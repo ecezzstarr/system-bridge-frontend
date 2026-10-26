@@ -184,8 +184,7 @@ function WorldScene({domains,links,selected,onSelect,placing,onPlace,preview}:{
   // Camera begins near the first verified castle, so even a single Premium
   // domain has recognizable architecture on a narrow mobile screen.
   const anchor=domains.find(domain=>domain.domainId===selected)||domains[0]
-  const focal=focus==='food'?{x:9.1,y:3,z:-5.1}
-    :{x:anchor?.location.x||0,y:1.3,z:anchor?.location.z||0}
+  const focal={x:anchor?.location.x||0,y:1.3,z:anchor?.location.z||0}
   useEffect(()=>{
     camera.position.set(focal.x+12,focal.y+20,focal.z+23)
     camera.lookAt(focal.x,focal.y,focal.z)
@@ -395,7 +394,7 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
           Find my castle
        </button>}
        {!placing?<button type="button" className="min-h-11 rounded-xl border border-cyan-200/45 bg-[#092a36]/95 px-3 text-xs font-black text-cyan-100"
-         onClick={()=>{setSelected(owner.domainId);setFocus('world');setPlacing(true);setCandidate(null);setOperation('Tap an empty area of land to preview your castle position.')}}>
+         onClick={()=>{setSelected(owner.domainId);setPlacing(true);setCandidate(null);setOperation('Tap an empty area of land to preview your castle position.')}}>
          Position my castle
        </button>:<div className="space-y-2 rounded-xl border border-emerald-200/40 bg-[#082b2b]/95 p-3 text-xs text-white shadow-xl">
          <p className="font-bold text-emerald-100">Tap an open space on the land.</p>
