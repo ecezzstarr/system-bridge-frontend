@@ -4,10 +4,8 @@ import {Suspense,useEffect,useMemo,useState,useCallback} from 'react'
 import Link from 'next/link'
 import {Html,OrbitControls,Line} from '@react-three/drei'
 import {useFrame,useThree} from '@react-three/fiber'
-import {BurningRiverFoodStore3D} from './burning-river-food-store-3d'
 import {WeaveOpenWorldLandscape} from '@/components/world/weave-open-world-landscape'
 import {CityMaterial} from '@/components/system-switch/file-folder-city-material'
-import {burningRiverFoodHref} from '@/lib/burning-river-food-catalog'
 import * as THREE from 'three'
 import {AdaptiveCanvas} from '@/components/world/adaptive-canvas'
 import {visiblePoll} from '@/lib/visible-poll'
@@ -169,15 +167,16 @@ function DomainCastle({domain,selected,onSelect}:{
           ${selected?'border-amber-200 bg-[#53341d]/95 text-amber-100':'border-amber-200/45 bg-[#081b34]/90 text-white'}`}
         aria-pressed={selected} data-open-world-domain={domain.domainId}>
         <span className="block truncate">{domain.publicName}</span>
-        <span className="mt-1 block text-[9px] font-medium capitalize text-amber-200">{domain.tier} · {domain.stage}</span>
+        <span className="mt-1 block text-[9px] font-medium capitalize text-amber-200">{domain.tier} File Folder · {domain.stage}</span>
+        <span className="mt-1 block text-[9px] font-medium text-sky-100/85">{domain.activity.operatingSystems} preview systems · {domain.activity.activeBuilds} builds</span>
       </button>
     </Html>
   </group>
 }
 
-function WorldScene({domains,links,selected,onSelect,carrierCode,focus,placing,onPlace,preview}:{
+function WorldScene({domains,links,selected,onSelect,placing,onPlace,preview}:{
   placing:boolean;onPlace:(point:{x:number;z:number})=>void;preview:{x:number;z:number}|null
-  carrierCode?:string|null;focus:'world'|'food'
+
   domains:PublicWorldDomain[];links:WorldFeed['links'];selected:string|null
   onSelect:(id:string)=>void
 }){
@@ -188,9 +187,9 @@ function WorldScene({domains,links,selected,onSelect,carrierCode,focus,placing,o
   const focal=focus==='food'?{x:9.1,y:3,z:-5.1}
     :{x:anchor?.location.x||0,y:1.3,z:anchor?.location.z||0}
   useEffect(()=>{
-    camera.position.set(focal.x+12,focal.y+(focus==='food'?14:20),focal.z+(focus==='food'?19:23))
+    camera.position.set(focal.x+12,focal.y+20,focal.z+23)
     camera.lookAt(focal.x,focal.y,focal.z)
-  },[camera,focus,focal.x,focal.y,focal.z])
+  },[camera,focal.x,focal.y,focal.z])
   const byId=useMemo(()=>new Map(domains.map(d=>[d.domainId,d])),[domains])
   return <>
     <fog attach="fog" args={['#a6cce0',112,260]}/>
@@ -203,7 +202,6 @@ function WorldScene({domains,links,selected,onSelect,carrierCode,focus,placing,o
       <meshBasicMaterial color="#a7ffe2" side={THREE.DoubleSide} transparent opacity={.85}/>
     </mesh>}
     <MovingBurningRiver/>
-    <BurningRiverFoodStore3D carrierCode={carrierCode}/>
     {domains.map(d=><DomainCastle key={d.domainId} domain={d}
       selected={selected===d.domainId} onSelect={onSelect}/>)}
     {links.map((link,i)=>{
@@ -232,7 +230,6 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
   requestedDoor?:string|null
   role?:'visitor'|'client'|'agent'|'bridger'|'admin'
 }){
- const [focus,setFocus]=useState<'world'|'food'>('world')
  const [detailsOpen,setDetailsOpen]=useState(false)
  const [feed,setFeed]=useState<WorldFeed>(emptyFeed)
  const [status,setStatus]=useState<'loading'|'ready'|'unavailable'>('loading')
@@ -379,7 +376,7 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
         fallback={<div role="status" data-weave-world-gpu-fallback="no-illustrated-map" className="flex h-full items-center justify-center px-6 text-center text-sm text-amber-50">Live 3D could not start on this browser. Verified Customer Doors are listed below.</div>}
         onWorldReady={()=>setSceneReady(true)} mobileGame>
         <WorldScene domains={displayDomains} links={feed.links} selected={selected} onSelect={tapCastle}
-          carrierCode={carrierCode} focus={focus} placing={placing} onPlace={placeOnLand} preview={candidate}/>
+          placing={placing} onPlace={placeOnLand} preview={candidate}/>
       </AdaptiveCanvas>}
       {webgl===null&&<div role="status" className="pointer-events-none absolute inset-x-5 bottom-20 z-10 rounded-lg bg-[#0e3651]/75 px-4 py-3 text-center text-xs text-amber-50">Opening System Switch · WEAVE Live 3D…</div>}
       {webgl===true&&!sceneReady&&<div role="status" className="pointer-events-none absolute inset-x-5 bottom-20 z-10 rounded-lg bg-[#0e3651]/75 px-4 py-3 text-center text-xs text-amber-50">Rendering the living WEAVE 3D world…</div>}
@@ -391,16 +388,10 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
       <div className="pointer-events-none absolute inset-x-0 top-0 z-10 bg-gradient-to-b from-[#061225]/65 to-transparent px-3 pb-8 pt-3">
         <span className="rounded-md bg-[#061225]/80 px-2 py-1.5 text-[11px] font-bold text-amber-100">System Switch · Bridge of Radiance · WEAVE Open World</span>
       </div>
-      <nav aria-label="Explore WEAVE physical 3D land" className="absolute left-3 top-12 z-20 flex max-w-[calc(100%-1.5rem)] gap-2">
-        {(['world','food'] as const).map(view=><button key={view} type="button" aria-pressed={focus===view} onClick={()=>setFocus(view)} className="min-h-10 rounded-lg border border-amber-200/35 bg-[#082740]/80 px-3 py-2 text-[11px] font-bold text-amber-50">{view==='food'?'WEAVE Food Store':'File Folder Land'}</button>)}
-      </nav>
-      {focus==='food'&&webgl===false&&<div className="absolute inset-x-7 bottom-20 z-10 mx-auto max-w-sm overflow-hidden rounded-lg border border-amber-200/35 bg-[#082b34]/90 p-2 shadow-2xl">
-       <img src="/weave-food/weave-family-products.avif" width={1200} height={700} alt="WEAVE Food Store original product collection" loading="lazy" className="h-auto w-full object-contain"/>
-     </div>}
 
      {role==='client'&&owner&&<div className="absolute right-3 top-16 z-20 flex max-w-[57%] flex-col gap-2" data-client-world-castle-relocation="owner-only">
        {!placing&&<button type="button" className="min-h-10 rounded-xl border border-amber-200/40 bg-[#112b36]/95 px-3 text-xs font-bold text-amber-100"
-          onClick={()=>{setFocus('world');setPage(Math.max(0,Math.floor((owner.worldSlot-1)/48)));setSelected(owner.domainId)}}>
+          onClick={()=>{setPage(Math.max(0,Math.floor((owner.worldSlot-1)/48)));setSelected(owner.domainId)}}>
           Find my castle
        </button>}
        {!placing?<button type="button" className="min-h-11 rounded-xl border border-cyan-200/45 bg-[#092a36]/95 px-3 text-xs font-black text-cyan-100"
@@ -415,12 +406,7 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
            className="min-h-10 w-full rounded-lg border border-white/30 px-2">Cancel</button>
        </div>}
      </div>}
-     {focus==='food'&&<Link href={burningRiverFoodHref(carrierCode,'agent-electrolyte')}
-       data-weave-food-direct-carrier-order="true"
-       className="absolute bottom-14 right-3 inline-flex min-h-11 items-center rounded-lg border border-amber-200/50 bg-[#07231c]/95 px-3 text-xs font-black text-amber-100 shadow-xl">
-       {carrierCode?'Order through my Agent':'Choose a Food Agent'} <ArrowRight className="ml-2 h-4 w-4"/>
-     </Link>}
-     {selectedDomain&&focus==='world'&&<div className={`absolute right-3 z-30 w-[min(280px,calc(100%-1.5rem))] rounded-xl border border-amber-200/50 bg-[#081c2a]/95 p-3 shadow-xl bottom-14`} data-open-world-selected-building={selectedDomain.domainId}>
+     {selectedDomain&&<div className={`absolute right-3 z-30 w-[min(280px,calc(100%-1.5rem))] rounded-xl border border-amber-200/50 bg-[#081c2a]/95 p-3 shadow-xl bottom-14`} data-open-world-selected-building={selectedDomain.domainId}>
        <p className="truncate text-xs font-black text-amber-100">{selectedDomain.publicName}</p>
        <p className="mt-1 text-[11px] capitalize text-sky-100/70">{selectedDomain.tier} · {stageLabel[selectedDomain.stage]}</p>
        {role==='client'&&owner?.domainId===selectedDomain.domainId?
