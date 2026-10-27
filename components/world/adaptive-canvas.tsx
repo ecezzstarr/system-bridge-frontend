@@ -11,22 +11,40 @@ export function FrameDriver({active,fps,onFirstFrame}:{active:boolean;fps:number
     if(!active)return
     let frame=0
     let last=0
-    let elapsed=clock.elapsedTime
+    let simulatedTimeMs=clock.elapsedTime*1000
     let hasDrawn=false
     const tick=(time:number)=>{
-      if(document.hidden)return
+      // Hidden worlds must not schedule frames. The visibility listener below
+      // re-arms exactly one frame when a phone returns to this tab.
+      frame=0
+      if(document.hidden){last=0;return}
       const delta=last?time-last:1000/fps
       if(!last||delta>=1000/fps){
         if(last)reportRuntimeFrame(delta,1000/fps)
-        elapsed+=Math.min(delta,100)/1000
-        advance(elapsed)
+        // R3F's advance() expects milliseconds, not accumulated seconds.
+        // Preserve the 100ms stall cap in the same unit so the scene clock
+        // advances normally without a large jump after a suspended phone tab.
+        simulatedTimeMs+=Math.min(delta,100)
+        advance(simulatedTimeMs)
         if(!hasDrawn){hasDrawn=true;onFirstFrame?.()}
         last=time
       }
       frame=requestAnimationFrame(tick)
     }
-    frame=requestAnimationFrame(tick)
-    return ()=>cancelAnimationFrame(frame)
+    const visibilityChange=()=>{
+      last=0
+      if(document.hidden){
+        if(frame){cancelAnimationFrame(frame);frame=0}
+      }else if(!frame){
+        frame=requestAnimationFrame(tick)
+      }
+    }
+    document.addEventListener('visibilitychange',visibilityChange)
+    if(!document.hidden)frame=requestAnimationFrame(tick)
+    return ()=>{
+      document.removeEventListener('visibilitychange',visibilityChange)
+      if(frame)cancelAnimationFrame(frame)
+    }
   },[active,fps,advance,clock,onFirstFrame])
   return null
 }

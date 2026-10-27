@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '@/lib/auth-provider'
 import { WeaveLogo } from '@/components/weave-logo'
+import { WEAVE_WRITING } from '@/lib/weave-writing'
 
 const departments = [
   { name: 'Stability', people: 'Agents' },
@@ -74,7 +75,7 @@ export default function Home() {
             <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
               <Link href="/market" className="rounded-lg px-3 py-2.5 text-slate-200 hover:bg-white/10">Customer Market</Link>
               <Link href="/client/login" className="rounded-lg border border-sky-200/20 px-3 py-2.5 text-sky-100 hover:bg-sky-200/10">Client Portal</Link>
-              <Link href="/login" className="rounded-lg px-3 py-2.5 text-slate-200 hover:bg-white/10">Sign In</Link>
+              <Link href="/login" className="rounded-lg px-3 py-2.5 text-slate-200 hover:bg-white/10">{WEAVE_WRITING.positionAccess.signIn}</Link>
             </div>
           </div>
         </nav>

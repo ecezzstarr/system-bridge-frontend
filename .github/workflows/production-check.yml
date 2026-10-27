@@ -84,10 +84,12 @@ jobs:
         run: |
           node tests/burning-river-system-switch-continuity.cjs
           node tests/weave-open-world-system-switch.cjs
+          node tests/weave-open-world-live-approved-image.cjs
           node tests/weave-castle-position-and-entry.cjs
 
       - name: WEAVE food regressions
         run: |
+          node tests/food-distribution-manager-regression.cjs
           node tests/admin-order-notification-coverage.cjs
           node tests/carrier-food-payment-regression.cjs
           node tests/electrolyte-independent-home-regression.cjs
@@ -123,6 +125,7 @@ jobs:
           node tests/admin-music-studio-dj.cjs
           node tests/work-github-oracle-release-regression.cjs
           node tests/company-of-time-homepage-regression.cjs
+          node tests/weave-company-shared-theme.cjs
           node tests/file-folder-standard-official-world-regression.cjs
           node tests/weave-narration-studio.cjs
           node tests/prospect-whatsapp-handoff-regression.cjs

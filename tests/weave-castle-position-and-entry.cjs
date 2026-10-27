@@ -43,8 +43,13 @@ const entry=read('app/system-switch/world/page.tsx')
 assert.ok(world.includes('data-client-world-castle-relocation="owner-only"')&&world.includes('Position my castle'),'Verified Client has relocation control')
 assert.ok(world.includes("'/api/client/open-world/castle-position'")&&world.includes('Confirm castle position'),'Castle moves only after affirmative confirmation')
 assert.ok(land.includes('onPlace({x:event.point.x,z:event.point.z})'),'Tap real land to choose castle point')
-assert.ok(world.includes("owner?.domainId===id")&&world.includes("window.location.assign('/client/system-switch')"),'Tapping own castle opens the private File Folder')
-assert.ok(world.includes("if(href)window.location.assign(href)"),'Public visitor taps go only to real commissioned public market')
+assert.ok(world.includes("owner?.domainId===selectedDomain.domainId")&&
+ world.includes('<Link href="/client/system-switch"'),
+ 'Selecting an owned castle offers its protected private File Folder entrance')
+assert.ok(world.includes('publicHref(selectedDomain)!')&&
+ world.includes("if(!domain.customerDoor.open")&&
+ world.includes('if(!feed.domains.some(domain=>domain.domainId===id))return'),
+ 'Visitor taps show real publicly commissioned Customer Doors without auto-entering private File Folders')
 assert.ok(world.includes('publicHref(selectedDomain)'),'Selected Client products are reached through true Customer Door')
 assert.ok(entry.includes('legionCode={legionCode}')&&world.includes("'&legion='+encodeURIComponent(legionCode)"),'Existing Legion attribution survives customer crossing')
 const publicMarket=read('app/market/[slug]/page.tsx')

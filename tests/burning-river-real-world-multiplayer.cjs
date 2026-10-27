@@ -57,6 +57,7 @@ const db=read('lib/weave-open-world-store.ts')
 const api=read('app/api/events/flame/open-world/route.ts')
 const client=read('app/api/client/company-loop-connections/route.ts')
 const map=read('components/events/burning-river-live-world.tsx')
+const atlas=read('components/world/weave-open-world-atlas.tsx')
 const gate=read('components/events/burning-river-official-gateway.tsx')
 const route=read('app/system-switch/world/page.tsx')
 const staff=read('components/events/position-event-world.tsx')
@@ -90,8 +91,10 @@ assert.ok(map.includes('MovingBurningRiver')&&map.includes('DomainCastle')&&map.
 assert.ok(!map.includes('WeaveEmbodiedAvatar')&&!map.includes('joystick')&&!map.includes('soldiers'),
  'World is about Client systems and company interaction, not warfare')
 assert.ok(gate.includes("burning-river-crossing-official.webp")&&
- map.includes("burning-river-open-world-official.webp"),
- 'Both official approved images are referenced; no alternate concept image')
+ map.includes('data-weave-official-open-world-reference="weave_open_world_fantasy_map.png"')&&
+ atlas.includes('/weave/open-world/scene-preview.webp')&&
+ atlas.includes('const SCENE_URLS=['),
+ 'The approved Burning River crossing is distinct from the new WEAVE Open World artwork')
 assert.ok(gate.includes('href={worldHref}')&&route.includes('<BurningRiverLiveWorld role={role} carrierCode={carrierCode} requestedDoor={door} legionCode={legionCode}/>'),
  'Clickable crossing opens real shared world route')
 assert.ok(gate.includes('encodeURIComponent(carrierCode)')&&

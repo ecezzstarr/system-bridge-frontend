@@ -34,16 +34,10 @@ assert.match(eventWorld,/data-flame-event-compact-entrance="true"/)
 for (const removed of ['Your Loop 1 Position','River Bank · Functions','Movement Current','Staff Customer Door current','<FlameFoodCurrent />','The River that Burns']) {
   assert.ok(!eventWorld.includes(removed), 'The removed event information must not reappear: '+removed)
 }
-assert.match(gate,/const backHref = '\/event'/)
-assert.match(gate,/data-system-switch-gate="burning-river"/,'Agent, Bridger and Administration enter the Burning River gate')
-assert.match(gate,/<RiverSurface quiet=\{false\}\s*\/>/,'The gate renders real flowing fire and water')
-assert.match(gate,/<SystemSwitchThreshold active/,'The physical System Switch arch appears before the File Folder world')
-assert.match(gate,/href="\/system-switch\/world\?via=system-switch"/,'Staff explicitly cross from the gate into the File Folder open world')
-assert.match(gate,/data-system-switch-role=\{role\}/,'The three staff positions retain identity at the crossing')
-assert.ok(!gate.includes('<StaffFileFolderWorld'),'The gate does not skip straight into the File Folder world')
+assert.ok(gate.includes("redirect('/system-switch/world?via=system-switch')")&&!gate.includes('<RiverSurface'),'System Switch is the live world itself, with no intermediate event gate')
 const publicFileFolderWorld = read('app/system-switch/world/page.tsx')
 assert.match(publicFileFolderWorld,/data-file-folder-open-world-entry=/)
-assert.match(publicFileFolderWorld,/fromSwitch\?'\/system-switch':'\/flame-event'/,'The File Folder open world returns to the same gate')
+assert.ok(publicFileFolderWorld.includes("fromSwitch?(role==='client'?'/client/event':'/event')"),'Return from the world goes straight to Company Loop 1, never a second gate')
 assert.match(publicFileFolderWorld,/<BurningRiverLiveWorld role=\{role\} carrierCode=\{carrierCode\} requestedDoor=\{door\} legionCode=\{legionCode\}\s*\/>/,'The destination is the existing real Client domain world')
 
 assert.match(staffWorkspace,/data-verified-employment-workspace="true"/)

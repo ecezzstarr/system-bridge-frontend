@@ -108,8 +108,8 @@ export async function replyToEmployment(position:WeaveEmploymentPosition,employe
     }else{
       const {rows:authors}=await pool.query('SELECT name FROM users WHERE id=$1::uuid',[author.id])
       const sender=String(authors[0]?.name||'An employee').slice(0,100)
-      const roleName=position==='distribution_manager'?'Distribution Manager'
-        :position==='distribution_assistant'?'Assistant Distribution Manager':'Food Preparation'
+      const roleName=position==='distribution_manager'?'Food Distribution Manager'
+        :position==='distribution_assistant'?'Assistant Food Distribution Manager':'Food Preparation'
       await pool.query(`INSERT INTO notifications(user_id,type,title,content,from_user_name,link)
         SELECT id,'employment_reply',$1,$2,'WEAVE Employment',$3
         FROM users WHERE role='admin' AND is_active=true`,
@@ -168,7 +168,7 @@ export async function exitWeaveEmployment(
         SET status='ended',exit_kind='lead_departed',exit_reason=$2,
           exited_at=NOW(),exited_by=$3::uuid,updated_at=NOW()
         WHERE manager_user_id=$1::uuid AND status='approved' RETURNING user_id`,
-        [employeeId,'The lead Distribution Manager appointment ended. Assistant employment is closed until a new appointment is approved.',actor.id])
+        [employeeId,'The lead Food Distribution Manager appointment ended. Assistant employment is closed until a new appointment is approved.',actor.id])
       affectedAssistants=rows
       for(const assistant of affectedAssistants){
         await client.query(`INSERT INTO weave_employment_exit_events(position,employee_user_id,actor_user_id,exit_kind,reason)
@@ -215,7 +215,7 @@ export async function exitWeaveEmployment(
       for(const assistant of affectedAssistants){
         await pool.query(`INSERT INTO notifications(user_id,type,title,content,from_user_name)
           VALUES($1::uuid,'employment_exit','Distribution Assistant employment ended',
-            'Your lead Distribution Manager appointment has ended. Your Assistant Distribution Manager employment also ended. You may apply again for a future vacancy; existing work and payment records remain available.', 'WEAVE Employment')`,
+            'Your lead Food Distribution Manager appointment has ended. Your Assistant Food Distribution Manager employment also ended. You may apply again for a future vacancy; existing work and payment records remain available.', 'WEAVE Employment')`,
           [assistant.user_id])
       }
     }

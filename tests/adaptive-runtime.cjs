@@ -133,7 +133,7 @@ function frames(){
   let effect,id=0
   h.sandbox.requestAnimationFrame=fn=>{callbacks.set(++id,fn);return id}
   h.sandbox.cancelAnimationFrame=id=>callbacks.delete(id)
-  const state={clock,advance:time=>{clock.elapsedTime=time;rendered.push(time)}}
+  const state={clock,advance:time=>{clock.elapsedTime=time/1000;rendered.push(time)}}
   const {FrameDriver}=h.load('components/world/adaptive-canvas.tsx',{
     react:{useEffect:fn=>effect=fn},'react/jsx-runtime':{},
     '@react-three/fiber':{useThree:selector=>selector(state)},
@@ -144,15 +144,26 @@ function frames(){
   for(let time=10;time<1010;time+=10)frame(time)
   assert.ok(rendered.length<=30,'render rate stays capped on fast displays')
   frame(10000)
-  assert.ok(rendered.at(-1)-rendered.at(-2)<=.10001,'long stalls cannot cause simulation jumps')
+  assert.ok(rendered.at(-1)-rendered.at(-2)<=100.01,'R3F receives millisecond timestamps and long stalls cannot cause simulation jumps')
   cleanup();assert.equal(callbacks.size,0)
   const count=rendered.length
   FrameDriver({active:false,fps:15});effect();frame(20000)
   assert.equal(rendered.length,count,'offscreen scenes schedule no frames')
   FrameDriver({active:true,fps:15});cleanup=effect();frame(30000)
   assert.ok(rendered.at(-1)>rendered.at(-2),'resuming preserves scene time')
-  h.document.hidden=true;frame(30100);assert.equal(callbacks.size,0)
+  assert.ok(rendered.at(-1)>0,'R3F advance receives a positive simulated timestamp in milliseconds')
+  h.document.hidden=true;frame(30100);assert.equal(callbacks.size,0,
+    'Hidden scene must stop requesting GPU animation frames')
+  const beforeReturn=rendered.length
+  h.document.hidden=false;h.document.emit('visibilitychange')
+  assert.equal(callbacks.size,1,'Visible scene resumes with exactly one requested frame')
+  frame(30200)
+  assert.ok(rendered.length>beforeReturn,'Returning to an open-world tab renders again')
+  assert.ok(rendered.at(-1)-rendered.at(-2)<=100.01,'Return cannot jump simulation time')
+  h.document.hidden=true;h.document.emit('visibilitychange')
+  assert.equal(callbacks.size,0,'Visibility hide cancels the queued frame immediately')
   cleanup()
+  assert.equal(h.document.count(),0,'World loop removes visibility listener on unmount')
 }
 (async()=>{await polling();await resources();await adaptation();await readiness();frames();console.log('PASS: adaptive runtime behavior, capped/offscreen rendering, request lifetimes, hidden-tab recovery and readiness cleanup')})().catch(error=>{console.error(error);process.exitCode=1})
 

@@ -118,7 +118,7 @@ export default function WeaveLifestylesPage() {
         <div className="mt-2 flex items-start justify-between gap-4">
           <div>
             <h1 className="text-3xl font-black tracking-tight text-white">LIFESTYLE</h1>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">Agents have included Lifestyle access. Bridgers can attain Agentic-Bridger with one payment of 11 Flame Coin. Agentic-Bridger then enables Lifestyle access and eligibility to apply for positions such as Distribution Manager and Legion. Regular Bridger work has no subscription; Clients follow their own access terms.</p>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">Agents have included Lifestyle access. Bridgers can attain Agentic-Bridger with one payment of 11 Flame Coin. Agentic-Bridger then enables Lifestyle access and eligibility to apply for positions such as Food Distribution Manager and Legion. Regular Bridger work has no subscription; Clients follow their own access terms.</p>
           </div>
           <Sparkles className="h-8 w-8 shrink-0 text-yellow-400" />
         </div>
@@ -155,7 +155,7 @@ export default function WeaveLifestylesPage() {
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-[0.22em] text-emerald-300">Attain Agentic-Bridger · Enable Lifestyle</p>
                   <h2 className="mt-2 text-2xl font-black text-white">{WORLD_RULES.AGENTIC_BRIDGER_ONE_TIME_FLAME_COIN} Flame Coin <span className="text-sm text-slate-300">· one time</span></h2>
-                  <p className="mt-2 max-w-2xl text-xs leading-6 text-slate-300">Pay 11 Flame Coin once to attain Agentic-Bridger. This permanent attainment enables Lifestyle access, including applications for eligible Distribution Manager and Legion positions. Appointment and employment are separate approval processes. Regular Bridger activity remains free.</p>
+                  <p className="mt-2 max-w-2xl text-xs leading-6 text-slate-300">Pay 11 Flame Coin once to attain Agentic-Bridger. This permanent attainment enables Lifestyle access, including applications for eligible Food Distribution Manager and Legion positions. Appointment and employment are separate approval processes. Regular Bridger activity remains free.</p>
                   <p className="mt-2 text-xs text-slate-400">Bridge AI costs 8 Flame Coin per new template. Echo is free. Agentic-Bridger is attained once for 11 Flame Coin; there is no recurring Bridger or Agentic-Bridger subscription.</p>
                   
                 </div>
@@ -261,12 +261,12 @@ export default function WeaveLifestylesPage() {
                   tone="amber"
                   icon={<BriefcaseBusiness className="h-8 w-8" />}
                   eyebrow="WEAVE employment Lifestyle"
-                  title="DISTRIBUTION MANAGER"
-                  detail="Distribution Manager is an actual WEAVE distribution position carried by an existing Agent or Bridger: public distribution, campaign movement, Agent/Bridger acquisition, coordination and reporting back to Administration."
+                  title="FOOD DISTRIBUTION MANAGER"
+                  detail="Food Distribution Manager is an actual WEAVE employment position carried by an existing Agent or Bridger. The role distributes WEAVE food products to consumers and businesses, coordinates verified handoffs across all food product types, and manages a shared target of 200 Administration-verified food distributions each calendar month."
                   open={distributionManagerOpen}
-                  reason={access?.active ? 'Distribution Manager entry is available from your current position.' : agentFree ? 'An active Agent account is required.' : bridger ? 'Attain Agentic-Bridger for a one-time 11 Flame Coin payment.' : `Renew the ${roleLabel} monthly subscription to reopen this Lifestyle.`}
+                  reason={access?.active ? 'Food Distribution Manager entry is available from your current position.' : agentFree ? 'An active Agent account is required.' : bridger ? 'Attain Agentic-Bridger for a one-time 11 Flame Coin payment.' : `Renew the ${roleLabel} monthly subscription to reopen this Lifestyle.`}
                   href="/manager/dashboard"
-                  action="Enter Distribution Manager"
+                  action="Enter Food Distribution Manager"
                   tools={[{icon:<Megaphone className="h-3.5 w-3.5"/>,label:'Distribution Studio'},{icon:<BriefcaseBusiness className="h-3.5 w-3.5"/>,label:'WEAVE employment'}]}
                 />
               )}
@@ -276,12 +276,12 @@ export default function WeaveLifestylesPage() {
                   tone="cyan"
                   icon={<Users className="h-8 w-8" />}
                   eyebrow="WEAVE distribution employment · 6 appointments"
-                  title="ASSISTANT DISTRIBUTION MANAGER"
-                  detail="Work alongside verified WEAVE Distribution Managers on campaigns, outreach, follow-up and verified Agent/Bridger acquisition. Six appointments are available, two per Manager. Read the salary, monthly target and payment conditions inside the employment document before submitting an application."
+                  title="ASSISTANT FOOD DISTRIBUTION MANAGER"
+                  detail="Work alongside verified Food Distribution Managers to distribute WEAVE food products to consumers and businesses. Six assistant appointments are available, two per lead. Teams share a target of 200 Administration-verified handoffs per calendar month across all food product types."
                   open={distributionManagerOpen}
-                  reason={access?.active ? 'Assistant Distribution Manager applications are available.' : agentFree ? 'An active Agent account is required.' : 'Attain Agentic-Bridger once to enable Lifestyle applications.'}
+                  reason={access?.active ? 'Assistant Food Distribution Manager applications are available.' : agentFree ? 'An active Agent account is required.' : 'Attain Agentic-Bridger once to enable Lifestyle applications.'}
                   href="/weave/lifestyles/distribution-assistant"
-                  action="Apply for Assistant Distribution Manager"
+                  action="Apply for Assistant Food Distribution Manager"
                   tools={[{icon:<BriefcaseBusiness className="h-3.5 w-3.5"/>,label:'Employment application'},{icon:<Users className="h-3.5 w-3.5"/>,label:'Monthly referrals'}]}
                 />
               )}

@@ -77,11 +77,24 @@ assert.equal(at.salaryPaymentSource,'forensic_payroll_approval_required','Forens
 assert.equal(below.referralPaymentSource,'existing_referral_bonus_awards_ledger','Do not duplicate previously credited referral bonuses')
 assert.ok(!/INSERT INTO|UPDATE wallets|ledger_entries/.test(source),'Policy helper does not transfer funds')
 
+const foodSource=read('lib/food-distribution.ts')
+const foodModule=ts.transpileModule(foodSource,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText
+const foodContext={exports:{},require(name){
+  if(name==='@/lib/db')return {getPool(){throw new Error('Compensation calculation must not touch database')},sql(){throw new Error('Compensation calculation must not touch database')}}
+  throw new Error('Unexpected food module import '+name)
+}}
+vm.runInNewContext(foodModule,foodContext)
+const foodComp=foodContext.exports.calculateFoodDistributionCompensation
+assert.equal(foodComp({verifiedDistributions:199,monthlySalaryNgn:70000}).salaryEntitlementNgn,0,'199 verified food handoffs do not qualify the lead salary')
+assert.equal(foodComp({verifiedDistributions:200,monthlySalaryNgn:70000}).salaryEntitlementNgn,70000,'200 verified food handoffs qualify the lead salary preview')
+assert.equal(foodComp({verifiedDistributions:200,monthlySalaryNgn:40000}).salaryEntitlementNgn,40000,'The assistant qualifies through the same team target')
+assert.equal(foodComp({verifiedDistributions:0,monthlySalaryNgn:40000}).target,200,'Food distribution target is 200 verified handoffs each calendar month')
+
 const manager=read('lib/manager-employment.ts')
 const assistants=read('lib/distribution-assistants.ts')
 const mainUI=read('app/(app)/manager/dashboard/page.tsx')
 const assistantUI=read('app/(app)/weave/lifestyles/distribution-assistant/page.tsx')
-assert.ok(manager.includes('calculateDistributionTeamCompensation')&&assistants.includes('calculateDistributionTeamCompensation'),'Both roles follow one policy')
+assert.ok(manager.includes('calculateFoodDistributionCompensation')&&assistants.includes('calculateFoodDistributionCompensation'),'Both food roles use the same food-distribution salary policy')
 assert.ok(mainUI.includes('state.compensation?.salaryEntitlementNgn')&&assistantUI.includes('state.compensation?.salaryEntitlementNgn'),'Both roles see conditional salary')
-assert.ok(mainUI.includes('300 verified Agent or Bridger referrals')&&assistantUI.includes('300 verified Agent/Bridger referrals')&&assistantUI.includes('500 each later team month'),'Probation-specific and regular team salary rules are visible')
-console.log('Distribution performance checks passed: probation 299/300, ongoing 499/500, employment anniversaries and date clamping')
+assert.ok(mainUI.includes('200 verified food distributions')&&assistantUI.includes('200 Administration-verified food distributions per calendar month'),'Both roles display the 200 monthly verified handoff target')
+console.log('Food distribution salary checks passed: 199/200 threshold, shared team qualification, and no automatic payment')

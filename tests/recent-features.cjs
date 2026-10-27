@@ -1212,7 +1212,7 @@ const oldSystemSwitchActionSource=fs.readFileSync(path.join(root,'app/api/system
 const oldSystemSwitchBridgeSource=fs.readFileSync(path.join(root,'app/api/system-switch/bridge/route.ts'),'utf8')
 const oldSystemSwitchFolderSource=fs.readFileSync(path.join(root,'app/api/system-switch/file-folder/route.ts'),'utf8')
 const oldSystemSwitchFolderPurchaseSource=fs.readFileSync(path.join(root,'app/api/system-switch/file-folder/purchase/route.ts'),'utf8')
-assert.ok(publicSystemSwitchSource.includes("redirect('/client/system-switch')"),'Public /system-switch resolves to the Client System Switch')
+assert.ok(publicSystemSwitchSource.includes("redirect('/system-switch/world?via=system-switch')"),'System Switch — Bridge of Radiance now resolves directly into permanent WEAVE Open 3D World')
 assert.ok(bridgeEntryPageSource.includes('ChatGptBridgeArrival'),'ChatGPT Prospect arrival stays inside Bridge')
 assert.ok(!bridgeEntryPageSource.includes('/system-switch?bridge='),'Bridge no longer redirects a Prospect into System Switch')
 assert.ok(bridgeArrivalSource.includes('BridgeRadianceWorld'),'Bridge arrival has its own Bridge Radiance world')

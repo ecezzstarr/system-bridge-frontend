@@ -11,8 +11,8 @@ type Thread={record:{status:string;position?:'manager'|'assistant';exit_kind:str
 type Props={position:WeaveEmploymentPosition;employeeId?:string;administration?:boolean;onStatusChange?:()=>void}
 
 const title:Record<WeaveEmploymentPosition,string>={
-  distribution_manager:'Distribution Manager',
-  distribution_assistant:'Assistant Distribution Manager',
+  distribution_manager:'Food Distribution Manager',
+  distribution_assistant:'Assistant Food Distribution Manager',
   food_preparation:'Food Preparation',
 }
 export function EmploymentActions({position,employeeId,administration=false,onStatusChange}:Props){
@@ -79,7 +79,7 @@ export function EmploymentActions({position,employeeId,administration=false,onSt
   const exitConfirm=isApplication?'Confirm application withdrawal':'Confirm resignation'
   const impact=isApplication?'Only your unapproved application is closed; no team appointment or probation is affected.':
     position==='distribution_manager'?
-    'Ending this appointment also ends the appointments of its approved Assistant Distribution Managers. They will be notified and require new appointments before resuming this work.':
+    'Ending this appointment also ends the appointments of its approved Assistant Food Distribution Managers. They will be notified and require new appointments before resuming this work.':
     position==='food_preparation'?
     'Previously assigned food orders stay on record. An approved Stability Lead or replacement must review any unfinished tasks for reassignment.':
     'The Manager may appoint another eligible assistant after this position ends.'
