@@ -39,7 +39,7 @@ export async function POST(request:NextRequest) {
   if(!['manager','assistant'].includes(position)||note.length<30||note.length>2000)
     return NextResponse.json({success:false,error:'Choose a position and provide 30–2,000 characters describing your food distribution plan.'},{status:400})
   const access=await getLifestyleAccess(user.id)
-  const legion=await getActiveLegionEmployment((await import('@/lib/db')).sql,user.id)
+  const legion=await getActiveLegionEmployment(sql,user.id)
   if(!access.active||legion.active)return NextResponse.json({success:false,error:'An active Agent position without exclusive Legion service is required.'},{status:403})
   await ensureFoodDistributionEmploymentSchema()
   const pool=getPool()
@@ -68,6 +68,14 @@ export async function POST(request:NextRequest) {
     `,[user.id,position,note,supervisor])
     if(!rows.length){await client.query('ROLLBACK');return NextResponse.json({success:false,error:'An active application already exists.'},{status:409})}
     await client.query('COMMIT')
+    try {
+      await pool.query(\`INSERT INTO notifications(user_id,type,title,content,from_user_name,link)
+        SELECT id,'food_distribution_employment','Food Distribution application awaiting review',
+          $1,'WEAVE Employment','/admin/food-distribution-employment'
+        FROM users WHERE role='admin' AND is_active=true\`,[
+          `An Agent submitted a ${position==='manager'?'Food Distribution Manager':'Assistant Food Distribution Manager'} application. Open the Administration review desk to verify eligibility and decide the appointment.\`
+        ])
+    } catch(error) { console.error('[food distribution employment] Administration alert failed',error) }
     return NextResponse.json({success:true,appointment:rows[0]},{headers:{'Cache-Control':'private, no-store'}})
   }catch(error){
     try{await client.query('ROLLBACK')}catch{}
