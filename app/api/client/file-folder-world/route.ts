@@ -14,6 +14,7 @@ import { CLIENT_BUILD_SPEED_MAX, effectiveBuildMinutes, getClientBuildEconomy } 
 import { fileFolderMotion } from '@/lib/weave-interaction-motion'
 import { recordSystemEvent } from '@/lib/system-events'
 import { ensureClientBusinessStoreSchema } from '@/lib/client-business-store'
+import { validateFileFolderModuleConnection } from '@/lib/file-folder-module-connections'
 
 function clean(value: unknown, max = 4000) {
   return typeof value === 'string' ? value.trim().slice(0, max) : ''
@@ -98,7 +99,63 @@ export async function POST(request: NextRequest) {
     const action = clean(body.action, 80)
     let receipt = null as Awaited<ReturnType<typeof issueWeaveReceipt>> | null
 
-    if (action === 'create_platform_project') {
+    if (action === 'connect_modules') {
+      const sourceSystemId=clean(body.source_system_id,80)
+      const targetSystemId=clean(body.target_system_id,80)
+      if(!isUuid(sourceSystemId)||!isUuid(targetSystemId)||sourceSystemId===targetSystemId){
+        return NextResponse.json({error:'Choose two different active systems from this File Folder.'},{status:400})
+      }
+      await ctx.sql`
+        CREATE TABLE IF NOT EXISTS client_file_folder_system_connections (
+          id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+          client_id uuid NOT NULL,
+          file_number varchar(120) NOT NULL,
+          source_system_id uuid NOT NULL,
+          target_system_id uuid NOT NULL,
+          contract_key varchar(80) NOT NULL,
+          status varchar(48) NOT NULL DEFAULT 'configured_pending_runtime_adapter',
+          created_at timestamptz NOT NULL DEFAULT NOW(),
+          updated_at timestamptz NOT NULL DEFAULT NOW(),
+          UNIQUE(client_id,file_number,source_system_id,target_system_id)
+        )
+      `
+      const systems=await ctx.sql`
+        SELECT id,system_type,status
+        FROM client_built_systems
+        WHERE client_id=${ctx.client.id}::uuid
+          AND file_number=${ctx.client.file_number}
+          AND id IN (${sourceSystemId}::uuid,${targetSystemId}::uuid)
+      `
+      const sourceSystem=systems.find((system:any)=>String(system.id)===sourceSystemId)
+      const targetSystem=systems.find((system:any)=>String(system.id)===targetSystemId)
+      const validation=validateFileFolderModuleConnection({
+        sourceType:String(sourceSystem?.system_type||''),
+        targetType:String(targetSystem?.system_type||''),
+        actorIsClientOwner:true,
+        sourceIsActive:sourceSystem?.status==='active',
+        targetIsActive:targetSystem?.status==='active',
+      })
+      if(!validation.ok){
+        return NextResponse.json({error:validation.reason},{status:409})
+      }
+      const rows=await ctx.sql`
+        INSERT INTO client_file_folder_system_connections(
+          client_id,file_number,source_system_id,target_system_id,contract_key,status
+        ) VALUES(
+          ${ctx.client.id}::uuid,${ctx.client.file_number},
+          ${sourceSystemId}::uuid,${targetSystemId}::uuid,
+          ${validation.contract},${validation.state}
+        )
+        ON CONFLICT(client_id,file_number,source_system_id,target_system_id)
+        DO UPDATE SET contract_key=EXCLUDED.contract_key,status=EXCLUDED.status,updated_at=NOW()
+        RETURNING id,source_system_id,target_system_id,contract_key,status,created_at
+      `
+      return NextResponse.json({
+        success:true,
+        connection:rows[0],
+        runtimeNote:'Connection contract saved. Live data transfer remains disabled until a verified runtime adapter is implemented.',
+      },{status:201,headers:{'Cache-Control':'private, no-store'}})
+    } else if (action === 'create_platform_project') {
       const kind=clean(body.kind,80)
       const title=clean(body.title,220)
       const purpose=clean(body.purpose,2000)
