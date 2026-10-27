@@ -15,6 +15,7 @@ import { fileFolderMotion } from '@/lib/weave-interaction-motion'
 import { recordSystemEvent } from '@/lib/system-events'
 import { ensureClientBusinessStoreSchema } from '@/lib/client-business-store'
 import { validateFileFolderModuleConnection } from '@/lib/file-folder-module-connections'
+import { ensureFileFolderModuleRuntimeSchema, getModuleRuntimeReadiness } from '@/lib/file-folder-module-runtime'
 
 function clean(value: unknown, max = 4000) {
   return typeof value === 'string' ? value.trim().slice(0, max) : ''
@@ -32,6 +33,7 @@ async function resolveClientWorld(request: NextRequest) {
 
   await ensureClientFileFolderSchema(sql)
   await ensureFileFolderWorldSchema(sql)
+  await ensureFileFolderModuleRuntimeSchema(sql)
   await sql`
     CREATE TABLE IF NOT EXISTS client_file_folder_system_connections (
       id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -103,10 +105,17 @@ export async function GET(request: NextRequest) {
       ORDER BY c.created_at DESC
       LIMIT 100
     `
+    const moduleRuntimeEvents=await ctx.sql`
+      SELECT id,target_system_id,source_event_key,contract_key,event_type,title,status,received_at
+      FROM client_file_folder_module_inbox
+      WHERE client_id=${ctx.client.id}::uuid AND file_number=${ctx.client.file_number}
+      ORDER BY received_at DESC
+      LIMIT 100
+    `
 
     return NextResponse.json({
       success: true,
-      world: {...world,moduleConnections},
+      world: {...world,moduleConnections,moduleRuntimeEvents},
       motion:fileFolderMotion('snapshot'),
     }, { headers: { 'Cache-Control': 'private, no-store' } })
   } catch (error) {
@@ -163,13 +172,15 @@ export async function POST(request: NextRequest) {
       if(!validation.ok){
         return NextResponse.json({error:validation.reason},{status:409})
       }
+      const readiness=getModuleRuntimeReadiness(validation.contract,String(sourceSystem.system_type),String(targetSystem.system_type))
+      const connectionStatus=readiness.adapterAvailable?'active':'configured_pending_runtime_adapter'
       const rows=await ctx.sql`
         INSERT INTO client_file_folder_system_connections(
           client_id,file_number,source_system_id,target_system_id,contract_key,status
         ) VALUES(
           ${ctx.client.id}::uuid,${ctx.client.file_number},
           ${sourceSystemId}::uuid,${targetSystemId}::uuid,
-          ${validation.contract},${validation.state}
+          ${validation.contract},${connectionStatus}
         )
         ON CONFLICT(client_id,file_number,source_system_id,target_system_id)
         DO UPDATE SET contract_key=EXCLUDED.contract_key,status=EXCLUDED.status,updated_at=NOW()
@@ -178,7 +189,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success:true,
         connection:rows[0],
-        runtimeNote:'Connection contract saved. Live data transfer remains disabled until a verified runtime adapter is implemented.',
+        runtimeNote:readiness.reason,
       },{status:201,headers:{'Cache-Control':'private, no-store'}})
     } else if (action === 'create_platform_project') {
       const kind=clean(body.kind,80)
