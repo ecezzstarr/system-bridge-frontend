@@ -54,6 +54,7 @@ export default function GenerativeFormationWorkshop(){
   finally{setBuildingStage('')}
  }
  useEffect(()=>{void load()},[load])
+ useEffect(()=>{const interval=window.setInterval(()=>void load(),15000);return ()=>window.clearInterval(interval)},[load])
  async function propose(){
   const token=getClientToken();if(!token){setError('Client login required.');return}
   setLoading(true);setError('')
@@ -73,7 +74,7 @@ export default function GenerativeFormationWorkshop(){
   <button type="button" disabled={loading||description.trim().length<15||!name.trim()} onClick={propose} className="rounded bg-cyan-300 px-4 py-3 text-sm font-bold text-black disabled:opacity-40">{loading?'Forming source plan…':'Form system plan inside this File Folder'}</button>
   {error&&<p role="alert" className="text-sm text-amber-200">{error}</p>}
   <div className="space-y-3"><h4 className="text-sm font-bold">My emerging formations ({formations.length})</h4>{formations.map(item=><article key={item.id} className="space-y-3 border-l-2 border-cyan-400/50 bg-black/30 p-3">
-   <div><p className="font-semibold">{item.specification.name}</p><p className="text-xs text-cyan-200">Conceptual · awaiting implementation and verification</p><p className="mt-1 text-xs text-slate-300">{item.specification.purpose}</p><p className="mt-1 text-xs text-slate-400">Materials: {item.specification.materials.join(', ')}</p></div>
+   <div><p className="font-semibold">{item.specification.name}</p><p className="text-xs text-cyan-200">Source plan · construction progress tracked below</p><p className="mt-1 text-xs text-slate-300">{item.specification.purpose}</p><p className="mt-1 text-xs text-slate-400">Materials: {item.specification.materials.join(', ')}</p></div>
    {item.specification.sourcePlan&&<div className="space-y-3 border-t border-white/10 pt-3">
     <div><p className="text-[10px] font-bold uppercase tracking-wider text-cyan-200">Source composition · {item.specification.sourcePlan.systemKind}</p><p className="mt-1 text-xs text-slate-300">Functions</p><ul className="list-disc space-y-1 pl-5 text-xs text-slate-200">{item.specification.sourcePlan.functions.map(value=><li key={value}>{value}</li>)}</ul></div>
     <div><p className="text-xs text-slate-300">Participant roles</p><p className="mt-1 text-xs text-slate-200">{item.specification.sourcePlan.participantRoles.join(' · ')}</p></div>
