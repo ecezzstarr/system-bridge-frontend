@@ -4,6 +4,20 @@ type Sql = (strings: TemplateStringsArray, ...values: any[]) => Promise<any[]>
 
 export async function ensureFileFolderModuleRuntimeSchema(sql: Sql) {
   await sql`
+    CREATE TABLE IF NOT EXISTS client_file_folder_system_connections (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      client_id uuid NOT NULL,
+      file_number varchar(120) NOT NULL,
+      source_system_id uuid NOT NULL,
+      target_system_id uuid NOT NULL,
+      contract_key varchar(80) NOT NULL,
+      status varchar(48) NOT NULL DEFAULT 'configured_pending_runtime_adapter',
+      created_at timestamptz NOT NULL DEFAULT NOW(),
+      updated_at timestamptz NOT NULL DEFAULT NOW(),
+      UNIQUE(client_id,file_number,source_system_id,target_system_id)
+    )
+  `
+  await sql`
     CREATE TABLE IF NOT EXISTS client_file_folder_module_inbox (
       id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
       client_id uuid NOT NULL,
