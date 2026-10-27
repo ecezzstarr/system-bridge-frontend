@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getBusinessDb, ensureClientBusinessStoreSchema } from '@/lib/client-business-store'
 import { ensureEnterpriseDreamSchema } from '@/lib/enterprise-dream'
 import { ensureLegionCommerceSchema } from '@/lib/legion-commerce'
+import { dispatchFileFolderOrderEvent } from '@/lib/file-folder-module-runtime'
 
 function carrierCodeFromRequest(request: NextRequest) {
   const direct = new URL(request.url).searchParams.get('legion')?.trim()
@@ -24,7 +25,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   await ensureLegionCommerceSchema(sql)
 
   const [store] = await sql`
-    SELECT id,client_id,customer_wallet_required
+    SELECT id,client_id,file_number,customer_wallet_required
     FROM client_business_stores
     WHERE public_slug=${slug}
       AND enabled=true
@@ -97,6 +98,22 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   `
 
   await notifyAdminOrder({orderId:String(order.id),event:'placed',department:'client',subject:'Client Customer Door order',detail:`${customerName} requested a Client store item (${item.currency} ${Number(item.price||0).toLocaleString()})${legion?.sales_code?' via Legion '+legion.sales_code:''}. Awaiting payment; Client retains ownership.`,adminPath:'/admin/orders',actorName:'Customer Door'})
+  try {
+    await dispatchFileFolderOrderEvent(sql as any, {
+      orderId:String(order.id),
+      clientId:String(store.client_id),
+      fileNumber:String(store.file_number),
+      itemId:String(item.id),
+      amount:item.price || 0,
+      currency:String(item.currency),
+      orderStatus:String(order.status),
+      paymentStatus:String(order.payment_status),
+    })
+  } catch (runtimeError) {
+    // Customer order creation remains authoritative; the runtime adapter logs
+    // failures without breaking the public checkout response.
+    console.error('[file-folder-module-runtime] order dispatch failed', runtimeError)
+  }
 
   const destination = new URL(`/market/${encodeURIComponent(slug)}`, request.url)
   destination.searchParams.set('order', String(order.id))
