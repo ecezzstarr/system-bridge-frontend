@@ -32,6 +32,20 @@ async function resolveClientWorld(request: NextRequest) {
 
   await ensureClientFileFolderSchema(sql)
   await ensureFileFolderWorldSchema(sql)
+  await sql`
+    CREATE TABLE IF NOT EXISTS client_file_folder_system_connections (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      client_id uuid NOT NULL,
+      file_number varchar(120) NOT NULL,
+      source_system_id uuid NOT NULL,
+      target_system_id uuid NOT NULL,
+      contract_key varchar(80) NOT NULL,
+      status varchar(48) NOT NULL DEFAULT 'configured_pending_runtime_adapter',
+      created_at timestamptz NOT NULL DEFAULT NOW(),
+      updated_at timestamptz NOT NULL DEFAULT NOW(),
+      UNIQUE(client_id,file_number,source_system_id,target_system_id)
+    )
+  `
   await ensureClientMoneyEnvironment(sql, clientId)
 
   const [client] = await sql`
@@ -78,10 +92,21 @@ export async function GET(request: NextRequest) {
       String(ctx.client.id),
       String(ctx.client.file_number),
     )
+    const moduleConnections=await ctx.sql`
+      SELECT c.id,c.source_system_id,c.target_system_id,c.contract_key,c.status,c.created_at,
+        source.title AS source_title,source.system_type AS source_type,
+        target.title AS target_title,target.system_type AS target_type
+      FROM client_file_folder_system_connections c
+      JOIN client_built_systems source ON source.id=c.source_system_id
+      JOIN client_built_systems target ON target.id=c.target_system_id
+      WHERE c.client_id=${ctx.client.id}::uuid AND c.file_number=${ctx.client.file_number}
+      ORDER BY c.created_at DESC
+      LIMIT 100
+    `
 
     return NextResponse.json({
       success: true,
-      world,
+      world: {...world,moduleConnections},
       motion:fileFolderMotion('snapshot'),
     }, { headers: { 'Cache-Control': 'private, no-store' } })
   } catch (error) {
