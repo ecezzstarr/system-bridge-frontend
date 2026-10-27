@@ -73,7 +73,7 @@ export async function dispatchFileFolderOrderEvent(sql: Sql, event: FileFolderOr
       AND c.file_number=${event.fileNumber}
       AND c.status='active'
       AND (
-        (c.contract_key='order' AND source.system_type IN ('commerce_storefront','marketplace_network')
+        (c.contract_key='order' AND source.system_type='commerce_storefront'
           AND target.system_type IN ('marketplace_network','payments_gateway','route_station','integration_network'))
         OR
         (c.contract_key='customer_request' AND source.system_type='customer_door'
@@ -111,7 +111,7 @@ export type ModuleRuntimeReadiness = {
 
 export function getModuleRuntimeReadiness(contractKey: string, sourceType: string, targetType: string): ModuleRuntimeReadiness {
   const supported = contractKey === 'order'
-    ? ['commerce_storefront','marketplace_network'].includes(sourceType)
+    ? sourceType === 'commerce_storefront'
       && ['marketplace_network','payments_gateway','route_station','integration_network'].includes(targetType)
     : contractKey === 'customer_request'
       ? sourceType === 'customer_door' && ['operations_board','mobile_service_app'].includes(targetType)
