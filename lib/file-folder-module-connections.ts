@@ -47,5 +47,7 @@ export function validateFileFolderModuleConnection(input: {
   if (!source || !target) return { ok: false, reason: 'One or both systems do not have a registered, reviewed module contract.' }
   const shared = source.outputs.filter(output => target.inputs.includes(output))
   if (!shared.length) return { ok: false, reason: 'The source output does not match any input accepted by the destination system.' }
+  const runtimePriority = ['order','customer_request','seller_order','dispatch_request','media_asset','published_media','learning_activity','completion_record','delivery_status','evidence_record','catalog']
+  shared.sort((a,b)=>runtimePriority.indexOf(a)-runtimePriority.indexOf(b))
   return { ok: true, contract: shared[0], state: 'configured_pending_runtime_adapter' }
 }
