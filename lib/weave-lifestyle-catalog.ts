@@ -4,6 +4,7 @@ export const DISTRIBUTION_MANAGER_LIFESTYLE = 'distribution_manager' as const
 export const DISTRIBUTION_ASSISTANT_LIFESTYLE = 'distribution_assistant' as const
 export const WEAVE_MANDATE_LIFESTYLE = 'weave_mandate' as const
 export const FOOD_PREPARATION_MANAGER_LIFESTYLE = 'food_preparation_manager' as const
+export const FOOD_DISTRIBUTION_MANAGER_LIFESTYLE = 'food_distribution_manager' as const
 export const FARM_TO_FAMILY_LIFESTYLE = 'farm_to_family' as const
 
 export type WeaveLifestyleKey =
@@ -13,6 +14,7 @@ export type WeaveLifestyleKey =
   | typeof DISTRIBUTION_ASSISTANT_LIFESTYLE
   | typeof WEAVE_MANDATE_LIFESTYLE
   | typeof FOOD_PREPARATION_MANAGER_LIFESTYLE
+  | typeof FOOD_DISTRIBUTION_MANAGER_LIFESTYLE
   | typeof FARM_TO_FAMILY_LIFESTYLE
 
 export const WEAVE_LIFESTYLE_CATALOG = {
@@ -63,6 +65,18 @@ export const WEAVE_LIFESTYLE_CATALOG = {
     environments: [
       { label: 'Employment Application', href: '/weave/lifestyles/food-preparation', purpose: 'Apply for an available Manager or Assistant Manager position.' },
       { label: 'Daily Kitchen Work Desk', href: '/weave/lifestyles/food-preparation', purpose: 'Prepare and dispatch verified paid orders assigned by the approved Stability Lead; record each handoff.' },
+    ],
+  },
+  [FOOD_DISTRIBUTION_MANAGER_LIFESTYLE]: {
+    key: FOOD_DISTRIBUTION_MANAGER_LIFESTYLE,
+    label: 'Food Distribution Manager',
+    route: '/weave/lifestyles/food-distribution',
+    roles: ['agent'],
+    summary: 'Separate Agent employment for food stock movement, outlet supply, delivery coordination and verified distribution records. Administration approves both Food Distribution Manager and Assistant Food Distribution Manager appointments.',
+    environments: [
+      { label: 'Employment Application', href: '/weave/lifestyles/food-distribution', purpose: 'Apply for a Food Distribution Manager or Assistant Food Distribution Manager appointment.' },
+      { label: 'Approved Workspaces', href: '/weave/lifestyles/work', purpose: 'Open the food distribution workspace after Administration approval.' },
+      { label: 'Food Store', href: '/food-store', purpose: 'Coordinate distribution against actual WEAVE food products and orders.' },
     ],
   },
   [FARM_TO_FAMILY_LIFESTYLE]: {
