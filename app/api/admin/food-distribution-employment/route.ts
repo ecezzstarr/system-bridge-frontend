@@ -36,9 +36,14 @@ export async function POST(request:NextRequest){
     UPDATE weave_food_distribution_employment SET status=$2,administration_note=$3,reviewed_by=$4::uuid,
       reviewed_at=NOW(),hired_at=CASE WHEN $2='approved' THEN NOW() ELSE NULL END,updated_at=NOW()
     WHERE user_id=$1::uuid AND status='pending'
+      AND (position='manager' OR EXISTS (
+        SELECT 1 FROM weave_food_distribution_employment lead JOIN users lead_user ON lead_user.id=lead.user_id
+        WHERE lead.user_id=weave_food_distribution_employment.manager_user_id
+          AND lead.position='manager' AND lead.status='approved' AND lead_user.is_active=true
+      ))
     RETURNING user_id,position,status,manager_user_id,reviewed_at,hired_at
   `,[applicantId,action==='approve'?'approved':'rejected',note,admin.id])
-  if(!rows.length)return NextResponse.json({success:false,error:'Application is no longer pending. Refresh Administration.'},{status:409})
+  if(!rows.length)return NextResponse.json({success:false,error:'Application is no longer pending, or the selected lead Manager is no longer active. Refresh Administration.'},{status:409})
   try{await getPool().query(`
     INSERT INTO notifications(user_id,type,title,content,from_user_name)
     VALUES($1::uuid,'food_distribution_employment',$2,$3,'WEAVE Administration')
