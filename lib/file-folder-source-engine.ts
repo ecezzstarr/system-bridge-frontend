@@ -5,6 +5,8 @@
  * existing File Folder. This is a plan, not generated executable code. Runtime
  * execution requires separately implemented, permission-checked capabilities.
  */
+import { FILE_FOLDER_PLATFORM_TEMPLATES, type FileFolderPlatformKind } from '@/lib/file-folder-platform-projects'
+
 export const SOURCE_SYSTEM_KINDS = [
   'commerce',
   'operations',
@@ -17,6 +19,23 @@ export const SOURCE_SYSTEM_KINDS = [
 
 export type SourceSystemKind = typeof SOURCE_SYSTEM_KINDS[number]
 
+const PLATFORM_KIND_BY_SOURCE: Record<SourceSystemKind, FileFolderPlatformKind> = {
+  commerce: 'commerce_platform',
+  operations: 'custom_platform',
+  community: 'social_community',
+  creative: 'video_channel',
+  education: 'education_network',
+  logistics: 'transportation_network',
+  custom: 'custom_platform',
+}
+
+export type SourceBlueprintStage = {
+  blueprintKey: string
+  order: number
+  purpose: string
+  status: 'not_started'
+}
+
 export type SourceEnginePlan = {
   engine: 'weave-file-folder-source-engine'
   version: 1
@@ -26,6 +45,9 @@ export type SourceEnginePlan = {
   functions: string[]
   participantRoles: string[]
   connections: string[]
+  platformKind: FileFolderPlatformKind
+  blueprintStages: SourceBlueprintStage[]
+  productionGap: string
   buildSequence: string[]
   acceptanceChecks: string[]
   state: 'conceptual'
@@ -89,6 +111,8 @@ export function createSourceEnginePlan(input: {
     ? input.systemKind as SourceSystemKind
     : 'custom'
   const blueprint = KIND_BLUEPRINTS[systemKind]
+  const platformKind = PLATFORM_KIND_BY_SOURCE[systemKind]
+  const platformTemplate = FILE_FOLDER_PLATFORM_TEMPLATES[platformKind]
   return {
     engine: 'weave-file-folder-source-engine',
     version: 1,
@@ -98,6 +122,14 @@ export function createSourceEnginePlan(input: {
     functions: [...blueprint.functions],
     participantRoles: [...blueprint.participantRoles],
     connections: [...blueprint.connections],
+    platformKind,
+    blueprintStages: platformTemplate.stages.map((blueprintKey, index) => ({
+      blueprintKey,
+      order: index + 1,
+      purpose: `Build and verify ${blueprintKey.replaceAll('_', ' ')} inside this Client File Folder`,
+      status: 'not_started' as const,
+    })),
+    productionGap: platformTemplate.productionGap,
     buildSequence: [
       'Recognize the Client source and its existing File Folder context',
       'Review and refine the proposed functions, roles, connections and rules',
