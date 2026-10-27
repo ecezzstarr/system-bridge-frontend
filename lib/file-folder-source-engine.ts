@@ -138,7 +138,7 @@ export function createSourceEnginePlan(input: {
       'Activate only after authorized review and operational evidence',
     ],
     acceptanceChecks: [
-      'Client ownership and File Folder scope are enforced on every operation',
+      'Client ownership, File Folder scope and participant permissions are enforced on every operation',
       'Each participant can access only the functions allowed by their role',
       'Connections have validated inputs, outputs and failure behavior',
       'Writes are persisted and can be inspected or audited',
