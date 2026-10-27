@@ -179,6 +179,10 @@ jobs:
           node tests/customer-door-payment-privacy.cjs
           node tests/living-presence-renderer.cjs
           node tests/formation-foundation.cjs
+          node tests/file-folder-source-engine.cjs
+          node tests/file-folder-module-connections.cjs
+          node tests/file-folder-module-connection-api-regression.cjs
+          node tests/file-folder-module-runtime.cjs
 
       - name: Flame Coin payments PostgreSQL settlement
         env:
