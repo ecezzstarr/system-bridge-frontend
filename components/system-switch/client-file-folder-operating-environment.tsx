@@ -489,7 +489,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
       const refreshed=await fetch('/api/client/file-folder-world',{headers:{Authorization:`Bearer ${token}`},cache:'no-store'})
       const snapshot=await refreshed.json()
       if(refreshed.ok&&snapshot.world)setWorld(snapshot.world)
-      setConnectionMessage(`Connection saved for ${result.connection?.contract_key||'validated contract'}. Live transfer awaits its verified runtime adapter.`)
+      setConnectionMessage(result.runtimeNote||`Connection saved for ${result.connection?.contract_key||'validated contract'}.`)
     }catch(error:any){setConnectionMessage(error?.message||'Unable to configure connection')}
     finally{setConnectionBusy(false)}
   }
@@ -862,6 +862,17 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
                     <p className="mt-1 text-[10px] text-cyan-100">Contract: {connection.contract_key} · {String(connection.status).replaceAll('_',' ')}</p>
                   </div>)}
                   {(!Array.isArray(world?.moduleConnections)||world.moduleConnections.length===0)&&<p className="text-[10px] text-slate-500">No module connections configured yet.</p>}
+                </div>
+                <div className="mt-5 border-t border-white/10 pt-4">
+                  <p className="text-[9px] font-black uppercase tracking-[0.16em] text-cyan-200">Runtime inbox · real Customer Door events</p>
+                  <div className="mt-3 space-y-2">
+                    {(Array.isArray(world?.moduleRuntimeEvents)?world.moduleRuntimeEvents:[]).map((event:any)=><div key={event.id} className="rounded-xl border border-white/10 bg-black/20 p-3">
+                      <p className="text-xs font-bold text-white">{event.title}</p>
+                      <p className="mt-1 text-[10px] text-slate-400">{event.event_type} · {event.contract_key} · {event.status}</p>
+                      <p className="mt-1 text-[9px] text-slate-500">{new Date(event.received_at).toLocaleString()}</p>
+                    </div>)}
+                    {(!Array.isArray(world?.moduleRuntimeEvents)||world.moduleRuntimeEvents.length===0)&&<p className="text-[10px] text-slate-500">No real order events have reached a connected module inbox yet.</p>}
+                  </div>
                 </div>
               </section>
 
