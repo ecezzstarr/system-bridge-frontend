@@ -1,0 +1,36 @@
+/* Approved WEAVE Open World artwork: moving light, never fake Client data. */
+[data-weave-official-atlas="approved-image-live-world"] {
+  isolation:isolate;
+  box-shadow:0 0 65px rgba(5,29,54,.45),inset 0 0 0 1px rgba(245,207,130,.30);
+}
+[data-weave-official-atlas="approved-image-live-world"] [data-weave-world-moving-river="image-overlay"] {
+  mix-blend-mode:screen;
+  opacity:.68;
+  filter:drop-shadow(0 0 5px rgba(141,226,255,.55));
+}
+.weave-atlas-water-current {
+  stroke-dasharray:4 62;
+  stroke-dashoffset:0;
+  animation:weave-atlas-river-drift 9s linear infinite;
+}
+.weave-atlas-fire-current {
+  stroke-dasharray:3 53;
+  stroke-dashoffset:0;
+  animation:weave-atlas-river-drift 6s linear infinite reverse;
+}
+@keyframes weave-atlas-river-drift {
+  to { stroke-dashoffset:-650; }
+}
+[data-weave-official-atlas="approved-image-live-world"] [data-weave-live-castle-spotlight] {
+  filter:drop-shadow(0 8px 15px rgba(17,14,31,.56));
+}
+/* The ten atlas image pieces form ONE unbroken approved picture. */
+[data-weave-official-atlas="approved-image-live-world"] [data-weave-official-art-tiles="10"] img {
+  display:block;
+  padding:0;
+  margin:0;
+  border:0;
+}
+@media(prefers-reduced-motion:reduce){
+  .weave-atlas-water-current,.weave-atlas-fire-current{animation:none}
+}

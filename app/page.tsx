@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '@/lib/auth-provider'
 import { WeaveLogo } from '@/components/weave-logo'
+import { WEAVE_WRITING } from '@/lib/weave-writing'
 
 const departments = [
   { name: 'Stability', people: 'Agents' },
@@ -74,7 +75,7 @@ export default function Home() {
             <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
               <Link href="/market" className="rounded-lg px-3 py-2.5 text-slate-200 hover:bg-white/10">Customer Market</Link>
               <Link href="/client/login" className="rounded-lg border border-sky-200/20 px-3 py-2.5 text-sky-100 hover:bg-sky-200/10">Client Portal</Link>
-              <Link href="/login" className="rounded-lg px-3 py-2.5 text-slate-200 hover:bg-white/10">Sign In</Link>
+              <Link href="/login" className="rounded-lg px-3 py-2.5 text-slate-200 hover:bg-white/10">{WEAVE_WRITING.positionAccess.signIn}</Link>
             </div>
           </div>
         </nav>
@@ -84,7 +85,7 @@ export default function Home() {
             <div className="weave-home-hero-light pointer-events-none absolute inset-0" aria-hidden="true" />
             <div className="relative mx-auto max-w-5xl">
               <h1 className="weave-home-title text-4xl font-black leading-tight tracking-tight sm:text-6xl md:text-7xl">The Company of Time</h1>
-              <p className="weave-home-credit mt-5 text-base font-semibold tracking-wide sm:text-lg">Interaction in Motion presents</p>
+              <p className="weave-home-credit mt-5 text-base font-semibold tracking-wide sm:text-lg">{WEAVE_WRITING.identity.movement} presents</p>
               <h2 className="weave-home-subtitle mx-auto mt-5 max-w-4xl text-2xl font-black leading-snug tracking-tight sm:text-4xl">
                 The Weave of Presence: System Switch — Bridge of Radiance
               </h2>
@@ -234,7 +235,7 @@ export default function Home() {
         <footer className="weave-home-footer px-4 py-8">
           <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3">
             <WeaveLogo size="sm" />
-            <p className="text-sm font-semibold text-slate-300">The Company of Time · Interaction in Motion</p>
+            <p className="text-sm font-semibold text-slate-300">The Company of Time · {WEAVE_WRITING.identity.movement}</p>
           </div>
         </footer>
       </div>

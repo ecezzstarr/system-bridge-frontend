@@ -1,0 +1,424 @@
+/*
+ * WEAVE of Presence — one company world
+ *
+ * Permanent palette: porcelain and cloud white, living river blue and warm gold.
+ * Loop 1: soft flowing flame light is an atmosphere, not a separate wallpaper.
+ * Existing Standard / Pro / Premium / Plus 3D materials and actual photographs
+ * are NEVER tinted, filtered, replaced or covered by the global theme.
+ *
+ * Keep dark, readable functional controls and real 3D sky/terrain intact.
+ * One Nigerian Loop 2 owns the green-white-green override.
+ */
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) {
+  --weave-company-river: #237bb7;
+  --weave-company-ink: #183b55;
+  --weave-company-gold: #b28643;
+  --weave-company-gold-line: rgba(192, 152, 86, .36);
+  --weave-company-porcelain: #f2f9fe;
+  --weave-company-app-background: #f4f9fc;
+  --weave-company-glow: rgba(255, 217, 141, .34);
+  --background: var(--weave-company-app-background);
+  --foreground: var(--weave-company-ink);
+  --card: #ffffff;
+  --card-foreground: var(--weave-company-ink);
+  --popover: #fffefa;
+  --popover-foreground: var(--weave-company-ink);
+  --primary: var(--weave-company-river);
+  --primary-foreground: #ffffff;
+  --secondary: #eaf5fb;
+  --secondary-foreground: #24465f;
+  --muted: #edf5f9;
+  --muted-foreground: #4b687c;
+  --accent: #f4e6c8;
+  --accent-foreground: #60471f;
+  --border: #d9e5eb;
+  --input: #ffffff;
+  --ring: var(--weave-company-river);
+  --sidebar: #f8fbfd;
+  --sidebar-foreground: var(--weave-company-ink);
+  --weave-world-base: var(--weave-company-app-background);
+  --weave-world-surface: rgba(255,255,255,.96);
+  --weave-world-surface-strong: #ffffff;
+  --weave-world-line: rgba(178,134,67,.28);
+  --presence-glow: #57afe0;
+  --field-border: rgba(181, 146, 89, .29);
+  color-scheme: light;
+  background: #eaf6fc;
+}
+
+/* The background belongs to the ROOT application, so the area above and
+   below the homepage as well as the exposed world behind each route shares
+   exactly the same light-and-water foundation. No dark viewport gutters. */
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) body {
+  background:
+    radial-gradient(ellipse 75% 45% at 4% 6%, rgba(125, 199, 245, .20), transparent 75%),
+    radial-gradient(ellipse 58% 45% at 94% 8%, rgba(251, 208, 126, .18), transparent 80%),
+    linear-gradient(180deg, #eef8ff 0%, #fffefa 44%, #edf7fc 100%);
+  color: var(--weave-company-ink);
+}
+
+/* Shared living canvas: genuine river and gentle fire illumination without
+   the dark full-screen base / vignette from the former navy-root theme. */
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) .weave-live-flame-field {
+  background:
+    radial-gradient(ellipse at var(--weave-flame-x) var(--weave-flame-y),
+      rgba(255, 222, 163, .23), transparent 56%),
+    radial-gradient(ellipse at 28% 80%, rgba(65, 163, 224, .13), transparent 75%),
+    linear-gradient(180deg, #ecf7fd, #fffefa 49%, #eaf7fc);
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) .weave-live-flame-vignette {
+  background:
+    radial-gradient(ellipse 47% 25% at 88% 7%, rgba(248, 200, 122, .11), transparent 90%),
+    linear-gradient(90deg, rgba(79,165,220,.06), transparent 20% 80%, rgba(79,165,220,.05));
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) .weave-live-flame-canvas {
+  filter: none;
+  opacity: .21;
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) .weave-live-flame-current-a {
+  opacity: .42;
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) .weave-live-flame-current-b {
+  opacity: .30;
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) .weave-live-flame-core {
+  background: radial-gradient(ellipse at 52% 78%,
+    rgba(255,238,199,.23) 0 11%, rgba(250,194,101,.17) 26%,
+    rgba(81,172,230,.055) 53%, transparent 73%);
+}
+
+/* Physical World districts and workspaces share a gold/river framing and the
+   same atmospheric motion. Functional text keeps its existing light-on-dark
+   contrast inside these operating stations; never invert forms blindly. */
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) :is(
+  .weave-app-shell,.weave-client-shell,.weave-environment-surface
+) {
+  background: transparent;
+}
+/* Ordinary text on the light root is river-ink; private company workspaces
+   retain their established light-on-dark operational contrast. */
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) :is(
+  .weave-app-shell,.weave-client-shell
+) {
+  color: #f0f8ff;
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) .weave-dashboard-world {
+  background:
+    radial-gradient(ellipse 60% 34% at 90% 5%, rgba(245, 194, 100, .20), transparent 83%),
+    radial-gradient(ellipse 50% 32% at 5% 94%, rgba(50, 178, 231, .30), transparent 87%),
+    linear-gradient(165deg, rgba(9,41,65,.91), rgba(13,80,107,.90) 55%, rgba(7,37,63,.92));
+  box-shadow: inset 0 0 0 1px rgba(220, 182, 120, .16);
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) .weave-dashboard-world :is(
+  .weave-dashboard-position,[data-role-presence-gate],[data-role-district]
+) {
+  border-color: rgba(218, 180, 112, .30);
+  box-shadow: inset 0 1px 0 rgba(255, 245, 218, .09);
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) :is(
+  .weave-header,.weave-sidebar,.weave-client-nav,
+  .weave-environment-panel,.weave-reading-surface,.field-surface,
+  .card,[role="card"],[data-slot="card"]
+) {
+  border-color: rgba(215, 177, 111, .35);
+  background: linear-gradient(138deg, rgba(24,87,117,.81),rgba(13,43,74,.90));
+  box-shadow: 0 12px 34px rgba(20,61,90,.13), inset 0 1px 0 rgba(246,224,168,.10);
+}
+/* Dialogs, dropdowns, sensitive inputs and payment controls keep opaque,
+   accessible dark surfaces. Only refine their gold trim. */
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) :is(
+  [data-slot="dialog-content"],[data-slot="popover-content"],
+  [data-slot="dropdown-menu-content"],[data-slot="sheet-content"]
+) {
+  background: #0c2d49;
+  border-color: rgba(220,179,109,.38);
+}
+
+/* Echo, Carrier, Lifestyle, Arena, notifications and workstations use one
+   warm river-blue operating material. White labels remain legible; individual
+   controls and real scene canvases are not replaced. */
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) .weave-operating-environment {
+  border-color: rgba(221, 182, 117, .36);
+  background:
+    radial-gradient(ellipse 52% 27% at 87% 3%, rgba(249,208,133,.16), transparent 82%),
+    radial-gradient(ellipse 52% 26% at 5% 92%, rgba(53,168,217,.16), transparent 85%),
+    linear-gradient(165deg, rgba(12,55,81,.94),rgba(19,88,116,.92) 55%,rgba(8,46,70,.95));
+  box-shadow: inset 0 1px 0 rgba(255,227,176,.12);
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) [data-public-market-world] {
+  background:
+    radial-gradient(ellipse 57% 32% at 8% 3%, rgba(42,157,215,.24), transparent),
+    linear-gradient(180deg,#153d5a,#0a3656 66%,#0d4765);
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) [data-public-market-world] > section:first-child {
+  background:
+    radial-gradient(ellipse 51% 45% at 85% 5%, rgba(248,200,118,.22), transparent 83%),
+    radial-gradient(ellipse 52% 47% at 8% 75%, rgba(87,192,239,.18), transparent 83%),
+    linear-gradient(135deg,#124865,#0b2f4e);
+  border-color: rgba(221,182,117,.30);
+}
+
+/* Public entry paths use the shared signature while retaining their original
+   official artwork, foreground text contrast, working links and 3D assets. */
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) :is(
+  [data-public-lifestyle-catalog],[data-public-flame-preview-world],
+  [data-weave-open-world="system-switch"],[data-system-switch-gate="burning-river"]
+) {
+  border-top: 1px solid rgba(226,188,124,.36);
+  background-color: #103b5b;
+  background-image:
+    radial-gradient(ellipse 40% 18% at 86% 3%, rgba(243,189,99,.17), transparent 95%),
+    linear-gradient(145deg, rgba(17,80,108,.94), rgba(7,42,69,.94) 56%,rgba(21,88,112,.92));
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) :is(
+  [data-public-lifestyle-catalog],[data-public-flame-preview-world],
+  [data-weave-open-world="system-switch"],[data-system-switch-gate="burning-river"]
+) :is(a,button):focus-visible {
+  outline: 2px solid #f5c77e;
+  outline-offset: 3px;
+}
+
+/* Shared navigation and entrance contrast: no recolouring of official logos. */
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) .weave-home-nav {
+  background:
+    radial-gradient(ellipse 48% 190% at 90% 0%, rgba(242,198,115,.24), transparent),
+    linear-gradient(104deg, rgba(240,249,255,.96), rgba(255,254,248,.97) 53%, rgba(227,243,252,.96));
+  border-bottom: 1px solid var(--weave-company-gold-line);
+  box-shadow: 0 7px 24px rgba(29,92,127,.10);
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) .weave-home-nav a {
+  color: #214c68;
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) .weave-home-nav a:hover {
+  color: #8a5e27;
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) :is(.weave-home-nav,.weave-home-footer) .weave-logo-live {
+  padding: .25rem .5rem;
+  border-radius: .4rem;
+  background: linear-gradient(100deg,#184968,#286c92);
+  box-shadow: inset 0 0 0 1px rgba(255,219,151,.21);
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) .weave-home-footer {
+  background:
+    radial-gradient(ellipse at 12% 0%, rgba(89,176,225,.19), transparent 75%),
+    linear-gradient(100deg, #edf8fd, #fffdf6 52%, #eaf6ff);
+  border-top: 1px solid var(--weave-company-gold-line);
+  box-shadow: none;
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) .weave-home-footer p {
+  color: #214c68;
+}
+/* Override dark utility text only on the light public nav; leave official
+   image tags, assets and all private operating pages untouched. */
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) .weave-home-nav [class*="border-sky"] {
+  border-color: rgba(187,148,81,.4);
+}
+
+/* Loop 2's company-wide green / white / green theme also reaches the
+   homepage TOP and BOTTOM so navy strips never reappear across a loop switch. */
+html[data-weave-loop-theme="one-nigerian"] .weave-home-nav,
+html[data-weave-loop-theme="one-nigerian"] .weave-home-footer {
+  background:
+    linear-gradient(90deg,rgba(0,135,81,.23),rgba(250,255,251,.97) 25% 75%,rgba(0,135,81,.23));
+  border-color: rgba(0,135,81,.29);
+  box-shadow: 0 6px 24px rgba(1,99,62,.07);
+}
+html[data-weave-loop-theme="one-nigerian"] .weave-home-nav a,
+html[data-weave-loop-theme="one-nigerian"] .weave-home-footer p {
+  color: #155d3f;
+}
+html[data-weave-loop-theme="one-nigerian"] :is(.weave-home-nav,.weave-home-footer) .weave-logo-live {
+  padding: .25rem .5rem;
+  border-radius: .4rem;
+  background: linear-gradient(100deg,#0a4a30,#117a50);
+}
+
+/* Loop 2 receives the Nigerian flag and green field, never River/Gold override.
+   The older core Loop 2 rules in weave-theme.css remain authoritative. */
+@media (prefers-reduced-motion: reduce) {
+  html[data-weave-app-theme="river-gold"] .weave-live-flame-canvas,
+  html[data-weave-app-theme="river-gold"] .weave-live-flame-core {
+    animation: none;
+    transition: none;
+  }
+}
+
+
+/* Homepage continuity — the fixed chrome used by every Agent, Bridger,
+   Administration and Client position shares the same porcelain, warm gold
+   and clear-water ground as the public entrance. The individual operational
+   worlds, private forms and 3D canvases retain their legible contrast. */
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) {
+  --weave-company-sky-surface: rgba(246, 251, 255, .96);
+  --weave-company-paper-surface: rgba(255, 253, 247, .98);
+  --weave-company-reading-ink: #193e58;
+  --weave-company-reading-muted: #4c6a80;
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) :is(
+  .weave-app-shell,.weave-client-shell
+) {
+  background: transparent;
+  isolation: isolate;
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) .weave-header {
+  border: 1px solid rgba(180,138,72,.38);
+  background:
+    radial-gradient(ellipse at 88% 0%, rgba(246,209,139,.21), transparent 65%),
+    linear-gradient(105deg, var(--weave-company-sky-surface), var(--weave-company-paper-surface) 52%, rgba(229,244,253,.96));
+  color: var(--weave-company-reading-ink);
+  box-shadow: 0 10px 35px rgba(27,76,105,.11), inset 0 1px 0 rgba(255,255,255,.98);
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) .weave-header :is(
+  [data-phone-chrome="presence"] button .text-white,
+  [data-phone-chrome="presence"] button .text-slate-500,
+  [data-phone-chrome="interaction"],
+  [data-phone-chrome="value"],
+  [data-lifestyle-entry]
+) {
+  color: #234d69;
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) .weave-header input {
+  color: #204661;
+  caret-color: #a77530;
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) .weave-header input::placeholder {
+  color: #55778f;
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) .weave-header :is(
+  .weave-flame-live-indicator,[data-weave-live-word="station"]
+) {
+  color: #966525;
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) .weave-header [data-weave-account-menu="position-controls"] {
+  background: linear-gradient(155deg, #f5fbff, #fffcf3 65%, #eaf5fb);
+  border-color: rgba(178,134,66,.37);
+  box-shadow: 0 22px 45px rgba(13,64,91,.19);
+  color: #173c57;
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) .weave-header [data-weave-account-menu="position-controls"] :is(
+  .text-white,.text-slate-500,.text-slate-300,.text-slate-400,.text-sky-100,.text-yellow-100
+) {
+  color: #234963;
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) .weave-header [data-weave-account-menu="position-controls"] :is(button,a):hover {
+  background: rgba(56,140,182,.12);
+  color: #7b501b;
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) :is(
+  .weave-sidebar,.weave-client-nav
+) {
+  border-color: rgba(186,151,94,.36);
+  background:
+    radial-gradient(ellipse at 95% 0%, rgba(250,214,153,.12), transparent 65%),
+    linear-gradient(165deg, rgba(19,72,99,.95), rgba(13,55,84,.95));
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) :is(
+  .weave-reading-surface,.weave-environment-panel,.field-surface,
+  .card,[data-slot="card"]
+) {
+  border-color: rgba(200,165,104,.36);
+  box-shadow: 0 16px 42px rgba(24,72,100,.12), inset 0 1px 0 rgba(255,241,210,.08);
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) :is(
+  .weave-app-shell,.weave-client-shell
+) :is(button,a,input,select,textarea):focus-visible {
+  outline: 2px solid #c29145;
+  outline-offset: 3px;
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) :is(
+  .weave-app-shell,.weave-client-shell
+) :is(input,textarea,select) {
+  border-color: rgba(194,155,90,.34);
+}
+/* Plus ownership stays white/gold from the purchased 3D ground through its
+   surrounding command surface. Unrelated Standard, Pro and Premium worlds
+   retain their own commissioned identity and original palettes. */
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) [data-file-folder-tier="plus"] {
+  background: linear-gradient(155deg, #edf8ff, #fffefa 30%, #f3f7fb 85%) !important;
+  color: #234663;
+  border-color: rgba(197,158,86,.51);
+  box-shadow: 0 22px 62px rgba(27,96,126,.13);
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) [data-file-folder-tier="plus"] > details.ff-construction-overview {
+  background: rgba(255,255,255,.81);
+  border-bottom: 1px solid rgba(197,158,86,.37);
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) [data-file-folder-tier="plus"] > details.ff-construction-overview header {
+  background:
+    radial-gradient(ellipse at 88% 0%, rgba(247,218,161,.24), transparent 67%),
+    linear-gradient(115deg,#f1f9fd,#fffdf5 55%,#eaf7fd);
+  color: #234663;
+  border-color: rgba(190,155,90,.29);
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) [data-file-folder-tier="plus"] > details.ff-construction-overview header :is(
+  h1,h2,h3,.text-white,.text-slate-500,.text-slate-400
+) { color: #234663; }
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) [data-file-folder-tier="plus"] > details.ff-construction-overview header :is(
+  .text-amber-200,.text-amber-100,.text-cyan-200
+) { color: #875d24; }
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) [data-file-folder-tier="plus"] [data-plus-file-folder-world="official-white-gold"] {
+  border-radius: 0;
+  border-inline: 0;
+}
+/* Status and actions must still work when the permanent 3D open world is
+   unavailable on a device; no CSS overlays may steal canvas pointer events. */
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) [data-world-first-view="live-3d-castle-landscape"] {
+  border-top: 1px solid rgba(215,182,120,.28);
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-weave-app-theme="river-gold"] .weave-header { transition: none; }
+}
+
+
+/*
+ * Theme reconciliation — Plus File Folder is the shared visual reference.
+ * The former navy glass + 20px blur washed edges and small text together,
+ * while the company shell painted light scenery underneath white text.
+ * Use porcelain / river-blue / gold for shared chrome; keep the actual
+ * operational world and its 3D materials untouched.
+ */
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) body {
+  color: #183b55;
+  font-weight: 400;
+  text-shadow: none;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) :is(
+  .weave-header, .weave-sidebar, .weave-client-nav,
+  .weave-environment-panel, .weave-reading-surface, .field-surface,
+  .card, [role="card"], [data-slot="card"]
+) {
+  color: #183b55;
+  background: linear-gradient(145deg, rgba(247,251,254,.97), rgba(255,253,247,.96) 58%, rgba(236,247,253,.96)) !important;
+  border-color: rgba(178,134,66,.34);
+  box-shadow: 0 12px 32px rgba(24,59,85,.09), inset 0 1px 0 rgba(255,255,255,.96);
+  -webkit-backdrop-filter: blur(6px) saturate(112%);
+  backdrop-filter: blur(6px) saturate(112%);
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) :is(
+  .weave-header, .weave-sidebar, .weave-client-nav,
+  .weave-environment-panel, .weave-reading-surface, .field-surface,
+  .card, [role="card"], [data-slot="card"]
+) :is(.text-white, [class~="text-slate-200"], [class~="text-slate-300"], [class~="text-slate-400"], [class~="text-sky-100"], [class~="text-cyan-100"], [class~="text-amber-100"], [class~="text-amber-200"]) {
+  color: #34566d;
+}
+/* Dialogs and menus are opaque paper surfaces, not blurred glass. */
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) :is(
+  [data-slot="dialog-content"], [data-slot="popover-content"],
+  [data-slot="dropdown-menu-content"], [data-slot="sheet-content"]
+) {
+  background: #fffdf7 !important;
+  color: #183b55;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+/* Keep the dark operational landscape legible where it is intentionally used. */
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) .weave-dashboard-world {
+  color: #f2f9fe;
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) .weave-dashboard-world :is(
+  .weave-dashboard-position, [data-role-presence-gate], [data-role-district]
+) {
+  color: #f2f9fe;
+}

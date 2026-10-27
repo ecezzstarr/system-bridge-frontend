@@ -75,7 +75,7 @@ export default function ClientLoginPage() {
           <KeyRound className="h-3 w-3" />
           <span className="text-[10px] font-black uppercase tracking-[0.2em]">{WEAVE_WRITING.clientAccess.loginEyebrow}</span>
         </div>
-        <p className="mt-3 text-[10px] font-bold uppercase tracking-[0.28em] text-slate-500">Interaction in Motion</p>
+        <p className="mt-3 text-[10px] font-bold uppercase tracking-[0.28em] text-slate-500">{WEAVE_WRITING.identity.movement}</p>
       </div>
 
       <Card className="w-full max-w-md border-slate-700 bg-slate-900/50 backdrop-blur-xl relative z-10 shadow-2xl">
@@ -110,7 +110,7 @@ export default function ClientLoginPage() {
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
                 <Input
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="Password"
+                  placeholder={WEAVE_WRITING.clientAccess.password}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="pl-10 pr-10 bg-slate-800/50 border-slate-700 text-white text-sm h-12 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all"
@@ -128,7 +128,7 @@ export default function ClientLoginPage() {
 
             <div className="flex justify-end">
               <Link href="/forgot-password?portal=client" className="text-xs font-semibold text-blue-400 transition-colors hover:text-blue-300">
-                Forgot password?
+                {WEAVE_WRITING.positionAccess.forgotPassword}
               </Link>
             </div>
 

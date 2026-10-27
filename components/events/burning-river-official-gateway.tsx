@@ -17,7 +17,7 @@ const hotspots={
 }
 
 export function BurningRiverOfficialGateway({
- staff=false,carrierCode=null,staffHref='/system-switch',
+ staff=false,carrierCode=null,staffHref='/system-switch/world?via=system-switch',
 }:{staff?:boolean;carrierCode?:string|null;staffHref?:string}){
  const worldHref=carrierCode?'/system-switch/world?carrier='+encodeURIComponent(carrierCode):'/system-switch/world'
  const customerHref=worldHref+'#domains'
@@ -33,7 +33,7 @@ export function BurningRiverOfficialGateway({
          onError={()=>setMissing(true)}
          className="block h-auto w-full" data-flame-approved-image="true"/>
        <Link href={worldHref} className={hotspotBase} style={hotspots.river}
-         aria-label="Enter Burning River" title="Enter Burning River"
+         aria-label="Enter System Switch — Bridge of Radiance · WEAVE Open World" title="WEAVE Open World"
          data-enter-burning-river="true" data-gateway-image-entrance="river"/>
        <Link href={staffEntrance} className={hotspotBase} style={hotspots.staff}
          aria-label={staff?'Staff entrance: cross System Switch Gate':'Staff entrance: sign in'}

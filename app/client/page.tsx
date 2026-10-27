@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/lib/auth-provider'
 import { WeaveLogo } from '@/components/weave-logo'
+import { WEAVE_WRITING } from '@/lib/weave-writing'
 
 export default function ClientHomePage() {
   const { user } = useAuth()
@@ -19,7 +20,7 @@ export default function ClientHomePage() {
       {/* Official WEAVE identity */}
       <div className="text-center mb-8 flex flex-col items-center">
         <WeaveLogo size="lg" className="mb-4" />
-        <p className="text-[10px] font-bold text-sky-300/70 uppercase tracking-[0.24em] mb-2">Interaction in Motion</p>
+        <p className="text-[10px] font-bold text-sky-300/70 uppercase tracking-[0.24em] mb-2">{WEAVE_WRITING.identity.movement}</p>
         <p className="text-lg text-slate-300">Client Services Portal</p>
         <p className="mt-3 max-w-md text-sm leading-6 text-slate-400">Client is the system-building position in WEAVE. A valid File Number opens the path to a persistent File Folder where a workshop can become a built and operated system.</p>
       </div>
@@ -28,7 +29,7 @@ export default function ClientHomePage() {
       <div className="w-full max-w-xs space-y-4">
         <Link href="/client/login" className="block">
           <Button className="w-full h-12 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold text-base">
-            Sign In
+            {WEAVE_WRITING.positionAccess.signIn}
           </Button>
         </Link>
         

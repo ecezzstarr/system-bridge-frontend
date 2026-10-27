@@ -230,7 +230,7 @@ export default function PublicFileFolderPurchasePage() {
   const stages = ['Recognize', 'Choose File Folder', 'Record payment', 'Administration', 'Become Client']
 
   return (
-    <main className="min-h-screen bg-[#03060b] text-white">
+    <main className="min-h-screen bg-[#03060b] text-white" data-weave-public-file-folder-purchase="river-gold">
       <nav className="border-b border-cyan-300/10 bg-[#03101d]/82 px-4 py-3 backdrop-blur-xl">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
           <Link href="/"><WeaveLogo size="sm" /></Link>

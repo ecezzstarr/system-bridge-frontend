@@ -14,7 +14,10 @@ export function FrameDriver({active,fps,onFirstFrame}:{active:boolean;fps:number
     let elapsed=clock.elapsedTime
     let hasDrawn=false
     const tick=(time:number)=>{
-      if(document.hidden)return
+      // Hidden worlds must not schedule frames. The visibility listener below
+      // re-arms exactly one frame when a phone returns to this tab.
+      frame=0
+      if(document.hidden){last=0;return}
       const delta=last?time-last:1000/fps
       if(!last||delta>=1000/fps){
         if(last)reportRuntimeFrame(delta,1000/fps)
@@ -25,8 +28,20 @@ export function FrameDriver({active,fps,onFirstFrame}:{active:boolean;fps:number
       }
       frame=requestAnimationFrame(tick)
     }
-    frame=requestAnimationFrame(tick)
-    return ()=>cancelAnimationFrame(frame)
+    const visibilityChange=()=>{
+      last=0
+      if(document.hidden){
+        if(frame){cancelAnimationFrame(frame);frame=0}
+      }else if(!frame){
+        frame=requestAnimationFrame(tick)
+      }
+    }
+    document.addEventListener('visibilitychange',visibilityChange)
+    if(!document.hidden)frame=requestAnimationFrame(tick)
+    return ()=>{
+      document.removeEventListener('visibilitychange',visibilityChange)
+      if(frame)cancelAnimationFrame(frame)
+    }
   },[active,fps,advance,clock,onFirstFrame])
   return null
 }

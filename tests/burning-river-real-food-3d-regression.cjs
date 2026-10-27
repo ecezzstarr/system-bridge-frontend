@@ -39,7 +39,7 @@ assert.ok(arrival.includes('<BurningRiverOfficialGateway carrierCode={carrierCod
 assert.ok(arrival.includes('<BurningRiverOfficialGateway carrierCode={carrierCode}/>'),'Preserve the newer official Burning River gateway')
 const live=read('components/events/burning-river-live-world.tsx')
 assert.ok(live.includes('<BurningRiverFoodStore3D carrierCode={carrierCode}/>'),'Food photos must also be mounted in the current live world')
-assert.ok(live.includes('Explore the WEAVE land'),'Phone users can focus the food shop')
+assert.ok(live.includes('Explore WEAVE physical 3D land')&&live.includes('WEAVE Food Store'),'Phone users can focus the real 3D food shop without the illustrated castle map')
 assert.ok(read('app/system-switch/world/page.tsx').includes('<BurningRiverLiveWorld role={role} carrierCode={carrierCode} requestedDoor={door} legionCode={legionCode}/>'),'Current live world must preserve Agent attribution')
 assert.ok(publicApi.includes("p.enabled=true AND b.status='active'"),'Client File Folder structures require published active systems')
 assert.ok(clientRoute.includes("query.checkout!=='1'")&&carrier.includes("query.checkout!=='1'"),'Public Client and food checkout boundaries remain in place')

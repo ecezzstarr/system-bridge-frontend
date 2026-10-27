@@ -14,12 +14,11 @@ type Team={
   updates:{id:string;kind:UpdateKind;content:string;created_at:string;author_name:string;author_position:string}[]
 }
 const TOOLS=[
-  {href:'/distribution-studio',label:'Distribution Studio',note:'Prepare and monitor authorized company campaigns'},
-  {href:'/referrals',label:'Referral Movement',note:'Inspect verified Agent and Bridger registrations'},
-  {href:'/video-ad-studio',label:'Video Ad Studio',note:'Form campaign video for distribution'},
-  {href:'/weave/carrier',label:'Carrier',note:'Publish authorized public company movement'},
-  {href:'/communications',label:'Direct Communication',note:'Reach authorized company contacts'},
-  {href:'/event',label:'Burning River',note:'Join the active Company Loop event'},
+  {href:'/manager/dashboard',label:'Food Distribution Desk',note:'Record completed food handoffs and monitor the 200 verified monthly target'},
+  {href:'/agility',label:'Agility Food Products',note:'Coordinate Agility stock, Agent orders and customer sales'},
+  {href:'/weave/lifestyles/food',label:'Farm to Family',note:'Coordinate produce distribution to households and businesses'},
+  {href:'/weave/carrier',label:'Carrier Food Door',note:'Share the approved public food-order entrance'},
+  {href:'/weave/lifestyles/food-preparation',label:'Food Preparation & Dispatch',note:'Coordinate paid food orders, packaging and dispatch'},
 ]
 export function DistributionTeamWorkspace(){
   const {user,token,isInitialized}=useAuth()
@@ -58,7 +57,7 @@ export function DistributionTeamWorkspace(){
     }catch(err){setError(err instanceof Error?err.message:'Unable to send')}
     finally{setSending(false)}
   }
-  return <section className="mt-5 space-y-5 border-t border-cyan-300/15 pt-5" data-distribution-team-workspace="verified-team">
+  return <section className="mt-5 space-y-5 border-t border-cyan-300/15 pt-5" data-food-distribution-team-workspace="verified-team">
     {loading&&!team&&<p className="text-xs text-slate-400">Opening verified team communication…</p>}
     {error&&<p role="alert" className="rounded-xl border border-rose-300/20 p-3 text-xs text-rose-200">{error}</p>}
     {team&&<div className="space-y-5" data-team-communication="active">
@@ -68,9 +67,9 @@ export function DistributionTeamWorkspace(){
       </div>
       <div className="flex flex-wrap gap-2">{team.members.map(member=><span key={member.id} className="rounded-full border border-emerald-300/20 bg-emerald-200/[.045] px-3 py-2 text-[11px] text-emerald-100">{member.name} · {member.position==='manager'?'Lead':'Assistant'}</span>)}</div>
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(15rem,.6fr)]">
-        <section className="min-w-0 rounded-2xl border border-cyan-200/15 bg-slate-950/45 p-4 sm:p-5" aria-label="Distribution team conversation">
+        <section className="min-w-0 rounded-2xl border border-cyan-200/15 bg-slate-950/45 p-4 sm:p-5" aria-label="Food distribution team conversation">
           <h3 className="flex items-center gap-2 text-base font-black"><MessageSquareText className="h-5 w-5 text-cyan-200"/> Team conversation</h3>
-          <p className="mt-2 text-xs leading-6 text-slate-300">Send a question, plan, progress report or handoff to the verified lead and assistants. All team members can respond through this same workspace.</p>
+          <p className="mt-2 text-xs leading-6 text-slate-300">Coordinate food-product availability, consumer and business orders, delivery handoffs and shortages with the verified lead and assistants. All team members can respond through this same workspace.</p>
           <div className="mt-4 grid gap-3 sm:grid-cols-[9rem_1fr]">
             <label className="text-xs font-semibold text-white" htmlFor="distribution-update-kind">Message category
               <select id="distribution-update-kind" value={kind} onChange={event=>setKind(event.target.value as UpdateKind)} className="mt-2 min-h-11 w-full rounded-lg border border-white/20 bg-slate-950 p-2 text-xs text-white">
@@ -79,7 +78,7 @@ export function DistributionTeamWorkspace(){
             </label>
             <label htmlFor="distribution-update-text" className="text-xs font-semibold text-white">Message to your team
               <textarea id="distribution-update-text" value={content} maxLength={2000} rows={3}
-                onChange={event=>setContent(event.target.value)} placeholder="What needs to be done, what was verified, or which team member needs a response?"
+                onChange={event=>setContent(event.target.value)} placeholder="Which food products are available, which consumer/business handoff needs coordination, or which delivery needs a follow-up?"
                 className="mt-2 w-full rounded-lg border border-white/20 bg-slate-950 p-3 text-sm font-normal text-white"/>
             </label>
           </div>
@@ -109,7 +108,7 @@ export function DistributionTeamWorkspace(){
       <div className="rounded-2xl border border-amber-200/15 bg-slate-950/45 p-4 sm:p-5">
         <DistributionTeamTaskBoard members={team.members}/>
       </div>
-      <p className="text-[11px] leading-5 text-slate-400">Team messages are author-attributed and notify other verified members. Messages do not count as completed orders, verified referrals, or automatic payroll entries.</p>
+      <p className="text-[11px] leading-5 text-slate-400">Team messages are author-attributed and notify other verified members. Messages do not count as completed food distributions or automatic payroll entries.</p>
     </div>}
   </section>
 }
