@@ -8,7 +8,7 @@ assert(api.includes("resolveClientToken(token, sql)"),'API resolves authenticate
 assert(api.includes("AND client_id=${ctx.client.id}::uuid")&&api.includes("AND file_number=${ctx.client.file_number}"),'Connection reads are Client and File Folder scoped')
 assert(api.includes('validateFileFolderModuleConnection('),'API validates typed contracts before persisting')
 assert(api.includes('configured_pending_runtime_adapter'),'API does not falsely activate a connection without an adapter')
-assert(api.includes('world: {...world,moduleConnections}'),'Configured connections are returned in the File Folder snapshot')
+assert(api.includes('world: {...world,moduleConnections,moduleRuntimeEvents}'),'Configured connections and runtime events are returned in the File Folder snapshot')
 assert(ui.includes('data-file-folder-module-connections="configured"'),'Existing File Folder operating environment exposes module connection controls')
 assert(ui.includes("action:'connect_modules'"),'UI uses the authenticated File Folder connection action')
 assert(ui.includes('Runtime state is reported from the verified adapter registry.'),'UI communicates the runtime boundary')
