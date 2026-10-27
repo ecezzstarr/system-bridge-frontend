@@ -8,7 +8,7 @@ import {createSourceEnginePlan} from '@/lib/file-folder-source-engine'
 
 async function context(request:NextRequest){
  const sql=getFileFolderDb()
- const token=request.headers.get('authorization')?.replace(/^Bearer\\s+/i,'').trim()||null
+ const token=request.headers.get('authorization')?.replace(/^Bearer\s+/i,'').trim()||null
  const clientId=await resolveClientToken(token,sql)
  if(!clientId)return {error:NextResponse.json({error:'Client login required'},{status:401})}
  await ensureClientFileFolderSchema(sql)
