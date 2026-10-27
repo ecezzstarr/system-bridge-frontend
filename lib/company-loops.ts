@@ -87,6 +87,15 @@ export async function ensureCompanyLoopsSchema(sql = getDb()) {
   `
   await sql`
     UPDATE company_loops
+    SET title = 'From my God will lead me to my God is',
+      purpose = 'Company Loop 3 — Individual Event: From my God will lead me to my God is. Begins January 12, 2027 (West Africa Time); the event ending and scroll remain to be authored.',
+      boundaries = 'This individual event has its own meaning and must not inherit the One Nigerian scroll or green–white–green theme.',
+      updated_at = NOW()
+    WHERE loop_number = 3 AND title = 'Company Loop 3' AND status = 'published'
+  `
+
+  await sql`
+    UPDATE company_loops
     SET stage = CASE WHEN NOW() >= ${COMPANY_LOOP_THREE_STARTS_AT}::timestamptz
       THEN 'Movement' ELSE 'Scheduled' END,
       updated_at = NOW()
