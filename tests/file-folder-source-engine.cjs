@@ -1,8 +1,8 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),ts=require('typescript')
-const exports={}
+const moduleBox={exports:{}}
 const source=fs.readFileSync('lib/file-folder-source-engine.ts','utf8')
-vm.runInNewContext(ts.transpileModule(source,{compilerOptions:{module:1,target:9}}).outputText,{exports,Error,Set})
-const {createSourceEnginePlan,SOURCE_SYSTEM_KINDS}=exports
+vm.runInNewContext(ts.transpileModule(source,{compilerOptions:{module:1,target:9}}).outputText,{module:moduleBox,exports:moduleBox.exports,Error,Set})
+const {createSourceEnginePlan,SOURCE_SYSTEM_KINDS}=moduleBox.exports
 assert.equal(SOURCE_SYSTEM_KINDS.length,7)
 const plan=createSourceEnginePlan({name:'Barbershop enterprise',sourceDescription:'Expand a barbershop with booking, products, staff participation and delivery.',systemKind:'commerce'})
 assert.equal(plan.engine,'weave-file-folder-source-engine')
