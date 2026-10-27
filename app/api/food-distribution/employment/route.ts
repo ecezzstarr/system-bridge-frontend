@@ -73,7 +73,7 @@ export async function POST(request:NextRequest) {
         SELECT id,'food_distribution_employment','Food Distribution application awaiting review',
           $1,'WEAVE Employment','/admin/food-distribution-employment'
         FROM users WHERE role='admin' AND is_active=true\`,[
-          `An Agent submitted a ${position==='manager'?'Food Distribution Manager':'Assistant Food Distribution Manager'} application. Open the Administration review desk to verify eligibility and decide the appointment.\`
+          'An Agent submitted a '+(position==='manager'?'Food Distribution Manager':'Assistant Food Distribution Manager')+' application. Open the Administration review desk to verify eligibility and decide the appointment.'
         ])
     } catch(error) { console.error('[food distribution employment] Administration alert failed',error) }
     return NextResponse.json({success:true,appointment:rows[0]},{headers:{'Cache-Control':'private, no-store'}})
