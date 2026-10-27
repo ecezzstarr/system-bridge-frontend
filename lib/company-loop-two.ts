@@ -58,7 +58,7 @@ export const ONE_NIGERIAN_SCROLL_TEXT = ONE_NIGERIAN_SCROLL_PASSAGES.map(passage
 
 /** Department identity for route-aware guidance, separate from authored scroll text. */
 export const ONE_NIGERIAN_DEPARTMENT_WORDS: Record<OneNigerianRole, {department:string; words:string}> = {
-  admin: {department:'Administration · A Cat',words:ONE_NIGERIAN_SCROLL_PASSAGES.filter(item => item.role==='admin').map(item=>item.text).join('\n\n')},
+  admin: {department:'Administration · A Time',words:ONE_NIGERIAN_SCROLL_PASSAGES.filter(item => item.role==='admin').map(item=>item.text).join('\n\n')},
   bridger: {department:'Hope · Bridgers Department',words:ONE_NIGERIAN_SCROLL_PASSAGES[1].text},
   agent: {department:'Stability · Agents Department',words:ONE_NIGERIAN_SCROLL_PASSAGES[2].text},
   client: {department:'Dream Lovely, Lord/Lady ownership department',words:ONE_NIGERIAN_SCROLL_PASSAGES[4].text},
