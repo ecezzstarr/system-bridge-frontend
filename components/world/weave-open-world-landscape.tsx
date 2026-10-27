@@ -85,6 +85,24 @@ function WorldFootpath({domain}:{domain:PublicWorldDomain}){
  </group>
 }
 
+function WorldRidge({x,z,scale=1,snow=false}:{x:number;z:number;scale?:number;snow?:boolean}){
+ return <group position={[x,0,z]} scale={scale} data-world-reference-ridge={snow?'snow-peaks':'ember-highlands'}>
+  {[[-2.8,3.1,1.3],[0,4.4,1.7],[2.5,2.8,1.2]].map(([px,h,r],i)=><group key={i} position={[px,0,i%2?-.8:.6]}>
+   <mesh position={[0,h*.43,0]} castShadow receiveShadow><coneGeometry args={[r*1.25,h,7]}/><meshStandardMaterial color={snow?'#7f9aaa':'#49382f'} roughness={.98}/></mesh>
+   {snow&&<mesh position={[0,h*.82,0]} castShadow><coneGeometry args={[r*.52,h*.36,7]}/><meshStandardMaterial color="#e7edf0" roughness={.88}/></mesh>}
+   {!snow&&<mesh position={[0,h*.19,.03]} rotation={[0,0,.18]}><coneGeometry args={[r*.65,h*.24,7]}/><meshStandardMaterial color="#a54b20" emissive="#61200c" emissiveIntensity={.28} roughness={.8}/></mesh>}
+  </group>)}
+ </group>
+}
+function RiverCrossing({x,z,rotation=0}:{x:number;z:number;rotation?:number}){
+ return <group position={[x,-.04,z]} rotation={[0,rotation,0]} data-world-reference-crossing="bridge-of-radiance">
+  <mesh position={[0,.38,0]} castShadow><boxGeometry args={[8,.24,1.35]}/><meshStandardMaterial color="#b6a078" metalness={.3} roughness={.55}/></mesh>
+  {[-3.3,3.3].map(side=><group key={side} position={[side,0,0]}>
+   <mesh position={[0,.05,0]} castShadow><boxGeometry args={[.5,.65,1.7]}/><meshStandardMaterial color="#655346" roughness={.92}/></mesh>
+   <mesh position={[0,.62,0]}><sphereGeometry args={[.17,8,6]}/><meshStandardMaterial color="#ffcf77" emissive="#f7a12b" emissiveIntensity={1.2}/></mesh>
+  </group>)}
+ </group>
+}
 export function WeaveOpenWorldLandscape({domains,placing=false,onPlace}:{domains:PublicWorldDomain[];placing?:boolean;onPlace?:(location:{x:number;z:number})=>void}){
  return <group data-weave-world-landscape="physical-ground-forest-and-paths">
   <mesh rotation={[-Math.PI/2,0,0]} position={[0,-.52,0]} receiveShadow
@@ -93,6 +111,18 @@ export function WeaveOpenWorldLandscape({domains,placing=false,onPlace}:{domains
    <LandMaterial/>
   </mesh>
   <Woodland/>
+  {/* Approved Burning River art guides the real scene: snowy northern heights,
+      ember terrain and illuminated crossings over the shared water/fire route.
+      This is interactive geometry, not static wallpaper. */}
+  <WorldRidge x={-49} z={-76} scale={2.5} snow/>
+  <WorldRidge x={-18} z={-83} scale={2.1} snow/>
+  <WorldRidge x={42} z={-75} scale={2.35} snow/>
+  <WorldRidge x={-48} z={66} scale={2.5}/>
+  <WorldRidge x={-20} z={80} scale={2.1}/>
+  <WorldRidge x={49} z={67} scale={2.4}/>
+  <RiverCrossing x={-4} z={-42} rotation={.18}/>
+  <RiverCrossing x={5} z={1} rotation={-.16}/>
+  <RiverCrossing x={-3} z={43} rotation={.2}/>
   {domains.map(domain=><WorldFootpath key={domain.domainId} domain={domain}/>)}
  </group>
 }
