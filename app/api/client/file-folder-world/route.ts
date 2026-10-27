@@ -34,20 +34,6 @@ async function resolveClientWorld(request: NextRequest) {
   await ensureClientFileFolderSchema(sql)
   await ensureFileFolderWorldSchema(sql)
   await ensureFileFolderModuleRuntimeSchema(sql)
-  await sql`
-    CREATE TABLE IF NOT EXISTS client_file_folder_system_connections (
-      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-      client_id uuid NOT NULL,
-      file_number varchar(120) NOT NULL,
-      source_system_id uuid NOT NULL,
-      target_system_id uuid NOT NULL,
-      contract_key varchar(80) NOT NULL,
-      status varchar(48) NOT NULL DEFAULT 'configured_pending_runtime_adapter',
-      created_at timestamptz NOT NULL DEFAULT NOW(),
-      updated_at timestamptz NOT NULL DEFAULT NOW(),
-      UNIQUE(client_id,file_number,source_system_id,target_system_id)
-    )
-  `
   await ensureClientMoneyEnvironment(sql, clientId)
 
   const [client] = await sql`
@@ -139,20 +125,6 @@ export async function POST(request: NextRequest) {
       if(!isUuid(sourceSystemId)||!isUuid(targetSystemId)||sourceSystemId===targetSystemId){
         return NextResponse.json({error:'Choose two different active systems from this File Folder.'},{status:400})
       }
-      await ctx.sql`
-        CREATE TABLE IF NOT EXISTS client_file_folder_system_connections (
-          id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-          client_id uuid NOT NULL,
-          file_number varchar(120) NOT NULL,
-          source_system_id uuid NOT NULL,
-          target_system_id uuid NOT NULL,
-          contract_key varchar(80) NOT NULL,
-          status varchar(48) NOT NULL DEFAULT 'configured_pending_runtime_adapter',
-          created_at timestamptz NOT NULL DEFAULT NOW(),
-          updated_at timestamptz NOT NULL DEFAULT NOW(),
-          UNIQUE(client_id,file_number,source_system_id,target_system_id)
-        )
-      `
       const systems=await ctx.sql`
         SELECT id,system_type,status
         FROM client_built_systems
