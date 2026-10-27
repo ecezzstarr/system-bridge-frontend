@@ -181,6 +181,7 @@ jobs:
           node tests/formation-foundation.cjs
           node tests/file-folder-source-engine.cjs
           node tests/file-folder-module-connections.cjs
+          node tests/file-folder-module-connection-api-regression.cjs
 
       - name: Flame Coin payments PostgreSQL settlement
         env:
