@@ -1,5 +1,3 @@
-import type { ModuleContract } from '@/lib/file-folder-module-connections'
-
 type Sql = (strings: TemplateStringsArray, ...values: any[]) => Promise<any[]>
 
 export async function ensureFileFolderModuleRuntimeSchema(sql: Sql) {
