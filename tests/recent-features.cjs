@@ -1685,3 +1685,41 @@ assert.ok(companyGuidanceApiSource.includes("cg:")&&companyGuidanceApiSource.inc
 assert.ok(companyGuidanceThreadSource.includes('/api/company-guidance')&&!companyGuidanceThreadSource.includes("redirect('/company-chat?position="),'Company Guidance position routes are live threads instead of a redirect loop')
 assert.ok(adminCompanyGuidanceSource.includes('/api/company-guidance')&&roleHas('admin','/admin/company-guidance'),'Administration has a discoverable Company Guidance reply endpoint')
 assert.ok(weaveEnvironmentMapSource.includes("'administration-company-guidance'"),'Administration Company Guidance has a registered WEAVE environment identity')
+
+
+// Agent Food Distribution employment remains independent from Bridger distribution
+// and Food Preparation, with a separate Administration approval desk.
+const foodDistributionFiles=[
+  'lib/food-distribution-employment.ts',
+  'app/api/food-distribution/employment/route.ts',
+  'app/api/admin/food-distribution-employment/route.ts',
+  'app/(app)/weave/lifestyles/food-distribution/page.tsx',
+  'app/(app)/admin/food-distribution-employment/page.tsx',
+  'app/api/employment/workspace/route.ts',
+  'app/(app)/weave/lifestyles/work/page.tsx',
+  'app/(app)/weave/lifestyles/page.tsx',
+  'lib/weave-lifestyle-catalog.ts',
+  'components/app-header.tsx',
+];
+for(const file of foodDistributionFiles){
+  const source=fs.readFileSync(path.join(root,file),'utf8')
+  const compiled=ts.transpileModule(source,{reportDiagnostics:true,compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true,target:ts.ScriptTarget.ES2022}})
+  const syntaxErrors=(compiled.diagnostics||[]).filter(d=>d.category===ts.DiagnosticCategory.Error)
+  assert.equal(syntaxErrors.length,0,file+' Food Distribution / Administration syntax check')
+}
+const foodDistributionSchemaSource=fs.readFileSync(path.join(root,'lib/food-distribution-employment.ts'),'utf8')
+const foodDistributionApiSource=fs.readFileSync(path.join(root,'app/api/food-distribution/employment/route.ts'),'utf8')
+const foodDistributionAdminApiSource=fs.readFileSync(path.join(root,'app/api/admin/food-distribution-employment/route.ts'),'utf8')
+const foodDistributionAdminPageSource=fs.readFileSync(path.join(root,'app/(app)/admin/food-distribution-employment/page.tsx'),'utf8')
+const foodDistributionWorkspaceSource=fs.readFileSync(path.join(root,'app/api/employment/workspace/route.ts'),'utf8')
+const foodDistributionLifestyleSource=fs.readFileSync(path.join(root,'app/(app)/weave/lifestyles/page.tsx'),'utf8')
+const adminHeaderSource=fs.readFileSync(path.join(root,'components/app-header.tsx'),'utf8')
+assert.ok(foodDistributionSchemaSource.includes('weave_food_distribution_employment')&&foodDistributionSchemaSource.includes("position IN ('manager','assistant')"),'Food Distribution has its own employment records and role types')
+assert.ok(foodDistributionApiSource.includes("user.role!=='agent'")&&foodDistributionApiSource.includes('getActiveLegionEmployment')&&foodDistributionApiSource.includes('An Agent submitted a '),'Food Distribution applications are Agent-only, respect exclusive Legion service and notify Administration')
+assert.ok(foodDistributionApiSource.includes("position==='assistant'")&&foodDistributionApiSource.includes("position='manager' AND e.status='approved'"),'Assistant Food Distribution applicants must select an approved Food Distribution Manager')
+assert.ok(foodDistributionAdminApiSource.includes("user?.role!=='admin'")&&foodDistributionAdminApiSource.includes("action==='approved'")===false&&foodDistributionAdminApiSource.includes("status='pending'"),'Administration alone reviews pending Food Distribution applications')
+assert.ok(foodDistributionAdminPageSource.includes('Approve appointment')&&foodDistributionAdminPageSource.includes('Decline')&&foodDistributionAdminPageSource.includes('Food Distribution Employment'),'Administration has an actual decision desk for the new appointment path')
+assert.ok(foodDistributionWorkspaceSource.includes('food_distribution_manager')&&foodDistributionWorkspaceSource.includes('food_distribution_assistant_manager'),'Only approved Food Distribution appointments enter the staff workspace')
+assert.ok(foodDistributionLifestyleSource.includes('FOOD DISTRIBUTION MANAGER')&&foodDistributionLifestyleSource.includes('/weave/lifestyles/food-distribution'),'Agent Lifestyle exposes the separate Food Distribution application')
+assert.ok(adminHeaderSource.includes('A Time · Administration')&&adminHeaderSource.includes("? 'A Time'")&&!adminHeaderSource.includes('A Cat · Administration'),'The notification-bearing global header labels Administration as A Time, not A Cat')
+console.log('Food Distribution employment and Administration identity regression checks passed')
