@@ -20,6 +20,12 @@ const guidance:Record<string,JobGuidance>={
     steps:['Read the assignments issued by your verified lead Manager.',
       'Carry out distribution and referral activities using the authorized company instruments.',
       'Report progress with evidence, submit completed work and respond to the lead’s review.']},
+  food_distribution_manager:{
+    group:'Stability · Food Distribution',start:'/weave/lifestyles/food-distribution',talk:'/communications',
+    steps:['Review available stock and actual paid food orders before making a distribution plan.','Coordinate outlet supply, carrier handoffs and delivery responsibilities with named owners.','Record each completed distribution against verifiable order or delivery evidence; target 200 per month without counting unverified activity.']},
+  food_distribution_assistant_manager:{
+    group:'Stability · Food Distribution · Assistant',start:'/weave/lifestyles/food-distribution',talk:'/communications',
+    steps:['Confirm the assignment and stock quantity with your approved Food Distribution Manager.','Carry out only assigned outlet supply, stock movement or delivery handoffs.','Record the actual order reference, delivery result and any shortage or exception for lead review.']},
   food_preparation:{
     group:'Stability · Food Preparation',start:'/weave/lifestyles/food-preparation',talk:'#food-team-communication',
     steps:['Open verified food orders and your own assigned preparation work.',
@@ -27,6 +33,18 @@ const guidance:Record<string,JobGuidance>={
       'Follow the approved Stability Lead’s allocation; Administration handles verification and financial authorization.']},
 }
 const guidanceFor=(position:WorkPosition):JobGuidance=>{
+  if(position.id==='food_distribution_manager'||position.id==='food_distribution_assistant_manager'){
+    const lead=position.id==='food_distribution_manager'
+    return {...guidance[position.id],steps:lead?[
+      'Check the real food inventory and paid orders that need movement before assigning work.',
+      'Coordinate outlets, carriers and delivery handoffs; name an accountable person for each task.',
+      'Review delivery evidence and record verified distributions toward the monthly target of 200.'
+    ]:[
+      'Read the stock or delivery assignment from your approved Food Distribution Manager.',
+      'Confirm quantities and destination before carrying the handoff.',
+      'Record the actual delivery result and report shortages or exceptions to the lead.'
+    ]}
+  }
   if(position.id==='food_preparation'){
     const lead=position.title==='Food Preparation Manager'
     return {...guidance.food_preparation,steps:lead?[

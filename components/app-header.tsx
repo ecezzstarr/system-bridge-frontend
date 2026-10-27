@@ -54,7 +54,7 @@ export function AppHeader({ user }: AppHeaderProps) {
       : effectiveUser.role === 'client'
         ? 'Client · File Folder'
         : effectiveUser.role === 'admin'
-          ? 'A Cat · Administration'
+          ? 'A Time · Administration'
           : effectiveUser.role
   const presenceLabel = effectiveUser.role === 'bridger'
     ? 'Hope'
@@ -63,7 +63,7 @@ export function AppHeader({ user }: AppHeaderProps) {
       : effectiveUser.role === 'client'
         ? 'Lord/Lady'
         : effectiveUser.role === 'admin'
-          ? 'A Cat'
+          ? 'A Time'
           : 'Presence'
   const roleLabel = effectiveUser.role === 'admin'
     ? 'Administration'
