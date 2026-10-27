@@ -69,10 +69,10 @@ export async function POST(request:NextRequest) {
     if(!rows.length){await client.query('ROLLBACK');return NextResponse.json({success:false,error:'An active application already exists.'},{status:409})}
     await client.query('COMMIT')
     try {
-      await pool.query(\`INSERT INTO notifications(user_id,type,title,content,from_user_name,link)
+      await pool.query(`INSERT INTO notifications(user_id,type,title,content,from_user_name,link)
         SELECT id,'food_distribution_employment','Food Distribution application awaiting review',
           $1,'WEAVE Employment','/admin/food-distribution-employment'
-        FROM users WHERE role='admin' AND is_active=true\`,[
+        FROM users WHERE role='admin' AND is_active=true`,[
           'An Agent submitted a '+(position==='manager'?'Food Distribution Manager':'Assistant Food Distribution Manager')+' application. Open the Administration review desk to verify eligibility and decide the appointment.'
         ])
     } catch(error) { console.error('[food distribution employment] Administration alert failed',error) }
