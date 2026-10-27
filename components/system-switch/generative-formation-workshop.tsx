@@ -22,15 +22,37 @@ export default function GenerativeFormationWorkshop(){
  const [systemKind,setSystemKind]=useState('custom')
  const [materials,setMaterials]=useState<FormationMaterial[]>(['custom'])
  const [formations,setFormations]=useState<Formation[]>([])
+ const [worldSnapshot,setWorldSnapshot]=useState<any>(null)
+ const [buildingStage,setBuildingStage]=useState('')
  const [loading,setLoading]=useState(false)
  const [error,setError]=useState('')
  const load=useCallback(async()=>{
   const token=getClientToken();if(!token)return
   try{
-   const res=await fetch('/api/client/generated-formations',{headers:{Authorization:`Bearer ${token}`},cache:'no-store'})
+   const [res,worldRes]=await Promise.all([
+    fetch('/api/client/generated-formations',{headers:{Authorization:`Bearer ${token}`},cache:'no-store'}),
+    fetch('/api/client/file-folder-world',{headers:{Authorization:`Bearer ${token}`},cache:'no-store'}),
+   ])
    if(res.ok){const data=await res.json();setFormations(data.formations||[])}
-  }catch{setError('Formation history is temporarily unavailable.')}
+   if(worldRes.ok){const data=await worldRes.json();setWorldSnapshot(data.world||null)}
+  }catch{setError('Formation history or File Folder construction state is temporarily unavailable.')}
  },[])
+ async function beginStage(item:Formation,stage:SourcePlan['blueprintStages'][number]){
+  const token=getClientToken();if(!token){setError('Client login required.');return}
+  const key=item.id+':'+stage.blueprintKey
+  setBuildingStage(key);setError('')
+  try{
+   const response=await fetch('/api/client/file-folder-world',{method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({
+    action:'start_build',blueprint_key:stage.blueprintKey,
+    title:`${item.specification.name} — ${stage.blueprintKey.replaceAll('_',' ')}`,
+    purpose:item.specification.purpose,
+   })})
+   const data=await response.json()
+   if(!response.ok)throw new Error(data.error||'Construction could not begin')
+   await load()
+  }catch(e){setError(e instanceof Error?e.message:'Construction could not begin')}
+  finally{setBuildingStage('')}
+ }
  useEffect(()=>{void load()},[load])
  async function propose(){
   const token=getClientToken();if(!token){setError('Client login required.');return}
@@ -56,7 +78,7 @@ export default function GenerativeFormationWorkshop(){
     <div><p className="text-[10px] font-bold uppercase tracking-wider text-cyan-200">Source composition · {item.specification.sourcePlan.systemKind}</p><p className="mt-1 text-xs text-slate-300">Functions</p><ul className="list-disc space-y-1 pl-5 text-xs text-slate-200">{item.specification.sourcePlan.functions.map(value=><li key={value}>{value}</li>)}</ul></div>
     <div><p className="text-xs text-slate-300">Participant roles</p><p className="mt-1 text-xs text-slate-200">{item.specification.sourcePlan.participantRoles.join(' · ')}</p></div>
     <div><p className="text-xs text-slate-300">System connections</p><ul className="mt-1 list-disc space-y-1 pl-5 text-xs text-slate-200">{item.specification.sourcePlan.connections.map(value=><li key={value}>{value}</li>)}</ul></div>
-    <div className="rounded border border-cyan-300/20 p-3"><p className="text-[10px] font-bold uppercase tracking-wider text-cyan-200">Existing construction path · {item.specification.sourcePlan.platformKind.replaceAll('_',' ')}</p><p className="mt-1 text-xs text-slate-300">The engine maps this proposal to real blueprint stages already defined in the File Folder build system. These stages are not marked built until actual build and active-system records exist.</p><ol className="mt-2 list-decimal space-y-1 pl-5 text-xs text-slate-200">{item.specification.sourcePlan.blueprintStages.map(stage=><li key={stage.blueprintKey}><span className="font-semibold">{stage.blueprintKey.replaceAll('_',' ')}</span><span className="text-slate-400"> — {stage.status.replaceAll('_',' ')}</span></li>)}</ol><p className="mt-3 text-xs text-amber-200">Still required before launch: {item.specification.sourcePlan.productionGap}</p></div>
+    <div className="rounded border border-cyan-300/20 p-3"><p className="text-[10px] font-bold uppercase tracking-wider text-cyan-200">Existing construction path · {item.specification.sourcePlan.platformKind.replaceAll('_',' ')}</p><p className="mt-1 text-xs text-slate-300">Each available stage uses the existing File Folder construction endpoint, including its dependency checks, material requirements, build duration and Client authorization. A stage is operating only when the real system record is active.</p><ol className="mt-2 list-decimal space-y-2 pl-5 text-xs text-slate-200">{item.specification.sourcePlan.blueprintStages.map(stage=>{const catalog=(worldSnapshot?.blueprints||[]).find((blueprint:any)=>blueprint.blueprint_key===stage.blueprintKey);const active=(worldSnapshot?.systems||[]).find((system:any)=>system.status==='active'&&(system.configuration?.blueprintKey===stage.blueprintKey||system.system_type===stage.blueprintKey));const pending=(worldSnapshot?.builds||[]).find((build:any)=>build.blueprint_key===stage.blueprintKey&&['building','funding_gate'].includes(build.status));const state=active?'operating':pending?.status==='building'?'building':pending?.status==='funding_gate'?'funding gate':catalog?'not started':'blueprint unavailable';const canStart=Boolean(catalog&&!active&&!pending);return <li key={stage.blueprintKey}><div className="flex flex-wrap items-center gap-2"><span className="font-semibold">{stage.blueprintKey.replaceAll('_',' ')}</span><span className={active?'text-emerald-300':pending?'text-amber-200':'text-slate-400'}>— {state}</span>{canStart&&<button type="button" disabled={Boolean(buildingStage)} onClick={()=>void beginStage(item,stage)} className="rounded border border-cyan-200/40 px-2 py-1 text-[10px] font-bold text-cyan-100 disabled:opacity-40">{buildingStage===item.id+':'+stage.blueprintKey?'Starting…':'Begin construction'}</button>}</div>{!catalog&&<p className="mt-1 text-[10px] text-amber-200">This blueprint is not currently published in the File Folder build catalog.</p>}</li>})}</ol><p className="mt-3 text-xs text-amber-200">Still required before launch: {item.specification.sourcePlan.productionGap}</p></div>
     <div><p className="text-xs text-slate-300">Build sequence</p><ol className="mt-1 list-decimal space-y-1 pl-5 text-xs text-slate-200">{item.specification.sourcePlan.buildSequence.map(value=><li key={value}>{value}</li>)}</ol></div>
     <details className="text-xs text-slate-300"><summary className="cursor-pointer">Acceptance and security checks</summary><ul className="mt-2 list-disc space-y-1 pl-5">{item.specification.sourcePlan.acceptanceChecks.map(value=><li key={value}>{value}</li>)}</ul><p className="mt-2 text-slate-400">{item.specification.sourcePlan.executionBoundary}</p></details>
    </div>}
