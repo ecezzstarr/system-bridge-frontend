@@ -9,7 +9,7 @@ const required=[
   'The Weave of Presence: System Switch — Bridge of Radiance',
   'Stability',
   'Hope',
-  'A Cat',
+  'A Time',
   'Dream',
   'The company through the people of its departments',
   'Company Loop 1 — Flame Event: Burning River',
