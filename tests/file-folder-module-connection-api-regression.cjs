@@ -11,6 +11,6 @@ assert(api.includes('configured_pending_runtime_adapter'),'API does not falsely 
 assert(api.includes('world: {...world,moduleConnections,moduleRuntimeEvents}'),'Configured connections and runtime events are returned in the File Folder snapshot')
 assert(ui.includes('data-file-folder-module-connections="configured"'),'Existing File Folder operating environment exposes module connection controls')
 assert(ui.includes("action:'connect_modules'"),'UI uses the authenticated File Folder connection action')
-assert(ui.includes('Runtime state is reported from the verified adapter registry.'),'UI communicates the runtime boundary')
+assert(ui.includes('A saved contract is not yet live data transfer.'),'UI communicates the runtime boundary')
 assert(contracts.includes('source.outputs.filter(output => target.inputs.includes(output))'),'Only matching source output and target input contracts connect')
 console.log('File Folder module connection API/UI regression: authenticated scope, contract validation, persistence, snapshot visibility and runtime boundary passed')
