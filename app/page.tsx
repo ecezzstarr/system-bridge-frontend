@@ -23,7 +23,7 @@ import { WEAVE_WRITING } from '@/lib/weave-writing'
 const departments = [
   { name: 'Stability', people: 'Agents' },
   { name: 'Hope', people: 'Bridgers' },
-  { name: 'A Cat', people: 'Administration' },
+  { name: 'A Time', people: 'Administration' },
   { name: 'Dream', people: 'Clients' },
 ] as const
 
@@ -49,7 +49,7 @@ const staffEntrances = [
   { name: 'Agent', department: 'Stability', enter: '/login', registration: '/register?role=agent', registrationLabel: 'Join as an Agent' },
   { name: 'Bridger', department: 'Hope', enter: '/login', registration: '/register?role=bridger', registrationLabel: 'Join as a Bridger' },
   { name: 'Client', department: 'Dream', enter: '/client/login', registration: '/client/register', registrationLabel: 'Register with File Number' },
-  { name: 'Administration', department: 'A Cat', enter: '/login?portal=admin', registration: null, registrationLabel: null },
+  { name: 'Administration', department: 'A Time', enter: '/login?portal=admin', registration: null, registrationLabel: null },
 ] as const
 
 export default function Home() {
@@ -98,7 +98,7 @@ export default function Home() {
                 ))}
               </div>
               <p className="weave-home-department-summary mt-6 text-base font-medium leading-relaxed sm:text-lg">The company through the people of its departments</p>
-              <div className="weave-home-loops mx-auto mt-9 grid max-w-4xl gap-3 text-left sm:grid-cols-2" data-company-time-loops>
+              <div className="weave-home-loops mx-auto mt-9 grid max-w-4xl gap-3 text-left sm:grid-cols-3" data-company-time-loops>
                 <div className="weave-home-loop weave-home-loop-flame p-5">
                   <p className="text-base font-black text-white sm:text-lg">Company Loop 1 — Flame Event: Burning River</p>
                   <Link href="/flame-event" className="mt-3 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-orange-100 hover:text-white">
@@ -108,6 +108,10 @@ export default function Home() {
                 <div className="weave-home-loop weave-home-loop-country p-5">
                   <p className="text-base font-black text-white sm:text-lg">Company Loop 2 — Country Event: One Nigeria</p>
                   <p className="mt-3 text-sm leading-6 text-slate-300">The next company movement, carried by the same departments and their people.</p>
+                </div>
+                <div className="weave-home-loop weave-home-loop-time p-5">
+                  <p className="text-base font-black text-white sm:text-lg">Company Loop 3 — Individual Event: From my God will lead me to my God is</p>
+                  <p className="mt-3 text-sm leading-6 text-slate-300">A new individual event carried by the Company of Time.</p>
                 </div>
               </div>
             </div>
