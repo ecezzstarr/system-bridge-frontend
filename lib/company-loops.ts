@@ -67,8 +67,7 @@ export async function ensureCompanyLoopsSchema(sql = getDb()) {
       AND purpose = ${"Company Loop 2 — Flame Event: One Nigerian operates from January 1 through May 1, 2027, with WEAVE taking on a green–white–green national environment."}
   `
 
-  // Loop 3 is a dated placeholder. The Administrator has not named its theme,
-  // duration or authored its scroll; do not fabricate those details.
+  // Company Loop 3 carries the Sovereign-authored individual event identity.
   await sql`
     INSERT INTO company_loops (
       loop_number, title, purpose, stage, position, boundaries,
@@ -76,11 +75,11 @@ export async function ensureCompanyLoopsSchema(sql = getDb()) {
     )
     SELECT
       3,
-      'Company Loop 3',
-      'Company Loop 3 begins January 12, 2027 (West Africa Time). Its event identity, theme, scroll and ending have not yet been supplied.',
+      'From my God will lead me to my God is',
+      'Company Loop 3 — Individual Event: From my God will lead me to my God is. Begins January 12, 2027 (West Africa Time); the event ending and scroll remain to be authored.',
       'Scheduled',
       'all',
-      'Do not carry forward the One Nigerian scroll or green–white–green theme into this loop without Administration direction.',
+      'This individual event has its own meaning and must not inherit the One Nigerian scroll or green–white–green theme.',
       ARRAY['client','agent','bridger','admin']::text[],
       'published',
       NOW()
@@ -91,7 +90,7 @@ export async function ensureCompanyLoopsSchema(sql = getDb()) {
     SET stage = CASE WHEN NOW() >= ${COMPANY_LOOP_THREE_STARTS_AT}::timestamptz
       THEN 'Movement' ELSE 'Scheduled' END,
       updated_at = NOW()
-    WHERE loop_number = 3 AND title = 'Company Loop 3' AND status = 'published'
+    WHERE loop_number = 3 AND title IN ('Company Loop 3','From my God will lead me to my God is') AND status = 'published'
       AND stage IS DISTINCT FROM CASE WHEN NOW() >= ${COMPANY_LOOP_THREE_STARTS_AT}::timestamptz
         THEN 'Movement' ELSE 'Scheduled' END
   `
