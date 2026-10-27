@@ -6,6 +6,7 @@ import {getLifestyleAccess} from '@/lib/weave-lifestyle'
 import {ensureManagerEmploymentTable} from '@/lib/manager-employment'
 import {ensureDistributionAssistantSchema} from '@/lib/distribution-assistants'
 import {ensureFoodPreparationManagerSchema} from '@/lib/food-preparation-manager'
+import {ensureFoodDistributionEmploymentSchema} from '@/lib/food-distribution-employment'
 import {getGuidanceStaffDepartments} from '@/lib/weave-guidance-departments'
 
 export const dynamic='force-dynamic'
@@ -18,6 +19,12 @@ const distributionTools:WorkLink[]=[
   {label:'Carrier',href:'/weave/carrier',purpose:'Distribute approved live company activity'},
   {label:'Direct Communication',href:'/communications',purpose:'Coordinate with authorized contacts'},
   {label:'Burning River',href:'/event',purpose:'Join the current company business loop'},
+]
+const foodDistributionTools:WorkLink[]=[
+  {label:'Food Distribution Desk',href:'/weave/lifestyles/food-distribution',purpose:'Coordinate food stock, outlet supply, carrier handoffs and verified delivery records'},
+  {label:'Food Store',href:'/food-store',purpose:'Review the live WEAVE food catalog and eligible order movement'},
+  {label:'Carrier',href:'/weave/carrier',purpose:'Carry approved food distribution activity outward'},
+  {label:'Direct Communication',href:'/communications',purpose:'Coordinate with authorized food outlets and staff'},
 ]
 const foodTools:WorkLink[]=[
   {label:'Kitchen Work Desk',href:'/weave/lifestyles/food-preparation',purpose:'Receive verified paid orders and record preparation or dispatch'},
@@ -42,12 +49,14 @@ export async function GET(request:NextRequest){
       message:'Your current exclusive Legion service temporarily suspends other company job operations until the Legion appointment ends.'},
       {headers:{'Cache-Control':'private, no-store'}})
     await Promise.all([ensureManagerEmploymentTable(),ensureDistributionAssistantSchema(),
-      ...(user.role==='agent'?[ensureFoodPreparationManagerSchema()]:[])])
+      ...(user.role==='agent'?[ensureFoodPreparationManagerSchema(),ensureFoodDistributionEmploymentSchema()]:[])])
     const pool=getPool()
-    const [manager,assistant,food,departments]=await Promise.all([
+    const [manager,assistant,food,foodDistribution,departments]=await Promise.all([
       pool.query('SELECT status FROM manager_employment WHERE user_id=$1::uuid',[user.id]),
       pool.query('SELECT status FROM weave_distribution_assistants WHERE user_id=$1::uuid',[user.id]),
       user.role==='agent'?pool.query('SELECT status,position FROM weave_food_preparation_managers WHERE agent_id=$1::uuid',[user.id]):
+        Promise.resolve({rows:[]}),
+      user.role==='agent'?pool.query('SELECT status,position,manager_user_id FROM weave_food_distribution_employment WHERE user_id=$1::uuid',[user.id]):
         Promise.resolve({rows:[]}),
       getGuidanceStaffDepartments(user),
     ])
@@ -55,6 +64,7 @@ export async function GET(request:NextRequest){
     const lead=manager.rows[0]
     const assistantRecord=assistant.rows[0]
     const foodRecord=food.rows[0]
+    const foodDistributionRecord=foodDistribution.rows[0]
     if(['probation','active'].includes(lead?.status)){
       positions.push({id:'distribution_manager',title:'Distribution Manager',department:'Stability · Company Distribution',
         standing:lead.status==='probation'?'Verified · Probation':'Active appointment',
@@ -65,6 +75,14 @@ export async function GET(request:NextRequest){
       positions.push({id:'distribution_assistant',title:'Assistant Distribution Manager',department:'Stability · Company Distribution',
         standing:'Approved appointment',description:'Carry assigned field tasks, report verified progress and communicate directly with your lead and other assistants.',
         tools:[{label:'Assistant Team Workspace',href:'/weave/lifestyles/distribution-assistant',purpose:'Receive and act on team assignments'},...distributionTools]})
+    }
+    if(foodDistributionRecord?.status==='approved'){
+      const isLead=foodDistributionRecord.position==='manager'
+      positions.push({id:isLead?'food_distribution_manager':'food_distribution_assistant_manager',
+        title:isLead?'Food Distribution Manager':'Assistant Food Distribution Manager',
+        department:'Stability · Food Distribution',standing:'Approved appointment',
+        description:isLead?'Coordinate food stock movement, outlet supply, delivery handoffs and verified distribution reporting.':'Carry assigned food stock, outlet supply and delivery handoffs under the approved Food Distribution Manager.',
+        tools:[{label:'Food Distribution Desk',href:'/weave/lifestyles/food-distribution',purpose:'Open appointment details and food distribution coordination'},...foodDistributionTools]})
     }
     if(foodRecord?.status==='approved'){
       positions.push({id:'food_preparation',title:foodRecord.position==='manager'?'Food Preparation Manager':'Assistant Food Preparation Manager',
