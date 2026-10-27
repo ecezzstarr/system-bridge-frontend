@@ -102,6 +102,8 @@ export default function WeaveLifestylesPage() {
   const agenticOpen = Boolean(agenticAvailable && aceOpen)
   const mandateAvailable = access?.role === 'agent' || access?.role === 'bridger'
   const mandateOpen = Boolean(mandateAvailable && access?.active)
+  const foodDistributionAvailable = access?.role === 'agent'
+  const foodDistributionOpen = Boolean(foodDistributionAvailable && access?.active)
   const foodPreparationAvailable = access?.role === 'agent'
   const foodPreparationOpen = Boolean(foodPreparationAvailable && access?.active)
   const foodAvailable = access?.role === 'agent' || access?.role === 'bridger'
@@ -227,6 +229,21 @@ export default function WeaveLifestylesPage() {
                   tools={[{icon:<ShieldCheck className="h-3.5 w-3.5"/>,label:'Department application'},{icon:<BriefcaseBusiness className="h-3.5 w-3.5"/>,label:'Company Guidance'}]}
                 />
               )}
+              {foodDistributionAvailable && (
+                <LifestyleGround
+                  tone="cyan"
+                  icon={<ShoppingBasket className="h-8 w-8" />}
+                  eyebrow="Agent employment · Stability · Food logistics"
+                  title="FOOD DISTRIBUTION MANAGER"
+                  detail="A separate Agent employment path for Food Distribution Manager and Assistant Food Distribution Manager. Coordinate stock movement, outlet supply, carrier handoffs and delivery confirmation against real WEAVE food orders. Administration must approve the appointment; the operating target is 200 verifiable food distributions monthly."
+                  open={foodDistributionOpen}
+                  reason={access?.active ? 'Apply for Administration appointment or open your approved food distribution role.' : 'An active Agent position is required.'}
+                  href="/weave/lifestyles/food-distribution"
+                  action="Apply / Open Food Distribution"
+                  tools={[{icon:<ShoppingBasket className="h-3.5 w-3.5"/>,label:'Stock & outlet supply'},{icon:<BriefcaseBusiness className="h-3.5 w-3.5"/>,label:'200 verified distributions'}]}
+                />
+              )}
+
               {foodPreparationAvailable && (
                 <LifestyleGround
                   tone="amber"
