@@ -14,7 +14,7 @@ const SOURCE_KINDS=[
  {value:'custom',label:'Other / define my own system'},
 ] as const
 
-type SourcePlan={systemKind:string;functions:string[];participantRoles:string[];connections:string[];buildSequence:string[];acceptanceChecks:string[];executionBoundary:string}
+type SourcePlan={systemKind:string;functions:string[];participantRoles:string[];connections:string[];platformKind:string;blueprintStages:{blueprintKey:string;order:number;purpose:string;status:string}[];productionGap:string;buildSequence:string[];acceptanceChecks:string[];executionBoundary:string}
 type Formation={id:string;status:string;specification:{name:string;purpose:string;materials:string[];textures:{material:string;description:string}[];openQuestions:string[];sourcePlan?:SourcePlan}}
 export default function GenerativeFormationWorkshop(){
  const [description,setDescription]=useState('')
@@ -56,6 +56,7 @@ export default function GenerativeFormationWorkshop(){
     <div><p className="text-[10px] font-bold uppercase tracking-wider text-cyan-200">Source composition · {item.specification.sourcePlan.systemKind}</p><p className="mt-1 text-xs text-slate-300">Functions</p><ul className="list-disc space-y-1 pl-5 text-xs text-slate-200">{item.specification.sourcePlan.functions.map(value=><li key={value}>{value}</li>)}</ul></div>
     <div><p className="text-xs text-slate-300">Participant roles</p><p className="mt-1 text-xs text-slate-200">{item.specification.sourcePlan.participantRoles.join(' · ')}</p></div>
     <div><p className="text-xs text-slate-300">System connections</p><ul className="mt-1 list-disc space-y-1 pl-5 text-xs text-slate-200">{item.specification.sourcePlan.connections.map(value=><li key={value}>{value}</li>)}</ul></div>
+    <div className="rounded border border-cyan-300/20 p-3"><p className="text-[10px] font-bold uppercase tracking-wider text-cyan-200">Existing construction path · {item.specification.sourcePlan.platformKind.replaceAll('_',' ')}</p><p className="mt-1 text-xs text-slate-300">The engine maps this proposal to real blueprint stages already defined in the File Folder build system. These stages are not marked built until actual build and active-system records exist.</p><ol className="mt-2 list-decimal space-y-1 pl-5 text-xs text-slate-200">{item.specification.sourcePlan.blueprintStages.map(stage=><li key={stage.blueprintKey}><span className="font-semibold">{stage.blueprintKey.replaceAll('_',' ')}</span><span className="text-slate-400"> — {stage.status.replaceAll('_',' ')}</span></li>)}</ol><p className="mt-3 text-xs text-amber-200">Still required before launch: {item.specification.sourcePlan.productionGap}</p></div>
     <div><p className="text-xs text-slate-300">Build sequence</p><ol className="mt-1 list-decimal space-y-1 pl-5 text-xs text-slate-200">{item.specification.sourcePlan.buildSequence.map(value=><li key={value}>{value}</li>)}</ol></div>
     <details className="text-xs text-slate-300"><summary className="cursor-pointer">Acceptance and security checks</summary><ul className="mt-2 list-disc space-y-1 pl-5">{item.specification.sourcePlan.acceptanceChecks.map(value=><li key={value}>{value}</li>)}</ul><p className="mt-2 text-slate-400">{item.specification.sourcePlan.executionBoundary}</p></details>
    </div>}
