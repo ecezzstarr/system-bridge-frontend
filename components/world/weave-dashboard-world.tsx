@@ -42,7 +42,7 @@ const COPY:Record<WorldRole,{
     centerHref:'/agent/presence',
   },
   admin:{
-    eyebrow:'A Cat · Administration Department',
+    eyebrow:'A Time · Administration Department',
     title:'The institution in one organized world.',
     subtitle:'People, Finance, Operations, Workshops and Communication remain separate districts inside one Administration world.',
     centerHref:'/admin/control-center',
