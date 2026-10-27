@@ -30,7 +30,7 @@ export const FILE_FOLDER_MODULE_CONTRACTS: Readonly<Record<string, ModuleContrac
 }
 
 export type ModuleConnectionValidation =
-  | { ok: true; contract: string; state: 'configured_pending_runtime_adapter' }
+  | { ok: true; contract: string; state: 'active' | 'configured_pending_runtime_adapter' }
   | { ok: false; reason: string }
 
 export function validateFileFolderModuleConnection(input: {
