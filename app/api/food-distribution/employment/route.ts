@@ -1,6 +1,6 @@
 import { NextRequest,NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
-import { getPool } from '@/lib/db'
+import { getPool,sql } from '@/lib/db'
 import { getLifestyleAccess } from '@/lib/weave-lifestyle'
 import { getActiveLegionEmployment } from '@/lib/legion-employment'
 import { ensureFoodDistributionEmploymentSchema,getFoodDistributionEmployment } from '@/lib/food-distribution-employment'
@@ -12,7 +12,7 @@ export async function GET(request:NextRequest) {
   if(user.role!=='agent')return NextResponse.json({success:false,error:'Food Distribution employment is an Agent Department position.'},{status:403})
   try {
     const access=await getLifestyleAccess(user.id)
-    const legion=await getActiveLegionEmployment((await import('@/lib/db')).sql,user.id)
+    const legion=await getActiveLegionEmployment(sql,user.id)
     const [appointment,managers]=await Promise.all([
       getFoodDistributionEmployment(user.id),
       (async()=>{await ensureFoodDistributionEmploymentSchema();const {rows}=await getPool().query(`
