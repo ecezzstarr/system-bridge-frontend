@@ -33,6 +33,7 @@ async function sql(strings,...values){
  assert.equal(getModuleRuntimeReadiness('catalog','commerce_storefront','marketplace_network').adapterAvailable,false)
  assert.equal(getModuleRuntimeReadiness('customer_request','customer_door','operations_board').adapterAvailable,true)
  assert.equal(getModuleRuntimeReadiness('order','customer_door','payments_gateway').adapterAvailable,false)
+ assert.equal(getModuleRuntimeReadiness('order','marketplace_network','route_station').adapterAvailable,false,'unimplemented chained adapters must not be activated')
  const api=fs.readFileSync('app/api/client/file-folder-world/route.ts','utf8')
  const checkout=fs.readFileSync('app/api/public/store/[slug]/orders/route.ts','utf8')
  const workshop=fs.readFileSync('components/system-switch/generative-formation-workshop.tsx','utf8')
