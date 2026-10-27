@@ -180,6 +180,7 @@ jobs:
           node tests/living-presence-renderer.cjs
           node tests/formation-foundation.cjs
           node tests/file-folder-source-engine.cjs
+          node tests/file-folder-module-connections.cjs
 
       - name: Flame Coin payments PostgreSQL settlement
         env:
