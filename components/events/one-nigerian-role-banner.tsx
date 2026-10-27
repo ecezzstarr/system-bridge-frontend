@@ -8,7 +8,7 @@ type BannerRole = 'admin' | 'bridger'
 
 const MESSAGES: Record<BannerRole, { position: string; words: string }> = {
   admin: {
-    position: 'Administration · A Cat',
+    position: 'Administration · A Time',
     words: "Let us have what is known as bad government. Weave will fix it, and it will all be like the bad was a stepping stone for wherever I am. There's a way.",
   },
   bridger: {
