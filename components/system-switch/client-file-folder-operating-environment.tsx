@@ -393,6 +393,10 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
   )
   const [selectedSystemId,setSelectedSystemId]=useState('')
   const [selectedBuildId,setSelectedBuildId]=useState('')
+  const [connectionSourceId,setConnectionSourceId]=useState('')
+  const [connectionTargetId,setConnectionTargetId]=useState('')
+  const [connectionBusy,setConnectionBusy]=useState(false)
+  const [connectionMessage,setConnectionMessage]=useState('')
 
   useEffect(() => {
     const tick = visiblePoll(() => setNow(Date.now()), 5000)
@@ -468,6 +472,27 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
   useEffect(() => () => {
     if (travelTimer.current) window.clearTimeout(travelTimer.current)
   }, [])
+
+  const connectModules=async()=>{
+    if(!connectionSourceId||!connectionTargetId||connectionSourceId===connectionTargetId)return
+    setConnectionBusy(true);setConnectionMessage('')
+    try{
+      const token=getClientToken()
+      if(!token)throw new Error('Client login required.')
+      const response=await fetch('/api/client/file-folder-world',{
+        method:'POST',
+        headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},
+        body:JSON.stringify({action:'connect_modules',source_system_id:connectionSourceId,target_system_id:connectionTargetId}),
+      })
+      const result=await response.json()
+      if(!response.ok)throw new Error(result.error||'Unable to configure connection')
+      const refreshed=await fetch('/api/client/file-folder-world',{headers:{Authorization:`Bearer ${token}`},cache:'no-store'})
+      const snapshot=await refreshed.json()
+      if(refreshed.ok&&snapshot.world)setWorld(snapshot.world)
+      setConnectionMessage(`Connection saved for ${result.connection?.contract_key||'validated contract'}. Live transfer awaits its verified runtime adapter.`)
+    }catch(error:any){setConnectionMessage(error?.message||'Unable to configure connection')}
+    finally{setConnectionBusy(false)}
+  }
 
   const blueprints = Array.isArray(world?.blueprints) ? world.blueprints : []
   const builds = Array.isArray(world?.builds) ? world.builds : []
@@ -811,7 +836,36 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
               </div>
             </div>
 
-            <section className="border-y border-emerald-200/10 bg-emerald-300/[0.02] px-4 py-5" data-formation-intelligence="field-evidence">
+            <section className="rounded-3xl border border-cyan-300/15 bg-cyan-300/[0.025] p-5" data-file-folder-module-connections="configured">
+                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-cyan-200">System Weaves · Module Connections</p>
+                <h3 className="mt-1 text-lg font-black text-white">Connect existing systems inside this File Folder</h3>
+                <p className="mt-2 text-xs leading-5 text-slate-400">Only active systems in this Client File Folder can be connected. WEAVE validates the source output against the destination input and records the route. A saved contract is not yet live data transfer.</p>
+                <div className="mt-4 grid gap-3 md:grid-cols-2">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Source system
+                    <select aria-label="Source system" value={connectionSourceId} onChange={event=>setConnectionSourceId(event.target.value)} className="mt-2 w-full rounded-xl border border-white/10 bg-[#061111] p-3 text-sm normal-case text-white">
+                      <option value="">Choose active source</option>
+                      {systems.filter((system:any)=>system.status==='active').map((system:any)=><option key={system.id} value={system.id}>{system.title} · {String(system.system_type).replaceAll('_',' ')}</option>)}
+                    </select>
+                  </label>
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Destination system
+                    <select aria-label="Destination system" value={connectionTargetId} onChange={event=>setConnectionTargetId(event.target.value)} className="mt-2 w-full rounded-xl border border-white/10 bg-[#061111] p-3 text-sm normal-case text-white">
+                      <option value="">Choose compatible destination</option>
+                      {systems.filter((system:any)=>system.status==='active'&&system.id!==connectionSourceId).map((system:any)=><option key={system.id} value={system.id}>{system.title} · {String(system.system_type).replaceAll('_',' ')}</option>)}
+                    </select>
+                  </label>
+                </div>
+                <button type="button" onClick={()=>void connectModules()} disabled={connectionBusy||!connectionSourceId||!connectionTargetId||connectionSourceId===connectionTargetId} className="mt-3 rounded-xl bg-cyan-200 px-4 py-3 text-xs font-black text-slate-950 disabled:opacity-40">{connectionBusy?'Validating and saving…':'Validate and connect systems'}</button>
+                {connectionMessage&&<p role="status" className="mt-3 text-xs leading-5 text-cyan-100">{connectionMessage}</p>}
+                <div className="mt-4 space-y-2">
+                  {(Array.isArray(world?.moduleConnections)?world.moduleConnections:[]).map((connection:any)=><div key={connection.id} className="rounded-xl border border-white/10 bg-black/20 p-3">
+                    <p className="text-xs font-bold text-white">{connection.source_title} → {connection.target_title}</p>
+                    <p className="mt-1 text-[10px] text-cyan-100">Contract: {connection.contract_key} · {String(connection.status).replaceAll('_',' ')}</p>
+                  </div>)}
+                  {(!Array.isArray(world?.moduleConnections)||world.moduleConnections.length===0)&&<p className="text-[10px] text-slate-500">No module connections configured yet.</p>}
+                </div>
+              </section>
+
+              <section className="border-y border-emerald-200/10 bg-emerald-300/[0.02] px-4 py-5" data-formation-intelligence="field-evidence">
               <p className="text-[8px] font-black uppercase tracking-[.2em] text-emerald-300">Field Evidence · World Use</p>
               <h3 className="mt-1 text-lg font-black text-white">Potential is recognized through movement already happening.</h3>
               <p className="mt-2 max-w-3xl text-[10px] leading-5 text-slate-400">Investment can fund materials, parts, acceleration and larger systems. Recognition remains separate: it comes from customers, visitors and participants actually using what this territory has put into the world.</p>
