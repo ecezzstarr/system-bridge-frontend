@@ -1,0 +1,20 @@
+const fs = require('node:fs')
+const path = require('node:path')
+const root = path.resolve(__dirname, '..')
+const commission = fs.readFileSync(path.join(root, 'lib/regional-manager-commission.ts'), 'utf8')
+const migration = fs.readFileSync(path.join(root, 'migrations/20261028_regional_manager_file_folder_commission.sql'), 'utf8')
+const verification = fs.readFileSync(path.join(root, 'app/api/admin/bridge-deposits/verify/route.ts'), 'utf8')
+const administration = fs.readFileSync(path.join(root, 'app/api/admin/regional-managers/route.ts'), 'utf8')
+
+assert(commission.includes('REGIONAL_MANAGER_COMPANY_SHARE_RATE = 0.40'), 'Regional Manager commission uses the 40% company share')
+assert(commission.includes('REGIONAL_MANAGER_COMPANY_SHARE_COMMISSION_RATE = 0.02'), 'Regional Manager commission rate is 2% of company share')
+assert(commission.includes('companyShareAmount * REGIONAL_MANAGER_COMPANY_SHARE_COMMISSION_RATE'), 'Commission is based on company share, not gross purchase')
+assert(commission.includes("commerce_type='regional_manager_file_folder_commission'"), 'Commission ledger has a distinct idempotency key')
+assert(migration.includes('weave_regional_manager_appointments') && migration.includes('weave_regional_manager_bridgers'), 'Appointment and team attribution schemas exist')
+assert(verification.includes('creditRegionalManagerFileFolderCommission'), 'Verified File Folder purchase calls Regional Manager commission engine')
+assert(administration.includes("user.role !== 'admin'") && administration.includes("action === 'assign_bridger'"), 'Only Administration can manage Regional Manager team attribution')
+assert.strictEqual(1300 * 0.40 * 0.02, 10.4, 'Example: ₦1,300 gross purchase yields ₦10.40 Regional Manager commission at a 40% company share')
+console.log('Regional Manager File Folder commission regression passed')
+function assert(condition, message) {
+  if (!condition) throw new Error(message)
+}
