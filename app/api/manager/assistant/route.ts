@@ -49,7 +49,7 @@ export async function POST(request:NextRequest) {
         not_manager:'Only an active Distribution Manager may review assistant applications.',
         not_pending:'The application is no longer pending.',
         administration_verification_required:'Administration must verify this application before the lead Manager can appoint an assistant.',
-        positions_full:'All six Assistant Distribution Manager positions are filled.',
+        positions_full:'All twenty Assistant Distribution Manager positions are filled.',
         manager_team_full:'This Distribution Manager already has two appointed assistants.',
         already_manager:'This applicant currently holds a Distribution Manager position.',
       }
