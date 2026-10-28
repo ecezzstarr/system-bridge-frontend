@@ -1,5 +1,6 @@
 const fs = require('node:fs')
 const path = require('node:path')
+const assert = require('node:assert/strict')
 const root = path.resolve(__dirname, '..')
 const commission = fs.readFileSync(path.join(root, 'lib/regional-manager-commission.ts'), 'utf8')
 const migration = fs.readFileSync(path.join(root, 'migrations/20261028_regional_manager_file_folder_commission.sql'), 'utf8')
@@ -15,6 +16,3 @@ assert(verification.includes('creditRegionalManagerFileFolderCommission'), 'Veri
 assert(administration.includes("user.role !== 'admin'") && administration.includes("action === 'assign_bridger'"), 'Only Administration can manage Regional Manager team attribution')
 assert.strictEqual(1300 * 0.40 * 0.02, 10.4, 'Example: ₦1,300 gross purchase yields ₦10.40 Regional Manager commission at a 40% company share')
 console.log('Regional Manager File Folder commission regression passed')
-function assert(condition, message) {
-  if (!condition) throw new Error(message)
-}
