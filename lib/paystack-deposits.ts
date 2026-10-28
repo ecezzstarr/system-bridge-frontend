@@ -6,7 +6,7 @@ import { notifyDepositDecision } from '@/lib/deposit-notifications'
 export async function settlePaystackDeposit(reference: string) {
   const transaction = await verifyPaystackTransaction(reference)
   const client = await getPool().connect()
-  let notification: { userId: string; amountNgn: number; flameCoin: number; userEmail: string } | null = null
+  let notification: { userId: string; depositId: string; amountNgn: number; flameCoin: number } | null = null
   try {
     await client.query('BEGIN')
     const found = await client.query(
@@ -52,7 +52,7 @@ export async function settlePaystackDeposit(reference: string) {
     )
     if (updated.rowCount !== 1) throw new Error('Deposit settlement conflict')
     await client.query('COMMIT')
-    notification = { userId:String(deposit.user_id), amountNgn:Number(deposit.amount_usd), flameCoin, userEmail:String(deposit.owner_email) }
+    notification = { userId:String(deposit.user_id), depositId:String(deposit.id), amountNgn:Number(deposit.amount_usd), flameCoin }
     return { settled: true, duplicate: false, depositId: deposit.id, flameCoin }
   } catch (error) {
     await client.query('ROLLBACK').catch(() => {})
@@ -60,7 +60,7 @@ export async function settlePaystackDeposit(reference: string) {
   } finally {
     client.release()
     if (notification) {
-      await notifyDepositDecision({userId:notification.userId,approved:true,rail:'PAYSTACK' as any,depositId:String(notification.userId),amountLabel:'₦'+notification.amountNgn.toLocaleString(),creditedFlameCoin:notification.flameCoin})
+      await notifyDepositDecision({userId:notification.userId,approved:true,rail:'PAYSTACK',depositId:notification.depositId,amountLabel:'₦'+notification.amountNgn.toLocaleString(),creditedFlameCoin:notification.flameCoin})
     }
   }
 }
