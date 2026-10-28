@@ -19,29 +19,9 @@ export async function GET(request:NextRequest){
     return NextResponse.json({success:true,deposits},{headers:{'Cache-Control':'private, no-store'}})
   }catch(error){console.error('[client TRX deposit history]',error);return NextResponse.json({error:'Deposit history unavailable'},{status:503})}
 }
-export async function POST(request:NextRequest){
-  const user=await getAuthUser(request)
-  if(!user||user.role!=='client')return NextResponse.json({error:'Client login required'},{status:403})
-  try{
-    const body=await request.json()
-    const amount=normalizeTronAmount(body?.amount)
-    const hash=normalizeTronTxHash(body?.txHash)
-    const submitted=await submitClientTronDeposit(user.id,amount,hash)
-    if(!submitted.existing)await notifyDepositSubmitted({
-      depositorId:user.id,depositorName:user.name||user.username||user.email,role:'Client',
-      depositId:submitted.id,rail:'TRX',amountLabel:amount.toLocaleString()+' TRX',
-      secondaryLabel:amount.toLocaleString()+' Flame Coin after verification',
-      adminLink:'/admin/client-deposits',
-    })
-    return NextResponse.json({
-      success:true,status:'pending',existing:submitted.existing,depositId:submitted.id,
-      txHash:hash,companyTrxWallet:WORLD_RULES.COMPANY_TRX_WALLET,
-      message:submitted.existing?'This deposit is already awaiting Administration verification. No second request was created.':'Deposit recorded. Administration must verify the TRX transaction and Company wallet receipt before crediting Flame Coin.',
-    })
-  }catch(error:any){
-    const message=String(error?.message||'TRX deposit could not be submitted')
-    const invalid=/transaction ID|amount|already belongs/.test(message)
-    console.error('[client TRX deposit]',message)
-    return NextResponse.json({error:invalid?message:'TRX deposit could not be submitted'},{status:invalid?400:503})
-  }
+export async function POST() {
+  return NextResponse.json(
+    { error: 'Manual TRX wallet funding is retired. Use the authenticated Paystack deposit checkout at /api/deposit/paystack.' },
+    { status: 410 },
+  )
 }
