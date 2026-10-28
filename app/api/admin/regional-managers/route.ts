@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { getPool, sql } from '@/lib/db'
 import { ensureRegionalManagerCommissionSchema } from '@/lib/regional-manager-commission'
+import { ensureManagerEmploymentTable } from '@/lib/manager-employment'
 
 export async function GET(request: NextRequest) {
   const admin = await getAuthUser(request)
@@ -75,6 +76,7 @@ export async function POST(request: NextRequest) {
   }
 
   if (action === 'assign_distribution_manager') {
+    await ensureManagerEmploymentTable()
     const userId = String(body?.userId || '')
     const regionalManagerId = String(body?.regionalManagerId || '')
     const client = await getPool().connect()
