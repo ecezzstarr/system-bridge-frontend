@@ -63,7 +63,7 @@ export async function notifyDepositSubmitted(input: {
   depositorName: string
   role: string
   depositId: string
-  rail: 'OPAY' | 'TRX' | 'BRIDGE_TRX'
+  rail: 'OPAY' | 'TRX' | 'PAYSTACK' | 'BRIDGE_TRX' | 'PAYSTACK'
   amountLabel: string
   secondaryLabel?: string
   adminLink?: string
