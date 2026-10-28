@@ -21,7 +21,7 @@ const teamRoute=read('app/api/manager/team/route.ts')
 const teamEngine=read('lib/distribution-team-updates.ts')
 const referral=read('lib/referral-bonus.ts')
 
-assert.ok(engine.includes('MANAGER_EMPLOYMENT_LIMIT = 3'),'WEAVE keeps three Distribution Manager positions')
+assert.ok(engine.includes('MANAGER_EMPLOYMENT_LIMIT = 10'),'WEAVE supports up to ten Distribution Manager positions')
 assert.ok(engine.includes('getReferralCoreState(userId,{settlePending:false}).catch')&&engine.includes('getDistributionTeamMonthlyReferrals(userId).catch'),'Missing referral reports never hide an accepted employment record')
 assert.ok(referral.includes('options.settlePending !== false'),'Manager page reads referral stats without blocking on an external wallet/FX settlement')
 assert.ok(managerDashboard.includes('id="distribution-manager-signature"')&&managerDashboard.includes('autoComplete="name"'),'Manager signature has a labeled and accessible input')
