@@ -55,7 +55,9 @@ export async function creditRegionalManagerFileFolderCommission(params: {
   if (!bridgerId || !purchaseId || !Number.isFinite(grossPurchaseValue) || grossPurchaseValue <= 0) return null
 
   await ensureRegionalManagerCommissionSchema()
-  const [assignment] = await sql`
+  // Direct Administration attribution takes precedence. If none exists, derive the
+  // Regional Manager from the lead team's active appointment, including its assistants.
+  let [assignment] = await sql`
     SELECT rm.user_id AS regional_manager_id
     FROM weave_regional_manager_bridgers member
     JOIN weave_regional_manager_appointments rm
@@ -67,6 +69,24 @@ export async function creditRegionalManagerFileFolderCommission(params: {
       AND bridger.is_active=true
     LIMIT 1
   `
+  if (!assignment?.regional_manager_id) {
+    [assignment] = await sql`
+      SELECT rm.user_id AS regional_manager_id
+      FROM weave_regional_manager_appointments rm
+      JOIN weave_regional_manager_distribution_managers lead_assignment
+        ON lead_assignment.regional_manager_user_id=rm.user_id AND lead_assignment.status='active'
+      JOIN manager_employment lead
+        ON lead.user_id=lead_assignment.distribution_manager_user_id
+        AND lead.status IN ('probation','active')
+      LEFT JOIN weave_distribution_assistants assistant
+        ON assistant.manager_user_id=lead.user_id AND assistant.status='approved'
+      JOIN users bridger ON bridger.id=${bridgerId}::uuid
+      WHERE rm.status='active'
+        AND bridger.role='bridger' AND bridger.is_active=true
+        AND (lead.user_id=bridger.id OR assistant.user_id=bridger.id)
+      LIMIT 1
+    `
+  }
   if (!assignment?.regional_manager_id) return null
 
   const regionalManagerId = String(assignment.regional_manager_id)
