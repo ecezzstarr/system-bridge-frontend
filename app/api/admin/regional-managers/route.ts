@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
-import { sql } from '@/lib/db'
+import { getPool, sql } from '@/lib/db'
 import { ensureRegionalManagerCommissionSchema } from '@/lib/regional-manager-commission'
 
 export async function GET(request: NextRequest) {
@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
   if (action === 'assign_distribution_manager') {
     const userId = String(body?.userId || '')
     const regionalManagerId = String(body?.regionalManagerId || '')
-    const client = await (await import('@/lib/db')).getPool().connect()
+    const client = await getPool().connect()
     try {
       await client.query('BEGIN')
       await client.query("SELECT pg_advisory_xact_lock(hashtext('weave_regional_manager_distribution_manager_capacity'))")
@@ -168,6 +168,10 @@ export async function POST(request: NextRequest) {
     if (!appointment) return NextResponse.json({ error: 'Active Regional Manager appointment not found' }, { status: 404 })
     await sql`
       UPDATE weave_regional_manager_bridgers SET status='ended',updated_at=NOW()
+      WHERE regional_manager_user_id=${userId}::uuid AND status='active'
+    `
+    await sql`
+      UPDATE weave_regional_manager_distribution_managers SET status='ended',updated_at=NOW()
       WHERE regional_manager_user_id=${userId}::uuid AND status='active'
     `
     return NextResponse.json({ success: true, appointment })
