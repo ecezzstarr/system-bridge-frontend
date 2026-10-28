@@ -128,53 +128,28 @@ export default function WalletDepositWithdrawPage() {
   }
 
   const handleDeposit = async () => {
-    if (!amount || parseFloat(amount) <= 0) {
-      setMessage('Please enter a valid amount')
+    const ngnAmount = Number(amount)
+    if (!Number.isFinite(ngnAmount) || ngnAmount < 1) {
+      setMessage('Enter a valid NGN amount of at least ₦1')
       return
     }
-    if (!isOpayRole && !/^[0-9a-f]{64}$/i.test(depositTxHash.trim())) {
-      setMessage('Enter the exact 64-character hexadecimal TRX transaction hash after sending to the Company wallet')
-      return
-    }
-
     setLoading(true)
     setMessage('')
     try {
       const token = localStorage.getItem('ssb_auth_token')
-      const endpoint = isOpayRole ? '/api/deposit/opay' : '/api/deposit/tron'
-
-      const response = await fetch(endpoint, {
+      const response = await fetch('/api/deposit/paystack', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          ...(token ? { 'Authorization': 'Bearer ' + token } : {}),
         },
-        body: JSON.stringify({
-          amount: parseFloat(amount),
-          ...(isOpayRole ? {} : { txHash: depositTxHash.trim() }),
-        }),
+        body: JSON.stringify({ amount: ngnAmount }),
       })
-
       const data = await response.json()
-      if (data.success) {
-        if (isOpayRole && data.paymentLink) {
-          window.location.href = data.paymentLink
-        } else if (isOpayRole && data.deposit?.id) {
-          setPendingDepositId(data.deposit.id)
-          setPendingDepositFlameCoin(data.deposit.amount_trx || '')
-          setDepositStep('receipt')
-          setMessage('')
-        } else {
-          setMessage(data.message||'TRX request awaiting Administration verification.')
-          setAmount('')
-          setDepositTxHash('')
-          void fetchClientDeposits()
-        }
-      } else {
-        setMessage(data.error || 'Deposit initialization failed')
-      }
+      if (!response.ok || !data.success || !data.paymentLink) throw new Error(data.error || 'Paystack checkout could not be initialized')
+      window.location.href = data.paymentLink
     } catch (error) {
-      setMessage('Error processing deposit')
+      setMessage(error instanceof Error ? error.message : 'Error processing deposit')
     } finally {
       setLoading(false)
     }
@@ -399,137 +374,33 @@ export default function WalletDepositWithdrawPage() {
               <div className="group relative">
                 <div className="absolute -inset-0.5 bg-gradient-to-r from-green-500 to-emerald-500 rounded-2xl opacity-20 blur"></div>
                 <div className="relative bg-slate-900/80 backdrop-blur-xl border border-slate-700 rounded-2xl p-8">
-                  {isOpayRole && depositStep === 'receipt' ? (
-                    <>
-                      <h2 className="text-xl font-bold text-white mb-4">Submit Payment Proof</h2>
-                      <p className="text-slate-400 text-sm mb-6">
-                        Your deposit record has been created for <strong>{pendingDepositFlameCoin} Flame Coin</strong>. Send the NGN payment to OPay account <strong>{WEAVE_OPAY_ACCOUNT_NUMBER}</strong>, then paste your transaction reference or receipt details below. An admin will verify and credit your wallet.
-                      </p>
-
-                      <div className="mb-6">
-                        <label className="block text-sm font-semibold text-white mb-3">Transaction Reference / Receipt</label>
-                        <textarea
-                          value={receiptText}
-                          onChange={(e) => setReceiptText(e.target.value)}
-                          placeholder="Paste your OPay transaction ID or receipt details here..."
-                          rows={4}
-                          className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
-                        />
+                  <>
+                    <h2 className="text-xl font-bold text-white mb-4">Deposit via Paystack (NGN)</h2>
+                    <p className="text-slate-400 text-sm mb-6">
+                      Pay securely through the Company Paystack checkout. Weave verifies the payment server-side and credits the corresponding Flame Coin to your Main Wallet. No manual receipt submission is required.
+                    </p>
+                    <div className="mb-6 grid grid-cols-2 gap-4">
+                      <div className="p-4 bg-slate-800/50 border border-slate-700 rounded-xl">
+                        <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Exchange Rate</p>
+                        <p className="text-cyan-400 font-bold">{flameCoinRate ? `1 Flame Coin = ₦${flameCoinRate.toFixed(2)}` : 'Rate confirmed at checkout'}</p>
                       </div>
-
-                      {message && (
-                        <div className={`p-3 rounded-lg mb-6 text-sm ${message.includes('Success') || message.includes('submitted') ? 'bg-green-500/20 border border-green-500/50 text-green-300' : 'bg-red-500/20 border border-red-500/50 text-red-300'}`}>
-                          {message}
-                        </div>
-                      )}
-
-                      <div className="flex gap-3">
-                        <Button
-                          onClick={() => { setDepositStep('amount'); setPendingDepositId(null); setReceiptText(''); setMessage('') }}
-                          variant="outline"
-                          className="flex-1 border-slate-700 text-slate-400 hover:bg-slate-800 py-6"
-                        >
-                          Back
-                        </Button>
-                        <Button
-                          onClick={submitReceipt}
-                          disabled={loading || !receiptText.trim()}
-                          className="flex-[2] bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white border-0 py-6 text-lg"
-                        >
-                          {loading ? 'Submitting...' : 'Submit Receipt'}
-                        </Button>
+                      <div className="p-4 bg-slate-800/50 border border-slate-700 rounded-xl">
+                        <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Target Asset</p>
+                        <p className="text-white font-bold">Flame Coin</p>
                       </div>
-                    </>
-                  ) : isOpayRole ? (
-                    <>
-                      <h2 className="text-xl font-bold text-white mb-4">Deposit via OPay (NGN) - Manual Verification</h2>
-                      <p className="text-slate-400 text-sm mb-6">
-                        Deposit Naira (NGN) through the Company OPay account. The verified Naira amount is converted at the current TRX/NGN price and credited as Flame Coin for purchases, subscriptions, workshops, Arena, Casino, and other paid participation across Weave.
-                      </p>
-                      
-                      <div className="mb-6 grid grid-cols-2 gap-4">
-                        <div className="p-4 bg-slate-800/50 border border-slate-700 rounded-xl">
-                          <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Exchange Rate</p>
-                          <p className="text-cyan-400 font-bold">{flameCoinRate ? `1 Flame Coin = ₦${flameCoinRate.toFixed(2)}` : 'Loading...'}</p>
-                        </div>
-                        <div className="p-4 bg-slate-800/50 border border-slate-700 rounded-xl">
-                          <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Target Asset</p>
-                          <p className="text-white font-bold">Flame Coin</p>
-                        </div>
-                      </div>
-
-                      {/* Amount Input */}
-                      <div className="mb-6">
-                        <label className="block text-sm font-semibold text-white mb-3">Amount to Deposit (NGN)</label>
-                        <div className="relative">
-                          <input
-                            type="number"
-                            value={amount}
-                            onChange={(e) => setAmount(e.target.value)}
-                            placeholder="Enter amount in Naira"
-                            className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
-                          />
-                          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 font-bold">NGN</div>
-                        </div>
-                        {amount && flameCoinRate && (
-                          <p className="text-xs text-cyan-400 mt-2">
-                            Estimated conversion: <span className="font-bold">{(parseFloat(amount) / flameCoinRate).toFixed(6)} Flame Coin</span>
-                          </p>
-                        )}
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <h2 className="text-xl font-bold text-white mb-4">Fund Flame Coin with TRX</h2>
-                      <p className="text-slate-400 text-sm mb-6">Send real TRX to the Company TRX payment wallet below. After verification, the same number of Flame Coins is credited to your Weave balance.</p>
-
-                      {/* Platform Wallet Address */}
-                      <div className="mb-6 p-4 bg-slate-800/50 border border-slate-700 rounded-lg">
-                        <p className="text-xs text-slate-500 uppercase tracking-wider mb-2">Company TRX Payment Wallet</p>
-                        <div className="flex items-center justify-between gap-2">
-                          <code className="text-cyan-400 font-mono text-sm break-all">{companyTrxWallet}</code>
-                          <Button onClick={copyPlatformWallet} variant="ghost" size="sm" className="shrink-0 hover:bg-slate-700">
-                            <Copy className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-
-                      {/* Amount Input */}
-                      <div className="mb-6">
-                        <label className="block text-sm font-semibold text-white mb-3">Amount Sent (TRX)</label>
-                        <div className="relative">
-                          <input
-                            type="number"
-                            value={amount}
-                            onChange={(e) => setAmount(e.target.value)}
-                            placeholder="Enter TRX amount"
-                            className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
-                          />
-                        </div>
-                      </div>
-                      {amount && (
-                        <p className="text-xs text-cyan-400 -mt-4 mb-6">
-                          After verification: <span className="font-bold">{parseFloat(amount).toLocaleString(undefined, { maximumFractionDigits: 6 })} TRX = {parseFloat(amount).toLocaleString(undefined, { maximumFractionDigits: 6 })} Flame Coin</span>
-                        </p>
-                      )}
-                      <div className="mb-6">
-                        <label className="block text-sm font-semibold text-white mb-3">TRX Transaction Hash</label>
-                        <input
-                          type="text"
-                          value={depositTxHash}
-                          onChange={(e) => setDepositTxHash(e.target.value)}
-                          placeholder="Paste the TRX transaction hash"
-                          className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
-                        />
-                      </div>
-                    </>
-                  )}
-
+                    </div>
+                    <div className="mb-6">
+                      <label className="block text-sm font-semibold text-white mb-3">Amount to Deposit (NGN)</label>
+                      <input type="number" min="1" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="Enter Naira amount" className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" />
+                    </div>
+                    {message && <div className="p-3 rounded-lg mb-6 text-sm bg-red-500/20 border border-red-500/50 text-red-300">{message}</div>}
+                  </>
+                  
                   {/* Quick Amounts */}
                   <div className="mb-6">
-                    <p className="text-sm text-slate-400 mb-3">Quick select ({isOpayRole ? 'NGN' : 'TRX'}):</p>
+                    <p className="text-sm text-slate-400 mb-3">Quick select (NGN):</p>
                     <div className="grid grid-cols-5 gap-2">
-                      {(isOpayRole ? [1000, 5000, 10000, 50000, 100000] : [1, 5, 10, 50, 100]).map((amt) => (
+                      {[1000, 5000, 10000, 50000, 100000].map((amt) => (
                         <button
                           key={amt}
                           onClick={() => setAmount(amt.toString())}
@@ -549,16 +420,14 @@ export default function WalletDepositWithdrawPage() {
 
                   <Button
                     onClick={handleDeposit}
-                    disabled={loading || !amount || (!isOpayRole && !depositTxHash.trim())}
+                    disabled={loading || !amount}
                     className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white border-0 py-6 text-lg"
                   >
-                    {loading ? 'Processing...' : `Deposit ${isOpayRole ? 'NGN' : 'TRX'}`}
+                    {loading ? 'Opening Paystack...' : 'Continue to Paystack'}
                   </Button>
 
                   <p className="text-xs text-slate-500 text-center mt-4">
-                    {isOpayRole 
-                      ? `Manual OPay Deposit: Send NGN to OPay ${WEAVE_OPAY_ACCOUNT_NUMBER}, then submit your deposit for admin verification.` 
-                      : 'Send TRX, submit its transaction hash, and Administration will verify 1 TRX = 1 Flame Coin.'}
+                    Payment is verified by Paystack and Weave before Flame Coin is credited. Withdrawals remain on their existing method.
                   </p>
                 </div>
               </div>
