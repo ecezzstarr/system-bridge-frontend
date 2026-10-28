@@ -12,8 +12,8 @@ export async function GET(request:NextRequest){
   if(!user||user.role!=='client')return NextResponse.json({error:'Client login required'},{status:403})
   try{
     const deposits=await sql`
-      SELECT id,amount_trx,method,status,receipt_data,created_at,updated_at,verified_at
-      FROM deposits WHERE user_id=${user.id}::uuid AND method='tron'
+      SELECT id,amount_trx,amount_usd,method,currency,status,receipt_data,created_at,updated_at,verified_at
+      FROM deposits WHERE user_id=${user.id}::uuid AND method IN ('tron','paystack')
       ORDER BY created_at DESC LIMIT 30
     `
     return NextResponse.json({success:true,deposits},{headers:{'Cache-Control':'private, no-store'}})
