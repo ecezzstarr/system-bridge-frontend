@@ -53,6 +53,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({success:true,depositId:inserted.rows[0].id,reference,amountNgn,flameCoin,paymentLink:checkout.authorizationUrl,status:'pending'})
     } catch(error) {
       await pool.query("UPDATE deposits SET status='rejected',updated_at=NOW() WHERE id=$1::uuid AND status='pending'",[inserted.rows[0].id])
+      await pool.query(
+        "INSERT INTO ledger_entries(user_id,entry_type,amount,currency,description,metadata) VALUES($1::uuid,'deposit',0,'Flame Coin','Paystack checkout initialization failed',$2::jsonb)",
+        [user.id,JSON.stringify({deposit_id:inserted.rows[0].id,payment_method:'Paystack',reference,ngn_amount:amountNgn,amount_kobo:Math.round(amountNgn*100),status:'initialization_failed'})],
+      )
       throw error
     }
   } catch(error) {
