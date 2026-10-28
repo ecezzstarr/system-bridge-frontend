@@ -120,7 +120,7 @@ export default function WeaveLifestylesPage() {
         <div className="mt-2 flex items-start justify-between gap-4">
           <div>
             <h1 className="text-3xl font-black tracking-tight text-white">LIFESTYLE</h1>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">Agents have included Lifestyle access. Bridgers can attain Agentic-Bridger with one payment of 11 Flame Coin. Agentic-Bridger then enables Lifestyle access and eligibility to apply for positions such as Distribution Manager and Legion. Regular Bridger work has no subscription; Clients follow their own access terms.</p>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">{access?.role === 'agent' ? 'Agents enter Lifestyle through their active Agent position and can apply for Food Distribution Manager or Assistant Food Distribution Manager appointments. Administration approval is required before either appointment becomes active.' : 'Bridgers can attain Agentic-Bridger with one payment of 11 Flame Coin, opening Lifestyle eligibility for Bridger-specific Distribution Manager and Legion opportunities. Regular Bridger work has no subscription; Clients follow their own access terms.'}</p>
           </div>
           <Sparkles className="h-8 w-8 shrink-0 text-yellow-400" />
         </div>
