@@ -10,7 +10,7 @@ const administration = fs.readFileSync(path.join(root, 'app/api/admin/regional-m
 assert(commission.includes('REGIONAL_MANAGER_COMPANY_SHARE_RATE = 0.40'), 'Regional Manager commission uses the 40% company share')
 assert(commission.includes('REGIONAL_MANAGER_COMPANY_SHARE_COMMISSION_RATE = 0.02'), 'Regional Manager commission rate is 2% of company share')
 assert(commission.includes('companyShareAmount * REGIONAL_MANAGER_COMPANY_SHARE_COMMISSION_RATE'), 'Commission is based on company share, not gross purchase')
-assert(commission.includes("commerce_type='regional_manager_file_folder_commission'"), 'Commission ledger has a distinct idempotency key')
+assert(commission.includes("commerce_type'='regional_manager_file_folder_commission"), 'Commission ledger has a distinct idempotency key')
 assert(migration.includes('weave_regional_manager_appointments') && migration.includes('weave_regional_manager_bridgers'), 'Appointment and team attribution schemas exist')
 assert(verification.includes('creditRegionalManagerFileFolderCommission'), 'Verified File Folder purchase calls Regional Manager commission engine')
 assert(administration.includes("user.role !== 'admin'") && administration.includes("action === 'assign_bridger'"), 'Only Administration can manage Regional Manager team attribution')
