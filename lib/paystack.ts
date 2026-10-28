@@ -16,7 +16,7 @@ export function createPaystackReference(prefix = 'WEAVE') {
 }
 
 export async function initializePaystackTransaction(input: PaystackInitializeInput) {
-  if (!/^\\S+@\\S+\\.\\S+$/.test(input.email)) throw new Error('A valid payer email is required')
+  if (!/^\S+@\S+\.\S+$/.test(input.email)) throw new Error('A valid payer email is required')
   if (!Number.isSafeInteger(input.amountKobo) || input.amountKobo < 100) throw new Error('Paystack NGN amount must be a positive integer in kobo')
   if (!input.callbackUrl.startsWith('https://')) throw new Error('Paystack callback URL must use HTTPS')
   const reference = input.reference || createPaystackReference()
