@@ -69,7 +69,7 @@ export function EnvironmentPageGuard({children}:{children:React.ReactNode}){
 
   const normalized=normalizeEnvironmentPageRoute(pathname)
   const surface=items.find(item=>normalizeEnvironmentPageRoute(item.route)===normalized)
-  if(!surface||surface.is_visible!==false)return <>{children}</>
+  if(!surface||surface.is_visible!==false||normalized==='/weave/lifestyles')return <>{children}</>
 
   return <main className="mx-auto flex min-h-[62vh] w-full max-w-3xl items-center justify-center p-5">
     <section className="w-full rounded-[2rem] border border-amber-300/15 bg-[#050b14]/88 p-8 text-center shadow-2xl backdrop-blur-xl">

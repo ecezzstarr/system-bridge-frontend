@@ -128,6 +128,9 @@ jobs:
           node tests/prospect-whatsapp-handoff-regression.cjs
           node tests/bridger-whatsapp-replacement-limit.cjs
           node tests/file-folder-sales-manager-regression.cjs
+          node tests/regional-manager-file-folder-commission.cjs
+          node tests/regional-manager-applications-regression.cjs
+          node tests/regional-manager-application-ui-regression.cjs
           node tests/animation-workshop.cjs
           node tests/music-workshop.cjs
           node tests/public-flame-movement-regression.cjs

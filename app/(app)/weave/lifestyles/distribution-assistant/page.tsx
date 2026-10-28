@@ -47,7 +47,7 @@ export default function DistributionAssistantLifestylePage(){
     <div className="flex flex-wrap gap-4 text-xs text-cyan-300"><Link href="/weave/lifestyles">← Return to Lifestyle</Link><Link href="/weave/lifestyles/work">My approved workspaces →</Link></div>
     <p className="mt-7 text-xs font-black uppercase tracking-widest text-amber-300">WEAVE Distribution · Employment</p>
     <h1 className="mt-2 text-3xl font-black">Assistant Distribution Manager</h1>
-    <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">Six assistant positions, two for each of WEAVE's three Distribution Managers, support the company with outreach, campaign circulation, follow-ups and verified Agent/Bridger acquisition. The assistant remains an Agent or Bridger in WEAVE. A lead Manager must first be verified by Administration before appointing assistants or beginning their probation. Each three-person team (one main Manager and two assistants) shares a 300-referral target in its first probation month and a 500-referral target in each later team employment month.</p>
+    <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">Up to twenty assistant positions, two for each of up to ten lead Distribution Managers, support the company with outreach, campaign circulation, follow-ups and verified Agent/Bridger acquisition. The assistant remains an Agent or Bridger in WEAVE. A lead Manager must first be verified by Administration before appointing assistants or beginning their probation. Each three-person team (one main Manager and two assistants) shares a 300-referral target in its first probation month and a 500-referral target in each later team employment month.</p>
     <section className="mt-6 grid grid-cols-2 gap-3">
       <Info label="Shared team target" value={appointed?String(target):"300 probation → 500 regular"}/>
       <Info label="Employment positions remaining" value={String(state?.remainingPositions??'—')}/>
@@ -85,7 +85,7 @@ export default function DistributionAssistantLifestylePage(){
       <label className="mt-4 block text-xs font-bold text-slate-300" htmlFor="assistant-note">Distribution experience and monthly plan</label>
       <textarea id="assistant-note" maxLength={2000} rows={5} value={note} onChange={event=>setNote(event.target.value)} className="mt-2 w-full rounded-xl border border-white/20 bg-slate-950 p-3 text-sm text-white" placeholder="Explain how you will find, guide and follow up with new Agents and Bridgers."/>
       <Button className="mt-4 bg-cyan-700 text-white hover:bg-cyan-600" onClick={apply} disabled={!data?.eligible||submitting||note.trim().length<30||state?.remainingPositions===0}>{submitting?'Submitting…':'Submit application'}</Button>
-      {state?.remainingPositions===0&&<p className="mt-2 text-xs text-slate-400">All six appointments are currently filled.</p>}
+      {state?.remainingPositions===0&&<p className="mt-2 text-xs text-slate-400">All twenty appointments are currently filled.</p>}
     </section>}
   </main>
 }

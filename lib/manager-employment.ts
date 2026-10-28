@@ -7,7 +7,7 @@ import { DISTRIBUTION_MANAGER_LIFESTYLE as DISTRIBUTION_MANAGER_LIFESTYLE_KEY } 
 import { getDistributionTeamMonthlyReferrals, DISTRIBUTION_TEAM_MONTHLY_REFERRAL_TARGET, DISTRIBUTION_TEAM_PROBATION_REFERRAL_TARGET } from '@/lib/distribution-team-referrals'
 import { calculateDistributionTeamCompensation } from '@/lib/distribution-team-compensation'
 
-export const MANAGER_EMPLOYMENT_LIMIT = 3
+export const MANAGER_EMPLOYMENT_LIMIT = 10
 export const MANAGER_MONTHLY_SALARY_NGN = 70_000
 export const MANAGER_PROBATION_TARGET = DISTRIBUTION_TEAM_PROBATION_REFERRAL_TARGET
 export const MANAGER_PROBATION_MONTHS = 1

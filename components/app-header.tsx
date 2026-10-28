@@ -102,7 +102,7 @@ export function AppHeader({ user }: AppHeaderProps) {
       {lifestyleVisible && (
         <button
           type="button"
-          onClick={() => { setAccountOpen(false); router.push('/weave/lifestyles') }}
+          onClick={() => { setAccountOpen(false); window.location.assign('/weave/lifestyles') }}
           className="mt-1 flex w-full items-center gap-3 rounded-xl border border-yellow-300/10 bg-yellow-300/[0.04] px-3 py-2.5 text-left text-[10px] font-black text-yellow-100 hover:bg-yellow-300/[0.08] hover:text-white"
         >
           <Sparkles className="h-4 w-4 text-yellow-300" />Lifestyle · Position Access
@@ -169,7 +169,7 @@ export function AppHeader({ user }: AppHeaderProps) {
           {accountOpen && renderAccountMenu('left')}
         </div>
 
-        {lifestyleVisible && <Button variant="ghost" size="sm" data-lifestyle-entry="open-weave-phone" className="h-9 shrink-0 px-2 text-[10px] font-black text-yellow-100" onClick={() => router.push('/weave/lifestyles')}>Lifestyle</Button>}
+        {lifestyleVisible && <Button variant="ghost" size="sm" data-lifestyle-entry="open-weave-phone" className="h-9 shrink-0 px-2 text-[10px] font-black text-yellow-100" onClick={() => window.location.assign('/weave/lifestyles')}>Lifestyle</Button>}
         <Button
           variant="ghost"
           size="sm"

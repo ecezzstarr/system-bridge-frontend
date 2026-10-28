@@ -4,6 +4,7 @@ import { sql } from '@/lib/db'
 import { generateFileNumber } from '@/lib/fne'
 import { ensureClientFileFolderSchema } from '@/lib/client-file-folder'
 import { creditBridgerActivityCommission } from '@/lib/bridger-commission-router'
+import { creditRegionalManagerFileFolderCommission } from '@/lib/regional-manager-commission'
 import { FILE_FOLDER_PRICING, fileFolderTierLabel, getFileFolderTier } from '@/lib/file-folder-pricing'
 import { notifyUser } from '@/lib/deposit-notifications'
 import { ensureFlameSchema } from '@/lib/flame-schema'
@@ -114,6 +115,22 @@ async function verifyBridgeRadiancePurchase({
       }
     }
 
+    let regionalManagerCommission = null
+    if (purchase.bridger_id) {
+      try {
+        regionalManagerCommission = await creditRegionalManagerFileFolderCommission({
+          bridgerId: String(purchase.bridger_id),
+          purchaseId: String(purchase.id),
+          grossPurchaseValue: purchaseAmount,
+          description: `Regional Manager share: ${tierLabel} File Folder purchase: ${purchase.file_number}`,
+        })
+      } catch {
+        return NextResponse.json({
+          error: 'File Folder is approved, but the assigned Regional Manager commission could not be recovered. Verify the Regional Manager primary wallet and retry this approval.',
+        }, { status: 503 })
+      }
+    }
+
     return NextResponse.json({
       success: true,
       status: 'approved',
@@ -130,6 +147,7 @@ async function verifyBridgeRadiancePurchase({
       plusFlameCoinValue: fileFolderTier === 'plus' ? FILE_FOLDER_PRICING.plusFlameCoin : null,
       plusUsdtReference: fileFolderTier === 'plus' ? FILE_FOLDER_PRICING.plusUsdt : null,
       commissionMovement,
+      regionalManagerCommission,
       registerUrl: existingClient ? null : `/client/register?fileNumber=${encodeURIComponent(purchase.file_number)}`,
       systemSwitchUrl: existingClient ? '/client/system-switch' : null,
       message: existingClient
@@ -277,6 +295,22 @@ async function verifyBridgeRadiancePurchase({
     })
   }
 
+  let regionalManagerCommission = null
+  if (bridgerId) {
+    try {
+      regionalManagerCommission = await creditRegionalManagerFileFolderCommission({
+        bridgerId,
+        purchaseId: String(confirmed.id),
+        grossPurchaseValue: Number(confirmed.amount_trx),
+        description: `Regional Manager share: ${tierLabel} File Folder purchase: ${fileNumber}`,
+      })
+    } catch {
+      return NextResponse.json({
+        error: 'File Folder is approved, but the assigned Regional Manager commission could not be recovered. Verify the Regional Manager primary wallet and retry this approval.',
+      }, { status: 503 })
+    }
+  }
+
   if (activation?.customerDoor && existingClientId) {
     await recordSystemEvent({
       eventType: fileFolderTier === 'plus' ? 'plus_file_folder_operating_systems_ready' : 'customer_door_construction_started',
@@ -333,6 +367,7 @@ async function verifyBridgeRadiancePurchase({
     systemSwitchUrl: existingClientId ? '/client/system-switch' : null,
     aiProviderAllocation: allocation?.allocation || null,
     commissionMovement,
+    regionalManagerCommission,
     customerDoor: activation?.customerDoor || null,
     message: existingClientId
       ? fileFolderTier === 'plus' ? 'Plus File Folder approved with completed operating systems and a ready Customer Door.' : 'File Folder approved, attached to the Client account, and the included Customer Door formation started.'

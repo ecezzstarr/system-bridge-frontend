@@ -100,7 +100,7 @@ export default function DistributionEmploymentAdministration(){
     </section>
     <section className="border-t border-white/10 pt-6">
       <h2 className="text-xl font-black">Manager appointments and team standing</h2>
-      <p className="mt-2 text-xs text-slate-400">Three lead Distribution Manager appointments maximum. Application signing is not employment approval. Administration verification starts the one-month probation; approved Managers direct daily distribution work.</p>
+      <p className="mt-2 text-xs text-slate-400">Up to ten lead Distribution Manager appointments are supported, with two assistants per lead (up to twenty assistants company-wide). Application signing is not employment approval. Administration verification starts the one-month probation; approved Managers direct daily distribution work.</p>
       <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {(state?.overview.teams||[]).map(t=><article key={t.manager_id} className="border border-white/10 p-4 text-xs text-slate-300">
           <p className="text-base font-black text-white">{t.manager_name}</p>

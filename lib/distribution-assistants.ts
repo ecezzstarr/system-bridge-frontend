@@ -5,7 +5,7 @@ import { ensureManagerEmploymentTable, getManagerEmployment } from '@/lib/manage
 import { getDistributionTeamMonthlyReferrals, DISTRIBUTION_TEAM_MONTHLY_REFERRAL_TARGET, DISTRIBUTION_TEAM_PROBATION_REFERRAL_TARGET } from '@/lib/distribution-team-referrals'
 import { calculateDistributionTeamCompensation } from '@/lib/distribution-team-compensation'
 
-export const DISTRIBUTION_ASSISTANT_LIMIT = 6
+export const DISTRIBUTION_ASSISTANT_LIMIT = 20
 export const DISTRIBUTION_ASSISTANTS_PER_MANAGER = 2
 export const DISTRIBUTION_ASSISTANT_MONTHLY_SALARY_NGN = 40_000
 // Team target is 300 in the Manager's probation month, then 500 per employment month.
