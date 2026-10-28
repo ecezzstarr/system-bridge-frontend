@@ -294,7 +294,7 @@ export default function WeaveLifestylesPage() {
                   icon={<Users className="h-8 w-8" />}
                   eyebrow="WEAVE distribution employment · 6 appointments"
                   title="ASSISTANT DISTRIBUTION MANAGER"
-                  detail="Work alongside verified WEAVE Distribution Managers on campaigns, outreach, follow-up and verified Agent/Bridger acquisition. Six appointments are available, two per Manager. Read the salary, monthly target and payment conditions inside the employment document before submitting an application."
+                  detail="Work alongside verified WEAVE Distribution Managers on campaigns, outreach, follow-up and verified Agent/Bridger acquisition. Up to twenty appointments are available, two per each of up to ten lead Managers. Read the salary, monthly target and payment conditions inside the employment document before submitting an application."
                   open={distributionManagerOpen}
                   reason={access?.active ? 'Assistant Distribution Manager applications are available.' : agentFree ? 'An active Agent account is required.' : 'Attain Agentic-Bridger once to enable Lifestyle applications.'}
                   href="/weave/lifestyles/distribution-assistant"
