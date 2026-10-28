@@ -13,6 +13,6 @@ assert(commission.includes('companyShareAmount * REGIONAL_MANAGER_COMPANY_SHARE_
 assert(commission.includes("commerce_type'='regional_manager_file_folder_commission"), 'Commission ledger has a distinct idempotency key')
 assert(migration.includes('weave_regional_manager_appointments') && migration.includes('weave_regional_manager_bridgers'), 'Appointment and team attribution schemas exist')
 assert(verification.includes('creditRegionalManagerFileFolderCommission'), 'Verified File Folder purchase calls Regional Manager commission engine')
-assert(administration.includes("user.role !== 'admin'") && administration.includes("action === 'assign_bridger'"), 'Only Administration can manage Regional Manager team attribution')
-assert.strictEqual(1300 * 0.40 * 0.02, 10.4, 'Example: ₦1,300 gross purchase yields ₦10.40 Regional Manager commission at a 40% company share')
+assert(administration.includes("admin.role !== 'admin'") && administration.includes("action === 'assign_bridger'"), 'Only Administration can manage Regional Manager team attribution')
+assert.strictEqual(1300 * 0.40 * 0.02, 10.4, 'Example: 1,300 purchase units yield 10.4 commission units at a 40% company share')
 console.log('Regional Manager File Folder commission regression passed')
