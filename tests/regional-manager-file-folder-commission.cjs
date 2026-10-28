@@ -10,6 +10,8 @@ const administration = fs.readFileSync(path.join(root, 'app/api/admin/regional-m
 assert(commission.includes('REGIONAL_MANAGER_COMPANY_SHARE_RATE = 0.40'), 'Regional Manager commission uses the 40% company share')
 assert(commission.includes('REGIONAL_MANAGER_COMPANY_SHARE_COMMISSION_RATE = 0.02'), 'Regional Manager commission rate is 2% of company share')
 assert(commission.includes('companyShareAmount * REGIONAL_MANAGER_COMPANY_SHARE_COMMISSION_RATE'), 'Commission is based on company share, not gross purchase')
+assert(commission.includes('assistant.manager_user_id=lead.user_id') && commission.includes('lead.user_id=bridger.id'), 'Regional Manager commission follows the assigned lead team and its assistants')
+assert(commission.includes('Direct Administration attribution takes precedence'), 'Explicit Bridger attribution takes precedence over inherited team attribution')
 assert(commission.includes("commerce_type'='regional_manager_file_folder_commission"), 'Commission ledger has a distinct idempotency key')
 assert(migration.includes('weave_regional_manager_appointments') && migration.includes('weave_regional_manager_bridgers'), 'Appointment and team attribution schemas exist')
 const hierarchyMigration = fs.readFileSync(path.join(root, 'migrations/20261028_regional_manager_distribution_hierarchy.sql'), 'utf8')
