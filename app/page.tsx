@@ -98,8 +98,11 @@ export default function Home() {
               </div>
               <p className="weave-home-department-summary mt-6 text-base font-medium leading-relaxed sm:text-lg">The company through the people of its departments</p>
               <div className="weave-home-loops mx-auto mt-9 grid max-w-4xl gap-3 text-left sm:grid-cols-3" data-company-time-loops>
-                <div className="weave-home-loop weave-home-loop-flame p-5">
-                  <p className="text-base font-black text-white sm:text-lg">Company Loop 1 — Flame Event: Burning River</p>
+                <div className="weave-home-loop weave-home-loop-flame p-5" data-company-loop-one="burning-river">
+                  <p className="text-base font-black text-white sm:text-lg">Company Loop 1 — Flame Event: The Burning River</p>
+                  <p className="mt-3 max-w-prose text-sm font-medium leading-6 text-orange-50 sm:text-base" data-burning-river-fixed-point>
+                    A dream moving through time until possibility finds a life in which to exist.
+                  </p>
                   <Link href="/flame-event" className="mt-3 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-orange-100 hover:text-white">
                     Explore Burning River <ArrowRight className="h-4 w-4" />
                   </Link>
