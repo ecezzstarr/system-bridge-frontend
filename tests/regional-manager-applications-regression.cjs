@@ -16,6 +16,6 @@ assert(applicant.includes("status IN ('rejected','withdrawn')"), 'Rejected or wi
 assert(!/MAX_APPLICATIONS|APPLICATION_LIMIT|LIMIT\s+1000/i.test(applicant + schema), 'No arbitrary 1,000-applicant cap is imposed')
 assert(admin.includes('Math.min(100') && admin.includes('OFFSET'), 'Administration reviews applications in bounded, paginated batches')
 assert(admin.includes("admin.role !== 'admin'"), 'Application review is Administration-only')
-assert(admin.includes("decision === 'approve'") && admin.includes("decision === 'reject'"), 'Administration can approve or reject applications')
+assert(admin.includes("['approve', 'reject'].includes(decision)") && admin.includes("decision === 'approve'"), 'Administration can approve or reject applications')
 assert(admin.includes('weave_regional_manager_appointments'), 'Approval creates a Regional Manager appointment while preserving source role')
 console.log('Regional Manager application scale and review regression passed')
