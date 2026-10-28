@@ -4,6 +4,7 @@ import { getPool } from '@/lib/db'
 import { getTrxPaymentNgnRate } from '@/lib/trx-payment'
 import { ngnToFlameCoin } from '@/lib/flame-coin'
 import { createPaystackReference, initializePaystackTransaction } from '@/lib/paystack'
+import { notifyDepositSubmitted } from '@/lib/deposit-notifications'
 
 export const dynamic = 'force-dynamic'
 
@@ -27,6 +28,20 @@ export async function POST(request: NextRequest) {
       "INSERT INTO deposits(user_id,amount_usd,amount_trx,status,method,currency,receipt_data,created_at,updated_at) VALUES($1::uuid,$2,$3,'pending','paystack','NGN',$4,NOW(),NOW()) RETURNING id",
       [user.id,amountNgn,flameCoin,reference],
     )
+    await pool.query(
+      "INSERT INTO ledger_entries(user_id,entry_type,amount,currency,description,metadata) VALUES($1::uuid,'deposit',$2,'Flame Coin','Paystack deposit pending payment verification',$3::jsonb)",
+      [user.id,flameCoin,JSON.stringify({deposit_id:inserted.rows[0].id,payment_method:'Paystack',reference,ngn_amount:amountNgn,amount_kobo:Math.round(amountNgn*100),rate_ngn_per_trx:rateNgnPerTrx,rate_source:rateSource,status:'pending'})],
+    )
+    await notifyDepositSubmitted({
+      depositorId:user.id,
+      depositorName:user.name||user.username||user.email,
+      role:user.role==='admin'?'Administration':user.role==='client'?'Client':user.role==='bridger'?'Bridger':'Agent',
+      depositId:String(inserted.rows[0].id),
+      rail:'PAYSTACK',
+      amountLabel:'₦'+amountNgn.toLocaleString(),
+      secondaryLabel:flameCoin.toLocaleString()+' Flame Coin after verified payment',
+      adminLink:'/admin/control-center#deposits',
+    })
     try {
       const origin=(process.env.WEAVE_PUBLIC_ORIGIN||new URL(request.url).origin).replace(/\/$/,'')
       if (!origin.startsWith('https://')) throw new Error('WEAVE_PUBLIC_ORIGIN must be the canonical HTTPS production origin')
