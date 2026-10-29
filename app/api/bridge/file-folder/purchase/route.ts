@@ -10,8 +10,12 @@ import { accrueAiProviderAllocation } from '@/lib/ai-provider-settlement'
 import { issueWeaveReceipt } from '@/lib/weave-receipts'
 import { getPublicFlameMovementAttribution, publicFlameMovementCodeFromRequest, recordPublicFlameMovementEvent } from '@/lib/public-flame-movement'
 import { provisionPurchasedFileFolderCustomerDoor } from '@/lib/client-customer-door-provisioning'
+import { getTrxPaymentNgnRate } from '@/lib/trx-payment'
+import { createPaystackReference, initializePaystackTransaction } from '@/lib/paystack'
+import { getPaystackConfig } from '@/lib/paystack-config'
 
 const sql = neon(process.env.DATABASE_URL!)
+function buyerEmailValid(value: unknown) { return typeof value === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim()) }
 function validPrice(value: unknown, tier?: string | null) { const amount = Number(value); return isValidFileFolderAmount(amount, tier) && amount <= 100000000 }
 async function ensurePurchaseSchema() {
   await sql`CREATE TABLE IF NOT EXISTS file_folder_purchases (id uuid PRIMARY KEY DEFAULT gen_random_uuid(),file_number varchar(120),client_id uuid,buyer_name varchar(255),buyer_email varchar(255),buyer_phone varchar(80),amount_trx numeric(30,8) NOT NULL,file_folder_tier varchar(20),payment_method varchar(40) NOT NULL,payment_reference varchar(255) NOT NULL,status varchar(40) NOT NULL DEFAULT 'pending_admin_confirmation',created_at timestamptz NOT NULL DEFAULT NOW(),confirmed_at timestamptz,confirmed_by uuid)`
@@ -29,6 +33,8 @@ async function ensurePurchaseSchema() {
   await sql`ALTER TABLE file_folder_purchases ADD COLUMN IF NOT EXISTS flame_external_id varchar(255)`
   await sql`ALTER TABLE file_folder_purchases ADD COLUMN IF NOT EXISTS bridger_id uuid`
   await sql`ALTER TABLE file_folder_purchases ADD COLUMN IF NOT EXISTS movement_code varchar(40)`
+  await sql`ALTER TABLE file_folder_purchases ADD COLUMN IF NOT EXISTS amount_ngn numeric(18,2)`
+  await sql`ALTER TABLE file_folder_purchases ADD COLUMN IF NOT EXISTS payment_verified_at timestamptz`
   await sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_file_folder_purchases_payment_reference ON file_folder_purchases(payment_reference)`
   await sql`CREATE INDEX IF NOT EXISTS idx_file_folder_purchases_file_number ON file_folder_purchases(file_number)`
 }
@@ -66,6 +72,8 @@ export async function GET(request: NextRequest) {
     const confirmed = purchase.status === 'confirmed' && Boolean(purchase.file_number)
     return NextResponse.json({
       success: true,
+      paymentLink,
+      amountNgn,
       purchase: {
         id: purchase.id,
         status: purchase.status,
@@ -98,8 +106,21 @@ export async function POST(request: NextRequest) {
     const amountFlameCoin = rawAmount == null || rawAmount === '' ? FILE_FOLDER_PRICING.standardMinimumFlameCoin : Number(rawAmount)
     const requestedTier = typeof body.fileFolderTier === 'string' ? body.fileFolderTier.trim().toLowerCase() : null
     const fileFolderTier = getFileFolderTier(amountFlameCoin, requestedTier)
-    const paymentMethod = 'trx'
-    const paymentReference = typeof body.paymentReference === 'string' ? body.paymentReference.trim() : ''
+    const paymentMethod = body.paymentMethod === 'paystack' ? 'paystack' : 'trx'
+    let paymentReference = typeof body.paymentReference === 'string' ? body.paymentReference.trim() : ''
+    let amountNgn: number | null = null
+    let rateNgnPerTrx: number | null = null
+    let rateSource: string | null = null
+    if (paymentMethod === 'paystack') {
+      if (!buyerEmailValid(body.buyerEmail)) return NextResponse.json({ error: 'Enter a valid email for Paystack checkout.' }, { status: 400 })
+      const rate = await getTrxPaymentNgnRate()
+      rateNgnPerTrx = rate.rateNgnPerTrx
+      rateSource = rate.source
+      const payableValue = fileFolderTier === 'plus' ? FILE_FOLDER_PRICING.plusFlameCoin : amountFlameCoin
+      amountNgn = Math.round(payableValue * rateNgnPerTrx * 100) / 100
+      if (!Number.isFinite(amountNgn) || amountNgn < 1 || rateNgnPerTrx <= 0) return NextResponse.json({ error: 'A valid live NGN quote is unavailable. Please try again later.' }, { status: 503 })
+      paymentReference = createPaystackReference('FOLDER')
+    }
     const buyerName = typeof body.buyerName === 'string' ? body.buyerName.trim() : null
     const buyerEmail = typeof body.buyerEmail === 'string' ? body.buyerEmail.trim() : null
     const buyerPhone = typeof body.buyerPhone === 'string' ? body.buyerPhone.trim() : null
@@ -161,7 +182,7 @@ export async function POST(request: NextRequest) {
         error: `Choose Standard from ${FILE_FOLDER_PRICING.standardMinimumFlameCoin.toLocaleString()} to ${FILE_FOLDER_PRICING.standardMaximumFlameCoin.toLocaleString()} Flame Coin, an explicitly negotiated Pro sale from ${FILE_FOLDER_PRICING.proNegotiatedMinimumFlameCoin.toLocaleString()} up to below ${FILE_FOLDER_PRICING.premiumFlameCoin.toLocaleString()} Flame Coin (normal Pro starting value ${FILE_FOLDER_PRICING.proStartingFlameCoin.toLocaleString()}), or Premium at exactly ${FILE_FOLDER_PRICING.premiumFlameCoin.toLocaleString()} Flame Coin; Plus is ${FILE_FOLDER_PRICING.plusFlameCoin.toLocaleString()} Flame Coin priced at ${FILE_FOLDER_PRICING.plusTrx.toLocaleString()} TRX (reference ${FILE_FOLDER_PRICING.plusUsdt.toLocaleString()} USDT).`,
       }, { status: 400 })
     }
-    if (!paymentReference) return NextResponse.json({ error: 'TRX transaction hash is required.' }, { status: 400 })
+    if (paymentMethod === 'trx' && !paymentReference) return NextResponse.json({ error: 'TRX transaction hash is required.' }, { status: 400 })
     if (fileNumber) {
       const [folder] = await sql`SELECT * FROM client_file_folders WHERE file_number=${fileNumber} LIMIT 1`
       if (!folder) return NextResponse.json({ error: 'File Folder not found' }, { status: 404 })
@@ -169,9 +190,28 @@ export async function POST(request: NextRequest) {
     }
     const [existing] = await sql`SELECT id FROM file_folder_purchases WHERE payment_reference=${paymentReference} LIMIT 1`
     if (existing) return NextResponse.json({ error: 'Payment reference already recorded' }, { status: 409 })
-    const [record] = await sql`INSERT INTO file_folder_purchases (file_number,client_id,buyer_name,buyer_email,buyer_phone,amount_trx,file_folder_tier,payment_method,payment_reference,bridge_code,provider_key,provider_name,flame_name,flame_external_id,bridger_id,movement_code) VALUES (${fileNumber},${clientId || null},${buyerName},${buyerEmail},${buyerPhone},${amountFlameCoin},${fileFolderTier},${paymentMethod},${paymentReference},${bridgeCode},${providerKey},${providerName},${flameName},${flameExternalId},${directBridgerId || movementBridgerId}::uuid,${movementAttribution?.movement_code || null}) RETURNING *`
+    const [record] = await sql`INSERT INTO file_folder_purchases (file_number,client_id,buyer_name,buyer_email,buyer_phone,amount_trx,file_folder_tier,payment_method,payment_reference,bridge_code,provider_key,provider_name,flame_name,flame_external_id,bridger_id,movement_code,amount_ngn,status) VALUES (${fileNumber},${clientId || null},${buyerName},${buyerEmail},${buyerPhone},${amountFlameCoin},${fileFolderTier},${paymentMethod},${paymentReference},${bridgeCode},${providerKey},${providerName},${flameName},${flameExternalId},${directBridgerId || movementBridgerId}::uuid,${movementAttribution?.movement_code || null},${amountNgn},${paymentMethod === 'paystack' ? 'pending_payment' : 'pending_admin_confirmation'}) RETURNING *`
+    let paymentLink: string | null = null
+    if (paymentMethod === 'paystack') {
+      try {
+        const config = await getPaystackConfig()
+        const origin = (config.publicOrigin || process.env.WEAVE_PUBLIC_ORIGIN || '').replace(/\/$/, '')
+        if (!origin.startsWith('https://')) throw new Error('Administration must configure the canonical HTTPS origin in the Paystack Integration Workshop.')
+        const checkout = await initializePaystackTransaction({
+          email: String(buyerEmail).trim().toLowerCase(),
+          amountKobo: Math.round(Number(amountNgn) * 100),
+          reference: paymentReference,
+          callbackUrl: origin + '/api/bridge/file-folder/paystack/verify',
+          metadata: { payment_type: 'file_folder_purchase', purchase_id: record.id, file_folder_tier: fileFolderTier, amount_flame_coin: amountFlameCoin, rate_ngn_per_trx: rateNgnPerTrx, rate_source: rateSource },
+        })
+        paymentLink = checkout.authorizationUrl
+      } catch (checkoutError) {
+        await sql`UPDATE file_folder_purchases SET status='payment_initialization_failed' WHERE id=${record.id}::uuid AND status='pending_payment'`
+        throw checkoutError
+      }
+    }
     const tierLabel = fileFolderTierLabel(fileFolderTier)
-    await notifyAdminOrder({orderId:String(record.id),event:'placed',department:directBridgerId||movementBridgerId?'bridger':'client',subject:'File Folder purchase awaiting verification',detail:`${buyerName} requested ${tierLabel} File Folder for ${amountFlameCoin.toLocaleString()} TRX${fileFolderTier === 'plus' ? ' (60,000 Flame Coin package, 20,000 USDT reference)' : ''} through ${bridgeCode?'Bridge AI':'public crossing'}. Verify payment before Client activation`,adminPath:'/admin/file-folder-sales-manager',actorId:directBridgerId||movementBridgerId||clientId||null,actorName:'Bridge of Radiance'})
+    if (paymentMethod === 'trx') await notifyAdminOrder({orderId:String(record.id),event:'placed',department:directBridgerId||movementBridgerId?'bridger':'client',subject:'File Folder purchase awaiting verification',detail:`${buyerName} requested ${tierLabel} File Folder for ${amountFlameCoin.toLocaleString()} TRX through ${bridgeCode?'Bridge AI':'public crossing'}. Verify payment before Client activation`,adminPath:'/admin/file-folder-sales-manager',actorId:directBridgerId||movementBridgerId||clientId||null,actorName:'Bridge of Radiance'})
     await recordSystemEvent({ eventType: 'file_folder_purchased', actorId: clientId, subjectType: 'file_folder_purchase', subjectId: String(record.id), source: 'bridge-file-folder', payload: { fileNumber, amountFlameCoin, fileFolderTier, paymentMethod, paymentReference } })
     const receipt = clientId ? await issueWeaveReceipt({ userId: clientId, kind: 'purchase', source: 'file_folder', sourceId: String(record.id), amount: amountFlameCoin, currency: fileFolderTier === 'plus' ? 'TRX' : 'Flame Coin', status: 'pending', description: `${tierLabel} File Folder purchase submitted`, metadata: { fileNumber, fileFolderTier, paymentMethod, paymentReference, plusFlameCoinValue: fileFolderTier === 'plus' ? FILE_FOLDER_PRICING.plusFlameCoin : null, plusUsdtReference: fileFolderTier === 'plus' ? FILE_FOLDER_PRICING.plusUsdt : null } }) : null
     try {
@@ -199,7 +239,7 @@ export async function POST(request: NextRequest) {
       receipt,
       fileFolderTier,
       crossing: { ready: false },
-      message: `${tierLabel} File Folder payment recorded. Administration will verify the payment and issue the File Number. ${fileFolderTier === 'plus' ? 'Plus includes completed working systems and an immediately ready Customer Door upon Client activation.' : 'The included Customer Door construction will then start.'}`,
+      message: paymentMethod === 'paystack' ? `${tierLabel} File Folder Paystack checkout is ready. Complete payment; Administration will approve the verified purchase before issuing the File Number.` : `${tierLabel} File Folder payment recorded. Administration will verify the payment and issue the File Number. ${fileFolderTier === 'plus' ? 'Plus includes completed working systems and an immediately ready Customer Door upon Client activation.' : 'The included Customer Door construction will then start.'}`,
     }, { status: 201 })
   } catch (error: any) { return NextResponse.json({ error: error?.message || 'Unable to record File Folder purchase' }, { status: 500 }) }
 }
