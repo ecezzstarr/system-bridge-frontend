@@ -72,8 +72,6 @@ export async function GET(request: NextRequest) {
     const confirmed = purchase.status === 'confirmed' && Boolean(purchase.file_number)
     return NextResponse.json({
       success: true,
-      paymentLink,
-      amountNgn,
       purchase: {
         id: purchase.id,
         status: purchase.status,
@@ -227,6 +225,8 @@ export async function POST(request: NextRequest) {
     }
     return NextResponse.json({
       success: true,
+      paymentLink,
+      amountNgn,
       purchase: {
         id: record.id,
         status: record.status,
