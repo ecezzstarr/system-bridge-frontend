@@ -48,8 +48,6 @@ export async function ensureForensicGiftCardSchema() {
   await sql`ALTER TABLE weave_forensic_gift_card_transactions ALTER COLUMN participant_share_ngn SET DEFAULT 0`
   await sql`ALTER TABLE weave_forensic_gift_card_transactions ALTER COLUMN weave_share_ngn SET DEFAULT 0`
   await sql`CREATE INDEX IF NOT EXISTS weave_forensic_gift_card_transactions_partnership_idx ON weave_forensic_gift_card_transactions(partnership_id, recorded_at DESC)`
-}
-
   await sql`
     CREATE TABLE IF NOT EXISTS weave_forensic_gift_card_trust (
       partnership_id UUID PRIMARY KEY REFERENCES weave_forensic_gift_card_partnerships(id) ON DELETE CASCADE,
@@ -61,3 +59,4 @@ export async function ensureForensicGiftCardSchema() {
     )
   `
   await sql`CREATE INDEX IF NOT EXISTS weave_forensic_gift_card_trust_manager_idx ON weave_forensic_gift_card_trust(regional_manager_user_id,status)`
+}
