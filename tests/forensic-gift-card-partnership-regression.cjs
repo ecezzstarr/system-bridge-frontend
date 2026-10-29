@@ -52,3 +52,14 @@ assert.ok(rewardsPage.includes('These are independent platforms, not confirmed W
 assert.ok(rewardsPage.includes('Never submit passwords, gift-card codes, PINs, OTPs'), 'Reward workflow warns against collecting account secrets')
 assert.ok(workspace.includes('/weave/lifestyles/mandate/gift-card-rewards'), 'Existing Carding workflow links to the external reward frontier')
 console.log('External gift-card reward programme catalogue and Forensic tracking regressions passed')
+
+
+const balanceApi = read('app/api/wallet/balance/route.ts')
+const header = read('components/app-header.tsx')
+assert.ok(header.includes("fetch('/api/wallet/balance'") && header.includes("cache: 'no-store'") && header.includes("window.setInterval") && header.includes("visibilitychange"), 'Shared header refreshes authoritative Flame Coin balance across routes, focus and elapsed time')
+assert.ok(header.includes('flameCoinBalance.toLocaleString(undefined,{maximumFractionDigits:2})'), 'Phone header displays the current confirmed Flame Coin balance')
+assert.ok(balanceApi.includes("Cache-Control': 'private, no-store, max-age=0'") && balanceApi.includes("export const dynamic = 'force-dynamic'"), 'Wallet balance endpoint prevents stale server/browser cache')
+assert.ok(api.includes("getTrxPaymentNgnRate") && api.includes("accountability_deduction_flame_coin") && api.includes("UPDATE wallets SET balance_trx=balance_trx-$1") && api.includes("INSERT INTO ledger_entries"), 'Approved accountability deduction converts NGN to Flame Coin and records wallet plus ledger in one database transaction')
+assert.ok(api.includes("BEGIN") && api.includes("COMMIT") && api.includes("ROLLBACK") && api.includes("FOR UPDATE"), 'Accountability deduction locks transaction and wallet and commits atomically')
+assert.ok(schema.includes('accountability_rate_ngn_per_flame_coin') && schema.includes('accountability_deducted_at') && migration.includes('accountability_deduction_reference'), 'Accountability conversion rate, amount and reference persist for audit')
+console.log('Shared Flame Coin balance freshness and atomic accountability deduction regressions passed')
