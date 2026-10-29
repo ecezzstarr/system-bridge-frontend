@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
       const evidence=typeof body.evidenceNote==='string'?body.evidenceNote.trim():''
       if (!Number.isSafeInteger(amount) || amount<=0 || evidence.length<12 || evidence.length>1000)
         return NextResponse.json({success:false,error:'Enter the agreed whole-naira company share and at least 12 characters of settlement evidence.'},{status:400})
-      const {rows}=await getPool().query(`UPDATE weave_gift_card_reward_enrollments SET company_share_status='sent',company_share_received_ngn=$3,company_share_evidence=$4 WHERE id=$1::uuid AND participant_user_id=$2::uuid AND status='active' AND agreed_company_share_ngn=$3 RETURNING *`,[body.enrollmentId,user.id,amount,evidence])
+      const {rows}=await getPool().query(`UPDATE weave_gift_card_reward_enrollments SET company_share_status='sent',company_share_received_ngn=$3,company_share_evidence=$4 WHERE id=$1::uuid AND participant_user_id=$2::uuid AND status='active' AND company_share_status IN ('pending','held') AND agreed_company_share_ngn=$3 RETURNING *`,[body.enrollmentId,user.id,amount,evidence])
       if (!rows[0]) return NextResponse.json({success:false,error:'A verified first-trade record and the exact agreed company share are required.'},{status:409})
       return NextResponse.json({success:true,enrollment:rows[0],message:'Company-share evidence submitted to Forensics for independent verification.'})
     }
