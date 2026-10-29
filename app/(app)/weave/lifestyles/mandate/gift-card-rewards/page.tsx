@@ -1,0 +1,48 @@
+'use client'
+import {useCallback,useEffect,useState} from 'react'
+import Link from 'next/link'
+import {useAuth} from '@/lib/auth-provider'
+
+type Program={program_key:string;platform_name:string;platform_url:string;reward_summary:string;qualification_summary:string;cash_reward_ngn:number|string;coupon_reward_ngn:number|string;referral_summary:string;offer_source_url:string;checked_at:string}
+type Enrollment={id:string;program_key:string;platform_name:string;platform_profile_reference:string;status:string;participant_name?:string;reward_summary?:string;first_trade_reference?:string;first_trade_evidence?:string;reward_evidence?:string}
+export default function GiftCardRewardProgramsPage(){
+ const {token,user,isInitialized}=useAuth()
+ const [mode,setMode]=useState('');const [programs,setPrograms]=useState<Program[]>([]);const [enrollments,setEnrollments]=useState<Enrollment[]>([])
+ const [fields,setFields]=useState<Record<string,string>>({});const [selected,setSelected]=useState('cardcosmic');const [agreed,setAgreed]=useState(false);const [busy,setBusy]=useState(false);const [error,setError]=useState('');const [message,setMessage]=useState('')
+ const load=useCallback(async()=>{if(!token)return;try{const r=await fetch('/api/weave/lifestyles/mandate/gift-card-rewards',{headers:{Authorization:'Bearer '+token},cache:'no-store'});const d=await r.json();if(!r.ok)throw new Error(d.error||'Could not load reward programmes');setMode(d.mode||'participant');setPrograms(d.programs||[]);setEnrollments(d.enrollments||[]);setError('')}catch(e){setError(e instanceof Error?e.message:'Unable to load reward programmes')}},[token])
+ useEffect(()=>{if(isInitialized)void load()},[isInitialized,load])
+ async function send(body:Record<string,unknown>,patch=false){if(!token)return;setBusy(true);setError('');setMessage('');try{const r=await fetch('/api/weave/lifestyles/mandate/gift-card-rewards',{method:patch?'PATCH':'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify(body)});const d=await r.json();if(!r.ok)throw new Error(d.error||'Action failed');setMessage(d.message||'Record updated');setFields({});setAgreed(false);await load()}catch(e){setError(e instanceof Error?e.message:'Action failed')}finally{setBusy(false)}}
+ const field=(key:string,placeholder:string,area=false)=>(area?<textarea className='w-full rounded-lg border border-white/15 bg-black/20 p-3 text-sm' placeholder={placeholder} value={fields[key]||''} onChange={e=>setFields(v=>({...v,[key]:e.target.value}))}/>:<input className='w-full rounded-lg border border-white/15 bg-black/20 p-3 text-sm' placeholder={placeholder} value={fields[key]||''} onChange={e=>setFields(v=>({...v,[key]:e.target.value}))}/>)
+ if(!isInitialized)return <main className='p-6'>Opening gift-card reward programmes…</main>
+ if(!user||!['agent','bridger'].includes(user.role||''))return <main className='p-6'>An active Agent or Bridger account is required.</main>
+ return <main className='mx-auto max-w-5xl space-y-6 px-4 pb-20 pt-6 text-white' data-gift-card-reward-programs>
+  <Link href='/weave/lifestyles/mandate/forensic-gift-cards' className='text-xs text-amber-200'>← Return to Gift-Card Forensics</Link>
+  <header className='border-b border-white/10 pb-5'><p className='text-xs font-black uppercase tracking-wider text-amber-200'>WEAVE Forensics · External programmes</p><h1 className='mt-2 text-3xl font-black'>Gift-card reward frontier</h1><p className='mt-3 max-w-3xl text-sm leading-6 text-stone-300'>Track selected gift-card platforms that advertise welcome rewards and referral earnings. These are independent platforms, not confirmed Weave partners. Reward amounts and eligibility can change; always verify the offer in the platform's current terms before acting.</p></header>
+  {error&&<p role='alert' className='border border-rose-300/30 p-3 text-sm'>{error}</p>}{message&&<p role='status' className='border border-emerald-300/30 p-3 text-sm'>{message}</p>}
+  <section className='grid gap-4 md:grid-cols-2'>{programs.map(p=><article key={p.program_key} className='space-y-3 rounded-2xl border border-white/10 bg-white/[.025] p-5'>
+   <div className='flex items-start justify-between gap-3'><div><p className='text-[10px] font-black uppercase tracking-wider text-amber-200'>External platform</p><h2 className='mt-1 text-xl font-black'>{p.platform_name}</h2></div><span className='rounded-full border border-white/10 px-2 py-1 text-[10px]'>Offer listing</span></div>
+   <p className='text-sm leading-6 text-stone-200'>{p.reward_summary}</p>
+   <p className='text-xs leading-5 text-stone-400'>{p.qualification_summary}</p>
+   <p className='text-xs leading-5 text-stone-400'>{p.referral_summary}</p>
+   <div className='flex flex-wrap gap-2'><a className='rounded-lg border border-white/15 px-3 py-2 text-xs font-bold' href={p.platform_url} target='_blank' rel='noreferrer'>Open platform ↗</a><a className='rounded-lg border border-white/15 px-3 py-2 text-xs font-bold' href={p.offer_source_url} target='_blank' rel='noreferrer'>Check offer terms ↗</a></div>
+   <p className='text-[10px] text-stone-500'>Offer source last checked: {new Date(p.checked_at).toLocaleDateString('en-NG')}</p>
+  </article>)}</section>
+  <section className='space-y-3 rounded-2xl border border-amber-200/20 p-5'>
+   <h2 className='text-lg font-black'>Submit a platform profile for Forensic review</h2>
+   <p className='text-sm leading-6 text-stone-300'>Only submit a reference to a profile you own and authorize Weave to review. Never submit passwords, gift-card codes, PINs, OTPs, recovery codes or private login links. This form records participation; it does not open accounts, perform trades, guarantee rewards, or send payouts.</p>
+   <label className='block text-xs font-bold text-stone-300'>Platform</label><select value={selected} onChange={e=>setSelected(e.target.value)} className='w-full rounded-lg border border-white/15 bg-black/20 p-3 text-sm'>{programs.map(p=><option key={p.program_key} value={p.program_key}>{p.platform_name}</option>)}</select>
+   {field('profile','Your non-secret profile reference')}
+   {field('authorization','Explain your authorization for Weave to track this opportunity and its agreed company allocation',true)}
+   <label className='flex items-start gap-2 text-xs leading-5 text-stone-300'><input type='checkbox' checked={agreed} onChange={e=>setAgreed(e.target.checked)} className='mt-1'/><span>I understand this is an external platform offer, reward eligibility depends on its own terms, and Weave's company share must be agreed and recorded before a qualifying activity.</span></label>
+   <button disabled={busy||!agreed||!fields.profile||!fields.authorization} onClick={()=>void send({action:'submit_enrollment',programKey:selected,platformProfileReference:fields.profile,authorizationNote:fields.authorization,participantAgreed:agreed})} className='rounded-xl bg-amber-200 px-4 py-3 text-sm font-black text-black disabled:opacity-40'>Submit to Forensics</button>
+  </section>
+  <section className='space-y-3'><h2 className='text-lg font-black'>{mode==='forensic'?'Forensic review queue':'Your submitted programmes'}</h2>{enrollments.length===0?<p className='text-sm text-stone-400'>No reward programme records yet.</p>:enrollments.map(e=><article key={e.id} className='space-y-3 rounded-xl border border-white/10 p-4'>
+   <div className='flex flex-wrap items-start justify-between gap-2'><div><p className='font-bold'>{e.platform_name}{e.participant_name?' · '+e.participant_name:''}</p><p className='text-xs text-stone-400'>Profile reference: {e.platform_profile_reference}</p></div><span className='text-xs uppercase text-amber-100'>{e.status}</span></div>
+   {e.reward_summary&&<p className='text-xs text-stone-300'>{e.reward_summary}</p>}
+   {mode==='forensic'&&e.status==='pending'&&<div className='space-y-2'>{field(e.id+'review','Review evidence and authorization note (min 8 characters)',true)}<div className='flex flex-wrap gap-2'><button disabled={busy||(fields[e.id+'review']||'').trim().length<8} onClick={()=>void send({action:'review_enrollment',enrollmentId:e.id,status:'approved',reviewNote:fields[e.id+'review']},true)} className='rounded-lg bg-emerald-200 px-3 py-2 text-xs font-bold text-black'>Approve</button><button disabled={busy||(fields[e.id+'review']||'').trim().length<8} onClick={()=>void send({action:'review_enrollment',enrollmentId:e.id,status:'held',reviewNote:fields[e.id+'review']},true)} className='rounded-lg border border-amber-200/30 px-3 py-2 text-xs'>Hold for review</button></div></div>}
+   {mode==='forensic'&&e.status==='approved'&&<div className='space-y-2'>{field(e.id+'trade','First successful trade reference')}{field(e.id+'evidence','Evidence note for the trade and displayed platform reward',true)}<button disabled={busy||(fields[e.id+'trade']||'').trim().length<6||(fields[e.id+'evidence']||'').trim().length<12} onClick={()=>void send({action:'record_first_trade',enrollmentId:e.id,tradeReference:fields[e.id+'trade'],evidenceNote:fields[e.id+'evidence']},true)} className='rounded-lg bg-amber-200 px-3 py-2 text-xs font-bold text-black'>Record first-trade evidence</button></div>}
+   {e.first_trade_reference&&<p className='text-xs text-stone-300'>First trade: {e.first_trade_reference} · {e.first_trade_evidence}</p>}
+   {e.reward_evidence&&<p className='text-xs text-stone-400'>Forensic note: {e.reward_evidence}</p>}
+  </article>)}</section>
+ </main>
+}
