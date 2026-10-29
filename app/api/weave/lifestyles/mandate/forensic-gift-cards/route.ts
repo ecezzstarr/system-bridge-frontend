@@ -84,14 +84,14 @@ export async function POST(request: NextRequest) {
       const gross = Number(body.grossAmountNgn)
       const evidence = typeof body.evidenceNote === 'string' ? body.evidenceNote.trim() : ''
       if (!validId(partnershipId) || reference.length < 6 || reference.length > 180 ||
-          description.length < 3 || description.length > 240 || !Number.isSafeInteger(gross) || gross <= 0 ||
+          description.length < 3 || description.length > 240 || !Number.isSafeInteger(gross) || gross <= 1500 ||
           evidence.length < 12 || evidence.length > 1000)
-        return NextResponse.json({success:false,error:'Enter an approved partnership, unique transaction reference, gift description, positive whole-naira amount and a 12–1000 character evidence note.'},{status:400})
+        return NextResponse.json({success:false,error:'Enter an approved partnership, unique transaction reference, gift description, whole-naira amount greater than ₦1,500 and a 12–1000 character evidence note.'},{status:400})
       const { rows } = await pool.query(`INSERT INTO weave_forensic_gift_card_transactions
         (partnership_id,transaction_reference,gift_card_description,gross_amount_ngn,evidence_note,recorded_by)
         SELECT p.id,$2,$3,$4,$5,$6::uuid FROM weave_forensic_gift_card_partnerships p
         WHERE p.id=$1::uuid AND p.status='active'
-          AND EXISTS (SELECT 1 FROM weave_forensic_gift_card_trust trust WHERE trust.partnership_id=p.id AND trust.participant_user_id=p.participant_user_id AND trust.status='active')
+          AND EXISTS (SELECT 1 FROM weave_forensic_gift_card_trust trust JOIN weave_regional_manager_appointments rm ON rm.user_id=trust.regional_manager_user_id AND rm.status='active' JOIN weave_regional_manager_bridgers member ON member.bridger_user_id=p.participant_user_id AND member.regional_manager_user_id=trust.regional_manager_user_id AND member.status='active' WHERE trust.partnership_id=p.id AND trust.participant_user_id=p.participant_user_id AND trust.status='active')
         RETURNING *`,[partnershipId,reference,description,gross,evidence,user.id])
       if (!rows[0]) return NextResponse.json({success:false,error:'Only an approved active partnership with active Regional Manager Company Escrow Trust can have transactions recorded.'},{status:409})
       return NextResponse.json({success:true,transaction:rows[0],message:'Gift-card transaction recorded. The ₦3,000 carding split belongs to the partnership setup and is not charged again for each repeat transaction.'},{status:201})
@@ -118,6 +118,9 @@ export async function PATCH(request: NextRequest) {
         SELECT p.id,p.participant_user_id,$2::uuid,'active',NOW(),NULL
         FROM weave_forensic_gift_card_partnerships p
         WHERE p.id=$1::uuid AND p.status='active'
+          AND EXISTS (SELECT 1 FROM weave_regional_manager_bridgers member
+            WHERE member.bridger_user_id=p.participant_user_id
+              AND member.regional_manager_user_id=$2::uuid AND member.status='active')
         ON CONFLICT (partnership_id) DO UPDATE SET regional_manager_user_id=EXCLUDED.regional_manager_user_id,status='active',activated_at=NOW(),revoked_at=NULL
         RETURNING *`,[body.partnershipId,user.id])
       if (!rows[0]) return NextResponse.json({success:false,error:'Approve the partnership before activating Company Escrow.'},{status:409})
@@ -127,13 +130,15 @@ export async function PATCH(request: NextRequest) {
       if (!(await isForensic(user))) return NextResponse.json({success:false,error:'Approved active Forensics departmental appointment required.'},{status:403})
       if (body.status === 'verified' && !(await isForensic(user))) return NextResponse.json({success:false,error:'Forensics must verify company settlement.'},{status:403})
       const evidence = typeof body.evidenceNote === 'string' ? body.evidenceNote.trim() : ''
+      const amount = Number(body.companySettlementAmountNgn)
+      if (['sent','verified'].includes(body.status) && (!Number.isSafeInteger(amount) || amount <= 0)) return NextResponse.json({success:false,error:'Enter the exact company amount sent in whole naira.'},{status:400})
       if (['sent','held','investigation'].includes(body.status) && evidence.length < 8) return NextResponse.json({success:false,error:'Add a settlement evidence note of at least 8 characters.'},{status:400})
       const { rows } = await pool.query(`UPDATE weave_forensic_gift_card_transactions t SET
-        company_settlement_status=$2, company_settlement_evidence=COALESCE(NULLIF($3,''),company_settlement_evidence),
+        company_settlement_status=$2, company_settlement_amount_ngn=CASE WHEN $2 IN ('sent','verified') THEN $5::integer ELSE company_settlement_amount_ngn END, company_settlement_evidence=COALESCE(NULLIF($3,''),company_settlement_evidence),
         settlement_verified_by=CASE WHEN $2='verified' THEN $4::uuid ELSE settlement_verified_by END,
         settlement_verified_at=CASE WHEN $2='verified' THEN NOW() ELSE settlement_verified_at END,
         accountability_review_status=CASE WHEN $2 IN ('held','investigation') THEN 'pending_review' ELSE accountability_review_status END
-        WHERE t.id=$1::uuid AND ($2<>'verified' OR t.status='verified') RETURNING *`,[body.transactionId,body.status,evidence,user.id])
+        WHERE t.id=$1::uuid AND ($2<>'verified' OR (t.status='verified' AND $5=t.gross_amount_ngn-t.participant_agreed_share_ngn)) RETURNING *`,[body.transactionId,body.status,evidence,user.id,amount])
       if (!rows[0]) return NextResponse.json({success:false,error:'Transaction must exist and be independently verified before settlement verification.'},{status:409})
       return NextResponse.json({success:true,transaction:rows[0],message:'Company settlement status recorded. Accountability deductions require documented review.'})
     }
