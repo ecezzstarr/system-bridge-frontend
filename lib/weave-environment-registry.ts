@@ -81,6 +81,7 @@ export const WEAVE_ENVIRONMENT_REGISTRY: EnvironmentSurfaceDefinition[] = [
   { key:'admin-outreach', label:'Fulfillment Agent', kind:'district', route:'/admin/outreach', area:'Administration', scope:'admin', defaultOrder:100 },
   { key:'admin-agent-channels', label:'Agent Channel Requests', kind:'district', route:'/admin/agent-channels', area:'Administration', scope:'admin', defaultOrder:110 },
   { key:'admin-client-deposits', label:'Client Deposits', kind:'district', route:'/admin/client-deposits', area:'Administration', scope:'admin', defaultOrder:120 },
+  { key:'admin-paystack-integration', label:'Paystack Integration Workshop', kind:'district', route:'/admin/paystack-integration-workshop', area:'Administration', scope:'admin', protected:true, defaultOrder:121 },
   { key:'admin-client-vault', label:'Client Vaults', kind:'district', route:'/admin/client-vault', area:'Administration', scope:'admin', defaultOrder:130 },
   { key:'admin-enterprise-systems', label:'Enterprise Systems', kind:'district', route:'/admin/enterprise-systems', area:'Administration', scope:'admin', defaultOrder:140 },
   { key:'admin-agility', label:'Agility Fulfillment', kind:'district', route:'/admin/agility', area:'Administration', scope:'admin', defaultOrder:150 },

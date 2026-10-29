@@ -207,6 +207,9 @@ jobs:
           WEAVE_SYSTEM_SWITCH_TEST_DATABASE_URL: postgres://weave_qa:weave_qa_only@127.0.0.1:5432/weave_switch_test
         run: node tests/burning-river-multiplayer-postgres.cjs
 
+      - name: Paystack integration foundation regression
+        run: node tests/paystack-integration-regression.cjs
+
       - name: TypeScript check
         run: npx tsc --noEmit
 

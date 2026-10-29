@@ -187,6 +187,7 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
       accent:'#f59e0b',
       places:[
         {label:'Client Deposits',href:'/admin/client-deposits',detail:'Review Client funding requests.',daily:true},
+        {label:'Paystack Integration Workshop',href:'/admin/paystack-integration-workshop',detail:'Configure server-side Paystack readiness and manually verify wallet-deposit integration before release.',daily:true},
         {label:'Client Vaults',href:'/admin/client-vault',detail:'Administer Client vault movement.'},
         {label:'Customer Door Settlements',href:'/admin/customer-door-settlements',detail:'Forensics reviews real Customer Door payments and credits Client Main Wallets from funded reserves.',daily:true},
         {label:'Flame Coin Sales Forensics',href:'/admin/weave-flame-coin-sales',detail:'Verify approved bank payments and credit purchased Flame Coin into registered buyer Main Wallets from funded reserves.',daily:true},
