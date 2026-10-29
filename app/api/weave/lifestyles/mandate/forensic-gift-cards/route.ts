@@ -23,9 +23,17 @@ async function isForensic(user: any) {
 export async function GET(request: NextRequest) {
   try {
     const user = await getUser(request)
-    if (!user || !['agent','bridger'].includes(user.role)) return NextResponse.json({ success:false, error:'An active Agent or Bridger account is required.' }, { status:403 })
+    if (!user) return NextResponse.json({ success:false, error:'Sign in is required.' }, { status:403 })
     await ensureForensicGiftCardSchema()
     const pool = getPool()
+    if (await isRegionalManager(user)) {
+      const [partnerships, transactions] = await Promise.all([
+        pool.query(\`SELECT p.*,u.name AS participant_name,trust.status AS trust_status,manager.name AS regional_manager_name FROM weave_forensic_gift_card_partnerships p JOIN users u ON u.id=p.participant_user_id LEFT JOIN weave_forensic_gift_card_trust trust ON trust.partnership_id=p.id LEFT JOIN users manager ON manager.id=trust.regional_manager_user_id ORDER BY p.submitted_at DESC LIMIT 300\`),
+        pool.query(\`SELECT t.*,p.participant_user_id,p.carding_profile_reference,p.seller_name,u.name AS participant_name FROM weave_forensic_gift_card_transactions t JOIN weave_forensic_gift_card_partnerships p ON p.id=t.partnership_id JOIN users u ON u.id=p.participant_user_id ORDER BY t.recorded_at DESC LIMIT 500\`)
+      ])
+      return NextResponse.json({success:true,mode:'regional_manager',partnerships:partnerships.rows,transactions:transactions.rows},{headers:{'Cache-Control':'private, no-store'}})
+    }
+    if (!['agent','bridger'].includes(user.role)) return NextResponse.json({ success:false, error:'An active Agent or Bridger account is required.' }, { status:403 })
     if (await isForensic(user)) {
       const [partnerships, transactions] = await Promise.all([
         pool.query(`SELECT p.*,u.name AS participant_name,u.username AS participant_username
