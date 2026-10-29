@@ -33,14 +33,16 @@ export default function BridgerBridgeRadianceArrival({
       <p className="text-[9px] font-black uppercase tracking-[.23em] text-cyan-200">Bridge AI · {bridgerName}</p>
       <h2 className="mt-2 text-xl font-black">Recognize what you want to build</h2>
       <p className="mt-2 text-sm leading-6 text-slate-300">
-        Talk with the Bridger's Bridge AI about your idea, or continue to the
-        Client File Folder purchase crossing. Your purchase remains attached
-        to this specific Bridger path for Administration verification.
+        Talk with the Bridger's Bridge AI about your idea, compare the four File Folder types, or continue to purchase. Checkout supports Paystack in Naira and the existing TRX method. Your purchase remains attached to this specific Bridger path for Administration verification.
       </p>
       <div className="mt-4 flex flex-wrap gap-3">
         <Link href={`/bridge/${encodeURIComponent(code)}?chat=1`}
           className="inline-flex min-h-11 items-center rounded-xl border border-cyan-200/35 px-4 py-2.5 text-xs font-black text-cyan-100">
           Talk with Bridge AI
+        </Link>
+        <Link href="/file-folder-preview"
+          className="inline-flex min-h-11 items-center rounded-xl border border-white/15 px-4 py-2.5 text-xs font-bold text-slate-200">
+          Preview File Folder types
         </Link>
         <button type="button"
           onClick={()=>purchaseRef.current?.scrollIntoView({behavior:'smooth',block:'start'})}
