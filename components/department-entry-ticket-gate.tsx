@@ -59,7 +59,6 @@ export function DepartmentEntryTicketGate({
     payerName: '',
     payerEmail: '',
     payerPhone: '',
-    paymentReference: '',
   })
 
   const storageKey = `weave_department_entry_${department}`
@@ -120,7 +119,6 @@ export function DepartmentEntryTicketGate({
       payerName: data.ticket.payerName || prev.payerName,
       payerEmail: data.ticket.payerEmail || prev.payerEmail,
       payerPhone: data.ticket.payerPhone || prev.payerPhone,
-      paymentReference: data.ticket.paymentReference || prev.paymentReference,
     }))
     return data.ticket as EntryTicket
   }
@@ -214,7 +212,7 @@ export function DepartmentEntryTicketGate({
     sessionStorage.removeItem(storageKey)
     setTicket(null)
     setAccessToken('')
-    setForm({ payerName: '', payerEmail: '', payerPhone: '', paymentReference: '' })
+    setForm({ payerName: '', payerEmail: '', payerPhone: '' })
     setError('')
     createTicket().catch((err: any) => setError(err?.message || 'Unable to present new ticket'))
   }
@@ -306,17 +304,8 @@ export function DepartmentEntryTicketGate({
             <CreditCard className="h-4 w-4 text-green-400" />
             <p className="text-xs font-black uppercase tracking-widest text-white">WEAVE Payment Center · Paystack</p>
           </div>
-          <p className="mt-3 text-[9px] uppercase tracking-widest text-slate-500">Company OPay Account</p>
-          <div className="mt-1 flex items-center gap-2">
-            <p className="font-mono text-lg font-black tracking-wider text-green-300">{ticket.opayAccountNumber}</p>
-            <button type="button" onClick={() => copy(ticket.opayAccountNumber, 'opay')} className="rounded-lg p-2 text-slate-400 hover:bg-white/5 hover:text-white">
-              <Copy className="h-4 w-4" />
-            </button>
-            {copied === 'opay' && <span className="text-[9px] font-bold text-green-400">Copied</span>}
-          </div>
-          <p className="mt-2 text-xs leading-5 text-slate-500">
-            Send exactly ₦{ticket.amountNgn.toLocaleString()} for this 3 Flame Coin Department Entry Ticket.
-            This payment buys the ticket; it is not a wallet top-up.
+          <p className="mt-3 text-xs leading-5 text-slate-400">
+            Pay securely through Paystack checkout. The amount is for this 3 Flame Coin Department Entry Ticket, not a wallet top-up.
           </p>
         </div>
       </div>
@@ -345,12 +334,6 @@ export function DepartmentEntryTicketGate({
               className="border-slate-700 bg-slate-900 text-white"
             />
           </div>
-          <Input
-            value={form.paymentReference}
-            onChange={e => setForm(prev => ({ ...prev, paymentReference: e.target.value }))}
-            placeholder="No manual payment reference required"
-            className="border-slate-700 bg-slate-900 font-mono text-white"
-          />
           <Button
             type="button"
             onClick={submitPayment}
