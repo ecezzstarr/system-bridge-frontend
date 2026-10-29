@@ -1,7 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { Search, Wallet, Settings, LogOut, Radio, Sparkles } from "lucide-react"
+import { Search, Wallet, Settings, LogOut, Radio, Sparkles, MessageCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { PresenceIndicator } from "@/components/presence-indicator"
@@ -99,6 +99,14 @@ export function AppHeader({ user }: AppHeaderProps) {
         <p className="truncate text-[10px] font-black text-white">{effectiveUser.name}</p>
         <p className="mt-0.5 text-[8px] font-black uppercase tracking-[.14em] text-slate-500">{positionLabel} position</p>
       </div>
+      <button
+        type="button"
+        onClick={() => { setAccountOpen(false); router.push('/weave/reach-delivery') }}
+        className="mt-1 flex w-full items-center gap-3 rounded-xl border border-sky-300/10 bg-sky-300/[0.04] px-3 py-2.5 text-left text-[10px] font-black text-sky-100 hover:bg-sky-300/[0.08] hover:text-white"
+        data-weave-reach-delivery-entry="account-menu"
+      >
+        <MessageCircle className="h-4 w-4 text-sky-300" />Reach and Delivery
+      </button>
       {lifestyleVisible && (
         <button
           type="button"
