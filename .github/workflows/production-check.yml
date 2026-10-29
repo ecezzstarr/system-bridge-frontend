@@ -56,7 +56,9 @@ jobs:
           node tests/today-food-postgres.cjs
 
       - name: Core recent-feature regression
-        run: node tests/recent-features.cjs
+        run: |
+          node tests/recent-features.cjs
+          node tests/forensic-gift-card-partnership-regression.cjs
 
       - name: Agent Creative Studio fee and image regressions
         run: |
