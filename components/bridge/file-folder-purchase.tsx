@@ -98,7 +98,7 @@ export default function FileFolderPurchase({
   }
 
   useEffect(() => {
-    if (!purchase?.id || !bridgeCode || purchase.status !== 'pending_admin_confirmation') return
+    if (!purchase?.id || !['pending_payment', 'pending_admin_confirmation'].includes(purchase.status)) return
 
     let stopped = false
     let timer: number | null = null
@@ -112,7 +112,7 @@ export default function FileFolderPurchase({
       setChecking(true)
       try {
         const response = await fetch(
-          `/api/bridge/file-folder/purchase?purchaseId=${encodeURIComponent(purchase.id)}&bridgeCode=${encodeURIComponent(bridgeCode)}`,
+          `/api/bridge/file-folder/purchase?purchaseId=${encodeURIComponent(purchase.id)}${bridgeCode ? `&bridgeCode=${encodeURIComponent(bridgeCode)}` : ''}`,
           { cache: 'no-store' },
         )
         const body = await response.json()
@@ -127,7 +127,7 @@ export default function FileFolderPurchase({
         }
 
         if (next.status === 'rejected') {
-          setMessage('Administration could not verify this File Folder payment. Review the TRX transaction and submit the correct movement.')
+          setMessage('Administration could not verify this File Folder payment. Contact Administration before starting another checkout.')
           return
         }
       } catch {
@@ -273,7 +273,7 @@ export default function FileFolderPurchase({
                 />
               </label>
               <label className="block">
-                <span className="text-[9px] font-bold uppercase tracking-[.12em] text-stone-500">Email · optional payment record</span>
+                <span className="text-[9px] font-bold uppercase tracking-[.12em] text-stone-500">Email · required for Paystack checkout</span>
                 <input
                   type="email"
                   value={email}
@@ -372,7 +372,7 @@ export default function FileFolderPurchase({
               </>
             )}
 
-            {purchase?.status === 'pending_admin_confirmation' && (
+            {['pending_payment', 'pending_admin_confirmation'].includes(purchase?.status || '') && (
               <div className="mt-4">
                 <div className="flex h-14 w-14 items-center justify-center rounded-full border border-amber-200/25 bg-amber-300/[.06]">
                   <ShieldCheck className="h-6 w-6 text-amber-200" />
