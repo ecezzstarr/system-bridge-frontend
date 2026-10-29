@@ -11,6 +11,11 @@ const validId = (value: unknown): value is string =>
 async function getUser(request: NextRequest) {
   return getAuthUser(request)
 }
+async function isRegionalManager(user: any) {
+  if (!user?.id) return false
+  const { rows } = await getPool().query(`SELECT 1 FROM weave_regional_manager_appointments WHERE user_id=$1::uuid AND status='active' LIMIT 1`, [user.id])
+  return Boolean(rows[0])
+}
 async function isForensic(user: any) {
   return Boolean(user && ['agent','bridger'].includes(user.role) && await canReplyForGuidanceDepartment(user, 'forensic'))
 }
@@ -79,7 +84,7 @@ export async function POST(request: NextRequest) {
         SELECT p.id,$2,$3,$4,$5,$6::uuid FROM weave_forensic_gift_card_partnerships p
         WHERE p.id=$1::uuid AND p.status='active'
         RETURNING *`,[partnershipId,reference,description,gross,evidence,user.id])
-      if (!rows[0]) return NextResponse.json({success:false,error:'Only an approved active partnership can have transactions recorded.'},{status:409})
+      if (!rows[0]) return NextResponse.json({success:false,error:'Only an approved active partnership with active Regional Manager Company Escrow Trust can have transactions recorded.'},{status:409})
       return NextResponse.json({success:true,transaction:rows[0],message:'Gift-card transaction recorded. The ₦3,000 carding split belongs to the partnership setup and is not charged again for each repeat transaction.'},{status:201})
     }
     return NextResponse.json({success:false,error:'Unknown Forensic gift-card action.'},{status:400})
@@ -97,6 +102,39 @@ export async function PATCH(request: NextRequest) {
     await ensureForensicGiftCardSchema()
     const body = await request.json().catch(() => ({}))
     const pool = getPool()
+    if (body.action === 'activate_company_escrow' && validId(body.partnershipId)) {
+      if (!(await isRegionalManager(user))) return NextResponse.json({success:false,error:'An active appointed Regional Manager must activate Company Escrow.'},{status:403})
+      const { rows } = await pool.query(`INSERT INTO weave_forensic_gift_card_trust
+        (partnership_id,participant_user_id,regional_manager_user_id,status,activated_at,revoked_at)
+        SELECT p.id,p.participant_user_id,$2::uuid,'active',NOW(),NULL
+        FROM weave_forensic_gift_card_partnerships p
+        WHERE p.id=$1::uuid AND p.status='active'
+        ON CONFLICT (partnership_id) DO UPDATE SET regional_manager_user_id=EXCLUDED.regional_manager_user_id,status='active',activated_at=NOW(),revoked_at=NULL
+        RETURNING *`,[body.partnershipId,user.id])
+      if (!rows[0]) return NextResponse.json({success:false,error:'Approve the partnership before activating Company Escrow.'},{status:409})
+      return NextResponse.json({success:true,trust:rows[0],message:'Company Escrow Trust activated. Forensics may proceed only while Trust is active.'})
+    }
+    if (body.action === 'settle_company_share' && validId(body.transactionId) && ['sent','verified','held','investigation'].includes(body.status)) {
+      if (body.status === 'verified' && !(await isForensic(user))) return NextResponse.json({success:false,error:'Forensics must verify company settlement.'},{status:403})
+      const evidence = typeof body.evidenceNote === 'string' ? body.evidenceNote.trim() : ''
+      if (['sent','held','investigation'].includes(body.status) && evidence.length < 8) return NextResponse.json({success:false,error:'Add a settlement evidence note of at least 8 characters.'},{status:400})
+      const { rows } = await pool.query(`UPDATE weave_forensic_gift_card_transactions t SET
+        company_settlement_status=$2, company_settlement_evidence=COALESCE(NULLIF($3,''),company_settlement_evidence),
+        settlement_verified_by=CASE WHEN $2='verified' THEN $4::uuid ELSE settlement_verified_by END,
+        settlement_verified_at=CASE WHEN $2='verified' THEN NOW() ELSE settlement_verified_at END,
+        accountability_review_status=CASE WHEN $2 IN ('held','investigation') THEN 'pending_review' ELSE accountability_review_status END
+        WHERE t.id=$1::uuid AND ($2<>'verified' OR t.status='verified') RETURNING *`,[body.transactionId,body.status,evidence,user.id])
+      if (!rows[0]) return NextResponse.json({success:false,error:'Transaction must exist and be independently verified before settlement verification.'},{status:409})
+      return NextResponse.json({success:true,transaction:rows[0],message:'Company settlement status recorded. Accountability deductions require documented review.'})
+    }
+    if (body.action === 'review_manager_accountability' && validId(body.transactionId) && ['approved_deduction','rejected'].includes(body.status)) {
+      if (user.role !== 'admin') return NextResponse.json({success:false,error:'Administration must review and authorize Regional Manager accountability deductions.'},{status:403})
+      const note = typeof body.reviewNote === 'string' ? body.reviewNote.trim() : ''
+      if (note.length < 20) return NextResponse.json({success:false,error:'Document the evidence and rationale in at least 20 characters.'},{status:400})
+      const { rows } = await pool.query(`UPDATE weave_forensic_gift_card_transactions SET accountability_review_status=$2,accountability_review_note=$3 WHERE id=$1::uuid AND company_settlement_status IN ('held','investigation') AND accountability_review_status='pending_review' RETURNING *`,[body.transactionId,body.status,note])
+      if (!rows[0]) return NextResponse.json({success:false,error:'Only a held or investigated transaction can receive an accountability decision.'},{status:409})
+      return NextResponse.json({success:true,transaction:rows[0],message:'Accountability decision recorded; no wallet is automatically debited.'})
+    }
     if (body.action === 'review_partnership' && validId(body.partnershipId) && ['active','paused','closed'].includes(body.status)) {
       const { rows } = await pool.query(`UPDATE weave_forensic_gift_card_partnerships
         SET status=$2,reviewed_at=NOW(),reviewed_by=$3::uuid
