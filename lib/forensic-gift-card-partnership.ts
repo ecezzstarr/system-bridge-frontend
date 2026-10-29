@@ -55,7 +55,7 @@ export async function ensureForensicGiftCardSchema() {
       partnership_id UUID PRIMARY KEY REFERENCES weave_forensic_gift_card_partnerships(id) ON DELETE CASCADE,
       participant_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
       regional_manager_user_id UUID NOT NULL REFERENCES users(id),
-      status VARCHAR(20) NOT NULL DEFAULT 'active' CHECK (status IN ('active','revoked')),
+      status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','active','revoked')),
       activated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       revoked_at TIMESTAMPTZ
     )
