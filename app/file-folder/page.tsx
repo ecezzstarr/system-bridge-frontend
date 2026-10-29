@@ -47,6 +47,7 @@ export default function PublicFileFolderPurchasePage() {
   const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
   const [reference, setReference] = useState('')
+  const [paymentMethod, setPaymentMethod] = useState<'paystack' | 'trx'>('paystack')
   const [wallet, setWallet] = useState('')
   const [walletLoading, setWalletLoading] = useState(true)
   const [copied, setCopied] = useState(false)
@@ -71,7 +72,10 @@ export default function PublicFileFolderPurchasePage() {
   }, [purchase, reference, name, phone, validAmount])
 
   useEffect(() => {
-    setStaffOfferToken(new URLSearchParams(window.location.search).get('staffOffer') || '')
+    const params = new URLSearchParams(window.location.search)
+    setStaffOfferToken(params.get('staffOffer') || '')
+    const requestedTier = params.get('tier')?.toLowerCase()
+    if (requestedTier === 'standard' || requestedTier === 'premium' || requestedTier === 'plus') setTier(requestedTier)
   }, [])
 
   useEffect(() => {
@@ -99,7 +103,7 @@ export default function PublicFileFolderPurchasePage() {
   }, [])
 
   useEffect(() => {
-    if (!purchase?.id || !purchase.accessToken || purchase.status !== 'pending_admin_confirmation') return
+    if (!purchase?.id || !purchase.accessToken || !['pending_payment', 'pending_admin_confirmation'].includes(purchase.status)) return
 
     let stopped = false
     let timer: number | null = null
@@ -179,7 +183,9 @@ export default function PublicFileFolderPurchasePage() {
   }
 
   const submitPurchase = async () => {
-    if (!validAmount || !name.trim() || !phone.trim() || !reference.trim() || purchase) return
+    if (!validAmount || !name.trim() || !phone.trim() || purchase) return
+    if (paymentMethod === 'trx' && !reference.trim()) return
+    if (paymentMethod === 'paystack' && !email.trim()) return
     setBusy(true)
     setMessage('')
 
@@ -190,8 +196,8 @@ export default function PublicFileFolderPurchasePage() {
         body: JSON.stringify({
           amountTrx: amount,
           fileFolderTier: tier,
-          paymentMethod: 'trx',
-          paymentReference: reference.trim(),
+          paymentMethod,
+          paymentReference: paymentMethod === 'trx' ? reference.trim() : undefined,
           buyerName: name.trim(),
           buyerPhone: phone.trim(),
           buyerEmail: email.trim() || undefined,
@@ -209,6 +215,11 @@ export default function PublicFileFolderPurchasePage() {
       }
       setPurchase(next)
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ id: next.id, accessToken: next.accessToken, tier }))
+      if (paymentMethod === 'paystack') {
+        if (!body.paymentLink) throw new Error('Paystack did not return a checkout link. No payment has been taken.')
+        window.location.assign(body.paymentLink)
+        return
+      }
       setMessage(body.message || 'Payment recorded. Administration verification is now open.')
     } catch (error: any) {
       setMessage(error?.message || 'Unable to record File Folder purchase')
@@ -247,7 +258,7 @@ export default function PublicFileFolderPurchasePage() {
             <div>
               <p className="text-[9px] font-black uppercase tracking-[.22em] text-orange-200">Public Client Crossing · File Folder</p>
               <h1 className="mt-3 max-w-4xl text-3xl font-black tracking-tight sm:text-5xl">Purchase your File Folder. Enter WEAVE as a Client.</h1>
-              <p className="mt-3 max-w-3xl text-sm leading-6 text-stone-400">Visitors do not need a Bridger link to become Clients. Choose the File Folder level, send the matching TRX amount to the WEAVE company wallet, submit the transaction hash, and Administration issues your File Number after verification.</p>
+              <p className="mt-3 max-w-3xl text-sm leading-6 text-stone-400">Visitors do not need a Bridger link to become Clients. Choose a File Folder, pay securely in Naira through Paystack or keep using the existing TRX wallet method. Administration verifies the payment and issues your File Number before the Client crossing opens.</p>
             </div>
             <div className="border-l border-white/10 pl-4">
               <p className="text-[8px] font-black uppercase tracking-[.18em] text-white/35">Current state</p>
@@ -291,15 +302,20 @@ export default function PublicFileFolderPurchasePage() {
 
               {tier === 'standard' && <label className="mt-4 block"><span className="text-[9px] font-bold uppercase tracking-[.12em] text-stone-500">Standard amount · {FILE_FOLDER_PRICING.standardMinimumFlameCoin.toLocaleString()} to {FILE_FOLDER_PRICING.standardMaximumFlameCoin.toLocaleString()}</span><input inputMode="decimal" type="number" min={FILE_FOLDER_PRICING.standardMinimumFlameCoin} max={FILE_FOLDER_PRICING.standardMaximumFlameCoin} value={standardAmount} onChange={e=>setStandardAmount(e.target.value)} disabled={Boolean(purchase)} className="mt-2 w-full rounded-xl border border-white/10 bg-black/25 px-4 py-3 text-sm outline-none" /></label>}
 
-              <div className="mt-5 rounded-2xl border border-emerald-300/10 bg-emerald-300/[.035] p-4">
+              <div className="mt-5 grid grid-cols-2 gap-2" role="group" aria-label="Choose payment method">
+                <button type="button" disabled={Boolean(purchase)} onClick={() => setPaymentMethod('paystack')} className={`min-h-12 rounded-xl border px-3 py-2 text-xs font-black ${paymentMethod === 'paystack' ? 'border-emerald-200/50 bg-emerald-300/10 text-emerald-100' : 'border-white/10 text-slate-400'}`}>Paystack · Naira</button>
+                <button type="button" disabled={Boolean(purchase)} onClick={() => setPaymentMethod('trx')} className={`min-h-12 rounded-xl border px-3 py-2 text-xs font-black ${paymentMethod === 'trx' ? 'border-orange-200/50 bg-orange-300/10 text-orange-100' : 'border-white/10 text-slate-400'}`}>TRX wallet</button>
+              </div>
+
+              {paymentMethod === 'trx' ? <div className="mt-5 rounded-2xl border border-emerald-300/10 bg-emerald-300/[.035] p-4">
                 <p className="text-[8px] font-black uppercase tracking-[.16em] text-emerald-200">WEAVE company TRX wallet</p>
                 <div className="mt-3 flex gap-2"><div className="min-w-0 flex-1 rounded-xl border border-white/10 bg-black/30 px-3 py-3 font-mono text-[10px] text-slate-300 break-all">{walletLoading?'Loading wallet…':wallet||'Company wallet is unavailable'}</div><Button type="button" variant="outline" disabled={!wallet} onClick={copyWallet}><Copy className="h-4 w-4" /> {copied?'Copied':'Copy'}</Button></div>
                 <p className="mt-3 text-[10px] leading-5 text-slate-500">Send exactly <strong className="text-white">{Number.isFinite(amount)?amount.toLocaleString():'—'} TRX</strong>. {tier==='plus' ? `Plus is valued at ${FILE_FOLDER_PRICING.plusFlameCoin.toLocaleString()} Flame Coin, with a ${FILE_FOLDER_PRICING.plusUsdt.toLocaleString()} USDT reference. Your payment is in TRX, not USDT. Ready systems activate only after Administration verifies payment and attaches your Client File Folder.` : 'For Standard and Premium, the amount paid in TRX is the same numeric File Folder value in Flame Coin.'}</p>
               </div>
 
-              <label className="mt-5 block"><span className="text-[9px] font-bold uppercase tracking-[.12em] text-stone-500">TRX transaction hash</span><div className="mt-2 flex items-center gap-3 rounded-xl border border-white/10 bg-black/25 px-3"><FileKey2 className="h-4 w-4 text-orange-200" /><input value={reference} onChange={e=>setReference(e.target.value)} disabled={Boolean(purchase)} placeholder="Paste transaction hash after payment" className="w-full bg-transparent py-3 text-sm outline-none placeholder:text-white/20 disabled:opacity-50" /></div></label>
+              {paymentMethod === 'trx' ? <label className="mt-5 block"><span className="text-[9px] font-bold uppercase tracking-[.12em] text-stone-500">TRX transaction hash</span><div className="mt-2 flex items-center gap-3 rounded-xl border border-white/10 bg-black/25 px-3"><FileKey2 className="h-4 w-4 text-orange-200" /><input value={reference} onChange={e=>setReference(e.target.value)} disabled={Boolean(purchase)} placeholder="Paste transaction hash after payment" className="w-full bg-transparent py-3 text-sm outline-none placeholder:text-white/20 disabled:opacity-50" /></div></label> : <div className="mt-5 rounded-2xl border border-cyan-200/15 bg-cyan-300/[.04] p-4"><p className="text-xs font-bold text-cyan-100">Paystack secure checkout</p><p className="mt-2 text-[10px] leading-5 text-slate-400">Your current File Folder value will be quoted in Naira using the configured payment rate. Payment verification and Administration approval remain required.</p></div>}
 
-              {!purchase && <Button onClick={submitPurchase} disabled={busy || !wallet || !validAmount || !name.trim() || !phone.trim() || !reference.trim()} className="mt-5 h-12 w-full bg-white font-black text-[#090605] hover:bg-stone-100">{busy?<Loader2 className="mr-2 h-4 w-4 animate-spin"/>:<ArrowRight className="mr-2 h-4 w-4"/>}Submit File Folder purchase</Button>}
+              {!purchase && <Button onClick={submitPurchase} disabled={busy || !validAmount || !name.trim() || !phone.trim() || (paymentMethod === 'trx' && (!wallet || !reference.trim())) || (paymentMethod === 'paystack' && !email.trim())} className="mt-5 h-12 w-full bg-white font-black text-[#090605] hover:bg-stone-100">{busy?<Loader2 className="mr-2 h-4 w-4 animate-spin"/>:<ArrowRight className="mr-2 h-4 w-4"/>}{busy ? (paymentMethod === 'paystack' ? 'Opening Paystack…' : 'Submitting purchase…') : paymentMethod === 'paystack' ? 'Continue to Paystack' : 'Submit File Folder purchase'}</Button>}
 
               {message && <div className={`mt-5 rounded-2xl border p-4 text-xs leading-5 ${purchase?.status==='confirmed'?'border-emerald-300/20 bg-emerald-300/[.06] text-emerald-100':purchase?.status==='rejected'?'border-rose-300/20 bg-rose-300/[.05] text-rose-100':'border-amber-300/15 bg-amber-300/[.04] text-amber-100'}`}>{message}</div>}
 
