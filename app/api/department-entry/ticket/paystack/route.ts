@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
     const payerName = String(body.payerName || '').trim().slice(0, 255)
     const payerEmail = String(body.payerEmail || '').trim().slice(0, 255).toLowerCase()
     const payerPhone = String(body.payerPhone || '').trim().slice(0, 80)
-    if (!payerName || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(payerEmail)) return NextResponse.json({ error: 'Enter your name and a valid email for Paystack checkout.' }, { status: 400 })
+    if (!payerName || !payerEmail.includes('@') || !payerEmail.includes('.')) return NextResponse.json({ error: 'Enter your name and a valid email for Paystack checkout.' }, { status: 400 })
     const checkout = await initializeDepartmentEntryPaystackTicket({ accessToken, payerName, payerEmail, payerPhone: payerPhone || undefined })
     return NextResponse.json({ success: true, ...checkout })
   } catch (error) {
