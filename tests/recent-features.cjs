@@ -246,7 +246,7 @@ assert.ok(bridgeVerifySource.includes('registerUrl'),'Verification returns the C
 assert.ok(notificationsApiSource.includes('getAuthUser'),'Notification inbox requires authenticated identity')
 assert.ok(!notificationsApiSource.includes("searchParams.get('userId')"),'Notification inbox cannot select another user by query parameter')
 assert.ok(notificationBellSource.includes("visiblePoll(fetchNotifications, 5000)"),'Notification bell polls promptly while visible without overlapping requests')
-assert.ok(opayDepositSource.includes('/admin/control-center#deposits'),'OPay notification deep-links to the canonical Control Center deposit station')
+assert.ok(paystackApiSource.includes("adminLink:'/admin/control-center#deposits'"),'Paystack deposit notification deep-links to the canonical Control Center deposit station')
 assert.ok(tronDepositSource.includes('/admin/client-deposits'),'TRX notification deep-links to dedicated Client deposit review')
 assert.ok(bridgeDepositSource.includes('/admin/control-center#bridge'),'Bridge notification deep-links to the canonical Control Center Bridge deposit station')
 assert.ok(adminDashboardNotificationSource.includes("hash === '#deposits'"),'Administration Control Center handles OPay notification hash')
