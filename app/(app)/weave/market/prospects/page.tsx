@@ -175,6 +175,35 @@ export default function ProspectMarketPage() {
     window.location.assign(waUrl)
   }
 
+  const shareProspectMessageWithImage = async (target: string, message: string) => {
+    const imageUrl = '/weave/plus-file-folder-white-official.webp'
+    try {
+      const response = await fetch(imageUrl)
+      if (!response.ok) throw new Error('Official Plus File Folder image is unavailable')
+      const blob = await response.blob()
+      const image = new File([blob], 'weave-plus-file-folder.webp', {
+        type: blob.type || 'image/webp',
+      })
+      const shareData: ShareData = { title: 'What Is Weave?', text: message, files: [image] }
+
+      // Native sharing keeps the Bridger in their own phone/account. The
+      // operating system chooses WhatsApp and the Bridger chooses the chat.
+      // Web Share cannot preselect a recipient in another app.
+      if (typeof navigator.share === 'function' &&
+          typeof navigator.canShare === 'function' &&
+          navigator.canShare({ files: [image] })) {
+        await navigator.share(shareData)
+        return
+      }
+    } catch (error) {
+      // User cancellation is not a reason to force-open another app.
+      if (error instanceof DOMException && error.name === 'AbortError') return
+    }
+
+    // Unsupported browsers retain the established direct-to-prospect method.
+    openWhatsApp(target, `${message}\n\nhttps://weavingsystem.online${imageUrl}`)
+  }
+
   const handleSend = async (p: MyProspect) => {
     const target = normalizeWhatsAppTarget(p)
     if (!/^[1-9]\d{6,14}$/.test(target)) {
@@ -199,7 +228,7 @@ export default function ProspectMarketPage() {
         return
       }
 
-      openWhatsApp(target, `${p.messageSent}\n\nhttps://weavingsystem.online/weave/plus-file-folder-white-official.webp`)
+      await shareProspectMessageWithImage(target, p.messageSent)
     } catch (error) {
       toast.error('WEAVE could not open this Prospect movement')
     } finally {
