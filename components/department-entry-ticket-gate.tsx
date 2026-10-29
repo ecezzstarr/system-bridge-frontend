@@ -304,7 +304,7 @@ export function DepartmentEntryTicketGate({
         <div className="mt-4 rounded-xl border border-white/10 bg-black/30 p-4">
           <div className="flex items-center gap-2">
             <CreditCard className="h-4 w-4 text-green-400" />
-            <p className="text-xs font-black uppercase tracking-widest text-white">WEAVE Payment Center · OPay</p>
+            <p className="text-xs font-black uppercase tracking-widest text-white">WEAVE Payment Center · Paystack</p>
           </div>
           <p className="mt-3 text-[9px] uppercase tracking-widest text-slate-500">Company OPay Account</p>
           <div className="mt-1 flex items-center gap-2">
@@ -348,7 +348,7 @@ export function DepartmentEntryTicketGate({
           <Input
             value={form.paymentReference}
             onChange={e => setForm(prev => ({ ...prev, paymentReference: e.target.value }))}
-            placeholder="OPay payment reference / transaction ID"
+            placeholder="No manual payment reference required"
             className="border-slate-700 bg-slate-900 font-mono text-white"
           />
           <Button
