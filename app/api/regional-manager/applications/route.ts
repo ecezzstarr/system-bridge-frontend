@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
   }
   await ensureRegionalManagerCommissionSchema()
   const [application] = await sql`
-    SELECT user_id, source_role, region, experience, motivation, status, submitted_at,
+    SELECT user_id, source_role, region, experience, motivation, training_standard_acknowledged, status, submitted_at,
       reviewed_at, review_note
     FROM weave_regional_manager_applications
     WHERE user_id=${user.id}::uuid
@@ -37,11 +37,12 @@ export async function POST(request: NextRequest) {
   const region = typeof body?.region === 'string' ? body.region.trim() : ''
   const experience = typeof body?.experience === 'string' ? body.experience.trim() : ''
   const motivation = typeof body?.motivation === 'string' ? body.motivation.trim() : ''
+  const trainingStandardAcknowledged = body?.trainingStandardAcknowledged === true
   if (region.length < 2 || region.length > 120 || experience.length < 20 || experience.length > 4000 ||
-      motivation.length < 20 || motivation.length > 4000) {
+      motivation.length < 20 || motivation.length > 4000 || !trainingStandardAcknowledged) {
     return NextResponse.json({
       success: false,
-      error: 'Provide a region (2–120 characters), experience (20–4,000 characters), and motivation (20–4,000 characters).',
+      error: 'Provide the region, relevant experience, a regional student-employment operating plan, and acknowledge the required training standard.',
     }, { status: 400 })
   }
 
@@ -61,14 +62,14 @@ export async function POST(request: NextRequest) {
 
   const [application] = await sql`
     INSERT INTO weave_regional_manager_applications
-      (user_id, source_role, region, experience, motivation, status, submitted_at, reviewed_at, reviewed_by, review_note, updated_at)
-    VALUES (${user.id}::uuid, ${user.role}, ${region}, ${experience}, ${motivation}, 'pending', NOW(), NULL, NULL, NULL, NOW())
+      (user_id, source_role, region, experience, motivation, training_standard_acknowledged, status, submitted_at, reviewed_at, reviewed_by, review_note, updated_at)
+    VALUES (${user.id}::uuid, ${user.role}, ${region}, ${experience}, ${motivation}, ${trainingStandardAcknowledged}, 'pending', NOW(), NULL, NULL, NULL, NOW())
     ON CONFLICT (user_id) DO UPDATE SET
       source_role=EXCLUDED.source_role, region=EXCLUDED.region, experience=EXCLUDED.experience,
-      motivation=EXCLUDED.motivation, status='pending', submitted_at=NOW(),
+      motivation=EXCLUDED.motivation, training_standard_acknowledged=EXCLUDED.training_standard_acknowledged, status='pending', submitted_at=NOW(),
       reviewed_at=NULL, reviewed_by=NULL, review_note=NULL, updated_at=NOW()
     WHERE weave_regional_manager_applications.status IN ('rejected','withdrawn')
-    RETURNING user_id, source_role, region, experience, motivation, status, submitted_at
+    RETURNING user_id, source_role, region, experience, motivation, training_standard_acknowledged, status, submitted_at
   `
   if (!application) return NextResponse.json({ success: false, error: 'An application already exists and cannot be replaced.' }, { status: 409 })
   return NextResponse.json({ success: true, application }, { status: 201 })

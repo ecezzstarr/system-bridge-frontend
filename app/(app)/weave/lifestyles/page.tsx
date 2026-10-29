@@ -180,7 +180,7 @@ export default function WeaveLifestylesPage() {
             <section className="mt-6 border border-amber-300/25 bg-amber-300/[.04] p-5 sm:p-6" data-regional-manager-opportunity="true">
               <p className="text-[10px] font-black uppercase tracking-[.22em] text-amber-200">Regional leadership · Application open</p>
               <h2 className="mt-2 text-2xl font-black text-white">REGIONAL MANAGER</h2>
-              <p className="mt-2 max-w-3xl text-xs leading-6 text-slate-300">Clients, Bridgers, and Agents can apply while keeping their existing identity. Applications are reviewed independently of appointment capacity. An approved Regional Manager can assign up to 10 lead Distribution Managers and 20 assistants.</p>
+              <p className="mt-2 max-w-3xl text-xs leading-6 text-slate-300">Clients, Bridgers, and Agents can apply while keeping their existing identity. A Regional Manager builds regional capacity and employs university students into defined roles, coordinating study-compatible work, school-fee support alongside the government student loan programme when applicable, rent and daily meals under approved terms, and a pathway toward future regional leadership. Administration reviews applications; approved Regional Managers can assign up to 10 lead Distribution Managers and 20 assistants.</p>
               <Link href="/weave/lifestyles/regional-manager" className="mt-4 inline-flex min-h-11 items-center rounded-xl border border-amber-300/25 bg-amber-200 px-4 py-3 text-xs font-black uppercase tracking-wider text-slate-950 hover:bg-amber-100">Apply to become Regional Manager</Link>
             </section>
           )}
