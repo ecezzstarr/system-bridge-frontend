@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 import { ArrowLeft, LoaderCircle, RefreshCw } from 'lucide-react'
 import { useAuth } from '@/lib/auth-provider'
+import { PublicReachRequestForm } from '@/components/reach-delivery/public-request-form'
+import { ReachRequestTracker } from '@/components/reach-delivery/request-tracker'
 
 type ReachRow = {
   id: string; public_reference: string; request_kind: string; sender_name: string; recipient_name: string
@@ -55,7 +57,11 @@ export default function ReachDeliveryWorkspace() {
   if(!user)return <main className="mx-auto max-w-3xl p-6 text-white"><h1 className="text-2xl font-black">Weave Reach and Delivery</h1><p className="mt-3 text-sm">Sign in with an authorized Agent, Bridger, or appointed department position to continue.</p><Link href="/login" className="mt-4 inline-block text-sky-200">Sign in</Link></main>
 
   return <main className="mx-auto max-w-6xl px-4 pb-16 pt-5 text-white" data-weave-reach-workspace>
-    <Link href="/" className="inline-flex items-center gap-2 text-xs text-sky-200"><ArrowLeft className="h-4 w-4"/>Public homepage</Link>
+    <Link href="/" className="inline-flex items-center gap-2 text-xs text-sky-200"><ArrowLeft className="h-4 w-4"/>Public homepage</Link>\n    <section className="mb-8 rounded-2xl border border-sky-200/15 bg-slate-950/35 p-3 sm:p-5" data-reach-inside-user-entry>
+      <PublicReachRequestForm />
+      <div className="px-2 pb-4 sm:px-4"><ReachRequestTracker /></div>
+    </section>
+
     <header className="mt-5 border-b border-white/10 pb-5">
       <p className="text-xs font-black uppercase tracking-[.2em] text-sky-200">The Weave of Presence</p>
       <h1 className="mt-2 text-3xl font-black">Reach and Delivery · Operations</h1>
