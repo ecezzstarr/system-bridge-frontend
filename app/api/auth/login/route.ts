@@ -6,7 +6,6 @@ import { getDivineShieldState } from '@/lib/weave-infrastructure'
 import { ensureUserReferralCode } from '@/lib/user-referral'
 
 const PLATFORM_ADMIN_EMAIL = 'ecezzstarr@gmail.com'
-const PLATFORM_ADMIN_ID = 'be4f0618-d666-4e13-ae8f-13c986784ff7'
 
 function hasUsablePasswordHash(value: unknown) {
   return /^\\$2[aby]\\$\\d{2}\\$/.test(String(value || ''))
@@ -65,7 +64,7 @@ export async function POST(request: NextRequest) {
         SELECT u.*, w.balance_trx as platform_wallet_balance, w.tron_address as wallet_address
         FROM users u
         LEFT JOIN wallets w ON w.user_id = u.id AND w.is_primary = true
-        WHERE u.id = ${PLATFORM_ADMIN_ID}::uuid
+        WHERE LOWER(u.email) = LOWER(${PLATFORM_ADMIN_EMAIL})
           AND u.is_active = true
           AND u.role = 'admin'
         LIMIT 1
