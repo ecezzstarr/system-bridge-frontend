@@ -30,7 +30,7 @@ export async function initializePaystackTransaction(input: PaystackInitializeInp
 
 export async function verifyPaystackTransaction(reference: string): Promise<PaystackTransaction> {
   if (!/^[a-zA-Z0-9.=-]{1,100}$/.test(reference)) throw new Error('Invalid Paystack reference')
-  const response = await fetch(PAYSTACK_API + '/transaction/verify/' + encodeURIComponent(reference), { headers: { Authorization: 'Bearer ' + secretKey() }, cache: 'no-store' })
+  const response = await fetch(PAYSTACK_API + '/transaction/verify/' + encodeURIComponent(reference), { headers: { Authorization: 'Bearer ' + await secretKey() }, cache: 'no-store' })
   const payload = await response.json().catch(() => null)
   if (!response.ok || payload?.status !== true || !payload?.data) throw new Error('Paystack transaction verification failed')
   return payload.data as PaystackTransaction
