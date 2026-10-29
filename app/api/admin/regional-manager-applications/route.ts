@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
   values.push(limit, offset)
   const pool = getPool()
   const rows = await pool.query(`
-    SELECT a.user_id, u.name, u.email, a.source_role, a.region, a.experience, a.motivation,
+    SELECT a.user_id, u.name, u.email, a.source_role, a.region, a.experience, a.motivation, a.training_standard_acknowledged,
       a.status, a.submitted_at, a.reviewed_at, reviewer.name AS reviewer_name, a.review_note
     FROM weave_regional_manager_applications a
     JOIN users u ON u.id=a.user_id
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
   try {
     await client.query('BEGIN')
     const result = await client.query(`
-      SELECT a.user_id, a.source_role, a.status, u.is_active, u.role
+      SELECT a.user_id, a.source_role, a.status, a.training_standard_acknowledged, u.is_active, u.role
       FROM weave_regional_manager_applications a
       JOIN users u ON u.id=a.user_id
       WHERE a.user_id=$1::uuid
@@ -80,6 +80,11 @@ export async function POST(request: NextRequest) {
         application.role !== application.source_role) {
       await client.query('ROLLBACK')
       return NextResponse.json({ success: false, error: 'Applicant is no longer eligible under their current account role.' }, { status: 409 })
+    }
+
+    if (decision === 'approve' && !application.training_standard_acknowledged) {
+      await client.query('ROLLBACK')
+      return NextResponse.json({ success: false, error: 'The applicant must acknowledge the Regional Manager training standard before appointment.' }, { status: 409 })
     }
 
     if (decision === 'approve') {
