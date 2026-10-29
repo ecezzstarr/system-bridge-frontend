@@ -45,6 +45,9 @@ export async function getPaystackConfig(): Promise<{ secretKey: string; publicOr
 export async function savePaystackConfig(input: { secretKey: string; publicOrigin: string; mode: 'test'|'live'; adminId: string }) {
   const key = input.secretKey.trim()
   const origin = input.publicOrigin.trim().replace(/\/$/, '')
+  let parsedOrigin: URL
+  try { parsedOrigin = new URL(origin) } catch { throw new Error('Enter a valid canonical public HTTPS origin.') }
+  if (parsedOrigin.protocol !== 'https:' || parsedOrigin.origin !== origin) throw new Error('Enter the canonical public HTTPS origin only, without a path, query or fragment.')
   if (!/^https:\/\/[^\s/]+(?:\/[^\s]*)?$/i.test(origin) || origin.includes('?') || origin.includes('#')) throw new Error('Enter the canonical public HTTPS origin without query or fragment.')
   if (input.mode === 'test' && !key.startsWith('sk_test_')) throw new Error('Test mode requires a Paystack test secret key (sk_test_…).')
   if (input.mode === 'live' && !key.startsWith('sk_live_')) throw new Error('Live mode requires a Paystack live secret key (sk_live_…).')
