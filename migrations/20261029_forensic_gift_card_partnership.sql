@@ -65,3 +65,7 @@ ALTER TABLE weave_forensic_gift_card_transactions ADD COLUMN IF NOT EXISTS settl
 ALTER TABLE weave_forensic_gift_card_transactions ADD COLUMN IF NOT EXISTS responsible_regional_manager_user_id UUID REFERENCES users(id);
 ALTER TABLE weave_forensic_gift_card_transactions ADD COLUMN IF NOT EXISTS accountability_review_status VARCHAR(20) NOT NULL DEFAULT 'not_required' CHECK (accountability_review_status IN ('not_required','pending_review','approved_deduction','rejected'));
 ALTER TABLE weave_forensic_gift_card_transactions ADD COLUMN IF NOT EXISTS accountability_review_note TEXT;
+ALTER TABLE weave_forensic_gift_card_transactions ADD COLUMN IF NOT EXISTS accountability_deduction_flame_coin NUMERIC(30,8);
+ALTER TABLE weave_forensic_gift_card_transactions ADD COLUMN IF NOT EXISTS accountability_rate_ngn_per_flame_coin NUMERIC(30,8);
+ALTER TABLE weave_forensic_gift_card_transactions ADD COLUMN IF NOT EXISTS accountability_deduction_reference VARCHAR(220);
+ALTER TABLE weave_forensic_gift_card_transactions ADD COLUMN IF NOT EXISTS accountability_deducted_at TIMESTAMPTZ;
