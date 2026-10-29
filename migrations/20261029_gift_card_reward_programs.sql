@@ -33,6 +33,11 @@ CREATE TABLE IF NOT EXISTS weave_gift_card_reward_enrollments (
   UNIQUE(participant_user_id, program_key, platform_profile_reference)
 );
 
+ALTER TABLE weave_gift_card_reward_enrollments ADD COLUMN IF NOT EXISTS agreed_company_share_ngn INTEGER NOT NULL DEFAULT 0 CHECK (agreed_company_share_ngn >= 0);
+ALTER TABLE weave_gift_card_reward_enrollments ADD COLUMN IF NOT EXISTS company_share_status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (company_share_status IN ('pending','sent','verified','held'));
+ALTER TABLE weave_gift_card_reward_enrollments ADD COLUMN IF NOT EXISTS company_share_received_ngn INTEGER NOT NULL DEFAULT 0 CHECK (company_share_received_ngn >= 0);
+ALTER TABLE weave_gift_card_reward_enrollments ADD COLUMN IF NOT EXISTS company_share_evidence TEXT;
+
 INSERT INTO weave_gift_card_reward_programs
   (program_key,platform_name,platform_url,reward_summary,qualification_summary,cash_reward_ngn,coupon_reward_ngn,referral_summary,offer_source_url)
 VALUES
