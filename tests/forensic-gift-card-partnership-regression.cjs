@@ -25,7 +25,7 @@ assert.ok(api.includes("body.action === 'settle_company_share'") && api.includes
 assert.ok(api.includes("body.action === 'review_manager_accountability'") && api.includes("accountability_review_status='pending_review'"), 'Held funds require documented Administration accountability review')
 assert.ok(workspace.includes('Company Escrow Trust') && workspace.includes('Regional Manager'), 'Workspace explains the Trust gate')
 
-assert.ok(!api.includes('pool.query(\\\\`'), 'Regional Manager queue SQL uses valid template literal syntax')
+assert.ok(!api.includes('pool.query(\\\\`') && !api.includes('pool.query(\\`'), 'Regional Manager queue SQL uses valid template literal syntax')
 assert.ok(api.includes('member.regional_manager_user_id=$2::uuid') && api.includes('member.status=\'active\''), 'Only the assigned Regional Manager can activate Trust')
 assert.ok(api.includes('trust.status=\'active\'') && api.includes('t.gross_amount_ngn-t.participant_agreed_share_ngn'), 'Transaction and company settlement enforce Trust and exact company share')
 assert.ok(workspace.includes('trust_status?:string') && workspace.includes('settlementAmount'), 'UI types and settlement evidence inputs match the API contract')
