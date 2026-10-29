@@ -151,9 +151,9 @@ export async function PATCH(request: NextRequest) {
     }
     if (body.action === 'settle_company_share' && validId(body.transactionId) && ['sent','verified','held','investigation'].includes(body.status)) {
       if (!(await isForensic(user))) return NextResponse.json({success:false,error:'Approved active Forensics departmental appointment required.'},{status:403})
-      if (body.status === 'verified' && !(await isForensic(user))) return NextResponse.json({success:false,error:'Forensics must verify company settlement.'},{status:403})
       const evidence = typeof body.evidenceNote === 'string' ? body.evidenceNote.trim() : ''
-      const amount = Number(body.companySettlementAmountNgn)
+      const parsedAmount = Number(body.companySettlementAmountNgn)
+      const amount = Number.isSafeInteger(parsedAmount) ? parsedAmount : 0
       if (['sent','verified'].includes(body.status) && (!Number.isSafeInteger(amount) || amount <= 0)) return NextResponse.json({success:false,error:'Enter the exact company amount sent in whole naira.'},{status:400})
       if (['sent','held','investigation'].includes(body.status) && evidence.length < 8) return NextResponse.json({success:false,error:'Add a settlement evidence note of at least 8 characters.'},{status:400})
       const { rows } = await pool.query(`UPDATE weave_forensic_gift_card_transactions t SET
