@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
         WHERE p.id=$1::uuid AND p.status='active'
         RETURNING *`,[partnershipId,reference,description,gross,evidence,user.id])
       if (!rows[0]) return NextResponse.json({success:false,error:'Only an approved active partnership can have transactions recorded.'},{status:409})
-      return NextResponse.json({success:true,transaction:rows[0],message:'Transaction recorded with the fixed ₦3,000 carding allocation: ₦1,500 participant share and ₦1,500 Weave share. Additional transactions may be recorded independently.'},{status:201})
+      return NextResponse.json({success:true,transaction:rows[0],message:'Gift-card transaction recorded. The ₦3,000 carding split belongs to the partnership setup and is not charged again for each repeat transaction.'},{status:201})
     }
     return NextResponse.json({success:false,error:'Unknown Forensic gift-card action.'},{status:400})
   } catch (error:any) {
@@ -104,6 +104,17 @@ export async function PATCH(request: NextRequest) {
         [body.partnershipId,body.status,user.id])
       if (!rows[0]) return NextResponse.json({success:false,error:'Partnership not found or cannot be reviewed.'},{status:409})
       return NextResponse.json({success:true,partnership:rows[0]})
+    }
+    if (body.action === 'carding_settlement' && validId(body.partnershipId) && ['recorded','verified','settled'].includes(body.status)) {
+      const { rows } = await pool.query(`UPDATE weave_forensic_gift_card_partnerships
+        SET carding_settlement_status=$2,reviewed_at=NOW(),reviewed_by=$3::uuid
+        WHERE id=$1::uuid AND status='active'
+          AND (carding_settlement_status='pending' OR
+            (carding_settlement_status='recorded' AND $2 IN ('verified','settled')) OR
+            (carding_settlement_status='verified' AND $2='settled'))
+        RETURNING *`,[body.partnershipId,body.status,user.id])
+      if (!rows[0]) return NextResponse.json({success:false,error:'Carding settlement status cannot move backwards or the partnership is not active.'},{status:409})
+      return NextResponse.json({success:true,partnership:rows[0],message:'One-time carding split status updated.'})
     }
     if (body.action === 'verify_transaction' && validId(body.transactionId)) {
       const { rows } = await pool.query(`UPDATE weave_forensic_gift_card_transactions
