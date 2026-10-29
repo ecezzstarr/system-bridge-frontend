@@ -183,28 +183,23 @@ export function DepartmentEntryTicketGate({
 
   const submitPayment = async () => {
     if (!accessToken) return
-    if (!form.payerName.trim() || !form.paymentReference.trim() || (!form.payerEmail.trim() && !form.payerPhone.trim())) {
-      setError('Enter your name, payment reference, and either email or phone.')
+    if (!form.payerName.trim() || !form.payerEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.payerEmail.trim())) {
+      setError('Enter your name and a valid email for Paystack checkout.')
       return
     }
-
     setSubmitting(true)
     setError('')
     try {
-      const res = await fetch('/api/department-entry/ticket', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-entry-ticket-token': accessToken,
-        },
-        body: JSON.stringify(form),
+      const res = await fetch('/api/department-entry/ticket/paystack', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-entry-ticket-token': accessToken },
+        body: JSON.stringify({ payerName: form.payerName, payerEmail: form.payerEmail, payerPhone: form.payerPhone }),
       })
       const data = await res.json()
-      if (!res.ok || !data.success) throw new Error(data.error || 'Unable to submit payment')
-      setTicket(data.ticket)
+      if (!res.ok || !data.success || !data.paymentLink) throw new Error(data.error || 'Unable to start Paystack checkout')
+      window.location.assign(data.paymentLink)
     } catch (err: any) {
-      setError(err?.message || 'Unable to submit payment')
-    } finally {
+      setError(err?.message || 'Unable to start Paystack checkout')
       setSubmitting(false)
     }
   }
