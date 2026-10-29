@@ -6,7 +6,6 @@ import { useEffect, useMemo, useState } from 'react'
 import {
   ArrowRight,
   CheckCircle2,
-  Copy,
   Crown,
   FileKey2,
   Flame,
@@ -33,6 +32,7 @@ type PurchaseState = {
   status: string
   fileNumber?: string | null
   amountFlameCoin?: number
+  amountNgn?: number
 }
 
 export default function FileFolderPurchase({
@@ -49,16 +49,13 @@ export default function FileFolderPurchase({
   flameName?: string
 }) {
   const router = useRouter()
-  const purchaseStorageKey = bridgeCode ? `weave:bridge-purchase:${bridgeCode}` : ''
+  const purchaseStorageKey = bridgeCode ? `weave:bridge-purchase:${bridgeCode}` : `weave:file-folder-purchase:${fileNumber || 'direct'}`
   const [selectedTier, setSelectedTier] = useState<'pro' | 'premium'>('pro')
   const [proPrice, setProPrice] = useState(String(PRO_STARTING_PRICE))
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
-  const [copied, setCopied] = useState(false)
-  const [wallet, setWallet] = useState('')
-  const [loadingWallet, setLoadingWallet] = useState(true)
-  const [reference, setReference] = useState('')
+
   const [message, setMessage] = useState('')
   const [busy, setBusy] = useState(false)
   const [purchase, setPurchase] = useState<PurchaseState | null>(null)
@@ -73,18 +70,9 @@ export default function FileFolderPurchase({
     if (purchase?.status === 'confirmed' && purchase.fileNumber) return 5
     if (purchase?.status === 'rejected') return 3
     if (purchase) return 4
-    if (reference.trim()) return 3
     if (validPrice && name.trim() && phone.trim()) return 2
     return 1
-  }, [purchase, reference, validPrice, name, phone])
-
-  useEffect(() => {
-    fetch('/api/bridge/file-folder')
-      .then(async response => response.ok ? response.json() : null)
-      .then(data => setWallet(data?.companyTrxWallet || data?.depositWallet || ''))
-      .catch(() => setWallet(''))
-      .finally(() => setLoadingWallet(false))
-  }, [])
+  }, [purchase, validPrice, name, phone])
 
   useEffect(() => {
     if (!purchaseStorageKey || purchase) return
@@ -110,7 +98,7 @@ export default function FileFolderPurchase({
   }
 
   useEffect(() => {
-    if (!purchase?.id || !bridgeCode || purchase.status !== 'pending_admin_confirmation') return
+    if (!purchase?.id || !['pending_payment', 'pending_admin_confirmation'].includes(purchase.status)) return
 
     let stopped = false
     let timer: number | null = null
@@ -124,7 +112,7 @@ export default function FileFolderPurchase({
       setChecking(true)
       try {
         const response = await fetch(
-          `/api/bridge/file-folder/purchase?purchaseId=${encodeURIComponent(purchase.id)}&bridgeCode=${encodeURIComponent(bridgeCode)}`,
+          `/api/bridge/file-folder/purchase?purchaseId=${encodeURIComponent(purchase.id)}${bridgeCode ? `&bridgeCode=${encodeURIComponent(bridgeCode)}` : ''}`,
           { cache: 'no-store' },
         )
         const body = await response.json()
@@ -139,7 +127,7 @@ export default function FileFolderPurchase({
         }
 
         if (next.status === 'rejected') {
-          setMessage('Administration could not verify this File Folder payment. Review the TRX transaction and submit the correct movement.')
+          setMessage('Administration could not verify this File Folder payment. Contact Administration before starting another checkout.')
           return
         }
       } catch {
@@ -158,18 +146,10 @@ export default function FileFolderPurchase({
     }
   }, [purchase?.id, purchase?.status, bridgeCode])
 
-  const copyWallet = async () => {
-    if (!wallet) return
-    await navigator.clipboard.writeText(wallet)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 1600)
-  }
-
-  const recordTrxPayment = async () => {
-    if (!validPrice || !reference.trim() || !name.trim() || !phone.trim()) return
+  const startPaystackCheckout = async () => {
+    if (!validPrice || !name.trim() || !phone.trim() || !email.trim() || busy) return
     setBusy(true)
     setMessage('')
-
     try {
       const res = await fetch('/api/bridge/file-folder/purchase', {
         method: 'POST',
@@ -178,11 +158,10 @@ export default function FileFolderPurchase({
           fileNumber: fileNumber || undefined,
           amountFlameCoin: selectedPrice,
           fileFolderTier: selectedTier,
-          paymentMethod: 'trx',
-          paymentReference: reference.trim(),
+          paymentMethod: 'paystack',
           buyerName: name.trim(),
           buyerPhone: phone.trim(),
-          buyerEmail: email.trim() || undefined,
+          buyerEmail: email.trim(),
           bridgeCode,
           providerKey,
           providerName,
@@ -190,17 +169,17 @@ export default function FileFolderPurchase({
         }),
       })
       const body = await res.json()
-      if (!res.ok) throw new Error(body.error || 'Unable to record payment')
-
+      if (!res.ok) throw new Error(body.error || 'Unable to start Paystack checkout')
       const nextPurchase = body.purchase || null
+      if (!nextPurchase?.id || !body.paymentLink) throw new Error('Paystack checkout did not return a valid purchase and payment link.')
       setPurchase(nextPurchase)
-      if (nextPurchase?.id && purchaseStorageKey) {
+      if (purchaseStorageKey) {
         try { window.sessionStorage.setItem(purchaseStorageKey, String(nextPurchase.id)) } catch {}
       }
-      setMessage(body.message || 'File Folder payment recorded. Administration verification is now open.')
+      setMessage(body.message || 'Continue to Paystack to complete the File Folder payment.')
+      window.location.assign(body.paymentLink)
     } catch (error: any) {
-      setMessage(error.message || 'Unable to record payment')
-    } finally {
+      setMessage(error.message || 'Unable to start Paystack checkout')
       setBusy(false)
     }
   }
@@ -245,7 +224,7 @@ export default function FileFolderPurchase({
                     ? WEAVE_WRITING.fileFolderCrossing.administration
                     : WEAVE_WRITING.fileFolderCrossing.recognition}
             </p>
-            {purchase?.status === 'pending_admin_confirmation' && (
+            {['pending_payment', 'pending_admin_confirmation'].includes(purchase?.status || '') && (
               <p className="mt-1 inline-flex items-center gap-1.5 text-[8px] font-bold uppercase tracking-[.14em] text-amber-200">
                 <Radio className="h-3 w-3" /> {checking ? 'Reading Administration decision' : 'Awaiting Administration verification'}
               </p>
@@ -294,7 +273,7 @@ export default function FileFolderPurchase({
                 />
               </label>
               <label className="block">
-                <span className="text-[9px] font-bold uppercase tracking-[.12em] text-stone-500">Email · optional payment record</span>
+                <span className="text-[9px] font-bold uppercase tracking-[.12em] text-stone-500">Email · required for Paystack checkout</span>
                 <input
                   type="email"
                   value={email}
@@ -361,41 +340,17 @@ export default function FileFolderPurchase({
         <section className="grid border-b border-white/8 lg:grid-cols-[1.05fr_.95fr]">
           <div className="border-b border-white/8 px-4 py-6 sm:px-6 lg:border-b-0 lg:border-r lg:px-8">
             <div className="flex items-center gap-2">
-              <Wallet className="h-4 w-4 text-sky-200" />
-              <p className="text-[8px] font-black uppercase tracking-[.22em] text-sky-200">{WEAVE_WRITING.fileFolderCrossing.trx}</p>
+              <ShieldCheck className="h-4 w-4 text-sky-200" />
+              <p className="text-[8px] font-black uppercase tracking-[.22em] text-sky-200">Paystack Checkout</p>
             </div>
-            <p className="mt-4 text-[8px] font-bold uppercase tracking-[.15em] text-white/30">Company TRX wallet</p>
-            <p className="mt-2 break-all font-mono text-xs text-stone-200">
-              {loadingWallet ? 'Resolving Company TRX wallet…' : wallet || 'Company TRX wallet is not configured.'}
+            <p className="mt-4 text-xs leading-6 text-stone-400">
+              Pay securely in Naira through Paystack. The checkout amount is calculated from the current Flame Coin/TRX payment rate. Do not send TRX or submit a manual transaction hash for this purchase.
             </p>
-            <button
-              type="button"
-              disabled={!wallet}
-              onClick={copyWallet}
-              className="mt-3 inline-flex items-center gap-2 border-b border-white/15 pb-1 text-[9px] font-black uppercase tracking-[.14em] text-white disabled:opacity-30"
-            >
-              <Copy className="h-3.5 w-3.5" /> {copied ? 'Wallet copied' : 'Copy wallet'}
-            </button>
-
-            <div className="mt-6 flex items-end justify-between gap-4 border-y border-white/8 py-4">
-              <div>
-                <p className="text-[8px] uppercase tracking-[.15em] text-stone-500">Movement amount</p>
-                <p className="mt-1 text-2xl font-black text-white">{Number.isFinite(selectedPrice) ? selectedPrice.toLocaleString() : '—'} TRX</p>
-              </div>
-              <p className="text-right text-[8px] font-bold uppercase tracking-[.14em] text-orange-200">1 Flame Coin = 1 TRX</p>
+            <div className="mt-6 border-y border-white/8 py-4">
+              <p className="text-[8px] uppercase tracking-[.15em] text-stone-500">File Folder value</p>
+              <p className="mt-1 text-2xl font-black text-white">{Number.isFinite(selectedPrice) ? selectedPrice.toLocaleString() : '—'} Flame Coin</p>
+              <p className="mt-1 text-[9px] text-stone-500">The exact NGN total appears in Paystack checkout.</p>
             </div>
-
-            {!purchase && (
-              <label className="mt-5 block">
-                <span className="text-[9px] font-bold uppercase tracking-[.12em] text-stone-500">TRX transaction hash</span>
-                <input
-                  value={reference}
-                  onChange={event => setReference(event.target.value)}
-                  placeholder="Paste transaction hash after sending"
-                  className="mt-2 w-full border-b border-white/12 bg-transparent pb-2 font-mono text-xs text-white outline-none placeholder:text-white/20"
-                />
-              </label>
-            )}
           </div>
 
           <div className="px-4 py-6 sm:px-6 lg:px-8">
@@ -404,27 +359,27 @@ export default function FileFolderPurchase({
             {!purchase && (
               <>
                 <p className="mt-4 text-xs leading-6 text-stone-400">
-                  After you send the exact TRX amount, confirm the transaction here. Administration manually verifies the payment. That verification issues the File Number and opens the Client crossing into System Switch.
+                  Continue to Paystack to pay the File Folder amount. After Paystack verifies the payment, Administration reviews the purchase before the File Number is issued and the Client crossing opens.
                 </p>
                 <button
                   type="button"
-                  disabled={!validPrice || !reference.trim() || !name.trim() || !phone.trim() || busy}
-                  onClick={recordTrxPayment}
+                  disabled={!validPrice || !name.trim() || !phone.trim() || !email.trim() || busy}
+                  onClick={startPaystackCheckout}
                   className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full border border-orange-200/25 bg-orange-300/10 px-5 py-3 text-[10px] font-black uppercase tracking-[.16em] text-orange-50 transition hover:bg-orange-300/15 disabled:opacity-30"
                 >
-                  {busy ? 'Recording movement…' : WEAVE_WRITING.fileFolderCrossing.paymentAction} <ArrowRight className="h-3.5 w-3.5" />
+                  {busy ? 'Opening Paystack…' : 'Continue to Paystack'} <ArrowRight className="h-3.5 w-3.5" />
                 </button>
               </>
             )}
 
-            {purchase?.status === 'pending_admin_confirmation' && (
+            {['pending_payment', 'pending_admin_confirmation'].includes(purchase?.status || '') && (
               <div className="mt-4">
                 <div className="flex h-14 w-14 items-center justify-center rounded-full border border-amber-200/25 bg-amber-300/[.06]">
                   <ShieldCheck className="h-6 w-6 text-amber-200" />
                 </div>
                 <h3 className="mt-4 text-xl font-black text-white">{WEAVE_WRITING.fileFolderCrossing.pendingTitle}</h3>
-                <p className="mt-2 text-xs leading-6 text-stone-400">Your payment reference has reached Administration. Like an Agent or Bridger entry ticket, the crossing stays closed until Administration verifies the movement. Verification issues your File Number and releases the Client crossing.</p>
-                <p className="mt-4 text-[8px] font-black uppercase tracking-[.16em] text-amber-200">{checking ? 'Reading Administration verification…' : 'Waiting for Administration to verify and open crossing'}</p>
+                <p className="mt-2 text-xs leading-6 text-stone-400">Paystack has verified your payment and sent the purchase to Administration. The crossing stays closed until Administration approves it and issues your File Number.</p>
+                <p className="mt-4 text-[8px] font-black uppercase tracking-[.16em] text-amber-200">{purchase?.status === 'pending_payment' ? 'Waiting for Paystack payment verification' : checking ? 'Reading Administration verification…' : 'Waiting for Administration approval and File Number'}</p>
               </div>
             )}
 

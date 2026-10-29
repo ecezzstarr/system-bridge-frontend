@@ -21,7 +21,12 @@ for (const token of ["['admin','agent','bridger','client']","amountKobo:Math.rou
 if (!webhook.includes("request.headers.get('x-paystack-signature')") || !webhook.includes('settlePaystackDeposit')) throw new Error('Webhook must validate signature and invoke server verification')
 if (!callback.includes('settlePaystackDeposit')) throw new Error('Browser callback must use server-side verification')
 if (!walletUi.includes("fetch('/api/deposit/paystack'") || !walletUi.includes('window.location.href = data.paymentLink')) throw new Error('Wallet deposit UI is not connected to Paystack checkout')
-for (const token of ['Administration, Agents and Bridgers','Clients use Paystack','Withdrawals remain on their existing methods','outside this change','PAYSTACK_SECRET_KEY','/api/deposit/paystack/webhook']) {
+for (const token of ['Administration, Agents and Bridgers','Clients use Paystack','Withdrawals remain on their existing methods','Customer Door orders','PAYSTACK_SECRET_KEY','/api/deposit/paystack/webhook']) {
   if (!docs.toLowerCase().includes(token.toLowerCase())) throw new Error('Missing scoped rollout requirement: ' + token)
 }
-console.log('Paystack wallet-deposit regression checks passed')
+const fileFolderCheckout = read('app/api/bridge/file-folder/purchase/route.ts')
+const fileFolderSettlement = read('lib/file-folder-paystack.ts')
+if (!fileFolderCheckout.includes('initializePaystackTransaction') || !fileFolderCheckout.includes('amount_ngn')) throw new Error('File Folder purchase must initialize Paystack with a stored NGN amount')
+if (!fileFolderSettlement.includes('paystackTransactionMatches') || !fileFolderSettlement.includes("status='pending_admin_confirmation'")) throw new Error('File Folder payment must be verified before Administration review')
+if (!webhook.includes('settleFileFolderPaystackPurchase')) throw new Error('Paystack webhook must route File Folder payments to the File Folder settlement handler')
+console.log('Paystack wallet, ticket and File Folder checkout regression checks passed')

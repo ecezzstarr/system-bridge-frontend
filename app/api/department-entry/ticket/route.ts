@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import {
   createDepartmentEntryTicket,
   getDepartmentEntryTicket,
-  submitDepartmentEntryPayment,
 } from '@/lib/department-entry-tickets'
 import type { Department } from '@/lib/departmental-codes'
 
@@ -82,56 +81,9 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function PATCH(request: NextRequest) {
-  try {
-    const accessToken = readAccessToken(request)
-    if (!accessToken) {
-      return NextResponse.json({ error: 'Ticket access token required' }, { status: 401 })
-    }
-
-    const body = await request.json()
-    const payerName = String(body.payerName || '').trim().slice(0, 255)
-    const payerEmail = String(body.payerEmail || '').trim().slice(0, 255)
-    const payerPhone = String(body.payerPhone || '').trim().slice(0, 80)
-    const paymentReference = String(body.paymentReference || '').trim().slice(0, 255)
-
-    if (!payerName || !paymentReference || (!payerEmail && !payerPhone)) {
-      return NextResponse.json(
-        { error: 'Name, payment reference, and either email or phone are required.' },
-        { status: 400 }
-      )
-    }
-
-    const ticket = await submitDepartmentEntryPayment(accessToken, {
-      payerName,
-      payerEmail: payerEmail || undefined,
-      payerPhone: payerPhone || undefined,
-      paymentReference,
-    })
-
-    if (!ticket) {
-      return NextResponse.json(
-        { error: 'Ticket is unavailable, expired, or already completed.' },
-        { status: 409 }
-      )
-    }
-
-    return NextResponse.json({
-      success: true,
-      ticket: safeTicket(ticket),
-      message: 'Payment submitted. Administration has been notified for verification.',
-    })
-  } catch (error: any) {
-    if (error?.code === '23505') {
-      return NextResponse.json(
-        { error: 'That payment reference has already been used.' },
-        { status: 409 }
-      )
-    }
-    console.error('[department-entry] submit payment error:', error)
-    return NextResponse.json(
-      { error: error?.message || 'Unable to submit payment' },
-      { status: 500 }
-    )
-  }
+export async function PATCH() {
+  return NextResponse.json(
+    { error: 'Manual payment-reference submission is disabled. Use the Paystack checkout for Department Entry.' },
+    { status: 410 }
+  )
 }

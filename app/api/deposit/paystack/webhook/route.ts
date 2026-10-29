@@ -3,6 +3,8 @@ import { verifyPaystackWebhookSignature } from '@/lib/paystack'
 import { settlePaystackDeposit } from '@/lib/paystack-deposits'
 import { getPool } from '@/lib/db'
 import { notifyAdministrators } from '@/lib/deposit-notifications'
+import { settleDepartmentEntryPaystackTicket } from '@/lib/department-entry-paystack'
+import { settleFileFolderPaystackPurchase } from '@/lib/file-folder-paystack'
 
 export const dynamic = 'force-dynamic'
 
@@ -15,7 +17,11 @@ export async function POST(request: NextRequest) {
     const event=JSON.parse(rawBody)
     const reference=typeof event?.data?.reference==='string'?event.data.reference:''
     if (event?.event === 'charge.success' && reference) {
-      await settlePaystackDeposit(reference)
+      const ticketResult = await settleDepartmentEntryPaystackTicket(reference)
+      if (!ticketResult.matched) {
+        const fileFolderResult = await settleFileFolderPaystackPurchase(reference)
+        if (!fileFolderResult.matched) await settlePaystackDeposit(reference)
+      }
     } else if ((event?.event === 'charge.failed' || event?.event === 'refund.processed') && reference) {
       const pool=getPool()
       const client=await pool.connect()

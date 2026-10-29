@@ -30,5 +30,5 @@ assert(purchase.includes('FROM bridge_ais b'),'Purchase validates a native Bridg
 assert(purchase.includes('directBridgerId=String(bridgerPath.bridger_id)'),'Native purchase has database-backed Bridger identity')
 assert(purchase.includes('${directBridgerId || movementBridgerId}::uuid'),'Bridger attribution is recorded on the purchase')
 assert(purchase.includes("WHERE code=${bridgeCode} AND expires_at>NOW()"),'ChatGPT Flame crossing purchase path is retained')
-assert(purchaseUi.includes('bridgeCode,')&&purchaseUi.includes('paymentReference:'),'Purchase uses existing receipt/payment verification flow')
+assert(purchaseUi.includes('bridgeCode,')&&purchaseUi.includes("paymentMethod: 'paystack'")&&purchaseUi.includes('buyerEmail: email.trim()'),'Purchase starts a Paystack checkout with buyer identity')
 console.log('Bridger Bridge AI → Radiance → Client File Folder regression passed')

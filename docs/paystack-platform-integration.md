@@ -2,11 +2,11 @@
 
 ## Scope
 
-Paystack is used only to fund Flame Coin wallets:
+Paystack is used to fund Flame Coin wallets and to collect approved File Folder purchase payments:
 - Administration, Agents and Bridgers use Paystack instead of the manual OPay deposit process.
 - Clients use Paystack instead of sending TRX to the Company wallet to purchase Flame Coin.
 
-Withdrawals remain on their existing methods and are not changed by this integration. File Folder purchases, Customer Door orders, food, stock, subscriptions, tickets and all other commerce flows are outside this change.
+Withdrawals remain on their existing methods and are not changed by this integration. Customer Door orders, food, stock, subscriptions and other unrelated commerce flows remain outside this change. Department Entry Tickets use a separate Paystack checkout and never credit a wallet. File Folder purchases use a separate Paystack checkout and remain pending until server-side payment verification succeeds and Administration approves the purchase.
 
 ## Deposit lifecycle
 
@@ -28,4 +28,4 @@ Withdrawals remain on their existing methods and are not changed by this integra
 
 This branch must pass the full Production Check, then complete a real test-mode deposit for each role group (staff and Client), verify the matching wallet and Administration ledger record, and verify duplicate webhook delivery causes no second credit. Do not activate live keys until those checks pass.
 
-No withdrawal, payout or other commerce flow is included.
+Department Entry ticket checkout verifies the unique reference, exact NGN amount, NGN currency and payer email directly with Paystack. Only verified payments enter Administration's existing approval queue; departmental codes are still issued only after Administration approves. Manual ticket reference submission is disabled. File Folder checkout applies the same reference, amount, currency and payer-email checks; its File Number is not issued until Administration approves the verified purchase. Withdrawals remain on their existing methods.

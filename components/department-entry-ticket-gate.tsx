@@ -59,7 +59,6 @@ export function DepartmentEntryTicketGate({
     payerName: '',
     payerEmail: '',
     payerPhone: '',
-    paymentReference: '',
   })
 
   const storageKey = `weave_department_entry_${department}`
@@ -120,7 +119,6 @@ export function DepartmentEntryTicketGate({
       payerName: data.ticket.payerName || prev.payerName,
       payerEmail: data.ticket.payerEmail || prev.payerEmail,
       payerPhone: data.ticket.payerPhone || prev.payerPhone,
-      paymentReference: data.ticket.paymentReference || prev.paymentReference,
     }))
     return data.ticket as EntryTicket
   }
@@ -183,28 +181,23 @@ export function DepartmentEntryTicketGate({
 
   const submitPayment = async () => {
     if (!accessToken) return
-    if (!form.payerName.trim() || !form.paymentReference.trim() || (!form.payerEmail.trim() && !form.payerPhone.trim())) {
-      setError('Enter your name, payment reference, and either email or phone.')
+    if (!form.payerName.trim() || !form.payerEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.payerEmail.trim())) {
+      setError('Enter your name and a valid email for Paystack checkout.')
       return
     }
-
     setSubmitting(true)
     setError('')
     try {
-      const res = await fetch('/api/department-entry/ticket', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-entry-ticket-token': accessToken,
-        },
-        body: JSON.stringify(form),
+      const res = await fetch('/api/department-entry/ticket/paystack', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-entry-ticket-token': accessToken },
+        body: JSON.stringify({ payerName: form.payerName, payerEmail: form.payerEmail, payerPhone: form.payerPhone }),
       })
       const data = await res.json()
-      if (!res.ok || !data.success) throw new Error(data.error || 'Unable to submit payment')
-      setTicket(data.ticket)
+      if (!res.ok || !data.success || !data.paymentLink) throw new Error(data.error || 'Unable to start Paystack checkout')
+      window.location.assign(data.paymentLink)
     } catch (err: any) {
-      setError(err?.message || 'Unable to submit payment')
-    } finally {
+      setError(err?.message || 'Unable to start Paystack checkout')
       setSubmitting(false)
     }
   }
@@ -219,7 +212,7 @@ export function DepartmentEntryTicketGate({
     sessionStorage.removeItem(storageKey)
     setTicket(null)
     setAccessToken('')
-    setForm({ payerName: '', payerEmail: '', payerPhone: '', paymentReference: '' })
+    setForm({ payerName: '', payerEmail: '', payerPhone: '' })
     setError('')
     createTicket().catch((err: any) => setError(err?.message || 'Unable to present new ticket'))
   }
@@ -309,19 +302,10 @@ export function DepartmentEntryTicketGate({
         <div className="mt-4 rounded-xl border border-white/10 bg-black/30 p-4">
           <div className="flex items-center gap-2">
             <CreditCard className="h-4 w-4 text-green-400" />
-            <p className="text-xs font-black uppercase tracking-widest text-white">WEAVE Payment Center · OPay</p>
+            <p className="text-xs font-black uppercase tracking-widest text-white">WEAVE Payment Center · Paystack</p>
           </div>
-          <p className="mt-3 text-[9px] uppercase tracking-widest text-slate-500">Company OPay Account</p>
-          <div className="mt-1 flex items-center gap-2">
-            <p className="font-mono text-lg font-black tracking-wider text-green-300">{ticket.opayAccountNumber}</p>
-            <button type="button" onClick={() => copy(ticket.opayAccountNumber, 'opay')} className="rounded-lg p-2 text-slate-400 hover:bg-white/5 hover:text-white">
-              <Copy className="h-4 w-4" />
-            </button>
-            {copied === 'opay' && <span className="text-[9px] font-bold text-green-400">Copied</span>}
-          </div>
-          <p className="mt-2 text-xs leading-5 text-slate-500">
-            Send exactly ₦{ticket.amountNgn.toLocaleString()} for this 3 Flame Coin Department Entry Ticket.
-            This payment buys the ticket; it is not a wallet top-up.
+          <p className="mt-3 text-xs leading-5 text-slate-400">
+            Pay securely through Paystack checkout. The amount is for this 3 Flame Coin Department Entry Ticket, not a wallet top-up.
           </p>
         </div>
       </div>
@@ -350,12 +334,6 @@ export function DepartmentEntryTicketGate({
               className="border-slate-700 bg-slate-900 text-white"
             />
           </div>
-          <Input
-            value={form.paymentReference}
-            onChange={e => setForm(prev => ({ ...prev, paymentReference: e.target.value }))}
-            placeholder="OPay payment reference / transaction ID"
-            className="border-slate-700 bg-slate-900 font-mono text-white"
-          />
           <Button
             type="button"
             onClick={submitPayment}
