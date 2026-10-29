@@ -89,9 +89,16 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({success:false,error:'Enter an approved partnership, unique transaction reference, gift description, whole-naira amount greater than ₦1,500 and a 12–1000 character evidence note.'},{status:400})
       const { rows } = await pool.query(`INSERT INTO weave_forensic_gift_card_transactions
         (partnership_id,transaction_reference,gift_card_description,gross_amount_ngn,evidence_note,recorded_by,responsible_regional_manager_user_id)
-        SELECT p.id,$2,$3,$4,$5,$6::uuid,trust.regional_manager_user_id FROM weave_forensic_gift_card_partnerships p
-        JOIN weave_forensic_gift_card_trust trust ON trust.partnership_id=p.id AND trust.status='active'
-          AND EXISTS (SELECT 1 FROM weave_forensic_gift_card_trust trust JOIN weave_regional_manager_appointments rm ON rm.user_id=trust.regional_manager_user_id AND rm.status='active' JOIN weave_regional_manager_bridgers member ON member.bridger_user_id=p.participant_user_id AND member.regional_manager_user_id=trust.regional_manager_user_id AND member.status='active' WHERE trust.partnership_id=p.id AND trust.participant_user_id=p.participant_user_id AND trust.status='active')
+        SELECT p.id,$2,$3,$4,$5,$6::uuid,trust.regional_manager_user_id
+        FROM weave_forensic_gift_card_partnerships p
+        JOIN weave_forensic_gift_card_trust trust
+          ON trust.partnership_id=p.id AND trust.participant_user_id=p.participant_user_id AND trust.status='active'
+        JOIN weave_regional_manager_appointments rm
+          ON rm.user_id=trust.regional_manager_user_id AND rm.status='active'
+        JOIN weave_regional_manager_bridgers member
+          ON member.bridger_user_id=p.participant_user_id
+          AND member.regional_manager_user_id=trust.regional_manager_user_id AND member.status='active'
+        WHERE p.id=$1::uuid AND p.status='active'
         RETURNING *`,[partnershipId,reference,description,gross,evidence,user.id])
       if (!rows[0]) return NextResponse.json({success:false,error:'Only an approved active partnership with active Regional Manager Company Escrow Trust can have transactions recorded.'},{status:409})
       return NextResponse.json({success:true,transaction:rows[0],message:'Gift-card transaction recorded. The ₦3,000 carding split belongs to the partnership setup and is not charged again for each repeat transaction.'},{status:201})
