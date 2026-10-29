@@ -91,6 +91,7 @@ export async function POST(request: NextRequest) {
         (partnership_id,transaction_reference,gift_card_description,gross_amount_ngn,evidence_note,recorded_by)
         SELECT p.id,$2,$3,$4,$5,$6::uuid FROM weave_forensic_gift_card_partnerships p
         WHERE p.id=$1::uuid AND p.status='active'
+          AND EXISTS (SELECT 1 FROM weave_forensic_gift_card_trust trust WHERE trust.partnership_id=p.id AND trust.participant_user_id=p.participant_user_id AND trust.status='active')
         RETURNING *`,[partnershipId,reference,description,gross,evidence,user.id])
       if (!rows[0]) return NextResponse.json({success:false,error:'Only an approved active partnership with active Regional Manager Company Escrow Trust can have transactions recorded.'},{status:409})
       return NextResponse.json({success:true,transaction:rows[0],message:'Gift-card transaction recorded. The ₦3,000 carding split belongs to the partnership setup and is not charged again for each repeat transaction.'},{status:201})
@@ -105,7 +106,7 @@ export async function POST(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   const user = await getUser(request)
-  if (!(await isForensic(user))) return NextResponse.json({success:false,error:'Approved active Forensics departmental appointment required.'},{status:403})
+  if (!user) return NextResponse.json({success:false,error:'Sign in is required.'},{status:403})
   try {
     await ensureForensicGiftCardSchema()
     const body = await request.json().catch(() => ({}))
@@ -123,6 +124,7 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({success:true,trust:rows[0],message:'Company Escrow Trust activated. Forensics may proceed only while Trust is active.'})
     }
     if (body.action === 'settle_company_share' && validId(body.transactionId) && ['sent','verified','held','investigation'].includes(body.status)) {
+      if (!(await isForensic(user))) return NextResponse.json({success:false,error:'Approved active Forensics departmental appointment required.'},{status:403})
       if (body.status === 'verified' && !(await isForensic(user))) return NextResponse.json({success:false,error:'Forensics must verify company settlement.'},{status:403})
       const evidence = typeof body.evidenceNote === 'string' ? body.evidenceNote.trim() : ''
       if (['sent','held','investigation'].includes(body.status) && evidence.length < 8) return NextResponse.json({success:false,error:'Add a settlement evidence note of at least 8 characters.'},{status:400})
@@ -144,6 +146,7 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({success:true,transaction:rows[0],message:'Accountability decision recorded; no wallet is automatically debited.'})
     }
     if (body.action === 'review_partnership' && validId(body.partnershipId) && ['active','paused','closed'].includes(body.status)) {
+      if (!(await isForensic(user))) return NextResponse.json({success:false,error:'Approved active Forensics departmental appointment required.'},{status:403})
       const { rows } = await pool.query(`UPDATE weave_forensic_gift_card_partnerships
         SET status=$2,reviewed_at=NOW(),reviewed_by=$3::uuid
         WHERE id=$1::uuid AND status IN ('pending','active','paused') RETURNING *`,
@@ -152,6 +155,7 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({success:true,partnership:rows[0]})
     }
     if (body.action === 'carding_settlement' && validId(body.partnershipId) && ['recorded','verified','settled'].includes(body.status)) {
+      if (!(await isForensic(user))) return NextResponse.json({success:false,error:'Approved active Forensics departmental appointment required.'},{status:403})
       const { rows } = await pool.query(`UPDATE weave_forensic_gift_card_partnerships
         SET carding_settlement_status=$2,reviewed_at=NOW(),reviewed_by=$3::uuid
         WHERE id=$1::uuid AND status='active'
@@ -163,6 +167,7 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({success:true,partnership:rows[0],message:'One-time carding split status updated.'})
     }
     if (body.action === 'verify_transaction' && validId(body.transactionId)) {
+      if (!(await isForensic(user))) return NextResponse.json({success:false,error:'Approved active Forensics departmental appointment required.'},{status:403})
       const { rows } = await pool.query(`UPDATE weave_forensic_gift_card_transactions
         SET status='verified',verified_by=$2::uuid,verified_at=NOW()
         WHERE id=$1::uuid AND status='recorded' RETURNING *`,[body.transactionId,user.id])
