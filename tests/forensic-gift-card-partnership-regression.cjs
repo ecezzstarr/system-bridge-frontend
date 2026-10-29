@@ -29,3 +29,5 @@ assert.ok(!api.includes('pool.query(\\\\`') && !api.includes('pool.query(\\`'), 
 assert.ok(api.includes('member.regional_manager_user_id=$2::uuid') && api.includes('member.status=\'active\''), 'Only the assigned Regional Manager can activate Trust')
 assert.ok(api.includes('trust.status=\'active\'') && api.includes('t.gross_amount_ngn-t.participant_agreed_share_ngn'), 'Transaction and company settlement enforce Trust and exact company share')
 assert.ok(workspace.includes('trust_status?:string') && workspace.includes('settlementAmount'), 'UI types and settlement evidence inputs match the API contract')
+
+assert.ok(!read('app/(app)/admin/regional-manager-applications/page.tsx').includes("onClick={()=>void review(a.user_id,'approve')>Approve appointment"), 'Regional Manager application review JSX compiles');
