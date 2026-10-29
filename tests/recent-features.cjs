@@ -247,7 +247,7 @@ assert.ok(notificationsApiSource.includes('getAuthUser'),'Notification inbox req
 assert.ok(!notificationsApiSource.includes("searchParams.get('userId')"),'Notification inbox cannot select another user by query parameter')
 assert.ok(notificationBellSource.includes("visiblePoll(fetchNotifications, 5000)"),'Notification bell polls promptly while visible without overlapping requests')
 assert.ok(paystackApiSource.includes("adminLink:'/admin/control-center#deposits'"),'Paystack deposit notification deep-links to the canonical Control Center deposit station')
-assert.ok(tronDepositSource.includes('/admin/client-deposits'),'TRX notification deep-links to dedicated Client deposit review')
+assert.ok(tronDepositSource.includes("status: 410")&&tronDepositSource.includes('/api/deposit/paystack'),'Retired TRX deposit endpoint directs users to the current Paystack funding rail')
 assert.ok(bridgeDepositSource.includes('/admin/control-center#bridge'),'Bridge notification deep-links to the canonical Control Center Bridge deposit station')
 assert.ok(adminDashboardNotificationSource.includes("hash === '#deposits'"),'Administration Control Center handles OPay notification hash')
 assert.ok(adminDashboardNotificationSource.includes("hash === '#tron'")&&adminDashboardNotificationSource.includes("window.location.replace('/admin/client-deposits')"),'Legacy TRX Control Center hash resolves to the dedicated Client Deposits place')
