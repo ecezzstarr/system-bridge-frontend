@@ -3,6 +3,7 @@ import { getAuthUser } from '@/lib/auth-api'
 import { getPool } from '@/lib/db'
 import { canReplyForGuidanceDepartment } from '@/lib/weave-guidance-departments'
 import { ensureForensicGiftCardSchema } from '@/lib/forensic-gift-card-partnership'
+import { getTrxPaymentNgnRate } from '@/lib/trx-payment'
 
 export const dynamic = 'force-dynamic'
 const validId = (value: unknown): value is string =>
@@ -169,9 +170,74 @@ export async function PATCH(request: NextRequest) {
       if (user.role !== 'admin') return NextResponse.json({success:false,error:'Administration must review and authorize Regional Manager accountability deductions.'},{status:403})
       const note = typeof body.reviewNote === 'string' ? body.reviewNote.trim() : ''
       if (note.length < 20) return NextResponse.json({success:false,error:'Document the evidence and rationale in at least 20 characters.'},{status:400})
-      const { rows } = await pool.query(`UPDATE weave_forensic_gift_card_transactions SET accountability_review_status=$2,accountability_review_note=$3 WHERE id=$1::uuid AND company_settlement_status IN ('held','investigation') AND accountability_review_status='pending_review' RETURNING *`,[body.transactionId,body.status,note])
-      if (!rows[0]) return NextResponse.json({success:false,error:'Only a held or investigated transaction can receive an accountability decision.'},{status:409})
-      return NextResponse.json({success:true,transaction:rows[0],message:'Accountability decision recorded; no wallet is automatically debited.'})
+      const client = await pool.connect()
+      try {
+        await client.query('BEGIN')
+        const locked = await client.query(`SELECT t.*,p.participant_user_id FROM weave_forensic_gift_card_transactions t JOIN weave_forensic_gift_card_partnerships p ON p.id=t.partnership_id WHERE t.id=$1::uuid AND t.company_settlement_status IN ('held','investigation') AND t.accountability_review_status='pending_review' FOR UPDATE OF t`,[body.transactionId])
+        const transaction = locked.rows[0]
+        if (!transaction) {
+          await client.query('ROLLBACK')
+          return NextResponse.json({success:false,error:'Only a held or investigated transaction awaiting review can receive an accountability decision.'},{status:409})
+        }
+        if (body.status === 'rejected') {
+          const rejected = await client.query(`UPDATE weave_forensic_gift_card_transactions SET accountability_review_status='rejected',accountability_review_note=$2 WHERE id=$1::uuid RETURNING *`,[body.transactionId,note])
+          await client.query('COMMIT')
+          return NextResponse.json({success:true,transaction:rejected.rows[0],message:'Administration rejected the accountability deduction. No wallet was debited.'})
+        }
+        const managerId = transaction.responsible_regional_manager_user_id
+        if (!managerId) {
+          await client.query('ROLLBACK')
+          return NextResponse.json({success:false,error:'No responsible Regional Manager is recorded; deduction cannot proceed.'},{status:409})
+        }
+        const companyNgn = Number(transaction.company_settlement_amount_ngn)
+        const agreedShare = Number(transaction.participant_agreed_share_ngn)
+        const grossNgn = Number(transaction.gross_amount_ngn)
+        const exactCompanyShare = grossNgn - agreedShare
+        if (!Number.isSafeInteger(companyNgn) || companyNgn <= 0 || companyNgn !== exactCompanyShare) {
+          await client.query('ROLLBACK')
+          return NextResponse.json({success:false,error:'The verified company share does not match the recorded gross amount less the participant share.'},{status:409})
+        }
+        const rate = await getTrxPaymentNgnRate()
+        if (!Number.isFinite(rate.rateNgnPerTrx) || rate.rateNgnPerTrx <= 0) {
+          await client.query('ROLLBACK')
+          return NextResponse.json({success:false,error:'A valid NGN-to-Flame-Coin rate is unavailable; no deduction was made.'},{status:503})
+        }
+        const deductionFlameCoin = Math.round((companyNgn / rate.rateNgnPerTrx) * 100000000) / 100000000
+        if (!Number.isFinite(deductionFlameCoin) || deductionFlameCoin <= 0) {
+          await client.query('ROLLBACK')
+          return NextResponse.json({success:false,error:'Calculated Flame Coin deduction is invalid.'},{status:400})
+        }
+        const walletResult = await client.query(`SELECT id,balance_trx FROM wallets WHERE user_id=$1::uuid AND is_primary=true FOR UPDATE`,[managerId])
+        const wallet = walletResult.rows[0]
+        if (!wallet) {
+          await client.query('ROLLBACK')
+          return NextResponse.json({success:false,error:'Regional Manager primary Flame Coin wallet was not found; no deduction was made.'},{status:409})
+        }
+        const before = Number(wallet.balance_trx)
+        if (!Number.isFinite(before) || before < deductionFlameCoin) {
+          await client.query('ROLLBACK')
+          return NextResponse.json({success:false,error:'Regional Manager has insufficient available Flame Coin; no partial deduction was made.'},{status:409})
+        }
+        const debit = await client.query(`UPDATE wallets SET balance_trx=balance_trx-$1,updated_at=NOW() WHERE id=$2::uuid AND balance_trx >= $1 RETURNING balance_trx`,[deductionFlameCoin,wallet.id])
+        if (debit.rowCount !== 1) {
+          await client.query('ROLLBACK')
+          return NextResponse.json({success:false,error:'Wallet balance changed during review; no deduction was committed.'},{status:409})
+        }
+        const after = Number(debit.rows[0].balance_trx)
+        const reference = `FORENSIC-RM-${body.transactionId}`
+        await client.query(`INSERT INTO ledger_entries (user_id,entry_type,amount,currency,description,balance_before,balance_after,metadata,created_at) VALUES ($1::uuid,'fee',$2,'Flame Coin',$3,$4,$5,$6::jsonb,NOW())`,[
+          managerId,deductionFlameCoin,`Approved Regional Manager accountability deduction for Forensic gift-card transaction ${body.transactionId}`,before,after,
+          JSON.stringify({source:'forensic_gift_card_accountability',reference,transactionId:body.transactionId,companyShareNgn:companyNgn,ngnPerFlameCoin:rate.rateNgnPerTrx,rateSource:rate.source,flameCoinDeducted:deductionFlameCoin,reviewedBy:user.id,reviewNote:note})
+        ])
+        const updated = await client.query(`UPDATE weave_forensic_gift_card_transactions SET accountability_review_status='approved_deduction',accountability_review_note=$2,accountability_deduction_flame_coin=$3,accountability_rate_ngn_per_flame_coin=$4,accountability_deduction_reference=$5,accountability_deducted_at=NOW() WHERE id=$1::uuid RETURNING *`,[body.transactionId,note,deductionFlameCoin,rate.rateNgnPerTrx,reference])
+        await client.query('COMMIT')
+        return NextResponse.json({success:true,transaction:updated.rows[0],deduction:{reference,managerUserId:managerId,companyShareNgn:companyNgn,rateNgnPerFlameCoin:rate.rateNgnPerTrx,rateSource:rate.source,flameCoinDeducted:deductionFlameCoin,balanceBefore:before,balanceAfter:after},message:'Approved accountability deduction completed atomically in Flame Coin and recorded in the ledger.'})
+      } catch (error) {
+        await client.query('ROLLBACK').catch(() => {})
+        throw error
+      } finally {
+        client.release()
+      }
     }
     if (body.action === 'review_partnership' && validId(body.partnershipId) && ['active','paused','closed'].includes(body.status)) {
       if (!(await isForensic(user))) return NextResponse.json({success:false,error:'Approved active Forensics departmental appointment required.'},{status:403})
