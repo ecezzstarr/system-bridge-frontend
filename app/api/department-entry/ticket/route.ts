@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import {
   createDepartmentEntryTicket,
   getDepartmentEntryTicket,
-  submitDepartmentEntryPayment,
 } from '@/lib/department-entry-tickets'
 import type { Department } from '@/lib/departmental-codes'
 
