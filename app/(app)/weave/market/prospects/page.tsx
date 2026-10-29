@@ -199,7 +199,7 @@ export default function ProspectMarketPage() {
         return
       }
 
-      openWhatsApp(target, p.messageSent)
+      openWhatsApp(target, `${p.messageSent}\n\nhttps://weavingsystem.online/weave/plus-file-folder-white-official.webp`)
     } catch (error) {
       toast.error('WEAVE could not open this Prospect movement')
     } finally {
