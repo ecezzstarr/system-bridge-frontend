@@ -8,7 +8,7 @@ export async function initializeDepartmentEntryPaystackTicket(input: { accessTok
   await ensureDepartmentEntryTicketSchema()
   const rows = await sql\`
     SELECT * FROM departmental_entry_tickets
-    WHERE access_token_hash = encode(digest(\${input.accessToken}, 'sha256'), 'hex')
+    WHERE access_token_hash = \${createHash('sha256').update(input.accessToken).digest('hex')}
       AND status = 'PRESENTED' AND expires_at > NOW()
     LIMIT 1
   \`
