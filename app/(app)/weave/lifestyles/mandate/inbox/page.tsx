@@ -94,6 +94,7 @@ export default function MandateGuidanceInbox(){
         className={`border px-3 py-2 text-xs font-bold ${department===d?'border-amber-300/50 text-amber-100':'border-white/10 text-stone-400'}`}>{names[d]}</button>)}</div>
     </div>
     {departments.includes('forensic')&&<Link href="/weave/lifestyles/mandate/forensic-food" className="mt-4 inline-flex border border-amber-300/30 px-4 py-3 text-xs font-bold text-amber-200">Open Food Forensics · Weave OPay stock distributions</Link>}
+    {departments.includes('forensic')&&<Link href="/weave/lifestyles/mandate/forensic-gift-cards" className="ml-2 mt-4 inline-flex border border-violet-300/30 px-4 py-3 text-xs font-bold text-violet-200">Open Gift-Card Forensics · Partnerships & repeat transactions</Link>}
     {error&&<p role="alert" className="mt-3 text-xs text-rose-200">{error}</p>}
     <div className="mt-4 flex min-h-[600px] flex-col border border-white/10 md:h-[72vh] md:flex-row">
       <aside className="max-h-72 overflow-y-auto border-b border-white/10 md:max-h-none md:w-80 md:border-b-0 md:border-r">
