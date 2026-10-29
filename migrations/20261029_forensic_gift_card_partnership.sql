@@ -45,3 +45,23 @@ ALTER TABLE weave_forensic_gift_card_partnerships ADD COLUMN IF NOT EXISTS cardi
 ALTER TABLE weave_forensic_gift_card_transactions ALTER COLUMN carding_amount_ngn SET DEFAULT 0;
 ALTER TABLE weave_forensic_gift_card_transactions ALTER COLUMN participant_share_ngn SET DEFAULT 0;
 ALTER TABLE weave_forensic_gift_card_transactions ALTER COLUMN weave_share_ngn SET DEFAULT 0;
+
+-- Company Escrow / Regional Manager Trust gate for each carding profile.
+CREATE TABLE IF NOT EXISTS weave_forensic_gift_card_trust (
+  partnership_id UUID PRIMARY KEY REFERENCES weave_forensic_gift_card_partnerships(id) ON DELETE CASCADE,
+  participant_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  regional_manager_user_id UUID NOT NULL REFERENCES weave_regional_manager_appointments(user_id),
+  status VARCHAR(20) NOT NULL DEFAULT 'active' CHECK (status IN ('active','revoked')),
+  activated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  revoked_at TIMESTAMPTZ
+);
+CREATE INDEX IF NOT EXISTS weave_forensic_gift_card_trust_manager_idx ON weave_forensic_gift_card_trust(regional_manager_user_id,status);
+ALTER TABLE weave_forensic_gift_card_transactions ADD COLUMN IF NOT EXISTS participant_agreed_share_ngn INTEGER NOT NULL DEFAULT 1500 CHECK (participant_agreed_share_ngn >= 0);
+ALTER TABLE weave_forensic_gift_card_transactions ADD COLUMN IF NOT EXISTS company_settlement_amount_ngn INTEGER NOT NULL DEFAULT 0 CHECK (company_settlement_amount_ngn >= 0);
+ALTER TABLE weave_forensic_gift_card_transactions ADD COLUMN IF NOT EXISTS company_settlement_status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (company_settlement_status IN ('pending','sent','verified','held','investigation'));
+ALTER TABLE weave_forensic_gift_card_transactions ADD COLUMN IF NOT EXISTS company_settlement_evidence TEXT;
+ALTER TABLE weave_forensic_gift_card_transactions ADD COLUMN IF NOT EXISTS settlement_verified_by UUID REFERENCES users(id);
+ALTER TABLE weave_forensic_gift_card_transactions ADD COLUMN IF NOT EXISTS settlement_verified_at TIMESTAMPTZ;
+ALTER TABLE weave_forensic_gift_card_transactions ADD COLUMN IF NOT EXISTS responsible_regional_manager_user_id UUID REFERENCES users(id);
+ALTER TABLE weave_forensic_gift_card_transactions ADD COLUMN IF NOT EXISTS accountability_review_status VARCHAR(20) NOT NULL DEFAULT 'not_required' CHECK (accountability_review_status IN ('not_required','pending_review','approved_deduction','rejected'));
+ALTER TABLE weave_forensic_gift_card_transactions ADD COLUMN IF NOT EXISTS accountability_review_note TEXT;
