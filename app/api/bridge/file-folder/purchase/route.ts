@@ -201,7 +201,7 @@ export async function POST(request: NextRequest) {
           email: String(buyerEmail).trim().toLowerCase(),
           amountKobo: Math.round(Number(amountNgn) * 100),
           reference: paymentReference,
-          callbackUrl: origin + '/api/bridge/file-folder/paystack/verify',
+          callbackUrl: origin + '/api/bridge/file-folder/paystack/verify?returnTo=' + encodeURIComponent((() => { try { const referer = request.headers.get('referer'); const parsed = referer ? new URL(referer) : new URL('/', origin); return parsed.origin === origin ? parsed.pathname + parsed.search : '/' } catch { return '/' } })()),
           metadata: { payment_type: 'file_folder_purchase', purchase_id: record.id, file_folder_tier: fileFolderTier, amount_flame_coin: amountFlameCoin, rate_ngn_per_trx: rateNgnPerTrx, rate_source: rateSource },
         })
         paymentLink = checkout.authorizationUrl
