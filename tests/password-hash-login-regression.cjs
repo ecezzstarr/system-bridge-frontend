@@ -13,6 +13,7 @@ const authProvider=read('lib/auth-provider.tsx')
 const staffLoginPage=read('app/(auth)/login/page.tsx')
 const clientLoginPage=read('app/client/login/page.tsx')
 
+assert.ok(staffLogin.includes(String.raw`return /^\$2[aby]\$\d{2}\$/.test`),'Administration login recognizes valid bcrypt hashes instead of sending every account to recovery')
 assert.ok(staffRegister.includes('bcrypt.hash(password, 10)')&&staffRegister.includes('password_hash'),'Agent and Bridger registration stores a bcrypt password hash')
 assert.ok(clientRegister.includes('bcrypt.hash(password, 10)')&&clientRegister.includes('password_hash'),'Client registration stores a bcrypt password hash')
 assert.ok(reset.includes('bcrypt.hash(password,10)')&&reset.includes('UPDATE users SET password_hash=$1'),'Password recovery writes a fresh bcrypt hash onto the existing account')
