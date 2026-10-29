@@ -28,8 +28,8 @@ export async function GET(request: NextRequest) {
     const pool = getPool()
     if (await isRegionalManager(user)) {
       const [partnerships, transactions] = await Promise.all([
-        pool.query(\`SELECT p.*,u.name AS participant_name,trust.status AS trust_status,manager.name AS regional_manager_name FROM weave_forensic_gift_card_partnerships p JOIN users u ON u.id=p.participant_user_id LEFT JOIN weave_forensic_gift_card_trust trust ON trust.partnership_id=p.id LEFT JOIN users manager ON manager.id=trust.regional_manager_user_id ORDER BY p.submitted_at DESC LIMIT 300\`),
-        pool.query(\`SELECT t.*,p.participant_user_id,p.carding_profile_reference,p.seller_name,u.name AS participant_name FROM weave_forensic_gift_card_transactions t JOIN weave_forensic_gift_card_partnerships p ON p.id=t.partnership_id JOIN users u ON u.id=p.participant_user_id ORDER BY t.recorded_at DESC LIMIT 500\`)
+        pool.query(`SELECT p.*,u.name AS participant_name,trust.status AS trust_status,manager.name AS regional_manager_name FROM weave_forensic_gift_card_partnerships p JOIN users u ON u.id=p.participant_user_id LEFT JOIN weave_forensic_gift_card_trust trust ON trust.partnership_id=p.id LEFT JOIN users manager ON manager.id=trust.regional_manager_user_id ORDER BY p.submitted_at DESC LIMIT 300`),
+        pool.query(`SELECT t.*,p.participant_user_id,p.carding_profile_reference,p.seller_name,u.name AS participant_name FROM weave_forensic_gift_card_transactions t JOIN weave_forensic_gift_card_partnerships p ON p.id=t.partnership_id JOIN users u ON u.id=p.participant_user_id ORDER BY t.recorded_at DESC LIMIT 500`)
       ])
       return NextResponse.json({success:true,mode:'regional_manager',partnerships:partnerships.rows,transactions:transactions.rows},{headers:{'Cache-Control':'private, no-store'}})
     }
@@ -88,9 +88,9 @@ export async function POST(request: NextRequest) {
           evidence.length < 12 || evidence.length > 1000)
         return NextResponse.json({success:false,error:'Enter an approved partnership, unique transaction reference, gift description, whole-naira amount greater than ₦1,500 and a 12–1000 character evidence note.'},{status:400})
       const { rows } = await pool.query(`INSERT INTO weave_forensic_gift_card_transactions
-        (partnership_id,transaction_reference,gift_card_description,gross_amount_ngn,evidence_note,recorded_by)
-        SELECT p.id,$2,$3,$4,$5,$6::uuid FROM weave_forensic_gift_card_partnerships p
-        WHERE p.id=$1::uuid AND p.status='active'
+        (partnership_id,transaction_reference,gift_card_description,gross_amount_ngn,evidence_note,recorded_by,responsible_regional_manager_user_id)
+        SELECT p.id,$2,$3,$4,$5,$6::uuid,trust.regional_manager_user_id FROM weave_forensic_gift_card_partnerships p
+        JOIN weave_forensic_gift_card_trust trust ON trust.partnership_id=p.id AND trust.status='active'
           AND EXISTS (SELECT 1 FROM weave_forensic_gift_card_trust trust JOIN weave_regional_manager_appointments rm ON rm.user_id=trust.regional_manager_user_id AND rm.status='active' JOIN weave_regional_manager_bridgers member ON member.bridger_user_id=p.participant_user_id AND member.regional_manager_user_id=trust.regional_manager_user_id AND member.status='active' WHERE trust.partnership_id=p.id AND trust.participant_user_id=p.participant_user_id AND trust.status='active')
         RETURNING *`,[partnershipId,reference,description,gross,evidence,user.id])
       if (!rows[0]) return NextResponse.json({success:false,error:'Only an approved active partnership with active Regional Manager Company Escrow Trust can have transactions recorded.'},{status:409})
