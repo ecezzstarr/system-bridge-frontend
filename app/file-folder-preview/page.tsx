@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowLeft, ArrowRight, Bot, Building2, DoorOpen, Hammer, Layers3, PackageOpen, Store, Users, Workflow } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Building2, DoorOpen, Hammer, Layers3, PackageOpen, Store, Users, Workflow } from 'lucide-react'
 
 const tiers = [
   {
