@@ -3,6 +3,8 @@ import { sql } from '@/lib/db'
 import { getAuthUser } from '@/lib/auth-api'
 import { ensureClientMoneyEnvironment } from '@/lib/client-money-environment'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
   try {
     const user = await getAuthUser(request)
@@ -38,7 +40,7 @@ export async function GET(request: NextRequest) {
           mainClientWallet: clientMoney.mainWallet,
         }
       } : {}),
-    })
+    }, { headers: { 'Cache-Control': 'private, no-store, max-age=0', 'Vary': 'Authorization' } })
   } catch (error) {
     console.error('Wallet balance error:', error)
     return NextResponse.json({ success: false, error: 'Failed to fetch balance' }, { status: 500 })
