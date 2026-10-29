@@ -73,6 +73,10 @@ async function verifyBridgeRadiancePurchase({
     return NextResponse.json({ error: 'Bridge Radiance File Folder purchase not found' }, { status: 404 })
   }
 
+  if (purchase.payment_method === 'paystack' && !purchase.payment_verified_at) {
+    return NextResponse.json({ error: 'Paystack payment must be verified server-side before Administration can approve this File Folder purchase.' }, { status: 409 })
+  }
+
   const purchaseAmount = Number(purchase.amount_trx)
   const fileFolderTier =
     getFileFolderTier(purchaseAmount, purchase.file_folder_tier) ||
