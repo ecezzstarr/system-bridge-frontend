@@ -4,6 +4,7 @@ import { getPool } from '@/lib/db'
 import { getTrxPaymentNgnRate } from '@/lib/trx-payment'
 import { ngnToFlameCoin } from '@/lib/flame-coin'
 import { createPaystackReference, initializePaystackTransaction } from '@/lib/paystack'
+import { getPaystackConfig } from '@/lib/paystack-config'
 import { notifyDepositSubmitted } from '@/lib/deposit-notifications'
 
 export const dynamic = 'force-dynamic'
@@ -43,7 +44,8 @@ export async function POST(request: NextRequest) {
       adminLink:'/admin/control-center#deposits',
     })
     try {
-      const origin=(process.env.WEAVE_PUBLIC_ORIGIN||new URL(request.url).origin).replace(/\/$/,'')
+      const config=await getPaystackConfig()
+      const origin=(config.publicOrigin||process.env.WEAVE_PUBLIC_ORIGIN||new URL(request.url).origin).replace(/\/$/,'')
       if (!origin.startsWith('https://')) throw new Error('WEAVE_PUBLIC_ORIGIN must be the canonical HTTPS production origin')
       const checkout=await initializePaystackTransaction({
         email:user.email,amountKobo:Math.round(amountNgn*100),reference,
