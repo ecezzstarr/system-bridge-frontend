@@ -52,7 +52,7 @@ export async function ensureForensicGiftCardSchema() {
     CREATE TABLE IF NOT EXISTS weave_forensic_gift_card_trust (
       partnership_id UUID PRIMARY KEY REFERENCES weave_forensic_gift_card_partnerships(id) ON DELETE CASCADE,
       participant_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-      regional_manager_user_id UUID NOT NULL REFERENCES weave_regional_manager_appointments(user_id),
+      regional_manager_user_id UUID NOT NULL REFERENCES users(id),
       status VARCHAR(20) NOT NULL DEFAULT 'active' CHECK (status IN ('active','revoked')),
       activated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       revoked_at TIMESTAMPTZ
