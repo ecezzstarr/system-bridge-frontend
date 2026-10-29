@@ -1,6 +1,6 @@
 "use client"
 
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 import { Search, Wallet, Settings, LogOut, Radio, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -19,6 +19,7 @@ interface AppHeaderProps {
 
 export function AppHeader({ user }: AppHeaderProps) {
   const router = useRouter()
+  const pathname = usePathname()
   const [search, setSearch] = useState("")
   const { user: authUser, logout } = useAuth()
   const effectiveUser = user || (authUser ? { name: authUser.name || 'WEAVE User', role: authUser.role || 'user', avatar: authUser.avatar || undefined } : undefined)
@@ -27,23 +28,44 @@ export function AppHeader({ user }: AppHeaderProps) {
   const [carrierOpen, setCarrierOpen] = useState(false)
 
   useEffect(() => {
-    if (!authUser?.id) return
+    if (!authUser?.id) {
+      setFlameCoinBalance(null)
+      return
+    }
+    let active = true
+    const refreshBalance = async () => {
+      const token = localStorage.getItem('ssb_auth_token')
+      try {
+        const response = await fetch('/api/wallet/balance', {
+          cache: 'no-store',
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        })
+        const data = await response.json()
+        if (active && response.ok && data.success && Number.isFinite(Number(data.flameCoinBalance))) {
+          setFlameCoinBalance(Number(data.flameCoinBalance))
+        }
+      } catch { /* Keep the last confirmed balance visible when temporarily offline. */ }
+    }
+    void refreshBalance()
+    const interval = window.setInterval(() => { void refreshBalance() }, 30000)
+    const refreshOnFocus = () => { if (document.visibilityState === 'visible') void refreshBalance() }
+    window.addEventListener('focus', refreshOnFocus)
+    document.addEventListener('visibilitychange', refreshOnFocus)
     const token = localStorage.getItem('ssb_auth_token')
-    fetch('/api/wallet/balance', {
-      headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-    })
-      .then(res => res.json())
-      .then(data => { if (data.success) setFlameCoinBalance(data.flameCoinBalance) })
-      .catch(() => {})
-
     fetch('/api/carrier/access', {
-      headers: token ? { 'Authorization': `Bearer ${token}` } : {},
       cache: 'no-store',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
     })
       .then(res => res.json())
-      .then(data => setCarrierOpen(Boolean(data?.access?.active)))
-      .catch(() => setCarrierOpen(false))
-  }, [authUser?.id])
+      .then(data => { if (active) setCarrierOpen(Boolean(data?.access?.active)) })
+      .catch(() => { if (active) setCarrierOpen(false) })
+    return () => {
+      active = false
+      window.clearInterval(interval)
+      window.removeEventListener('focus', refreshOnFocus)
+      document.removeEventListener('visibilitychange', refreshOnFocus)
+    }
+  }, [authUser?.id, pathname])
 
   if (!effectiveUser) return null
 
@@ -185,11 +207,12 @@ export function AppHeader({ user }: AppHeaderProps) {
           variant="ghost"
           size="sm"
           data-phone-chrome="value"
-          className="h-9 w-9 shrink-0 rounded-full px-0 text-slate-300 hover:bg-cyan-300/[0.06] hover:text-white"
+          className="h-9 min-w-9 shrink-0 rounded-full px-2 text-slate-300 hover:bg-cyan-300/[0.06] hover:text-white"
           onClick={() => router.push('/wallet')}
           aria-label={flameCoinBalance !== null ? `Open Flame Coin wallet, balance ${flameCoinBalance.toLocaleString()}` : 'Open Flame Coin wallet'}
         >
           <Wallet className="h-4 w-4 text-cyan-300" />
+          <span className="hidden max-w-[5.5rem] truncate text-[9px] font-black tabular-nums text-cyan-100 min-[390px]:inline">{flameCoinBalance === null ? '—' : flameCoinBalance.toLocaleString(undefined,{maximumFractionDigits:2})}</span>
         </Button>
 
         <div className="shrink-0" data-phone-chrome="signal">
