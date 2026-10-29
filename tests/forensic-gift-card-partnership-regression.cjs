@@ -19,3 +19,8 @@ assert.ok(migration.includes('UNIQUE(participant_user_id, carding_profile_refere
 assert.ok(workspace.includes('The ₦3,000 split is recorded once at partnership setup') && workspace.includes('Record transaction'), 'Workspace distinguishes the one-time split from repeat sales')
 assert.ok(inbox.includes('/weave/lifestyles/mandate/forensic-gift-cards') && inbox.includes('Gift-Card Forensics'), 'Forensic staff can discover the workflow from their existing inbox')
 console.log('Forensic gift-card awareness, authorization, one-time split and repeat transaction regression checks passed')
+
+assert.ok(api.includes("body.action === 'activate_company_escrow'") && api.includes("weave_forensic_gift_card_trust") && api.includes("trust.status='active'"), 'Forensic transactions require Regional Manager Company Escrow Trust')
+assert.ok(api.includes("body.action === 'settle_company_share'") && api.includes("company_settlement_status"), 'Company share settlement is separately tracked and verified')
+assert.ok(api.includes("body.action === 'review_manager_accountability'") && api.includes("accountability_review_status='pending_review'"), 'Held funds require documented Administration accountability review')
+assert.ok(workspace.includes('Company Escrow Trust') && workspace.includes('Regional Manager'), 'Workspace explains the Trust gate')
