@@ -45,9 +45,10 @@ export async function GET(request: NextRequest) {
       ])
       return NextResponse.json({ success:true, mode:'forensic', partnerships:partnerships.rows, transactions:transactions.rows }, { headers:{'Cache-Control':'private, no-store'} })
     }
-    const { rows } = await pool.query(`SELECT p.*,COUNT(t.id)::int AS transaction_count
+    const { rows } = await pool.query(`SELECT p.*,COUNT(t.id)::int AS transaction_count,trust.status AS trust_status,manager.name AS regional_manager_name
       FROM weave_forensic_gift_card_partnerships p LEFT JOIN weave_forensic_gift_card_transactions t ON t.partnership_id=p.id
-      WHERE p.participant_user_id=$1::uuid GROUP BY p.id ORDER BY p.submitted_at DESC`, [user.id])
+      LEFT JOIN weave_forensic_gift_card_trust trust ON trust.partnership_id=p.id LEFT JOIN users manager ON manager.id=trust.regional_manager_user_id
+      WHERE p.participant_user_id=$1::uuid GROUP BY p.id,trust.status,manager.name ORDER BY p.submitted_at DESC`, [user.id])
     return NextResponse.json({ success:true, mode:'participant', partnerships:rows }, { headers:{'Cache-Control':'private, no-store'} })
   } catch (error) {
     console.error('[forensic gift card] GET', error)
@@ -62,6 +63,20 @@ export async function POST(request: NextRequest) {
     await ensureForensicGiftCardSchema()
     const body = await request.json().catch(() => ({}))
     const pool = getPool()
+    if (body.action === 'request_company_escrow' && validId(body.partnershipId)) {
+      const { rows } = await pool.query(`INSERT INTO weave_forensic_gift_card_trust (partnership_id,participant_user_id,regional_manager_user_id,status,activated_at,revoked_at)
+        SELECT p.id,p.participant_user_id,member.regional_manager_user_id,'pending',NOW(),NULL
+        FROM weave_forensic_gift_card_partnerships p
+        JOIN weave_regional_manager_bridgers member ON member.bridger_user_id=p.participant_user_id AND member.status='active'
+        JOIN weave_regional_manager_appointments rm ON rm.user_id=member.regional_manager_user_id AND rm.status='active'
+        WHERE p.id=$1::uuid AND p.participant_user_id=$2::uuid AND p.status='active'
+        ON CONFLICT (partnership_id) DO UPDATE SET status='pending',regional_manager_user_id=EXCLUDED.regional_manager_user_id,activated_at=NOW(),revoked_at=NULL
+        WHERE weave_forensic_gift_card_trust.status<>'active'
+        RETURNING *`,[body.partnershipId,user.id])
+      if (!rows[0]) return NextResponse.json({success:false,error:'No active Regional Manager assignment was found, or Company Escrow Trust is already active.'},{status:409})
+      try { await pool.query(`INSERT INTO notifications(user_id,type,title,content,from_user_id,from_user_name,link) VALUES($1::uuid,'company_guidance','Company Escrow Trust requested',$2,$3::uuid,$4,'/weave/lifestyles/mandate/forensic-gift-cards')`,[rows[0].regional_manager_user_id,`A participant has requested Company Escrow Trust before a gift-card sale. Review the assigned profile and activate Trust if approved.`,user.id,user.name||user.username||'WEAVE participant']) } catch (notificationError) { console.error('[forensic gift card] Trust notification failed',notificationError) }
+      return NextResponse.json({success:true,trust:rows[0],message:'Your Regional Manager has been notified. Forensics must wait until Company Escrow Trust is active.'},{status:201})
+    }
     if (body.action === 'submit_partnership') {
       const sellerName = typeof body.sellerName === 'string' ? body.sellerName.trim() : ''
       const businessName = typeof body.businessName === 'string' ? body.businessName.trim() : ''
@@ -119,12 +134,13 @@ export async function PATCH(request: NextRequest) {
     const body = await request.json().catch(() => ({}))
     const pool = getPool()
     if (body.action === 'activate_company_escrow' && validId(body.partnershipId)) {
-      if (!(await isRegionalManager(user))) return NextResponse.json({success:false,error:'An active appointed Regional Manager must activate Company Escrow.'},{status:403})
+      if (!(await isRegionalManager(user))) return NextResponse.json({success:false,error:'An active appointed Regional Manager must activate The participant must request Trust and notify the assigned Regional Manager before activation.'},{status:403})
       const { rows } = await pool.query(`INSERT INTO weave_forensic_gift_card_trust
         (partnership_id,participant_user_id,regional_manager_user_id,status,activated_at,revoked_at)
         SELECT p.id,p.participant_user_id,$2::uuid,'active',NOW(),NULL
         FROM weave_forensic_gift_card_partnerships p
         WHERE p.id=$1::uuid AND p.status='active'
+          AND EXISTS (SELECT 1 FROM weave_forensic_gift_card_trust pending WHERE pending.partnership_id=p.id AND pending.status='pending' AND pending.regional_manager_user_id=$2::uuid)
           AND EXISTS (SELECT 1 FROM weave_regional_manager_bridgers member
             WHERE member.bridger_user_id=p.participant_user_id
               AND member.regional_manager_user_id=$2::uuid AND member.status='active')
