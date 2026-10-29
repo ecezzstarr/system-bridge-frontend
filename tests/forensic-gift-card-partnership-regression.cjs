@@ -31,3 +31,7 @@ assert.ok(api.includes('trust.status=\'active\'') && api.includes('t.gross_amoun
 assert.ok(workspace.includes('trust_status?:string') && workspace.includes('settlementAmount'), 'UI types and settlement evidence inputs match the API contract')
 
 assert.ok(!read('app/(app)/admin/regional-manager-applications/page.tsx').includes("onClick={()=>void review(a.user_id,'approve')>Approve appointment"), 'Regional Manager application review JSX compiles');
+
+assert.ok(api.includes("body.action === 'request_company_escrow'") && api.includes("Regional Manager has been notified"), 'Participant must notify assigned Regional Manager before Trust activation')
+assert.ok(api.includes("pending.status='pending'") && api.includes("trust.status='active'"), 'Escrow request and activation are separate persisted states')
+assert.ok(workspace.includes("request_company_escrow") && workspace.includes("Activate Company Escrow Trust"), 'Participant request and manager activation are surfaced in the existing workspace')
