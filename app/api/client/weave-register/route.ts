@@ -5,7 +5,7 @@ import { randomBytes, randomUUID } from 'node:crypto'
 import { validateFileNumber } from '@/lib/fne'
 import { ensureClientMoneyEnvironment } from '@/lib/client-money-environment'
 import { getDivineShieldState } from '@/lib/weave-infrastructure'
-import { buildUserReferralCode } from '@/lib/user-referral'
+import { buildUserReferralCode, resolveReferralOwnerByCode } from '@/lib/user-referral'
 import { publicFlameMovementCodeFromRequest, recordPublicFlameMovementEvent } from '@/lib/public-flame-movement'
 import { activatePurchasedFileFolderForClient } from '@/lib/file-folder-purchase-activation'
 import { ensureClientMonthlySchema, normalizeRegisteredGender } from '@/lib/client-monthly-subscription'
@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     const shield=await getDivineShieldState()
     if(shield.active) return NextResponse.json({error:'WEAVE is under maintenance. Divine Shield is active.'},{status:423})
 
-    const { fileNumber, staffOffer, email, password, businessName, gender: rawGender } = await request.json()
+    const { fileNumber, staffOffer, email, password, businessName, gender: rawGender, referredBy } = await request.json()
     const gender=normalizeRegisteredGender(rawGender)
     if(!gender)return NextResponse.json({error:'Choose Male or Female at registration.'},{status:400})
     await ensureClientMonthlySchema()
@@ -67,6 +67,14 @@ export async function POST(request: NextRequest) {
     const name = identityData?.name || 'Client'
     const phone = identityData?.phone || ''
     const bridgerId = folder.bridger_id || null
+    const referralInput = String(referredBy || '').trim()
+    const referralOwner = referralInput ? await resolveReferralOwnerByCode(referralInput) : null
+    if (referralInput && !referralOwner) {
+      return NextResponse.json(
+        { error: 'That referral code was not found or is inactive. Check the code and try again.', code: 'REFERRAL_CODE_INVALID' },
+        { status: 400 }
+      )
+    }
     const userId = randomUUID()
     const referralCode = buildUserReferralCode(userId, 'client')
 
@@ -97,7 +105,7 @@ export async function POST(request: NextRequest) {
         ${gender},
         'due',
         ${referralCode},
-        ${bridgerId}
+        ${referralOwner?.id || bridgerId}
       )
       RETURNING id, name, email, role, file_number, business_name, gender, referral_code, referred_by
     `

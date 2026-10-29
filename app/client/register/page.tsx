@@ -94,7 +94,8 @@ function ClientRegisterContent() {
           email: formData.email,
           password: formData.password,
           businessName: formData.businessName,
-          gender: formData.gender
+          gender: formData.gender,
+          referredBy: searchParams.get('ref') || undefined
         })
       })
 

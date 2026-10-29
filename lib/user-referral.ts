@@ -43,10 +43,36 @@ export async function resolveReferralOwnerByCode(code: string) {
   const rows = await sql`
     SELECT id, role, referral_code
     FROM users
-    WHERE UPPER(referral_code) = ${normalized}
+    WHERE (
+        UPPER(referral_code) = ${normalized}
+        OR (
+          referral_code IS NULL
+          AND UPPER(
+            'W-' ||
+            CASE role WHEN 'agent' THEN 'A' WHEN 'bridger' THEN 'B' ELSE 'C' END ||
+            '-' || SUBSTRING(REPLACE(id::text, '-', '') FROM 1 FOR 14)
+          ) = ${normalized}
+        )
+      )
       AND role IN ('agent','bridger','client')
       AND is_active = true
     LIMIT 1
   `
-  return rows[0] || null
+  const owner = rows[0]
+  if (!owner) return null
+
+  // Older active accounts may predate referral-code hydration. Persist the
+  // canonical code when it is first resolved so subsequent referrals are stable.
+  if (!owner.referral_code) {
+    const codeForOwner = buildUserReferralCode(String(owner.id), String(owner.role))
+    const updated = await sql`
+      UPDATE users
+      SET referral_code = COALESCE(referral_code, ${codeForOwner}), updated_at = NOW()
+      WHERE id = ${String(owner.id)}::uuid
+      RETURNING referral_code
+    `
+    owner.referral_code = updated[0]?.referral_code || codeForOwner
+  }
+
+  return owner
 }
