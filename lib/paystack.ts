@@ -1,14 +1,11 @@
 import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto'
+import { getPaystackSecretKey } from '@/lib/paystack-config'
 
 const PAYSTACK_API = 'https://api.paystack.co'
 export type PaystackInitializeInput = { email: string; amountKobo: number; reference?: string; callbackUrl: string; metadata: Record<string, unknown> }
 export type PaystackTransaction = { status: string; reference: string; amount: number; currency: string; metadata?: unknown; customer?: { email?: string }; channel?: string; paid_at?: string | null }
 
-function secretKey() {
-  const key = process.env.PAYSTACK_SECRET_KEY?.trim()
-  if (!key) throw new Error('PAYSTACK_SECRET_KEY is not configured')
-  return key
-}
+async function secretKey() { return getPaystackSecretKey() }
 
 export function createPaystackReference(prefix = 'WEAVE') {
   const safePrefix = prefix.replace(/[^a-zA-Z0-9.-]/g, '').slice(0, 18) || 'WEAVE'
@@ -22,7 +19,7 @@ export async function initializePaystackTransaction(input: PaystackInitializeInp
   const reference = input.reference || createPaystackReference()
   const response = await fetch(PAYSTACK_API + '/transaction/initialize', {
     method: 'POST',
-    headers: { Authorization: 'Bearer ' + secretKey(), 'Content-Type': 'application/json' },
+    headers: { Authorization: 'Bearer ' + await secretKey(), 'Content-Type': 'application/json' },
     body: JSON.stringify({ email: input.email, amount: input.amountKobo, currency: 'NGN', reference, callback_url: input.callbackUrl, metadata: input.metadata }),
     cache: 'no-store',
   })
@@ -39,9 +36,10 @@ export async function verifyPaystackTransaction(reference: string): Promise<Pays
   return payload.data as PaystackTransaction
 }
 
-export function verifyPaystackWebhookSignature(rawBody: string | Buffer, signature: string | null) {
-  const secret = process.env.PAYSTACK_SECRET_KEY
-  if (!signature || !secret || !/^[a-f0-9]{128}$/i.test(signature)) return false
+export async function verifyPaystackWebhookSignature(rawBody: string | Buffer, signature: string | null) {
+  if (!signature || !/^[a-f0-9]{128}$/i.test(signature)) return false
+  let secret: string
+  try { secret = await getPaystackSecretKey() } catch { return false }
   const expected = createHmac('sha512', secret).update(rawBody).digest()
   const received = Buffer.from(signature, 'hex')
   return received.length === expected.length && timingSafeEqual(received, expected)
