@@ -7,6 +7,10 @@ CREATE TABLE IF NOT EXISTS weave_forensic_gift_card_partnerships (
   authorization_note TEXT NOT NULL,
   status VARCHAR(20) NOT NULL DEFAULT 'pending'
     CHECK (status IN ('pending','active','paused','closed')),
+  carding_amount_ngn INTEGER NOT NULL DEFAULT 3000 CHECK (carding_amount_ngn = 3000),
+  participant_carding_share_ngn INTEGER NOT NULL DEFAULT 1500 CHECK (participant_carding_share_ngn = 1500),
+  weave_carding_share_ngn INTEGER NOT NULL DEFAULT 1500 CHECK (weave_carding_share_ngn = 1500),
+  carding_settlement_status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (carding_settlement_status IN ('pending','recorded','verified','settled')),
   submitted_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   reviewed_at TIMESTAMPTZ,
   reviewed_by UUID REFERENCES users(id),
@@ -20,9 +24,9 @@ CREATE TABLE IF NOT EXISTS weave_forensic_gift_card_transactions (
   transaction_reference VARCHAR(180) NOT NULL UNIQUE,
   gift_card_description VARCHAR(240) NOT NULL,
   gross_amount_ngn INTEGER NOT NULL CHECK (gross_amount_ngn > 0),
-  carding_amount_ngn INTEGER NOT NULL DEFAULT 3000 CHECK (carding_amount_ngn = 3000),
-  participant_share_ngn INTEGER NOT NULL DEFAULT 1500 CHECK (participant_share_ngn = 1500),
-  weave_share_ngn INTEGER NOT NULL DEFAULT 1500 CHECK (weave_share_ngn = 1500),
+  carding_amount_ngn INTEGER NOT NULL DEFAULT 0 CHECK (carding_amount_ngn >= 0),
+  participant_share_ngn INTEGER NOT NULL DEFAULT 0 CHECK (participant_share_ngn >= 0),
+  weave_share_ngn INTEGER NOT NULL DEFAULT 0 CHECK (weave_share_ngn >= 0),
   status VARCHAR(20) NOT NULL DEFAULT 'recorded'
     CHECK (status IN ('recorded','verified','settled','reversed')),
   evidence_note TEXT NOT NULL,
@@ -33,3 +37,11 @@ CREATE TABLE IF NOT EXISTS weave_forensic_gift_card_transactions (
 );
 CREATE INDEX IF NOT EXISTS weave_forensic_gift_card_transactions_partnership_idx
   ON weave_forensic_gift_card_transactions(partnership_id, recorded_at DESC);
+
+ALTER TABLE weave_forensic_gift_card_partnerships ADD COLUMN IF NOT EXISTS carding_amount_ngn INTEGER NOT NULL DEFAULT 3000 CHECK (carding_amount_ngn = 3000);
+ALTER TABLE weave_forensic_gift_card_partnerships ADD COLUMN IF NOT EXISTS participant_carding_share_ngn INTEGER NOT NULL DEFAULT 1500 CHECK (participant_carding_share_ngn = 1500);
+ALTER TABLE weave_forensic_gift_card_partnerships ADD COLUMN IF NOT EXISTS weave_carding_share_ngn INTEGER NOT NULL DEFAULT 1500 CHECK (weave_carding_share_ngn = 1500);
+ALTER TABLE weave_forensic_gift_card_partnerships ADD COLUMN IF NOT EXISTS carding_settlement_status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (carding_settlement_status IN ('pending','recorded','verified','settled'));
+ALTER TABLE weave_forensic_gift_card_transactions ALTER COLUMN carding_amount_ngn SET DEFAULT 0;
+ALTER TABLE weave_forensic_gift_card_transactions ALTER COLUMN participant_share_ngn SET DEFAULT 0;
+ALTER TABLE weave_forensic_gift_card_transactions ALTER COLUMN weave_share_ngn SET DEFAULT 0;
