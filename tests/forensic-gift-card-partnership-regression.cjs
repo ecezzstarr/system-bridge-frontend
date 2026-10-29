@@ -35,3 +35,18 @@ assert.ok(!read('app/(app)/admin/regional-manager-applications/page.tsx').includ
 assert.ok(api.includes("body.action === 'request_company_escrow'") && api.includes("Regional Manager has been notified"), 'Participant must notify assigned Regional Manager before Trust activation')
 assert.ok(api.includes("pending.status='pending'") && api.includes("trust.status='active'"), 'Escrow request and activation are separate persisted states')
 assert.ok(workspace.includes("request_company_escrow") && workspace.includes("Activate Company Escrow Trust"), 'Participant request and manager activation are surfaced in the existing workspace')
+
+
+const rewardsApi = read('app/api/weave/lifestyles/mandate/gift-card-rewards/route.ts')
+const rewardsPage = read('app/(app)/weave/lifestyles/mandate/gift-card-rewards/page.tsx')
+const rewardsSchema = read('lib/gift-card-reward-programs.ts')
+const rewardsMigration = read('migrations/20261029_gift_card_reward_programs.sql')
+assert.ok(rewardsApi.includes("body.action === 'submit_enrollment'") && rewardsApi.includes("body.action==='review_enrollment'") && rewardsApi.includes("body.action==='record_first_trade'"), 'External reward programme enrollment and Forensic review lifecycle exists')
+assert.ok(rewardsSchema.includes("'cardgoal'") && rewardsSchema.includes("'cardcosmic'"), 'Catalogue seeds Cardgoal and CardCosmic')
+assert.ok(rewardsSchema.includes('coupon_reward_ngn') && rewardsSchema.includes('cash_reward_ngn'), 'Cash rewards are distinguished from non-cash coupons')
+assert.ok(rewardsSchema.includes('UNIQUE(participant_user_id, program_key, platform_profile_reference)'), 'Duplicate platform profile enrollments are prevented')
+assert.ok(rewardsMigration.includes('weave_gift_card_reward_enrollments') && rewardsMigration.includes('ON CONFLICT (program_key)'), 'Reward catalogue migration and idempotent seed updates exist')
+assert.ok(rewardsPage.includes('These are independent platforms, not confirmed Weave partners') && rewardsPage.includes('does not create a platform account'), 'External offers are not represented as partnerships or automated trades')
+assert.ok(rewardsPage.includes('Never submit passwords, gift-card codes, PINs, OTPs'), 'Reward workflow warns against collecting account secrets')
+assert.ok(workspace.includes('/weave/lifestyles/mandate/gift-card-rewards'), 'Existing Carding workflow links to the external reward frontier')
+console.log('External gift-card reward programme catalogue and Forensic tracking regressions passed')
