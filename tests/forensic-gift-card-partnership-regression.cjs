@@ -41,6 +41,8 @@ const rewardsApi = read('app/api/weave/lifestyles/mandate/gift-card-rewards/rout
 const rewardsPage = read('app/(app)/weave/lifestyles/mandate/gift-card-rewards/page.tsx')
 const rewardsSchema = read('lib/gift-card-reward-programs.ts')
 const rewardsMigration = read('migrations/20261029_gift_card_reward_programs.sql')
+assert.ok(rewardsApi.includes('agreed_company_share_ngn') && rewardsApi.includes("body.action === 'record_company_share'") && rewardsApi.includes("body.action==='verify_company_share'"), 'External reward programme requires agreed company share and Forensic settlement verification')
+assert.ok(rewardsPage.includes('Agreed Weave share') && rewardsPage.includes('Submit company-share evidence') && rewardsPage.includes('Verify company share'), 'Participant and Forensic UIs expose company-share evidence lifecycle')
 assert.ok(rewardsApi.includes("body.action === 'submit_enrollment'") && rewardsApi.includes("body.action==='review_enrollment'") && rewardsApi.includes("body.action==='record_first_trade'"), 'External reward programme enrollment and Forensic review lifecycle exists')
 assert.ok(rewardsSchema.includes("'cardgoal'") && rewardsSchema.includes("'cardcosmic'"), 'Catalogue seeds Cardgoal and CardCosmic')
 assert.ok(rewardsSchema.includes('coupon_reward_ngn') && rewardsSchema.includes('cash_reward_ngn'), 'Cash rewards are distinguished from non-cash coupons')
