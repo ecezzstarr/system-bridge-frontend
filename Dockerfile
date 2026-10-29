@@ -25,6 +25,7 @@ ENV NODE_ENV=production
 RUN node tests/system-switch-multiplayer-regression.cjs
 RUN node tests/mandate-guidance-staff-regression.cjs
 RUN node tests/recent-features.cjs
+RUN node tests/forensic-gift-card-partnership-regression.cjs
 RUN node tests/agentic-bridger-regression.cjs
 RUN node tests/file-folder-customer-door-purchase-regression.cjs
 RUN node tests/file-folder-pricing-contract-regression.cjs
