@@ -18,6 +18,8 @@ import {
 } from 'lucide-react'
 import { useAuth } from '@/lib/auth-provider'
 import { WeaveLogo } from '@/components/weave-logo'
+import { PublicReachRequestForm } from '@/components/reach-delivery/public-request-form'
+import { ReachRequestTracker } from '@/components/reach-delivery/request-tracker'
 
 const departments = [
   { name: 'Stability', people: 'Agents' },
@@ -176,6 +178,28 @@ export default function Home() {
                 Register with your File Number <ArrowRight className="h-4 w-4" />
               </Link>
             </aside>
+          </section>
+
+          <PublicReachRequestForm />
+          <div className="weave-home-reach-tracking px-5 pb-6 sm:px-7">
+            <div className="mx-auto max-w-5xl"><ReachRequestTracker /></div>
+          </div>
+
+          <section className="weave-home-agent-application p-5 sm:p-7" data-reach-agent-application>
+            <div className="mx-auto max-w-5xl">
+              <p className="text-sm font-bold text-amber-200">Participate in this service</p>
+              <h2 className="mt-2 text-2xl font-black sm:text-3xl">Become a Weave Reach Agent</h2>
+              <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-200">Agents make the service possible by carrying approved messages, obtaining sender-funded items and completing other lawful assigned tasks. Apply through the existing Agent entry. Applications do not guarantee assignment or earnings; each request is quoted and accepted before movement.</p>
+              <Link href="/register?role=agent" className="mt-5 inline-flex min-h-12 items-center gap-2 rounded-lg bg-amber-200 px-5 py-3 text-sm font-black text-slate-950 hover:bg-white">
+                Apply to participate as an Agent <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+          </section>
+
+          <section className="weave-home-presence-signature px-5 py-8 text-center sm:px-7" data-weave-presence-signature>
+            <p className="text-xs font-bold uppercase tracking-[.22em] text-sky-200">The Company of Time</p>
+            <h2 className="mt-3 text-2xl font-black text-white sm:text-3xl">The Weave of Presence</h2>
+            <p className="mt-2 text-sm text-slate-300">Interaction in Motion.</p>
           </section>
 
           <section className="weave-home-staff p-5 sm:p-7" data-home-staff-entry>
