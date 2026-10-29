@@ -36,13 +36,27 @@ export async function POST(request: NextRequest) {
   try {
     await ensureGiftCardRewardProgramsSchema()
     const body = await request.json().catch(()=>({}))
+    if (body.action === 'record_company_share' && validId(body.enrollmentId)) {
+      const amount=Number(body.companyShareAmountNgn)
+      const evidence=typeof body.evidenceNote==='string'?body.evidenceNote.trim():''
+      if (!Number.isSafeInteger(amount) || amount<=0 || evidence.length<12 || evidence.length>1000)
+        return NextResponse.json({success:false,error:'Enter the agreed whole-naira company share and at least 12 characters of settlement evidence.'},{status:400})
+      const {rows}=await getPool().query(`UPDATE weave_gift_card_reward_enrollments SET company_share_status='sent',company_share_received_ngn=$3,company_share_evidence=$4 WHERE id=$1::uuid AND participant_user_id=$2::uuid AND status='active' AND agreed_company_share_ngn=$3 RETURNING *`,[body.enrollmentId,user.id,amount,evidence])
+      if (!rows[0]) return NextResponse.json({success:false,error:'A verified first-trade record and the exact agreed company share are required.'},{status:409})
+      return NextResponse.json({success:true,enrollment:rows[0],message:'Company-share evidence submitted to Forensics for independent verification.'})
+    }
     if (body.action !== 'submit_enrollment') return NextResponse.json({success:false,error:'Unknown gift-card reward action.'},{status:400})
     const key = typeof body.programKey==='string' ? body.programKey : ''
     const profile = typeof body.platformProfileReference==='string' ? body.platformProfileReference.trim() : ''
     const authorization = typeof body.authorizationNote==='string' ? body.authorizationNote.trim() : ''
-    if (!['cardgoal','cardcosmic'].includes(key) || profile.length<3 || profile.length>180 || authorization.length<20 || authorization.length>1000 || body.participantAgreed!==true)
-      return NextResponse.json({success:false,error:'Choose a listed platform, provide a non-secret profile reference, confirm the terms, and enter an authorization note of 20–1000 characters.'},{status:400})
-    const {rows}=await getPool().query(`INSERT INTO weave_gift_card_reward_enrollments (participant_user_id,program_key,platform_profile_reference,authorization_note,participant_agreed) SELECT $1::uuid,p.program_key,$3,$4,TRUE FROM weave_gift_card_reward_programs p WHERE p.program_key=$2 AND p.active=TRUE RETURNING *`,[user.id,key,profile,authorization])
+    const agreedShare = Number(body.agreedCompanyShareNgn)
+    if (!['cardgoal','cardcosmic'].includes(key) || profile.length<3 || profile.length>180 || authorization.length<20 || authorization.length>1000 || body.participantAgreed!==true || !Number.isSafeInteger(agreedShare) || agreedShare<=0)
+      return NextResponse.json({success:false,error:'Choose a listed platform, provide a non-secret profile reference, agree to a positive whole-naira company share, confirm the terms, and enter an authorization note of 20–1000 characters.'},{status:400})
+    const pool=getPool()
+    const program=await pool.query(`SELECT cash_reward_ngn FROM weave_gift_card_reward_programs WHERE program_key=$1 AND active=TRUE`,[key])
+    if (!program.rows[0] || agreedShare>Number(program.rows[0].cash_reward_ngn))
+      return NextResponse.json({success:false,error:'The agreed Weave share cannot exceed the platform\'s currently advertised cash reward. Coupon value is not cash.'},{status:400})
+    const {rows}=await pool.query(`INSERT INTO weave_gift_card_reward_enrollments (participant_user_id,program_key,platform_profile_reference,authorization_note,participant_agreed,agreed_company_share_ngn) SELECT $1::uuid,p.program_key,$3,$4,TRUE,$5 FROM weave_gift_card_reward_programs p WHERE p.program_key=$2 AND p.active=TRUE RETURNING *`,[user.id,key,profile,authorization,agreedShare])
     if (!rows[0]) return NextResponse.json({success:false,error:'This reward programme is unavailable.'},{status:404})
     return NextResponse.json({success:true,enrollment:rows[0],message:'Submitted to Forensics for review. This records the opportunity only; it does not create a platform account, perform a trade, or guarantee a reward.'},{status:201})
   } catch (error:any) {
@@ -66,6 +80,14 @@ export async function PATCH(request: NextRequest) {
       const {rows}=await pool.query(`UPDATE weave_gift_card_reward_enrollments SET status=$2,reviewed_at=NOW(),reviewed_by=$3::uuid,reward_evidence=$4 WHERE id=$1::uuid AND status IN ('pending','approved','active','held') RETURNING *`,[body.enrollmentId,body.status,user.id,note])
       if (!rows[0]) return NextResponse.json({success:false,error:'Enrollment not found or already closed.'},{status:409})
       return NextResponse.json({success:true,enrollment:rows[0],message:'Forensic review recorded. External rewards and payouts must still be verified on the platform.'})
+    }
+    if (body.action==='verify_company_share' && validId(body.enrollmentId) && ['verified','held'].includes(body.status)) {
+      if (!(await isForensic(user))) return NextResponse.json({success:false,error:'Approved active Forensics departmental appointment required.'},{status:403})
+      const note=typeof body.evidenceNote==='string'?body.evidenceNote.trim():''
+      if (note.length<8 || note.length>1000) return NextResponse.json({success:false,error:'Add a verification note of 8–1000 characters.'},{status:400})
+      const {rows}=await pool.query(`UPDATE weave_gift_card_reward_enrollments SET company_share_status=$2,company_share_evidence=CONCAT(COALESCE(company_share_evidence,''),E'\\nForensic review: ',$3),reviewed_at=NOW(),reviewed_by=$4::uuid WHERE id=$1::uuid AND company_share_status='sent' AND ($2<>'verified' OR company_share_received_ngn=agreed_company_share_ngn) RETURNING *`,[body.enrollmentId,body.status,note,user.id])
+      if (!rows[0]) return NextResponse.json({success:false,error:'Company share must be submitted and match the agreed amount before verification.'},{status:409})
+      return NextResponse.json({success:true,enrollment:rows[0],message:'Company-share verification recorded; no external transfer is executed by Weave.'})
     }
     if (body.action==='record_first_trade' && validId(body.enrollmentId)) {
       if (!(await isForensic(user))) return NextResponse.json({success:false,error:'Approved active Forensics departmental appointment required.'},{status:403})
