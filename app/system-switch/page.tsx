@@ -65,6 +65,7 @@ export default function SystemSwitchEntryPage() {
             <ArrowLeft className="h-4 w-4" /> Return to Burning River Event
           </Link>
           <Link href="/system-switch/bridge-radiance/flame-coin" className="ml-2 inline-flex min-h-11 items-center rounded-full border border-amber-200/25 bg-[#071d30]/80 px-4 text-xs font-bold text-amber-100">Flame Coin</Link>
+          <Link href="/file-folder" className="ml-2 inline-flex min-h-11 items-center rounded-full border border-emerald-200/30 bg-emerald-200/10 px-4 text-xs font-bold text-emerald-50">Purchase File Folder · Paystack / TRX</Link>
         </div>
         <div className="absolute inset-x-0 bottom-0 z-10 mx-auto flex max-w-2xl flex-col items-center px-4 pb-[max(2rem,env(safe-area-inset-bottom))] text-center sm:pb-12">
           <p className="text-[10px] font-black uppercase tracking-[.25em] text-amber-200">The Company of Time · Burning River</p>
