@@ -63,7 +63,7 @@ export async function notifyDepositSubmitted(input: {
   depositorName: string
   role: string
   depositId: string
-  rail: 'OPAY' | 'TRX' | 'PAYSTACK' | 'BRIDGE_TRX' | 'PAYSTACK'
+  rail: 'OPAY' | 'TRX' | 'PAYSTACK' | 'BRIDGE_TRX'
   amountLabel: string
   secondaryLabel?: string
   adminLink?: string
@@ -81,7 +81,7 @@ export async function notifyDepositSubmitted(input: {
 export async function notifyDepositDecision(input: {
   userId: string
   approved: boolean
-  rail: 'OPAY' | 'TRX'
+  rail: 'OPAY' | 'TRX' | 'PAYSTACK'
   depositId: string
   amountLabel: string
   creditedFlameCoin?: number
