@@ -1,6 +1,8 @@
 import { sql } from '@/lib/db'
+import { ensureRegionalManagerCommissionSchema } from '@/lib/regional-manager-commission'
 
 export async function ensureForensicGiftCardSchema() {
+  await ensureRegionalManagerCommissionSchema()
   await sql`
     CREATE TABLE IF NOT EXISTS weave_forensic_gift_card_partnerships (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -59,4 +61,13 @@ export async function ensureForensicGiftCardSchema() {
     )
   `
   await sql`CREATE INDEX IF NOT EXISTS weave_forensic_gift_card_trust_manager_idx ON weave_forensic_gift_card_trust(regional_manager_user_id,status)`
+  await sql`ALTER TABLE weave_forensic_gift_card_transactions ADD COLUMN IF NOT EXISTS participant_agreed_share_ngn INTEGER NOT NULL DEFAULT 1500 CHECK (participant_agreed_share_ngn >= 0)`
+  await sql`ALTER TABLE weave_forensic_gift_card_transactions ADD COLUMN IF NOT EXISTS company_settlement_amount_ngn INTEGER NOT NULL DEFAULT 0 CHECK (company_settlement_amount_ngn >= 0)`
+  await sql`ALTER TABLE weave_forensic_gift_card_transactions ADD COLUMN IF NOT EXISTS company_settlement_status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (company_settlement_status IN ('pending','sent','verified','held','investigation'))`
+  await sql`ALTER TABLE weave_forensic_gift_card_transactions ADD COLUMN IF NOT EXISTS company_settlement_evidence TEXT`
+  await sql`ALTER TABLE weave_forensic_gift_card_transactions ADD COLUMN IF NOT EXISTS settlement_verified_by UUID REFERENCES users(id)`
+  await sql`ALTER TABLE weave_forensic_gift_card_transactions ADD COLUMN IF NOT EXISTS settlement_verified_at TIMESTAMPTZ`
+  await sql`ALTER TABLE weave_forensic_gift_card_transactions ADD COLUMN IF NOT EXISTS responsible_regional_manager_user_id UUID REFERENCES users(id)`
+  await sql`ALTER TABLE weave_forensic_gift_card_transactions ADD COLUMN IF NOT EXISTS accountability_review_status VARCHAR(20) NOT NULL DEFAULT 'not_required' CHECK (accountability_review_status IN ('not_required','pending_review','approved_deduction','rejected'))`
+  await sql`ALTER TABLE weave_forensic_gift_card_transactions ADD COLUMN IF NOT EXISTS accountability_review_note TEXT`
 }
