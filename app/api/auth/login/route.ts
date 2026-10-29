@@ -8,7 +8,7 @@ import { ensureUserReferralCode } from '@/lib/user-referral'
 const PLATFORM_ADMIN_EMAIL = 'ecezzstarr@gmail.com'
 
 function hasUsablePasswordHash(value: unknown) {
-  return /^\\$2[aby]\\$\\d{2}\\$/.test(String(value || ''))
+  return /^\$2[aby]\$\d{2}\$/.test(String(value || ''))
 }
 
 async function createSession(user: { id: string }) {
