@@ -225,7 +225,7 @@ export async function PATCH(request: NextRequest) {
         }
         const after = Number(debit.rows[0].balance_trx)
         const reference = `FORENSIC-RM-${body.transactionId}`
-        await client.query(`INSERT INTO ledger_entries (user_id,entry_type,amount,currency,description,balance_before,balance_after,metadata,created_at) VALUES ($1::uuid,'fee',$2,'Flame Coin',$3,$4,$5,$6::jsonb,NOW())`,[
+        await client.query(`INSERT INTO ledger_entries (id,user_id,entry_type,amount,currency,description,balance_before,balance_after,metadata,created_at) VALUES (gen_random_uuid(),$1::uuid,'fee',$2,'Flame Coin',$3,$4,$5,$6::jsonb,NOW())`,[
           managerId,deductionFlameCoin,`Approved Regional Manager accountability deduction for Forensic gift-card transaction ${body.transactionId}`,before,after,
           JSON.stringify({source:'forensic_gift_card_accountability',reference,transactionId:body.transactionId,companyShareNgn:companyNgn,ngnPerFlameCoin:rate.rateNgnPerTrx,rateSource:rate.source,flameCoinDeducted:deductionFlameCoin,reviewedBy:user.id,reviewNote:note})
         ])
