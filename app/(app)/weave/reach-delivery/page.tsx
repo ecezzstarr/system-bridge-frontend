@@ -25,7 +25,7 @@ export default function ReachDeliveryWorkspace() {
   const [message,setMessage] = useState('')
   const [costs,setCosts] = useState<Record<string,Record<string,string>>>({})
   const [agentIds,setAgentIds] = useState<Record<string,string>>({})
-  const headers = token ? {Authorization:`Bearer ${token}`,'Content-Type':'application/json'} : {'Content-Type':'application/json'}
+  const headers: Record<string, string> = {'Content-Type':'application/json', ...(token ? {Authorization:`Bearer ${token}`} : {})}
   const load = useCallback(async () => {
     if (!token) return
     setBusy('load'); setError('')
