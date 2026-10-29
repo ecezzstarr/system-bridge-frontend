@@ -22,7 +22,7 @@ assert.ok(api.includes("const ELIGIBLE_ROLES = ['client', 'bridger', 'agent']"),
 assert.ok(reviewApi.includes('Math.min(100')&&reviewApi.includes('OFFSET'),'Review API uses paginated retrieval rather than loading the entire queue')
 assert.ok(applicant.includes('university students')&&applicant.includes('daily meals'),'Regional Manager workspace defines student employment and livelihood support')
 assert.ok(api.includes('training_standard_acknowledged')&&api.includes('trainingStandardAcknowledged'),'Application API persists the training-standard acknowledgement')
-assert.ok(reviewApi.includes('a.training_standard_acknowledged')&&reviewApi.includes('appointment approval is blocked'),'Administration sees acknowledgement and server blocks approval when missing')
+assert.ok(reviewApi.includes('a.training_standard_acknowledged')&&reviewApi.includes('must acknowledge the Regional Manager training standard before appointment'),'Administration sees acknowledgement and server blocks approval when missing')
 assert.ok(admin.includes('Missing — appointment approval is blocked')&&admin.includes('!a.training_standard_acknowledged'),'Administration review UI exposes the acknowledgement gate')
 assert.ok(read('lib/regional-manager-commission.ts').includes('ADD COLUMN IF NOT EXISTS training_standard_acknowledged'),'Runtime schema setup upgrades existing application tables safely')
 assert.ok(lifestyle.includes('employs university students')&&lifestyle.includes('daily meals'),'Canonical Lifestyle catalogue describes the actual Regional Manager workflow')
