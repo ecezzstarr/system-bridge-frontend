@@ -53,7 +53,7 @@ export async function ensureGiftCardRewardProgramsSchema() {
       coupon_reward_ngn=EXCLUDED.coupon_reward_ngn,
       referral_summary=EXCLUDED.referral_summary,
       offer_source_url=EXCLUDED.offer_source_url,
-      checked_at=NOW(),
+      checked_at=CASE WHEN weave_gift_card_reward_programs.reward_summary IS DISTINCT FROM EXCLUDED.reward_summary OR weave_gift_card_reward_programs.qualification_summary IS DISTINCT FROM EXCLUDED.qualification_summary OR weave_gift_card_reward_programs.referral_summary IS DISTINCT FROM EXCLUDED.referral_summary THEN NOW() ELSE weave_gift_card_reward_programs.checked_at END,
       updated_at=NOW()
   `
 }
