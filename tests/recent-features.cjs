@@ -1381,7 +1381,7 @@ assert.ok(valueMovementSource.includes("const isOpayRole = user?.role === 'admin
 assert.ok(valueMovementSource.includes("if (!user || !isOpayRole) {") && valueMovementSource.includes("fetch('/api/rate/flame-coin-ngn')"),'NGN exchange rate is fetched only when an OPay role is active')
 assert.ok(valueMovementSource.includes("fetch('/api/bridge/file-folder')") && valueMovementSource.includes('setCompanyTrxWallet(data.companyTrxWallet'), 'Client wallet address loads independently from NGN rate quotes')
 assert.ok(!valueMovementSource.includes("fetch('/api/rate/trx-payment-ngn')") && !valueMovementSource.includes('trxPaymentRate') && !valueMovementSource.includes('NGN value ≈'), 'Client TRX conversion never requests or renders a Naira estimate')
-assert.ok(valueMovementSource.includes('After verification:') && valueMovementSource.includes('} TRX = {parseFloat(amount).toLocaleString'), 'Client conversion continues to show 1 TRX to 1 Flame Coin')
+assert.ok(valueMovementSource.includes("fetch('/api/deposit/paystack'") && valueMovementSource.includes('Paystack checkout could not be initialized'), 'Client funding uses the shared verified Paystack checkout rather than the retired TRX conversion flow')
 assert.ok(!valueMovementSource.includes('Your Referral Link'),'Wallet no longer mixes referral UI with financial movement')
 assert.ok(reserveEngineSource.includes('Reserve Engine'),'Creator Fund Wall is a coherent Reserve Engine')
 assert.ok(!reserveEngineSource.includes('data?.wallet.address'),'Reserve no longer reads a nonexistent wallet shape')
