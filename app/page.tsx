@@ -147,6 +147,9 @@ export default function Home() {
               <Link href="/file-folder-preview" className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-[#b9ab8c] px-5 py-3 text-sm font-bold text-[#283d52] hover:bg-[#e8e0d1]">
                 View File Folder Preview
               </Link>
+              <Link href="/file-folder" className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-emerald-200/35 bg-emerald-200/10 px-5 py-3 text-sm font-bold text-emerald-50 hover:bg-emerald-200/15">
+                Purchase · Paystack or TRX <ArrowRight className="h-4 w-4" />
+              </Link>
             </div>
           </section>
 
