@@ -247,6 +247,11 @@ export default function ProspectMarketPage() {
         </Card>
       </div>
 
+      <Link href="/bridger/working-manual" className="flex flex-col gap-1 rounded-xl border border-sky-400/25 bg-sky-400/5 px-5 py-4 transition-colors hover:bg-sky-400/10 sm:flex-row sm:items-center sm:justify-between">
+        <span><span className="block text-[10px] font-black uppercase tracking-[.16em] text-sky-300">Bridger Working Manual</span><span className="mt-1 block text-sm font-semibold text-white">Contact at least two prospects every working hour.</span></span>
+        <span className="text-xs font-bold text-sky-200">Read the working standard →</span>
+      </Link>
+
       <div className="flex gap-2 border-b border-slate-800">
         <button
           onClick={() => setTab('browse')}
