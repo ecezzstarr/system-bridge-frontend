@@ -81,6 +81,7 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
       accent:'#22d3ee',
       places:[
         {label:'Enterprise Legions Notebook',href:'/enterprise/legions-notebook',detail:'Read how a Bridger with permanent Agentic-Bridger access can join a Client enterprise as an exclusive Legion.'},
+        {label:'Bridger Working Manual',href:'/bridger/working-manual',detail:'Follow the hourly prospect-contact requirement and the complete human-first outreach movement.',daily:true},
         {label:'Crossing Notebook',href:'/bridger/crossing-notebook',detail:'Read how Hope moves from Prospect possibility → real response → relationship → File Folder → Client ownership and use.',daily:true},
         {label:'Prospect Market',href:'/weave/market/prospects',detail:'Claim or purchase unverified Prospect farming tools and work them for real human interaction.',daily:true},
         {label:'Email Outreach',href:'/bridger/email-outreach',detail:'Acquire lower-cost unverified email Prospect candidates, attempt contact and inspect the response movement.',daily:true},
