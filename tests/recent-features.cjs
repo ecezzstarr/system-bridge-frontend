@@ -1738,3 +1738,10 @@ assert.ok(foodDistributionWorkspaceSource.includes('food_distribution_manager')&
 assert.ok(foodDistributionLifestyleSource.includes('FOOD DISTRIBUTION MANAGER')&&foodDistributionLifestyleSource.includes('/weave/lifestyles/food-distribution'),'Agent Lifestyle exposes the separate Food Distribution application')
 assert.ok(adminHeaderSource.includes('A Time · Administration')&&adminHeaderSource.includes("? 'A Time'")&&!adminHeaderSource.includes('A Cat · Administration'),'The notification-bearing global header labels Administration as A Time, not A Cat')
 console.log('Food Distribution employment and Administration identity regression checks passed')
+
+const bridgerWorkingManualSource=fs.readFileSync(path.join(root,'app/(app)/bridger/working-manual/page.tsx'),'utf8')
+assert.ok(bridgerWorkingManualSource.includes('at least two prospects every working hour'),'Bridger manual defines the hourly two-prospect contact requirement')
+assert.ok(bridgerWorkingManualSource.includes('2 × working hours'),'Bridger daily contact target scales with working hours')
+assert.ok(bridgerWorkingManualSource.includes('A sent message is an outreach attempt'),'Bridger manual distinguishes outreach from response and conversion')
+assert.ok(roleHas('bridger','/bridger/working-manual'),'Bridger world exposes the Working Manual')
+assert.ok(prospectMarketSource.includes('/bridger/working-manual')||bridgerWorkingManualSource.includes('/weave/market/prospects'),'Prospect Marketplace and Working Manual are connected')
