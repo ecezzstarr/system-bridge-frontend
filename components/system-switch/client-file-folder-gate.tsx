@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { ArrowLeft, Bot, FileBox, Scale, Search, ShieldCheck, UserRoundCheck } from 'lucide-react'
+import { WEAVE_WRITING } from '@/lib/weave-writing'
 
 type GateStage = 'bridge_file_folder' | 'forensics' | 'administration' | 'personalization' | 'construction' | 'active'
 
@@ -59,6 +60,12 @@ export default function ClientFileFolderGate({ entry }: { entry: any }) {
           <h1 className="mt-6 text-3xl font-black tracking-tight">{entry?.gate?.title || 'File Folder Gate'}</h1>
           <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-400">{entry?.gate?.detail}</p>
 
+          <section className="mt-6 rounded-2xl border border-amber-300/25 bg-amber-300/[0.045] p-4" data-client-system-switch-orientation="pending">
+            <h2 className="text-base font-bold text-amber-100">What opens beyond System Switch?</h2>
+            <p className="mt-2 text-sm leading-6 text-slate-200">{WEAVE_WRITING.systemSwitch.introduction}</p>
+            <p className="mt-2 text-sm leading-6 text-slate-300">{WEAVE_WRITING.systemSwitch.client}</p>
+            <p className="mt-2 text-xs leading-5 text-amber-200">Your private crossing opens only after the required File Folder verification and authorization.</p>
+          </section>
           <div className="mt-6 grid gap-3 sm:grid-cols-2">
             <div className="rounded-2xl border border-white/10 bg-black/30 p-4">
               <p className="text-[9px] font-black uppercase tracking-[0.18em] text-slate-500">Client</p>
