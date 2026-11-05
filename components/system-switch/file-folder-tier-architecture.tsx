@@ -14,10 +14,10 @@ export function resolveFileFolderVisualTier(value:unknown):FileFolderVisualTier{
     ?tier as FileFolderVisualTier:'legacy'
 }
 export const FILE_FOLDER_TIER_THEMES={
-  standard:{label:'STANDARD',accent:'#87c6d6',body:'#294450',roof:'#b6c5c6',glass:'#79c4cf',height:1.6,columns:2},
-  pro:{label:'PRO',accent:'#8ce3d9',body:'#264c53',roof:'#b8ded3',glass:'#64e2d6',height:2.45,columns:3},
-  premium:{label:'PREMIUM',accent:'#f6cf87',body:'#5a5145',roof:'#f7e0bd',glass:'#d9be9b',height:3.25,columns:4},
-  plus:{label:'PLUS',accent:'#f5f6f5',body:'#d3dadd',roof:'#ffffff',glass:'#b1e5ef',height:4,columns:5},
+  standard:{label:'STANDARD',accent:'#b9a477',body:'#678956',roof:'#d9ccb2',glass:'#b9dae9',height:1.6,columns:2},
+  pro:{label:'PRO',accent:'#74cbe9',body:'#243d57',roof:'#c7d9ec',glass:'#e4f6ff',height:2.45,columns:3},
+  premium:{label:'PREMIUM',accent:'#e2ad63',body:'#3d2e35',roof:'#dbc19e',glass:'#fff0dc',height:3.25,columns:4},
+  plus:{label:'PLUS',accent:'#c69745',body:'#eceaf1',roof:'#f8f5e9',glass:'#f4faff',height:4,columns:5},
   legacy:{label:'FILE FOLDER',accent:'#87c6d6',body:'#294450',roof:'#b6c5c6',glass:'#79c4cf',height:1.6,columns:2},
 } as const
 
