@@ -57,6 +57,12 @@ assert.match(staff, /href="\/system-switch\/world\?via=system-switch"/)
 assert.match(staff, /if \(user\.role === 'client'\) redirect\('\/client\/system-switch'\)/)
 assert.match(staff, /\['admin', 'agent', 'bridger'\]/)
 
+const eventGate = read('components/events/burning-river-official-gateway.tsx')
+assert.match(eventGate, /data-system-switch-public-before-crossing="true"/)
+assert.match(eventGate, /WEAVE_WRITING\.systemSwitch\.introduction/)
+assert.match(eventGate, /WEAVE_WRITING\.systemSwitch\.privacy/)
+assert.match(staff, /min-h-\[max\(88svh,560px\)\]/, 'Small screens must not clip orientation text')
+
 const visitorWorld = read('app/system-switch/world/page.tsx')
 assert.match(visitorWorld, /data-system-switch-arrival-orientation="true"/)
 assert.match(visitorWorld, /crossing\.visitor/)
