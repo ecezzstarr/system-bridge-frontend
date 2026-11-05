@@ -19,6 +19,10 @@ export function NormalWeaveRoleAtmosphere({
   const eligible = userRole === 'bridger' || userRole === 'agent' || userRole === 'admin'
   const isDashboard = DASHBOARDS.has(pathname)
 
+  // Bridger Home now renders its own reversible workplace/district choice.
+  // Do not replace that page with another dashboard world at the atmosphere layer.
+  if (pathname === '/bridger/dashboard' && userRole === 'bridger') return <>{children}</>
+
   if (!eligible || !isDashboard) return <>{children}</>
 
   // Home is the compact WEAVE world. Operational functions live on their own
