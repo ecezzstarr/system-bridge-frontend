@@ -53,6 +53,33 @@ html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-locati
   animation: none !important;
 }
 
+/* Small operational labels should never become 10- or 11-pixel microprint.
+ * Use sensible minimums without enlarging specialized canvas annotations.
+ */
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+  main,section,article,aside,form
+) :is([class~="text-[11px]"],[class~="text-[12px]"]):not(:where(
+  [data-public-weave-world] *,[data-plus-file-folder-world] *,[data-file-folder-world] *
+)) {
+  font-size: .78rem !important;
+  line-height: 1.25rem !important;
+}
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+  main,section,article,aside,form
+) :is(h1,h2,h3,p,li,label,button,a) {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+  main,section,article,aside,form
+) [class*="line-clamp-"]:not([data-allow-truncate="true"]):not(:where(
+  [data-public-weave-world] *,[data-plus-file-folder-world] *,[data-file-folder-world] *
+)) {
+  -webkit-line-clamp: unset !important;
+  display: block;
+  overflow: visible !important;
+}
+
 /* Public marketing, payments, registration, client portal and legal pages
  * often sit outside [data-weave-environment]. They must not fall back to the
  * original navy rendering.
