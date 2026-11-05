@@ -47,7 +47,7 @@ export default function SystemSwitchEntryPage() {
       data-system-switch-threshold="staff-to-file-folder-open-world"
       data-system-switch-crossed="false"
     >
-      <div className="relative h-[88svh] min-h-[560px] w-full overflow-hidden" data-system-switch-living-river="water-fire-bridge">
+      <div className="relative flex min-h-[max(88svh,560px)] w-full flex-col justify-end overflow-hidden" data-system-switch-living-river="water-fire-bridge">
         <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_65%,#245f76,#082b44_50%,#04101f)]" />
         {webgl && (
           <div className="absolute inset-0" data-system-switch-gate-world="live-3d">
@@ -68,7 +68,7 @@ export default function SystemSwitchEntryPage() {
           </Link>
           <Link href="/system-switch/bridge-radiance/flame-coin" className="ml-2 inline-flex min-h-11 items-center rounded-full border border-amber-200/25 bg-[#071d30]/80 px-4 text-xs font-bold text-amber-100">Flame Coin</Link>
         </div>
-        <div className="absolute inset-x-0 bottom-0 z-10 mx-auto flex max-w-2xl flex-col items-center px-4 pb-[max(2rem,env(safe-area-inset-bottom))] text-center sm:pb-12">
+        <div className="relative z-10 mx-auto mt-24 flex w-full max-w-2xl flex-col items-center px-4 pb-[max(2rem,env(safe-area-inset-bottom))] text-center sm:pb-12">
           <p className="text-[11px] font-black uppercase tracking-[.16em] text-amber-200">{crossing.eyebrow}</p>
           <h1 className="mt-2 text-3xl font-black tracking-tight sm:text-5xl">System Switch</h1>
           <p className="mt-2 max-w-xl text-sm leading-6 text-sky-50 sm:text-base" data-system-switch-orientation="website-to-3d">
