@@ -5,6 +5,13 @@
 - **WEAVE Open World** is the shared physical land inside System Switch where verified File Folder territories, Client construction, public Customer Doors, business stores and real company interactions appear.
 - **Burning River** is Company Loop 1's Flame Event. Flowing fire and water are part of its activity inside the shared land, not the name of the permanent world. Later company events occupy that same place, preserving Client File Folder ownership and locations.
 
+## What the participant understands before crossing
+System Switch is **the gate**. The website is where a participant reads about WEAVE and signs in or finds an appropriate public entrance. At the threshold, WEAVE tells the participant that the next environment is an **interactive 3D File Folder Open World**: Client places, other people, paths and public Customer Doors occupy navigable space rather than ordinary website pages.
+
+The orientation must answer three questions in clear language: **Where am I? What is beyond the gate? Which places am I allowed to enter?** It applies to Administration, Agents, Bridgers, Clients and public visitors. Crossing the threshold does not change permissions. Public visitors and company staff may explore published Customer Doors; only a verified Client can operate their own private File Folder. Every open-world entrance explains the public/private boundary before or at first arrival, including the direct visitor route.
+
+This is an entrance and orientation experience, not merely a login page, loading screen or image. The live 3D world remains interactive and its existing authorized systems are unchanged.
+
 ## Canonical entry
 `/system-switch` → **System Switch Gate** for signed-in Agent, Bridger and Administration → `/system-switch/world?via=system-switch` → Client File Folder land. Visitors enter `/system-switch/world` through the official event image or public Customer Market. Clients continue entering private systems through their own client gate and may inspect public land separately.
 

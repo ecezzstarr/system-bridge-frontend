@@ -20,6 +20,7 @@ import { WeaveEnvironmentSurface } from '@/components/world/weave-environment-su
 import { EnvironmentOrganizerProvider, EnvironmentPageGuard } from '@/components/world/environment-organizer-provider'
 import { WeaveExistingPageImage } from '@/components/world/weave-existing-page-image'
 import { canAccessEnvironmentRoute } from '@/lib/company-guidance-access'
+import {KingdomThemeFrame} from '@/components/world/kingdom-theme-frame'
 
 export default function AppLayout({
   children,
@@ -137,6 +138,7 @@ export default function AppLayout({
 
   return (
     <EnvironmentOrganizerProvider>
+    <KingdomThemeFrame subject="legion" enabled={Boolean(legionEmployment?.active)}>
     <div className="weave-app-shell relative min-h-dvh overflow-hidden bg-transparent" data-weave-world-runtime="persistent" data-legion-exclusive={legionEmployment?.active ? 'true' : 'false'}>
       <div className="relative z-10 flex min-h-dvh min-w-0 flex-col">
         <AppHeader user={user as any} />
@@ -163,6 +165,7 @@ export default function AppLayout({
         <TermsAcceptanceModal role={user.role as 'agent' | 'bridger'} userName={user.name} onAccepted={() => setTermsNeeded(false)} />
       )}
     </div>
+    </KingdomThemeFrame>
     </EnvironmentOrganizerProvider>
   )
 }

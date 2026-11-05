@@ -31,7 +31,7 @@ const PLATFORM_TRAINING: readonly WeaveLoadingBrief[] = [
   {
     eyebrow:'WEAVE · SYSTEM INTRODUCTION',
     title:'What is WEAVE?',
-    body:'WEAVE of Presence develops systems, products and practical ways to participate. System Switch connects a person to work they can operate; Bridge Radiance makes that continuation visible.',
+    body:'WEAVE of Presence develops systems, products and practical ways to participate. System Switch is the gate where the website becomes a navigable 3D File Folder Open World. Bridge Radiance makes the continuation visible through real interaction.',
     movement:'Notice → Recognize → Solve → Move',
   },
   {
@@ -94,7 +94,7 @@ const CLIENT_TRAINING: readonly WeaveLoadingBrief[] = [
   {
     eyebrow:'CLIENT TRAINING · 1 OF 3',
     title:'Your File Folder is an operating world.',
-    body:'Your File Folder belongs to you as a Client. Select the systems your business needs and inspect their real functions before construction. The File Folder is an operating environment, not a picture or a promise of instant income. WEAVE connects your choices, builds and working systems in one place.',
+    body:'You cross System Switch from WEAVE website pages into the 3D File Folder Open World. Your verified Client File Folder is the private operating environment you own there. Learn the difference between public places and your private systems; then inspect real build functions before construction. A File Folder is not a picture or a promise of income.',
     movement:'Recognize → preview → build → activate → operate',
   },
   {
@@ -302,6 +302,22 @@ export function transitDirectionForPath(from:string,to:string):'return'|'forward
 
 export function transitTrainingForPath(role:WeaveLoadingRole,path:string):WeaveLoadingBrief|null {
   const pathname=path.split('?')[0]
+  if(pathname==='/system-switch'||pathname==='/system-switch/world'){
+    return {
+      eyebrow:'SYSTEM SWITCH · BEFORE CROSSING',
+      title:pathname==='/system-switch'?'From website pages to the 3D open world':'Recognize the File Folder Open World',
+      body:'System Switch is the gate into WEAVE’s 3D File Folder Open World. Beyond it, Client buildings, people and published Customer Doors become places to explore. Your position and the Client owner’s permissions determine which private systems you can use.',
+      movement:'Recognize the gate → understand the world → respect access → cross',
+    }
+  }
+  if(role==='client'&&pathname==='/client/system-switch'){
+    return {
+      eyebrow:'CLIENT · SYSTEM SWITCH CROSSING',
+      title:'Your File Folder is inside the 3D world',
+      body:'The website gives way to the shared File Folder Open World. Your verified File Folder is your own private operating environment, separate from the public spaces other people may visit.',
+      movement:'Recognize the shared world → enter your own File Folder → operate actual systems',
+    }
+  }
   if(role==='agent'){
     // An unrelated Agent introduction must never replace the real destination.
     if(!AGENT_GUIDES.some(entry=>entry.match(pathname)))return null

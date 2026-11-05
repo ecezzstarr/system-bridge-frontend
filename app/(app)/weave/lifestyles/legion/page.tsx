@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import { ArrowLeft, BriefcaseBusiness, CheckCircle2, ExternalLink, Loader2, ShieldCheck, Users } from 'lucide-react'
 import { toast } from 'sonner'
+import {LegionKingdomIdentity} from '@/components/world/legion-kingdom-identity'
 
 function headers(){
   const token=typeof window!=='undefined'?localStorage.getItem('ssb_auth_token'):null
@@ -95,6 +96,7 @@ export default function LegionLifestylePage(){
     return <main className="mx-auto max-w-5xl px-4 py-8 md:px-7 md:py-12" data-legion-employment="active">
       <div className="rounded-[2rem] border border-violet-300/20 bg-[#080b12]/90 p-6 md:p-9">
         <div className="flex items-start justify-between gap-4"><div><p className="text-[10px] font-black uppercase tracking-[.28em] text-violet-300">Lifestyle · Legion</p><h1 className="mt-2 text-3xl font-black text-white">YOU NOW WORK FOR THIS CLIENT</h1></div><ShieldCheck className="h-8 w-8 text-violet-300"/></div>
+        <LegionKingdomIdentity/>
         <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-400">Legion is exclusive Client employment inside Weave. Your underlying {employment.sourceRole||'Agent/Bridger'} account is preserved, but its normal work functions are closed while this Legion employment is active.</p>
         <div className="mt-7 grid gap-4 md:grid-cols-2">
           <section className="rounded-2xl border border-white/10 bg-white/[0.035] p-5"><p className="text-[9px] font-black uppercase tracking-wider text-slate-500">Client enterprise</p><h2 className="mt-2 text-2xl font-black text-white">{employment.enterpriseName}</h2><p className="mt-1 text-sm text-slate-400">Owned by {employment.clientName||'Client'}</p><p className="mt-4 text-xs text-violet-200">Function: {employment.functionTitle||'Enterprise Legion'}</p>{employment.profitParticipation&&<p className="mt-2 text-xs leading-5 text-slate-500">Participation: {employment.profitParticipation}</p>}</section>

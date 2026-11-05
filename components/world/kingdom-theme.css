@@ -1,0 +1,27 @@
+/* Scoped identity: Company Loop and public world themes never inherit these variables. */
+.kingdom-theme-frame[data-kingdom-active="true"] {
+  background:radial-gradient(ellipse at 56% 12%,color-mix(in srgb,var(--kingdom-sky) 45%,transparent),transparent 62%),
+    linear-gradient(165deg,color-mix(in srgb,var(--kingdom-ground) 48%,#07101c),#06101b 75%);
+}
+.kingdom-theme-frame[data-kingdom-active="true"] .weave-dashboard-world{
+  background:radial-gradient(ellipse at 48% 46%,color-mix(in srgb,var(--kingdom-glow) 14%,transparent),transparent 65%);
+}
+.kingdom-theme-frame[data-kingdom-active="true"] .weave-dashboard-position,
+.kingdom-theme-frame[data-kingdom-active="true"] [data-role-world-beacon] > span:first-child{
+  border-color:color-mix(in srgb,var(--kingdom-accent) 42%,transparent);
+  box-shadow:0 14px 44px rgba(0,0,0,.23),inset 0 1px 0 color-mix(in srgb,var(--kingdom-glass) 12%,transparent);
+}
+.kingdom-theme-frame[data-kingdom-active="true"] .kingdom-identity-link{
+  color:#fff;
+  background:linear-gradient(125deg,color-mix(in srgb,var(--kingdom-ground) 72%,#0c1a2b),color-mix(in srgb,var(--kingdom-accent) 20%,#07101b));
+  border:1px solid color-mix(in srgb,var(--kingdom-accent) 70%,transparent);
+  box-shadow:0 12px 40px rgba(0,0,0,.3),inset 0 1px 0 color-mix(in srgb,var(--kingdom-glass) 30%,transparent);
+}
+.kingdom-theme-frame[data-kingdom-active="true"] [data-legion-employment="active"] > div{
+  background:linear-gradient(150deg,color-mix(in srgb,var(--kingdom-ground) 40%,#061020),#060d18 80%);
+  border-color:color-mix(in srgb,var(--kingdom-accent) 45%,transparent);
+}
+.kingdom-theme-frame[data-kingdom-active="true"] [data-legion-employment="active"] .kingdom-employment-identity{
+  border:1px solid color-mix(in srgb,var(--kingdom-accent) 46%,transparent);
+  background:linear-gradient(110deg,color-mix(in srgb,var(--kingdom-ground) 48%,#07111e),rgba(5,13,25,.75));
+}

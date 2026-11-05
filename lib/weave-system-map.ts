@@ -15,6 +15,12 @@ export const WEAVE_SYSTEM_MAP = {
     participation: 'Value can open further participation.',
     livelihood: 'Participation can become a means to live.',
   },
+  systemSwitch: {
+    purpose: 'System Switch is the gate from WEAVE website pages into the interactive 3D File Folder Open World.',
+    orientation: 'Before crossing, explain the shared environment and the access boundaries of Clients, staff and public visitors.',
+    beyondTheGate: 'People can navigate public Client domains and commissioned Customer Doors as places in a world, not a sequence of ordinary pages.',
+    ownership: 'A Client-owned File Folder is a protected operating environment. Exploring the shared world does not give another participant access to private systems.',
+  },
   aiParticipation: {
     principle: 'AI participates inside human movement; it does not replace the human source.',
     perception: 'AI may recognize authorized world context, records and the active district so assistance begins where movement is happening.',

@@ -9,6 +9,7 @@ import ClientFileFolderGate from '@/components/system-switch/client-file-folder-
 import ClientFileFolderOperatingEnvironment from '@/components/system-switch/client-file-folder-operating-environment'
 import { FileFolderEnvironmentLoader } from '@/components/system-switch/file-folder-environment-loader'
 import { getClientToken, getClientUser } from '@/lib/client-auth'
+import { WEAVE_WRITING } from '@/lib/weave-writing'
 import './file-folder-phone.css'
 
 export default function ClientSystemSwitchPage() {
@@ -152,10 +153,15 @@ export default function ClientSystemSwitchPage() {
       {privateWorkshop&&<section className="mx-2 mb-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200/25 bg-[linear-gradient(120deg,rgba(74,111,133,.23),rgba(8,23,40,.93)_52%,rgba(158,102,39,.16))] px-3 py-3 text-white sm:mx-5" data-system-switch-client-continuation="real-file-folder">
         <div>
           <p className="text-[9px] font-black uppercase tracking-[.15em] text-amber-200">{arrivedFromEvent?'Arrived from Flame Event · System Switch':'System Switch · Client-owned File Folder'}</p>
-          <h1 className="mt-1 text-sm font-black text-white">The crossing continues as your own operating world.</h1>
-          <p className="mt-1 max-w-2xl text-[11px] leading-5 text-sky-100/75">The same physical avatar and Switch arch continue here. Your actual builds, systems, Customer Door and work determine what this ground can do. This is your private formation space, not the public Customer Market.</p>
+          <h1 className="mt-1 text-sm font-black text-white">From the website into your own operating world.</h1>
+          <p className="mt-1 max-w-2xl text-[11px] leading-5 text-sky-100/75">The System Switch gate leads into the 3D File Folder Open World. Here your own File Folder preserves your builds, systems, Customer Door and company work. This private workshop is yours to operate; shared public places remain separate.</p>
         </div>
         <Link href="/client/system-switch/flame-event" className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-amber-200/35 px-3 py-2 text-[10px] font-bold text-amber-100"><Flame className="h-3.5 w-3.5"/> Return to Burning River</Link>
+      </section>}
+      {!privateWorkshop&&<section className="mx-3 mb-3 rounded-xl border border-amber-200/30 bg-[#071927]/90 p-3 text-sm leading-6 text-sky-50 sm:mx-5" data-client-system-switch-orientation="shared-world">
+        <strong className="text-amber-200">System Switch · Shared 3D World</strong>
+        <p>{WEAVE_WRITING.systemSwitch.client}</p>
+        <p className="mt-1 text-xs text-sky-100">{WEAVE_WRITING.systemSwitch.privacy}</p>
       </section>}
       {privateWorkshop?<ClientFileFolderOperatingEnvironment data={data} />:<SharedSystemSwitchWorld role="client" getToken={getClientToken} onPrivateWorkshop={()=>setPrivateWorkshop(true)}/>}
       <details className="ff-page-actions">

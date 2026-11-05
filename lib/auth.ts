@@ -1,6 +1,7 @@
 import type { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
+import { usableBcryptPasswordHash } from '@/lib/password-hash'
 import { getUserByUsername, updateUserLastLogin } from './db'
 import { getDivineShieldState } from './weave-infrastructure'
 
@@ -36,9 +37,6 @@ declare module 'next-auth/jwt' {
   }
 }
 
-function hasUsablePasswordHash(value: unknown) {
-  return /^\$2[aby]\$\d{2}\$/.test(String(value || ''))
-}
 
 // Username and Password Authentication
 const providers: NextAuthOptions['providers'] = [
@@ -68,14 +66,16 @@ const providers: NextAuthOptions['providers'] = [
           return null
         }
 
-        if (!hasUsablePasswordHash(user.password_hash)) {
+        const passwordHash = usableBcryptPasswordHash(user.password_hash)
+
+        if (!passwordHash) {
           console.log('[WEAVE] User requires password setup/recovery')
           return null
         }
 
         // Verify password
         console.log('[WEAVE] Verifying password...')
-        const isValid = await bcrypt.compare(credentials.password, user.password_hash)
+        const isValid = await bcrypt.compare(credentials.password, passwordHash)
         console.log('[WEAVE] Password valid:', isValid)
         
         if (!isValid) {
