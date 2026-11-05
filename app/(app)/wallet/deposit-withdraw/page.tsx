@@ -18,7 +18,7 @@ export default function WalletDepositWithdrawPage() {
   const [flameCoinRate, setFlameCoinRate] = useState<number | null>(null)
   const [companyTrxWallet, setCompanyTrxWallet] = useState('')
   const [depositTxHash, setDepositTxHash] = useState('')
-  const [clientDeposits,setClientDeposits] = useState<Array<{id:string;amount_trx:number|string;amount_usd?:number|string;method?:string;currency?:string;status:string;receipt_data:string|null;created_at:string}>>([])
+  const [clientDeposits,setClientDeposits] = useState<Array<{id:string;amount_trx:number|string;amount_usd?:number|string;method?:string;currency?:string;status:string;receipt_data:string|null;created_at:string;verified_at?:string|null}>>([])
   const [platformFeePercent, setPlatformFeePercent] = useState(5)
   const [withdrawBankName, setWithdrawBankName] = useState('')
   const [withdrawAccountNumber, setWithdrawAccountNumber] = useState('')
@@ -417,7 +417,7 @@ export default function WalletDepositWithdrawPage() {
                       <div><p className="font-bold text-white">{item.method==='paystack' ? `₦${Number(item.amount_usd||0).toLocaleString()} · ${Number(item.amount_trx).toLocaleString()} Flame Coin` : `${Number(item.amount_trx).toLocaleString()} TRX`}</p><p className="mt-1 text-xs text-slate-400">{new Date(item.created_at).toLocaleString()}</p>
                         <p className="mt-1 max-w-[260px] truncate font-mono text-[10px] text-cyan-200">{item.receipt_data||(item.method==='paystack'?'Missing Paystack reference':'Missing transaction hash')}</p></div>
                       <span className={item.status==='approved'?'text-sm font-bold text-emerald-300':item.status==='rejected'?'text-sm font-bold text-red-300':'text-sm font-bold text-amber-200'}>
-                        {item.status==='approved'?'Verified · Flame Coin credited':item.status==='rejected'?'Rejected · No credit':'Awaiting Paystack verification'}
+                        {item.status==='approved'?(item.method==='paystack'&&!item.verified_at?'Credited · Verification under review':'Verified · Flame Coin credited'):item.status==='rejected'?'Rejected · No credit':'Awaiting Paystack verification'}
                       </span>
                     </div>
                   ))}
