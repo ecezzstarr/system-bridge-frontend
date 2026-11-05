@@ -1,0 +1,251 @@
+/*
+ * WEAVE company-wide Plus visual finishing layer.
+ * All non-Flame Event routes inherit the approved Plus File Folder's
+ * porcelain-white, warm gold, clear glass, cloud-blue and deep-ink language.
+ *
+ * Product-specific 3D scenes, official reference images, live video and the
+ * Burning River Flame Event pages retain their own visual systems.
+ */
+:root {
+  --weave-plus-porcelain: #fffefa;
+  --weave-plus-marble: #f7f9fc;
+  --weave-plus-glass: rgba(255,255,255,.88);
+  --weave-plus-gold: #a47632;
+  --weave-plus-gold-deep: #845b24;
+  --weave-plus-ink: #253f52;
+  --weave-plus-secondary-ink: #486274;
+  --weave-plus-divider: rgba(162,126,69,.29);
+}
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) {
+  --weave-plus-page-shadow: 0 18px 55px rgba(32,59,79,.095);
+}
+
+/* Public marketing, payments, registration, client portal and legal pages
+ * often sit outside [data-weave-environment]. They must not fall back to the
+ * original navy rendering.
+ */
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+  main,section,article,aside,header,footer,nav,form
+)[class*="bg-[#0"]:not(:where([data-public-weave-world] *,[data-file-folder-world] *,[data-plus-file-folder-world] *)) {
+  background-color: var(--weave-plus-glass) !important;
+  color: var(--weave-plus-ink);
+  border-color: var(--weave-plus-divider);
+}
+
+/* Convert legacy dark fills consistently, including transparency utilities.
+ * Do not cover the official home world, live 3D File Folder equipment, loaders
+ * or Flame Event scene imagery.
+ */
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+  main,section,article,aside,header,footer,nav,form,div,button,a,fieldset
+) :is(
+  [class*="bg-slate-700"],[class*="bg-slate-800"],[class*="bg-slate-900"],
+  [class*="bg-slate-950"],[class*="bg-gray-800"],[class*="bg-gray-900"],
+  [class*="bg-zinc-800"],[class*="bg-zinc-900"],
+  [class*="bg-neutral-900"],[class*="bg-black/"]
+):not(:where([data-public-weave-world] *,[data-file-folder-world] *,[data-plus-file-folder-world] *,[data-weave-loader-art] *,[data-weave-open-world] canvas)) {
+  background-color: rgba(255,255,255,.83) !important;
+  border-color: var(--weave-plus-divider);
+}
+
+/* Direct utility classes on route roots or nested sections (not descendants).
+ * Avoid replacing photography, video, canvas, SVG artwork or feature worlds.
+ */
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+  main,section,article,aside,header,footer,nav,form,div
+):is(
+  [class*="bg-slate-700"],[class*="bg-slate-800"],[class*="bg-slate-900"],
+  [class*="bg-slate-950"],[class*="bg-gray-800"],[class*="bg-gray-900"],
+  [class*="bg-black/"],[class*="bg-[#020"],[class*="bg-[#030"],
+  [class*="bg-[#040"],[class*="bg-[#050"],[class*="bg-[#060"],
+  [class*="bg-[#070"],[class*="bg-[#080"],[class*="bg-[#090"],
+  [class*="bg-[#0a0"],[class*="bg-[#0b0"],[class*="bg-[#0e1"]
+):not(:where([data-public-weave-world] *,[data-file-folder-world] *,[data-plus-file-folder-world] *,[data-weave-loader-art] *,[data-public-flame-preview-world] *)) {
+  background-color: rgba(255,255,255,.85) !important;
+}
+
+/* Legacy navy radial/linear artwork on *content sections* is remade as real
+ * daylight atmosphere. Do not paint over dedicated R3F canvases or loaders.
+ */
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+  main,section,article,aside,header
+)[class*="bg-[radial-gradient"]:not(:where([data-public-weave-world] *,[data-file-folder-world] *)),
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+  main,section,article,aside,header
+)[class*="bg-[linear-gradient"]:not(:where([data-public-weave-world] *,[data-file-folder-world] *)) {
+  background-image: radial-gradient(ellipse at 16% 10%,rgba(199,223,241,.52),transparent 58%),linear-gradient(135deg,rgba(255,255,255,.96),rgba(251,247,237,.86)) !important;
+  border-color: var(--weave-plus-divider);
+}
+
+/* Readability of existing WEAVE words is essential: no glowing dark shadows,
+ * faint white copy or forced one-line truncation across company workspaces.
+ */
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+  main,section,article,aside,header,nav,footer,form,.weave-header
+) :is(h1,h2,h3,h4,h5,h6,p,li,dt,dd,label,small,strong) {
+  text-shadow: none !important;
+  overflow-wrap: anywhere;
+  text-wrap: pretty;
+}
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+  main,section,article,aside,header,nav,footer,form,.weave-header
+) :is(
+  [class~="text-white"],[class*="text-white/"],
+  [class~="text-slate-50"],[class~="text-slate-100"],
+  [class~="text-slate-200"],[class~="text-slate-300"],
+  [class~="text-slate-400"],[class~="text-slate-500"],
+  [class~="text-slate-600"]
+):not(:where(
+  [data-public-weave-world] *,[data-plus-file-folder-world] *,
+  [data-file-folder-world] *,[data-public-flame-preview-world] *,
+  .weave-loader-stable *,[data-weave-loader-art] *,
+  button,a[class*="bg-blue-"],a[class*="bg-cyan-"],
+  button *,a[class*="bg-blue-"] *,a[class*="bg-cyan-"] *
+)) {
+  color: var(--weave-plus-ink) !important;
+}
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+  main,section,article,aside,header,nav,footer,form,.weave-header
+) :is(
+  [class*="text-slate-400/"],[class*="text-slate-500/"],
+  [class*="text-white/"],[class*="text-sky-100/"],
+  [class*="text-amber-100/"]
+):not(:where([data-public-weave-world] *,[data-plus-file-folder-world] *,[data-file-folder-world] *,button *,a[class*="bg-blue-"] *)) {
+  color: var(--weave-plus-secondary-ink) !important;
+}
+
+/* Lighter accent colors become deep, accessible accents on white surfaces.
+ * State colors remain distinguishable: positive=green, error=red, info=blue.
+ */
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+  main,section,article,aside,header,nav,footer,form,.weave-header
+) :is([class~="text-blue-300"],[class~="text-blue-400"],[class~="text-sky-300"],[class~="text-sky-400"],[class~="text-cyan-300"],[class~="text-cyan-400"]):not(:where([data-public-weave-world] *,[data-plus-file-folder-world] *)) {
+  color: #206785 !important;
+}
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+  main,section,article,aside,header,nav,footer,form,.weave-header
+) :is([class~="text-violet-100"],[class~="text-violet-200"],[class~="text-violet-300"],[class~="text-fuchsia-200"],[class~="text-fuchsia-300"]) {
+  color: #704e8b !important;
+}
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+  main,section,article,aside,header,nav,footer,form,.weave-header
+) :is([class~="text-emerald-100"],[class~="text-emerald-200"],[class~="text-emerald-300"],[class~="text-green-200"],[class~="text-green-300"]) {
+  color: #176b4e !important;
+}
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+  main,section,article,aside,header,nav,footer,form,.weave-header
+) :is([class~="text-red-200"],[class~="text-red-300"],[class~="text-rose-200"],[class~="text-rose-300"]) {
+  color: #a32f4b !important;
+}
+
+/* Porcelain navigation, gold separators and precise gold focus rings. */
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+  main,section,article,aside,header,footer,nav
+) :is(
+  [class*="border-white/"],[class*="border-slate-700"],
+  [class*="border-slate-800"],[class*="border-sky-200/"]
+):not(:where([data-public-weave-world] *,[data-plus-file-folder-world] *)) {
+  border-color: var(--weave-plus-divider) !important;
+}
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+  [data-slot="card"],.weave-reading-surface,.weave-environment-panel,
+  .weave-header,.weave-sidebar,.weave-client-nav
+) {
+  border: 1px solid var(--weave-plus-divider);
+  box-shadow: var(--weave-plus-page-shadow);
+}
+
+/* Reset black-on-black leftovers from text inputs outside role layouts. */
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+  input,textarea,select,[data-slot="input"]
+) {
+  background-color: #ffffff !important;
+  color: #233e52 !important;
+  border: 1px solid rgba(153,117,60,.4) !important;
+  box-shadow: inset 0 1px 3px rgba(30,47,60,.045);
+}
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+  input,textarea,select
+)::placeholder {
+  color: #637688 !important;
+  opacity: 1;
+}
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+  input,textarea,select
+):focus-visible {
+  outline: 2px solid #a47632 !important;
+  outline-offset: 1px;
+}
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+  [data-slot="card"],.weave-reading-surface,main,article
+) :is(button,a)[class*="bg-blue-600"],
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+  [data-slot="card"],.weave-reading-surface,main,article
+) :is(button,a)[class*="bg-cyan-600"] {
+  background-color: #a47632 !important;
+  color: #ffffff !important;
+  border-color: #845b24 !important;
+  box-shadow: 0 5px 16px rgba(138,95,35,.17);
+}
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+  [data-slot="card"],.weave-reading-surface,main,article
+) :is(button,a)[class*="bg-blue-600"]:hover,
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+  [data-slot="card"],.weave-reading-surface,main,article
+) :is(button,a)[class*="bg-cyan-600"]:hover {
+  background-color: #845b24 !important;
+}
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+  main,article,section
+) :is(button,a,[role="button"]):focus-visible {
+  outline: 3px solid #ac7e35 !important;
+  outline-offset: 3px;
+}
+
+/* Company records, payment tables and reports should read like institutional
+ * documents, not faint lettering on transparent black boxes.
+ */
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+  main,section,article,aside
+) :is(table,thead,tbody,tr,td,th) {
+  border-color: rgba(156,126,72,.27);
+}
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+  main,section,article,aside
+) :is(th,[role="columnheader"]) {
+  color: #344e60;
+  font-weight: 750;
+}
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+  main,section,article,aside
+) :is(pre,code) {
+  color: #274258;
+  overflow-wrap: anywhere;
+}
+
+/* Mobile-first readability, no clipped company descriptions. */
+@media(max-width:767px) {
+  html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+    main,section,article,aside,form
+  ) :is(p,li,dd,dt,label) {
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
+  html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+    main,section,article,aside,form
+  ) :is(button,a,[role="button"]):not(:where(.weave-header *)) {
+    min-height: 2.5rem;
+  }
+  html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+    main,section,article,aside,form
+  ) .truncate:not([data-allow-truncate="true"]) {
+    white-space: normal !important;
+    text-overflow: clip !important;
+    overflow: visible !important;
+  }
+}
+@media(prefers-reduced-motion:reduce) {
+  html[data-weave-shell-theme="plus-white-gold"] :is(
+    .weave-live-flame-current,.weave-live-flame-core
+  ) { animation: none !important; }
+}
