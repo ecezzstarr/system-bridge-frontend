@@ -51,11 +51,13 @@ export const ADMIN_SPACES:readonly AdminSpace[]=[
   },
   {
     "title": "Legacy Communication Entrance",
-    "href": "/admin/hub"
+    "href": "/admin/hub",
+    "description": "Open the existing Company Communication route through its preserved legacy entrance."
   },
   {
     "title": "Legacy Administration Functions",
-    "href": "/admin/functions"
+    "href": "/admin/functions",
+    "description": "Open the preserved legacy functions entrance to the Administration World."
   }
 ]},
   {id:"people",title:"People & Employment",purpose:"Manage people, applications, Client work and appointments.",stations:[
