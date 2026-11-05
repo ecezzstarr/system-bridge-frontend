@@ -30,17 +30,19 @@ export async function POST(request: NextRequest) {
        ORDER BY created_at DESC LIMIT 3`,
       [user.id],
     )
+    const outcomes = await Promise.allSettled(
+      rows.rows.map(row => settlePaystackDeposit(String(row.reference))),
+    )
     let credited = 0
     let pending = 0
-    for (const row of rows.rows) {
-      try {
-        const result = await settlePaystackDeposit(String(row.reference))
-        if (result.settled && !result.duplicate) credited++
-        else if (!result.settled) pending++
-      } catch (error) {
+    for (const outcome of outcomes) {
+      if (outcome.status === 'fulfilled') {
+        if (outcome.value.settled && !outcome.value.duplicate) credited++
+        else if (!outcome.value.settled) pending++
+      } else {
         // An unavailable Paystack API or an old invalid checkout is not proof
         // of payment. Preserve the record for Administration's audit queue.
-        console.error('[Paystack user reconciliation]', error)
+        console.error('[Paystack user reconciliation]', outcome.reason)
         pending++
       }
     }
