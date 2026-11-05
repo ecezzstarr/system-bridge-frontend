@@ -8,6 +8,7 @@ import { PresenceIndicator } from "@/components/presence-indicator"
 import { NotificationBell } from "@/components/notification-bell"
 import { useState, useEffect } from "react"
 import { useAuth } from "@/lib/auth-provider"
+import { visiblePoll } from "@/lib/visible-poll"
 
 interface AppHeaderProps {
   user?: {
@@ -27,23 +28,40 @@ export function AppHeader({ user }: AppHeaderProps) {
   const [carrierOpen, setCarrierOpen] = useState(false)
 
   useEffect(() => {
-    if (!authUser?.id) return
+    if (!authUser?.id) {
+      setFlameCoinBalance(null)
+      return
+    }
+
     const token = localStorage.getItem('ssb_auth_token')
-    fetch('/api/wallet/balance', {
-      headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-    })
-      .then(res => res.json())
-      .then(data => { if (data.success) setFlameCoinBalance(data.flameCoinBalance) })
-      .catch(() => {})
+    const headers = token ? { 'Authorization': `Bearer ${token}` } : {}
+    const refreshWallet = async (signal: AbortSignal) => {
+      // A missed webhook must not strand paid Bridgers or Agents. This endpoint
+      // checks only the logged-in user's own unfinished Paystack references.
+      if (['admin', 'agent', 'bridger', 'client'].includes(authUser.role)) {
+        await fetch('/api/deposit/paystack/reconcile', {
+          method: 'POST', headers, signal, cache: 'no-store',
+        }).catch(() => {})
+      }
+      if (signal.aborted) return
+      const result = await fetch('/api/wallet/balance', {
+        headers, cache: 'no-store', signal,
+      })
+      if (!result.ok) return
+      const data = await result.json()
+      if (!signal.aborted && data.success) setFlameCoinBalance(data.flameCoinBalance)
+    }
+    const stop = visiblePoll(refreshWallet, 20000)
 
     fetch('/api/carrier/access', {
-      headers: token ? { 'Authorization': `Bearer ${token}` } : {},
-      cache: 'no-store',
+      headers, cache: 'no-store',
     })
       .then(res => res.json())
       .then(data => setCarrierOpen(Boolean(data?.access?.active)))
       .catch(() => setCarrierOpen(false))
-  }, [authUser?.id])
+
+    return stop
+  }, [authUser?.id, authUser?.role])
 
   if (!effectiveUser) return null
 
