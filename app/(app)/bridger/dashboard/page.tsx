@@ -15,10 +15,10 @@ export default function BridgerDashboardPage() {
   const [originalWorld, setOriginalWorld] = useState(false)
 
   useEffect(() => {
-    if (isInitialized && !isLoading && user && user.role !== 'bridger') router.replace('/event')
+    if (isInitialized && !isLoading && user && user.role!=='bridger') router.replace('/event')
   }, [isInitialized, isLoading, user?.role, router])
 
-  if (!isInitialized || isLoading || user?.role !== 'bridger') return null
+  if (!isInitialized || isLoading || user?.role!=='bridger')return null
 
   return <>
     {originalWorld ? (
