@@ -314,7 +314,7 @@ export function transitTrainingForPath(role:WeaveLoadingRole,path:string):WeaveL
     return {
       eyebrow:'CLIENT · SYSTEM SWITCH CROSSING',
       title:'Your File Folder is inside the 3D world',
-      body:'The website gives way to the shared File Folder Open World. Your verified File Folder is your own operating environment, separate from the public spaces other people may visit.',
+      body:'The website gives way to the shared File Folder Open World. Your verified File Folder is your own private operating environment, separate from the public spaces other people may visit.',
       movement:'Recognize the shared world → enter your own File Folder → operate actual systems',
     }
   }
