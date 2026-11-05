@@ -19,7 +19,8 @@ export async function GET(request: NextRequest) {
       JOIN users u ON u.id = d.user_id
       WHERE d.method = 'paystack'
         AND u.role IN ('agent', 'bridger', 'admin', 'client')
-      ORDER BY d.created_at DESC
+      ORDER BY CASE WHEN d.status='approved' AND d.verified_at IS NULL THEN 0 WHEN d.status='pending' THEN 1 ELSE 2 END,
+               d.created_at DESC
       LIMIT 100
     `)
     return NextResponse.json({ success: true, deposits: result.rows }, {
