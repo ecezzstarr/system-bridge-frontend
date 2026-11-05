@@ -31,6 +31,30 @@ const required=[
   'data-weave-public-entry-world="true"',
 ]
 for(const phrase of required)assert.ok(source.includes(phrase),'Homepage missing: '+phrase)
+assert.ok(source.includes('data-home-company-worldwide="true"'),'Homepage must explain WEAVE across borders')
+assert.ok(source.includes('wherever people live and work'),'Homepage must present WEAVE as globally oriented')
+
+// Only the named Company Loop 2 national event may use Nigeria/Nigerian wording
+// on the public homepage. Preserve its exact heading and remove it before
+// checking the rest of the source and any directly embedded homepage content.
+const loopTwoStart=source.indexOf('weave-home-loop-country')
+const loopThreeStart=source.indexOf('weave-home-loop-time')
+assert.ok(loopTwoStart>=0 && loopThreeStart>loopTwoStart,'Keep distinct Loop 2 and Loop 3 sections')
+const loopTwoCopy=source.slice(loopTwoStart,loopThreeStart)
+assert.match(loopTwoCopy,/\\bNigeria(?:n)?\\b/i,'Loop 2 keeps its country identity')
+const outsideLoopTwo=source.slice(0,loopTwoStart)+source.slice(loopThreeStart)
+assert.doesNotMatch(outsideLoopTwo,/\\bNigeria(?:n)?\\b/i,
+  'Homepage must not use Nigeria/Nigerian outside Company Loop 2')
+for(const component of [
+  'components/reach-delivery/public-request-form.tsx',
+  'components/reach-delivery/request-tracker.tsx',
+  'components/weave-logo.tsx',
+]){
+  const text=fs.readFileSync(path.join(__dirname,'..',component),'utf8')
+  assert.doesNotMatch(text,/\\bNigeria(?:n)?\\b/i,
+    'Visible homepage component must remain country-neutral: '+component)
+}
+
 const order=[
   'data-company-of-time="introduction"',
   'data-home-plus-file-folder="official-picture"',
