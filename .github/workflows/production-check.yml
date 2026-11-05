@@ -120,6 +120,7 @@ jobs:
           node tests/file-folder-plus-contract-regression.cjs
           node tests/file-folder-global-upgrade-release-regression.cjs
           node tests/file-folder-plus-official-world-regression.cjs
+          node tests/weave-plus-company-theme-regression.cjs
           node tests/plus-file-folder-formation-behavior.cjs
           node tests/admin-music-studio-dj.cjs
           node tests/work-github-oracle-release-regression.cjs

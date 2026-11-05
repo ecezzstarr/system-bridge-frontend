@@ -4,6 +4,8 @@ import './weave-readability.css'
 import './weave-theme.css'
 import './weave-mobile.css'
 import './weave-home-burning-river.css'
+import './weave-plus-company-theme.css'
+import './weave-plus-company-pages.css'
 import { AuthProvider } from '@/lib/auth-provider'
 import { ThemeProvider } from 'next-themes'
 import { PWARegister } from '@/components/pwa-register'
@@ -12,6 +14,7 @@ import { DJBroadcastPlayer } from '@/components/dj-broadcast-player'
 import { WEAVE_PUBLIC_ORIGIN } from '@/lib/weave-origin'
 import { PresenceCameraProvider, PresenceCameraRootViewport } from '@/components/world/presence-camera'
 import { WeaveWorldEnvironment } from '@/components/world/weave-world-environment'
+import { WeaveGlobalVisualTheme } from '@/components/world/weave-global-visual-theme'
 import { InteractionMotionLayer } from '@/components/world/interaction-motion-layer'
 import { DivineShieldGate } from '@/components/divine-shield-gate'
 import { WeaveEnvironmentTransit } from '@/components/world/weave-environment-transit'
@@ -50,11 +53,12 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" suppressHydrationWarning className="overflow-x-hidden" data-weave-theme="dark-blue">
+    <html lang="en" suppressHydrationWarning className="overflow-x-hidden" data-weave-theme="dark-blue" data-weave-shell-theme="plus-white-gold">
       <body className="bg-background text-foreground overflow-x-hidden antialiased">
         <ThemeProvider attribute="class" defaultTheme="dark" forcedTheme="dark" enableSystem={false}>
           <AuthProvider>
             <PresenceCameraProvider>
+              <WeaveGlobalVisualTheme />
               <WeaveWorldEnvironment />
               <InteractionMotionLayer />
               <PWARegister />
