@@ -63,4 +63,31 @@ if (!depositRoute.includes('export async function GET(request: NextRequest)') ||
 if (!notifications.includes("input.rail === 'PAYSTACK'") || !notifications.includes('This is not proof of payment')) {
   throw new Error('Checkout initiation cannot be described as payment approval')
 }
+
+const ownerRecovery = read('app/api/deposit/paystack/reconcile/route.ts')
+const globalHeader = read('components/app-header.tsx')
+if (!ownerRecovery.includes('getAuthUser(request)') || !ownerRecovery.includes("user_id=$1::uuid") ||
+    !ownerRecovery.includes("status IN ('pending','rejected')") ||
+    !ownerRecovery.includes('settlePaystackDeposit(String(row.reference))')) {
+  throw new Error('Authenticated recovery must verify only the current user\'s unfinished Paystack payments')
+}
+if (!globalHeader.includes('visiblePoll(refreshWallet, 20000)') ||
+    !globalHeader.includes('/api/deposit/paystack/reconcile') ||
+    !globalHeader.includes('/api/wallet/balance')) {
+  throw new Error('Global Flame Coin balance must reconcile and refresh every 20 seconds')
+}
+if (!walletUi.includes('visiblePoll(async () =>') || !walletUi.includes('}, 20000, false)')) {
+  throw new Error('Wallet transaction list and displayed balance must refresh every 20 seconds')
+}
+if (!settlement.includes("status IN ('pending','rejected')") ||
+    !settlement.includes("'refund.processed'") ||
+    !settlement.includes("'Verified Paystack deposit credited'")) {
+  throw new Error('Verified legacy deposits must recover only when no earlier credit or refund exists')
+}
+if (!adminPaystack.includes('reconcilePending === true') ||
+    !adminPaystack.includes('settlePaystackDeposit(String(row.reference))') ||
+    !adminTerminal.includes('Reconcile previous deposits')) {
+  throw new Error('Administration must be able to reconcile previous paid-but-uncredited deposits for offline users')
+}
+
 console.log('Paystack verified deposits, secured Administration review, and legacy endpoint regressions passed')
