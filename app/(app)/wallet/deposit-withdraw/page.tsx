@@ -71,6 +71,20 @@ export default function WalletDepositWithdrawPage() {
       .catch(() => {})
   }, [user, isOpayRole])
 
+  // Paystack redirects back only after server-side verification is attempted.
+  useEffect(() => {
+    if (!user) return
+    const paymentStatus = new URLSearchParams(window.location.search).get('deposit')
+    if (paymentStatus === 'verified') {
+      setMessage('Payment verified by Paystack. Your Flame Coin wallet has been credited.')
+      void fetchBalance()
+      void fetchClientDeposits()
+    } else if (paymentStatus === 'pending' || paymentStatus === 'verification_pending') {
+      setMessage('Payment not yet confirmed. Your wallet will be credited only after Paystack verifies the payment.')
+      void fetchClientDeposits()
+    }
+  }, [user?.id])
+
   const fetchClientDeposits = async () => {
     if(!user)return
     try{
