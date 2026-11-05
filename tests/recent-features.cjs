@@ -571,7 +571,7 @@ assert.deepEqual(
 )
 assert.deepEqual(
  getRolePlaces('bridger').map(place=>place.href),
- ['/bridger/presence','/settings','/enterprise/legions-notebook','/bridger/crossing-notebook','/weave/market/prospects','/bridger/email-outreach','/bridger/numbers','/bridger/bridge-ai','/echo','/wallet/deposit-withdraw','/communications','/company-chat','/profiles','/event'],
+ ['/bridger/presence','/settings','/enterprise/legions-notebook','/bridger/working-manual','/bridger/crossing-notebook','/weave/market/prospects','/bridger/email-outreach','/bridger/numbers','/bridger/bridge-ai','/echo','/wallet/deposit-withdraw','/communications','/company-chat','/profiles','/event'],
  'Bridger account keeps its focused Prospect/Crossing and Continuity functions including Email Outreach'
 )
 for(const role of ['agent','bridger']) for(const href of ['/arena','/casino','/video-feed','/marketplace','/lounge']) assert.ok(!roleHas(role,href),role+' excludes unrelated account entrance '+href)
