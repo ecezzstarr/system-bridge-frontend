@@ -15,7 +15,7 @@ for (const token of ['initializePaystackTransaction','verifyPaystackTransaction'
 for (const token of ["WHERE d.method='paystack'","FOR UPDATE OF d","deposit.status === 'approved'","balance_trx=balance_trx+$2","Verified Paystack deposit credited","amount_kobo"]) {
   if (!settlement.includes(token)) throw new Error('Missing idempotent settlement guard: ' + token)
 }
-for (const token of ["['admin','agent','bridger','client']","amountKobo:Math.round(amountNgn*100)","notifyDepositSubmitted","status:'pending'"]) {
+for (const token of ["['admin','agent','bridger','client']","amountKobo:amountKobo","notifyDepositSubmitted","status:'pending'"]) {
   if (!depositRoute.includes(token)) throw new Error('Missing Paystack deposit initialization requirement: ' + token)
 }
 if (!webhook.includes("request.headers.get('x-paystack-signature')") || !webhook.includes('settlePaystackDeposit')) throw new Error('Webhook must validate signature and invoke server verification')
