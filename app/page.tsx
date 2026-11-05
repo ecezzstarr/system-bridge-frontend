@@ -90,6 +90,9 @@ export default function Home() {
               <h2 className="weave-home-subtitle mx-auto mt-5 max-w-4xl text-2xl font-black leading-snug tracking-tight sm:text-4xl">
                 The Weave of Presence: System Switch — Bridge of Radiance
               </h2>
+              <p className="mx-auto mt-5 max-w-3xl text-base font-medium leading-7 text-slate-100" data-home-system-switch-explanation="website-to-3d">
+                System Switch is the gate from this website into the 3D File Folder Open World. Before crossing, people learn what lies beyond the gate and which places they may enter as Clients, staff or public visitors.
+              </p>
               <div className="weave-home-departments mx-auto mt-9 grid max-w-4xl grid-cols-2 gap-3 sm:grid-cols-4" data-company-time-departments>
                 {departments.map(department => (
                   <div key={department.name} className="weave-home-department px-3 py-4">
