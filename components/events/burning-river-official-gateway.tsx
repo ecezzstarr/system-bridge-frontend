@@ -1,6 +1,7 @@
 'use client'
 import {useState} from 'react'
 import Link from 'next/link'
+import {WEAVE_WRITING} from '@/lib/weave-writing'
 
 /**
  * The official image already contains its four entrance buttons.
@@ -26,6 +27,10 @@ export function BurningRiverOfficialGateway({
  return <section className="relative isolate overflow-hidden bg-[#080e1c] text-white"
    data-flame-official-gateway="bridge_of_radiance_flame_event_gateway.png">
    <div className="mx-auto max-w-[900px]">
+     <div className="mx-3 mt-3 rounded-xl border border-amber-100/25 bg-[#07182b]/90 px-4 py-3 text-left shadow-lg sm:mx-5" data-system-switch-public-before-crossing="true">
+       <p className="text-sm font-bold text-amber-200">Before you cross · System Switch</p>
+       <p className="mt-1 text-sm leading-6 text-sky-50">This entrance leads from the website into the 3D File Folder Open World. Explore published Client places and Customer Doors. Your position determines which private systems you can use.</p>
+     </div>
      {!missing?<div className="relative w-full" data-gateway-image-hotspots="approved-artwork">
        <img src="/weave/flame-event/burning-river-crossing-official.webp"
          alt="The Company of Time. Interaction in Motion presents The Weave of Presence: System Switch — Bridge of Radiance. The Scroll of Time and Continuity, Company Loop 1, Flame Event: Burning River. Gateway with four illustrated entrances."
