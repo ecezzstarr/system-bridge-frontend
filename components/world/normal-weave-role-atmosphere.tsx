@@ -19,6 +19,13 @@ export function NormalWeaveRoleAtmosphere({
   const eligible = userRole === 'bridger' || userRole === 'agent' || userRole === 'admin'
   const isDashboard = DASHBOARDS.has(pathname)
 
+  // Each department owns a reversible workplace and the preserved original world.
+  // Do not intercept these dashboards; route guards and Legacy districts remain intact.
+  const ownWorkplace = (pathname === '/bridger/dashboard' && userRole === 'bridger')
+    || (pathname === '/agent/dashboard' && userRole === 'agent')
+    || (pathname === '/admin/dashboard' && userRole === 'admin')
+  if (ownWorkplace) return <>{children}</>
+
   if (!eligible || !isDashboard) return <>{children}</>
 
   // Home is the compact WEAVE world. Operational functions live on their own

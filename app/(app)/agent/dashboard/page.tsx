@@ -5,6 +5,8 @@ import { useEffect, useState } from 'react'
 import { BriefcaseBusiness, Share2, Truck } from 'lucide-react'
 import { useAuth } from '@/lib/auth-provider'
 import { WeaveDashboardWorld } from '@/components/world/weave-dashboard-world'
+import { AgentWorkplace } from '@/components/agent/agent-workplace'
+import { ArrowLeft } from 'lucide-react'
 import { AgilityAgentLoginAd, AGILITY_AGENT_LOGIN_AD_KEY } from '@/components/agility-agent-login-ad'
 import { Loop1AgentLoginAd, LOOP1_AGENT_LOGIN_AD_KEY } from '@/components/agent/loop1-agent-login-ad'
 import { ManagerLifestyleEntry } from '@/components/manager-lifestyle-entry'
@@ -13,6 +15,7 @@ import { useRouter } from 'next/navigation'
 export default function AgentWorld() {
   const { user } = useAuth()
   const router = useRouter()
+  const [originalWorld,setOriginalWorld]=useState(false)
   const [showLoop1Ad,setShowLoop1Ad]=useState(false)
   const [showAgilityAd,setShowAgilityAd]=useState(false)
   const [agilityQueued,setAgilityQueued]=useState(false)
@@ -37,7 +40,17 @@ export default function AgentWorld() {
       onOpenContinuance={()=>{setShowLoop1Ad(false);router.push('/agent/commissions')}}
     />
     <AgilityAgentLoginAd open={showAgilityAd} onOpenChange={setShowAgilityAd} onBuy={()=>{setShowAgilityAd(false);router.push('/agility')}} />
-    <WeaveDashboardWorld role="agent" userName={user.name} />
+    {originalWorld ? (
+      <div data-agent-original-district-world="preserved">
+        <button type="button" onClick={()=>setOriginalWorld(false)}
+          className="relative z-30 m-4 inline-flex min-h-11 items-center gap-2 rounded-xl border border-amber-300/40 bg-[#142334] px-4 py-2 text-sm font-semibold text-amber-100">
+          <ArrowLeft className="h-4 w-4"/> Return to Work Desk
+        </button>
+        <WeaveDashboardWorld role="agent" userName={user.name} />
+      </div>
+    ) : (
+      <AgentWorkplace userName={user.name} onOpenDistricts={()=>setOriginalWorld(true)}/>
+    )}
     <ManagerLifestyleEntry />
     <div className="sr-only focus-within:not-sr-only">
       <Link href="/agility">Agility home</Link>
