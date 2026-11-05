@@ -22,6 +22,7 @@ export async function initializePaystackTransaction(input: PaystackInitializeInp
     headers: { Authorization: 'Bearer ' + await secretKey(), 'Content-Type': 'application/json' },
     body: JSON.stringify({ email: input.email, amount: input.amountKobo, currency: 'NGN', reference, callback_url: input.callbackUrl, metadata: input.metadata }),
     cache: 'no-store',
+    signal: AbortSignal.timeout(10000),
   })
   const payload = await response.json().catch(() => null)
   if (!response.ok || payload?.status !== true || !payload?.data?.authorization_url || payload?.data?.reference !== reference) throw new Error('Paystack could not initialize this payment')
@@ -30,7 +31,7 @@ export async function initializePaystackTransaction(input: PaystackInitializeInp
 
 export async function verifyPaystackTransaction(reference: string): Promise<PaystackTransaction> {
   if (!/^[a-zA-Z0-9.=-]{1,100}$/.test(reference)) throw new Error('Invalid Paystack reference')
-  const response = await fetch(PAYSTACK_API + '/transaction/verify/' + encodeURIComponent(reference), { headers: { Authorization: 'Bearer ' + await secretKey() }, cache: 'no-store' })
+  const response = await fetch(PAYSTACK_API + '/transaction/verify/' + encodeURIComponent(reference), { headers: { Authorization: 'Bearer ' + await secretKey() }, cache: 'no-store', signal: AbortSignal.timeout(10000) })
   const payload = await response.json().catch(() => null)
   if (!response.ok || payload?.status !== true || !payload?.data) throw new Error('Paystack transaction verification failed')
   return payload.data as PaystackTransaction
