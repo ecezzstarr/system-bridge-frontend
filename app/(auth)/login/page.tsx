@@ -45,11 +45,14 @@ export default function LoginPage() {
         return
       }
 
+      if (loggedInUser?.role === 'admin') {
+        router.replace('/admin/dashboard')
+        return
+      }
+
       const eventLive = await isFlameEventActive()
 
-      if (loggedInUser?.role === 'admin') {
-        router.replace(eventLive ? '/event' : administrationPortal ? '/authority/workshops' : '/admin/dashboard')
-      } else if (loggedInUser?.role === 'agent') {
+      if (loggedInUser?.role === 'agent') {
         sessionStorage.setItem(AGILITY_AGENT_LOGIN_AD_KEY, '1')
         if (!eventLive) sessionStorage.setItem(LOOP1_AGENT_LOGIN_AD_KEY, '1')
         router.replace(eventLive ? '/event' : '/agent/dashboard')
