@@ -8,6 +8,7 @@ import { useAuth } from '@/lib/auth-provider'
 import { AdaptiveCanvas } from '@/components/world/adaptive-canvas'
 import { RiverSurface } from '@/components/events/flame-event-mobile-scene'
 import { SystemSwitchThreshold } from '@/components/world/system-switch-threshold'
+import { WEAVE_WRITING } from '@/lib/weave-writing'
 
 /**
  * One staff crossing: Flame Event -> Burning River System Switch Gate
@@ -35,6 +36,7 @@ export default function SystemSwitchEntryPage() {
   const role = user.role as 'admin' | 'agent' | 'bridger'
   const backHref = '/event'
   const position = role === 'admin' ? 'Administration' : role === 'agent' ? 'Agent · Stability' : 'Bridger · Hope'
+  const crossing = WEAVE_WRITING.systemSwitch
 
   return (
     <main
@@ -45,7 +47,7 @@ export default function SystemSwitchEntryPage() {
       data-system-switch-threshold="staff-to-file-folder-open-world"
       data-system-switch-crossed="false"
     >
-      <div className="relative h-[88svh] min-h-[560px] w-full overflow-hidden" data-system-switch-living-river="water-fire-bridge">
+      <div className="relative flex min-h-[max(88svh,560px)] w-full flex-col justify-end overflow-hidden" data-system-switch-living-river="water-fire-bridge">
         <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_65%,#245f76,#082b44_50%,#04101f)]" />
         {webgl && (
           <div className="absolute inset-0" data-system-switch-gate-world="live-3d">
@@ -66,21 +68,32 @@ export default function SystemSwitchEntryPage() {
           </Link>
           <Link href="/system-switch/bridge-radiance/flame-coin" className="ml-2 inline-flex min-h-11 items-center rounded-full border border-amber-200/25 bg-[#071d30]/80 px-4 text-xs font-bold text-amber-100">Flame Coin</Link>
         </div>
-        <div className="absolute inset-x-0 bottom-0 z-10 mx-auto flex max-w-2xl flex-col items-center px-4 pb-[max(2rem,env(safe-area-inset-bottom))] text-center sm:pb-12">
-          <p className="text-[10px] font-black uppercase tracking-[.25em] text-amber-200">The Company of Time · Burning River</p>
-          <h1 className="mt-3 text-3xl font-black tracking-tight sm:text-5xl">System Switch Gate</h1>
-          <p className="mt-3 max-w-lg text-xs leading-5 text-sky-100/85 sm:text-sm">
-            {position} · Cross the river of water and fire to enter the shared open world of Client File Folders. Open a commissioned Customer Door to visit the Client's public systems.
+        <div className="relative z-10 mx-auto mt-24 flex w-full max-w-2xl flex-col items-center px-4 pb-[max(2rem,env(safe-area-inset-bottom))] text-center sm:pb-12">
+          <p className="text-[11px] font-black uppercase tracking-[.16em] text-amber-200">{crossing.eyebrow}</p>
+          <h1 className="mt-2 text-3xl font-black tracking-tight sm:text-5xl">System Switch</h1>
+          <p className="mt-2 max-w-xl text-sm leading-6 text-sky-50 sm:text-base" data-system-switch-orientation="website-to-3d">
+            {crossing.introduction}
           </p>
+          <p className="mt-2 max-w-xl text-xs leading-5 text-amber-100 sm:text-sm">
+            {position} · {crossing.staff}
+          </p>
+          <section className="mt-4 w-full max-w-xl rounded-xl border border-sky-100/25 bg-[#051526]/90 p-3 text-left sm:p-4" aria-label="Know the crossing before you enter" data-system-switch-before-crossing="true">
+            <p className="text-sm font-bold text-white">{crossing.preparation}</p>
+            <ol className="mt-2 space-y-1 text-xs leading-5 text-sky-50 sm:text-sm">
+              {crossing.stages.map((stage, index) => (
+                <li key={stage.title}><strong className="text-amber-200">{index + 1}. {stage.title}:</strong> {stage.detail}</li>
+              ))}
+            </ol>
+          </section>
           <Link
             href="/system-switch/world?via=system-switch"
             data-system-switch-crossing="open-file-folder-world"
             className="mt-6 inline-flex min-h-14 w-full max-w-md items-center justify-center gap-3 rounded-xl border border-amber-100 bg-amber-200 px-5 py-3 text-sm font-black text-[#0a2033] shadow-[0_8px_35px_rgba(253,197,99,.24)]"
           >
-            <FolderOpen className="h-5 w-5" /> Enter Weave Open World <ArrowRight className="h-5 w-5" />
+            <FolderOpen className="h-5 w-5" /> {crossing.crossAction} <ArrowRight className="h-5 w-5" />
           </Link>
-          <p className="mt-3 flex items-center gap-2 text-[11px] text-sky-100/65">
-            <Waves className="h-4 w-4 text-sky-300" /> Public Client worlds only · Private Client builds stay protected
+          <p className="mt-3 flex items-center gap-2 text-center text-xs leading-5 text-sky-50/90">
+            <Waves className="h-4 w-4 text-sky-300" /> {crossing.privacy}
           </p>
         </div>
       </div>

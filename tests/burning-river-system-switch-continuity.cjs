@@ -27,7 +27,7 @@ assert.ok(sharedCSS.includes('height:clamp(480px,calc(100svh - 96px),850px)'),'P
 assert.ok(!systemSwitch.includes("url('/weave/flame-event/burning-river-world.svg')"),'Staff System Switch does not substitute a wallpaper for the real river')
 assert.ok(systemSwitch.includes('data-system-switch-living-river'),'Live crossing is mounted in the staff route')
 assert.ok(systemSwitch.includes('<RiverSurface quiet={false} />')&&systemSwitch.includes('<SystemSwitchThreshold active'),'Staff gate renders the real Burning River and Bridge of Radiance without a duplicate playable world')
-assert.ok(systemSwitch.indexOf('<RiverSurface quiet={false} />')<systemSwitch.indexOf('Enter Weave Open World'),'Burning River is visible before the File Folder crossing action')
+assert.ok(systemSwitch.indexOf('<RiverSurface quiet={false} />')<systemSwitch.indexOf('data-system-switch-crossing="open-file-folder-world"'),'Burning River is visible before the actual File Folder crossing action')
 assert.ok(!systemSwitch.includes('<StaffFileFolderWorld'),'Staff must explicitly cross the gate before opening the world')
 const fileFolderWorld=read('app/system-switch/world/page.tsx')
 assert.ok(fileFolderWorld.includes('<BurningRiverLiveWorld role={role} carrierCode={carrierCode} requestedDoor={door} legionCode={legionCode}/>')&&fileFolderWorld.includes('data-file-folder-open-world-entry'),'The destination renders verified Client File Folder domains')
