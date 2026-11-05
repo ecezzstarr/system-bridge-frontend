@@ -17,7 +17,9 @@ export async function settlePaystackDeposit(reference: string) {
     if (!deposit) throw new Error('Paystack deposit reference was not found')
     const expectedKobo = Math.round(Number(deposit.amount_usd) * 100)
     if (!paystackTransactionMatches({ transaction, expectedReference: reference, expectedAmountKobo: expectedKobo, expectedEmail: deposit.owner_email })) {
-      if (deposit.status === 'pending') {
+      // An incomplete checkout is not a failed payment. Allow webhook/Administration retry.
+      // Only a completed but mismatched payment is rejected for manual investigation.
+      if (deposit.status === 'pending' && transaction.status === 'success') {
         await client.query("UPDATE deposits SET status='rejected',updated_at=NOW() WHERE id=$1::uuid AND status='pending'", [deposit.id])
         await client.query(
           "INSERT INTO ledger_entries(user_id,entry_type,amount,currency,description,metadata) VALUES($1::uuid,'deposit',0,'Flame Coin','Paystack deposit verification failed',$2::jsonb)",
