@@ -34,7 +34,9 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const amountNgn = Number(body?.amount)
-    if (!Number.isFinite(amountNgn) || amountNgn < 1 || amountNgn > 100000000 || Math.round(amountNgn*100)!==amountNgn*100) {
+    const amountKobo = Math.round(amountNgn * 100)
+    if (!Number.isFinite(amountNgn) || amountNgn < 1 || amountNgn > 100000000 ||
+        !Number.isSafeInteger(amountKobo) || Math.abs(amountNgn * 100 - amountKobo) > 0.000001) {
       return NextResponse.json({error:'Enter a valid NGN amount (minimum ₦1, maximum ₦100,000,000, up to two decimals).'}, {status:400})
     }
     if (!user.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(user.email)) return NextResponse.json({error:'A valid email is required on your Weave account for Paystack checkout.'},{status:400})
@@ -48,15 +50,15 @@ export async function POST(request: NextRequest) {
       [user.id,amountNgn,flameCoin,reference],
     )
     await pool.query(
-      "INSERT INTO ledger_entries(user_id,entry_type,amount,currency,description,metadata) VALUES($1::uuid,'deposit',$2,'Flame Coin','Paystack deposit pending payment verification',$3::jsonb)",
-      [user.id,flameCoin,JSON.stringify({deposit_id:inserted.rows[0].id,payment_method:'Paystack',reference,ngn_amount:amountNgn,amount_kobo:Math.round(amountNgn*100),rate_ngn_per_trx:rateNgnPerTrx,rate_source:rateSource,status:'pending'})],
+      "INSERT INTO ledger_entries(user_id,entry_type,amount,currency,description,metadata) VALUES($1::uuid,'deposit',0,'Flame Coin','Paystack deposit pending payment verification',$2::jsonb)",
+      [user.id,JSON.stringify({deposit_id:inserted.rows[0].id,payment_method:'Paystack',reference,ngn_amount:amountNgn,amount_kobo:amountKobo,rate_ngn_per_trx:rateNgnPerTrx,rate_source:rateSource,status:'pending'})],
     )
     try {
       const config=await getPaystackConfig()
       const origin=(config.publicOrigin||process.env.WEAVE_PUBLIC_ORIGIN||new URL(request.url).origin).replace(/\/$/,'')
       if (!origin.startsWith('https://')) throw new Error('WEAVE_PUBLIC_ORIGIN must be the canonical HTTPS production origin')
       const checkout=await initializePaystackTransaction({
-        email:user.email,amountKobo:Math.round(amountNgn*100),reference,
+        email:user.email,amountKobo:amountKobo,reference,
         callbackUrl:origin+'/api/deposit/paystack/verify',
         metadata:{deposit_id:inserted.rows[0].id,user_id:user.id,user_role:user.role,flame_coin_amount:flameCoin,rate_ngn_per_trx:rateNgnPerTrx,rate_source:rateSource,custom_fields:[{display_name:'Weave deposit ID',variable_name:'weave_deposit_id',value:inserted.rows[0].id},{display_name:'Flame Coin credit',variable_name:'flame_coin_amount',value:String(flameCoin)}]},
       })
@@ -75,7 +77,7 @@ export async function POST(request: NextRequest) {
       await pool.query("UPDATE deposits SET status='rejected',updated_at=NOW() WHERE id=$1::uuid AND status='pending'",[inserted.rows[0].id])
       await pool.query(
         "INSERT INTO ledger_entries(user_id,entry_type,amount,currency,description,metadata) VALUES($1::uuid,'deposit',0,'Flame Coin','Paystack checkout initialization failed',$2::jsonb)",
-        [user.id,JSON.stringify({deposit_id:inserted.rows[0].id,payment_method:'Paystack',reference,ngn_amount:amountNgn,amount_kobo:Math.round(amountNgn*100),status:'initialization_failed'})],
+        [user.id,JSON.stringify({deposit_id:inserted.rows[0].id,payment_method:'Paystack',reference,ngn_amount:amountNgn,amount_kobo:amountKobo,status:'initialization_failed'})],
       )
       throw error
     }
