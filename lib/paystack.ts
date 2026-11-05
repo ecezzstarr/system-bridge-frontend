@@ -33,7 +33,8 @@ export async function verifyPaystackTransaction(reference: string): Promise<Pays
   if (!/^[a-zA-Z0-9.=-]{1,100}$/.test(reference)) throw new Error('Invalid Paystack reference')
   const response = await fetch(PAYSTACK_API + '/transaction/verify/' + encodeURIComponent(reference), { headers: { Authorization: 'Bearer ' + await secretKey() }, cache: 'no-store', signal: AbortSignal.timeout(10000) })
   const payload = await response.json().catch(() => null)
-  if (!response.ok || payload?.status !== true || !payload?.data) throw new Error('Paystack transaction verification failed')
+  if (response.status === 404) throw new Error('Reference not found in the configured Paystack merchant account. Verify the original merchant and live/test mode.')
+  if (!response.ok || payload?.status !== true || !payload?.data) throw new Error('Paystack verification unavailable. Check merchant account credentials and retry.')
   return payload.data as PaystackTransaction
 }
 
@@ -46,7 +47,43 @@ export async function verifyPaystackWebhookSignature(rawBody: string | Buffer, s
   return received.length === expected.length && timingSafeEqual(received, expected)
 }
 
-export function paystackTransactionMatches(input: { transaction: PaystackTransaction; expectedReference: string; expectedAmountKobo: number; expectedEmail?: string }) {
+export type PaystackMatchInput = {
+  transaction: PaystackTransaction
+  expectedReference: string
+  expectedAmountKobo: number
+  expectedEmail?: string
+  expectedDepositId?: string
+  expectedUserId?: string
+}
+
+/** Confirm amount, reference, currency and the original checkout's identity. */
+export function paystackMismatchReason(input: PaystackMatchInput): string | null {
   const tx = input.transaction
-  return tx.status === 'success' && tx.reference === input.expectedReference && tx.currency === 'NGN' && Number.isSafeInteger(tx.amount) && tx.amount === input.expectedAmountKobo && (!input.expectedEmail || tx.customer?.email?.toLowerCase() === input.expectedEmail.toLowerCase())
+  if (tx.status !== 'success') return 'Paystack has not confirmed a successful charge.'
+  if (tx.reference !== input.expectedReference) return 'Paystack returned a different reference.'
+  if (tx.currency !== 'NGN') return 'Paystack returned a different currency.'
+  if (!Number.isSafeInteger(tx.amount) || tx.amount !== input.expectedAmountKobo) {
+    return 'The amount Paystack received does not match the recorded checkout.'
+  }
+  const meta = tx.metadata && typeof tx.metadata === 'object' && !Array.isArray(tx.metadata)
+    ? tx.metadata as Record<string, unknown> : null
+  // The checkout stores original user+deposit IDs in provider metadata.
+  // This is stronger than comparing against a possibly changed account email.
+  if (input.expectedDepositId && input.expectedUserId && meta &&
+      (meta.deposit_id !== undefined || meta.user_id !== undefined)) {
+    if (String(meta.deposit_id || '').toLowerCase() !== input.expectedDepositId.toLowerCase() ||
+        String(meta.user_id || '').toLowerCase() !== input.expectedUserId.toLowerCase()) {
+      return 'Paystack checkout identity does not match the Weave deposit.'
+    }
+    return null
+  }
+  if (input.expectedEmail && tx.customer?.email?.toLowerCase() !== input.expectedEmail.toLowerCase()) {
+    return 'Legacy payer email differs from the current Weave account. Review the original checkout evidence.'
+  }
+  return null
+}
+
+export function paystackTransactionMatches(input: PaystackMatchInput) {
+  const tx = input.transaction
+  return tx.status === 'success' && paystackMismatchReason(input) === null
 }
