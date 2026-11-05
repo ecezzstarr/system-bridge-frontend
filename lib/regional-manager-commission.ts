@@ -23,6 +23,7 @@ export async function ensureRegionalManagerCommissionSchema() {
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `
+  await sql`ALTER TABLE weave_regional_manager_applications ADD COLUMN IF NOT EXISTS training_standard_acknowledged BOOLEAN NOT NULL DEFAULT FALSE`
   await sql`CREATE INDEX IF NOT EXISTS weave_regional_manager_applications_status_submitted_idx ON weave_regional_manager_applications(status,submitted_at DESC)`
   await sql`CREATE INDEX IF NOT EXISTS weave_regional_manager_applications_role_submitted_idx ON weave_regional_manager_applications(source_role,submitted_at DESC)`
 
