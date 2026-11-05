@@ -20,6 +20,39 @@ html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-locati
   --weave-plus-page-shadow: 0 18px 55px rgba(32,59,79,.095);
 }
 
+/* A grown-up institutional reading system: strong headings, calm body copy,
+ * restrained letterspacing and a solid word surface even while Loop 1 is live.
+ */
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) body {
+  font-weight: 500;
+  -webkit-font-smoothing: antialiased;
+}
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+  main,section,article,aside
+) :is(h1,h2,h3):not(:where([data-public-weave-world] *,[data-plus-file-folder-world] *,[data-file-folder-world] *)) {
+  line-height: 1.17;
+  letter-spacing: -.015em;
+  text-wrap: balance;
+  text-shadow: none !important;
+}
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+  main,section,article,aside
+) :is(p,li,dd,dt):not(:where([data-public-weave-world] *,[data-plus-file-folder-world] *,[data-file-folder-world] *)) {
+  line-height: 1.6;
+  text-shadow: none !important;
+}
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+  [data-weave-live-word],.weave-word-presence
+):not(:where([data-public-weave-world] *,[data-plus-file-folder-world] *,[data-file-folder-world] *)) {
+  color: #2c4b60 !important;
+  -webkit-text-fill-color: currentColor;
+  background-image: none !important;
+  background-clip: border-box;
+  filter: none !important;
+  text-shadow: none !important;
+  animation: none !important;
+}
+
 /* Public marketing, payments, registration, client portal and legal pages
  * often sit outside [data-weave-environment]. They must not fall back to the
  * original navy rendering.
