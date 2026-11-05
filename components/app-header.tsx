@@ -34,7 +34,7 @@ export function AppHeader({ user }: AppHeaderProps) {
     }
 
     const token = localStorage.getItem('ssb_auth_token')
-    const headers = token ? { 'Authorization': `Bearer ${token}` } : {}
+    const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {}
     // Balance refresh must not wait on slow/failed Paystack gateway requests.
     const refreshWallet = async (signal: AbortSignal) => {
       const result = await fetch('/api/wallet/balance', {
@@ -45,7 +45,7 @@ export function AppHeader({ user }: AppHeaderProps) {
       if (!signal.aborted && data.success) setFlameCoinBalance(data.flameCoinBalance)
     }
     const stopBalance = visiblePoll(refreshWallet, 20000)
-    const stopRecovery = ['admin', 'agent', 'bridger', 'client'].includes(authUser.role)
+    const stopRecovery = ['admin', 'agent', 'bridger', 'client'].includes(authUser.role || '')
       ? visiblePoll(async signal => {
           await fetch('/api/deposit/paystack/reconcile', {
             method: 'POST', headers, signal, cache: 'no-store',
