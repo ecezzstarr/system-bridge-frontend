@@ -7,7 +7,7 @@
  * flame-event-original, so their established CSS remains the authority.
  * This stylesheet loads after the legacy dark-blue rules.
  */
-html[data-weave-theme="dark-blue"][data-weave-shell-theme="plus-white-gold"] {
+html[data-weave-theme="dark-blue"][data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) {
   --background: #f7f9fc;
   --foreground: #21394c;
   --card: #ffffff;
@@ -46,7 +46,7 @@ html[data-weave-theme="dark-blue"][data-weave-shell-theme="plus-white-gold"] {
   color-scheme: light;
 }
 
-html[data-weave-theme="dark-blue"][data-weave-shell-theme="plus-white-gold"] body {
+html[data-weave-theme="dark-blue"][data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) body {
   color: var(--foreground);
   background:
     radial-gradient(ellipse 68% 22% at 52% 4%, rgba(179,219,246,.43), transparent 82%),
@@ -55,38 +55,38 @@ html[data-weave-theme="dark-blue"][data-weave-shell-theme="plus-white-gold"] bod
   text-shadow: none;
 }
 
-html[data-weave-shell-theme="plus-white-gold"] :is(.weave-app-shell,.weave-client-shell) {
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(.weave-app-shell,.weave-client-shell) {
   color: var(--foreground);
   background-color: transparent;
 }
 
 /* The original responsive role layout and world remain mounted. Only the
    persistent atmosphere shifts to warm daylight and visible gold radiance. */
-html[data-weave-shell-theme="plus-white-gold"] .weave-live-flame-field {
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) .weave-live-flame-field {
   background:
     radial-gradient(circle at var(--weave-flame-x) var(--weave-flame-y),
       rgba(248,218,150,.18), transparent 45%),
     linear-gradient(155deg,#f0f7fd 0%,#ffffff 53%,#faf7ee 100%) !important;
 }
-html[data-weave-shell-theme="plus-white-gold"] .weave-live-flame-canvas {
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) .weave-live-flame-canvas {
   filter: grayscale(.3) sepia(.36) hue-rotate(344deg) saturate(.65);
   opacity: .23;
 }
-html[data-weave-shell-theme="plus-white-gold"] .weave-live-flame-current {
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) .weave-live-flame-current {
   opacity: .23;
   mix-blend-mode: multiply;
 }
-html[data-weave-shell-theme="plus-white-gold"] .weave-live-flame-vignette {
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) .weave-live-flame-vignette {
   background: linear-gradient(180deg,rgba(255,255,255,.04),rgba(235,245,250,.23)) !important;
 }
-html[data-weave-shell-theme="plus-white-gold"] .weave-live-flame-core {
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) .weave-live-flame-core {
   opacity: .28;
   mix-blend-mode: multiply;
 }
 
 /* Glass company controls: Administration, Agent, Bridger, Client and public
    access use the same material language, without duplicating navigation. */
-html[data-weave-theme="dark-blue"][data-weave-shell-theme="plus-white-gold"] :is(
+html[data-weave-theme="dark-blue"][data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
   .weave-header,.weave-sidebar,.weave-client-nav,
   .weave-environment-panel,.weave-reading-surface,.field-surface,
   .card,[role="card"],[data-slot="card"],
@@ -101,7 +101,7 @@ html[data-weave-theme="dark-blue"][data-weave-shell-theme="plus-white-gold"] :is
   backdrop-filter: blur(18px) saturate(125%);
 }
 
-html[data-weave-shell-theme="plus-white-gold"] :is(
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
   [data-slot="dialog-content"],[data-slot="popover-content"],
   [data-slot="dropdown-menu-content"],[data-slot="sheet-content"],
   [data-weave-account-menu]
@@ -114,7 +114,7 @@ html[data-weave-shell-theme="plus-white-gold"] :is(
 /* Many legacy stations still encode near-black utility colors instead of
    design tokens. Lift those operating panels without recoloring real images,
    canvas scenes, Flame Event routes or special product/status accent colors. */
-html[data-weave-shell-theme="plus-white-gold"] :is(
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
   [data-weave-environment],[data-weave-account-menu]
 ) :is(
   [class~="bg-slate-950"],[class~="bg-slate-900"],
@@ -132,7 +132,7 @@ html[data-weave-shell-theme="plus-white-gold"] :is(
 
 /* Restore readable dark ink where legacy role interfaces use white-on-navy.
    Event routes are entirely excluded by the root route theme attribute. */
-html[data-weave-shell-theme="plus-white-gold"] :is(
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
   [data-weave-environment],[data-weave-account-menu],.weave-header
 ) :is(
   [class~="text-white"],[class~="text-slate-50"],
@@ -141,32 +141,32 @@ html[data-weave-shell-theme="plus-white-gold"] :is(
 ):not(:where([data-plus-file-folder-world] *,[data-flame-event-location] *)) {
   color: #27435a !important;
 }
-html[data-weave-shell-theme="plus-white-gold"] :is(
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
   [data-weave-environment],[data-weave-account-menu],.weave-header
 ) :is([class~="text-slate-500"],[class~="text-slate-600"]) {
   color: #557085 !important;
 }
-html[data-weave-shell-theme="plus-white-gold"] :is(
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
   .weave-header,[data-weave-environment]
 ) :is(h1,h2,h3,[data-weave-live-word]) {
   text-shadow: 0 1px 0 rgba(255,255,255,.85);
 }
 
 /* Operating inputs, keyboard focus and hyperlinks remain functional. */
-html[data-weave-shell-theme="plus-white-gold"] :is(input,textarea,select) {
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(input,textarea,select) {
   color: #21394c;
   background-color: rgba(255,255,255,.92);
   border-color: rgba(174,136,77,.32);
 }
-html[data-weave-shell-theme="plus-white-gold"] :is(input,textarea)::placeholder {
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(input,textarea)::placeholder {
   color: #637a8c;
   opacity: 1;
 }
-html[data-weave-shell-theme="plus-white-gold"] :is(button,a,input,textarea,select):focus-visible {
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(button,a,input,textarea,select):focus-visible {
   outline: 2px solid #a9782d;
   outline-offset: 2px;
 }
-html[data-weave-shell-theme="plus-white-gold"] :is(
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
   .weave-nav-item[data-active="true"],[aria-current="page"]
 ) {
   border-color: rgba(166,124,58,.47);
@@ -175,8 +175,35 @@ html[data-weave-shell-theme="plus-white-gold"] :is(
 
 /* Preserve the existing dark, purpose-built Flame Event and file-folder
    loading art; their imagery is a separate operating/exhibition surface. */
-html[data-weave-shell-theme="plus-white-gold"] :is(
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
   .weave-loader-stable,.weave-file-folder-loader
 ) {
   color-scheme: dark;
+}
+
+/* Public sign-in / registration surfaces use the same readable Plus palette. */
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+  [data-slot="card"],[data-slot="dialog-content"],.weave-reading-surface
+) :is(
+  [class~="text-white"],[class~="text-slate-100"],
+  [class~="text-slate-200"],[class~="text-slate-300"],
+  [class~="text-slate-400"],[class~="text-slate-500"]
+) {
+  color: #36546a !important;
+}
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+  [data-slot="card"],[data-slot="dialog-content"]
+) :is(
+  [class*="bg-slate-700"],[class*="bg-slate-800"],[class*="bg-slate-900"]
+) {
+  background-color: rgba(249,251,255,.88) !important;
+}
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(h1,h2,h3)[class~="text-white"]:not(:where([data-public-weave-world] *)) {
+  color: #23435d !important;
+}
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) [data-slot="card"] :is(
+  button[class~="bg-blue-600"],button[class~="bg-cyan-600"]
+) {
+  color: #ffffff !important;
+  background-color: #a9782d !important;
 }
