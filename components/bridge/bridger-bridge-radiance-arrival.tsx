@@ -31,21 +31,22 @@ export default function BridgerBridgeRadianceArrival({
     />
     <section className="mx-auto mt-4 max-w-5xl rounded-2xl border border-cyan-200/20 bg-cyan-300/[.035] p-4 md:p-6">
       <p className="text-[9px] font-black uppercase tracking-[.23em] text-cyan-200">Bridge AI · {bridgerName}</p>
-      <h2 className="mt-2 text-xl font-black">Recognize what you want to build</h2>
+      <h2 className="mt-2 text-xl font-black">Bring your idea into a working business system</h2>
       <p className="mt-2 text-sm leading-6 text-slate-300">
-        Talk with the Bridger's Bridge AI about your idea, or continue to the
-        Client File Folder purchase crossing. Your purchase remains attached
-        to this specific Bridger path for Administration verification.
+        Discuss your business idea with the Bridger’s Bridge AI, or continue to
+        the Client File Folder purchase. Before proceeding, review what the
+        selected File Folder includes and the stated purchase requirements.
+        Your purchase remains linked to this Bridger path for Administration verification.
       </p>
       <div className="mt-4 flex flex-wrap gap-3">
         <Link href={`/bridge/${encodeURIComponent(code)}?chat=1`}
           className="inline-flex min-h-11 items-center rounded-xl border border-cyan-200/35 px-4 py-2.5 text-xs font-black text-cyan-100">
-          Talk with Bridge AI
+          Discuss your idea with Bridge AI
         </Link>
         <button type="button"
           onClick={()=>purchaseRef.current?.scrollIntoView({behavior:'smooth',block:'start'})}
           className="min-h-11 rounded-xl bg-amber-300 px-4 py-2.5 text-xs font-black text-slate-950">
-          Purchase a Client File Folder
+          Continue to File Folder purchase
         </button>
       </div>
     </section>

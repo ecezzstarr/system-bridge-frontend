@@ -1,19 +1,19 @@
 export const WEAVE_SYSTEM_MAP = {
   identity: {
     company: 'WEAVE',
-    subject: 'The Weave of Presence: System Switch — Bridge Radiance',
+    subject: 'The Weave of Presence: System Switch — Bridge of Radiance',
     movement: 'Interaction in Motion',
     publicDescription:
-      'An interactional company where human participation can become organized work, value, systems and opportunity.',
+      'WEAVE connects people, intelligence and practical work so ideas can become organized systems, services, enterprise and livelihood through real participation.',
   },
   principle: {
-    source: 'The human is the source.',
-    space: 'Presence is where WEAVE begins.',
-    movement: 'Interaction carries what is present into action.',
-    work: 'What is made can become work.',
-    value: 'What works can become value.',
-    participation: 'Value can open further participation.',
-    livelihood: 'Participation can become a means to live.',
+    source: 'The person remains the source of direction and choice.',
+    space: 'WEAVE begins with the person, their circumstances and what they bring.',
+    movement: 'Interaction turns what matters now into a clear next action.',
+    work: 'A useful result can become work that people can operate.',
+    value: 'Working systems can create value when people use them and participate.',
+    participation: 'Value can make room for further participation and shared work.',
+    livelihood: 'Sustained participation can support livelihood; outcomes depend on the work and real conditions.',
   },
   aiParticipation: {
     principle: 'AI participates inside human movement; it does not replace the human source.',
@@ -32,22 +32,22 @@ export const WEAVE_SYSTEM_MAP = {
     client: {
       name: 'Client',
       kind: 'player',
-      description: 'The Client is the player whose real movement is carried through System Switch and the File Folder.',
+      description: 'The Client owns and operates a business through their File Folder. The systems and functions available depend on the selected File Folder type and what has actually been built and activated.',
     },
     bridger: {
       name: 'Bridger',
       kind: 'partner',
-      description: 'Hope: the Bridger introduces WEAVE digital File Folders to interested people worldwide, reaches out to unverified prospects and guides willing people toward verified Client ownership.',
+      description: 'Hope: the Bridger introduces WEAVE to interested people, listens for what they need and guides willing prospects through the authorized path to Client ownership. A contact is not a Client until the required steps are verified.',
     },
     agent: {
       name: 'Agent',
       kind: 'employee',
-      description: 'Stability: the Agent sells and distributes WEAVE products to Nigerians, manages customers and shop supply, and participates in attached Bridger programs with qualifying commissions.',
+      description: 'Stability: the Agent sells and distributes WEAVE products in Nigeria, supports customers and shop supply, and may participate in attached Bridger programs under their qualifying terms.',
     },
     admin: {
       name: 'Administration',
       kind: 'institutional authority',
-      description: 'Administration governs recognition, approval, infrastructure, company controls and continuity.',
+      description: 'Administration oversees company records, authorized approvals, infrastructure, controls and continuity. Requests remain pending until the required decision or verification is recorded.',
     },
   },
   layers: [

@@ -36,9 +36,9 @@ const PRESETS=[
 const DEFAULT_ENV={
   preset:'radiant_arcade',
   sign:'OPEN FOR BUSINESS',
-  tagline:'Built inside the WEAVE Client Market.',
+  tagline:'Your business, presented through its WEAVE Customer Door.',
   marketSection:'Main Arcade',
-  featuredMessage:'Enter the store, inspect the offers and purchase directly from this Client.',
+  featuredMessage:'Explore the published products and services, review each offer and place an order with this business.',
   platformName:'',
   logoUrl:'',
 }

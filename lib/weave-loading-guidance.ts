@@ -31,20 +31,20 @@ const PLATFORM_TRAINING: readonly WeaveLoadingBrief[] = [
   {
     eyebrow:'WEAVE · SYSTEM INTRODUCTION',
     title:'What is WEAVE?',
-    body:'WEAVE of Presence develops systems, products and practical ways to participate. System Switch connects a person to work they can operate; Bridge Radiance makes that continuation visible.',
+    body:'The Weave of Presence connects people with practical work, products and business systems. System Switch is where a Client enters their File Folder and continues building. Bridge of Radiance keeps the person, the work and the next step connected.',
     movement:'Notice → Recognize → Solve → Move',
   },
   {
     eyebrow:'WEAVE · FOUR POSITIONS',
-    title:'Know who operates each part.',
-    body:'Agents work in Stability by selling and distributing WEAVE products in Nigeria and supporting Bridger programs. Bridgers work in Hope, introducing digital File Folders to interested people worldwide. Clients own their businesses. Administration organizes the company.',
+    title:'Understand each position before you begin.',
+    body:'Agents carry Stability through product sales, distribution and customer support in Nigeria. Bridgers carry Hope by introducing WEAVE to interested people and guiding willing prospects. Clients own and operate their businesses through File Folders. Administration manages company controls, approvals and verified records.',
     movement:'Agent · Bridger · Client · Administration',
   },
   {
     eyebrow:'WEAVE · HOW TO BEGIN',
-    title:'Choose one real action.',
-    body:'Company Loop 1 — Flame Event: Burning River runs October 1 to December 31, 2026. Every department continues its own real business activities within this shared three-month event. Later loops will reflect verified results and new needs.',
-    movement:'Choose a system → operate → verify → continue',
+    title:'Start with one clear action.',
+    body:'Company Loop 1 — Flame Event: Burning River runs from October 1 through December 31, 2026. It is a shared company event, not a department. Each position continues its own real work within the loop; progress should be based on recorded activity and verified results.',
+    movement:'Choose your next step → act → verify the result → continue',
   },
 ]
 

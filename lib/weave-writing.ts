@@ -4,7 +4,7 @@ export const WEAVE_WRITING_STYLE = {
     'WEAVE',
     'The Weave of Presence',
     'System Switch',
-    'Bridge Radiance',
+    'Bridge of Radiance',
     'Interaction in Motion',
     'Prospect',
     'Client',
@@ -40,15 +40,15 @@ export const WEAVE_WRITING_STYLE = {
 export const WEAVE_WRITING = {
   identity: {
     institution: 'The Weave of Presence',
-    subject: 'System Switch — Bridge Radiance',
+    subject: 'System Switch — Bridge of Radiance',
     movement: 'Interaction in Motion',
   },
 
   bridgeRadiance: {
-    eyebrow: 'Bridge Radiance',
-    title: 'Begin with what is already present.',
+    eyebrow: 'Bridge of Radiance',
+    title: 'Begin with what is here. Make the next step clear.',
     detail:
-      'Speak from what is real now. Bridge AI and the Bridger can recognize what is already present and open the next useful part of WEAVE without forcing the crossing.',
+      'Start with the person, question or opportunity in front of you. Bridge AI and the Bridger help clarify what matters and identify a useful next step. You remain in control of whether to continue.',
     position: 'Prospect position',
     movement: 'Prospect movement',
     topic: 'Current topic',
@@ -63,9 +63,9 @@ export const WEAVE_WRITING = {
 
   fileFolderCrossing: {
     eyebrow: 'File Folder Crossing',
-    title: 'Establish the Client world.',
+    title: 'Establish your Client File Folder.',
     detail:
-      'The File Folder is the Client’s persistent operating environment. Record the TRX movement here. Administration verifies it, issues the File Number and opens the Client crossing into System Switch.',
+      'Your File Folder is the continuing business environment attached to your Client position. Record the required TRX payment movement here. Administration must verify the transaction before issuing your File Number and opening the Client crossing into System Switch.',
     stages: [
       'Prospect',
       'File Folder Value',
@@ -79,15 +79,15 @@ export const WEAVE_WRITING = {
     trx: 'TRX movement',
     administration: 'Administration verification',
     paymentAction: 'Record payment movement',
-    pendingTitle: 'Administration verification in progress.',
+    pendingTitle: 'Payment recorded. Verification is pending.',
     pendingDetail:
-      'The payment movement is recorded. When Administration verifies it, the File Number appears here. No second purchase is required.',
-    confirmedTitle: 'File Number issued.',
+      'Your payment details have been submitted for review. The File Number will appear here after Administration verifies the transaction. Do not submit a second payment for the same purchase while verification is pending.',
+    confirmedTitle: 'Your File Number has been issued.',
     confirmedDetail:
-      'The File Number now carries this movement into the Client position. Establish the Client identity to open System Switch.',
-    rejectedTitle: 'Verification not completed.',
+      'Your File Number confirms that Administration has completed this verification step. Use it to establish your Client identity and continue into System Switch.',
+    rejectedTitle: 'Payment verification could not be completed.',
     rejectedDetail:
-      'Administration did not verify this TRX movement. Confirm the transaction details before recording another File Folder movement.',
+      'Administration could not verify this transaction. Review the transaction details and follow the displayed correction process before submitting anything again.',
     clientAction: 'Establish Client Position',
   },
 
@@ -119,14 +119,14 @@ export const WEAVE_WRITING = {
     divider: 'Interaction in Motion',
     clientAccess: 'Client Access',
     chooseTitle: 'Choose Your Position',
-    chooseDetail: 'Choose the position you are entering.',
+    chooseDetail: 'Choose the role that matches the work you intend to do. Each position has its own responsibilities and access.',
     existing: 'Already have a position?',
     signIn: 'Sign In',
     termsTitle: 'Terms of Participation',
-    termsDetail: 'Review the company terms that govern this position.',
+    termsDetail: 'Review the responsibilities, access conditions and participation terms for this position before continuing.',
     acceptTerms: 'Accept Terms and Continue',
     guidanceTitle: 'Position Guidance',
-    guidanceDetail: 'See how this position moves inside WEAVE.',
+    guidanceDetail: 'Learn what this position is responsible for, which actions are available and how to complete the next step.',
     identityTitle: 'Establish Position',
   },
 } as const
