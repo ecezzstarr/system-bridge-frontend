@@ -33,16 +33,6 @@ export async function POST(request: NextRequest) {
       "INSERT INTO ledger_entries(user_id,entry_type,amount,currency,description,metadata) VALUES($1::uuid,'deposit',$2,'Flame Coin','Paystack deposit pending payment verification',$3::jsonb)",
       [user.id,flameCoin,JSON.stringify({deposit_id:inserted.rows[0].id,payment_method:'Paystack',reference,ngn_amount:amountNgn,amount_kobo:Math.round(amountNgn*100),rate_ngn_per_trx:rateNgnPerTrx,rate_source:rateSource,status:'pending'})],
     )
-    await notifyDepositSubmitted({
-      depositorId:user.id,
-      depositorName:user.name||user.username||user.email,
-      role:user.role==='admin'?'Administration':user.role==='client'?'Client':user.role==='bridger'?'Bridger':'Agent',
-      depositId:String(inserted.rows[0].id),
-      rail:'PAYSTACK',
-      amountLabel:'₦'+amountNgn.toLocaleString(),
-      secondaryLabel:flameCoin.toLocaleString()+' Flame Coin after verified payment',
-      adminLink:'/admin/control-center#deposits',
-    })
     try {
       const config=await getPaystackConfig()
       const origin=(config.publicOrigin||process.env.WEAVE_PUBLIC_ORIGIN||new URL(request.url).origin).replace(/\/$/,'')
@@ -51,6 +41,16 @@ export async function POST(request: NextRequest) {
         email:user.email,amountKobo:Math.round(amountNgn*100),reference,
         callbackUrl:origin+'/api/deposit/paystack/verify',
         metadata:{deposit_id:inserted.rows[0].id,user_id:user.id,user_role:user.role,flame_coin_amount:flameCoin,rate_ngn_per_trx:rateNgnPerTrx,rate_source:rateSource,custom_fields:[{display_name:'Weave deposit ID',variable_name:'weave_deposit_id',value:inserted.rows[0].id},{display_name:'Flame Coin credit',variable_name:'flame_coin_amount',value:String(flameCoin)}]},
+      })
+      await notifyDepositSubmitted({
+        depositorId:user.id,
+        depositorName:user.name||user.username||user.email,
+        role:user.role==='admin'?'Administration':user.role==='client'?'Client':user.role==='bridger'?'Bridger':'Agent',
+        depositId:String(inserted.rows[0].id),
+        rail:'PAYSTACK',
+        amountLabel:'₦'+amountNgn.toLocaleString(),
+        secondaryLabel:flameCoin.toLocaleString()+' Flame Coin pending Paystack confirmation',
+        adminLink:'/admin/control-center#deposits',
       })
       return NextResponse.json({success:true,depositId:inserted.rows[0].id,reference,amountNgn,flameCoin,paymentLink:checkout.authorizationUrl,status:'pending'})
     } catch(error) {
