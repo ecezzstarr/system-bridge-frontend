@@ -70,8 +70,10 @@ export async function notifyDepositSubmitted(input: {
 }) {
   return notifyAdministrators({
     type: 'deposit_pending',
-    title: `${input.role} deposit awaiting verification`,
-    content: `${input.depositorName} submitted ${input.amountLabel}${input.secondaryLabel ? ` (${input.secondaryLabel})` : ''} through ${input.rail}. Deposit ${input.depositId} is awaiting Administration.`,
+    title: input.rail === 'PAYSTACK' ? `${input.role} Paystack checkout opened` : `${input.role} deposit awaiting verification`,
+    content: input.rail === 'PAYSTACK'
+      ? `${input.depositorName} opened Paystack checkout for ${input.amountLabel}${input.secondaryLabel ? ` (${input.secondaryLabel})` : ''}. This is not proof of payment. Deposit ${input.depositId} requires Paystack verification.`
+      : `${input.depositorName} submitted ${input.amountLabel}${input.secondaryLabel ? ` (${input.secondaryLabel})` : ''} through ${input.rail}. Deposit ${input.depositId} is awaiting Administration.`,
     link: input.adminLink || '/admin/control-center#deposits',
     fromUserId: input.depositorId || null,
     fromUserName: input.depositorName,
@@ -94,9 +96,11 @@ export async function notifyDepositDecision(input: {
 
   return notifyUser(input.userId, {
     type: input.approved ? 'deposit_approved' : 'deposit_rejected',
-    title: input.approved ? 'Deposit approved' : 'Deposit rejected',
+    title: input.approved ? (input.rail === 'PAYSTACK' ? 'Paystack deposit verified' : 'Deposit approved') : 'Deposit rejected',
     content: input.approved
-      ? `Administration approved your ${input.amountLabel} ${input.rail} deposit.${credited}`
+      ? input.rail === 'PAYSTACK'
+        ? `Paystack verified your ${input.amountLabel} payment and Weave credited it.${credited}`
+        : `Administration approved your ${input.amountLabel} ${input.rail} deposit.${credited}`
       : `Administration rejected your ${input.amountLabel} ${input.rail} deposit. No Flame Coin was credited. Check the payment details before submitting again.`,
     link: '/wallet/deposit-withdraw',
     fromUserId: input.adminId || null,

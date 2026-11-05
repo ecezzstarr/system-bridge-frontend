@@ -22,16 +22,24 @@ function decrypt(value: string) {
   decipher.setAuthTag(Buffer.from(tag, 'base64'))
   return Buffer.concat([decipher.update(Buffer.from(data, 'base64')), decipher.final()]).toString('utf8')
 }
+// Run schema initialization once per warm server process, not on every payment request.
+let tableReady: Promise<void> | null = null
 async function ensureTable() {
-  await getPool().query(`CREATE TABLE IF NOT EXISTS weave_paystack_integration (
-    id integer PRIMARY KEY DEFAULT 1 CHECK (id = 1),
-    secret_key_ciphertext text NOT NULL,
-    public_origin text NOT NULL,
-    mode text NOT NULL CHECK (mode IN ('test','live')),
-    verified_at timestamptz NOT NULL,
-    updated_at timestamptz NOT NULL DEFAULT NOW(),
-    updated_by uuid
-  )`)
+  if (!tableReady) {
+    tableReady = getPool().query(`CREATE TABLE IF NOT EXISTS weave_paystack_integration (
+      id integer PRIMARY KEY DEFAULT 1 CHECK (id = 1),
+      secret_key_ciphertext text NOT NULL,
+      public_origin text NOT NULL,
+      mode text NOT NULL CHECK (mode IN ('test','live')),
+      verified_at timestamptz NOT NULL,
+      updated_at timestamptz NOT NULL DEFAULT NOW(),
+      updated_by uuid
+    )`).then(() => {}).catch(error => {
+      tableReady = null
+      throw error
+    })
+  }
+  await tableReady
 }
 export async function getPaystackConfig(): Promise<{ secretKey: string; publicOrigin: string; mode: 'test'|'live'; configured: boolean; verifiedAt: string|null }> {
   const envKey = process.env.PAYSTACK_SECRET_KEY?.trim()
@@ -52,7 +60,7 @@ export async function savePaystackConfig(input: { secretKey: string; publicOrigi
   if (input.mode === 'test' && !key.startsWith('sk_test_')) throw new Error('Test mode requires a Paystack test secret key (sk_test_…).')
   if (input.mode === 'live' && !key.startsWith('sk_live_')) throw new Error('Live mode requires a Paystack live secret key (sk_live_…).')
   if (!/^sk_(test|live)_[A-Za-z0-9]+$/.test(key)) throw new Error('The secret key format is not recognized.')
-  const response = await fetch(PAYSTACK_API + '/balance', { headers: { Authorization: 'Bearer ' + key }, cache: 'no-store' })
+  const response = await fetch(PAYSTACK_API + '/balance', { headers: { Authorization: 'Bearer ' + key }, cache: 'no-store', signal: AbortSignal.timeout(10000) })
   const payload = await response.json().catch(() => null)
   if (!response.ok || payload?.status !== true || !Array.isArray(payload?.data)) throw new Error('Paystack rejected the credential. Check the key and selected mode; nothing was saved.')
   await ensureTable()

@@ -29,3 +29,31 @@ Withdrawals remain on their existing methods and are not changed by this integra
 This branch must pass the full Production Check, then complete a real test-mode deposit for each role group (staff and Client), verify the matching wallet and Administration ledger record, and verify duplicate webhook delivery causes no second credit. Do not activate live keys until those checks pass.
 
 Department Entry ticket checkout verifies the unique reference, exact NGN amount, NGN currency and payer email directly with Paystack. Only verified payments enter Administration's existing approval queue; departmental codes are still issued only after Administration approves. Manual ticket reference submission is disabled. File Folder checkout applies the same reference, amount, currency and payer-email checks; its File Number is not issued until Administration approves the verified purchase. Withdrawals remain on their existing methods.
+
+## Bridger/Agent Administration reconciliation (November 2026)
+
+- Wallet deposits **do not require a manual Administration credit** after Paystack succeeds. The authoritative Paystack status, exact kobo amount, reference, payer email, and NGN currency are verified on the server. Only then does the database transaction mark the deposit approved and credit the wallet once.
+- Administration > Control Center > Deposits shows the recent Paystack records for Bridgers, Agents, Clients and Administration. A pending checkout can be checked again with **Verify with Paystack**. This button invokes exactly the same idempotent settlement as the signed Paystack webhook; it never edits wallet balances directly.
+- The legacy OPay receipt endpoint and manual OPay approval endpoint now return HTTP 410. They must remain disabled, because they could otherwise change Paystack references or bypass payment verification. Do not restore them without a fully separate, authenticated OPay settlement ledger and atomic confirmation flow.
+- A checkout **initiated** is not a payment **verified**. Pending checkout ledger entries carry zero amount, and users see their actual deposit history and statuses. Incomplete Paystack transactions remain pending so callbacks or Administration can retry without rejecting a payment that has not yet completed.
+- Paystack configuration schema readiness is cached in each warm server process, and provider calls have bounded timeouts. This reduces unnecessary work and avoids stalled requests.
+- Refund/reversal events are recorded and flagged for Administration review. They do not automatically debit already-spent wallet funds; reconciliation and a documented recovery decision are required.
+
+### Deployment verification
+
+Before merging or enabling live payments, run the Production Check and complete Paystack test-mode exercises: Bridger checkout, Agent checkout, successful wallet credit, pending checkout retry, exact amount mismatch, wrong payer email, invalid webhook signature, webhook replay and callback replay, refund event review, and the disabled OPay endpoints. Confirm with the production database that one verified reference produces **exactly one** positive credit and that the Admin queue shows correct states. Production webhooks, secrets, network access, and database reconciliation cannot be validated from source code alone.
+
+### Historical reconciliation (read-only)
+
+Before relying on historic balances, Administration should inspect approvals made before this change. A row with `status='approved'` but no `verified_at` is an **exception requiring Paystack transaction verification**, not proof of a successful payment:
+
+```sql
+SELECT d.id, d.user_id, u.role, u.email, d.receipt_data AS paystack_reference,
+       d.amount_usd AS amount_ngn, d.amount_trx AS flame_coin,
+       d.created_at, d.updated_at, d.verified_at
+FROM deposits d JOIN users u ON u.id=d.user_id
+WHERE d.method='paystack' AND d.status='approved' AND d.verified_at IS NULL
+ORDER BY d.created_at DESC;
+```
+
+Compare each exception's Paystack reference, payer, amount, currency, wallet movement and ledger entry with Paystack's authoritative transaction. Investigate discrepancies through Administration and Finance; never automatically credit again or delete historical records. The new Administration queue places these records first and identifies them as **Approval without Paystack proof**.

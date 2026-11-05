@@ -555,103 +555,138 @@ function UserManagementSection() {
 }
 
 function DepositApprovalSection({ user }: { user: any }) {
-  const [deposits, setDeposits] = useState<any[]>([])
+  type ReviewDeposit = {
+    id: string
+    name: string | null
+    email: string
+    role: string
+    status: string
+    reference: string
+    amount_ngn: number | string
+    flame_coin: number | string
+    created_at: string
+    verified_at: string | null
+  }
+  const [deposits, setDeposits] = useState<ReviewDeposit[]>([])
   const [loading, setLoading] = useState(true)
   const [processingId, setProcessingId] = useState<string | null>(null)
+  const [reconciling, setReconciling] = useState(false)
 
   useEffect(() => {
-    fetchPendingDeposits()
+    void fetchPendingDeposits()
+    const stop = visiblePoll(() => fetchPendingDeposits(true), 8000, false)
+    return stop
   }, [])
 
-  const fetchPendingDeposits = async () => {
+  const fetchPendingDeposits = async (silent = false) => {
+    if (!silent) setLoading(true)
     try {
       const token = localStorage.getItem('ssb_auth_token')
-      const response = await fetch('/api/admin/deposit/opay/pending', {
-        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+      const response = await fetch('/api/admin/deposit/paystack', {
+        cache: 'no-store',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
       })
       const data = await response.json()
-      setDeposits(Array.isArray(data) ? data : [])
+      if (!response.ok || !data.success) throw new Error(data.error || 'Unable to load deposits')
+      setDeposits(Array.isArray(data.deposits) ? data.deposits : [])
     } catch (error) {
-      console.error('Error fetching pending deposits:', error)
+      console.error('Paystack reconciliation list failed:', error)
+      if (!silent) toast.error(error instanceof Error ? error.message : 'Unable to load deposits')
     } finally {
-      setLoading(false)
+      if (!silent) setLoading(false)
     }
   }
 
-  const verifyDeposit = async (depositId: string, status: 'approved' | 'rejected') => {
+  const verifyDeposit = async (depositId: string) => {
     setProcessingId(depositId)
     try {
       const token = localStorage.getItem('ssb_auth_token')
-      const response = await fetch('/api/admin/deposit/opay/verify', {
+      const response = await fetch('/api/admin/deposit/paystack', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ depositId, adminId: user?.id, status }),
+        body: JSON.stringify({ depositId }),
       })
       const data = await response.json()
-      if (data.success) {
-        toast.success(data.message || `Deposit ${status === 'approved' ? 'received' : 'declined'}`)
-      } else {
-        toast.error(data.error || "That didn't update")
-      }
-      fetchPendingDeposits()
+      if (!response.ok || !data.success) throw new Error(data.error || data.message || 'Payment is not yet verified')
+      toast.success('Payment verified by Paystack. Wallet credited once.')
+      await fetchPendingDeposits(true)
     } catch (error) {
-      console.error('Error verifying deposit:', error)
-      toast.error("That didn't go through")
+      toast.error(error instanceof Error ? error.message : 'Payment verification is unavailable')
     } finally {
       setProcessingId(null)
     }
   }
 
+  const reconcileExisting = async () => {
+    if (reconciling) return
+    setReconciling(true)
+    try {
+      const token = localStorage.getItem('ssb_auth_token')
+      const response = await fetch('/api/admin/deposit/paystack', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ reconcilePending: true }),
+      })
+      const data = await response.json()
+      if (!response.ok || !data.success) throw new Error(data.error || 'Reconciliation unavailable')
+      toast.success(data.message || 'Reconciliation checked')
+      await fetchPendingDeposits(true)
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Unable to reconcile Paystack deposits')
+    } finally {
+      setReconciling(false)
+    }
+  }
+
   return (
     <div className="p-4">
-      <h3 className="font-bold text-white mb-4">Pending OPay Deposits</h3>
-
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h3 className="mb-1 font-bold text-white">Paystack Deposit Reconciliation</h3>
+          <p className="max-w-xl text-xs leading-5 text-slate-400">
+            Bridger and Agent payments are credited only after Paystack confirms the
+            transaction. Administration can verify a pending checkout again without
+            manually crediting or rejecting an unverified wallet deposit.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" size="sm" disabled={reconciling} onClick={() => void reconcileExisting()}>
+            {reconciling ? 'Checking Paystack...' : 'Reconcile previous deposits'}
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => void fetchPendingDeposits()}>Refresh</Button>
+        </div>
+      </div>
       {loading ? (
-        <p className="text-slate-500 text-center py-8 text-xs">Loading deposits...</p>
+        <p className="py-8 text-center text-xs text-slate-400">Loading Paystack deposits...</p>
       ) : deposits.length === 0 ? (
-        <p className="text-slate-500 text-center py-8 text-xs">No pending deposits</p>
+        <p className="py-8 text-center text-xs text-slate-400">No Paystack deposit records yet.</p>
       ) : (
-        <div className="space-y-3">
-          {deposits.map((deposit: any) => (
-            <div key={deposit.id} className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
-              <div className="flex items-start justify-between mb-2">
-                <div className="flex-1">
-                  <p className="font-semibold text-white text-sm">{deposit.name} <span className="text-slate-500 font-normal">({deposit.email})</span></p>
-                  <p className="text-[10px] text-slate-400 mt-1">
-                    ₦{Number(deposit.amount).toLocaleString()} → {Number(deposit.amount_trx).toFixed(6)} TRX
-                  </p>
-                  <p className="text-[10px] text-slate-500 mt-1">
-                    {new Date(deposit.created_at).toLocaleString()}
-                  </p>
+        <div className="mt-4 space-y-3">
+          {deposits.map(deposit => (
+            <div key={deposit.id} className="rounded-lg border border-white/10 bg-slate-800/50 p-4">
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="font-semibold text-white">{deposit.name || deposit.email} <span className="text-xs font-normal text-slate-400">· {deposit.role}</span></p>
+                  <p className="text-sm text-cyan-200">₦{Number(deposit.amount_ngn).toLocaleString()} · {Number(deposit.flame_coin).toLocaleString()} Flame Coin</p>
+                  <p className="mt-1 break-all font-mono text-[10px] text-slate-400">Reference: {deposit.reference}</p>
+                  <p className="mt-1 text-[10px] text-slate-500">{new Date(deposit.created_at).toLocaleString()}</p>
                 </div>
-                <span className="text-[10px] font-semibold text-yellow-400 uppercase">{deposit.status}</span>
-              </div>
-              {deposit.receipt_data && (
-                <div className="mt-2 p-2 bg-slate-900/50 rounded border border-slate-700">
-                  <p className="text-[10px] text-slate-500 uppercase mb-1">Receipt</p>
-                  <p className="text-xs text-slate-300 break-all">{deposit.receipt_data}</p>
+                <div className="flex flex-col items-end gap-2">
+                  <span className={deposit.status === 'approved' && deposit.verified_at ? 'text-xs font-bold text-emerald-300' : deposit.status === 'rejected' ? 'text-xs font-bold text-red-300' : 'text-xs font-bold text-amber-300'}>
+                    {deposit.status === 'approved' ? (deposit.verified_at ? 'Paystack verified · Wallet credited' : 'Approval without Paystack proof · Investigate') : deposit.status === 'rejected' ? 'Verification failed · Review' : 'Awaiting Paystack verification'}
+                  </span>
+                  {deposit.status === 'pending' && (
+                    <Button size="sm" disabled={processingId === deposit.id} onClick={() => void verifyDeposit(deposit.id)}>
+                      {processingId === deposit.id ? 'Verifying...' : 'Verify with Paystack'}
+                    </Button>
+                  )}
                 </div>
-              )}
-              <div className="flex gap-2 mt-3">
-                <Button
-                  size="sm"
-                  disabled={processingId === deposit.id}
-                  onClick={() => verifyDeposit(deposit.id, 'approved')}
-                  className="bg-green-600 hover:bg-green-700 h-8 text-xs"
-                >
-                  {processingId === deposit.id ? 'Processing...' : 'Approve'}
-                </Button>
-                <Button
-                  size="sm"
-                  disabled={processingId === deposit.id}
-                  onClick={() => verifyDeposit(deposit.id, 'rejected')}
-                  className="bg-red-600 hover:bg-red-700 h-8 text-xs"
-                >
-                  Reject
-                </Button>
               </div>
             </div>
           ))}

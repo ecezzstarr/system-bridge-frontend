@@ -17,7 +17,9 @@ export async function settlePaystackDeposit(reference: string) {
     if (!deposit) throw new Error('Paystack deposit reference was not found')
     const expectedKobo = Math.round(Number(deposit.amount_usd) * 100)
     if (!paystackTransactionMatches({ transaction, expectedReference: reference, expectedAmountKobo: expectedKobo, expectedEmail: deposit.owner_email })) {
-      if (deposit.status === 'pending') {
+      // An incomplete checkout is not a failed payment. Allow webhook/Administration retry.
+      // Only a completed but mismatched payment is rejected for manual investigation.
+      if (deposit.status === 'pending' && transaction.status === 'success') {
         await client.query("UPDATE deposits SET status='rejected',updated_at=NOW() WHERE id=$1::uuid AND status='pending'", [deposit.id])
         await client.query(
           "INSERT INTO ledger_entries(user_id,entry_type,amount,currency,description,metadata) VALUES($1::uuid,'deposit',0,'Flame Coin','Paystack deposit verification failed',$2::jsonb)",
@@ -31,9 +33,28 @@ export async function settlePaystackDeposit(reference: string) {
       await client.query('COMMIT')
       return { settled: true, duplicate: true, depositId: deposit.id }
     }
-    if (deposit.status !== 'pending') {
+    if (!['pending', 'rejected'].includes(deposit.status)) {
       await client.query('COMMIT')
-      return { settled: false, reason: 'Deposit is no longer pending.' }
+      return { settled: false, reason: 'Deposit is not eligible for verified recovery.' }
+    }
+
+    // Previously rejected checkouts may have been paid after a callback failure.
+    // Recover only if Paystack verifies the exact payment and no prior credit or
+    // refund was recorded. Never infer payment from a user-submitted receipt.
+    if (deposit.status === 'rejected') {
+      const previous = await client.query(
+        `SELECT
+           COUNT(*) FILTER (WHERE entry_type='deposit' AND amount>0
+              AND description IN ('Verified Paystack deposit credited','OPay Deposit Approved')) AS credits,
+           COUNT(*) FILTER (WHERE metadata->>'event_type'='refund.processed') AS refunds
+         FROM ledger_entries
+         WHERE user_id=$1::uuid AND metadata->>'deposit_id'=$2`,
+        [deposit.user_id, String(deposit.id)],
+      )
+      if (Number(previous.rows[0]?.credits || 0) > 0 || Number(previous.rows[0]?.refunds || 0) > 0) {
+        await client.query('COMMIT')
+        return { settled: false, reason: 'Historical payment needs Administration reconciliation; wallet was not credited again.' }
+      }
     }
     const flameCoin = Number(deposit.amount_trx)
     if (!Number.isFinite(flameCoin) || flameCoin <= 0) throw new Error('Stored Flame Coin credit is invalid')
@@ -47,7 +68,7 @@ export async function settlePaystackDeposit(reference: string) {
       [deposit.user_id, flameCoin, JSON.stringify({deposit_id:deposit.id,payment_method:'Paystack',reference,ngn_amount:Number(deposit.amount_usd),amount_kobo:expectedKobo,credited_flame_coin:flameCoin,paystack_channel:transaction.channel,paystack_paid_at:transaction.paid_at})],
     )
     const updated = await client.query(
-      "UPDATE deposits SET status='approved',verified_at=NOW(),updated_at=NOW() WHERE id=$1::uuid AND status='pending' RETURNING id",
+      "UPDATE deposits SET status='approved',verified_at=NOW(),updated_at=NOW() WHERE id=$1::uuid AND status IN ('pending','rejected') RETURNING id",
       [deposit.id],
     )
     if (updated.rowCount !== 1) throw new Error('Deposit settlement conflict')

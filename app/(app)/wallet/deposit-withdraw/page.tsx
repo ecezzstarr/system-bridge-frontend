@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { ArrowRight, ArrowDownToLine, ArrowUpFromLine, Wallet, Copy, Check, ShieldCheck } from 'lucide-react'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
+import { visiblePoll } from '@/lib/visible-poll'
 
 export default function WalletDepositWithdrawPage() {
   const { user } = useAuth()
@@ -18,16 +19,12 @@ export default function WalletDepositWithdrawPage() {
   const [flameCoinRate, setFlameCoinRate] = useState<number | null>(null)
   const [companyTrxWallet, setCompanyTrxWallet] = useState('')
   const [depositTxHash, setDepositTxHash] = useState('')
-  const [clientDeposits,setClientDeposits] = useState<Array<{id:string;amount_trx:number|string;amount_usd?:number|string;method?:string;currency?:string;status:string;receipt_data:string|null;created_at:string}>>([])
+  const [clientDeposits,setClientDeposits] = useState<Array<{id:string;amount_trx:number|string;amount_usd?:number|string;method?:string;currency?:string;status:string;receipt_data:string|null;created_at:string;verified_at?:string|null}>>([])
   const [platformFeePercent, setPlatformFeePercent] = useState(5)
   const [withdrawBankName, setWithdrawBankName] = useState('')
   const [withdrawAccountNumber, setWithdrawAccountNumber] = useState('')
   const [withdrawAccountName, setWithdrawAccountName] = useState('')
   const [conversions, setConversions] = useState<any[]>([])
-  const [depositStep, setDepositStep] = useState<'amount' | 'receipt'>('amount')
-  const [pendingDepositId, setPendingDepositId] = useState<string | null>(null)
-  const [pendingDepositFlameCoin, setPendingDepositFlameCoin] = useState<string>('')
-  const [receiptText, setReceiptText] = useState('')
 
   // Determine the correct dashboard route based on user role
   const getTerminalRoute = () => {
@@ -57,14 +54,14 @@ export default function WalletDepositWithdrawPage() {
 
   useEffect(() => {
     fetchBalance()
-    if (user && isOpayRole) {
-      fetchConversions()
+    if (user) {
+      void fetchClientDeposits()
+      if (isOpayRole) void fetchConversions()
     }
   }, [user, isOpayRole])
 
   useEffect(() => {
     if (!user || isOpayRole) return
-    void fetchClientDeposits()
     // Fetch only the Company TRX wallet and Flame Coin peg; no NGN quote for Clients.
     fetch('/api/bridge/file-folder')
       .then(res => res.json())
@@ -75,11 +72,33 @@ export default function WalletDepositWithdrawPage() {
       .catch(() => {})
   }, [user, isOpayRole])
 
+  // Keep both wallet balance and deposit status current while the page is visible.
+  useEffect(() => {
+    if (!user?.id) return
+    return visiblePoll(async () => {
+      await Promise.allSettled([fetchBalance(), fetchClientDeposits()])
+    }, 20000, false)
+  }, [user?.id, isOpayRole])
+
+  // Paystack redirects back only after server-side verification is attempted.
+  useEffect(() => {
+    if (!user) return
+    const paymentStatus = new URLSearchParams(window.location.search).get('deposit')
+    if (paymentStatus === 'verified') {
+      setMessage('Payment verified by Paystack. Your Flame Coin wallet has been credited.')
+      void fetchBalance()
+      void fetchClientDeposits()
+    } else if (paymentStatus === 'pending' || paymentStatus === 'verification_pending') {
+      setMessage('Payment not yet confirmed. Your wallet will be credited only after Paystack verifies the payment.')
+      void fetchClientDeposits()
+    }
+  }, [user?.id])
+
   const fetchClientDeposits = async () => {
-    if(!user||isOpayRole)return
+    if(!user)return
     try{
       const token=localStorage.getItem('ssb_auth_token')
-      const response=await fetch('/api/deposit/tron',{
+      const response=await fetch(isOpayRole?'/api/deposit/paystack':'/api/deposit/tron',{
         cache:'no-store',headers:token?{Authorization:'Bearer '+token}:{},
       })
       const body=await response.json()
@@ -112,7 +131,8 @@ export default function WalletDepositWithdrawPage() {
       const data = await response.json()
       if (data.success && data.data?.ledger) {
         const list = data.data.ledger.filter((t: any) => 
-          t.description.toLowerCase().includes('opay') || 
+          t.description.toLowerCase().includes('opay') ||
+          t.description.toLowerCase().includes('paystack') ||
           t.description.toLowerCase().includes('converted')
         )
         setConversions(list.slice(0, 5))
@@ -149,42 +169,6 @@ export default function WalletDepositWithdrawPage() {
       window.location.href = data.paymentLink
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Error processing deposit')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const submitReceipt = async () => {
-    if (!receiptText.trim()) {
-      setMessage('Please enter your OPay transaction reference or receipt details')
-      return
-    }
-    setLoading(true)
-    setMessage('')
-    try {
-      const token = localStorage.getItem('ssb_auth_token')
-      const response = await fetch('/api/deposit/opay/receipt', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify({ depositId: pendingDepositId, receipt: receiptText }),
-      })
-      const data = await response.json()
-      if (data.success) {
-        setMessage('Receipt submitted! Admin will verify your deposit shortly.')
-        setDepositStep('amount')
-        setPendingDepositId(null)
-        setPendingDepositFlameCoin('')
-        setReceiptText('')
-        setAmount('')
-        fetchBalance()
-      } else {
-        setMessage(data.error || 'Failed to submit receipt')
-      }
-    } catch (error) {
-      setMessage('Error submitting receipt')
     } finally {
       setLoading(false)
     }
@@ -412,7 +396,7 @@ export default function WalletDepositWithdrawPage() {
                   </div>
 
                   {message && (
-                    <div className={`p-3 rounded-lg mb-6 text-sm ${message.includes('Success') || message.includes('copied') ? 'bg-green-500/20 border border-green-500/50 text-green-300' : 'bg-red-500/20 border border-red-500/50 text-red-300'}`}>
+                    <div className={`p-3 rounded-lg mb-6 text-sm ${message.includes('verified') || message.includes('Success') || message.includes('copied') ? 'bg-green-500/20 border border-green-500/50 text-green-300' : 'bg-red-500/20 border border-red-500/50 text-red-300'}`}>
                       {message}
                     </div>
                   )}
@@ -431,18 +415,18 @@ export default function WalletDepositWithdrawPage() {
                 </div>
               </div>
 
-              {!isOpayRole && <section data-client-tron-deposits className="rounded-2xl border border-cyan-300/20 bg-slate-900/60 p-5 text-white">
+              {<section data-client-tron-deposits className="rounded-2xl border border-cyan-300/20 bg-slate-900/60 p-5 text-white">
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div><h3 className="text-lg font-black">My deposit records</h3><p className="mt-1 text-xs text-slate-400">Paystack deposits are credited after server-side payment verification. Older TRX requests remain listed for continuity.</p></div>
+                  <div><h3 className="text-lg font-black">My deposit records</h3><p className="mt-1 text-xs text-slate-400">Only confirmed Paystack payments credit Flame Coin. Pending checkouts and earlier TRX deposits appear with their actual status.</p></div>
                   <Button onClick={()=>{void fetchClientDeposits();void fetchBalance()}} variant="outline" size="sm">Refresh deposits</Button>
                 </div>
                 <div className="mt-4 space-y-2">
-                  {clientDeposits.length===0 ? <p className="text-sm text-slate-400">No TRX deposit request recorded yet.</p> : clientDeposits.map(item=>(
+                  {clientDeposits.length===0 ? <p className="text-sm text-slate-400">No deposit records yet.</p> : clientDeposits.map(item=>(
                     <div key={item.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-white/10 bg-black/20 p-3">
                       <div><p className="font-bold text-white">{item.method==='paystack' ? `₦${Number(item.amount_usd||0).toLocaleString()} · ${Number(item.amount_trx).toLocaleString()} Flame Coin` : `${Number(item.amount_trx).toLocaleString()} TRX`}</p><p className="mt-1 text-xs text-slate-400">{new Date(item.created_at).toLocaleString()}</p>
                         <p className="mt-1 max-w-[260px] truncate font-mono text-[10px] text-cyan-200">{item.receipt_data||(item.method==='paystack'?'Missing Paystack reference':'Missing transaction hash')}</p></div>
                       <span className={item.status==='approved'?'text-sm font-bold text-emerald-300':item.status==='rejected'?'text-sm font-bold text-red-300':'text-sm font-bold text-amber-200'}>
-                        {item.status==='approved'?'Approved · Flame Coin credited':item.status==='rejected'?'Rejected · No credit':'Awaiting Administration'}
+                        {item.status==='approved'?(item.method==='paystack'&&!item.verified_at?'Credited · Verification under review':'Verified · Flame Coin credited'):item.status==='rejected'?'Rejected · No credit':'Awaiting Paystack verification'}
                       </span>
                     </div>
                   ))}
@@ -464,13 +448,13 @@ export default function WalletDepositWithdrawPage() {
                         <div className="w-8 h-8 rounded-full bg-cyan-500/20 flex items-center justify-center shrink-0">
                           <span className="text-cyan-400 text-xs font-bold">2</span>
                         </div>
-                        <p className="text-slate-400 text-sm">Agents and Bridgers fund Flame Coin through verified Naira payments to the Company OPay account.</p>
+                        <p className="text-slate-400 text-sm">Agents and Bridgers fund Flame Coin through Paystack checkout. Weave credits the wallet after independent server-side Paystack verification.</p>
                       </div>
                       <div className="flex gap-4">
                         <div className="w-8 h-8 rounded-full bg-cyan-500/20 flex items-center justify-center shrink-0">
                           <span className="text-cyan-400 text-xs font-bold">3</span>
                         </div>
-                        <p className="text-slate-400 text-sm">Clients fund Flame Coin by sending TRX to the Company TRX wallet; after verification, 1 TRX credits 1 Flame Coin.</p>
+                        <p className="text-slate-400 text-sm">Clients also use Paystack for current wallet deposits. Earlier TRX-funded records remain available in their history.</p>
                       </div>
                     </div>
                   </div>
