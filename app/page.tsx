@@ -102,6 +102,7 @@ export default function Home() {
                 ))}
               </div>
               <p className="weave-home-department-summary mt-6 text-base font-medium leading-relaxed sm:text-lg">The company through the people of its departments</p>
+              <p className="mx-auto mt-3 max-w-3xl text-sm font-medium leading-6 text-slate-200 sm:text-base" data-home-company-worldwide="true">WEAVE brings people, departments and working systems into one institution across borders. Every participant enters through an appropriate position, with access to the activities and services available to them.</p>
               <div className="weave-home-loops mx-auto mt-9 grid max-w-4xl gap-3 text-left sm:grid-cols-3" data-company-time-loops>
                 <div className="weave-home-loop weave-home-loop-flame p-5">
                   <p className="text-base font-black text-white sm:text-lg">Company Loop 1 — Flame Event: Burning River</p>
@@ -160,7 +161,7 @@ export default function Home() {
             <div className="weave-home-work-copy p-5 sm:p-7">
               <p className="text-sm font-bold text-sky-200">What WEAVE Builds</p>
               <h2 className="mt-3 text-2xl font-black leading-tight sm:text-3xl">Technology and systems formed around movement already present in human life.</h2>
-              <p className="mt-4 text-base leading-7 text-slate-200">Weave of Presence builds systems, services and instruments around human participation. We work with people and their existing movement to create organized functions, work and value.</p>
+              <p className="mt-4 text-base leading-7 text-slate-200">Weave of Presence develops systems, services and instruments around human participation wherever people live and work. The company connects what people already know, make and carry with organized functions, practical work and value. Each service operates within its actual availability and authorized company systems.</p>
               <div className="mt-6 grid gap-3 sm:grid-cols-3">
                 {systems.map(({ icon: Icon, title, copy }) => (
                   <article key={title} className="weave-home-system p-4">
