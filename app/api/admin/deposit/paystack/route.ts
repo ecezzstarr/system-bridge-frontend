@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const depositId = String(body?.depositId || '')
-    if (!/^[0-9a-fA-F-]{36}$/.test(depositId)) {
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(depositId)) {
       return NextResponse.json({ error: 'A valid deposit ID is required.' }, { status: 400 })
     }
     const found = await getPool().query(
