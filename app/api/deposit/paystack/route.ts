@@ -9,6 +9,24 @@ import { notifyDepositSubmitted } from '@/lib/deposit-notifications'
 
 export const dynamic = 'force-dynamic'
 
+/** Authenticated user's Paystack payment history; display status without assuming payment. */
+export async function GET(request: NextRequest) {
+  const user = await getAuthUser(request)
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  try {
+    const result = await getPool().query(
+      "SELECT id, amount_usd, amount_trx, method, currency, status, receipt_data, created_at, verified_at FROM deposits WHERE user_id=$1::uuid AND method='paystack' ORDER BY created_at DESC LIMIT 30",
+      [user.id],
+    )
+    return NextResponse.json({ success: true, deposits: result.rows }, {
+      headers: { 'Cache-Control': 'private, no-store', Vary: 'Authorization' },
+    })
+  } catch (error) {
+    console.error('[Paystack deposit history]', error)
+    return NextResponse.json({ error: 'Deposit history is temporarily unavailable' }, { status: 503 })
+  }
+}
+
 export async function POST(request: NextRequest) {
   const user = await getAuthUser(request)
   if (!user) return NextResponse.json({error:'Unauthorized'},{status:401})
