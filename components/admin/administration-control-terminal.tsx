@@ -648,8 +648,8 @@ function DepositApprovalSection({ user }: { user: any }) {
                   <p className="mt-1 text-[10px] text-slate-500">{new Date(deposit.created_at).toLocaleString()}</p>
                 </div>
                 <div className="flex flex-col items-end gap-2">
-                  <span className={deposit.status === 'approved' ? 'text-xs font-bold text-emerald-300' : deposit.status === 'rejected' ? 'text-xs font-bold text-red-300' : 'text-xs font-bold text-amber-300'}>
-                    {deposit.status === 'approved' ? 'Paystack verified · Wallet credited' : deposit.status === 'rejected' ? 'Verification failed · Review' : 'Awaiting Paystack verification'}
+                  <span className={deposit.status === 'approved' && deposit.verified_at ? 'text-xs font-bold text-emerald-300' : deposit.status === 'rejected' ? 'text-xs font-bold text-red-300' : 'text-xs font-bold text-amber-300'}>
+                    {deposit.status === 'approved' ? (deposit.verified_at ? 'Paystack verified · Wallet credited' : 'Approval without Paystack proof · Investigate') : deposit.status === 'rejected' ? 'Verification failed · Review' : 'Awaiting Paystack verification'}
                   </span>
                   {deposit.status === 'pending' && (
                     <Button size="sm" disabled={processingId === deposit.id} onClick={() => void verifyDeposit(deposit.id)}>
