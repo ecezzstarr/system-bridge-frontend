@@ -47,6 +47,9 @@ if (retiredQueue.includes("WHERE d.status='pending'") || !retiredQueue.includes(
 for (const token of ['getAuthUser', "admin.role !== 'admin'", "d.method = 'paystack'", "method='paystack' AND status='pending'", 'settlePaystackDeposit']) {
   if (!adminPaystack.includes(token)) throw new Error('Administration Paystack verification boundary missing: ' + token)
 }
+if (!adminPaystack.includes("d.verified_at IS NULL") || !adminTerminal.includes('Approval without Paystack proof')) {
+  throw new Error('Historical manually approved deposits must be flagged for independent verification')
+}
 if (adminPaystack.includes('UPDATE wallets')) throw new Error('Administration cannot directly credit unverified Paystack deposits')
 if (!adminTerminal.includes('/api/admin/deposit/paystack') || !adminTerminal.includes('Verify with Paystack') || adminTerminal.includes('/api/admin/deposit/opay/verify')) {
   throw new Error('Administration must use the authentic Paystack reconciliation station')
