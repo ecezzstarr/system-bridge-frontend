@@ -41,7 +41,7 @@ assert.match(css,/data-weave-shell-theme="plus-white-gold"/)
 assert.match(css,/:not\(:has\(\[data-flame-event-location\]/)
 assert.match(css,/--primary: #845b24;/)
 const finishing=read('app/weave-plus-company-pages.css')
-assert.match(layout,/import '.\\/weave-plus-company-pages.css'/)
+assert.ok(layout.includes("import './weave-plus-company-pages.css'"))
 assert.match(finishing,/data-weave-shell-theme="plus-white-gold"/)
 assert.match(finishing,/\[class\*="bg-slate-800"\]/)
 assert.match(finishing,/\[class\*="bg-black\/"\]/)
@@ -63,8 +63,8 @@ function visit(dir) {
 const pages=visit(path.join(__dirname,'..','app'))
 const resolveRoute=file=>{
   const relative=path.relative(path.join(__dirname,'..','app'),file).replaceAll('\\','/')
-  const route=relative.replace(/\\/page\\.tsx$/,'').replace(/^page\\.tsx$/,'').split('/')
-    .filter(part=>part&&!/^\\([^)]*\\)$/.test(part)).join('/')
+  const route=relative.replace(/\/page\.tsx$/,'').replace(/^page\.tsx$/,'').split('/')
+    .filter(part=>part&&!/^\([^)]*\)$/.test(part)).join('/')
   return '/'+route
 }
 const allRoutes=[...new Set(pages.map(resolveRoute))]
