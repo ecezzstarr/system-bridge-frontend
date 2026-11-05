@@ -41,9 +41,9 @@ const loopTwoStart=source.indexOf('weave-home-loop-country')
 const loopThreeStart=source.indexOf('weave-home-loop-time')
 assert.ok(loopTwoStart>=0 && loopThreeStart>loopTwoStart,'Keep distinct Loop 2 and Loop 3 sections')
 const loopTwoCopy=source.slice(loopTwoStart,loopThreeStart)
-assert.match(loopTwoCopy,/\\bNigeria(?:n)?\\b/i,'Loop 2 keeps its country identity')
+assert.match(loopTwoCopy,/\bNigeria(?:n)?\b/i,'Loop 2 keeps its country identity')
 const outsideLoopTwo=source.slice(0,loopTwoStart)+source.slice(loopThreeStart)
-assert.doesNotMatch(outsideLoopTwo,/\\bNigeria(?:n)?\\b/i,
+assert.doesNotMatch(outsideLoopTwo,/\bNigeria(?:n)?\b/i,
   'Homepage must not use Nigeria/Nigerian outside Company Loop 2')
 for(const component of [
   'components/reach-delivery/public-request-form.tsx',
@@ -51,7 +51,7 @@ for(const component of [
   'components/weave-logo.tsx',
 ]){
   const text=fs.readFileSync(path.join(__dirname,'..',component),'utf8')
-  assert.doesNotMatch(text,/\\bNigeria(?:n)?\\b/i,
+  assert.doesNotMatch(text,/\bNigeria(?:n)?\b/i,
     'Visible homepage component must remain country-neutral: '+component)
 }
 
