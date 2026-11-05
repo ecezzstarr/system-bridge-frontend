@@ -571,6 +571,9 @@ function DepositApprovalSection({ user }: { user: any }) {
   const [loading, setLoading] = useState(true)
   const [processingId, setProcessingId] = useState<string | null>(null)
   const [reconciling, setReconciling] = useState(false)
+  type Inspection = {paymentStatus:string;mode:string;matched:boolean;canResolve:boolean;credits:number;creditedAmount:number;refunds:number;guidance:string}
+  const [inspections, setInspections] = useState<Record<string, Inspection>>({})
+  const [inspectingId, setInspectingId] = useState<string | null>(null)
 
   useEffect(() => {
     void fetchPendingDeposits()
@@ -597,6 +600,28 @@ function DepositApprovalSection({ user }: { user: any }) {
     }
   }
 
+  const inspectDeposit = async (depositId: string) => {
+    setInspectingId(depositId)
+    try {
+      const token = localStorage.getItem('ssb_auth_token')
+      const response = await fetch('/api/admin/deposit/paystack', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ action: 'inspect', depositId }),
+      })
+      const data = await response.json()
+      if (!response.ok || !data.success) throw new Error(data.error || 'Paystack evidence unavailable')
+      setInspections(previous => ({ ...previous, [depositId]: data.inspection }))
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Paystack inspection unavailable')
+    } finally {
+      setInspectingId(null)
+    }
+  }
+
   const verifyDeposit = async (depositId: string) => {
     setProcessingId(depositId)
     try {
@@ -607,14 +632,20 @@ function DepositApprovalSection({ user }: { user: any }) {
           'Content-Type': 'application/json',
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ depositId }),
+        body: JSON.stringify({ action: 'resolve', depositId }),
       })
       const data = await response.json()
       if (!response.ok || !data.success) throw new Error(data.error || data.message || 'Payment is not yet verified')
-      toast.success('Payment verified by Paystack. Wallet credited once.')
+      toast.success(data.message || 'Payment reconciled with Paystack')
+      setInspections(previous => {
+        const next = { ...previous }
+        delete next[depositId]
+        return next
+      })
       await fetchPendingDeposits(true)
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Payment verification is unavailable')
+      await inspectDeposit(depositId)
     } finally {
       setProcessingId(null)
     }
@@ -681,13 +712,26 @@ function DepositApprovalSection({ user }: { user: any }) {
                   <span className={deposit.status === 'approved' && deposit.verified_at ? 'text-xs font-bold text-emerald-300' : deposit.status === 'rejected' ? 'text-xs font-bold text-red-300' : 'text-xs font-bold text-amber-300'}>
                     {deposit.status === 'approved' ? (deposit.verified_at ? 'Paystack verified · Wallet credited' : 'Approval without Paystack proof · Investigate') : deposit.status === 'rejected' ? 'Verification failed · Review' : 'Awaiting Paystack verification'}
                   </span>
-                  {deposit.status === 'pending' && (
-                    <Button size="sm" disabled={processingId === deposit.id} onClick={() => void verifyDeposit(deposit.id)}>
-                      {processingId === deposit.id ? 'Verifying...' : 'Verify with Paystack'}
-                    </Button>
+                  {(deposit.status === 'pending' || deposit.status === 'rejected' || (deposit.status === 'approved' && !deposit.verified_at)) && (
+                    <div className="flex flex-wrap justify-end gap-2">
+                      <Button variant="outline" size="sm" disabled={inspectingId === deposit.id} onClick={() => void inspectDeposit(deposit.id)}>
+                        {inspectingId === deposit.id ? 'Inspecting...' : 'Inspect Paystack'}
+                      </Button>
+                      <Button size="sm" disabled={processingId === deposit.id} onClick={() => void verifyDeposit(deposit.id)}>
+                        {processingId === deposit.id ? 'Verifying...' : deposit.status === 'pending' ? 'Verify with Paystack' : deposit.status === 'rejected' ? 'Retry verified recovery' : 'Attach verified proof'}
+                      </Button>
+                    </div>
                   )}
                 </div>
               </div>
+              {inspections[deposit.id] && (
+                <div className="mt-3 rounded-lg border border-sky-300/15 bg-black/25 p-3 text-xs leading-5 text-slate-300" role="status">
+                  <p className="font-bold text-sky-100">Paystack evidence · {inspections[deposit.id].paymentStatus} · {inspections[deposit.id].mode} mode</p>
+                  <p className="mt-1">{inspections[deposit.id].guidance}</p>
+                  <p className="mt-1">Prior ledger credits: {inspections[deposit.id].credits} · Recorded Flame Coin: {inspections[deposit.id].creditedAmount.toLocaleString()} · Refund events: {inspections[deposit.id].refunds}</p>
+                  <p className="mt-1 font-semibold">{inspections[deposit.id].canResolve ? 'Eligible for Paystack-verified reconciliation.' : 'No automatic wallet credit permitted until evidence is resolved.'}</p>
+                </div>
+              )}
             </div>
           ))}
         </div>

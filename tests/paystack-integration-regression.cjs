@@ -44,7 +44,7 @@ for (const [name, src] of [['receipt', retiredReceipt], ['approval', retiredAppr
 if (retiredQueue.includes("WHERE d.status='pending'") || !retiredQueue.includes('NextResponse.json([]')) {
   throw new Error('Legacy OPay queue must not list Paystack checkouts')
 }
-for (const token of ['getAuthUser', "admin.role !== 'admin'", "d.method = 'paystack'", "method='paystack' AND status='pending'", 'settlePaystackDeposit']) {
+for (const token of ['getAuthUser', "admin.role !== 'admin'", "d.method = 'paystack'", "status IN ('pending','rejected')", 'settlePaystackDeposit']) {
   if (!adminPaystack.includes(token)) throw new Error('Administration Paystack verification boundary missing: ' + token)
 }
 if (!adminPaystack.includes("d.verified_at IS NULL") || !adminTerminal.includes('Approval without Paystack proof')) {
@@ -90,4 +90,20 @@ if (!adminPaystack.includes('reconcilePending === true') ||
   throw new Error('Administration must be able to reconcile previous paid-but-uncredited deposits for offline users')
 }
 
+const inspection = read('lib/paystack-inspection.ts')
+for (const token of ['paystackMismatchReason','expectedDepositId','expectedUserId','meta.deposit_id','meta.user_id']) {
+  if (!source.includes(token)) throw new Error('Paystack original checkout identity must be verified: ' + token)
+}
+for (const token of ["deposit.status === 'approved'",'evidenceReconciled','Historical Paystack payment evidence reconciled','credits > 0 || refunds > 0','FOR UPDATE OF d']) {
+  if (!settlement.includes(token)) throw new Error('Historic credits require safe idempotent reconciliation: ' + token)
+}
+for (const token of ['inspectPaystackDeposit','paystackMismatchReason','getPaystackConfig','metadata->>']) {
+  if (!inspection.includes(token)) throw new Error('Paystack Administration needs visible evidence diagnostics: ' + token)
+}
+for (const token of ["body?.action === 'inspect'","status='approved' AND verified_at IS NULL",'proofAttached']) {
+  if (!adminPaystack.includes(token)) throw new Error('Administration must inspect and repair all unresolved statuses: ' + token)
+}
+for (const token of ['Inspect Paystack','Retry verified recovery','Attach verified proof','inspections[deposit.id]']) {
+  if (!adminTerminal.includes(token)) throw new Error('Administration must see actionable recovery controls: ' + token)
+}
 console.log('Paystack verified deposits, secured Administration review, and legacy endpoint regressions passed')
