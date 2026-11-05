@@ -570,6 +570,7 @@ function DepositApprovalSection({ user }: { user: any }) {
   const [deposits, setDeposits] = useState<ReviewDeposit[]>([])
   const [loading, setLoading] = useState(true)
   const [processingId, setProcessingId] = useState<string | null>(null)
+  const [reconciling, setReconciling] = useState(false)
 
   useEffect(() => {
     void fetchPendingDeposits()
@@ -619,6 +620,30 @@ function DepositApprovalSection({ user }: { user: any }) {
     }
   }
 
+  const reconcileExisting = async () => {
+    if (reconciling) return
+    setReconciling(true)
+    try {
+      const token = localStorage.getItem('ssb_auth_token')
+      const response = await fetch('/api/admin/deposit/paystack', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ reconcilePending: true }),
+      })
+      const data = await response.json()
+      if (!response.ok || !data.success) throw new Error(data.error || 'Reconciliation unavailable')
+      toast.success(data.message || 'Reconciliation checked')
+      await fetchPendingDeposits(true)
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Unable to reconcile Paystack deposits')
+    } finally {
+      setReconciling(false)
+    }
+  }
+
   return (
     <div className="p-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -630,7 +655,12 @@ function DepositApprovalSection({ user }: { user: any }) {
             manually crediting or rejecting an unverified wallet deposit.
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={() => void fetchPendingDeposits()}>Refresh</Button>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" size="sm" disabled={reconciling} onClick={() => void reconcileExisting()}>
+            {reconciling ? 'Checking Paystack...' : 'Reconcile previous deposits'}
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => void fetchPendingDeposits()}>Refresh</Button>
+        </div>
       </div>
       {loading ? (
         <p className="py-8 text-center text-xs text-slate-400">Loading Paystack deposits...</p>
