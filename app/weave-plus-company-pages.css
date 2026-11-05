@@ -10,7 +10,7 @@
   --weave-plus-porcelain: #fffefa;
   --weave-plus-marble: #f7f9fc;
   --weave-plus-glass: rgba(255,255,255,.88);
-  --weave-plus-gold: #a47632;
+  --weave-plus-gold: #845b24;
   --weave-plus-gold-deep: #845b24;
   --weave-plus-ink: #253f52;
   --weave-plus-secondary-ink: #486274;
@@ -182,7 +182,7 @@ html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-locati
 html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
   [data-slot="card"],.weave-reading-surface,main,article
 ) :is(button,a)[class*="bg-cyan-600"] {
-  background-color: #a47632 !important;
+  background-color: #845b24 !important;
   color: #ffffff !important;
   border-color: #845b24 !important;
   box-shadow: 0 5px 16px rgba(138,95,35,.17);
@@ -193,7 +193,7 @@ html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-locati
 html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
   [data-slot="card"],.weave-reading-surface,main,article
 ) :is(button,a)[class*="bg-cyan-600"]:hover {
-  background-color: #845b24 !important;
+  background-color: #6d491d !important;
 }
 html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
   main,article,section
