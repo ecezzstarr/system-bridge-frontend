@@ -39,6 +39,43 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json()
+
+    // A single Administration action can recover verified but uncredited
+    // payments for users who are currently offline. This does NOT grant
+    // manual approval; each reference must pass independent Paystack checks.
+    if (body?.reconcilePending === true) {
+      const queue = await getPool().query(
+        `SELECT receipt_data AS reference
+         FROM deposits
+         WHERE method='paystack'
+           AND status IN ('pending','rejected')
+           AND receipt_data IS NOT NULL
+           AND created_at > NOW() - INTERVAL '90 days'
+         ORDER BY created_at DESC LIMIT 12`,
+      )
+      const results = await Promise.allSettled(
+        queue.rows.map(row => settlePaystackDeposit(String(row.reference))),
+      )
+      let credited = 0
+      let unresolved = 0
+      for (const result of results) {
+        if (result.status === 'fulfilled' && result.value.settled && !result.value.duplicate) {
+          credited++
+        } else {
+          unresolved++
+        }
+      }
+      return NextResponse.json({
+        success: true,
+        checked: queue.rowCount || 0,
+        credited,
+        unresolved,
+        message: credited
+          ? `${credited} Paystack-confirmed deposit(s) credited; the remaining records still require verification or review.`
+          : 'No new credits were verified. Unconfirmed or unmatched payments remain unchanged.',
+      }, { headers: { 'Cache-Control': 'private, no-store', Vary: 'Authorization' } })
+    }
+
     const depositId = String(body?.depositId || '')
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(depositId)) {
       return NextResponse.json({ error: 'A valid deposit ID is required.' }, { status: 400 })
