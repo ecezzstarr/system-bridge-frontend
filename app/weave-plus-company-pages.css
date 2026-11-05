@@ -77,6 +77,31 @@ html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-locati
   border-color: var(--weave-plus-divider);
 }
 
+/* Many operational pages set text-white on the top-level main element,
+ * so descendants without explicit classes inherit white on the new daylight
+ * ground. Correct the root inheritance as well as the individual labels.
+ */
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+  main,section,article,aside,header,footer,nav,form
+)[class~="text-white"]:not(:where(
+  [data-public-weave-world] *,[data-plus-file-folder-world],
+  [data-file-folder-world] *,[data-public-flame-preview-world] *,
+  [data-weave-loader-art] *
+)) {
+  color: var(--weave-plus-ink) !important;
+}
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+  [data-slot="card"],.weave-reading-surface,.weave-environment-panel,
+  [class*="bg-slate-800"],[class*="bg-slate-900"],
+  [class*="bg-black/"],[class*="bg-[#020"],[class*="bg-[#030"],
+  [class*="bg-[#040"],[class*="bg-[#050"],[class*="bg-[#060"]
+)[class~="text-white"]:not(:where(
+  [data-public-weave-world] *,[data-plus-file-folder-world] *,
+  [data-file-folder-world] *,button *,[data-weave-loader-art] *
+)) {
+  color: var(--weave-plus-ink) !important;
+}
+
 /* Readability of existing WEAVE words is essential: no glowing dark shadows,
  * faint white copy or forced one-line truncation across company workspaces.
  */
