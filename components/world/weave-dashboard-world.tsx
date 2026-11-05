@@ -102,7 +102,8 @@ export function WeaveDashboardWorld({
     data-role-world={role}
     data-client-world={role==='client'?'open-territory':undefined}
     data-world-organization="presence-district-place"
-    data-world-theme-source={role==='client'&&kingdom?kingdom.theme:'shared-live-flame'}
+    data-world-theme-source="shared-live-flame"
+    data-client-kingdom-theme={role==='client'?kingdom?.theme:undefined}
   >
     {role==='client'&&kingdom&&<ClientKingdomDashboardScene tier={kingdom.tier}/>}
     <header className="pointer-events-none relative z-20 flex items-start justify-between gap-3 px-4 pb-2 pt-16 sm:absolute sm:inset-x-0 sm:top-10 sm:p-6">
