@@ -44,6 +44,26 @@ export const WEAVE_WRITING = {
     movement: 'Interaction in Motion',
   },
 
+  systemSwitch: {
+    name: 'System Switch',
+    eyebrow: 'The Gate · Website to 3D Open World',
+    heading: 'System Switch — The Gate to the File Folder Open World',
+    introduction: 'This is where the WEAVE website becomes an interactive 3D world. Beyond the gate, you move through Client places, other participants and available Customer Doors instead of moving between ordinary website pages.',
+    preparation: 'Before crossing, understand the environment ahead, what is public and what belongs to your position.',
+    stages: [
+      { title: 'Where you are', detail: 'You are at the gate between the website and the 3D world.' },
+      { title: 'What is ahead', detail: 'A shared open world with Client buildings, people and published Customer Doors.' },
+      { title: 'What you may enter', detail: 'Public places are open to visitors. Private File Folders belong to their verified Clients.' },
+    ],
+    staff: 'Your company position continues beyond the gate. You may explore the shared land and visit published Client Customer Doors; you cannot enter another Client’s private File Folder.',
+    client: 'Your File Folder is your owned operating environment. The shared open world connects you to other public places, while your private systems remain yours to access and operate.',
+    visitor: 'You may explore public Client places and Customer Doors without receiving a private File Folder or access to unpublished work.',
+    crossAction: 'Cross into the 3D Open World',
+    destination: 'File Folder Open World',
+    arrival: 'You have entered the File Folder Open World. Explore public places and Customer Doors. Your position determines which private systems you can operate.',
+    privacy: 'The crossing does not change ownership, permissions or the privacy of a Client’s File Folder.',
+  },
+
   bridgeRadiance: {
     eyebrow: 'Bridge Radiance',
     title: 'Begin with what is already present.',
