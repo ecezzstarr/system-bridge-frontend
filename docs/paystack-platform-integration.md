@@ -42,3 +42,18 @@ Department Entry ticket checkout verifies the unique reference, exact NGN amount
 ### Deployment verification
 
 Before merging or enabling live payments, run the Production Check and complete Paystack test-mode exercises: Bridger checkout, Agent checkout, successful wallet credit, pending checkout retry, exact amount mismatch, wrong payer email, invalid webhook signature, webhook replay and callback replay, refund event review, and the disabled OPay endpoints. Confirm with the production database that one verified reference produces **exactly one** positive credit and that the Admin queue shows correct states. Production webhooks, secrets, network access, and database reconciliation cannot be validated from source code alone.
+
+### Historical reconciliation (read-only)
+
+Before relying on historic balances, Administration should inspect approvals made before this change. A row with `status='approved'` but no `verified_at` is an **exception requiring Paystack transaction verification**, not proof of a successful payment:
+
+```sql
+SELECT d.id, d.user_id, u.role, u.email, d.receipt_data AS paystack_reference,
+       d.amount_usd AS amount_ngn, d.amount_trx AS flame_coin,
+       d.created_at, d.updated_at, d.verified_at
+FROM deposits d JOIN users u ON u.id=d.user_id
+WHERE d.method='paystack' AND d.status='approved' AND d.verified_at IS NULL
+ORDER BY d.created_at DESC;
+```
+
+Compare each exception's Paystack reference, payer, amount, currency, wallet movement and ledger entry with Paystack's authoritative transaction. Investigate discrepancies through Administration and Finance; never automatically credit again or delete historical records. The new Administration queue places these records first and identifies them as **Approval without Paystack proof**.
