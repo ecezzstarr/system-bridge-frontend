@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 import bcrypt from 'bcryptjs'
+import { usableBcryptPasswordHash } from '@/lib/password-hash'
 import { randomBytes } from 'node:crypto'
 import { getDivineShieldState } from '@/lib/weave-infrastructure'
 import { ensureUserReferralCode } from '@/lib/user-referral'
 
-function hasUsablePasswordHash(value: unknown) {
-  return /^\$2[aby]\$\d{2}\$/.test(String(value || ''))
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -39,7 +37,9 @@ export async function POST(request: NextRequest) {
 
     const user = result[0]
 
-    if (!hasUsablePasswordHash(user.password_hash)) {
+    const passwordHash = usableBcryptPasswordHash(user.password_hash)
+
+    if (!passwordHash) {
       return NextResponse.json(
         {
           error: 'This Client account needs a password before it can sign in. Use Forgot Password with the email attached to this File Number.',
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const isValid = await bcrypt.compare(password, user.password_hash)
+    const isValid = await bcrypt.compare(password, passwordHash)
     if (!isValid) {
       return NextResponse.json(
         { error: 'Invalid file number or password' },
