@@ -223,6 +223,58 @@ html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-locati
   color: #a32f4b !important;
 }
 
+/* Legacy stone/gray marketing copy and pastel event-derived labels occur on
+ * public storefronts and File Folder sales pages as well as role dashboards.
+ * The page-wide light ground needs deep, differentiated text hues.
+ */
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+  main,section,article,aside,header,nav,footer,form,.weave-header
+) :is(
+  [class~="text-stone-300"],[class~="text-stone-400"],
+  [class~="text-stone-500"],[class~="text-stone-600"],
+  [class~="text-gray-300"],[class~="text-gray-400"],
+  [class~="text-gray-500"],[class~="text-neutral-300"],
+  [class~="text-neutral-400"],[class~="text-neutral-500"],
+  [class~="text-zinc-300"],[class~="text-zinc-400"]
+):not(:where([data-public-weave-world] *,[data-plus-file-folder-world] *,[data-file-folder-world] *,button,button *)) {
+  color: #506579 !important;
+}
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+  main,section,article,aside,header,nav,footer,form,.weave-header
+) :is(
+  [class~="text-amber-100"],[class~="text-amber-200"],
+  [class~="text-amber-300"],[class~="text-amber-400"],
+  [class~="text-orange-100"],[class~="text-orange-200"],
+  [class~="text-orange-300"],[class~="text-orange-400"],
+  [class~="text-yellow-100"],[class~="text-yellow-200"]
+):not(:where([data-public-weave-world] *,[data-plus-file-folder-world] *,[data-file-folder-world] *,button,button *)) {
+  color: #8a5d21 !important;
+}
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+  main,section,article,aside,header,nav,footer,form,.weave-header
+) :is(
+  [class~="text-blue-100"],[class~="text-blue-200"],
+  [class~="text-sky-100"],[class~="text-sky-200"],
+  [class~="text-cyan-100"],[class~="text-cyan-200"]
+):not(:where([data-public-weave-world] *,[data-plus-file-folder-world] *,[data-file-folder-world] *,button,button *)) {
+  color: #236784 !important;
+}
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+  main,section,article,aside,header,nav,footer,form,.weave-header
+) :is(
+  [class~="text-green-400"],[class~="text-emerald-400"],
+  [class~="text-teal-200"],[class~="text-teal-300"]
+):not(:where([data-public-weave-world] *,[data-plus-file-folder-world] *,[data-file-folder-world] *,button,button *)) {
+  color: #176b4e !important;
+}
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+  main,section,article,aside,header,nav,footer,form,.weave-header
+) :is(
+  [class~="text-rose-400"],[class~="text-red-400"]
+):not(:where([data-public-weave-world] *,[data-plus-file-folder-world] *,[data-file-folder-world] *,button,button *)) {
+  color: #9d3148 !important;
+}
+
 /* Porcelain navigation, gold separators and precise gold focus rings. */
 html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
   main,section,article,aside,header,footer,nav
