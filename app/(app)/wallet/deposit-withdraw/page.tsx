@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { ArrowRight, ArrowDownToLine, ArrowUpFromLine, Wallet, Copy, Check, ShieldCheck } from 'lucide-react'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
+import { visiblePoll } from '@/lib/visible-poll'
 
 export default function WalletDepositWithdrawPage() {
   const { user } = useAuth()
@@ -70,6 +71,14 @@ export default function WalletDepositWithdrawPage() {
       })
       .catch(() => {})
   }, [user, isOpayRole])
+
+  // Keep both wallet balance and deposit status current while the page is visible.
+  useEffect(() => {
+    if (!user?.id) return
+    return visiblePoll(async () => {
+      await Promise.allSettled([fetchBalance(), fetchClientDeposits()])
+    }, 20000, false)
+  }, [user?.id, isOpayRole])
 
   // Paystack redirects back only after server-side verification is attempted.
   useEffect(() => {
