@@ -19,9 +19,12 @@ export function NormalWeaveRoleAtmosphere({
   const eligible = userRole === 'bridger' || userRole === 'agent' || userRole === 'admin'
   const isDashboard = DASHBOARDS.has(pathname)
 
-  // Bridger Home now renders its own reversible workplace/district choice.
-  // Do not replace that page with another dashboard world at the atmosphere layer.
-  if (pathname === '/bridger/dashboard' && userRole === 'bridger') return <>{children}</>
+  // Each department owns a reversible workplace and the preserved original world.
+  // Do not intercept these dashboards; route guards and Legacy districts remain intact.
+  const ownWorkplace = (pathname === '/bridger/dashboard' && userRole === 'bridger')
+    || (pathname === '/agent/dashboard' && userRole === 'agent')
+    || (pathname === '/admin/dashboard' && userRole === 'admin')
+  if (ownWorkplace) return <>{children}</>
 
   if (!eligible || !isDashboard) return <>{children}</>
 
