@@ -16,18 +16,18 @@
   --weave-plus-secondary-ink: #486274;
   --weave-plus-divider: rgba(162,126,69,.29);
 }
-html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) {
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control],[data-kingdom-active="true"])) {
   --weave-plus-page-shadow: 0 18px 55px rgba(32,59,79,.095);
 }
 
 /* A grown-up institutional reading system: strong headings, calm body copy,
  * restrained letterspacing and a solid word surface even while Loop 1 is live.
  */
-html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) body {
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control],[data-kingdom-active="true"])) body {
   font-weight: 500;
   -webkit-font-smoothing: antialiased;
 }
-html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control],[data-kingdom-active="true"])) :is(
   main,section,article,aside
 ) :is(h1,h2,h3):not(:where([data-public-weave-world] *,[data-plus-file-folder-world] *,[data-file-folder-world] *)) {
   line-height: 1.17;
@@ -35,13 +35,13 @@ html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-locati
   text-wrap: balance;
   text-shadow: none !important;
 }
-html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control],[data-kingdom-active="true"])) :is(
   main,section,article,aside
 ) :is(p,li,dd,dt):not(:where([data-public-weave-world] *,[data-plus-file-folder-world] *,[data-file-folder-world] *)) {
   line-height: 1.6;
   text-shadow: none !important;
 }
-html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control],[data-kingdom-active="true"])) :is(
   [data-weave-live-word],.weave-word-presence
 ):not(:where([data-public-weave-world] *,[data-plus-file-folder-world] *,[data-file-folder-world] *)) {
   color: #2c4b60 !important;
@@ -56,7 +56,7 @@ html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-locati
 /* Small operational labels should never become 10- or 11-pixel microprint.
  * Use sensible minimums without enlarging specialized canvas annotations.
  */
-html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control],[data-kingdom-active="true"])) :is(
   main,section,article,aside,form
 ) :is([class~="text-[11px]"],[class~="text-[12px]"]):not(:where(
   [data-public-weave-world] *,[data-plus-file-folder-world] *,[data-file-folder-world] *
@@ -64,13 +64,13 @@ html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-locati
   font-size: .78rem !important;
   line-height: 1.25rem !important;
 }
-html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control],[data-kingdom-active="true"])) :is(
   main,section,article,aside,form
 ) :is(h1,h2,h3,p,li,label,button,a) {
   max-width: 100%;
   overflow-wrap: anywhere;
 }
-html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control],[data-kingdom-active="true"])) :is(
   main,section,article,aside,form
 ) [class*="line-clamp-"]:not([data-allow-truncate="true"]):not(:where(
   [data-public-weave-world] *,[data-plus-file-folder-world] *,[data-file-folder-world] *
@@ -84,7 +84,7 @@ html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-locati
  * often sit outside [data-weave-environment]. They must not fall back to the
  * original navy rendering.
  */
-html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control],[data-kingdom-active="true"])) :is(
   main,section,article,aside,header,footer,nav,form
 )[class*="bg-[#0"]:not(:where([data-public-weave-world] *,[data-file-folder-world] *,[data-plus-file-folder-world] *)) {
   background-color: var(--weave-plus-glass) !important;
@@ -96,7 +96,7 @@ html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-locati
  * Do not cover the official home world, live 3D File Folder equipment, loaders
  * or Flame Event scene imagery.
  */
-html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control],[data-kingdom-active="true"])) :is(
   main,section,article,aside,header,footer,nav,form,div,button,a,fieldset
 ) :is(
   [class*="bg-slate-700"],[class*="bg-slate-800"],[class*="bg-slate-900"],
@@ -111,7 +111,7 @@ html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-locati
 /* Direct utility classes on route roots or nested sections (not descendants).
  * Avoid replacing photography, video, canvas, SVG artwork or feature worlds.
  */
-html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control],[data-kingdom-active="true"])) :is(
   main,section,article,aside,header,footer,nav,form,div
 ):is(
   [class*="bg-slate-700"],[class*="bg-slate-800"],[class*="bg-slate-900"],
@@ -127,10 +127,10 @@ html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-locati
 /* Legacy navy radial/linear artwork on *content sections* is remade as real
  * daylight atmosphere. Do not paint over dedicated R3F canvases or loaders.
  */
-html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control],[data-kingdom-active="true"])) :is(
   main,section,article,aside,header
 )[class*="bg-[radial-gradient"]:not(:where([data-public-weave-world] *,[data-file-folder-world] *)),
-html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control],[data-kingdom-active="true"])) :is(
   main,section,article,aside,header
 )[class*="bg-[linear-gradient"]:not(:where([data-public-weave-world] *,[data-file-folder-world] *)) {
   background-image: radial-gradient(ellipse at 16% 10%,rgba(199,223,241,.52),transparent 58%),linear-gradient(135deg,rgba(255,255,255,.96),rgba(251,247,237,.86)) !important;
@@ -141,7 +141,7 @@ html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-locati
  * so descendants without explicit classes inherit white on the new daylight
  * ground. Correct the root inheritance as well as the individual labels.
  */
-html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control],[data-kingdom-active="true"])) :is(
   main,section,article,aside,header,footer,nav,form
 )[class~="text-white"]:not(:where(
   [data-public-weave-world] *,[data-plus-file-folder-world],
@@ -150,7 +150,7 @@ html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-locati
 )) {
   color: var(--weave-plus-ink) !important;
 }
-html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control],[data-kingdom-active="true"])) :is(
   [data-slot="card"],.weave-reading-surface,.weave-environment-panel,
   [class*="bg-slate-800"],[class*="bg-slate-900"],
   [class*="bg-black/"],[class*="bg-[#020"],[class*="bg-[#030"],
@@ -165,14 +165,14 @@ html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-locati
 /* Readability of existing WEAVE words is essential: no glowing dark shadows,
  * faint white copy or forced one-line truncation across company workspaces.
  */
-html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control],[data-kingdom-active="true"])) :is(
   main,section,article,aside,header,nav,footer,form,.weave-header
 ) :is(h1,h2,h3,h4,h5,h6,p,li,dt,dd,label,small,strong) {
   text-shadow: none !important;
   overflow-wrap: anywhere;
   text-wrap: pretty;
 }
-html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control],[data-kingdom-active="true"])) :is(
   main,section,article,aside,header,nav,footer,form,.weave-header
 ) :is(
   [class~="text-white"],[class*="text-white/"],
@@ -189,7 +189,7 @@ html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-locati
 )) {
   color: var(--weave-plus-ink) !important;
 }
-html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control],[data-kingdom-active="true"])) :is(
   main,section,article,aside,header,nav,footer,form,.weave-header
 ) :is(
   [class*="text-slate-400/"],[class*="text-slate-500/"],
@@ -202,22 +202,22 @@ html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-locati
 /* Lighter accent colors become deep, accessible accents on white surfaces.
  * State colors remain distinguishable: positive=green, error=red, info=blue.
  */
-html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control],[data-kingdom-active="true"])) :is(
   main,section,article,aside,header,nav,footer,form,.weave-header
 ) :is([class~="text-blue-300"],[class~="text-blue-400"],[class~="text-sky-300"],[class~="text-sky-400"],[class~="text-cyan-300"],[class~="text-cyan-400"]):not(:where([data-public-weave-world] *,[data-plus-file-folder-world] *)) {
   color: #206785 !important;
 }
-html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control],[data-kingdom-active="true"])) :is(
   main,section,article,aside,header,nav,footer,form,.weave-header
 ) :is([class~="text-violet-100"],[class~="text-violet-200"],[class~="text-violet-300"],[class~="text-fuchsia-200"],[class~="text-fuchsia-300"]) {
   color: #704e8b !important;
 }
-html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control],[data-kingdom-active="true"])) :is(
   main,section,article,aside,header,nav,footer,form,.weave-header
 ) :is([class~="text-emerald-100"],[class~="text-emerald-200"],[class~="text-emerald-300"],[class~="text-green-200"],[class~="text-green-300"]) {
   color: #176b4e !important;
 }
-html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control],[data-kingdom-active="true"])) :is(
   main,section,article,aside,header,nav,footer,form,.weave-header
 ) :is([class~="text-red-200"],[class~="text-red-300"],[class~="text-rose-200"],[class~="text-rose-300"]) {
   color: #a32f4b !important;
@@ -227,7 +227,7 @@ html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-locati
  * public storefronts and File Folder sales pages as well as role dashboards.
  * The page-wide light ground needs deep, differentiated text hues.
  */
-html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control],[data-kingdom-active="true"])) :is(
   main,section,article,aside,header,nav,footer,form,.weave-header
 ) :is(
   [class~="text-stone-300"],[class~="text-stone-400"],
@@ -239,7 +239,7 @@ html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-locati
 ):not(:where([data-public-weave-world] *,[data-plus-file-folder-world] *,[data-file-folder-world] *,button,button *)) {
   color: #506579 !important;
 }
-html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control],[data-kingdom-active="true"])) :is(
   main,section,article,aside,header,nav,footer,form,.weave-header
 ) :is(
   [class~="text-amber-100"],[class~="text-amber-200"],
@@ -250,7 +250,7 @@ html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-locati
 ):not(:where([data-public-weave-world] *,[data-plus-file-folder-world] *,[data-file-folder-world] *,button,button *)) {
   color: #8a5d21 !important;
 }
-html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control],[data-kingdom-active="true"])) :is(
   main,section,article,aside,header,nav,footer,form,.weave-header
 ) :is(
   [class~="text-blue-100"],[class~="text-blue-200"],
@@ -259,7 +259,7 @@ html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-locati
 ):not(:where([data-public-weave-world] *,[data-plus-file-folder-world] *,[data-file-folder-world] *,button,button *)) {
   color: #236784 !important;
 }
-html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control],[data-kingdom-active="true"])) :is(
   main,section,article,aside,header,nav,footer,form,.weave-header
 ) :is(
   [class~="text-green-400"],[class~="text-emerald-400"],
@@ -267,7 +267,7 @@ html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-locati
 ):not(:where([data-public-weave-world] *,[data-plus-file-folder-world] *,[data-file-folder-world] *,button,button *)) {
   color: #176b4e !important;
 }
-html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control],[data-kingdom-active="true"])) :is(
   main,section,article,aside,header,nav,footer,form,.weave-header
 ) :is(
   [class~="text-rose-400"],[class~="text-red-400"]
@@ -276,7 +276,7 @@ html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-locati
 }
 
 /* Porcelain navigation, gold separators and precise gold focus rings. */
-html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control],[data-kingdom-active="true"])) :is(
   main,section,article,aside,header,footer,nav
 ) :is(
   [class*="border-white/"],[class*="border-slate-700"],
@@ -284,7 +284,7 @@ html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-locati
 ):not(:where([data-public-weave-world] *,[data-plus-file-folder-world] *)) {
   border-color: var(--weave-plus-divider) !important;
 }
-html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control],[data-kingdom-active="true"])) :is(
   [data-slot="card"],.weave-reading-surface,.weave-environment-panel,
   .weave-header,.weave-sidebar,.weave-client-nav
 ) {
@@ -293,7 +293,7 @@ html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-locati
 }
 
 /* Reset black-on-black leftovers from text inputs outside role layouts. */
-html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control],[data-kingdom-active="true"])) :is(
   input,textarea,select,[data-slot="input"]
 ) {
   background-color: #ffffff !important;
@@ -301,22 +301,22 @@ html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-locati
   border: 1px solid rgba(153,117,60,.4) !important;
   box-shadow: inset 0 1px 3px rgba(30,47,60,.045);
 }
-html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control],[data-kingdom-active="true"])) :is(
   input,textarea,select
 )::placeholder {
   color: #637688 !important;
   opacity: 1;
 }
-html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control],[data-kingdom-active="true"])) :is(
   input,textarea,select
 ):focus-visible {
   outline: 2px solid #a47632 !important;
   outline-offset: 1px;
 }
-html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control],[data-kingdom-active="true"])) :is(
   [data-slot="card"],.weave-reading-surface,main,article
 ) :is(button,a)[class*="bg-blue-600"],
-html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control],[data-kingdom-active="true"])) :is(
   [data-slot="card"],.weave-reading-surface,main,article
 ) :is(button,a)[class*="bg-cyan-600"] {
   background-color: #845b24 !important;
@@ -324,15 +324,15 @@ html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-locati
   border-color: #845b24 !important;
   box-shadow: 0 5px 16px rgba(138,95,35,.17);
 }
-html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control],[data-kingdom-active="true"])) :is(
   [data-slot="card"],.weave-reading-surface,main,article
 ) :is(button,a)[class*="bg-blue-600"]:hover,
-html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control],[data-kingdom-active="true"])) :is(
   [data-slot="card"],.weave-reading-surface,main,article
 ) :is(button,a)[class*="bg-cyan-600"]:hover {
   background-color: #6d491d !important;
 }
-html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control],[data-kingdom-active="true"])) :is(
   main,article,section
 ) :is(button,a,[role="button"]):focus-visible {
   outline: 3px solid #ac7e35 !important;
@@ -342,18 +342,18 @@ html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-locati
 /* Company records, payment tables and reports should read like institutional
  * documents, not faint lettering on transparent black boxes.
  */
-html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control],[data-kingdom-active="true"])) :is(
   main,section,article,aside
 ) :is(table,thead,tbody,tr,td,th) {
   border-color: rgba(156,126,72,.27);
 }
-html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control],[data-kingdom-active="true"])) :is(
   main,section,article,aside
 ) :is(th,[role="columnheader"]) {
   color: #344e60;
   font-weight: 750;
 }
-html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control],[data-kingdom-active="true"])) :is(
   main,section,article,aside
 ) :is(pre,code) {
   color: #274258;
@@ -362,18 +362,18 @@ html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-locati
 
 /* Mobile-first readability, no clipped company descriptions. */
 @media(max-width:767px) {
-  html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+  html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control],[data-kingdom-active="true"])) :is(
     main,section,article,aside,form
   ) :is(p,li,dd,dt,label) {
     line-height: 1.5;
     overflow-wrap: anywhere;
   }
-  html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+  html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control],[data-kingdom-active="true"])) :is(
     main,section,article,aside,form
   ) :is(button,a,[role="button"]):not(:where(.weave-header *)) {
     min-height: 2.5rem;
   }
-  html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+  html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control],[data-kingdom-active="true"])) :is(
     main,section,article,aside,form
   ) .truncate:not([data-allow-truncate="true"]) {
     white-space: normal !important;
