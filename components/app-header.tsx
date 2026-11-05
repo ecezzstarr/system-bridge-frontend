@@ -35,15 +35,8 @@ export function AppHeader({ user }: AppHeaderProps) {
 
     const token = localStorage.getItem('ssb_auth_token')
     const headers = token ? { 'Authorization': `Bearer ${token}` } : {}
+    // Balance refresh must not wait on slow/failed Paystack gateway requests.
     const refreshWallet = async (signal: AbortSignal) => {
-      // A missed webhook must not strand paid Bridgers or Agents. This endpoint
-      // checks only the logged-in user's own unfinished Paystack references.
-      if (['admin', 'agent', 'bridger', 'client'].includes(authUser.role)) {
-        await fetch('/api/deposit/paystack/reconcile', {
-          method: 'POST', headers, signal, cache: 'no-store',
-        }).catch(() => {})
-      }
-      if (signal.aborted) return
       const result = await fetch('/api/wallet/balance', {
         headers, cache: 'no-store', signal,
       })
@@ -51,7 +44,15 @@ export function AppHeader({ user }: AppHeaderProps) {
       const data = await result.json()
       if (!signal.aborted && data.success) setFlameCoinBalance(data.flameCoinBalance)
     }
-    const stop = visiblePoll(refreshWallet, 20000)
+    const stopBalance = visiblePoll(refreshWallet, 20000)
+    const stopRecovery = ['admin', 'agent', 'bridger', 'client'].includes(authUser.role)
+      ? visiblePoll(async signal => {
+          await fetch('/api/deposit/paystack/reconcile', {
+            method: 'POST', headers, signal, cache: 'no-store',
+          }).catch(() => {})
+        }, 20000)
+      : () => {}
+
 
     fetch('/api/carrier/access', {
       headers, cache: 'no-store',
@@ -60,7 +61,7 @@ export function AppHeader({ user }: AppHeaderProps) {
       .then(data => setCarrierOpen(Boolean(data?.access?.active)))
       .catch(() => setCarrierOpen(false))
 
-    return stop
+    return () => { stopBalance(); stopRecovery() }
   }, [authUser?.id, authUser?.role])
 
   if (!effectiveUser) return null
