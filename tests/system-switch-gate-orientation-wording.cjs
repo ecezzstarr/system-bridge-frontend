@@ -37,7 +37,7 @@ assert.equal(gate.key, 'system-switch-orientation-gate')
 assert.match(gate.purpose, /gate between WEAVE website pages/)
 const world = resolveWeaveEnvironment('/system-switch/world')
 assert.equal(world.key, 'shared-file-folder-open-world')
-assert.match(world.purpose, /public.*private/)
+assert.match(world.purpose, /Public.*private/)
 assert.match(resolveWeaveEnvironment('/client/system-switch').purpose, /verified Client/)
 
 for(const role of ['visitor','agent','bridger','admin','client']) {
