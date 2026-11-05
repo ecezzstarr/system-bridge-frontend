@@ -17,10 +17,21 @@ export async function POST(request: NextRequest) {
     const event=JSON.parse(rawBody)
     const reference=typeof event?.data?.reference==='string'?event.data.reference:''
     if (event?.event === 'charge.success' && reference) {
-      const ticketResult = await settleDepartmentEntryPaystackTicket(reference)
-      if (!ticketResult.matched) {
-        const fileFolderResult = await settleFileFolderPaystackPurchase(reference)
-        if (!fileFolderResult.matched) await settlePaystackDeposit(reference)
+      // The server generates distinct references for each payment product.
+      // Route recognized references directly, avoiding unrelated schema queries.
+      if (reference.startsWith('ENTRY-')) {
+        await settleDepartmentEntryPaystackTicket(reference)
+      } else if (reference.startsWith('FOLDER-')) {
+        await settleFileFolderPaystackPurchase(reference)
+      } else if (/^(ADMIN|AGENT|BRIDGER|CLIENT)-/.test(reference)) {
+        await settlePaystackDeposit(reference)
+      } else {
+        // Keep compatibility with older Paystack references that lack a role prefix.
+        const ticketResult = await settleDepartmentEntryPaystackTicket(reference)
+        if (!ticketResult.matched) {
+          const fileFolderResult = await settleFileFolderPaystackPurchase(reference)
+          if (!fileFolderResult.matched) await settlePaystackDeposit(reference)
+        }
       }
     } else if ((event?.event === 'charge.failed' || event?.event === 'refund.processed') && reference) {
       const pool=getPool()
