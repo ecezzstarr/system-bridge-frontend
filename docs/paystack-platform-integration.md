@@ -57,3 +57,13 @@ ORDER BY d.created_at DESC;
 ```
 
 Compare each exception's Paystack reference, payer, amount, currency, wallet movement and ledger entry with Paystack's authoritative transaction. Investigate discrepancies through Administration and Finance; never automatically credit again or delete historical records. The new Administration queue places these records first and identifies them as **Approval without Paystack proof**.
+
+
+## Previously rejected or historically approved wallet deposits
+Administration → Control Center → Paystack Deposit Reconciliation now provides **Inspect Paystack** for pending, rejected, and historically approved deposits without provider evidence. The inspection returns the configured merchant mode, provider payment status, the precise category of mismatch, prior positive ledger credit count/total, and refund count. No balance changes occur when inspecting.
+
+A rejected deposit can be retried even if Paystack's `charge.failed` webhook arrived before an eventual successful provider confirmation. It is credited only when the provider returns **success**, the original reference, NGN kobo amount, and immutable Weave checkout user/deposit metadata all match, and no earlier ledger credit or refund exists. Modern checkout metadata allows a user to change their Weave email without falsely rejecting the original payment. Legacy records without metadata still require matching email. Each accepted credit remains inside a single locked PostgreSQL transaction.
+
+For `approved` deposits with missing `verified_at`, the repair **never credits the wallet again**. If Paystack confirms the transaction and exactly one existing ledger credit matches the recorded Flame Coin amount and no refund occurred, it attaches independently verified proof. Missing or conflicting ledger credits must be audited manually. Old OPay manual approvals may already have increased the wallet.
+
+If a transaction cannot be located, inspect the **original** Paystack merchant account and whether the current integration uses the correct live/test mode. A screenshot, checkout opening, or Paystack reference alone is not proof of a successful charge. No reverse, duplicate credit, or manual bypass is permitted.
