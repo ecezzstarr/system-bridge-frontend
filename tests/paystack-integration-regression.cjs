@@ -29,4 +29,35 @@ const fileFolderSettlement = read('lib/file-folder-paystack.ts')
 if (!fileFolderCheckout.includes('initializePaystackTransaction') || !fileFolderCheckout.includes('amount_ngn')) throw new Error('File Folder purchase must initialize Paystack with a stored NGN amount')
 if (!fileFolderSettlement.includes('paystackTransactionMatches') || !fileFolderSettlement.includes("status='pending_admin_confirmation'")) throw new Error('File Folder payment must be verified before Administration review')
 if (!webhook.includes('settleFileFolderPaystackPurchase')) throw new Error('Paystack webhook must route File Folder payments to the File Folder settlement handler')
-console.log('Paystack wallet, ticket and File Folder checkout regression checks passed')
+
+const retiredReceipt = read('app/api/deposit/opay/receipt/route.ts')
+const retiredApproval = read('app/api/admin/deposit/opay/verify/route.ts')
+const retiredQueue = read('app/api/admin/deposit/opay/pending/route.ts')
+const adminPaystack = read('app/api/admin/deposit/paystack/route.ts')
+const adminTerminal = read('components/admin/administration-control-terminal.tsx')
+const notifications = read('lib/deposit-notifications.ts')
+for (const [name, src] of [['receipt', retiredReceipt], ['approval', retiredApproval]]) {
+  if (!src.includes('status: 410') || src.includes('UPDATE deposits') || src.includes('UPDATE wallets')) {
+    throw new Error('Retired OPay ' + name + ' must never reopen or credit a payment')
+  }
+}
+if (retiredQueue.includes("WHERE d.status='pending'") || !retiredQueue.includes('NextResponse.json([]')) {
+  throw new Error('Legacy OPay queue must not list Paystack checkouts')
+}
+for (const token of ['getAuthUser', "admin.role !== 'admin'", "d.method = 'paystack'", "method='paystack' AND status='pending'", 'settlePaystackDeposit']) {
+  if (!adminPaystack.includes(token)) throw new Error('Administration Paystack verification boundary missing: ' + token)
+}
+if (adminPaystack.includes('UPDATE wallets')) throw new Error('Administration cannot directly credit unverified Paystack deposits')
+if (!adminTerminal.includes('/api/admin/deposit/paystack') || !adminTerminal.includes('Verify with Paystack') || adminTerminal.includes('/api/admin/deposit/opay/verify')) {
+  throw new Error('Administration must use the authentic Paystack reconciliation station')
+}
+if (!settlement.includes("deposit.status === 'pending' && transaction.status === 'success'")) {
+  throw new Error('Incomplete Paystack checkouts must remain pending for safe retry')
+}
+if (!depositRoute.includes('export async function GET(request: NextRequest)') || !depositRoute.includes("user_id=$1::uuid AND method='paystack'")) {
+  throw new Error('Paystack wallet history must be scoped to the authenticated user')
+}
+if (!notifications.includes("input.rail === 'PAYSTACK'") || !notifications.includes('This is not proof of payment')) {
+  throw new Error('Checkout initiation cannot be described as payment approval')
+}
+console.log('Paystack verified deposits, secured Administration review, and legacy endpoint regressions passed')
