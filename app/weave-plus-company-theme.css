@@ -14,7 +14,7 @@ html[data-weave-theme="dark-blue"][data-weave-shell-theme="plus-white-gold"]:not
   --card-foreground: #21394c;
   --popover: #fffdf8;
   --popover-foreground: #21394c;
-  --primary: #a9782d;
+  --primary: #845b24;
   --primary-foreground: #ffffff;
   --secondary: #e6f1f8;
   --secondary-foreground: #24455f;
@@ -205,7 +205,7 @@ html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-locati
   button[class~="bg-blue-600"],button[class~="bg-cyan-600"]
 ) {
   color: #ffffff !important;
-  background-color: #a9782d !important;
+  background-color: #845b24 !important;
 }
 
 /* Pastel text designed for navy must remain legible against porcelain/glass. */
