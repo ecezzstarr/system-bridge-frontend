@@ -207,3 +207,31 @@ html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-locati
   color: #ffffff !important;
   background-color: #a9782d !important;
 }
+
+/* Pastel text designed for navy must remain legible against porcelain/glass. */
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+  [data-weave-environment],.weave-header,[data-slot="card"]
+) :is(
+  [class*="text-white/"],[class*="text-slate-200/"],
+  [class*="text-slate-300/"],[class*="text-slate-400/"]
+):not(:where([data-plus-file-folder-world] *)) {
+  color: #425d70 !important;
+}
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+  [data-weave-environment],.weave-header,[data-slot="card"]
+) :is(
+  [class~="text-sky-100"],[class~="text-sky-200"],
+  [class~="text-cyan-100"],[class~="text-cyan-200"],
+  [class~="text-blue-100"],[class~="text-blue-200"]
+):not(:where([data-plus-file-folder-world] *)) {
+  color: #276884 !important;
+}
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(
+  [data-weave-environment],.weave-header,[data-slot="card"]
+) :is(
+  [class~="text-amber-100"],[class~="text-amber-200"],
+  [class~="text-yellow-100"],[class~="text-yellow-200"],
+  [class~="text-orange-100"],[class~="text-orange-200"]
+):not(:where([data-plus-file-folder-world] *)) {
+  color: #946924 !important;
+}
