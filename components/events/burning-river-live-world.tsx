@@ -13,6 +13,7 @@ import * as THREE from 'three'
 import {AdaptiveCanvas} from '@/components/world/adaptive-canvas'
 import {visiblePoll} from '@/lib/visible-poll'
 import {verifyCastlePlacement,type PublicWorldDomain} from '@/lib/weave-open-world-domains'
+import {FILE_FOLDER_PALETTES} from '@/lib/file-folder-world-presets'
 import {ArrowRight,Castle,Handshake,Layers3,MapPinned,RefreshCcw,ShieldCheck,Store,Waves} from 'lucide-react'
 
 type Connection={id:string;status:'pending'|'accepted'|'declined';otherDomainId:string;direction:'incoming'|'outgoing';requestNote:string}
@@ -21,10 +22,10 @@ type OwnOperatingSystem={id:string;name:string;systemType:string}
 type OwnWorld={domainId:string;worldSlot:number;collaborationOpen:boolean;connections:Connection[];projects:JointProject[];ownSystems:OwnOperatingSystem[]}
 type WorldFeed={domains:PublicWorldDomain[];links:{from:string;to:string}[];hasMore:boolean;event?:{label:string;status:string}}
 const palette:{[key:string]:[string,string,string]}={
-  standard:['#8799b5','#d5dfec','#62a8d9'],
-  pro:['#a9bad7','#d4edff','#a9d5ff'],
-  premium:['#947b75','#f4d0a8','#efb966'],
-  plus:['#e9e1d3','#fff9e9','#f9d07c'],
+  standard:[FILE_FOLDER_PALETTES['standard-living-valley'].structure,FILE_FOLDER_PALETTES['standard-living-valley'].accent,FILE_FOLDER_PALETTES['standard-living-valley'].glow],
+  pro:[FILE_FOLDER_PALETTES['radiant-blue'].structure,FILE_FOLDER_PALETTES['radiant-blue'].accent,FILE_FOLDER_PALETTES['radiant-blue'].glow],
+  premium:[FILE_FOLDER_PALETTES['ember-gold'].structure,FILE_FOLDER_PALETTES['ember-gold'].accent,FILE_FOLDER_PALETTES['ember-gold'].glow],
+  plus:[FILE_FOLDER_PALETTES['plus-white-gold'].structure,FILE_FOLDER_PALETTES['plus-white-gold'].accent,FILE_FOLDER_PALETTES['plus-white-gold'].glow],
   unclassified:['#787c87','#d1bdab','#a7b7c2'],
 }
 const emptyFeed:WorldFeed={domains:[],links:[],hasMore:false}

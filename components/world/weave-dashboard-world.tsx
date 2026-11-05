@@ -1,6 +1,9 @@
 'use client'
 
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
+import {useKingdomIdentity} from '@/components/world/kingdom-theme-frame'
+const ClientKingdomDashboardScene=dynamic(()=>import('@/components/world/client-kingdom-dashboard-scene'),{ssr:false})
 import {
   Building2,
   CircleUserRound,
@@ -74,6 +77,7 @@ export function WeaveDashboardWorld({
   userName?:string|null
 }){
   const copy=COPY[role]
+  const {identity:kingdom}=useKingdomIdentity()
   const {isVisible,orderFor}=useEnvironmentOrganizer()
   const hasRolePresence=role==='agent'||role==='bridger'||role==='client'
   const hasVideoStudio=role!=='admin'&&isVisible('/video-ad-studio')
@@ -98,12 +102,13 @@ export function WeaveDashboardWorld({
     data-role-world={role}
     data-client-world={role==='client'?'open-territory':undefined}
     data-world-organization="presence-district-place"
-    data-world-theme-source="shared-live-flame"
+    data-world-theme-source={role==='client'&&kingdom?kingdom.theme:'shared-live-flame'}
   >
+    {role==='client'&&kingdom&&<ClientKingdomDashboardScene tier={kingdom.tier}/>}
     <header className="pointer-events-none relative z-20 flex items-start justify-between gap-3 px-4 pb-2 pt-16 sm:absolute sm:inset-x-0 sm:top-10 sm:p-6">
       <div>
         <WeaveLogo size="sm"/>
-        <p className="mt-2 text-[8px] font-black uppercase tracking-[.22em] text-sky-300">{copy.eyebrow} · Open WEAVE World</p>
+        <p className="mt-2 text-[8px] font-black uppercase tracking-[.22em] text-sky-300">{role==='client'&&kingdom?kingdom.tier.toUpperCase()+' File Folder · Client Kingdom':copy.eyebrow+' · Open WEAVE World'}</p>
         <h1 className="mt-1 text-lg font-black text-white sm:text-2xl">{userName||copy.title}</h1>
         <p className="mt-1 hidden max-w-xl text-[9px] leading-4 text-slate-500 sm:block">{copy.subtitle}</p>
       </div>
@@ -113,6 +118,11 @@ export function WeaveDashboardWorld({
       </div>
     </header>
 
+    {role==='client'&&kingdom&&<div className="relative z-30 mx-3 mt-2 sm:absolute sm:bottom-[16%] sm:left-1/2 sm:mx-0 sm:-translate-x-1/2">
+      <Link href="/client/system-switch" className="kingdom-identity-link inline-flex min-h-12 w-full items-center justify-center rounded-xl px-5 py-3 text-center text-xs font-black uppercase tracking-wider sm:w-auto" data-enter-client-kingdom="verified-file-folder">
+        Enter {kingdom.tier.toUpperCase()} File Folder Kingdom
+      </Link>
+    </div>}
     <div
       className="relative z-20 mx-3 mt-4 flex min-h-[calc(100svh-13rem)] flex-col pb-[max(.75rem,env(safe-area-inset-bottom))] sm:hidden"
       data-mobile-role-world="full-height-travel-field"

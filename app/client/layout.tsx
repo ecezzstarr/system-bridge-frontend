@@ -9,6 +9,7 @@ import { PresenceCameraSignal, PresenceCameraViewport } from '@/components/world
 import { WeaveEnvironmentSurface } from '@/components/world/weave-environment-surface'
 import { EnvironmentOrganizerProvider, EnvironmentPageGuard } from '@/components/world/environment-organizer-provider'
 import { WeaveExistingPageImage } from '@/components/world/weave-existing-page-image'
+import {KingdomThemeFrame} from '@/components/world/kingdom-theme-frame'
 
 export const metadata: Metadata = {
   title: 'WEAVE of Presence — Client Services',
@@ -36,6 +37,7 @@ export default function ClientLayout({
   // Client routes share the root AuthProvider.
   return (
     <EnvironmentOrganizerProvider>
+    <KingdomThemeFrame subject="client">
     <div className="weave-client-shell relative min-h-dvh overflow-x-clip bg-transparent">
       <ClientRouteGuard>
         <div className="relative z-10" data-client-shell-height="content-owned">
@@ -54,6 +56,7 @@ export default function ClientLayout({
         </div>
       </ClientRouteGuard>
     </div>
+    </KingdomThemeFrame>
     </EnvironmentOrganizerProvider>
   )
 }
