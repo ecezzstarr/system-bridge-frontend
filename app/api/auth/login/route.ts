@@ -1,15 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 import bcrypt from 'bcryptjs'
+import { usableBcryptPasswordHash } from '@/lib/password-hash'
 import { randomBytes, randomUUID } from 'node:crypto'
 import { getDivineShieldState } from '@/lib/weave-infrastructure'
 import { ensureUserReferralCode } from '@/lib/user-referral'
 
 const PLATFORM_ADMIN_EMAIL = 'ecezzstarr@gmail.com'
 
-function hasUsablePasswordHash(value: unknown) {
-  return /^\$2[aby]\$\d{2}\$/.test(String(value || ''))
-}
 
 async function createSession(user: { id: string }) {
   const token = `token_${randomBytes(32).toString('hex')}`
@@ -93,7 +91,9 @@ export async function POST(request: NextRequest) {
 
     const user = users[0]
 
-    if (!hasUsablePasswordHash(user.password_hash)) {
+    const passwordHash = usableBcryptPasswordHash(user.password_hash)
+
+    if (!passwordHash) {
       return NextResponse.json({
         error: 'This WEAVE account needs a password before it can sign in. Use Forgot Password to set one.',
         code: 'PASSWORD_SETUP_REQUIRED',
@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
       }, { status: 409 })
     }
 
-    const isValidPassword = await bcrypt.compare(password, user.password_hash)
+    const isValidPassword = await bcrypt.compare(password, passwordHash)
     if (!isValidPassword) {
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 })
     }
