@@ -131,7 +131,7 @@ export async function readProFileNumberVerification(ticket:string){
   }
   siblingsEvent={reportedAmountUSDT,verifiedAmountUSDT,status,availableForWithdrawal:false}
  }
- const paymentReady=['payment_required','payment_rejected'].includes(String(row.status))
+ const paymentReady=String(row.status)==='payment_required'
  let receivingWallet:string|null=null
  if(paymentReady){
   await ensureProActivationSchema()
@@ -156,7 +156,7 @@ export async function submitProFileNumberPayment(ticket:string,txHash:string,exp
    payment_submitted_at=now(),status='pending_forensics',updated_at=now(),
    rejection_reason=NULL
   WHERE access_token_hash=${hashTicket(ticket.toLowerCase())}
-   AND status IN ('payment_required','payment_rejected') AND identity_verified_at IS NOT NULL
+   AND status='payment_required' AND payment_tx_hash IS NULL AND identity_verified_at IS NOT NULL
   RETURNING id`
  if(!row)throw new Error('Identity verification and an approved business plan are required before payment evidence.')
  return {success:true,status:'pending_forensics'}
