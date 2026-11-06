@@ -38,7 +38,7 @@ export default function ProActivationPage(){
   try{
    const res=await fetch('/api/client/pro-activation',{method:'POST',
     headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
-    body:JSON.stringify(action==='business_plan'?{action,plan}:{action,txHash:hash})})
+    body:JSON.stringify(action==='business_plan'?{action,plan} :{action,txHash:hash,expectedWallet:activation?.walletAddress})})
    const body=await res.json()
    if(!res.ok)throw new Error(body.error||'Submission unavailable')
    setMessage(action==='business_plan'
