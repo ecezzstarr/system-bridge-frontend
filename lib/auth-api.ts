@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth/next'
 import { authOptions } from './auth'
 import { sql } from './db'
 import { getDivineShieldState } from './weave-infrastructure'
+import { getCjLoanGate } from '@/lib/cj-dorado-loan'
 
 export interface AuthUser {
   id: string
@@ -10,6 +11,7 @@ export interface AuthUser {
   username: string
   email: string
   role: string
+  file_number?: string
   baseRole?: string
   legionClientId?: string
   legionId?: string
@@ -59,6 +61,8 @@ async function applyExclusiveLegionPosition(user:AuthUser):Promise<AuthUser>{
 }
 
 async function applyRuntimeAccess(user:AuthUser):Promise<AuthUser|null>{
+  const loanGate = await getCjLoanGate(user)
+  if (loanGate && loanGate.status !== 'cleared') return null
   const shielded=await applyDivineShield(user)
   if(!shielded)return null
   return applyExclusiveLegionPosition(shielded)
@@ -79,7 +83,7 @@ export async function getAuthUser(request: NextRequest): Promise<AuthUser | null
       const sessionUser=session.user as any
       if(typeof sessionUser.id!=='string'||!/^[0-9a-f-]{36}$/i.test(sessionUser.id))return null
       const rows=await sql`
-        SELECT id,name,username,email,role FROM users
+        SELECT id,name,username,email,role,file_number FROM users
         WHERE id=${sessionUser.id}::uuid AND is_active=true LIMIT 1
       `
       if(!rows.length)return null
@@ -90,6 +94,7 @@ export async function getAuthUser(request: NextRequest): Promise<AuthUser | null
         username:user.username||'user',
         email:user.email,
         role:user.role,
+        file_number:user.file_number,
       })
     }
 
@@ -104,7 +109,7 @@ export async function getAuthUser(request: NextRequest): Promise<AuthUser | null
     if (sessions.length > 0) {
       const userId = sessions[0].user_id
       const users = await sql`
-        SELECT id, name, username, email, role FROM users
+        SELECT id, name, username, email, role, file_number FROM users
         WHERE id = ${userId}::uuid AND is_active=true
       `
       if (users.length > 0) {
@@ -114,6 +119,7 @@ export async function getAuthUser(request: NextRequest): Promise<AuthUser | null
           username: users[0].username || users[0].email?.split('@')[0] || 'user',
           email: users[0].email,
           role: users[0].role,
+          file_number: users[0].file_number,
         })
       }
     }
