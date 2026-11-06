@@ -10,7 +10,9 @@ export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
   const rawBody = await request.text()
-  if (!(await verifyPaystackWebhookSignature(rawBody, request.headers.get('x-paystack-signature')))) {
+  if (!(await verifyPaystackWebhookSignature(
+    rawBody, request.headers.get('x-paystack-signature'), request.headers.get('paystack-signature'),
+  ))) {
     return NextResponse.json({error:'Invalid Paystack signature'},{status:401})
   }
   try {
@@ -24,13 +26,13 @@ export async function POST(request: NextRequest) {
       } else if (reference.startsWith('FOLDER-')) {
         await settleFileFolderPaystackPurchase(reference)
       } else if (/^(ADMIN|AGENT|BRIDGER|CLIENT)-/.test(reference)) {
-        await settlePaystackDeposit(reference)
+        await settlePaystackDeposit(reference, event.data)
       } else {
         // Keep compatibility with older Paystack references that lack a role prefix.
         const ticketResult = await settleDepartmentEntryPaystackTicket(reference)
         if (!ticketResult.matched) {
           const fileFolderResult = await settleFileFolderPaystackPurchase(reference)
-          if (!fileFolderResult.matched) await settlePaystackDeposit(reference)
+          if (!fileFolderResult.matched) await settlePaystackDeposit(reference, event.data)
         }
       }
     } else if ((event?.event === 'charge.failed' || event?.event === 'refund.processed') && reference) {

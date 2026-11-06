@@ -679,11 +679,11 @@ function DepositApprovalSection({ user }: { user: any }) {
     <div className="p-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h3 className="mb-1 font-bold text-white">Paystack Deposit Reconciliation</h3>
+          <h3 className="mb-1 font-bold text-white">Paystack Payments · Automatic Wallet Credit</h3>
           <p className="max-w-xl text-xs leading-5 text-slate-400">
-            Bridger and Agent payments are credited only after Paystack confirms the
-            transaction. Administration can verify a pending checkout again without
-            manually crediting or rejecting an unverified wallet deposit.
+            Paystack-confirmed payments credit the user's wallet automatically and immediately.
+            Administration receives a payment and credit notification; no manual approval is needed.
+            Use inspection and reconciliation only for transactions with missing or conflicting payment evidence.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">

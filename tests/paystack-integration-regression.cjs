@@ -20,6 +20,10 @@ for (const token of ["['admin','agent','bridger','client']","amountKobo:amountKo
 }
 if (!webhook.includes("request.headers.get('x-paystack-signature')") || !webhook.includes('settlePaystackDeposit')) throw new Error('Webhook must validate signature and invoke server verification')
 if (!callback.includes('settlePaystackDeposit')) throw new Error('Browser callback must use server-side verification')
+if (!callback.includes("method='paystack' AND receipt_data=$1 AND status='approved' AND verified_at IS NOT NULL") ||
+    !callback.includes('deposit=verified')) {
+  throw new Error('Callback must recognize a previously authenticated webhook credit immediately')
+}
 if (!walletUi.includes("fetch('/api/deposit/paystack'") || !walletUi.includes('window.location.href = data.paymentLink')) throw new Error('Wallet deposit UI is not connected to Paystack checkout')
 for (const token of ['Administration, Agents and Bridgers','Clients use Paystack','Withdrawals remain on their existing methods','Customer Door orders','PAYSTACK_SECRET_KEY','/api/deposit/paystack/webhook']) {
   if (!docs.toLowerCase().includes(token.toLowerCase())) throw new Error('Missing scoped rollout requirement: ' + token)
@@ -54,8 +58,10 @@ if (adminPaystack.includes('UPDATE wallets')) throw new Error('Administration ca
 if (!adminTerminal.includes('/api/admin/deposit/paystack') || !adminTerminal.includes('Verify with Paystack') || adminTerminal.includes('/api/admin/deposit/opay/verify')) {
   throw new Error('Administration must use the authentic Paystack reconciliation station')
 }
-if (!settlement.includes("deposit.status === 'pending' && transaction.status === 'success'")) {
-  throw new Error('Incomplete Paystack checkouts must remain pending for safe retry')
+if (!settlement.includes("if (!paystackTransactionMatches(matchInput))") ||
+    !settlement.includes("await client.query('COMMIT')") ||
+    !settlement.includes("return { settled: false, reason: paystackMismatchReason(matchInput)")) {
+  throw new Error('Incomplete or mismatched Paystack checkouts must not be falsely credited or irreversibly rejected')
 }
 if (!depositRoute.includes('export async function GET(request: NextRequest)') || !depositRoute.includes("user_id=$1::uuid AND method='paystack'")) {
   throw new Error('Paystack wallet history must be scoped to the authenticated user')
@@ -105,5 +111,42 @@ for (const token of ["body?.action === 'inspect'","status='approved' AND verifie
 }
 for (const token of ['Inspect Paystack','Retry verified recovery','Attach verified proof','inspections[deposit.id]']) {
   if (!adminTerminal.includes(token)) throw new Error('Administration must see actionable recovery controls: ' + token)
+}
+// Signed Paystack webhooks provide authoritative charge.success proof for
+// immediate idempotent settlement without an additional verify API round trip.
+if (!webhook.includes("verifyPaystackWebhookSignature(") ||
+    !webhook.includes("request.headers.get('paystack-signature')") ||
+    !webhook.includes("settlePaystackDeposit(reference, event.data)")) {
+  throw new Error('Only HMAC-verified successful Paystack webhook events may trigger instant wallet settlement')
+}
+for (const token of ["signedEvent?: PaystackTransaction","signedEvent || await verifyPaystackTransaction(reference)","confirmation_source:confirmationSource","notifyAdministrators({","type:'paystack_deposit_credited'"]) {
+  if (!settlement.includes(token)) throw new Error('Automatic Paystack credit + Administration notification missing: '+token)
+}
+if (!settlement.includes("FOR UPDATE OF d") || !settlement.includes("credits > 0 || refunds > 0") ||
+    !settlement.includes("status='approved',verified_at=NOW()")) {
+  throw new Error('Paystack instant credits must remain atomic, authenticated, and idempotent')
+}
+if (!adminTerminal.includes('Automatic Wallet Credit') || !adminTerminal.includes('no manual approval is needed')) {
+  throw new Error('Administration must see that verified Paystack wallet funding is automatic')
+}
+const webhookSetup = read('app/(app)/admin/paystack-integration-workshop/page.tsx')
+const webhookConfig = read('lib/paystack-config.ts')
+const webhookStatus = read('app/api/admin/paystack-integration/status/route.ts')
+for (const token of ["getPaystackWebhookSigningSecret", "PAYSTACK_WEBHOOK_SIGNING_SECRET", "webhook_signing_secret_ciphertext", "webhookSigningSecret?: string", "encrypt(webhookSecret)"]) {
+  if (!webhookConfig.includes(token)) throw new Error('Missing encrypted Paystack signing secret support: ' + token)
+}
+for (const token of ["modernHeader?: string | null", "Date.now() / 1000 - seconds", "Math.abs", "whsec_", "whk_", "timingSafeEqual", "modernHeader.split(',')"]) {
+  if (!source.includes(token)) throw new Error('Current timestamped Paystack-Signature verification missing: ' + token)
+}
+if (!webhook.includes("request.headers.get('paystack-signature')") ||
+    !webhook.includes("request.headers.get('x-paystack-signature')")) {
+  throw new Error('Both modern and legacy authenticated Paystack webhook events must work')
+}
+if (!webhookSetup.includes('webhookSigningSecret') || !webhookSetup.includes('whsec_') ||
+    !webhookStatus.includes('webhookSigningConfigured')) {
+  throw new Error('Administration must configure current Paystack webhook signing secret securely')
+}
+if (!source.includes('/^\\d{10}$/') || source.includes('/^\\\\d{10}$/')) {
+  throw new Error('Modern Paystack-Signature timestamp parsing must match decimal seconds')
 }
 console.log('Paystack verified deposits, secured Administration review, and legacy endpoint regressions passed')
