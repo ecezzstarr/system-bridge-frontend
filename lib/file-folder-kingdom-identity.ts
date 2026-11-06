@@ -1,5 +1,6 @@
 import 'server-only'
 import {getClientFolderUpgrade} from '@/lib/client-folder-upgrade'
+import {getProActivationState} from '@/lib/pro-file-folder-activation'
 import {FILE_FOLDER_PRICING,getFileFolderTier,type FileFolderTier} from '@/lib/file-folder-pricing'
 import {resolveFileFolderAppearance,FILE_FOLDER_PALETTES} from '@/lib/file-folder-world-presets'
 import {getPublishedFileFolderRelease} from '@/lib/file-folder-world-release'
@@ -67,6 +68,10 @@ export async function getClientKingdomIdentity(sql:any,clientId:string){
   }
   const upgrade=await getClientFolderUpgrade(sql,clientId,String(owner.file_number))
   if(upgrade?.status==='ready'&&isTier(upgrade.tier))tier=upgrade.tier
+  // An independently verified one-time Pro activation is a genuine Pro entitlement.
+  // Never downgrade an existing Premium or Plus world.
+  const proActivation=await getProActivationState(clientId,String(owner.file_number))
+  if(proActivation?.status==='active'&&(!tier||higher('pro',tier)))tier='pro'
   const resolvedTier=tier||'standard'
   const release=await getPublishedFileFolderRelease()
   const appearance=resolveFileFolderAppearance(resolvedTier,release?.config)
