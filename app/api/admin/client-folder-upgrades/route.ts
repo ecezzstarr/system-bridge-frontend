@@ -2,6 +2,7 @@ import { NextRequest,NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { getPool,sql } from '@/lib/db'
 import { CJ_PRO_FOLDER_NUMBER,clientUpgradePublicView,ensureClientFolderUpgrades } from '@/lib/client-folder-upgrade'
+import { CJ_EMPLOYEE_LOAN_USDT } from '@/lib/cj-dorado-loan'
 export const dynamic='force-dynamic'
 const headers={'Cache-Control':'private, no-store'}
 async function admin(request:NextRequest){
@@ -50,7 +51,7 @@ export async function POST(request:NextRequest){
     const [upgrade]=await sql`
       INSERT INTO client_folder_upgrades(client_id,file_number,tier,status,loan_principal_usdt,
         construction_note,prepared_by)
-      VALUES(${clients[0].id}::uuid,${CJ_PRO_FOLDER_NUMBER},'pro','construction',100,
+      VALUES(${clients[0].id}::uuid,${CJ_PRO_FOLDER_NUMBER},'pro','construction',${CJ_EMPLOYEE_LOAN_USDT},
         'Pro File Folder world is in construction while personal-loan terms and funding are verified.',
         ${user.id}::uuid)
       ON CONFLICT(file_number) DO NOTHING
@@ -58,10 +59,10 @@ export async function POST(request:NextRequest){
     `
     if(!upgrade)return NextResponse.json({error:'Upgrade already exists; inspect its status instead of replacing the loan ledger'},{status:409})
     await notify(clients[0].id,'Pro File Folder · World in construction',
-      'Your existing File Folder is being prepared at Pro level. A proposed 100 USDT personal loan requires accepted terms and verified funding before repayment can be due.')
+      'Your existing File Folder is being prepared at Pro level. A proposed 680 USDT personal loan requires accepted terms and verified funding before repayment can be due.')
     return NextResponse.json({success:true,upgrade},{status:201,headers})
   }
-  if(!['confirm_loan','verify_repayment','finish_construction'].includes(action))
+  if(!['revise_cj_loan','confirm_loan','verify_repayment','finish_construction'].includes(action))
     return NextResponse.json({error:'Unknown upgrade action'},{status:400})
   const connection=await getPool().connect()
   let response:any
@@ -73,12 +74,22 @@ export async function POST(request:NextRequest){
    const q=await connection.query('SELECT * FROM client_folder_upgrades WHERE file_number=$1 FOR UPDATE',[CJ_PRO_FOLDER_NUMBER])
    const row=q.rows[0]
    if(!row)throw new Error('Prepare a verified CJ Pro upgrade before recording an obligation')
-   if(action==='confirm_loan'){
+   if(action==='revise_cj_loan'){
+     if(body.confirmation!=='SET CJ LOAN 680'||row.status!=='construction'||
+       row.loan_agreed_at||row.loan_funded_at||Number(row.repayment_verified_usdt)>0)
+       throw new Error('Only an unsigned, unfunded, unpaid proposal may be revised. An existing funded loan requires a separately reviewed amendment.')
+     await connection.query(`UPDATE client_folder_upgrades
+       SET loan_principal_usdt=$1,construction_note=$2,updated_at=now()
+       WHERE id=$3`,[CJ_EMPLOYEE_LOAN_USDT,
+       'Pro File Folder under construction; revised 680 USDT personal loan requires independently verified agreement and funding before repayment.',row.id])
+     notifyTitle='Pro File Folder · Loan proposal revised'
+     notifyMessage='The proposed personal loan is now 680 USDT. This is not an accepted or funded debt until signed terms and actual funding are verified.'
+   }else if(action==='confirm_loan'){
      const agreementRef=String(body.agreementReference||'').trim()
      const fundingRef=String(body.fundingReference||'').trim()
-     if(row.status!=='construction'||!body.loanAccepted||!body.loanFundingChecked||
+     if(row.status!=='construction'||Number(row.loan_principal_usdt)!==CJ_EMPLOYEE_LOAN_USDT||!body.loanAccepted||!body.loanFundingChecked||
          agreementRef.length<6||fundingRef.length<6||fundingRef.length>255)
-       throw new Error('Signed loan acceptance evidence and independently checked 100 USDT loan funding are required')
+       throw new Error('Signed loan acceptance and independently verified 680 USDT loan funding are required')
      const [existing]=await Promise.all([connection.query('SELECT 1 FROM client_folder_loan_repayments WHERE reference=$1 LIMIT 1',[fundingRef])])
      if(existing.rows.length)throw new Error('Funding reference already used as a repayment')
      await connection.query(`UPDATE client_folder_upgrades
@@ -86,7 +97,7 @@ export async function POST(request:NextRequest){
          loan_funding_reference=$2,status='repayment_required',updated_at=now()
        WHERE id=$3`,[agreementRef,fundingRef,row.id])
      notifyTitle='Pro File Folder · Remaining personal loan'
-     notifyMessage='Your accepted and funded personal loan has an outstanding balance of 100.00 USDT. Your Pro File Folder remains in construction and entry stays closed until verified repayment and Administration release.'
+     notifyMessage='Your accepted and funded personal loan has an outstanding balance of 680.00 USDT. Account entry requires verified repayment; Pro world entry also requires construction release.'
    }else if(action==='verify_repayment'){
      const amount=Number(body.amountUSDT)
      const reference=String(body.repaymentReference||'').trim()
