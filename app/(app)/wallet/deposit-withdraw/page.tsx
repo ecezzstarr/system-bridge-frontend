@@ -67,7 +67,7 @@ export default function WalletDepositWithdrawPage() {
       void fetchClientDeposits()
       if (isOpayRole) void fetchConversions()
     }
-  }, [user, isOpayRole])
+  }, [user?.id, isOpayRole])
 
   useEffect(() => {
     if (!user || isOpayRole) return

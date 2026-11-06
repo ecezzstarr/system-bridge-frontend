@@ -17,8 +17,8 @@ export async function GET(request: NextRequest) {
     const wallets = await sql`
       SELECT balance_trx, balance_usdt, play_balance
       FROM wallets
-      WHERE user_id = ${user.id}::uuid
-      ORDER BY is_primary DESC NULLS LAST, created_at ASC
+      WHERE user_id = ${user.id}::uuid AND is_primary=true
+      ORDER BY created_at ASC
       LIMIT 1
     `
 

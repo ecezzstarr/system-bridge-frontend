@@ -14,7 +14,7 @@ export function BalanceSummary({ available, locked, currency = 'Flame Coin' }: B
   const safeLocked = Number.isFinite(Number(locked)) ? Number(locked) : 0
   const total = safeAvailable + safeLocked
   const amount = (value:number) => value.toLocaleString(undefined,{
-    minimumFractionDigits:0,maximumFractionDigits:6,
+    minimumFractionDigits:2,maximumFractionDigits:6,
   })
 
   return (

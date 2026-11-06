@@ -33,6 +33,7 @@ export function AppHeader({ user }: AppHeaderProps) {
       return
     }
 
+    setFlameCoinBalance(null)
     const token = localStorage.getItem('ssb_auth_token')
     const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {}
     // Balance refresh must not wait on slow/failed Paystack gateway requests.
