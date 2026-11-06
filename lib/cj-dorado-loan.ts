@@ -145,6 +145,13 @@ export async function settleCjLoan(reference:string){
   await connection.query('UPDATE client_folder_upgrades SET repayment_verified_usdt=repayment_verified_usdt+$1,updated_at=now() WHERE id=$2',[p.amount_usdt,up.id])
   await connection.query("UPDATE cj_loan_paystack_payments SET status='verified',verified_at=now() WHERE id=$1",[p.id])
   await connection.query('COMMIT')
+  try{
+   await sql`INSERT INTO notifications(user_id,type,title,content,from_user_name,link)
+    SELECT id,'file_folder_upgrade','CJ loan Paystack repayment verified',
+      ${'Paystack independently confirmed NGN '+Number(p.amount_ngn).toFixed(2)+' repayment against '+Number(p.amount_usdt).toFixed(2)+' USDT; reference '+reference+'. Loan balance updated. World construction release remains separately controlled.'},
+      'WEAVE Paystack','/admin/client-folder-upgrades'
+    FROM users WHERE role='admin' AND is_active=true`
+  }catch(error){console.error('[CJ loan settlement notification]',error)}
   return {matched:true,settled:true}
  }catch(e){await connection.query('ROLLBACK').catch(()=>{});throw e}
  finally{connection.release()}
