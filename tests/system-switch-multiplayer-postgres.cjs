@@ -8,7 +8,7 @@ function load(file,deps={}){const exports={};const source=compiled?compiled[file
 const runtime=load('lib/file-folder-world-runtime.ts'),presence=load('lib/system-switch-presence.ts',{'./file-folder-world-runtime':runtime})
 const sql=async(strings,...values)=>(await pool.query(strings.reduce((s,part,i)=>s+(i?'$'+i:'')+part,''),values)).rows
 let shield=false
-const auth=load('lib/auth-api.ts',{'next-auth/next':{getServerSession:async()=>null},'./auth':{authOptions:{}},'./db':{sql},'./weave-infrastructure':{getDivineShieldState:async()=>({active:shield})}})
+const auth=load('lib/auth-api.ts',{'next-auth/next':{getServerSession:async()=>null},'./auth':{authOptions:{}},'./db':{sql},'./weave-infrastructure':{getDivineShieldState:async()=>({active:shield})},'@/lib/cj-dorado-loan':{getCjLoanGate:async()=>null}})
 const response={json:(body,options)=>new Response(JSON.stringify(body),options)}
 const routes=load('app/api/system-switch/world/route.ts',{'next/server':{NextResponse:response},'@/lib/auth-api':auth,'@/lib/db':{getPool:()=>pool},'@/lib/system-switch-presence':presence})
 const secondPresence=load('lib/system-switch-presence.ts',{'./file-folder-world-runtime':runtime})
