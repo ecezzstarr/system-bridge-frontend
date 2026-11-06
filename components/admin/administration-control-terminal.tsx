@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/lib/auth-provider'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { 
@@ -297,261 +297,271 @@ function BridgerManagementSection() {
   </div>
 }
 
+type ManagedAccount={
+  id:string;name:string;email:string;username:string|null;role:string
+  departmental_code:string|null;assigned_agent_id:string|null
+  is_active:boolean;created_at:string
+  platform_wallet_balance:number|null;escrow_balance:number|null
+  wallet_status:string
+}
+
 function UserManagementSection() {
-  const { user } = useAuth()
-  const [users, setUsers] = useState([])
-  const [agents, setAgents] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState('unassigned')
-  const [statusMsg, setStatusMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
-  const [actingOn, setActingOn] = useState<string | null>(null)
+  const {token}=useAuth()
+  const [users,setUsers]=useState<ManagedAccount[]>([])
+  const [agents,setAgents]=useState<any[]>([])
+  const [filter,setFilter]=useState<'all'|'unassigned'>('all')
+  const [search,setSearch]=useState('')
+  const [total,setTotal]=useState(0)
+  const [hasMore,setHasMore]=useState(false)
+  const [loading,setLoading]=useState(true)
+  const [loadingMore,setLoadingMore]=useState(false)
+  const [loadError,setLoadError]=useState('')
+  const [warnings,setWarnings]=useState<string[]>([])
+  const [statusMsg,setStatusMsg]=useState<{type:'success'|'error';text:string}|null>(null)
+  const [actingOn,setActingOn]=useState<string|null>(null)
+  const requestSequence=useRef(0)
 
-  useEffect(() => {
-    fetchUsers()
-    fetchAgents()
-  }, [filter])
-
-  const fetchUsers = async () => {
-    try {
-      const response = await fetch(`/api/admin/users?filter=${filter}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('ssb_auth_token') || ''}` },
+  const loadUsers=async(offset=0)=>{
+    const seq=++requestSequence.current
+    if(offset===0){
+      setLoading(true)
+      setLoadError('')
+      setUsers([])
+      setTotal(0)
+      setHasMore(false)
+    } else setLoadingMore(true)
+    try{
+      if(!token)throw new Error('Administration session unavailable. Sign in again.')
+      const params=new URLSearchParams({filter,q:search.trim(),offset:String(offset)})
+      const response=await fetch('/api/admin/users?'+params.toString(),{
+        headers:{Authorization:'Bearer '+token},cache:'no-store',
       })
-      const data = await response.json()
-      setUsers(data.users || [])
-    } catch (error) {
-      console.error('Error fetching users:', error)
-    } finally {
-      setLoading(false)
+      const payload=await response.json().catch(()=>null)
+      if(!response.ok||!payload?.success||!Array.isArray(payload.users)){
+        throw new Error(payload?.error||'Unable to retrieve registered users (HTTP '+response.status+').')
+      }
+      if(seq!==requestSequence.current)return
+      setUsers(previous=>{
+        if(offset===0)return payload.users
+        const existing=new Set(previous.map(user=>user.id))
+        return [...previous,...payload.users.filter((user:ManagedAccount)=>!existing.has(user.id))]
+      })
+      setTotal(Number(payload.total)||0)
+      setHasMore(Boolean(payload.hasMore))
+      setWarnings(Array.isArray(payload.warnings)?payload.warnings:[])
+      setLoadError('')
+    }catch(error){
+      if(seq===requestSequence.current){
+        setLoadError(error instanceof Error?error.message:'Registered users are temporarily unavailable.')
+      }
+    }finally{
+      if(seq===requestSequence.current){
+        setLoading(false)
+        setLoadingMore(false)
+      }
     }
   }
 
-  const fetchAgents = async () => {
-    try {
-      const token = localStorage.getItem('ssb_auth_token')
-      const response = await fetch('/api/users?role=agent', {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      })
-      const data = await response.json()
-      setAgents(data.users || [])
-    } catch (error) {
-      console.error('Error fetching agents:', error)
-    }
-  }
+  useEffect(()=>{
+    const timer=setTimeout(()=>{void loadUsers(0)},search.trim()?250:0)
+    return ()=>{clearTimeout(timer);requestSequence.current++}
+  },[filter,search,token])
 
-  const assignDepartment = async (userId: string, deptCode: string) => {
+  const loadAgents=async()=>{
+    if(!token)return
+    try{
+      const response=await fetch('/api/users?role=agent',{
+        headers:{Authorization:'Bearer '+token},cache:'no-store',
+      })
+      const payload=await response.json()
+      if(response.ok&&Array.isArray(payload.users))setAgents(payload.users)
+    }catch(error){console.error('[Administration] Agent assignment choices unavailable:',error)}
+  }
+  useEffect(()=>{void loadAgents()},[token])
+
+  const submitChange=async(
+    userId:string,request:()=>Promise<Response>,successFallback:string,
+  )=>{
     setActingOn(userId)
     setStatusMsg(null)
-    try {
-      const response = await fetch('/api/admin/users', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('ssb_auth_token') || ''}`,
-        },
-        body: JSON.stringify({ userId, departmental_code: deptCode, adminId: user?.id }),
-      })
-      const data = await response.json()
-      if (response.ok && data.success) {
-        setStatusMsg({ type: 'success', text: data.message || 'Updated' })
-        fetchUsers()
-      } else {
-        setStatusMsg({ type: 'error', text: data.error || 'Failed to update department' })
-      }
-    } catch (error) {
-      console.error('Error assigning department:', error)
-      setStatusMsg({ type: 'error', text: 'Failed to update department' })
-    } finally {
-      setActingOn(null)
-    }
+    try{
+      const response=await request()
+      const body=await response.json().catch(()=>null)
+      if(!response.ok||!body?.success)throw new Error(body?.error||'Account update failed.')
+      setStatusMsg({type:'success',text:body.message||successFallback})
+      await loadUsers(0)
+      await loadAgents()
+    }catch(error){
+      setStatusMsg({type:'error',text:error instanceof Error?error.message:'Account update failed.'})
+    }finally{setActingOn(null)}
+  }
+  const userHeaders=()=>({
+    'Content-Type':'application/json',Authorization:'Bearer '+(token||''),
+  })
+  const assignDepartment=(userId:string,code:string)=>{
+    void submitChange(userId,()=>fetch('/api/admin/users',{
+      method:'PUT',headers:userHeaders(),
+      body:JSON.stringify({userId,departmental_code:code}),
+    }),'Department updated')
+  }
+  const assignBridgerToAgent=(bridgerId:string,agentId:string)=>{
+    void submitChange(bridgerId,()=>fetch('/api/admin/assign-bridger',{
+      method:'POST',headers:userHeaders(),body:JSON.stringify({bridgerId,agentId}),
+    }),'Bridger assignment updated')
+  }
+  const deactivateAccount=(account:ManagedAccount)=>{
+    if(!window.confirm('Deactivate '+account.email+'? Access will be revoked. Wallet, ledger and payment history will remain preserved.'))return
+    void submitChange(account.id,()=>fetch(
+      '/api/admin/users?userId='+encodeURIComponent(account.id),
+      {method:'DELETE',headers:{Authorization:'Bearer '+(token||'')}},
+    ),'Account deactivated')
+  }
+  const reactivateAccount=(account:ManagedAccount)=>{
+    if(!window.confirm('Reactivate access for '+account.email+'?'))return
+    void submitChange(account.id,()=>fetch('/api/admin/users',{
+      method:'PUT',headers:userHeaders(),
+      body:JSON.stringify({userId:account.id,action:'set_active',active:true}),
+    }),'Account reactivated')
   }
 
-  const removeRole = async (userId: string) => {
-    if (!confirm('Remove this user\'s role and agent assignment, demoting them to a plain user?')) return
-    await assignDepartment(userId, '')
-  }
-
-  const deleteAccount = async (userId: string, email: string) => {
-    if (!confirm(`Permanently delete ${email}? This cannot be undone and will remove their wallet, ledger entries, and profiles.`)) return
-    setActingOn(userId)
-    setStatusMsg(null)
-    try {
-      const response = await fetch(`/api/admin/users?userId=${userId}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${localStorage.getItem('ssb_auth_token') || ''}` },
-      })
-      const data = await response.json()
-      if (response.ok && data.success) {
-        setStatusMsg({ type: 'success', text: data.message || 'User deleted' })
-        fetchUsers()
-      } else {
-        setStatusMsg({ type: 'error', text: data.error || 'Failed to delete user' })
-      }
-    } catch (error) {
-      console.error('Error deleting user:', error)
-      setStatusMsg({ type: 'error', text: 'Failed to delete user' })
-    } finally {
-      setActingOn(null)
-    }
-  }
-
-  const assignBridgerToAgent = async (bridgerId: string, agentId: string) => {
-    setActingOn(bridgerId)
-    setStatusMsg(null)
-    try {
-      const response = await fetch('/api/admin/assign-bridger', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('ssb_auth_token') || ''}`,
-        },
-        body: JSON.stringify({ bridgerId, agentId }),
-      })
-      const data = await response.json()
-      if (response.ok && data.success) {
-        setStatusMsg({ type: 'success', text: data.message || (agentId ? 'Bridger assigned' : 'Bridger unassigned') })
-        fetchUsers()
-        fetchAgents()
-      } else {
-        setStatusMsg({ type: 'error', text: data.error || 'Failed to assign bridger' })
-      }
-    } catch (error) {
-      console.error('Error assigning bridger:', error)
-      setStatusMsg({ type: 'error', text: 'Failed to assign bridger' })
-    } finally {
-      setActingOn(null)
-    }
-  }
-
-  return (
-    <div className="p-4">
-      {statusMsg && (
-        <div className={`mb-4 px-3 py-2 rounded-lg text-xs ${statusMsg.type === 'success' ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'}`}>
-          {statusMsg.text}
-        </div>
-      )}
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="font-bold text-white">User Management</h3>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setFilter('unassigned')}
-            className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
-              filter === 'unassigned'
-                ? 'bg-purple-500 text-white'
-                : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-            }`}
-          >
-            Unassigned
-          </button>
-          <button
-            onClick={() => setFilter('all')}
-            className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
-              filter === 'all'
-                ? 'bg-purple-500 text-white'
-                : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-            }`}
-          >
-            All Users
-          </button>
-        </div>
+  return <section className="space-y-4 p-4" aria-label="Administration user directory">
+    <div className="flex flex-wrap items-start justify-between gap-3">
+      <div>
+        <h3 className="font-bold text-white">Registered users</h3>
+        <p className="mt-1 text-xs text-slate-400">
+          {loading?'Loading directory…':'Showing '+users.length+' of '+total+' matching accounts'}
+          {' · '}Agents, Bridgers, Clients and Administration
+        </p>
       </div>
-
-      {loading ? (
-        <p className="text-slate-500 text-center py-8 text-xs">Loading users...</p>
-      ) : users.length === 0 ? (
-        <p className="text-slate-500 text-center py-8 text-xs">No users found</p>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-[10px] sm:text-xs text-left">
-            <thead className="text-slate-500 border-b border-slate-800">
+      <div className="flex flex-wrap gap-2">
+        <button type="button" onClick={()=>setFilter('all')}
+          className={filter==='all'
+            ? 'rounded-lg bg-purple-500 px-3 py-2 text-xs font-semibold text-white'
+            : 'rounded-lg bg-slate-800 px-3 py-2 text-xs font-semibold text-slate-200'}>
+          All Users
+        </button>
+        <button type="button" onClick={()=>setFilter('unassigned')}
+          className={filter==='unassigned'
+            ? 'rounded-lg bg-purple-500 px-3 py-2 text-xs font-semibold text-white'
+            : 'rounded-lg bg-slate-800 px-3 py-2 text-xs font-semibold text-slate-200'}>
+          Needs assignment
+        </button>
+        <button type="button" onClick={()=>void loadUsers(0)}
+          disabled={loading||loadingMore}
+          className="rounded-lg border border-white/20 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50">
+          Refresh users
+        </button>
+      </div>
+    </div>
+    <label className="block text-xs text-slate-300">
+      Search registered users by name, email, username or position
+      <input type="search" value={search} onChange={event=>setSearch(event.target.value)}
+        placeholder="Find a registered account"
+        className="mt-2 w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-3 text-sm text-white placeholder:text-slate-500"
+      />
+    </label>
+    {warnings.length>0&&<div role="status"
+      className="space-y-1 rounded-xl border border-amber-300/20 bg-amber-300/5 p-3 text-xs text-amber-100">
+      <strong>Financial information partially unavailable</strong>
+      {warnings.map((warning,i)=><p key={i}>{warning}</p>)}
+    </div>}
+    {statusMsg&&<p role="status" className={
+      statusMsg.type==='success'?'rounded-xl border border-green-300/20 p-3 text-xs text-green-200':
+        'rounded-xl border border-red-300/20 p-3 text-xs text-red-200'
+    }>{statusMsg.text}</p>}
+    {loadError&&<div role="alert" className="rounded-xl border border-red-300/20 bg-red-400/5 p-4">
+      <p className="text-sm font-semibold text-red-200">User directory could not be loaded</p>
+      <p className="mt-2 text-xs text-slate-200">{loadError}</p>
+      <button type="button" onClick={()=>void loadUsers(0)}
+        className="mt-3 rounded-lg border border-white/20 px-4 py-2 text-xs font-semibold text-white">
+        Retry user directory
+      </button>
+    </div>}
+    {loading?<p role="status" className="py-8 text-center text-sm text-slate-300">Loading registered accounts…</p>
+      :!loadError&&users.length===0
+        ?<p className="py-8 text-center text-sm text-slate-300">
+          No accounts match these filters. Try All Users or clear the search.
+        </p>
+        :users.length>0&&<div className="overflow-x-auto">
+          <table className="w-full min-w-[730px] text-left text-xs">
+            <thead className="border-b border-slate-700 text-slate-400">
               <tr>
-                <th className="px-2 py-2 font-medium">Name</th>
-                <th className="px-2 py-2 font-medium">Department</th>
-                <th className="px-2 py-2 font-medium">Assigned Agent</th>
-                <th className="px-2 py-2 font-medium">Balance</th>
-                <th className="px-2 py-2 font-medium">Status</th>
-                <th className="px-2 py-2 font-medium">Actions</th>
+                <th className="px-2 py-3">Account</th>
+                <th className="px-2 py-3">Department</th>
+                <th className="px-2 py-3">Assigned Agent</th>
+                <th className="px-2 py-3">Flame Coin</th>
+                <th className="px-2 py-3">Standing</th>
+                <th className="px-2 py-3">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800">
-              {users.map((user: any) => (
-                <tr key={user.id} className="hover:bg-slate-800/50 transition-colors">
-                  <td className="px-2 py-2 font-semibold text-white">{user.name}</td>
-                  <td className="px-2 py-2">
-                    <select
-                      value={user.departmental_code || ''}
-                      onChange={(e) => assignDepartment(user.id, e.target.value)}
-                      className="bg-slate-800 border border-slate-700 rounded px-1 py-0.5 text-white text-[10px]"
-                    >
-                      <option value="">Select...</option>
-                      <option value="HOPE">Bridger</option>
-                      <option value="STABILITY">Agent</option>
-                      <option value="MOVEMENT">Client</option>
+              {users.map(account=><tr key={account.id} className="hover:bg-slate-800/40">
+                <td className="px-2 py-3">
+                  <p className="font-semibold text-white">{account.name||account.username||'WEAVE user'}</p>
+                  <p className="mt-1 break-all text-[10px] text-slate-400">{account.email}</p>
+                  <p className="mt-1 text-[10px] capitalize text-slate-500">{account.role}</p>
+                </td>
+                <td className="px-2 py-3">
+                  {account.role==='admin'||!account.is_active
+                    ?<span className="text-slate-300">{account.role==='admin'?'Administration (protected)':account.departmental_code||account.role}</span>
+                    :<select value={account.departmental_code||''}
+                      onChange={event=>assignDepartment(account.id,event.target.value)}
+                      disabled={actingOn===account.id}
+                      className="rounded border border-slate-700 bg-slate-800 px-2 py-2 text-white">
+                      <option value="">No department</option>
+                      <option value="HOPE">Bridger · Hope</option>
+                      <option value="STABILITY">Agent · Stability</option>
+                      <option value="MOVEMENT">Client · File Folder</option>
+                    </select>}
+                </td>
+                <td className="px-2 py-3">
+                  {(account.role==='bridger'||account.departmental_code==='HOPE')&&account.is_active
+                    ?<select value={account.assigned_agent_id||''}
+                      onChange={event=>assignBridgerToAgent(account.id,event.target.value)}
+                      disabled={actingOn===account.id}
+                      className="rounded border border-slate-700 bg-slate-800 px-2 py-2 text-white">
+                      <option value="">No Agent assigned</option>
+                      {agents.map(agent=><option key={agent.id} value={agent.id}>
+                        {agent.name} ({agent.bridger_count||0}/3)
+                      </option>)}
                     </select>
-                  </td>
-                  <td className="px-2 py-2">
-                    {(user.role === 'bridger' || user.departmental_code === 'HOPE') && (
-                      <div className="flex items-center gap-1">
-                        <select
-                          value={user.assigned_agent_id || ''}
-                          onChange={(e) => assignBridgerToAgent(user.id, e.target.value)}
-                          className="bg-slate-800 border border-slate-700 rounded px-1 py-0.5 text-white text-[10px]"
-                        >
-                          <option value="">No Agent</option>
-                          {agents.map((agent: any) => (
-                            <option key={agent.id} value={agent.id}>
-                              {agent.name} ({agent.bridger_count || 0}/3)
-                            </option>
-                          ))}
-                        </select>
-                        {user.assigned_agent_id && (
-                          <button
-                            onClick={() => assignBridgerToAgent(user.id, '')}
-                            disabled={actingOn === user.id}
-                            className="text-[9px] text-red-400 hover:underline disabled:opacity-50 whitespace-nowrap"
-                            title="Unassign from agent"
-                          >
-                            Unassign
-                          </button>
-                        )}
-                      </div>
-                    )}
-                  </td>
-                  <td className="px-2 py-2 text-cyan-400 font-mono">{user.platform_wallet_balance || 0} TRX</td>
-                  <td className="px-2 py-2">
-                    {user.assigned_agent_id ? (
-                      <span className="text-[10px] bg-green-500/20 text-green-300 px-1.5 py-0.5 rounded-full">
-                        Assigned
-                      </span>
-                    ) : !user.departmental_code ? (
-                      <span className="text-[10px] bg-yellow-500/20 text-yellow-300 px-1.5 py-0.5 rounded-full">
-                        Pending
-                      </span>
-                    ) : null}
-                  </td>
-                  <td className="px-2 py-2 space-x-2 whitespace-nowrap">
-                    <button
-                      onClick={() => removeRole(user.id)}
-                      disabled={actingOn === user.id}
-                      className="text-[10px] text-yellow-400 hover:underline disabled:opacity-50"
-                    >
-                      Remove Role
-                    </button>
-                    <button
-                      onClick={() => deleteAccount(user.id, user.email)}
-                      disabled={actingOn === user.id}
-                      className="text-[10px] text-red-400 hover:underline disabled:opacity-50"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
+                    :<span className="text-slate-500">—</span>}
+                </td>
+                <td className="px-2 py-3 font-mono text-cyan-200">
+                  {account.platform_wallet_balance==null?'Unavailable':
+                    Number(account.platform_wallet_balance).toLocaleString(undefined,{maximumFractionDigits:6})}
+                  {account.wallet_status==='legacy'&&<p className="mt-1 text-[10px] text-amber-200">Legacy wallet</p>}
+                  {account.wallet_status==='ambiguous'&&<p className="mt-1 text-[10px] text-amber-200">Wallet review required</p>}
+                </td>
+                <td className="px-2 py-3 text-slate-300">
+                  {!account.is_active?'Deactivated':
+                    account.role==='admin'?'Administration':
+                    account.assigned_agent_id?'Assigned':
+                    account.role==='bridger'?'Awaiting Agent':
+                    account.departmental_code?'Active':'Department pending'}
+                </td>
+                <td className="space-x-3 whitespace-nowrap px-2 py-3">
+                  {account.role==='admin'?<span className="text-[10px] text-slate-400">Protected</span>:
+                    account.is_active?<>
+                      <button type="button" disabled={actingOn===account.id}
+                        onClick={()=>{if(window.confirm('Remove departmental role for '+account.email+'?'))assignDepartment(account.id,'')}}
+                        className="text-[10px] text-amber-200 disabled:opacity-50">Remove role</button>
+                      <button type="button" disabled={actingOn===account.id}
+                        onClick={()=>deactivateAccount(account)}
+                        className="text-[10px] text-red-300 disabled:opacity-50">Deactivate</button>
+                    </>:<button type="button" disabled={actingOn===account.id}
+                      onClick={()=>reactivateAccount(account)}
+                      className="text-[10px] text-emerald-200 disabled:opacity-50">Reactivate</button>}
+                </td>
+              </tr>)}
             </tbody>
           </table>
-        </div>
-      )}
-    </div>
-  )
+        </div>}
+    {!loading&&hasMore&&!loadError&&<button type="button" onClick={()=>void loadUsers(users.length)}
+      disabled={loadingMore} className="rounded-lg border border-sky-200/30 px-4 py-2 text-xs font-semibold text-sky-100 disabled:opacity-50">
+      {loadingMore?'Loading accounts…':'Load more registered users'}
+    </button>}
+  </section>
 }
 
 function DepositApprovalSection({ user }: { user: any }) {
