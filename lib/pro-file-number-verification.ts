@@ -46,8 +46,7 @@ export async function eligibleProNumber(fileNumber:string){
  if(fileNumber===CJ_DORADO_FILE_NUMBER)await ensureCjDoradoFolder(sql)
  const [folder]=await sql`SELECT file_number,client_id FROM client_file_folders
   WHERE file_number=${fileNumber} LIMIT 1`
- if(!folder)return false
- if(fileNumber===CJ_DORADO_FILE_NUMBER)return true
+ if(fileNumber===CJ_DORADO_FILE_NUMBER)return Boolean(folder)
  const [activationTable]=await sql`SELECT to_regclass('public.pro_file_folder_activations') AS name`
  if(activationTable?.name){
   const [row]=await sql`SELECT 1 FROM pro_file_folder_activations WHERE file_number=${fileNumber} LIMIT 1`
@@ -58,6 +57,13 @@ export async function eligibleProNumber(fileNumber:string){
   const [offer]=await sql`SELECT 1 FROM company_client_staff_offers
    WHERE file_number=${fileNumber} AND status='approved' AND folder_tier='pro' LIMIT 1`
   if(offer)return true
+ }
+ const [purchaseTable]=await sql`SELECT to_regclass('public.file_folder_purchases') AS name`
+ if(purchaseTable?.name){
+  const [purchase]=await sql`SELECT 1 FROM file_folder_purchases
+   WHERE file_number=${fileNumber} AND file_folder_tier='pro'
+    AND status IN ('confirmed','approved') LIMIT 1`
+  if(purchase)return true
  }
  const [upgradeTable]=await sql`SELECT to_regclass('public.client_folder_upgrades') AS name`
  if(upgradeTable?.name){
