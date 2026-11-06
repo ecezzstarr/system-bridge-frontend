@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { sql, getPool } from '@/lib/db'
+import { getAdminUserDirectory } from '@/lib/admin-user-directory'
 
 async function requireAdmin(request: NextRequest) {
   const authUser = await getAuthUser(request)
@@ -13,70 +14,36 @@ async function requireAdmin(request: NextRequest) {
   return { userId: authUser.id }
 }
 
+export const dynamic = 'force-dynamic'
+const privateHeaders={'Cache-Control':'private, no-store, max-age=0',Vary:'Authorization'}
+
 export async function GET(request: NextRequest) {
-  const auth = await requireAdmin(request)
+  const auth=await requireAdmin(request)
   if (auth.error) return auth.error
 
+  const params=request.nextUrl.searchParams
+  const filter=params.get('filter')||'all'
+  const search=(params.get('q')||'').trim()
+  const offset=Number(params.get('offset')||'0')
+  if (!['all','unassigned'].includes(filter) ||
+      search.length>120 ||
+      !Number.isSafeInteger(offset) || offset<0 || offset>1000000) {
+    return NextResponse.json({success:false,error:'Invalid directory filter, search or offset.'},
+      {status:400,headers:privateHeaders})
+  }
   try {
-    const searchParams = request.nextUrl.searchParams
-    const filter = searchParams.get('filter') || 'unassigned'
-
-    let users
-    if (filter === 'unassigned') {
-      users = await sql`
-        SELECT u.id,u.email,u.username,u.name,u.role,u.departmental_code,
-               u.assigned_agent_id,u.created_at,
-               w.balance_trx AS platform_wallet_balance,
-               COALESCE(e.locked,0) AS escrow_balance
-        FROM users u
-        LEFT JOIN LATERAL (
-          SELECT balance_trx FROM wallets
-          WHERE user_id=u.id AND is_primary=true
-          ORDER BY created_at ASC LIMIT 1
-        ) w ON true
-        LEFT JOIN LATERAL (
-          SELECT SUM(amount) AS locked FROM escrow
-          WHERE user_id=u.id AND status='locked'
-            AND currency IN ('Flame Coin','TRX')
-        ) e ON true
-        WHERE u.role != 'admin' AND (u.departmental_code IS NULL OR u.assigned_agent_id IS NULL)
-        ORDER BY u.created_at DESC
-      `
-    } else {
-      users = await sql`
-        SELECT u.id,u.email,u.username,u.name,u.role,u.departmental_code,
-               u.assigned_agent_id,u.created_at,
-               w.balance_trx AS platform_wallet_balance,
-               COALESCE(e.locked,0) AS escrow_balance
-        FROM users u
-        LEFT JOIN LATERAL (
-          SELECT balance_trx FROM wallets
-          WHERE user_id=u.id AND is_primary=true
-          ORDER BY created_at ASC LIMIT 1
-        ) w ON true
-        LEFT JOIN LATERAL (
-          SELECT SUM(amount) AS locked FROM escrow
-          WHERE user_id=u.id AND status='locked'
-            AND currency IN ('Flame Coin','TRX')
-        ) e ON true
-        WHERE u.role != 'admin'
-        ORDER BY u.created_at DESC
-      `
-    }
-
-    return NextResponse.json({
-      success: true,
-      users: (users || []).map(u => ({
-        id: u.id, email: u.email, username: u.username, name: u.name, role: u.role,
-        departmental_code: u.departmental_code,
-        platform_wallet_balance: u.platform_wallet_balance == null ? null : Number(u.platform_wallet_balance),
-        escrow_balance: Number(u.escrow_balance),
-        assigned_agent_id: u.assigned_agent_id, created_at: u.created_at,
-      })),
+    const directory=await getAdminUserDirectory({
+      filter:filter as 'all'|'unassigned',search,offset,limit:100,
     })
-  } catch (error) {
-    console.error('[Admin Users] Get error:', error)
-    return NextResponse.json({ success: false, error: 'Failed to fetch users', users: [] }, { status: 500 })
+    return NextResponse.json({
+      success:true,...directory,offset,limit:100,
+    },{headers:privateHeaders})
+  } catch(error) {
+    console.error('[Admin users] Main directory query failed:',error)
+    return NextResponse.json({
+      success:false,
+      error:'Registered accounts could not be retrieved. Retry or inspect the server database connection.',
+    },{status:503,headers:privateHeaders})
   }
 }
 
