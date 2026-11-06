@@ -6,6 +6,7 @@ import { Pool } from 'pg'
  * End-to-end SQL settlement test. Uses the PostgreSQL service in Production
  * Check, with an isolated schema and no real payments or production wallets.
  */
+async function main() {
 const databaseUrl = process.env.WEAVE_SYSTEM_SWITCH_TEST_DATABASE_URL
 if (!databaseUrl) throw new Error('WEAVE_SYSTEM_SWITCH_TEST_DATABASE_URL is required')
 
@@ -136,3 +137,6 @@ try {
   if (schemaCreated) await adminPool.query(`DROP SCHEMA IF EXISTS "${schema}" CASCADE`).catch(()=>{})
   await adminPool.end()
 }
+
+}
+void main().catch(error => { console.error(error); process.exitCode = 1 })
