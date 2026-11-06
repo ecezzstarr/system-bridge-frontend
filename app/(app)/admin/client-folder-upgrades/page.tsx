@@ -5,6 +5,8 @@ import {useAuth} from '@/lib/auth-provider'
 type Upgrade={file_number:string;tier:string;status:string;loan_principal_usdt:number;repayment_verified_usdt:number;
  loan_agreed_at:string|null;loan_funded_at:string|null;loan_funding_reference:string|null;loan_agreement_reference:string|null}
 type Snapshot={fileNumber:string;clients:{id:string;name:string;file_number:string}[];upgrade:Upgrade|null;
+ employeeOffers:{id:string;candidate_name:string;position_title:string;status:string;client_id:string|null;ticket_amount_usdt:number;proposed_personal_loan_usdt:number}[];
+ fneStatus:{status:string;client_id:string|null}|null;
  repayments:{amount_usdt:number;reference:string;verified_at:string}[]}
 export default function ClientFolderUpgradeAdmin(){
  const {token,user,isInitialized}=useAuth()
@@ -63,6 +65,15 @@ export default function ClientFolderUpgradeAdmin(){
   <section className="space-y-3 rounded-2xl border border-white/10 bg-white/[.03] p-5">
    <p className="text-sm font-bold">File Number: <span className="font-mono text-cyan-200">{state?.fileNumber||'Loading'}</span></p>
    <p className="text-sm">Matched active Client accounts: {state?.clients?.length??'Checking'}</p>
+
+   <p className="text-sm">File Number Engine: <strong>{state?.fneStatus?.status||'No File Number Engine record'}</strong></p>
+   {state?.employeeOffers?.map(offer=><p key={offer.id} className="text-xs leading-6 text-slate-300">
+     Employee offer: {offer.candidate_name} · {offer.position_title} · {offer.status}.
+     Original ticket: {Number(offer.ticket_amount_usdt).toFixed(2)} USDT;
+     original proposed loan: {Number(offer.proposed_personal_loan_usdt).toFixed(2)} USDT.
+     {Number(offer.proposed_personal_loan_usdt)!==680?' Existing accepted or funded terms require independent reconciliation before a revised loan can be demanded.':''}
+   </p>)}
+
    {state?.clients?.map(client=><p key={client.id} className="text-sm text-slate-300">{client.name} · {client.file_number}</p>)}
    {up?<div className="space-y-2">
     <p className="text-sm">Tier: <strong>{up.tier.toUpperCase()}</strong> · State: <strong>{up.status.replaceAll('_',' ')}</strong></p>
@@ -70,6 +81,13 @@ export default function ClientFolderUpgradeAdmin(){
     <p className="text-sm">Verified repayments: {Number(up.repayment_verified_usdt).toFixed(2)} USDT · Remaining after confirmed funding: {remaining.toFixed(2)} USDT</p>
    </div>:<p className="text-sm text-slate-400">No Pro upgrade has been prepared against the live record.</p>}
   </section>
+
+  {state?.clients?.length===0&&<section className="space-y-3 rounded-2xl border border-sky-300/25 p-5">
+    <h2 className="text-lg font-bold">Prepare issued employee File Number</h2>
+    <p className="text-xs text-slate-300">Only available for one approved, unclaimed CJ employee offer. Does not create a new identity, issue another File Folder or bypass the private company invitation.</p>
+    <label className="block text-sm">Type PREPARE CJ FILE NUMBER<input value={confirmation} onChange={e=>setConfirmation(e.target.value)} className="mt-2 w-full rounded-lg border border-white/20 bg-slate-950 p-3"/></label>
+    <button disabled={busy||confirmation!=='PREPARE CJ FILE NUMBER'} onClick={()=>void act('prepare_employee_file_number',{confirmation})} className="rounded-lg border border-sky-200/40 px-5 py-3 text-sky-100 disabled:opacity-40">Prepare existing issued File Number</button>
+  </section>}
   {!up&&<section className="rounded-2xl border border-amber-300/25 p-5">
    <h2 className="text-lg font-bold">Prepare Pro world construction</h2>
    <p className="mt-2 text-xs leading-6 text-slate-300">The action only works if this File Number belongs to exactly one active CJ Dorado Client and her original File Folder ownership matches. It does not record a loan as accepted or funded.</p>
