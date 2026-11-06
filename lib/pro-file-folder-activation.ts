@@ -102,20 +102,26 @@ export async function submitProBusinessPlan(clientId:string,fileNumber:string,pl
   if(!row)throw new Error('The signed Pro agreement must be verified before the business plan can be submitted.')
   return {success:true,status:'payment_required'}
 }
-export async function submitProPayment(clientId:string,fileNumber:string,txHashInput:string) {
+export async function submitProPayment(clientId:string,fileNumber:string,txHashInput:string,expectedWalletInput:string) {
   const txHash=txHashInput.trim().toLowerCase()
   if(!txHashValid(txHash))throw new Error('Enter the 64-character TRON transaction hash.')
   await ensureProActivationSchema()
   const receivingWallet=await getReceivingWallet()
   if(!receivingWallet)throw new Error('Forensics has not configured a verified TRC-20 receiving wallet.')
+  const expectedWallet=expectedWalletInput.trim()
+  // Client must confirm exactly the address shown before they transferred USDT.
+  // A changed destination never silently rewrites evidence to a new wallet.
+  if(!isTronAddress(expectedWallet)||expectedWallet!==receivingWallet)
+    throw new Error('The official receiving wallet has changed. Do not send again; contact Forensics to reconcile the existing transfer.')
   const [row]=await sql`UPDATE pro_file_folder_activations
-    SET wallet_address=COALESCE(wallet_address,${receivingWallet}),payment_tx_hash=${txHash},
+    SET wallet_address=COALESCE(wallet_address,${expectedWallet}),payment_tx_hash=${txHash},
       payment_submitted_at=now(),status='pending_forensics',rejection_reason=NULL,updated_at=now()
     WHERE client_id=${clientId}::uuid AND file_number=${fileNumber}
+      AND (wallet_address IS NULL OR wallet_address=${expectedWallet})
       AND business_plan_submitted_at IS NOT NULL AND signed_agreement_verified_at IS NOT NULL
       AND status IN ('payment_required','rejected') AND activated_at IS NULL
     RETURNING id`
-  if(!row)throw new Error('Business plan and signed agreement are required, or payment is already under review.')
+  if(!row)throw new Error('Business plan, signature, wallet match and a non-pending activation are required.')
   return {success:true,status:'pending_forensics'}
 }
 export async function writeProActivationAudit(activationId:string,action:string,actorId:string,details:object={}){
