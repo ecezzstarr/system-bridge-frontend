@@ -14,6 +14,12 @@ export async function getCjLoanGate(user:User){
  FROM client_folder_upgrades WHERE client_id=${user.id}::uuid AND file_number=${CJ_DORADO_FILE_NUMBER} AND tier='pro' LIMIT 1`
  const verified=Number(row?.repayment_verified_usdt||0)
  const remaining=Math.max(0,Math.round((CJ_EMPLOYEE_LOAN_USDT-verified)*100)/100)
+ const [payTable]=await sql`SELECT to_regclass('public.cj_loan_paystack_payments') AS name`
+ if(payTable?.name){
+  const [dispute]=await sql`SELECT id FROM cj_loan_paystack_payments
+   WHERE client_id=${user.id}::uuid AND status='review' LIMIT 1`
+  if(dispute)return {status:'setup_pending' as const,remainingUSDT:remaining}
+ }
  if(!/\bcj\s+dorado\b/i.test(String(user.name||''))||!row||
  Number(row.loan_principal_usdt)!==CJ_EMPLOYEE_LOAN_USDT||!row.loan_agreed_at||!row.loan_funded_at||
  !['repayment_required','ready'].includes(String(row.status)))
@@ -125,4 +131,14 @@ export async function verifyCjLoanForGrant(reference:string,grant:string){
  AND client_id=${user.id}::uuid LIMIT 1`
  if(!p)throw new Error('Checkout is not attached to this Client.')
  return settleCjLoan(reference)
+}
+
+export async function flagCjLoanPaystackEvent(reference:string,event:'charge.failed'|'refund.processed'){
+ if(!/^CJLOAN-[a-zA-Z0-9.=-]{1,90}$/.test(reference))return false
+ await ensureCheckoutSchema()
+ const [row]=await sql`UPDATE cj_loan_paystack_payments SET status=
+  CASE WHEN ${event}='refund.processed' AND status='verified' THEN 'review'
+       WHEN ${event}='charge.failed' AND status='pending' THEN 'failed' ELSE status END
+  WHERE reference=${reference} RETURNING id,status`
+ return Boolean(row)
 }
