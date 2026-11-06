@@ -141,4 +141,7 @@ if (!webhookSetup.includes('webhookSigningSecret') || !webhookSetup.includes('wh
     !webhookStatus.includes('webhookSigningConfigured')) {
   throw new Error('Administration must configure current Paystack webhook signing secret securely')
 }
+if (!source.includes('/^\\d{10}$/') || source.includes('/^\\\\d{10}$/')) {
+  throw new Error('Modern Paystack-Signature timestamp parsing must match decimal seconds')
+}
 console.log('Paystack verified deposits, secured Administration review, and legacy endpoint regressions passed')

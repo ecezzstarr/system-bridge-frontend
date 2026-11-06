@@ -53,7 +53,7 @@ export async function verifyPaystackWebhookSignature(
     const fields = modernHeader.split(',').map(part => part.trim())
     const timestampField = fields.find(part => part.startsWith('t='))
     const timestamp = timestampField?.slice(2) || ''
-    if (!/^\\d{10}$/.test(timestamp)) return false
+    if (!/^\d{10}$/.test(timestamp)) return false
     const seconds = Number(timestamp)
     if (!Number.isSafeInteger(seconds) || Math.abs(Date.now() / 1000 - seconds) > 300) return false
     const expected = createHmac('sha512', secret)

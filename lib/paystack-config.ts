@@ -43,7 +43,7 @@ async function ensureTable() {
   }
   await tableReady
 }
-export async function getPaystackConfig(): Promise<{ secretKey: string; publicOrigin: string; mode: 'test'|'live'; configured: boolean; verifiedAt: string|null }> {
+export async function getPaystackConfig(): Promise<{ secretKey: string; publicOrigin: string; mode: 'test'|'live'; configured: boolean; webhookSigningConfigured: boolean; verifiedAt: string|null }> {
   const envKey = process.env.PAYSTACK_SECRET_KEY?.trim()
   const envOrigin = process.env.WEAVE_PUBLIC_ORIGIN?.trim().replace(/\/$/, '')
   await ensureTable()
