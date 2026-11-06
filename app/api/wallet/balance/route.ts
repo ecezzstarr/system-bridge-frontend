@@ -23,11 +23,18 @@ export async function GET(request: NextRequest) {
     `
 
     const wallet = wallets[0]
-
+    if (!wallet) return NextResponse.json({
+      success:false,error:'Your primary wallet record is unavailable. No zero balance was assumed.',
+    },{status:409,headers:{'Cache-Control':'private, no-store'}})
+    const actualBalance = Number(clientMoney?.mainWallet.flameCoin ?? wallet.balance_trx)
+    if (!Number.isFinite(actualBalance)) {
+      throw new Error('Primary wallet contains an invalid balance')
+    }
     return NextResponse.json({
       success: true,
       // Backward-compatible field: this is the main operational wallet.
-      flameCoinBalance: Number(clientMoney?.mainWallet.flameCoin ?? wallet?.balance_trx ?? 0),
+      flameCoinBalance: actualBalance,
+      recordedAt:new Date().toISOString(),
       playFlameCoin: Number(wallet?.play_balance || 0),
       currency: 'Flame Coin',
       peg: '1 Flame Coin = 1 TRX',
@@ -38,7 +45,7 @@ export async function GET(request: NextRequest) {
           mainClientWallet: clientMoney.mainWallet,
         }
       } : {}),
-    })
+    },{headers:{'Cache-Control':'private, no-store, max-age=0',Vary:'Authorization'}})
   } catch (error) {
     console.error('Wallet balance error:', error)
     return NextResponse.json({ success: false, error: 'Failed to fetch balance' }, { status: 500 })

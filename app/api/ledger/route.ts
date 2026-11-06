@@ -1,36 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
-import { getUserLedger, getUserEscrow, getUserTotalBalance } from '@/lib/ledger'
+import { getFinancialRecordPage } from '@/lib/ledger'
 
-export async function GET(request: NextRequest) {
+export const dynamic = 'force-dynamic'
+const noStore={ 'Cache-Control':'private, no-store, max-age=0', Vary:'Authorization' }
+
+export async function GET(request:NextRequest) {
+  const authUser=await getAuthUser(request)
+  if (!authUser?.id) return NextResponse.json(
+    {success:false,error:'Not authenticated'}, {status:401,headers:noStore},
+  )
   try {
-    const authUser = await getAuthUser(request)
-    
-    if (!authUser?.id) {
+    const value=request.nextUrl.searchParams.get('limit')
+    const limit=value==null?50:Number(value)
+    if (!Number.isInteger(limit) || limit<1 || limit>100) {
       return NextResponse.json(
-        { success: false, error: 'Not authenticated' },
-        { status: 401 }
+        {success:false,error:'Record limit must be between 1 and 100'},
+        {status:400,headers:noStore},
       )
     }
-
-    const userId = authUser.id
-    const ledger = await getUserLedger(userId, 100)
-    const escrow = await getUserEscrow(userId)
-    const balance = await getUserTotalBalance(userId)
-
+    const cursor=request.nextUrl.searchParams.get('cursor')
+    const data=await getFinancialRecordPage(authUser.id,limit,cursor)
+    return NextResponse.json({success:true,data},{headers:noStore})
+  } catch(error) {
+    console.error('[WEAVE Record] persistent data retrieval failed:',error)
+    const invalid=error instanceof Error && error.message==='Invalid record page cursor'
     return NextResponse.json({
-      success: true,
-      data: {
-        ledger,
-        escrow,
-        balance,
-      },
-    })
-  } catch (error) {
-    console.error('[WEAVE] Ledger API error:', error)
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch ledger' },
-      { status: 500 }
-    )
+      success:false,
+      error:invalid?'Invalid record cursor. Refresh Record to restart history.':'Financial records are temporarily unavailable. No balance has been replaced or reset.',
+    },{status:invalid?400:503,headers:noStore})
   }
 }
