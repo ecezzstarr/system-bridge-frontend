@@ -12,6 +12,7 @@ import { ensureClientMonthlySchema, normalizeRegisteredGender } from '@/lib/clie
 import { ensureCompanyClientStaffSchema, staffOfferTokenHash } from '@/lib/company-client-staff'
 import { issueWeaveReceipt } from '@/lib/weave-receipts'
 import { CJ_DORADO_FILE_NUMBER } from '@/lib/client-file-folder'
+import { ensureProActivationForNewClient } from '@/lib/pro-file-folder-activation'
 
 export async function POST(request: NextRequest) {
   try {
@@ -171,16 +172,9 @@ export async function POST(request: NextRequest) {
         console.error('[company client staff] position notification failed',notificationError)
       }
     }
-    // First-time employee registration establishes the owned account but does not
-    // bypass the personal loan that must be settled before the first login.
-    if (fileNumber === CJ_DORADO_FILE_NUMBER) {
-      return NextResponse.json({
-        success: true,
-        registrationPendingLoan: true,
-        code: 'CJ_LOAN_SETUP_PENDING',
-        message: 'Employee Client identity established. Administration must confirm the loan terms and funding; sign in with this File Number to complete verified Paystack repayment.',
-      }, { status: 201, headers: { 'Cache-Control': 'private, no-store' } })
-    }
+    // Only an approved new Pro entitlement creates a one-time fee gate.
+    // Never retroactively lock established Clients or alter their employee ticket.
+    await ensureProActivationForNewClient(String(user.id),String(fileNumber),String(staffGrant?.folder_tier||''))
 
     const token = `ssb_${randomBytes(32).toString('base64url')}`
     await sql`
