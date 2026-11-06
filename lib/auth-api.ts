@@ -3,7 +3,6 @@ import { getServerSession } from 'next-auth/next'
 import { authOptions } from './auth'
 import { sql } from './db'
 import { getDivineShieldState } from './weave-infrastructure'
-import { getCjLoanGate } from '@/lib/cj-dorado-loan'
 
 export interface AuthUser {
   id: string
@@ -61,8 +60,6 @@ async function applyExclusiveLegionPosition(user:AuthUser):Promise<AuthUser>{
 }
 
 async function applyRuntimeAccess(user:AuthUser):Promise<AuthUser|null>{
-  const loanGate = await getCjLoanGate(user)
-  if (loanGate && loanGate.status !== 'cleared') return null
   const shielded=await applyDivineShield(user)
   if(!shielded)return null
   return applyExclusiveLegionPosition(shielded)
