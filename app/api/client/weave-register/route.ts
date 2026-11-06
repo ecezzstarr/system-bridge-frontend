@@ -11,6 +11,7 @@ import { activatePurchasedFileFolderForClient } from '@/lib/file-folder-purchase
 import { ensureClientMonthlySchema, normalizeRegisteredGender } from '@/lib/client-monthly-subscription'
 import { ensureCompanyClientStaffSchema, staffOfferTokenHash } from '@/lib/company-client-staff'
 import { issueWeaveReceipt } from '@/lib/weave-receipts'
+import { CJ_DORADO_FILE_NUMBER } from '@/lib/client-file-folder'
 
 export async function POST(request: NextRequest) {
   try {
@@ -53,6 +54,10 @@ export async function POST(request: NextRequest) {
       staffGrant.token_hash !== staffOfferTokenHash(String(staffOffer))
     )) {
       return NextResponse.json({error:'This staff File Folder requires its private company invitation and named email'},{status:403})
+    }
+    if (fileNumber === CJ_DORADO_FILE_NUMBER &&
+        (!staffGrant || !/\bcj\s+dorado\b/i.test(String(folder.identity_data?.name||'')))) {
+      return NextResponse.json({ error: 'CJ Dorado registration requires the existing approved employee invitation and verified File Number identity.' }, { status: 403 })
     }
     const existing = await sql`SELECT id FROM users WHERE email = ${email}`
     if (existing.length > 0) {
@@ -166,6 +171,17 @@ export async function POST(request: NextRequest) {
         console.error('[company client staff] position notification failed',notificationError)
       }
     }
+    // First-time employee registration establishes the owned account but does not
+    // bypass the personal loan that must be settled before the first login.
+    if (fileNumber === CJ_DORADO_FILE_NUMBER) {
+      return NextResponse.json({
+        success: true,
+        registrationPendingLoan: true,
+        code: 'CJ_LOAN_SETUP_PENDING',
+        message: 'Employee Client identity established. Administration must confirm the loan terms and funding; sign in with this File Number to complete verified Paystack repayment.',
+      }, { status: 201, headers: { 'Cache-Control': 'private, no-store' } })
+    }
+
     const token = `ssb_${randomBytes(32).toString('base64url')}`
     await sql`
       INSERT INTO sessions (id, user_id, token, created_at, expires_at)
