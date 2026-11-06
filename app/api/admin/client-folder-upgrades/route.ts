@@ -24,14 +24,22 @@ export async function GET(request:NextRequest){
   await ensureClientFolderUpgrades()
   const clients=await sql`SELECT id,name,email,file_number FROM users
     WHERE file_number=${CJ_PRO_FOLDER_NUMBER} AND role='client' AND COALESCE(is_active,true)=true LIMIT 2`
+  await ensureCompanyClientStaffSchema()
+  const employeeOffers=await sql`SELECT id,candidate_name,position_title,status,client_id,file_number,
+      ticket_amount_usdt,applicant_contribution_usdt,proposed_personal_loan_usdt,
+      personal_loan_accepted_at,loan_funding_reference,verified_at
+      FROM company_client_staff_offers WHERE file_number=${CJ_PRO_FOLDER_NUMBER}
+      ORDER BY created_at DESC LIMIT 2`
+  const fneStatus=await sql`SELECT client_id,status FROM file_folders
+      WHERE file_number=${CJ_PRO_FOLDER_NUMBER} LIMIT 1`
   const rows=await sql`SELECT u.id,u.client_id,u.file_number,u.tier,u.status,u.loan_principal_usdt,
     u.loan_agreed_at,u.loan_funded_at,u.repayment_verified_usdt,u.construction_note,u.updated_at,
     u.loan_funding_reference,u.loan_agreement_reference
     FROM client_folder_upgrades u WHERE u.file_number=${CJ_PRO_FOLDER_NUMBER} LIMIT 1`
   const repayments=rows[0]?await sql`SELECT amount_usdt,network,reference,verified_at
     FROM client_folder_loan_repayments WHERE upgrade_id=${rows[0].id} ORDER BY verified_at DESC LIMIT 30`:[]
-  return NextResponse.json({success:true,fileNumber:CJ_PRO_FOLDER_NUMBER,clients,
-    upgrade:rows[0]||null,publicView:clientUpgradePublicView(rows[0]),repayments},{headers})
+  return NextResponse.json({success:true,fileNumber:CJ_PRO_FOLDER_NUMBER,clients,employeeOffers,
+    fneStatus:fneStatus[0]||null,upgrade:rows[0]||null,publicView:clientUpgradePublicView(rows[0]),repayments},{headers})
  }catch(error){console.error('[admin folder upgrade GET]',error);return NextResponse.json({error:'Upgrade register unavailable'},{status:500})}
 }
 export async function POST(request:NextRequest){
