@@ -101,14 +101,9 @@ function ClientRegisterContent() {
 
       const result = await res.json()
       if (result.success) {
-        if (result.registrationPendingLoan) {
-          toast.message(result.message || 'Employee identity established. Complete approved loan verification before sign-in.')
-          router.replace('/client/login')
-          return
-        }
         toast.success('Welcome into WEAVE.')
         setSession(result.token, result.user)
-        router.replace(await isFlameEventActive() ? '/client/event' : '/client/system-switch')
+        router.replace('/client/pro-activation')
       } else {
         toast.error(result.error || "That didn't complete. Try again.")
       }
