@@ -28,7 +28,7 @@ export async function POST(request:NextRequest){
   try{
     let response
     if(body.action==='business_plan')response=await submitProBusinessPlan(user.id,user.file_number!,body.plan||{})
-    else if(body.action==='submit_payment')response=await submitProPayment(user.id,user.file_number!,String(body.txHash||''))
+    else if(body.action==='submit_payment')response=await submitProPayment(user.id,user.file_number!,String(body.txHash||''),String(body.expectedWallet||''))
     else return NextResponse.json({error:'Unknown Pro activation action'},{status:400,headers:publicHeaders})
     return NextResponse.json(response,{headers:publicHeaders})
   }catch(e){return NextResponse.json({error:e instanceof Error?e.message:'Action unavailable'},{status:409,headers:publicHeaders})}
