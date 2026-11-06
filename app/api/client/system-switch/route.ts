@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getFileFolderDb, ensureClientFileFolderSchema, ensureCjDoradoFolder } from '@/lib/client-file-folder'
+import { getFileFolderDb, ensureClientFileFolderSchema, ensureCjDoradoFolder, CJ_DORADO_FILE_NUMBER } from '@/lib/client-file-folder'
 import { resolveClientToken, ensureClientVaultSchema } from '@/lib/client-vault'
-import { ensureClientWorkshopSchema } from '@/lib/client-system-workshop'
+import { ensureClientWorkshopSchema,ensureCjDoradoWorkshop } from '@/lib/client-system-workshop'
 import { ensureClientBusinessStore } from '@/lib/client-business-store'
 import { ensureClientVaultLedgerSchema } from '@/lib/client-vault-ledger'
 import { ensureClientInternationalPaymentProfile } from '@/lib/client-international-payments'
@@ -87,6 +87,8 @@ export async function GET(request: NextRequest) {
         { status: 409 }
       )
     }
+
+    if (client.file_number === CJ_DORADO_FILE_NUMBER) await ensureCjDoradoWorkshop(sql)
 
     const [workshop] = await sql`
       SELECT id, workshop_type, title, description
