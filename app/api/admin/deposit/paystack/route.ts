@@ -3,7 +3,7 @@ import { getAuthUser } from '@/lib/auth-api'
 import { getPool } from '@/lib/db'
 import { settlePaystackDeposit } from '@/lib/paystack-deposits'
 import { inspectPaystackDeposit } from '@/lib/paystack-inspection'
-import { manualCreditStuckPaystack } from '@/lib/manual-paystack-recovery'
+import { manualCreditStuckPaystack, ManualPaystackCreditError } from '@/lib/manual-paystack-recovery'
 
 export const dynamic = 'force-dynamic'
 
@@ -59,10 +59,8 @@ export async function POST(request: NextRequest) {
         const result = await manualCreditStuckPaystack({
           depositId,adminId:String(admin.id),
           paystackTransactionId:String(body.paystackTransactionId || ''),
-          observedReference:String(body.observedReference || ''),
-          observedAmountNgn:Number(body.observedAmountNgn),
+          confirmedInPaystackDashboard: body.confirmedInPaystackDashboard === true,
           evidenceNote:String(body.evidenceNote || ''),
-          confirmation:String(body.confirmation || ''),
         })
         return NextResponse.json({
           success:true, credited:result.credited, depositId:result.depositId,
@@ -70,10 +68,13 @@ export async function POST(request: NextRequest) {
           message:'Administration confirmed the Paystack charge and credited '+result.flameCoin.toLocaleString()+' Flame Coin once.',
         },{headers:{'Cache-Control':'private, no-store',Vary:'Authorization'}})
       } catch (error) {
-        const message = error instanceof Error ? error.message : 'Manual credit refused.'
-        // Expected validation/duplicate conflicts are not a gateway outage.
-        console.error('[Administration manual Paystack credit refused]', message)
-        return NextResponse.json({error:message},{status:409,headers:{'Cache-Control':'no-store'}})
+        if (error instanceof ManualPaystackCreditError) {
+          return NextResponse.json({error:error.message},{status:error.httpStatus,headers:{'Cache-Control':'no-store'}})
+        }
+        console.error('[Administration manual Paystack settlement failure]', error)
+        return NextResponse.json({
+          error:'Manual credit could not be committed. No wallet change was confirmed. Contact Finance with the deposit reference and server error log.',
+        },{status:503,headers:{'Cache-Control':'no-store'}})
       }
     }
 

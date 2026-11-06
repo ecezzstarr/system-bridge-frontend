@@ -151,19 +151,23 @@ if (!source.includes('/^\\d{10}$/') || source.includes('/^\\\\d{10}$/')) {
 }
 const manualRecovery = read('lib/manual-paystack-recovery.ts')
 for (const token of [
-  'weave_manual_paystack_credits','paystack_transaction_id varchar(40) NOT NULL UNIQUE',
-  "status IN ('pending','rejected')","deposit.status","FOR UPDATE OF d",
-  "balance_trx=balance_trx+$2","paystack.manual_admin_credit",
-  "approved_by:input.adminId","approval_basis:'human_verified_in_paystack_dashboard'",
-  "creditAfterManualConfirmation",
-].slice(0,9)) {
-  if (!manualRecovery.includes(token)) throw new Error('Manual Paystack recovery guard missing: '+token)
+  'confirmedInPaystackDashboard', 'ManualPaystackCreditError',
+  "status IN ('pending','rejected')", "FOR UPDATE OF d",
+  "balance_trx=balance_trx+$2", "paystack.manual_admin_credit",
+  "approved_by:input.adminId", "approval_basis:'human_confirmed_in_paystack_dashboard'",
+  'pg_advisory_xact_lock', "await client.query('COMMIT')",
+]) {
+  if (!manualRecovery.includes(token)) throw new Error('Manual Paystack settlement guard missing: '+token)
+}
+if (manualRecovery.includes('CREATE TABLE') || manualRecovery.includes('ensureManualPaystackSchema')) {
+  throw new Error('Manual credit must not depend on runtime CREATE TABLE or DDL privileges')
 }
 for (const token of ["body?.action === 'manual_credit'","manualCreditStuckPaystack","admin.role !== 'admin'"]) {
   if (!adminPaystack.includes(token)) throw new Error('Missing authenticated Administration manual credit action: '+token)
 }
-for (const token of ['Manual credit after Paystack confirmation','Confirm and credit Flame Coin once',
-  "action:'manual_credit'", 'Paystack transaction ID (numeric)', 'manual_credited']) {
+for (const token of ['Manual credit after Paystack confirmation', 'Approve and credit ',
+  "action:'manual_credit'", 'confirmedInPaystackDashboard:manualConfirmed',
+  'manual_credited', 'role="alert"']) {
   if (!adminTerminal.includes(token)) throw new Error('Administration manual credit workflow missing: '+token)
 }
 if (!depositRoute.includes('manual_credited') || !walletUi.includes('Administration-confirmed · Flame Coin credited')) {
