@@ -4,16 +4,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Lock } from 'lucide-react'
 
 export interface BalanceSummaryProps {
-  available: number
-  locked: number
+  available: number | string | null
+  locked: number | string | null
   currency?: string
 }
 
 export function BalanceSummary({ available, locked, currency = 'Flame Coin' }: BalanceSummaryProps) {
-  const safeAvailable = Number.isFinite(Number(available)) ? Number(available) : 0
-  const safeLocked = Number.isFinite(Number(locked)) ? Number(locked) : 0
-  const total = safeAvailable + safeLocked
-  const amount = (value:number) => value.toLocaleString(undefined,{
+  const safeAvailable = available == null || !Number.isFinite(Number(available)) ? null : Number(available)
+  const safeLocked = locked == null || !Number.isFinite(Number(locked)) ? null : Number(locked)
+  const total = safeAvailable == null || safeLocked == null ? null : safeAvailable + safeLocked
+  const amount = (value:number|null) => value==null?'Unavailable':value.toLocaleString(undefined,{
     minimumFractionDigits:2,maximumFractionDigits:6,
   })
 
