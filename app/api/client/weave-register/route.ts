@@ -174,7 +174,24 @@ export async function POST(request: NextRequest) {
     }
     // Only an approved new Pro entitlement creates a one-time fee gate.
     // Never retroactively lock established Clients or alter their employee ticket.
-    await ensureProActivationForNewClient(String(user.id),String(fileNumber),String(staffGrant?.folder_tier||''))
+    // Retail Pro also requires the activation stage when newly registered.
+    // Match only an already confirmed purchase; other tiers and older accounts
+    // are never given a new fee obligation by this registration change.
+    let activationTier=String(staffGrant?.folder_tier||'')
+    if(!activationTier){
+      const [pTable]=await sql`SELECT to_regclass('public.file_folder_purchases') AS name`
+      if(pTable?.name){
+        const [tierColumn]=await sql`SELECT 1 AS found FROM information_schema.columns
+          WHERE table_schema='public' AND table_name='file_folder_purchases' AND column_name='file_folder_tier' LIMIT 1`
+        if(tierColumn?.found){
+          const [purchase]=await sql`SELECT file_folder_tier FROM file_folder_purchases
+            WHERE file_number=${fileNumber} AND status IN ('approved','confirmed')
+            ORDER BY created_at DESC LIMIT 1`
+          activationTier=String(purchase?.file_folder_tier||'')
+        }
+      }
+    }
+    await ensureProActivationForNewClient(String(user.id),String(fileNumber),activationTier)
 
     const token = `ssb_${randomBytes(32).toString('base64url')}`
     await sql`
@@ -197,6 +214,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       token,
+      activationRequired: activationTier==='pro'||fileNumber===CJ_DORADO_FILE_NUMBER,
       customerDoor: activation.customerDoor,
       user: {
         id: user.id,
