@@ -88,7 +88,11 @@ export async function submitProFileNumberPlan(input:{
  if(!await eligibleProNumber(fileNumber))
   throw new Error('This File Number is not ready for Pro verification. Contact Administration.')
  await ensureProFileNumberVerificationSchema()
- // Multiple submissions are allowed for identity review; they never overwrite an approved request.
+ const [volume]=await sql`SELECT COUNT(*)::int AS total FROM pro_file_number_verifications
+  WHERE file_number=${fileNumber} AND created_at>now()-interval '1 hour'`
+ if(Number(volume?.total||0)>=5)
+  throw new Error('This File Number has recent verification requests. Contact Administration to reconcile them.')
+ // Multiple submissions are reviewed independently; no approved record is overwritten.
  const ticket=randomBytes(32).toString('hex')
  const [row]=await sql`INSERT INTO pro_file_number_verifications
   (file_number,business_name,business_plan,signed_name,access_token_hash)
@@ -105,10 +109,15 @@ export async function readProFileNumberVerification(ticket:string){
   WHERE access_token_hash=${hashTicket(ticket.toLowerCase())} LIMIT 1`
  if(!row)return null
  const paymentReady=['payment_required','payment_rejected'].includes(String(row.status))
+ let receivingWallet:string|null=null
+ if(paymentReady){
+  await ensureProActivationSchema()
+  receivingWallet=await getReceivingWallet()
+ }
  return {
   reference:String(row.id),fileNumber:String(row.file_number),businessName:String(row.business_name),
   status:String(row.status),feeUSDT:PRO_ACTIVATION_FEE_USDT,network:'USDT TRON (TRC-20)',
-  walletAddress:paymentReady?await getReceivingWallet():null,
+  walletAddress:receivingWallet,
   paymentVerified:Boolean(row.payment_verified_at),
   rejectionReason:row.rejection_reason||null,
  }
