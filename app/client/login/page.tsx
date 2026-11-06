@@ -143,6 +143,11 @@ export default function ClientLoginPage() {
             </Button>
           </form>
 
+          <div className="mt-5 rounded-xl border border-cyan-300/20 bg-cyan-300/5 p-4 text-center">
+            <p className="text-sm font-semibold text-white">Have a Pro File Number but no password?</p>
+            <p className="mt-2 text-xs text-slate-300">Start the File Folder verification workspace with your issued number, name your business, submit its business plan and complete the activation procedure.</p>
+            <Link href="/client/pro-verification" className="mt-3 inline-block rounded-lg border border-cyan-300/40 px-4 py-2 text-sm font-bold text-cyan-200">Verify Pro File Number</Link>
+          </div>
           <div className="mt-8 text-center border-t border-slate-800 pt-6">
             <p className="text-xs text-slate-500 font-medium">
               Have an issued File Number but no Client position yet?
