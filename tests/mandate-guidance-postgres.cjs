@@ -21,7 +21,7 @@ const reply=()=>staff.POST(request('POST','worker',{department:'forensic',reques
 async function run(){
  const admin=new Pool({connectionString:rootUri});try{await admin.query('CREATE DATABASE weave_mandate_test')}catch(e){if(e.code!=='42P04')throw e}finally{await admin.end()}
  await pool.query(`DROP TABLE IF EXISTS bridger_agentic_purchases,weave_guidance_staff_applications,arena_ace_accounts,arena_live_predictions,arena_matches,enterprise_legions,lounge_messages,notifications,sessions,users CASCADE;
- CREATE TABLE users(id uuid PRIMARY KEY,name text,username text,email text,role text,is_active boolean DEFAULT true,created_at timestamptz DEFAULT NOW(),avatar_url text,subscription_status text DEFAULT 'active',subscription_expiry timestamptz,is_subscription_exempt boolean DEFAULT false);
+ CREATE TABLE users(id uuid PRIMARY KEY,name text,username text,email text,role text,file_number text,is_active boolean DEFAULT true,created_at timestamptz DEFAULT NOW(),avatar_url text,subscription_status text DEFAULT 'active',subscription_expiry timestamptz,is_subscription_exempt boolean DEFAULT false);
  CREATE TABLE sessions(token text,user_id uuid,expires_at timestamptz);
  CREATE TABLE arena_matches(id uuid PRIMARY KEY);
  CREATE TABLE enterprise_legions(id uuid,client_id uuid,source_user_id uuid,active boolean,employment_status text,accepted_at timestamptz,created_at timestamptz);
