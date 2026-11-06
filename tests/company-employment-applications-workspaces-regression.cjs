@@ -37,7 +37,7 @@ for(const [source,kind] of [[manager,'distribution_manager'],[assistants,'distri
   assert.ok(source.includes('notifyAdministrationOfCompanyApplication')&&source.includes("kind:'"+kind+"'"),'Submitted '+kind+' application triggers routed Administration notification')
 const notificationInbox=read('app/(app)/notifications/page.tsx')
 const notificationNavigation=read('lib/notification-navigation.ts')
-assert.ok(bell.includes("window.location.href = '/notifications?open='")&&bell.includes('View message'),'Browser alerts open an authenticated full-message view')
+assert.ok(read('public/sw.js').includes("'?open=' + encodeURIComponent(id)")&&bell.includes('View message'),'Browser alerts open an authenticated full-message view')
 assert.ok(notificationInbox.includes('notificationDestination(active,user.role)')&&notificationInbox.includes('active.content')&&notificationNavigation.includes("if(link.startsWith('/')"),'The inbox shows full messages and follows safe server-provided application links')
 assert.ok(appInbox.includes("user?.role!=='admin'")&&appInbox.includes("data-admin-company-employment-inbox"),'Application register is Administration-only')
 for(const url of ['/api/admin/distribution-employment','/api/admin/food-preparation-manager','/api/admin/guidance-staff'])
