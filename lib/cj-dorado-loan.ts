@@ -8,6 +8,8 @@ type User={id:string;role?:string;name?:string;file_number?:string}
 export const isCjDoradoAccount=(user:User)=>user.role==='client'&&user.file_number===CJ_DORADO_FILE_NUMBER
 export async function getCjLoanGate(user:User){
  if(!isCjDoradoAccount(user))return null
+ const [table]=await sql`SELECT to_regclass('public.client_folder_upgrades') AS name`
+ if(!table?.name)return {status:'setup_pending' as const,remainingUSDT:CJ_EMPLOYEE_LOAN_USDT}
  const [row]=await sql`SELECT loan_principal_usdt,repayment_verified_usdt,loan_agreed_at,loan_funded_at,status
  FROM client_folder_upgrades WHERE client_id=${user.id}::uuid AND file_number=${CJ_DORADO_FILE_NUMBER} AND tier='pro' LIMIT 1`
  const verified=Number(row?.repayment_verified_usdt||0)
@@ -103,12 +105,12 @@ export async function settleCjLoan(reference:string){
   AND file_number=$2 AND tier='pro' FOR UPDATE`,[p.client_id,CJ_DORADO_FILE_NUMBER])
   const up=b.rows[0]
   if(!up||up.status!=='repayment_required'||!up.loan_agreed_at||!up.loan_funded_at||
-   !up.prepared_by||Number(up.loan_principal_usdt)!==CJ_EMPLOYEE_LOAN_USDT||
+   Number(up.loan_principal_usdt)!==CJ_EMPLOYEE_LOAN_USDT||
    Math.round((Number(up.loan_principal_usdt)-Number(up.repayment_verified_usdt))*100)!==Math.round(Number(p.amount_usdt)*100))
    throw new Error('Loan ledger changed. Administration must reconcile this payment.')
   await connection.query(`INSERT INTO client_folder_loan_repayments
-  (upgrade_id,amount_usdt,network,reference,verified_by)
-  VALUES($1,$2,'Paystack NGN',$3,$4::uuid)`,[up.id,p.amount_usdt,reference,up.prepared_by])
+  (upgrade_id,amount_usdt,network,reference,verified_by,verification_method)
+  VALUES($1,$2,'Paystack NGN',$3,NULL,'paystack_provider')`,[up.id,p.amount_usdt,reference])
   await connection.query('UPDATE client_folder_upgrades SET repayment_verified_usdt=repayment_verified_usdt+$1,updated_at=now() WHERE id=$2',[p.amount_usdt,up.id])
   await connection.query("UPDATE cj_loan_paystack_payments SET status='verified',verified_at=now() WHERE id=$1",[p.id])
   await connection.query('COMMIT')
