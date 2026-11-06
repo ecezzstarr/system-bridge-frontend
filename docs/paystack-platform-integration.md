@@ -115,3 +115,42 @@ in the secure server environment. The signing secret is distinct from
 mode. An absent or mismatched signing secret blocks modern webhooks and
 therefore blocks instant webhook settlement; the callback still has
 independent server-side transaction verification as a fallback.
+
+
+## Emergency Administration manual credit of stuck deposits
+The normal payment route remains automatic: Weave credits Paystack-confirmed charges
+after signed webhooks or server verification and notifies Administration.
+If a saved Paystack checkout remains `pending` or `rejected` but the user
+actually paid, an authorized Administration account may select
+**Manual credit after Paystack confirmation** for deposits up to **₦10,000**.
+
+Administration must independently open the ORIGINAL merchant's Paystack dashboard
+and see a successful charge. The form requires that charge's numeric Paystack
+transaction ID, exact original reference, exact NGN amount, a 20+ character
+explanation of the evidence, an explicit affirmation of merchant confirmation,
+and a full-reference confirmation phrase. This option does not accept an
+uploaded screenshot or a user's claim as verification.
+
+The server permits only a Paystack wallet deposit currently pending/rejected,
+locks that deposit row, checks all prior positive ledger credits and refund
+events, and enforces unique manual transaction ID and checkout reference.
+It saves an immutable Administration identity, evidence note, reference,
+amount and Flame Coin amount; updates exactly one primary wallet; appends a
+positive audit ledger entry; and approves the deposit in one PostgreSQL
+transaction. Failures roll everything back. Once committed, the user and
+Administration receive notifications and the user balance refreshes through
+the existing 20-second polling.
+
+A human-confirmed credit deliberately does NOT set `verified_at` as if it
+were authenticated by the Paystack API. Instead, user and Admin records label
+it **Administration-confirmed · Wallet credited** using the audited ledger.
+Older already-approved entries are ineligible for additional manual credit.
+Later independent Paystack verification may attach provider proof to an
+existing manual credit without crediting twice. Larger or conflicting payments
+require separate Finance investigation.
+
+**This is a privileged exceptional action and a financial risk.** Grant
+Administration accounts only to trusted staff and restrict the server
+credentials. Never run it solely from a receipt or without confirming
+success in the merchant dashboard. A source-code merge cannot itself
+credit already-paid production transactions.
