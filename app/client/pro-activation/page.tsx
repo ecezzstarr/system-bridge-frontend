@@ -63,11 +63,11 @@ export default function ProActivationPage(){
   <div className="mx-auto max-w-xl space-y-5 rounded-2xl border border-cyan-300/25 p-7">
    <p className="text-xs uppercase tracking-widest text-cyan-200">WEAVE of Presence · Pro Client</p>
    <h1 className="text-3xl font-bold">File Folder agreement and activation</h1>
-   <p className="text-sm leading-6 text-slate-200">Sign in using your issued Client File Number and password to read and electronically sign your Pro agreement, submit a business plan, and view your private activation status.</p>
+   <p className="text-sm leading-6 text-slate-200">If you have been issued a Pro File Number but no password, use the File Number Verification Workspace to name your business, submit your plan, sign the agreement and proceed to Forensics-verified activation.</p>
    <p className="text-xl font-bold">One-time activation: 680 USDT</p>
    <p className="text-xs text-slate-300">USDT on TRON (TRC-20). Payment is requested only after you review and sign the terms; Forensics verifies it manually.</p>
-   <Link href="/client/login" className="inline-block rounded-lg bg-cyan-300 px-5 py-3 font-bold text-slate-950">Continue to Client sign-in</Link>
-   <p className="text-xs text-slate-400">If you have not completed your private employee registration, ask Administration for your existing approved invitation. Do not open a second account.</p>
+   <Link href="/client/pro-verification" className="inline-block rounded-lg bg-cyan-300 px-5 py-3 font-bold text-slate-950">Start using File Number</Link>
+   <p className="text-xs text-slate-400">No password is needed to start Pro verification. The private Client account and File Folder will remain protected until identity and payment verification are completed.</p>
   </div>
  </main>
  if(notRequired)return <main className="min-h-screen p-8 text-white">No new Pro activation fee is due on this account. <Link href="/client/dashboard" className="underline">Return to dashboard</Link></main>
