@@ -21,7 +21,7 @@ const body=(id,sequence,x=0,z=8.2)=>({room:presence.SYSTEM_SWITCH_ROOM,connectio
 const age=()=>pool.query("UPDATE system_switch_presence SET updated_at=NOW()-INTERVAL '1 second'")
 async function run(){
  await pool.query(`DROP TABLE IF EXISTS system_switch_presence,enterprise_legions,client_file_folders,sessions,users CASCADE;
- CREATE TABLE users(id uuid PRIMARY KEY,name text,username text,email text,role text,business_name text,is_active boolean DEFAULT true);
+ CREATE TABLE users(id uuid PRIMARY KEY,name text,username text,email text,role text,file_number text,business_name text,is_active boolean DEFAULT true);
  CREATE TABLE sessions(token text,user_id uuid,expires_at timestamptz);
  CREATE TABLE client_file_folders(client_id uuid,status text);
  CREATE TABLE enterprise_legions(id uuid,client_id uuid,source_user_id uuid,active boolean,employment_status text,accepted_at timestamptz,created_at timestamptz)`)
