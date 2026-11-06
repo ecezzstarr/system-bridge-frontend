@@ -1,16 +1,23 @@
 import { getPool } from '@/lib/db'
-import { verifyPaystackTransaction, paystackTransactionMatches, paystackMismatchReason } from '@/lib/paystack'
-import { notifyDepositDecision } from '@/lib/deposit-notifications'
+import { verifyPaystackTransaction, paystackTransactionMatches, paystackMismatchReason, type PaystackTransaction } from '@/lib/paystack'
+import { notifyDepositDecision, notifyAdministrators } from '@/lib/deposit-notifications'
 
-/** Verify against Paystack and settle one pending wallet deposit atomically. */
-export async function settlePaystackDeposit(reference: string) {
-  const transaction = await verifyPaystackTransaction(reference)
+/**
+ * Credit a confirmed Paystack wallet deposit in a locked, idempotent DB transaction.
+ * A signed charge.success event can settle immediately without another network
+ * round trip; browser callback, Administration retry and user reconciliation
+ * still require Paystack's server-to-server verification API.
+ * The webhook route must authenticate its HMAC BEFORE passing signedEvent.
+ */
+export async function settlePaystackDeposit(reference: string, signedEvent?: PaystackTransaction) {
+  const transaction = signedEvent || await verifyPaystackTransaction(reference)
+  const confirmationSource = signedEvent ? 'signed_paystack_webhook' : 'paystack_server_verification'
   const client = await getPool().connect()
-  let notification: { userId: string; depositId: string; amountNgn: number; flameCoin: number } | null = null
+  let notification: { userId: string; depositId: string; amountNgn: number; flameCoin: number; role: string; name: string; reference: string } | null = null
   try {
     await client.query('BEGIN')
     const found = await client.query(
-      "SELECT d.*, u.email AS owner_email, u.role AS owner_role FROM deposits d JOIN users u ON u.id=d.user_id WHERE d.method='paystack' AND d.receipt_data=$1 FOR UPDATE OF d",
+      "SELECT d.*, u.email AS owner_email, u.name AS owner_name, u.role AS owner_role FROM deposits d JOIN users u ON u.id=d.user_id WHERE d.method='paystack' AND d.receipt_data=$1 FOR UPDATE OF d",
       [reference],
     )
     const deposit = found.rows[0]
@@ -22,15 +29,9 @@ export async function settlePaystackDeposit(reference: string) {
       expectedDepositId: String(deposit.id), expectedUserId: String(deposit.user_id),
     }
     if (!paystackTransactionMatches(matchInput)) {
-      // An incomplete checkout is not a failed payment. Allow webhook/Administration retry.
-      // Only a completed but mismatched payment is rejected for manual investigation.
-      if (deposit.status === 'pending' && transaction.status === 'success') {
-        await client.query("UPDATE deposits SET status='rejected',updated_at=NOW() WHERE id=$1::uuid AND status='pending'", [deposit.id])
-        await client.query(
-          "INSERT INTO ledger_entries(user_id,entry_type,amount,currency,description,metadata) VALUES($1::uuid,'deposit',0,'Flame Coin','Paystack deposit verification failed',$2::jsonb)",
-          [deposit.user_id, JSON.stringify({deposit_id:deposit.id,payment_method:'Paystack',reference,expected_amount_kobo:expectedKobo,received_amount_kobo:transaction.amount,received_currency:transaction.currency,received_status:transaction.status,status:'failed'})],
-        )
-      }
+      // A paid transaction with mismatched details is an exception, not
+      // permission to credit or permanently reject the wallet record.
+      // Keep the checkout unchanged for independent Administration review.
       await client.query('COMMIT')
       return { settled: false, reason: paystackMismatchReason(matchInput) || 'Paystack could not match the original checkout.' }
     }
@@ -88,7 +89,7 @@ export async function settlePaystackDeposit(reference: string) {
     if (wallet.rowCount !== 1) throw new Error('Primary wallet missing or duplicated; no deposit credit was applied')
     await client.query(
       "INSERT INTO ledger_entries(user_id,entry_type,amount,currency,description,metadata) VALUES($1::uuid,'deposit',$2,'Flame Coin','Verified Paystack deposit credited',$3::jsonb)",
-      [deposit.user_id, flameCoin, JSON.stringify({deposit_id:deposit.id,payment_method:'Paystack',reference,ngn_amount:Number(deposit.amount_usd),amount_kobo:expectedKobo,credited_flame_coin:flameCoin,paystack_channel:transaction.channel,paystack_paid_at:transaction.paid_at})],
+      [deposit.user_id, flameCoin, JSON.stringify({deposit_id:deposit.id,payment_method:'Paystack',reference,ngn_amount:Number(deposit.amount_usd),amount_kobo:expectedKobo,credited_flame_coin:flameCoin,paystack_channel:transaction.channel,paystack_paid_at:transaction.paid_at,confirmation_source:confirmationSource})],
     )
     const updated = await client.query(
       "UPDATE deposits SET status='approved',verified_at=NOW(),updated_at=NOW() WHERE id=$1::uuid AND status IN ('pending','rejected') RETURNING id",
@@ -96,7 +97,7 @@ export async function settlePaystackDeposit(reference: string) {
     )
     if (updated.rowCount !== 1) throw new Error('Deposit settlement conflict')
     await client.query('COMMIT')
-    notification = { userId:String(deposit.user_id), depositId:String(deposit.id), amountNgn:Number(deposit.amount_usd), flameCoin }
+    notification = { userId:String(deposit.user_id), depositId:String(deposit.id), amountNgn:Number(deposit.amount_usd), flameCoin, role:String(deposit.owner_role), name:String(deposit.owner_name || deposit.owner_email || 'Weave user'), reference }
     return { settled: true, duplicate: false, depositId: deposit.id, flameCoin }
   } catch (error) {
     await client.query('ROLLBACK').catch(() => {})
@@ -104,7 +105,22 @@ export async function settlePaystackDeposit(reference: string) {
   } finally {
     client.release()
     if (notification) {
-      await notifyDepositDecision({userId:notification.userId,approved:true,rail:'PAYSTACK',depositId:notification.depositId,amountLabel:'₦'+notification.amountNgn.toLocaleString(),creditedFlameCoin:notification.flameCoin})
+      await Promise.all([
+        notifyDepositDecision({
+          userId:notification.userId,approved:true,rail:'PAYSTACK',depositId:notification.depositId,
+          amountLabel:'₦'+notification.amountNgn.toLocaleString(),creditedFlameCoin:notification.flameCoin,
+        }),
+        notifyAdministrators({
+          type:'paystack_deposit_credited',
+          title:'Paystack confirmed · '+notification.role+' wallet credited',
+          content:notification.name+' paid ₦'+notification.amountNgn.toLocaleString()
+            +' via Paystack. '+notification.flameCoin.toLocaleString()
+            +' Flame Coin has been credited automatically (no Administration approval). '
+            +'Reference: '+notification.reference+'. Deposit: '+notification.depositId+'.',
+          link:'/admin/control-center#deposits',
+          fromUserName:'WEAVE Paystack',
+        }),
+      ])
     }
   }
 }

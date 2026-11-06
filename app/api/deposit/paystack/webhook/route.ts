@@ -24,13 +24,13 @@ export async function POST(request: NextRequest) {
       } else if (reference.startsWith('FOLDER-')) {
         await settleFileFolderPaystackPurchase(reference)
       } else if (/^(ADMIN|AGENT|BRIDGER|CLIENT)-/.test(reference)) {
-        await settlePaystackDeposit(reference)
+        await settlePaystackDeposit(reference, event.data)
       } else {
         // Keep compatibility with older Paystack references that lack a role prefix.
         const ticketResult = await settleDepartmentEntryPaystackTicket(reference)
         if (!ticketResult.matched) {
           const fileFolderResult = await settleFileFolderPaystackPurchase(reference)
-          if (!fileFolderResult.matched) await settlePaystackDeposit(reference)
+          if (!fileFolderResult.matched) await settlePaystackDeposit(reference, event.data)
         }
       }
     } else if ((event?.event === 'charge.failed' || event?.event === 'refund.processed') && reference) {

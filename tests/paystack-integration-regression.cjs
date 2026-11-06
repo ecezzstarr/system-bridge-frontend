@@ -54,8 +54,10 @@ if (adminPaystack.includes('UPDATE wallets')) throw new Error('Administration ca
 if (!adminTerminal.includes('/api/admin/deposit/paystack') || !adminTerminal.includes('Verify with Paystack') || adminTerminal.includes('/api/admin/deposit/opay/verify')) {
   throw new Error('Administration must use the authentic Paystack reconciliation station')
 }
-if (!settlement.includes("deposit.status === 'pending' && transaction.status === 'success'")) {
-  throw new Error('Incomplete Paystack checkouts must remain pending for safe retry')
+if (!settlement.includes("if (!paystackTransactionMatches(matchInput))") ||
+    !settlement.includes("await client.query('COMMIT')") ||
+    !settlement.includes("return { settled: false, reason: paystackMismatchReason(matchInput)")) {
+  throw new Error('Incomplete or mismatched Paystack checkouts must not be falsely credited or irreversibly rejected')
 }
 if (!depositRoute.includes('export async function GET(request: NextRequest)') || !depositRoute.includes("user_id=$1::uuid AND method='paystack'")) {
   throw new Error('Paystack wallet history must be scoped to the authenticated user')
@@ -105,5 +107,21 @@ for (const token of ["body?.action === 'inspect'","status='approved' AND verifie
 }
 for (const token of ['Inspect Paystack','Retry verified recovery','Attach verified proof','inspections[deposit.id]']) {
   if (!adminTerminal.includes(token)) throw new Error('Administration must see actionable recovery controls: ' + token)
+}
+// Signed Paystack webhooks provide authoritative charge.success proof for
+// immediate idempotent settlement without an additional verify API round trip.
+if (!webhook.includes("verifyPaystackWebhookSignature(rawBody") ||
+    !webhook.includes("settlePaystackDeposit(reference, event.data)")) {
+  throw new Error('Only HMAC-verified successful Paystack webhook events may trigger instant wallet settlement')
+}
+for (const token of ["signedEvent?: PaystackTransaction","signedEvent || await verifyPaystackTransaction(reference)","confirmation_source:confirmationSource","notifyAdministrators({","type:'paystack_deposit_credited'"]) {
+  if (!settlement.includes(token)) throw new Error('Automatic Paystack credit + Administration notification missing: '+token)
+}
+if (!settlement.includes("FOR UPDATE OF d") || !settlement.includes("credits > 0 || refunds > 0") ||
+    !settlement.includes("status='approved',verified_at=NOW()")) {
+  throw new Error('Paystack instant credits must remain atomic, authenticated, and idempotent')
+}
+if (!adminTerminal.includes('Automatic Wallet Credit') || !adminTerminal.includes('no manual approval is needed')) {
+  throw new Error('Administration must see that verified Paystack wallet funding is automatic')
 }
 console.log('Paystack verified deposits, secured Administration review, and legacy endpoint regressions passed')

@@ -67,3 +67,32 @@ A rejected deposit can be retried even if Paystack's `charge.failed` webhook arr
 For `approved` deposits with missing `verified_at`, the repair **never credits the wallet again**. If Paystack confirms the transaction and exactly one existing ledger credit matches the recorded Flame Coin amount and no refund occurred, it attaches independently verified proof. Missing or conflicting ledger credits must be audited manually. Old OPay manual approvals may already have increased the wallet.
 
 If a transaction cannot be located, inspect the **original** Paystack merchant account and whether the current integration uses the correct live/test mode. A screenshot, checkout opening, or Paystack reference alone is not proof of a successful charge. No reverse, duplicate credit, or manual bypass is permitted.
+
+
+## Instant Paystack wallet credit and Administration notice
+A successfully signed Paystack `charge.success` webhook is authenticated with
+`x-paystack-signature` (HMAC-SHA512) before reading its payment data.
+For an Agent, Bridger, Administration or Client **wallet deposit** reference,
+Weave can settle immediately from that authenticated success event without
+waiting for an additional Paystack verification API round-trip. It compares
+the exact reference, successful status, NGN currency, original kobo amount,
+and original checkout owner/deposit identity before any wallet movement.
+A row lock, prior ledger credit/refund check and single database transaction
+prevent duplicate credits from replayed webhooks or simultaneous callbacks.
+Any inconsistent/missing provider evidence leaves the record for review.
+
+The signed webhook and browser callback both share the same settlement logic.
+The callback performs independent server-to-server Paystack verification when
+a webhook has not yet settled the payment. On a **new** verified wallet credit,
+Weave sends both a user confirmation and an Administration notification with
+the original reference, depositor, role, NGN amount and Flame Coin credit.
+These notices are dispatched after the credit is committed; no manual
+Administration approval is required. A Paystack checkout *opened* notification
+must not be mistaken for confirmation of a completed payment.
+
+The live merchant webhook must be configured to the canonical HTTPS
+`/api/deposit/paystack/webhook` route using the same merchant credentials
+used to initiate the checkout. A wrong live/test merchant secret, blocked
+webhook delivery, missing original reference, refund or owner/amount
+mismatch is an unresolved payment exception, never a reason to issue
+unverified wallet funds.
