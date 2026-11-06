@@ -179,6 +179,11 @@ export const ADMIN_SPACES:readonly AdminSpace[]=[
     "description": "Review documented TRX sales and exchange movement."
   },
   {
+    "title": "Client Folder Upgrades (Legacy Register)",
+    "href": "/admin/client-folder-upgrades",
+    "description": "Historical Client File Folder records and File Number preparation; old loan collection is retired."
+  },
+  {
     "title": "Pro Folder Activation · Forensics",
     "href": "/admin/pro-activations",
     "description": "Review signed Pro agreements, Client business plans and manually verified one-time 680 USDT TRC-20 payments."
