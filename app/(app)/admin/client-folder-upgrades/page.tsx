@@ -7,6 +7,7 @@ type Upgrade={file_number:string;tier:string;status:string;loan_principal_usdt:n
 type Snapshot={fileNumber:string;clients:{id:string;name:string;file_number:string}[];upgrade:Upgrade|null;
  employeeOffers:{id:string;candidate_name:string;position_title:string;status:string;client_id:string|null;ticket_amount_usdt:number;proposed_personal_loan_usdt:number}[];
  fneStatus:{status:string;client_id:string|null}|null;
+ paystackQuote:{rate:number;source:string};
  repayments:{amount_usdt:number;reference:string;verified_at:string}[]}
 export default function ClientFolderUpgradeAdmin(){
  const {token,user,isInitialized}=useAuth()
@@ -17,6 +18,7 @@ export default function ClientFolderUpgradeAdmin(){
  const [checked,setChecked]=useState(false)
  const [paymentAmount,setPaymentAmount]=useState('680')
  const [paymentNetwork,setPaymentNetwork]=useState('')
+ const [rate,setRate]=useState('')
  const [paymentReference,setPaymentReference]=useState('')
  const [confirmation,setConfirmation]=useState('')
  const [busy,setBusy]=useState(false)
@@ -88,6 +90,15 @@ export default function ClientFolderUpgradeAdmin(){
     <label className="block text-sm">Type PREPARE CJ FILE NUMBER<input value={confirmation} onChange={e=>setConfirmation(e.target.value)} className="mt-2 w-full rounded-lg border border-white/20 bg-slate-950 p-3"/></label>
     <button disabled={busy||confirmation!=='PREPARE CJ FILE NUMBER'} onClick={()=>void act('prepare_employee_file_number',{confirmation})} className="rounded-lg border border-sky-200/40 px-5 py-3 text-sky-100 disabled:opacity-40">Prepare existing issued File Number</button>
   </section>}
+
+  <section className="space-y-3 rounded-2xl border border-cyan-300/25 p-5">
+    <h2 className="text-lg font-bold">Paystack loan settlement quote</h2>
+    <p className="text-sm text-slate-300">Loan principal: 680 USDT. Paystack collects NGN, not USDT. Each checkout records the NGN conversion rate and actual payable amount.</p>
+    <p className="text-sm">Current NGN per USDT: <strong>{state?.paystackQuote?.rate?Number(state.paystackQuote.rate).toLocaleString():'Not configured'}</strong> · {state?.paystackQuote?.source||'Unconfigured'}</p>
+    <label className="block text-sm">Approved NGN per USDT rate<input type="number" min=".0001" max="100000" step=".0001" value={rate} onChange={e=>setRate(e.target.value)} className="mt-2 w-full rounded-lg border border-white/20 bg-slate-950 p-3" placeholder="Enter Administration-approved settlement rate"/></label>
+    <label className="block text-sm">Type SET CJ PAYSTACK RATE<input value={confirmation} onChange={e=>setConfirmation(e.target.value)} className="mt-2 w-full rounded-lg border border-white/20 bg-slate-950 p-3"/></label>
+    <button disabled={busy||confirmation!=='SET CJ PAYSTACK RATE'||!(Number(rate)>0)} onClick={()=>void act('set_cj_paystack_rate',{confirmation,rateNGNPerUSDT:Number(rate)})} className="rounded-lg bg-cyan-300 px-5 py-3 text-sm font-bold text-slate-950 disabled:opacity-40">Save approved Paystack rate</button>
+  </section>
   {!up&&<section className="rounded-2xl border border-amber-300/25 p-5">
    <h2 className="text-lg font-bold">Prepare Pro world construction</h2>
    <p className="mt-2 text-xs leading-6 text-slate-300">The action only works if this File Number belongs to exactly one active CJ Dorado Client and her original File Folder ownership matches. It does not record a loan as accepted or funded.</p>
