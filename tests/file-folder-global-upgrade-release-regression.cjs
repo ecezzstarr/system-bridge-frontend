@@ -16,35 +16,36 @@ assert.ok(read('app/file-folder/page.tsx').includes('>Plus · Completed systems<
  'Public File Folder entrance must show all four types')
 assert.ok(read('app/api/bridge/file-folder/purchase/route.ts').includes("getFileFolderTier(amountFlameCoin, requestedTier)"),
  'Every checkout tier must pass the explicit fixed price contract')
-const upgrade=read('lib/client-folder-upgrade.ts')
+const activation=read('lib/pro-file-folder-activation.ts')
 const gate=read('components/system-switch/client-file-folder-gate.tsx')
 const entry=read('app/api/client/file-folder-entry/route.ts')
 const switchApi=read('app/api/client/system-switch/route.ts')
 const worldApi=read('app/api/client/file-folder-world/route.ts')
 const reminder=read('components/client/pro-folder-upgrade-reminder.tsx')
-const management=read('app/api/admin/client-folder-upgrades/route.ts')
-const migration=read('migrations/20261023_file_folder_four_tiers_global_releases_cj_pro.sql')
-assert.ok(upgrade.includes('CJ_DORADO_FILE_NUMBER')&&
+const management=read('app/api/admin/pro-activations/route.ts')
+assert.ok(activation.includes("PRO_ACTIVATION_FEE_USDT = 680")&&
  read('lib/client-file-folder.ts').includes('WEAVE-2026-0907-0001'),
- 'CJ Dorado keeps the existing File Number')
-assert.ok(management.includes("prepare_cj_pro")&&management.includes("confirm_loan")&&
- management.includes("verify_repayment")&&management.includes("finish_construction"),
- 'Administrative flow must distinguish construction, loan funding, repayment and release')
-assert.ok(management.includes('loanAccepted')&&management.includes('loanFundingChecked')&&
- management.includes('agreementReference')&&management.includes('fundingReference'),
- 'Loan cannot be invented from a chat or an unverified reference')
-assert.ok(management.includes('WHERE file_number=')&&management.includes('folder.client_id'),
- 'Pro offer cannot take over a different Client File Folder')
-assert.ok(gate.includes("stage === 'construction'")&&gate.includes('loan.remaining')&&reminder.includes('upgrade.loan.remaining'),
- 'Client should receive an accurate pre-entry loan reminder and construction message')
-assert.ok(entry.includes("upgrade.status!=='ready'")&&
- switchApi.includes("upgrade.status!=='ready'")&&worldApi.includes("upgrade.status!=='ready'"),
- 'Pro construction must block entry and direct private world API access')
-assert.ok(upgrade.includes('loan_funded_at')&&upgrade.includes('loan_agreed_at')&&
- upgrade.includes('remaining:funded?'),
- 'Remaining loan must never be shown as an actual obligation before verification')
-assert.ok(migration.includes('client_folder_loan_repayments')&&migration.includes('reference varchar(255) NOT NULL UNIQUE'),
- 'Personal-loan payments need distinct, idempotent, verifiable records')
+ 'CJ Dorado keeps her original File Number and the one-time 680 USDT fee')
+assert.ok(management.includes("action==='prepare'")&&management.includes("action==='confirm_signature'")&&
+ management.includes("action==='approve_payment'")&&management.includes('FOR UPDATE'),
+ 'Pro administration separates preparation, signed agreement, manual blockchain verification and release')
+assert.ok(management.includes('signed_agreement_verified_at')&&management.includes('business_plan_submitted_at')&&
+ management.includes('independentlyVerified')&&management.includes('verifiedAmountUSDT')&&
+ management.includes('verifiedTxHash'),
+ 'Forensics may not invent a signature, business plan or verified USDT payment')
+assert.ok(management.includes("WHERE file_number=")&&management.includes('folder.client_id'),
+ 'Pro offer cannot take over another Clients File Folder')
+assert.ok(gate.includes("stage === 'construction'")&&gate.includes('680 USDT')&&
+ reminder.includes('680 USDT'),
+ 'Client sees an accurate one-time fee and pre-entry activation reminder')
+assert.ok(entry.includes("proGate.status!=='active'")&&
+ switchApi.includes("proGate.status!=='active'")&&
+ worldApi.includes("activation.status!=='active'"),
+ 'All private Pro world endpoints block unpaid activation without blocking ordinary login')
+assert.ok(activation.includes('signed_agreement_verified_at')&&
+ activation.includes('business_plan_submitted_at')&&
+ activation.includes("status='pending_forensics'"),
+ 'Agreement and business plan are required before manually reviewed payment')
 const releases=read('lib/file-folder-world-release.ts')
 const globalApi=read('app/api/admin/file-folder-world-releases/route.ts')
 const globalPage=read('app/(app)/admin/file-folder-world-releases/page.tsx')
@@ -62,4 +63,4 @@ const src=ts.transpileModule(
  (pricing.match(/export function fileFolderTierLabel\([\s\S]+?\n\}/)||[])[0]||'',
  {compilerOptions:{target:ts.ScriptTarget.ES2020,module:ts.ModuleKind.CommonJS}}).outputText
 assert.ok(src.includes('Plus'))
-console.log('Four File Folder tiers, CJ Pro construction/repayment and global Administration release regression passed')
+console.log('Four File Folder tiers, 680 USDT Pro activation and global Administration release regression passed')
