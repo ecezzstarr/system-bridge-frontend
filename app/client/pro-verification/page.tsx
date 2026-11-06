@@ -147,7 +147,15 @@ export default function ProFileNumberVerification(){
      <p className="mt-2">Keep this code private. It is needed if you resume the verification on another device. Do not post it publicly.</p>
     </details>
     {verification.status==='pending_identity'&&<p className="rounded-lg border border-amber-300/20 p-4 text-sm text-slate-200">Administration is reviewing your File Number, identity, electronic signature, business name and business plan. Payment instructions are not available until that review is complete.</p>}
-    {(verification.status==='payment_required'||verification.status==='payment_rejected')&&<div className="space-y-4 rounded-lg border border-cyan-300/20 p-4">
+    {verification.status==='payment_rejected'&&<div className="space-y-3 rounded-lg border border-rose-300/30 p-4">
+     <h3 className="font-semibold text-rose-200">Payment evidence needs a new review</h3>
+     <p className="text-sm text-slate-200">Forensics finding: {verification.rejectionReason||'Receipt not independently confirmed.'} The original evidence is retained for audit. Do not send another payment without reconciling with Administration.</p>
+     <button type="button" onClick={()=>{
+      sessionStorage.removeItem(SESSION_KEY);setTicket('');setVerification(null);
+      setStep('file');setError('');setMessage('');setTxHash('')
+     }} className="rounded-lg border border-white/30 px-4 py-2 text-sm">Start a new verification request</button>
+    </div>}
+    {verification.status==='payment_required'&&<div className="space-y-4 rounded-lg border border-cyan-300/20 p-4">
      <h3 className="text-lg font-bold">5. Activate your Pro File Folder · 680 USDT</h3>
      {verification.rejectionReason&&<p className="text-sm text-rose-200">Forensics finding: {verification.rejectionReason}</p>}
      {verification.walletAddress?<div className="space-y-2">
