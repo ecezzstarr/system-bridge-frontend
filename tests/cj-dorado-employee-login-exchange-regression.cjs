@@ -31,7 +31,7 @@ assert.ok(activation.includes('signed_agreement_verified_at')&&activation.includ
  'Signature and plan must precede payment')
 assert.ok(activation.includes("status='pending_forensics'")&&activation.includes('payment_tx_hash char(64) UNIQUE'),
  'Unique blockchain payment evidence awaits review')
-assert.ok(activation.includes("status='awaiting_signature'")&&activation.includes("status='active'"),
+assert.ok(activation.includes("DEFAULT 'awaiting_signature'")&&activation.includes("'pending_forensics','rejected','active'"),
  'One-time activation has signature and active states')
 assert.ok(!activation.includes('initializePaystackTransaction'),'No Paystack checkout for Pro activation')
 const client=read('app/api/client/pro-activation/route.ts')
