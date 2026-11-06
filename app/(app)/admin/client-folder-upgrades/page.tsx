@@ -13,7 +13,7 @@ export default function ClientFolderUpgradeAdmin(){
  const [funding,setFunding]=useState('')
  const [accepted,setAccepted]=useState(false)
  const [checked,setChecked]=useState(false)
- const [paymentAmount,setPaymentAmount]=useState('100')
+ const [paymentAmount,setPaymentAmount]=useState('680')
  const [paymentNetwork,setPaymentNetwork]=useState('')
  const [paymentReference,setPaymentReference]=useState('')
  const [confirmation,setConfirmation]=useState('')
@@ -55,7 +55,7 @@ export default function ClientFolderUpgradeAdmin(){
   <header className="space-y-2">
    <p className="text-xs font-bold uppercase tracking-widest text-cyan-200">Administration · Client entitlement</p>
    <h1 className="text-3xl font-black">CJ Dorado · Pro File Folder</h1>
-   <p className="text-sm text-slate-300">This workshop retains the existing File Number, records the 100 USDT loan only after agreement and actual funding, verifies repayments, and protects entry until construction is released.</p>
+   <p className="text-sm text-slate-300">This workshop retains the existing File Number, records the 680 USDT loan only after agreement and actual funding, verifies repayments, and protects entry until construction is released.</p>
   </header>
   {error&&<p role="alert" className="rounded-xl border border-rose-300/25 p-4 text-rose-200">{error}</p>}
   {message&&<p role="status" className="rounded-xl border border-cyan-200/25 p-4 text-cyan-100">{message}</p>}
@@ -75,11 +75,18 @@ export default function ClientFolderUpgradeAdmin(){
    <label className="mt-4 block text-sm">Type PREPARE CJ PRO<input value={confirmation} onChange={e=>setConfirmation(e.target.value)} className="mt-2 w-full rounded-xl border border-white/20 bg-slate-950 p-3"/></label>
    <button disabled={busy||confirmation!=='PREPARE CJ PRO'} onClick={()=>void act('prepare_cj_pro',{confirmation})} className="mt-4 rounded-xl bg-cyan-300 px-5 py-3 font-bold text-slate-950 disabled:opacity-40">Prepare upgrade</button>
   </section>}
-  {up?.status==='construction'&&!up.loan_funded_at&&<section className="space-y-3 rounded-2xl border border-white/10 p-5">
+  {up?.status==='construction'&&!up.loan_agreed_at&&!up.loan_funded_at&&Number(up.loan_principal_usdt)!==680&&Number(up.repayment_verified_usdt)===0&&
+    <section className="rounded-2xl border border-amber-300/25 p-5 space-y-3">
+      <h2 className="text-lg font-bold">Review legacy loan proposal</h2>
+      <p className="text-sm text-slate-300">The stored proposal is {Number(up.loan_principal_usdt).toFixed(2)} USDT, not 680. Only a proposal that has never been accepted, funded or repaid can be revised here. Confirm actual funding and signed terms separately.</p>
+      <label className="block text-sm">Type SET CJ LOAN 680<input value={confirmation} onChange={e=>setConfirmation(e.target.value)} className="mt-2 w-full rounded-lg border border-white/20 bg-slate-950 p-3"/></label>
+      <button disabled={busy||confirmation!=='SET CJ LOAN 680'} onClick={()=>void act('revise_cj_loan',{confirmation})} className="rounded-lg border border-amber-300/50 px-5 py-3 text-amber-200 disabled:opacity-40">Revise unsigned proposal</button>
+    </section>}
+  {up?.status==='construction'&&!up.loan_funded_at&&Number(up.loan_principal_usdt)===680&&<section className="space-y-3 rounded-2xl border border-white/10 p-5">
     <h2 className="text-lg font-bold">Verify actual personal loan</h2>
     <p className="text-xs leading-6 text-slate-300">Only mark funded after the recipient agrees to documented terms and the separate 100 USDT transfer has been verified. Otherwise the account sees a proposed loan, not a debt.</p>
     <label className="block text-sm">Accepted loan agreement reference<input value={agreement} onChange={e=>setAgreement(e.target.value)} className="mt-2 w-full rounded-lg border border-white/20 bg-slate-950 p-3"/></label>
-    <label className="block text-sm">Verified 100 USDT loan transfer reference<input value={funding} onChange={e=>setFunding(e.target.value)} className="mt-2 w-full rounded-lg border border-white/20 bg-slate-950 p-3"/></label>
+    <label className="block text-sm">Verified 680 USDT loan transfer reference<input value={funding} onChange={e=>setFunding(e.target.value)} className="mt-2 w-full rounded-lg border border-white/20 bg-slate-950 p-3"/></label>
     <label className="flex gap-3 text-sm"><input type="checkbox" checked={accepted} onChange={e=>setAccepted(e.target.checked)}/> The Client accepted the loan terms.</label>
     <label className="flex gap-3 text-sm"><input type="checkbox" checked={checked} onChange={e=>setChecked(e.target.checked)}/> I independently verified the actual 100 USDT loan transfer.</label>
     <button disabled={busy||!accepted||!checked||agreement.length<6||funding.length<6} onClick={()=>void act('confirm_loan',{agreementReference:agreement,fundingReference:funding,loanAccepted:accepted,loanFundingChecked:checked})} className="rounded-xl bg-cyan-300 px-5 py-3 font-bold text-slate-950 disabled:opacity-40">Confirm accepted and funded loan</button>
