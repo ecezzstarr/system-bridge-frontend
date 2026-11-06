@@ -5,7 +5,6 @@ import { getPool } from '@/lib/db'
 import { notifyAdministrators } from '@/lib/deposit-notifications'
 import { settleDepartmentEntryPaystackTicket } from '@/lib/department-entry-paystack'
 import { settleFileFolderPaystackPurchase } from '@/lib/file-folder-paystack'
-import { settleCjLoan, flagCjLoanPaystackEvent } from '@/lib/cj-dorado-loan'
 
 export const dynamic = 'force-dynamic'
 
@@ -23,7 +22,14 @@ export async function POST(request: NextRequest) {
       // The server generates distinct references for each payment product.
       // Route recognized references directly, avoiding unrelated schema queries.
       if (reference.startsWith('CJLOAN-')) {
-        await settleCjLoan(reference)
+        // Retired CJ Paystack route: never treat a historical loan reference as
+        // a Pro activation fee or credit the former loan register.
+        await notifyAdministrators({
+          type:'deposit_payment_event',title:'Retired CJ Paystack reference requires reconciliation',
+          content:'Paystack reported a charge for historical reference '+reference+
+            '. Pro activation uses USDT TRC-20 and manual Forensics approval. Inspect the Paystack payment independently; do not auto-activate or auto-credit.',
+          link:'/admin/pro-activations',fromUserName:'WEAVE Paystack',
+        })
       } else if (reference.startsWith('ENTRY-')) {
         await settleDepartmentEntryPaystackTicket(reference)
       } else if (reference.startsWith('FOLDER-')) {
@@ -40,12 +46,11 @@ export async function POST(request: NextRequest) {
       }
     } else if ((event?.event === 'charge.failed' || event?.event === 'refund.processed') && reference) {
       if(reference.startsWith('CJLOAN-')){
-        const matched=await flagCjLoanPaystackEvent(reference,event.event)
-        if(matched)await notifyAdministrators({
-          type:'deposit_payment_event',
-          title:'CJ employee Paystack loan payment needs review',
-          content:'A signed Paystack '+event.event+' event was received for '+reference+'. Check the loan and access ledger before release or further payment.',
-          link:'/admin/client-folder-upgrades',fromUserName:'WEAVE Paystack',
+        await notifyAdministrators({
+          type:'deposit_payment_event',title:'Retired CJ Paystack refund or failure requires review',
+          content:'Paystack reported '+event.event+' for historical reference '+reference+
+            '. Reconcile the provider record; no Pro fee or Client wallet is changed automatically.',
+          link:'/admin/pro-activations',fromUserName:'WEAVE Paystack',
         })
         return NextResponse.json({received:true})
       }
