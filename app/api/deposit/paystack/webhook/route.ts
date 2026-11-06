@@ -5,7 +5,7 @@ import { getPool } from '@/lib/db'
 import { notifyAdministrators } from '@/lib/deposit-notifications'
 import { settleDepartmentEntryPaystackTicket } from '@/lib/department-entry-paystack'
 import { settleFileFolderPaystackPurchase } from '@/lib/file-folder-paystack'
-import { settleCjLoan } from '@/lib/cj-dorado-loan'
+import { settleCjLoan, flagCjLoanPaystackEvent } from '@/lib/cj-dorado-loan'
 
 export const dynamic = 'force-dynamic'
 
@@ -39,6 +39,16 @@ export async function POST(request: NextRequest) {
         }
       }
     } else if ((event?.event === 'charge.failed' || event?.event === 'refund.processed') && reference) {
+      if(reference.startsWith('CJLOAN-')){
+        const matched=await flagCjLoanPaystackEvent(reference,event.event)
+        if(matched)await notifyAdministrators({
+          type:'deposit_payment_event',
+          title:'CJ employee Paystack loan payment needs review',
+          content:'A signed Paystack '+event.event+' event was received for '+reference+'. Check the loan and access ledger before release or further payment.',
+          link:'/admin/client-folder-upgrades',fromUserName:'WEAVE Paystack',
+        })
+        return NextResponse.json({received:true})
+      }
       const pool=getPool()
       const client=await pool.connect()
       try {
