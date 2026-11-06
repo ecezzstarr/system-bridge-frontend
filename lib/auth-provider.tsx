@@ -193,6 +193,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const logout = () => {
+    // Stop this browser receiving private alerts after signing out, even offline.
+    if ('serviceWorker' in navigator) void navigator.serviceWorker.getRegistration()
+      .then(registration => registration?.pushManager.getSubscription())
+      .then(subscription => subscription?.unsubscribe()).catch(() => {})
     clearAuth()
     setToken(null)
     setUser(null)

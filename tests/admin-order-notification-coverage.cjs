@@ -108,5 +108,5 @@ assert(read('components/app-header.tsx').includes('<NotificationBell position="p
 assert(read('components/app-header.tsx').includes('<NotificationBell position="desktop" />'))
 const bell=read('components/notification-bell.tsx')
 assert(bell.includes("!user?.id||!deviceVisible"),'Hidden breakpoints must not fetch or play order-alert notifications')
-assert(bell.includes("Notification.requestPermission()"),'Browser permission may be requested only from the bell interaction')
+assert(read('components/phone-notifications.tsx').includes("Notification.requestPermission()"),'Phone notification permission is requested from the explicit enable control')
 testWriter().then(()=>console.log('Admin order coverage, secure inbox, idempotent notifications and lifecycle tests passed')).catch(e=>{console.error(e);process.exitCode=1})

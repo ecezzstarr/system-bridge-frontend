@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Bell, X, MessageCircle, Check } from 'lucide-react'
 import { useAuth } from '@/lib/auth-provider'
 import Link from 'next/link'
+import { PhoneNotifications } from '@/components/phone-notifications'
 
 interface Notification {
   id: string
@@ -104,23 +105,7 @@ export function NotificationBell({position='phone'}:{position?:'phone'|'desktop'
               const freshOnes = list.filter(n => !n.is_read && !knownIds.current.has(n.id))
               if (freshOnes.length > 0) {
                 void playRiverAlert()
-                if ('Notification' in window && Notification.permission === 'granted') {
-                  freshOnes.slice(0, 3).forEach(n => {
-                    try {
-                      const popup = new Notification(n.title || 'New notification', {
-                        body: n.content || '',
-                        tag: n.id,
-                      })
-                      popup.onclick = () => {
-                        window.focus()
-                        window.location.href = '/notifications?open=' + encodeURIComponent(n.id)
-                      }
-                    } catch {
-                      // Mobile browsers may disallow page-created system notifications.
-                      // Keep the in-app inbox and approved river sound working anyway.
-                    }
-                  })
-                }
+
               }
               list.forEach(n => knownIds.current.add(n.id))
             }
@@ -185,7 +170,7 @@ export function NotificationBell({position='phone'}:{position?:'phone'|'desktop'
       <button
         onClick={() => {
           setIsOpen(!isOpen)
-          if('Notification' in window&&Notification.permission==='default')void Notification.requestPermission()
+
         }}
         aria-label={`Notifications, ${unreadCount} unread`}
         className="relative p-2 text-slate-400 hover:text-white transition rounded-lg hover:bg-slate-800"
@@ -227,6 +212,8 @@ export function NotificationBell({position='phone'}:{position?:'phone'|'desktop'
                 <button type="button" onClick={() => setRiverSound(!soundEnabled)} aria-pressed={soundEnabled} className={`rounded-lg px-2 py-1.5 text-[10px] font-bold ${soundEnabled ? 'bg-cyan-400/15 text-cyan-100' : 'bg-slate-800 text-slate-300'}`}>{soundEnabled ? 'Sound On' : 'Sound Off'}</button>
               </div>
             </div>
+
+            <PhoneNotifications userId={user.id} />
 
             <div className="max-h-96 overflow-y-auto">
               {notifications.length === 0 ? (

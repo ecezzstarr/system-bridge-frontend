@@ -15,7 +15,7 @@ const foodChat=read('components/food-preparation/food-team-communications.tsx')
 const foodApi=read('app/api/weave/lifestyles/food-preparation/team/route.ts')
 
 assert.ok(bell.includes('View all messages')&&bell.includes('View message'),'Notification bell offers complete messages')
-assert.ok(bell.includes("'/notifications?open='")&&bell.includes('encodeURIComponent(notification.id)'),'Clicking mobile or browser alerts opens a specific message')
+assert.ok(read('public/sw.js').includes("'?open='")&&bell.includes('encodeURIComponent(notification.id)'),'Clicking mobile or browser alerts opens a specific message')
 assert.ok(inbox.includes('whitespace-pre-wrap break-words')&&inbox.includes('active.content'),'The selected message is not clipped in the inbox')
 assert.ok(inbox.includes('markAllRead:true')&&inbox.includes('notificationIds:ids'),'Notification read operations survive redesign')
 assert.ok(inbox.includes('notificationDestination(active,user.role)'),'Related page is chosen from role-safe navigation')
