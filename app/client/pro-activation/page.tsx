@@ -66,7 +66,7 @@ export default function ProActivationPage(){
    <p className="text-sm leading-6 text-slate-200">Sign in using your issued Client File Number and password to read and electronically sign your Pro agreement, submit a business plan, and view your private activation status.</p>
    <p className="text-xl font-bold">One-time activation: 680 USDT</p>
    <p className="text-xs text-slate-300">USDT on TRON (TRC-20). Payment is requested only after you review and sign the terms; Forensics verifies it manually.</p>
-   <Link href="/client/login?fileNumber=WEAVE-2026-0907-0001" className="inline-block rounded-lg bg-cyan-300 px-5 py-3 font-bold text-slate-950">Continue to Client sign-in</Link>
+   <Link href="/client/login" className="inline-block rounded-lg bg-cyan-300 px-5 py-3 font-bold text-slate-950">Continue to Client sign-in</Link>
    <p className="text-xs text-slate-400">If you have not completed your private employee registration, ask Administration for your existing approved invitation. Do not open a second account.</p>
   </div>
  </main>
