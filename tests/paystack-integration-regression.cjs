@@ -63,7 +63,7 @@ if (!settlement.includes("if (!paystackTransactionMatches(matchInput))") ||
     !settlement.includes("return { settled: false, reason: paystackMismatchReason(matchInput)")) {
   throw new Error('Incomplete or mismatched Paystack checkouts must not be falsely credited or irreversibly rejected')
 }
-if (!depositRoute.includes('export async function GET(request: NextRequest)') || !depositRoute.includes("user_id=$1::uuid AND method='paystack'")) {
+if (!depositRoute.includes('export async function GET(request: NextRequest)') || !depositRoute.includes("d.user_id=$1::uuid AND d.method='paystack'")) {
   throw new Error('Paystack wallet history must be scoped to the authenticated user')
 }
 if (!notifications.includes("input.rail === 'PAYSTACK'") || !notifications.includes('This is not proof of payment')) {
