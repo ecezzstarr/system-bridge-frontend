@@ -821,7 +821,7 @@ function DepositApprovalSection({ user }: { user: any }) {
                     placeholder="CREDIT plus full reference" className="w-full rounded-lg border border-white/20 bg-[#0a1a25] p-3 text-sm text-white" />
                   <div className="flex flex-wrap gap-2">
                     <Button size="sm" disabled={manualBusy || !manualConfirmed || manualPhrase !== 'CREDIT ' + deposit.reference ||
-                        manualReference !== deposit.reference || !/^\\d{5,40}$/.test(manualTransactionId) ||
+                        manualReference !== deposit.reference || !/^\d{5,40}$/.test(manualTransactionId) ||
                         Math.round(Number(manualNgn)*100) !== Math.round(Number(deposit.amount_ngn)*100) || manualNote.trim().length < 20}
                       onClick={() => void creditAfterManualConfirmation(deposit)}>
                       {manualBusy ? 'Crediting wallet...' : 'Confirm and credit Flame Coin once'}
