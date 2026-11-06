@@ -5,6 +5,7 @@ import { usableBcryptPasswordHash } from '@/lib/password-hash'
 import { randomBytes } from 'node:crypto'
 import { getDivineShieldState } from '@/lib/weave-infrastructure'
 import { ensureUserReferralCode } from '@/lib/user-referral'
+import { getCjLoanGate, issueCjLoanGrant } from '@/lib/cj-dorado-loan'
 
 
 export async function POST(request: NextRequest) {
@@ -25,7 +26,7 @@ export async function POST(request: NextRequest) {
       SELECT id, email, name, role, password_hash, file_number, business_name, referral_code, referred_by
       FROM users
       WHERE file_number = ${fileNumber}
-      AND is_active = true
+      AND is_active = true AND role = 'client'
     `
 
     if (result.length === 0) {
@@ -56,6 +57,18 @@ export async function POST(request: NextRequest) {
         { error: 'Invalid file number or password' },
         { status: 401 }
       )
+    }
+
+    const loanGate = await getCjLoanGate(user)
+    if (loanGate && loanGate.status !== 'cleared') {
+      return NextResponse.json({
+        error: loanGate.status === 'payment_required'
+          ? 'CJ Dorado: the accepted 680 USDT employee loan must be settled through verified Paystack checkout before account entry.'
+          : 'CJ Dorado: Administration must verify the 680 USDT loan agreement, actual funding and account ownership before checkout.',
+        code: loanGate.status === 'payment_required' ? 'CJ_LOAN_PAYMENT_REQUIRED' : 'CJ_LOAN_SETUP_PENDING',
+        amountUSDT: loanGate.remainingUSDT,
+        ...(loanGate.status === 'payment_required' ? { checkoutGrant: await issueCjLoanGrant(user.id) } : {}),
+      }, { status: 423, headers: { 'Cache-Control': 'private, no-store' } })
     }
 
     const referralCode = user.referral_code || await ensureUserReferralCode(user.id)
