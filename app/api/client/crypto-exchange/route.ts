@@ -2,6 +2,7 @@ import {NextRequest,NextResponse} from 'next/server'
 import {getAuthUser} from '@/lib/auth-api'
 import {sql} from '@/lib/db'
 import {CJ_DORADO_FILE_NUMBER} from '@/lib/client-file-folder'
+import {getProActivationState} from '@/lib/pro-file-folder-activation'
 export const dynamic='force-dynamic'
 const headers={'Cache-Control':'private, no-store'}
 const PAIRS=['BTC/USDT','ETH/USDT','SOL/USDT','TRX/USDT'] as const
@@ -11,9 +12,8 @@ async function access(request:NextRequest){
  const [owned]=await sql`SELECT id,file_number FROM users WHERE id=${user.id}::uuid
  AND role='client' AND is_active=true AND file_number=${CJ_DORADO_FILE_NUMBER} LIMIT 1`
  if(!owned)return null
- const [upgrade]=await sql`SELECT status FROM client_folder_upgrades
- WHERE client_id=${user.id}::uuid AND file_number=${CJ_DORADO_FILE_NUMBER} AND tier='pro' LIMIT 1`
- if(upgrade?.status!=='ready')return null
+ const activation=await getProActivationState(String(user.id),CJ_DORADO_FILE_NUMBER)
+ if(activation?.status!=='active')return null
  const [workshop]=await sql`SELECT id FROM client_system_workshops
  WHERE client_id=${user.id}::uuid AND file_number=${CJ_DORADO_FILE_NUMBER}
  AND workshop_type='crypto_exchange' LIMIT 1`
