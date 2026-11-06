@@ -577,26 +577,22 @@ function DepositApprovalSection({ user }: { user: any }) {
   const [inspectingId, setInspectingId] = useState<string | null>(null)
   const [manualId, setManualId] = useState<string | null>(null)
   const [manualTransactionId, setManualTransactionId] = useState('')
-  const [manualReference, setManualReference] = useState('')
-  const [manualNgn, setManualNgn] = useState('')
   const [manualNote, setManualNote] = useState('')
-  const [manualPhrase, setManualPhrase] = useState('')
   const [manualConfirmed, setManualConfirmed] = useState(false)
   const [manualBusy, setManualBusy] = useState(false)
+  const [manualError, setManualError] = useState('')
 
   const openManualCredit = (deposit: ReviewDeposit) => {
     setManualId(deposit.id)
     setManualTransactionId('')
-    setManualReference('')
-    setManualNgn('')
-    setManualNote('')
-    setManualPhrase('')
+    setManualNote('Confirmed the successful charge in the original Paystack merchant dashboard.')
+    setManualError('')
     setManualConfirmed(false)
   }
   const closeManualCredit = () => { if (!manualBusy) setManualId(null) }
   const creditAfterManualConfirmation = async (deposit: ReviewDeposit) => {
     if (manualBusy || !manualConfirmed) return
-    if (!window.confirm('Confirm this successful Paystack charge was independently checked in the original merchant dashboard? This will CREDIT the user wallet immediately.')) return
+    setManualError('')
     setManualBusy(true)
     try {
       const token = localStorage.getItem('ssb_auth_token')
@@ -608,22 +604,22 @@ function DepositApprovalSection({ user }: { user: any }) {
         },
         body: JSON.stringify({
           action:'manual_credit',depositId:deposit.id,
-          paystackTransactionId:manualTransactionId,
-          observedReference:manualReference,
-          observedAmountNgn:Number(manualNgn),
+          confirmedInPaystackDashboard:manualConfirmed,
           evidenceNote:manualNote,
-          confirmation:manualPhrase,
+          paystackTransactionId:manualTransactionId.trim(),
         }),
       })
-      const result = await response.json()
+      const result = await response.json().catch(() => ({}))
       if (!response.ok || !result.success || result.credited !== true) {
-        throw new Error(result.error || 'Manual Paystack credit was refused; no wallet funds moved.')
+        throw new Error(result.error || 'Manual credit endpoint unavailable on this release (HTTP ' + response.status + '). The wallet was not confirmed credited.')
       }
       toast.success(result.message || 'Manual Paystack credit recorded.')
       setManualId(null)
       await fetchPendingDeposits(true)
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Manual credit unavailable.')
+      const message = error instanceof Error ? error.message : 'Manual credit unavailable.'
+      setManualError(message)
+      toast.error(message)
     } finally { setManualBusy(false) }
   }
 
@@ -784,47 +780,45 @@ function DepositApprovalSection({ user }: { user: any }) {
                 </div>
               </div>
               {manualId === deposit.id && (
-                <div className="mt-4 space-y-3 rounded-xl border border-amber-300/25 bg-black/30 p-4">
-                  <p className="text-sm font-bold text-amber-100">Administration manual Paystack confirmation</p>
-                  <p className="text-xs leading-5 text-slate-300">Open the original Paystack merchant dashboard and confirm the transaction is successful, not pending, failed, reversed or refunded. Match this exact deposit reference and NGN amount before continuing. A user receipt alone is insufficient.</p>
-                  <p className="break-all font-mono text-[11px] text-white">{deposit.reference} · ₦{Number(deposit.amount_ngn).toLocaleString()} · {Number(deposit.flame_coin).toLocaleString()} Flame Coin</p>
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <label className="text-xs text-slate-200">Paystack transaction ID (numeric)
-                      <input type="text" inputMode="numeric" autoComplete="off" value={manualTransactionId}
-                        onChange={e => setManualTransactionId(e.target.value)}
-                        placeholder="ID shown in Paystack Dashboard" className="mt-1 w-full rounded-lg border border-white/20 bg-[#0a1a25] p-3 text-sm text-white" />
-                    </label>
-                    <label className="text-xs text-slate-200">Confirmed NGN amount
-                      <input type="number" min="1" max="10000" step="0.01" value={manualNgn}
-                        onChange={e => setManualNgn(e.target.value)}
-                        placeholder="Exact amount received" className="mt-1 w-full rounded-lg border border-white/20 bg-[#0a1a25] p-3 text-sm text-white" />
-                    </label>
+                <div className="mt-4 space-y-3 rounded-xl border border-amber-300/25 bg-black/30 p-4" role="region" aria-label="Manual Paystack wallet approval">
+                  <p className="text-sm font-bold text-amber-100">Confirm successful payment · Credit wallet</p>
+                  <p className="text-xs leading-5 text-slate-300">
+                    Confirm this specific transaction shows Success in your original Paystack merchant dashboard.
+                    Weave will credit the recorded amount once; it will not ask you to re-enter the reference or amount.
+                  </p>
+                  <div className="rounded-lg border border-white/10 bg-slate-900/60 p-3 text-sm text-white">
+                    <p className="font-semibold">{deposit.name || deposit.email} · {deposit.role}</p>
+                    <p>₦{Number(deposit.amount_ngn).toLocaleString()} → {Number(deposit.flame_coin).toLocaleString()} Flame Coin</p>
+                    <p className="mt-1 break-all font-mono text-xs text-cyan-200">{deposit.reference}</p>
                   </div>
-                  <label className="block text-xs text-slate-200">Full Paystack transaction reference
-                    <input type="text" autoComplete="off" value={manualReference}
-                      onChange={e => setManualReference(e.target.value)}
-                      placeholder="Type the reference shown in Paystack" className="mt-1 w-full rounded-lg border border-white/20 bg-[#0a1a25] p-3 text-sm text-white" />
-                  </label>
-                  <label className="block text-xs text-slate-200">Evidence and verification notes
-                    <textarea rows={2} maxLength={800} value={manualNote}
-                      onChange={e => setManualNote(e.target.value)}
-                      placeholder="Successful charge confirmed on merchant dashboard; date/time and payment details checked"
+                  <a href="https://dashboard.paystack.com/" target="_blank" rel="noreferrer noopener"
+                    className="inline-block rounded-lg border border-white/20 px-3 py-2 text-xs text-cyan-200 underline">
+                    Open Paystack merchant dashboard
+                  </a>
+                  <label className="block text-xs text-slate-200">
+                    Optional Paystack numeric transaction ID (for additional duplicate checking)
+                    <input type="text" inputMode="numeric" autoComplete="off" value={manualTransactionId}
+                      onChange={event => setManualTransactionId(event.target.value)}
+                      placeholder="Leave blank if not shown in Paystack"
                       className="mt-1 w-full rounded-lg border border-white/20 bg-[#0a1a25] p-3 text-sm text-white" />
                   </label>
-                  <label className="flex items-start gap-2 text-xs leading-5 text-slate-200">
-                    <input type="checkbox" checked={manualConfirmed} onChange={e => setManualConfirmed(e.target.checked)} className="mt-1" />
-                    I personally confirmed a successful payment in the Paystack merchant dashboard, matching this user, reference and amount; no refund or reversal is shown.
+                  <label className="block text-xs text-slate-200">
+                    Verification note
+                    <textarea rows={2} maxLength={800} value={manualNote}
+                      onChange={event => setManualNote(event.target.value)}
+                      className="mt-1 w-full rounded-lg border border-white/20 bg-[#0a1a25] p-3 text-sm text-white" />
                   </label>
-                  <p className="text-xs text-slate-300">Type <strong className="break-all text-amber-100">CREDIT {deposit.reference}</strong> to authorize the exact stored Flame Coin amount.</p>
-                  <input type="text" autoComplete="off" value={manualPhrase}
-                    onChange={e => setManualPhrase(e.target.value)}
-                    placeholder="CREDIT plus full reference" className="w-full rounded-lg border border-white/20 bg-[#0a1a25] p-3 text-sm text-white" />
+                  <label className="flex items-start gap-3 rounded-lg border border-amber-300/20 p-3 text-xs leading-5 text-amber-100">
+                    <input type="checkbox" checked={manualConfirmed}
+                      onChange={event => setManualConfirmed(event.target.checked)} className="mt-1" />
+                    I independently checked Paystack and confirm this reference was successfully paid, in full, without a refund or reversal. I authorize the exact stored wallet credit.
+                  </label>
+                  {manualError && <p role="alert" className="rounded-lg border border-red-400/30 p-3 text-xs text-red-200">{manualError}</p>}
                   <div className="flex flex-wrap gap-2">
-                    <Button size="sm" disabled={manualBusy || !manualConfirmed || manualPhrase !== 'CREDIT ' + deposit.reference ||
-                        manualReference !== deposit.reference || !/^\d{5,40}$/.test(manualTransactionId) ||
-                        Math.round(Number(manualNgn)*100) !== Math.round(Number(deposit.amount_ngn)*100) || manualNote.trim().length < 20}
+                    <Button size="sm" disabled={manualBusy || !manualConfirmed || manualNote.trim().length < 12 ||
+                      (manualTransactionId.trim() !== '' && !/^[0-9]{1,40}$/.test(manualTransactionId.trim()))}
                       onClick={() => void creditAfterManualConfirmation(deposit)}>
-                      {manualBusy ? 'Crediting wallet...' : 'Confirm and credit Flame Coin once'}
+                      {manualBusy ? 'Crediting wallet...' : 'Approve and credit ' + Number(deposit.flame_coin).toLocaleString() + ' Flame Coin'}
                     </Button>
                     <Button size="sm" variant="outline" disabled={manualBusy} onClick={closeManualCredit}>Cancel</Button>
                   </div>

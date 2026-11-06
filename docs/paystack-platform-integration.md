@@ -154,3 +154,25 @@ Administration accounts only to trusted staff and restrict the server
 credentials. Never run it solely from a receipt or without confirming
 success in the merchant dashboard. A source-code merge cannot itself
 credit already-paid production transactions.
+
+
+## Manual approval reliability correction — November 6, 2026
+Prior versions made the emergency Approve button depend on six repeated inputs,
+including a required numeric Paystack transaction ID and an exact phrase. The
+button remained disabled without adequate explanation. A runtime
+`CREATE TABLE` statement could also fail due to production database
+permissions. Those dependencies have been removed.
+
+Administration now reviews the stored recipient, NGN amount, Flame Coin amount
+and original reference, checks Paystack's merchant dashboard, optionally adds
+a numeric transaction ID, and explicitly affirms confirmation. One approval
+credits the stored amount. The backend never uses client-submitted wallet
+amounts. A human confirmation is still not represented as independent Paystack
+API verification. Audit entries, the deposit row lock, duplicate/refund checks
+and an advisory lock for provided Paystack transaction IDs prevent repeated
+crediting. No table migrations run during approval.
+
+A separate PostgreSQL integration test must exercise a completed deposit
+credit, repeated approval, refund conflicts and transaction-ID reuse, not merely
+scan file contents. GitHub Production Check is NOT deployment; explicit
+self-host deployment and a release identity check are required.
