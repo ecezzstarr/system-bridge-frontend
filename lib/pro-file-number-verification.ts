@@ -114,6 +114,23 @@ export async function readProFileNumberVerification(ticket:string){
   payment_submitted_at,payment_verified_at,rejection_reason FROM pro_file_number_verifications
   WHERE access_token_hash=${hashTicket(ticket.toLowerCase())} LIMIT 1`
  if(!row)return null
+ // Reported CJ event funds are visible only after independently verified identity,
+ // never through a File Number alone. They are not a wallet credit.
+ let siblingsEvent:null|{reportedAmountUSDT:number;verifiedAmountUSDT:number;status:string;availableForWithdrawal:boolean}=null
+ if(row.identity_verified_at&&String(row.file_number)===CJ_DORADO_FILE_NUMBER){
+  let reportedAmountUSDT=9000,verifiedAmountUSDT=0,status='pending_mandate_verification'
+  const [claimsTable]=await sql`SELECT to_regclass('public.client_siblings_event_claims') AS name`
+  if(claimsTable?.name){
+   const [claim]=await sql`SELECT reported_amount_usdt,verified_amount_usdt,status
+    FROM client_siblings_event_claims WHERE file_number=${CJ_DORADO_FILE_NUMBER} LIMIT 1`
+   if(claim){
+    reportedAmountUSDT=Number(claim.reported_amount_usdt||0)
+    verifiedAmountUSDT=Number(claim.verified_amount_usdt||0)
+    status=String(claim.status||status)
+   }
+  }
+  siblingsEvent={reportedAmountUSDT,verifiedAmountUSDT,status,availableForWithdrawal:false}
+ }
  const paymentReady=['payment_required','payment_rejected'].includes(String(row.status))
  let receivingWallet:string|null=null
  if(paymentReady){
@@ -124,7 +141,7 @@ export async function readProFileNumberVerification(ticket:string){
   reference:String(row.id),fileNumber:String(row.file_number),businessName:String(row.business_name),
   status:String(row.status),feeUSDT:PRO_ACTIVATION_FEE_USDT,network:'USDT TRON (TRC-20)',
   walletAddress:receivingWallet,
-  paymentVerified:Boolean(row.payment_verified_at),
+  paymentVerified:Boolean(row.payment_verified_at),siblingsEvent,
   rejectionReason:row.rejection_reason||null,
  }
 }
