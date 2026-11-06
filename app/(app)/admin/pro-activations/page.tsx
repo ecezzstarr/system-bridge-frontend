@@ -3,7 +3,7 @@ import {useCallback,useEffect,useState} from 'react'
 import Link from 'next/link'
 import {useAuth} from '@/lib/auth-provider'
 type Item={id:string;client_name:string;client_email:string;file_number:string;status:string;
- signed_agreement_reference?:string;payment_tx_hash?:string;wallet_address?:string;
+ signed_agreement_reference?:string;client_signature_name?:string|null;client_signature_at?:string|null;payment_tx_hash?:string;wallet_address?:string;
  business_plan?:Record<string,string>|null;rejection_reason?:string;verified_at?:string|null}
 type State={activations:Item[];cjClient?:{id:string;name:string;file_number:string}|null;wallet?:string|null;feeUSDT:number}
 export default function ProActivationsAdmin(){
@@ -84,10 +84,13 @@ export default function ProActivationsAdmin(){
      <pre className="mt-2 whitespace-pre-wrap break-words rounded-lg bg-slate-950 p-4 text-xs">{JSON.stringify(selected.business_plan,null,2)}</pre>
     </details>}
     {selected.status==='awaiting_signature'&&<div className="space-y-2 border-t border-white/10 pt-4">
-     <h3 className="font-semibold">Record CJ's signed agreement</h3>
+     <h3 className="font-semibold">Verify Client's electronic signature</h3>
+     {selected.client_signature_at
+      ?<p className="rounded-lg border border-cyan-300/20 p-3 text-sm text-cyan-100">Signed by {selected.client_signature_name} on {new Date(selected.client_signature_at).toLocaleString()}. Independently review identity and terms.</p>
+      :<p className="text-sm text-amber-200">Client electronic signature has not been received. Do not verify an unsigned agreement.</p>}
      <input value={reference} onChange={e=>setReference(e.target.value)} className="w-full rounded-lg border border-white/20 bg-slate-950 p-3" placeholder="Actual signed document reference"/>
      <label className="flex gap-2 text-sm"><input type="checkbox" checked={checked} onChange={e=>setChecked(e.target.checked)}/> I have reviewed CJ's signed Pro agreement and File Number identity.</label>
-     <button disabled={busy||!checked||reference.trim().length<6} onClick={()=>void act('confirm_signature',{agreementReference:reference,signatureChecked:checked})}
+     <button disabled={busy||!selected.client_signature_at||!checked||reference.trim().length<6} onClick={()=>void act('confirm_signature',{agreementReference:reference,signatureChecked:checked})}
       className="rounded-lg border border-cyan-300/40 px-4 py-3 disabled:opacity-40">Verify signed agreement</button>
     </div>}
     {selected.status==='pending_forensics'&&<div className="space-y-3 border-t border-white/10 pt-4">
