@@ -242,62 +242,137 @@ function decodeRecordCursor(cursor:string|null) {
   return {createdAt:parts[0],id:parts[1]}
 }
 
-/** One repeatable-read snapshot for Record: balances, escrow and page history. */
+/** 
+ * Keep each surviving financial section available when a legacy deployment
+ * lacks escrow or a particular account has an incomplete wallet. None of these
+ * cases permits inventing a zero balance or silently hiding a real ledger.
+ * Every section is queried from the SAME repeatable-read PostgreSQL snapshot.
+ */
 export async function getFinancialRecordPage(
   userId:string,limit=50,cursor:string|null=null,
 ) {
   const pageSize=Math.max(1,Math.min(100,Math.floor(limit)))
   const previous=decodeRecordCursor(cursor)
   const client=await getPool().connect()
+  const warnings:string[]=[]
   try {
     await client.query('BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY')
-    // One client, one repeatable-read transaction: queue sequential queries
-    // instead of concurrent client.query() calls (unsupported by future pg).
-    const wallet=await client.query(
-      `SELECT balance_trx FROM wallets WHERE user_id=$1::uuid
-       AND is_primary=true ORDER BY created_at ASC LIMIT 1`,[userId],
-    )
-    const escrow=await client.query(
-      `SELECT * FROM escrow WHERE user_id=$1::uuid AND status='locked'
-       ORDER BY locked_at DESC,id DESC`,[userId],
-    )
-    const held=await client.query(
-      `SELECT COALESCE(SUM(amount),0) AS total FROM escrow
-       WHERE user_id=$1::uuid AND status='locked'
-         AND currency IN ('Flame Coin','TRX')`,[userId],
-    )
-    const history=await client.query(
-      `SELECT * FROM ledger_entries WHERE user_id=$1::uuid
-         AND ($2::timestamptz IS NULL OR (created_at,id)<($2::timestamptz,$3::uuid))
-       ORDER BY created_at DESC,id DESC LIMIT $4`,
-      [userId,previous?.createdAt||null,previous?.id||null,pageSize+1],
-    )
-    const clock=await client.query('SELECT NOW() AS read_at')
-    if (wallet.rowCount !== 1) throw new Error('A primary wallet was not found for this account')
-    const available=Number(wallet.rows[0].balance_trx)
-    const locked=Number(held.rows[0]?.total)
-    if (!Number.isFinite(available) || !Number.isFinite(locked)) {
-      throw new Error('Wallet and escrow records disagree with the stored monetary data')
+    type ReadSection='wallet'|'escrow'|'escrowTotal'|'ledger'
+    const optional=async(section:ReadSection,query:string,params:unknown[])=>{
+      // SAVEPOINT is essential: PostgreSQL aborts a transaction after a
+      // missing-table/column error unless the failed query is rolled back.
+      const marker='record_'+section.toLowerCase()
+      await client.query('SAVEPOINT '+marker)
+      try {
+        const result=await client.query(query,params)
+        await client.query('RELEASE SAVEPOINT '+marker)
+        return result
+      } catch(error) {
+        await client.query('ROLLBACK TO SAVEPOINT '+marker)
+        await client.query('RELEASE SAVEPOINT '+marker)
+        const code=typeof error==='object'&&error!==null&&'code' in error
+          ? String(error.code) : 'unknown'
+        console.error('[WEAVE Record] unreadable '+section+' section (SQLSTATE '+code+')',error)
+        return null
+      }
     }
-    const hasMore=history.rows.length>pageSize
-    const entries=history.rows.slice(0,pageSize)
-    const last=entries[entries.length-1]
-    const nextCursor=hasMore && last
-      ? Buffer.from(new Date(last.created_at).toISOString()+'|'+last.id).toString('base64url')
-      : null
-    await client.query('COMMIT')
-    return {
-      ledger:entries.map(row=>({
+
+    let walletStatus:'available'|'legacy_wallet'|'missing'|'ambiguous'|'unavailable'='unavailable'
+    let available:number|null=null
+    // The registration path creates primary wallets, but older accounts may
+    // have exactly one wallet marked false/null. Read its existing value
+    // without changing it; never sum or arbitrarily select multiple wallets.
+    let wallet=await optional('wallet',
+      'SELECT id,balance_trx,is_primary FROM wallets WHERE user_id=$1::uuid ORDER BY created_at ASC,id ASC',
+      [userId])
+    if (!wallet) {
+      warnings.push('Main wallet could not be read. Its balance is unavailable, not zero.')
+    } else {
+      const primary=wallet.rows.filter(row=>row.is_primary===true)
+      const selected=primary.length===1?primary[0]:
+        primary.length===0&&wallet.rows.length===1?wallet.rows[0]:null
+      if (selected) {
+        available=Number(selected.balance_trx)
+        if (!Number.isFinite(available)) {
+          available=null
+          warnings.push('Stored wallet amount is invalid; no balance was assumed.')
+        } else {
+          walletStatus=primary.length===1?'available':'legacy_wallet'
+          if (walletStatus==='legacy_wallet') {
+            warnings.push('A legacy wallet balance is displayed. Administration should review its missing primary-wallet designation; no funds were moved.')
+          }
+        }
+      } else if (wallet.rows.length===0) {
+        walletStatus='missing'
+        warnings.push('No wallet record exists for this account. Ledger history may still be available; Administration must investigate without creating a replacement zero balance.')
+      } else {
+        walletStatus='ambiguous'
+        warnings.push('More than one wallet could be primary. Administration must reconcile wallet identity; balances were not combined.')
+      }
+    }
+
+    let escrowStatus:'available'|'unavailable'='unavailable'
+    let locked:number|null=null
+    let escrowEntries:any[]=[]
+    const escrow=await optional('escrow',
+      "SELECT * FROM escrow WHERE user_id=$1::uuid AND status='locked' ORDER BY locked_at DESC,id DESC",
+      [userId])
+    if (!escrow) {
+      warnings.push('Escrow records could not be read; locked funds and combined total are unavailable.')
+    } else {
+      const held=await optional('escrowTotal',
+        "SELECT COALESCE(SUM(amount),0) AS total FROM escrow WHERE user_id=$1::uuid AND status='locked' AND currency IN ('Flame Coin','TRX')",
+        [userId])
+      const amount=held?Number(held.rows[0]?.total):NaN
+      if (Number.isFinite(amount)) {
+        escrowStatus='available'
+        locked=amount
+        escrowEntries=escrow.rows.map(row=>({...row,amount:Number(row.amount)}))
+      } else {
+        warnings.push('Escrow total could not be validated; locked funds were not assumed to be zero.')
+      }
+    }
+
+    let ledgerStatus:'available'|'unavailable'='unavailable'
+    let historyEntries:any[]=[]
+    let hasMore=false
+    let nextCursor:string|null=null
+    const history=await optional('ledger',
+      "SELECT * FROM ledger_entries WHERE user_id=$1::uuid AND ($2::timestamptz IS NULL OR (created_at,id)<($2::timestamptz,$3::uuid)) ORDER BY created_at DESC,id DESC LIMIT $4",
+      [userId,previous?.createdAt||null,previous?.id||null,pageSize+1])
+    if (history) {
+      ledgerStatus='available'
+      hasMore=history.rows.length>pageSize
+      const entries=history.rows.slice(0,pageSize)
+      const last=entries[entries.length-1]
+      nextCursor=hasMore&&last
+        ?Buffer.from(new Date(last.created_at).toISOString()+'|'+last.id).toString('base64url')
+        :null
+      historyEntries=entries.map(row=>({
         ...row,amount:Number(row.amount),
         balance_before:row.balance_before==null?null:Number(row.balance_before),
         balance_after:row.balance_after==null?null:Number(row.balance_after),
-      })),
-      escrow:escrow.rows.map(row=>({...row,amount:Number(row.amount)})),
-      balance:{available,locked,total:available+locked},
-      hasMore,nextCursor,readAt:clock.rows[0].read_at,
+      }))
+    } else {
+      warnings.push('Transaction ledger could not be read. Existing transaction records have not been erased.')
+    }
+
+    if (walletStatus==='unavailable'&&escrowStatus==='unavailable'&&ledgerStatus==='unavailable') {
+      throw new Error('No financial data source could be read')
+    }
+    const clock=await client.query('SELECT NOW() AS read_at')
+    await client.query('COMMIT')
+    return {
+      ledger:historyEntries,
+      escrow:escrowEntries,
+      balance:{available,locked,total:available===null||locked===null?null:available+locked},
+      sections:{wallet:walletStatus,escrow:escrowStatus,ledger:ledgerStatus},
+      warnings,hasMore,nextCursor,readAt:clock.rows[0].read_at,
     }
   } catch(error) {
     await client.query('ROLLBACK').catch(()=>{})
     throw error
-  } finally { client.release() }
+  } finally {
+    client.release()
+  }
 }

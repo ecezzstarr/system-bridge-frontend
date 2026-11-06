@@ -15,7 +15,13 @@ interface LedgerEntry {
 interface LedgerData {
   ledger:LedgerEntry[]
   escrow:any[]
-  balance:{available:number;locked:number;total:number}
+  balance:{available:number|null;locked:number|null;total:number|null}
+  sections:{
+    wallet:'available'|'legacy_wallet'|'missing'|'ambiguous'|'unavailable'
+    escrow:'available'|'unavailable'
+    ledger:'available'|'unavailable'
+  }
+  warnings:string[]
   nextCursor:string|null
   hasMore:boolean
   readAt:string
@@ -134,8 +140,16 @@ export default function LedgerPage() {
         {error && <p role="alert" className="rounded-xl border border-amber-400/20 p-3 text-xs text-amber-100">
           Latest refresh failed: {error}. Showing the last successfully loaded records, not a replacement zero balance.
         </p>}
+        {data.warnings?.length>0 && (
+          <div role="status" className="space-y-1 rounded-xl border border-amber-400/20 bg-amber-400/5 p-4 text-xs leading-5 text-amber-100">
+            <p className="font-bold">Financial record needs attention</p>
+            {data.warnings.map((warning,i)=><p key={i}>{warning}</p>)}
+          </div>
+        )}
         <BalanceSummary available={data.balance.available} locked={data.balance.locked} currency="Flame Coin"/>
-        <EscrowList escrows={data.escrow.map(item=>({...item,locked_at:new Date(item.locked_at)}))}/>
+        {data.sections?.escrow==='available'
+          ? <EscrowList escrows={data.escrow.map(item=>({...item,locked_at:new Date(item.locked_at)}))}/>
+          : <p className="text-sm text-amber-200">Escrow history unavailable. No locked-balance value has been assumed.</p>}
         <section className="border-y border-white/10 bg-black/15 py-4" data-record-rail="transactions">
           <div className="mb-4 border-l border-sky-300/25 pl-3">
             <h2 className="text-sm font-black text-white">Transaction movement</h2>
@@ -144,7 +158,9 @@ export default function LedgerPage() {
             </p>
           </div>
           <div className="space-y-2">
-            {data.ledger.length ? data.ledger.map(entry=>(
+            {data.sections?.ledger==='unavailable'
+              ? <p className="py-6 text-center text-amber-200">Transaction history could not be retrieved. This does not mean the account has no transactions.</p>
+              : data.ledger.length ? data.ledger.map(entry=>(
               <TransactionItem key={entry.id} type={entry.entry_type}
                 amount={Number(entry.amount)} currency={entry.currency}
                 description={entry.description||'Recorded transaction'}
