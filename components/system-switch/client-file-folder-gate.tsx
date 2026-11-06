@@ -106,7 +106,7 @@ export default function ClientFileFolderGate({ entry }: { entry: any }) {
                 <p className="text-xs uppercase tracking-widest text-amber-200">Personal loan · USDT</p>
                 {entry.upgrade.loan?.remaining!==null&&entry.upgrade.loan?.remaining!==undefined?
                   <p className="mt-2 text-2xl font-bold text-amber-100">{Number(entry.upgrade.loan.remaining).toFixed(2)} USDT remaining</p>:
-                  <p className="mt-2 text-sm text-amber-100">100 USDT loan proposal · agreement and funding verification pending</p>}
+                  <p className="mt-2 text-sm text-amber-100">{Number(entry.upgrade.loan?.principal||0).toFixed(2)} USDT loan proposal · agreement and funding verification pending</p>}
                 <p className="mt-2 text-sm leading-6 text-slate-300">{entry.upgrade.loan?.display}</p>
               </div>
               <p className="text-xs leading-6 text-slate-400">Entry will open only after verified repayment, completed construction and Administration release. No payment is automatically withdrawn.</p>
