@@ -189,6 +189,11 @@ export const ADMIN_SPACES:readonly AdminSpace[]=[
     "description": "Review signed Pro agreements, Client business plans and manually verified one-time 680 USDT TRC-20 payments."
   },
   {
+    "title": "Pro File Number Verification · Forensics",
+    "href": "/admin/pro-file-number-verifications",
+    "description": "Review passwordless Pro recipient File Numbers, signed business plans and independently confirmed TRC-20 payments."
+  },
+  {
     "title": "CJ Crypto Exchange Review",
     "href": "/admin/cj-exchange",
     "description": "Review independently evidenced CJ Dorado exchange operations without executing trades."
