@@ -114,7 +114,7 @@ async function main() {
     await pool.query('ALTER TABLE wallets RENAME TO missing_wallets')
     await assert.rejects(getFinancialRecordPage(userId,20))
     await assert.rejects(getUserTotalBalance(userId))
-    await pool.query('ALTER TABLE wallets RENAME TO wallets')
+    await pool.query('ALTER TABLE missing_wallets RENAME TO wallets')
     await pool.query('ALTER TABLE ledger_entries RENAME TO missing_ledger_entries')
     await assert.rejects(getUserLedger(userId))
     await pool.query('ALTER TABLE missing_ledger_entries RENAME TO ledger_entries')

@@ -251,28 +251,28 @@ export async function getFinancialRecordPage(
   const client=await getPool().connect()
   try {
     await client.query('BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY')
-    const [wallet,escrow,held,history,clock]=await Promise.all([
-      client.query(
-        `SELECT balance_trx FROM wallets WHERE user_id=$1::uuid
-         AND is_primary=true ORDER BY created_at ASC LIMIT 1`,[userId],
-      ),
-      client.query(
-        `SELECT * FROM escrow WHERE user_id=$1::uuid AND status='locked'
-         ORDER BY locked_at DESC,id DESC`,[userId],
-      ),
-      client.query(
-        `SELECT COALESCE(SUM(amount),0) AS total FROM escrow
-         WHERE user_id=$1::uuid AND status='locked'
-           AND currency IN ('Flame Coin','TRX')`,[userId],
-      ),
-      client.query(
-        `SELECT * FROM ledger_entries WHERE user_id=$1::uuid
-           AND ($2::timestamptz IS NULL OR (created_at,id)<($2::timestamptz,$3::uuid))
-         ORDER BY created_at DESC,id DESC LIMIT $4`,
-        [userId,previous?.createdAt||null,previous?.id||null,pageSize+1],
-      ),
-      client.query('SELECT NOW() AS read_at'),
-    ])
+    // One client, one repeatable-read transaction: queue sequential queries
+    // instead of concurrent client.query() calls (unsupported by future pg).
+    const wallet=await client.query(
+      `SELECT balance_trx FROM wallets WHERE user_id=$1::uuid
+       AND is_primary=true ORDER BY created_at ASC LIMIT 1`,[userId],
+    )
+    const escrow=await client.query(
+      `SELECT * FROM escrow WHERE user_id=$1::uuid AND status='locked'
+       ORDER BY locked_at DESC,id DESC`,[userId],
+    )
+    const held=await client.query(
+      `SELECT COALESCE(SUM(amount),0) AS total FROM escrow
+       WHERE user_id=$1::uuid AND status='locked'
+         AND currency IN ('Flame Coin','TRX')`,[userId],
+    )
+    const history=await client.query(
+      `SELECT * FROM ledger_entries WHERE user_id=$1::uuid
+         AND ($2::timestamptz IS NULL OR (created_at,id)<($2::timestamptz,$3::uuid))
+       ORDER BY created_at DESC,id DESC LIMIT $4`,
+      [userId,previous?.createdAt||null,previous?.id||null,pageSize+1],
+    )
+    const clock=await client.query('SELECT NOW() AS read_at')
     if (wallet.rowCount !== 1) throw new Error('A primary wallet was not found for this account')
     const available=Number(wallet.rows[0].balance_trx)
     const locked=Number(held.rows[0]?.total)
