@@ -100,6 +100,7 @@ export async function POST(request:NextRequest){
   if(action==='finalize'){
    if(body.confirmation!=='FINALIZE VERIFIED PRO')
     throw new Error('Finalization requires explicit confirmation.')
+   await ensureProActivationSchema()
    const db=await getPool().connect()
    try{
     await db.query('BEGIN')
@@ -107,36 +108,67 @@ export async function POST(request:NextRequest){
     const row=result.rows[0]
     if(!row||row.status!=='paid_pending_account'||!row.payment_verified_at||
        Number(row.payment_verified_amount_usdt)!==PRO_ACTIVATION_FEE_USDT)
-     throw new Error('An independently verified 680 USDT payment is required first.')
-    const owner=await db.query(`SELECT id FROM users WHERE file_number=$1
+     throw new Error('An independently verified 680 USDT receipt is required first.')
+    const owner=await db.query(`SELECT id,name FROM users WHERE file_number=$1
      AND role='client' AND is_active=true LIMIT 2`,[row.file_number])
-    if(owner.rows.length!==1)throw new Error('Client account must be verified/provisioned before finalization.')
+    if(owner.rows.length!==1)throw new Error('Client must have an active verified account before Folder finalization.')
     const clientId=owner.rows[0].id
+    if(String(owner.rows[0].name||'').trim().toLowerCase()!==
+       String(row.signed_name||'').trim().toLowerCase())
+     throw new Error('Client identity and signed name do not match.')
     const folder=await db.query(`SELECT client_id,status FROM client_file_folders
-      WHERE file_number=$1 LIMIT 1`,[row.file_number])
-    if(!folder.rows.length||String(folder.rows[0].client_id)!==String(clientId)||
-      folder.rows[0].status!=='active')
-      throw new Error('The original File Folder must be actively owned by this same Client.')
-    await ensureProActivationSchema()
-    const [existing]= (await db.query(`SELECT id,status,file_number FROM pro_file_folder_activations
-     WHERE client_id=$1::uuid OR file_number=$2 FOR UPDATE`,[clientId,row.file_number])).rows
-    if(existing&&(existing.file_number!==row.file_number||existing.status==='active'))
-     throw new Error('An active or mismatched Pro activation already exists; reconcile instead of overwriting.')
+     WHERE file_number=$1 LIMIT 1`,[row.file_number])
+    if(folder.rows.length!==1||String(folder.rows[0].client_id)!==String(clientId)||
+       folder.rows[0].status!=='active')
+     throw new Error('The original File Folder must be active and owned by this Client.')
+    const existingRows=await db.query(`SELECT id,status,file_number FROM pro_file_folder_activations
+     WHERE client_id=$1::uuid OR file_number=$2 FOR UPDATE`,[clientId,row.file_number])
+    if(existingRows.rows.length>1||existingRows.rows[0]&&
+      (existingRows.rows[0].file_number!==row.file_number||existingRows.rows[0].status==='active'))
+     throw new Error('An active or mismatched Pro activation already exists; reconcile without overwriting.')
     const duplicate=await db.query(`SELECT id FROM pro_file_folder_activations
      WHERE payment_tx_hash=$1 AND client_id<>$2::uuid LIMIT 1`,
       [String(row.payment_tx_hash).trim(),clientId])
-    if(duplicate.rows.length)throw new Error('Receipt already used for a different Client.')
-    if(existing){
-     await db.query(`UPDATE pro_file_folder_activations SET
-      status='active',client_signature_name=$1,client_signature_at=$2,
+    if(duplicate.rows.length)throw new Error('Payment receipt assigned to another Client.')
+    const values=[
+      clientId,row.file_number,row.signed_name,row.terms_accepted_at,
+      row.identity_reference,row.identity_verified_by,row.identity_verified_at,
+      JSON.stringify(row.business_plan),row.created_at,String(row.payment_tx_hash).trim(),
+      row.payment_wallet,row.payment_submitted_at,row.payment_verified_by,row.payment_verified_at
+    ]
+    let activationId:string
+    if(existingRows.rows.length){
+     const updated=await db.query(`UPDATE pro_file_folder_activations SET
+      status='active',client_signature_name=$3,client_signature_at=$4,
       client_terms_version='PRO-680-USDT-2026-11',
-      signed_agreement_reference=$3,signed_agreement_verified_by=$4::uuid,
-      signed_agreement_verified_at=$5,business_plan=$6::jsonb,
-      business_plan_submitted_at=$7,payment_tx_hash=$8,payment_wallet=NULL
-      WHERE id=$9`,[])
+      signed_agreement_reference=$5,signed_agreement_verified_by=$6::uuid,
+      signed_agreement_verified_at=$7,business_plan=$8::jsonb,
+      business_plan_submitted_at=$9,payment_tx_hash=$10,
+      wallet_address=$11,payment_submitted_at=$12,
+      verified_amount_usdt=680,verified_by=$13::uuid,verified_at=$14,
+      activated_at=now(),updated_at=now()
+      WHERE client_id=$1::uuid AND file_number=$2 AND status<>'active' RETURNING id`,values)
+     if(updated.rows.length!==1)throw new Error('Existing Pro activation could not be finalized safely.')
+     activationId=String(updated.rows[0].id)
+    }else{
+     const inserted=await db.query(`INSERT INTO pro_file_folder_activations(
+       client_id,file_number,status,client_signature_name,client_signature_at,
+       client_terms_version,signed_agreement_reference,signed_agreement_verified_by,
+       signed_agreement_verified_at,business_plan,business_plan_submitted_at,
+       payment_tx_hash,wallet_address,payment_submitted_at,verified_amount_usdt,
+       verified_by,verified_at,activated_at)
+      VALUES($1::uuid,$2,'active',$3,$4,'PRO-680-USDT-2026-11',$5,$6::uuid,
+       $7,$8::jsonb,$9,$10,$11,$12,680,$13::uuid,$14,now()) RETURNING id`,values)
+     if(inserted.rows.length!==1)throw new Error('New Pro activation could not be finalized.')
+     activationId=String(inserted.rows[0].id)
     }
-    await db.query('ROLLBACK')
-    throw new Error('Finalization needs a separate checked account-link release; the paid record is safely retained.')
+    await db.query(`INSERT INTO pro_activation_audit(activation_id,action,actor_id,details)
+     VALUES($1::uuid,'passwordless_pro_finalized',$2::uuid,$3::jsonb)`,
+     [activationId,user.id,JSON.stringify({verificationId:id,feeUSDT:680,receipt:String(row.payment_tx_hash).trim()})])
+    await db.query(`UPDATE pro_file_number_verifications
+     SET status='active',updated_at=now() WHERE id=$1::uuid AND status='paid_pending_account'`,[id])
+    await db.query('COMMIT')
+    return NextResponse.json({success:true,status:'active'},{headers:proVerificationPublicHeaders})
    }catch(e){await db.query('ROLLBACK').catch(()=>{});throw e}
    finally{db.release()}
   }
