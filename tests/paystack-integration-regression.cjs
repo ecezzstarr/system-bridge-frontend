@@ -110,7 +110,8 @@ for (const token of ['Inspect Paystack','Retry verified recovery','Attach verifi
 }
 // Signed Paystack webhooks provide authoritative charge.success proof for
 // immediate idempotent settlement without an additional verify API round trip.
-if (!webhook.includes("verifyPaystackWebhookSignature(rawBody") ||
+if (!webhook.includes("verifyPaystackWebhookSignature(") ||
+    !webhook.includes("request.headers.get('paystack-signature')") ||
     !webhook.includes("settlePaystackDeposit(reference, event.data)")) {
   throw new Error('Only HMAC-verified successful Paystack webhook events may trigger instant wallet settlement')
 }
