@@ -30,6 +30,7 @@ export async function GET(request:NextRequest){
       personal_loan_accepted_at,loan_funding_reference,verified_at
       FROM company_client_staff_offers WHERE file_number=${CJ_PRO_FOLDER_NUMBER}
       ORDER BY created_at DESC LIMIT 2`
+  await ensureFneTables()
   const fneStatus=await sql`SELECT client_id,status FROM file_folders
       WHERE file_number=${CJ_PRO_FOLDER_NUMBER} LIMIT 1`
   const rows=await sql`SELECT u.id,u.client_id,u.file_number,u.tier,u.status,u.loan_principal_usdt,
