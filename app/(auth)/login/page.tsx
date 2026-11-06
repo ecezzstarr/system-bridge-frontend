@@ -65,6 +65,10 @@ export default function LoginPage() {
       }
     } catch (err) {
       const authError = err as WeaveAuthError
+      if (authError?.code === 'CJ_LOAN_PAYMENT_REQUIRED' || authError?.code === 'CJ_LOAN_SETUP_PENDING') {
+        router.replace('/client/login')
+        return
+      }
       if (authError?.code === 'PASSWORD_SETUP_REQUIRED') {
         const params = new URLSearchParams({ email: email.trim().toLowerCase() })
         if (administrationPortal) params.set('portal', 'admin')
