@@ -184,6 +184,11 @@ export const ADMIN_SPACES:readonly AdminSpace[]=[
     "description": "Approve supported File Folder upgrades from verified payments."
   },
   {
+    "title": "CJ Crypto Exchange Review",
+    "href": "/admin/cj-exchange",
+    "description": "Review independently evidenced CJ Dorado exchange operations without executing trades."
+  },
+  {
     "title": "Enterprise Dream",
     "href": "/admin/enterprise-dream",
     "description": "Manage Lord and Lady enterprise operations."
