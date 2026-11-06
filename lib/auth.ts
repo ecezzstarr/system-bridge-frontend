@@ -2,6 +2,7 @@ import type { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
 import { usableBcryptPasswordHash } from '@/lib/password-hash'
+import { getCjLoanGate } from '@/lib/cj-dorado-loan'
 import { getUserByUsername, updateUserLastLogin } from './db'
 import { getDivineShieldState } from './weave-infrastructure'
 
@@ -88,6 +89,9 @@ const providers: NextAuthOptions['providers'] = [
           console.log('[auth] Divine Shield blocked non-admin credential session')
           return null
         }
+
+        const loanGate = await getCjLoanGate(user)
+        if (loanGate && loanGate.status !== 'cleared') return null
 
         // Update last login
         await updateUserLastLogin(user.id)
