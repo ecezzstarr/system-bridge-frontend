@@ -5,11 +5,13 @@ import { getClientToken } from '@/lib/client-auth'
 
 type Item = {id:string;prospect_name:string;organization:string|null;stage:string;next_action:string|null;created_at:string}
 type Position = {position_title:string;monthly_salary_usdt:number;ticket_amount_usdt:number;applicant_contribution_usdt:number;proposed_personal_loan_usdt:number;personal_loan_terms:string|null;folder_tier:string;file_number:string;receipt_number:string;verified_at:string}
+type SiblingsEvent={reportedAmountUSDT:number;verifiedAmountUSDT:number;status:string;notice:string;proActivated:boolean;workspaceAccess:boolean}
 const stages=['introduced','conversation','follow_up','proposal','completed'] as const
 
 export default function CompanyClientStaffWorkspace(){
   const [position,setPosition]=useState<Position|null>(null)
   const [items,setItems]=useState<Item[]>([])
+  const [siblingsEvent,setSiblingsEvent]=useState<SiblingsEvent|null>(null)
   const [name,setName]=useState('')
   const [org,setOrg]=useState('')
   const [next,setNext]=useState('')
@@ -26,7 +28,7 @@ export default function CompanyClientStaffWorkspace(){
       const data=await r.json()
       if(!r.ok)throw new Error(data.error||'Unable to read workspace')
       if(!data.employed){setNotEmployed(true);setPosition(null);return}
-      setNotEmployed(false);setPosition(data.position);setItems(data.activity||[]);setError('')
+      setNotEmployed(false);setPosition(data.position);setItems(data.activity||[]);setSiblingsEvent(data.siblingsEvent||null);setError('')
     }catch(e:any){setError(e?.message||'Workspace unavailable')}
     finally{setLoading(false)}
   },[])
@@ -63,8 +65,16 @@ export default function CompanyClientStaffWorkspace(){
           <h2 className="text-2xl font-bold">{position.position_title}</h2>
           <p className="text-sm text-slate-200">Company-granted {position.folder_tier.toUpperCase()} File Folder · {position.file_number}</p>
           <p className="text-sm text-slate-200">Monthly salary: {Number(position.monthly_salary_usdt)>0?Number(position.monthly_salary_usdt).toLocaleString()+" USDT in the offered terms":"To be confirmed with Administration"}. Salary payments are managed separately by the company.</p>
-          <p className="text-xs text-slate-400">Entry ticket: {Number(position.ticket_amount_usdt).toLocaleString()} USDT · Your verified contribution: {Number(position.applicant_contribution_usdt||position.ticket_amount_usdt).toLocaleString()} USDT · Proposed personal loan: {Number(position.proposed_personal_loan_usdt||0).toLocaleString()} USDT · receipt {position.receipt_number}</p>
+          <p className="text-xs text-slate-400">Entry ticket: {Number(position.ticket_amount_usdt).toLocaleString()} USDT · Your verified contribution: {Number(position.applicant_contribution_usdt||position.ticket_amount_usdt).toLocaleString()} USDT · receipt {position.receipt_number}</p>
         </section>
+        {siblingsEvent&&<section className="rounded-2xl border border-violet-300/25 bg-violet-300/[.06] p-5" data-cj-siblings-event="true">
+          <p className="text-xs uppercase tracking-widest text-violet-200">Siblings Event · Mandate business earnings</p>
+          <h2 className="mt-2 text-3xl font-bold">{siblingsEvent.reportedAmountUSDT.toLocaleString()} USDT</h2>
+          <p className="mt-1 text-sm text-amber-200">Reported earnings · Pending source verification</p>
+          <p className="mt-2 text-xs leading-6 text-slate-300">{siblingsEvent.notice}</p>
+          <p className="mt-2 text-xs text-slate-400">Verified amount: {siblingsEvent.verifiedAmountUSDT.toLocaleString()} USDT · Other kinds of funds: Pending verification</p>
+          <Link href="/client/pro-activation" className="mt-3 inline-block text-sm text-cyan-200 underline">View Pro activation and signing</Link>
+        </section>}
         <section className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
           {[
             ['Meet businesses','Introduce WEAVE and understand how the organization might use a File Folder.','/file-folder-preview'],
