@@ -30,7 +30,7 @@ export default function ProFolderUpgradeReminder(){
    <p className="mt-2 text-sm leading-6 text-slate-300">{upgrade.notice}</p>
    <p className="mt-3 text-sm font-bold text-amber-200">{upgrade.loan.remaining!==null?
     upgrade.loan.remaining.toFixed(2)+' USDT · Remaining verified personal loan':
-    '100 USDT personal loan proposal · confirmation pending'}</p>
+    Number(upgrade.loan.principal||0).toFixed(2)+' USDT personal loan proposal · confirmation pending'}</p>
    <p className="mt-2 text-xs leading-6 text-slate-400">{upgrade.loan.display}</p>
    <Link href="/client/system-switch" className="mt-4 inline-flex rounded-xl border border-cyan-300/30 px-4 py-3 text-sm font-bold text-cyan-200">View the File Folder Gate →</Link>
   </div>
