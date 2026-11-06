@@ -1,5 +1,4 @@
 import { neon } from '@/lib/pg-neon'
-import { getCjLoanGate } from '@/lib/cj-dorado-loan'
 
 export const getVaultDb = () => {
 
@@ -25,7 +24,5 @@ export async function resolveClientToken(token: string | null, sql = getVaultDb(
   const [user] = await sql`SELECT u.id,u.name,u.role,u.file_number FROM sessions s JOIN users u ON u.id=s.user_id
     WHERE s.token=${token} AND s.expires_at>NOW() AND u.is_active=true AND u.role='client' LIMIT 1`
   if (!user?.id) return null
-  const loanGate = await getCjLoanGate(user)
-  if (loanGate && loanGate.status !== 'cleared') return null
   return String(user.id)
 }
