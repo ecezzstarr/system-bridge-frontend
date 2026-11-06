@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getFileFolderDb, ensureClientFileFolderSchema, ensureCjDoradoFolder } from '@/lib/client-file-folder'
+import { getFileFolderDb, ensureClientFileFolderSchema, ensureCjDoradoFolder, CJ_DORADO_FILE_NUMBER } from '@/lib/client-file-folder'
 import { resolveClientToken, ensureClientVaultSchema } from '@/lib/client-vault'
-import { ensureClientWorkshopSchema } from '@/lib/client-system-workshop'
+import { ensureClientWorkshopSchema,ensureCjDoradoWorkshop } from '@/lib/client-system-workshop'
 import { ensureClientBusinessStore } from '@/lib/client-business-store'
 import { ensureClientVaultLedgerSchema } from '@/lib/client-vault-ledger'
 import { ensureClientInternationalPaymentProfile } from '@/lib/client-international-payments'
@@ -9,7 +9,8 @@ import { ensureEnterpriseDreamSchema, getEnterpriseDream } from '@/lib/enterpris
 import { ensureClientMoneyEnvironment } from '@/lib/client-money-environment'
 import { getFileFolderWorldSnapshot } from '@/lib/client-file-folder-world'
 import { FILE_FOLDER_PRICING, getFileFolderTier } from '@/lib/file-folder-pricing'
-import {getClientFolderUpgrade,clientUpgradePublicView} from '@/lib/client-folder-upgrade'
+import {getClientFolderUpgrade} from '@/lib/client-folder-upgrade'
+import {getProActivationState} from '@/lib/pro-file-folder-activation'
 import {getPublishedFileFolderRelease} from '@/lib/file-folder-world-release'
 
 export async function GET(request: NextRequest) {
@@ -43,14 +44,12 @@ export async function GET(request: NextRequest) {
     if (!client) return NextResponse.json({ error: 'Client record not found' }, { status: 404 })
 
     const money = await ensureClientMoneyEnvironment(sql, client.id)
-    if(client.file_number){
-      const upgrade=await getClientFolderUpgrade(sql,String(client.id),String(client.file_number))
-      if(upgrade && upgrade.status!=='ready')
-        return NextResponse.json({
-          error:'Your Pro File Folder is under construction; verified repayment and release are required before entry.',
-          gate:'construction',upgrade:clientUpgradePublicView(upgrade),
-        },{status:423,headers:{'Cache-Control':'private, no-store'}})
-    }
+    const proGate=client.file_number
+      ? await getProActivationState(String(client.id),String(client.file_number)) : null
+    if(proGate&&proGate.status!=='active')
+      return NextResponse.json({error:'Pro activation is incomplete. Visit the activation workspace.',
+        gate:'construction',activation:proGate,activationUrl:'/client/pro-activation'},
+        {status:423,headers:{'Cache-Control':'private, no-store'}})
 
     if (!client.file_number) {
       return NextResponse.json(
@@ -87,6 +86,8 @@ export async function GET(request: NextRequest) {
         { status: 409 }
       )
     }
+
+    if (client.file_number === CJ_DORADO_FILE_NUMBER) await ensureCjDoradoWorkshop(sql)
 
     const [workshop] = await sql`
       SELECT id, workshop_type, title, description
@@ -216,6 +217,7 @@ export async function GET(request: NextRequest) {
 
     const directUpgrade=await getClientFolderUpgrade(sql,String(client.id),String(client.file_number))
     if (directUpgrade?.status==='ready') persistedTier=directUpgrade.tier
+    if (proGate?.status==='active') persistedTier='pro'
     const fileFolderTier = persistedTier || getFileFolderTier(Number(fileFolderWorld.buildFunding.initialFileFolderFlameCoin)) || 'standard'
 
     const workshopType=workshop.workshop_type

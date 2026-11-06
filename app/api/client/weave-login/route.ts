@@ -5,6 +5,7 @@ import { usableBcryptPasswordHash } from '@/lib/password-hash'
 import { randomBytes } from 'node:crypto'
 import { getDivineShieldState } from '@/lib/weave-infrastructure'
 import { ensureUserReferralCode } from '@/lib/user-referral'
+import { getProActivationState } from '@/lib/pro-file-folder-activation'
 
 
 export async function POST(request: NextRequest) {
@@ -25,7 +26,7 @@ export async function POST(request: NextRequest) {
       SELECT id, email, name, role, password_hash, file_number, business_name, referral_code, referred_by
       FROM users
       WHERE file_number = ${fileNumber}
-      AND is_active = true
+      AND is_active = true AND role = 'client'
     `
 
     if (result.length === 0) {
@@ -66,8 +67,10 @@ export async function POST(request: NextRequest) {
       VALUES (gen_random_uuid(), ${user.id}::uuid, ${token}, NOW(), NOW() + INTERVAL '7 days')
     `
 
+    const proActivation=await getProActivationState(String(user.id),String(user.file_number||''))
     return NextResponse.json({
       success: true,
+      activationRequired:Boolean(proActivation&&proActivation.status!=='active'),
       token,
       user: {
         id: user.id,

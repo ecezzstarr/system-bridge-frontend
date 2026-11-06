@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -31,7 +31,6 @@ export default function ClientLoginPage() {
   const [fileNumber, setFileNumber] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!fileNumber || !password) return
@@ -48,7 +47,7 @@ export default function ClientLoginPage() {
       if (result.success) {
         toast.success('Welcome back')
         setSession(result.token, result.user)
-        router.replace(await isFlameEventActive() ? '/client/event' : '/client/dashboard')
+        router.replace(result.activationRequired ? '/client/pro-activation' : (await isFlameEventActive() ? '/client/event' : '/client/dashboard'))
       } else if (result.code === 'PASSWORD_SETUP_REQUIRED') {
         toast.message('Set a password for this Client account to continue.')
         router.push('/forgot-password?portal=client')

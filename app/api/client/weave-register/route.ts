@@ -11,6 +11,8 @@ import { activatePurchasedFileFolderForClient } from '@/lib/file-folder-purchase
 import { ensureClientMonthlySchema, normalizeRegisteredGender } from '@/lib/client-monthly-subscription'
 import { ensureCompanyClientStaffSchema, staffOfferTokenHash } from '@/lib/company-client-staff'
 import { issueWeaveReceipt } from '@/lib/weave-receipts'
+import { CJ_DORADO_FILE_NUMBER } from '@/lib/client-file-folder'
+import { ensureProActivationForNewClient } from '@/lib/pro-file-folder-activation'
 
 export async function POST(request: NextRequest) {
   try {
@@ -53,6 +55,10 @@ export async function POST(request: NextRequest) {
       staffGrant.token_hash !== staffOfferTokenHash(String(staffOffer))
     )) {
       return NextResponse.json({error:'This staff File Folder requires its private company invitation and named email'},{status:403})
+    }
+    if (fileNumber === CJ_DORADO_FILE_NUMBER &&
+        (!staffGrant || !/\bcj\s+dorado\b/i.test(String(folder.identity_data?.name||'')))) {
+      return NextResponse.json({ error: 'CJ Dorado registration requires the existing approved employee invitation and verified File Number identity.' }, { status: 403 })
     }
     const existing = await sql`SELECT id FROM users WHERE email = ${email}`
     if (existing.length > 0) {
@@ -166,6 +172,27 @@ export async function POST(request: NextRequest) {
         console.error('[company client staff] position notification failed',notificationError)
       }
     }
+    // Only an approved new Pro entitlement creates a one-time fee gate.
+    // Never retroactively lock established Clients or alter their employee ticket.
+    // Retail Pro also requires the activation stage when newly registered.
+    // Match only an already confirmed purchase; other tiers and older accounts
+    // are never given a new fee obligation by this registration change.
+    let activationTier=String(staffGrant?.folder_tier||'')
+    if(!activationTier){
+      const [pTable]=await sql`SELECT to_regclass('public.file_folder_purchases') AS name`
+      if(pTable?.name){
+        const [tierColumn]=await sql`SELECT 1 AS found FROM information_schema.columns
+          WHERE table_schema='public' AND table_name='file_folder_purchases' AND column_name='file_folder_tier' LIMIT 1`
+        if(tierColumn?.found){
+          const [purchase]=await sql`SELECT file_folder_tier FROM file_folder_purchases
+            WHERE file_number=${fileNumber} AND status IN ('approved','confirmed')
+            ORDER BY created_at DESC LIMIT 1`
+          activationTier=String(purchase?.file_folder_tier||'')
+        }
+      }
+    }
+    await ensureProActivationForNewClient(String(user.id),String(fileNumber),activationTier)
+
     const token = `ssb_${randomBytes(32).toString('base64url')}`
     await sql`
       INSERT INTO sessions (id, user_id, token, created_at, expires_at)
@@ -187,6 +214,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       token,
+      activationRequired: activationTier==='pro'||fileNumber===CJ_DORADO_FILE_NUMBER,
       customerDoor: activation.customerDoor,
       user: {
         id: user.id,

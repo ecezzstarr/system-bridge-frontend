@@ -21,7 +21,8 @@ export async function ensureClientSessionSchema(sql = getVaultDb()) {
 
 export async function resolveClientToken(token: string | null, sql = getVaultDb()) {
   if (!token || token.length < 32 || token.length > 256) return null
-  const [user] = await sql`SELECT u.id FROM sessions s JOIN users u ON u.id=s.user_id
+  const [user] = await sql`SELECT u.id,u.name,u.role,u.file_number FROM sessions s JOIN users u ON u.id=s.user_id
     WHERE s.token=${token} AND s.expires_at>NOW() AND u.is_active=true AND u.role='client' LIMIT 1`
-  return user?.id ? String(user.id) : null
+  if (!user?.id) return null
+  return String(user.id)
 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { sql } from '@/lib/db'
 import { ensureCompanyClientStaffSchema } from '@/lib/company-client-staff'
+import {getCjSiblingsEvent} from '@/lib/client-siblings-event'
 export const dynamic='force-dynamic'
 
 async function access(request:NextRequest) {
@@ -29,7 +30,8 @@ export async function GET(request:NextRequest) {
       WHERE client_id=${grant.user.id}::uuid AND offer_id=${grant.offer.id}::uuid
       ORDER BY created_at DESC LIMIT 100
     `
-    return NextResponse.json({success:true,employed:true,position:grant.offer,activity},{
+    const siblingsEvent=await getCjSiblingsEvent(String(grant.user.id),String(grant.offer.file_number||''))
+    return NextResponse.json({success:true,employed:true,position:grant.offer,activity,siblingsEvent},{
       headers:{'Cache-Control':'private, no-store'},
     })
   } catch(error) {

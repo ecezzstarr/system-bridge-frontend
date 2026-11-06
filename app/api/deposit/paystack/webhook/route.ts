@@ -21,7 +21,16 @@ export async function POST(request: NextRequest) {
     if (event?.event === 'charge.success' && reference) {
       // The server generates distinct references for each payment product.
       // Route recognized references directly, avoiding unrelated schema queries.
-      if (reference.startsWith('ENTRY-')) {
+      if (reference.startsWith('CJLOAN-')) {
+        // Retired CJ Paystack route: never treat a historical loan reference as
+        // a Pro activation fee or credit the former loan register.
+        await notifyAdministrators({
+          type:'deposit_payment_event',title:'Retired CJ Paystack reference requires reconciliation',
+          content:'Paystack reported a charge for historical reference '+reference+
+            '. Pro activation uses USDT TRC-20 and manual Forensics approval. Inspect the Paystack payment independently; do not auto-activate or auto-credit.',
+          link:'/admin/pro-activations',fromUserName:'WEAVE Paystack',
+        })
+      } else if (reference.startsWith('ENTRY-')) {
         await settleDepartmentEntryPaystackTicket(reference)
       } else if (reference.startsWith('FOLDER-')) {
         await settleFileFolderPaystackPurchase(reference)
@@ -36,6 +45,15 @@ export async function POST(request: NextRequest) {
         }
       }
     } else if ((event?.event === 'charge.failed' || event?.event === 'refund.processed') && reference) {
+      if(reference.startsWith('CJLOAN-')){
+        await notifyAdministrators({
+          type:'deposit_payment_event',title:'Retired CJ Paystack refund or failure requires review',
+          content:'Paystack reported '+event.event+' for historical reference '+reference+
+            '. Reconcile the provider record; no Pro fee or Client wallet is changed automatically.',
+          link:'/admin/pro-activations',fromUserName:'WEAVE Paystack',
+        })
+        return NextResponse.json({received:true})
+      }
       const pool=getPool()
       const client=await pool.connect()
       try {

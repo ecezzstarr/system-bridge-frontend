@@ -8,7 +8,7 @@ function load(file,deps={}){const exports={};const source=compiled?compiled[file
 const runtime=load('lib/file-folder-world-runtime.ts'),presence=load('lib/system-switch-presence.ts',{'./file-folder-world-runtime':runtime})
 const sql=async(strings,...values)=>(await pool.query(strings.reduce((s,part,i)=>s+(i?'$'+i:'')+part,''),values)).rows
 let shield=false
-const auth=load('lib/auth-api.ts',{'next-auth/next':{getServerSession:async()=>null},'./auth':{authOptions:{}},'./db':{sql},'./weave-infrastructure':{getDivineShieldState:async()=>({active:shield})}})
+const auth=load('lib/auth-api.ts',{'next-auth/next':{getServerSession:async()=>null},'./auth':{authOptions:{}},'./db':{sql},'./weave-infrastructure':{getDivineShieldState:async()=>({active:shield})},'@/lib/cj-dorado-loan':{getCjLoanGate:async()=>null}})
 const response={json:(body,options)=>new Response(JSON.stringify(body),options)}
 const routes=load('app/api/system-switch/world/route.ts',{'next/server':{NextResponse:response},'@/lib/auth-api':auth,'@/lib/db':{getPool:()=>pool},'@/lib/system-switch-presence':presence})
 const secondPresence=load('lib/system-switch-presence.ts',{'./file-folder-world-runtime':runtime})
@@ -21,7 +21,7 @@ const body=(id,sequence,x=0,z=8.2)=>({room:presence.SYSTEM_SWITCH_ROOM,connectio
 const age=()=>pool.query("UPDATE system_switch_presence SET updated_at=NOW()-INTERVAL '1 second'")
 async function run(){
  await pool.query(`DROP TABLE IF EXISTS system_switch_presence,enterprise_legions,client_file_folders,sessions,users CASCADE;
- CREATE TABLE users(id uuid PRIMARY KEY,name text,username text,email text,role text,business_name text,is_active boolean DEFAULT true);
+ CREATE TABLE users(id uuid PRIMARY KEY,name text,username text,email text,role text,file_number text,business_name text,is_active boolean DEFAULT true);
  CREATE TABLE sessions(token text,user_id uuid,expires_at timestamptz);
  CREATE TABLE client_file_folders(client_id uuid,status text);
  CREATE TABLE enterprise_legions(id uuid,client_id uuid,source_user_id uuid,active boolean,employment_status text,accepted_at timestamptz,created_at timestamptz)`)

@@ -71,6 +71,7 @@ function staffRoute(current) {
   return load('app/api/auth/login/route.ts', {
     'next/server': next, bcryptjs: bcrypt,
     '@/lib/password-hash': { usableBcryptPasswordHash },
+    '@/lib/pro-file-folder-activation': { getProActivationState: async () => null },
     '@/lib/db': { sql: sqlFor(current) },
     '@/lib/weave-infrastructure': { getDivineShieldState: async () => ({ active: false }) },
     '@/lib/user-referral': { ensureUserReferralCode: async () => 'TEST-REFERRAL' },
@@ -80,6 +81,7 @@ function clientRoute(current) {
   return load('app/api/client/weave-login/route.ts', {
     'next/server': next, bcryptjs: bcrypt,
     '@/lib/password-hash': { usableBcryptPasswordHash },
+    '@/lib/pro-file-folder-activation': { getProActivationState: async () => null },
     '@/lib/db': { sql: sqlFor(current) },
     '@/lib/weave-infrastructure': { getDivineShieldState: async () => ({ active: false }) },
     '@/lib/user-referral': { ensureUserReferralCode: async () => 'TEST-REFERRAL' },

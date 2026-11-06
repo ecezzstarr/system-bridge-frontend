@@ -5,6 +5,7 @@ import { WeaveDashboardWorld } from '@/components/world/weave-dashboard-world'
 import { LifestyleEntry } from '@/components/manager-lifestyle-entry'
 import CompanyStaffWorkspaceEntry from '@/components/client/company-staff-workspace-entry'
 import ProFolderUpgradeReminder from '@/components/client/pro-folder-upgrade-reminder'
+import ClientSiblingsEventCard from '@/components/client/client-siblings-event-card'
 
 export default function ClientDashboardPage() {
   const { user } = useAuth()
@@ -12,6 +13,7 @@ export default function ClientDashboardPage() {
     <WeaveDashboardWorld role="client" userName={user?.name} />
     <LifestyleEntry />
     <ProFolderUpgradeReminder />
+    <ClientSiblingsEventCard />
     <CompanyStaffWorkspaceEntry />
   </>
 }
