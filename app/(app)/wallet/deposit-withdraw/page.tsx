@@ -14,7 +14,12 @@ export default function WalletDepositWithdrawPage() {
   const [amount, setAmount] = useState('')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
-  const [balance, setBalance] = useState(0)
+  const [balance,setBalance]=useState<number|null>(null)
+  const [balanceError,setBalanceError]=useState('')
+  const [balanceUpdatedAt,setBalanceUpdatedAt]=useState<string|null>(null)
+  const [depositHistoryLoaded,setDepositHistoryLoaded]=useState(false)
+  const [depositHistoryError,setDepositHistoryError]=useState('')
+  const balanceLabel=balance===null?'—':balance.toLocaleString(undefined,{maximumFractionDigits:6})
   const [withdrawAddress, setWithdrawAddress] = useState('')
   const [flameCoinRate, setFlameCoinRate] = useState<number | null>(null)
   const [companyTrxWallet, setCompanyTrxWallet] = useState('')
@@ -53,12 +58,16 @@ export default function WalletDepositWithdrawPage() {
   }, [user?.role, isOpayRole])
 
   useEffect(() => {
-    fetchBalance()
+    setBalance(null)
+    setBalanceError('')
+    setBalanceUpdatedAt(null)
+    setDepositHistoryLoaded(false)
+    void fetchBalance()
     if (user) {
       void fetchClientDeposits()
       if (isOpayRole) void fetchConversions()
     }
-  }, [user, isOpayRole])
+  }, [user?.id, isOpayRole])
 
   useEffect(() => {
     if (!user || isOpayRole) return
@@ -76,7 +85,7 @@ export default function WalletDepositWithdrawPage() {
   useEffect(() => {
     if (!user?.id) return
     return visiblePoll(async () => {
-      await Promise.allSettled([fetchBalance(), fetchClientDeposits()])
+      await Promise.allSettled([fetchBalance(), fetchClientDeposits(), ...(isOpayRole?[fetchConversions()]:[])])
     }, 20000, false)
   }, [user?.id, isOpayRole])
 
@@ -102,8 +111,16 @@ export default function WalletDepositWithdrawPage() {
         cache:'no-store',headers:token?{Authorization:'Bearer '+token}:{},
       })
       const body=await response.json()
-      if(response.ok&&body.success)setClientDeposits(body.deposits||[])
-    }catch(error){console.error('Unable to refresh Client deposit history',error)}
+      if (!response.ok || !body?.success || !Array.isArray(body.deposits)) {
+        throw new Error(body?.error || 'Deposit records could not be loaded')
+      }
+      setClientDeposits(body.deposits)
+      setDepositHistoryLoaded(true)
+      setDepositHistoryError('')
+    }catch(error){
+      console.error('Unable to refresh Client deposit history',error)
+      setDepositHistoryError(error instanceof Error?error.message:'Deposit history unavailable')
+    }
   }
 
   const fetchBalance = async () => {
@@ -111,14 +128,20 @@ export default function WalletDepositWithdrawPage() {
     try {
       const token = localStorage.getItem('ssb_auth_token')
       const response = await fetch('/api/wallet/balance', {
-        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        cache:'no-store',
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
       })
       const data = await response.json()
-      if (data.success) {
-        setBalance(data.flameCoinBalance ?? 0)
+      const newValue=Number(data?.flameCoinBalance)
+      if (!response.ok || !data?.success || data.flameCoinBalance==null || !Number.isFinite(newValue)) {
+        throw new Error(data?.error || 'Persistent wallet balance could not be loaded')
       }
+      setBalance(newValue)
+      setBalanceUpdatedAt(data.recordedAt || new Date().toISOString())
+      setBalanceError('')
     } catch (e) {
       console.error('Failed to fetch balance:', e)
+      setBalanceError(e instanceof Error?e.message:'Wallet balance unavailable')
     }
   }
 
@@ -126,15 +149,17 @@ export default function WalletDepositWithdrawPage() {
     try {
       const token = localStorage.getItem('ssb_auth_token')
       const response = await fetch('/api/ledger', {
-        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        cache:'no-store',
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
       })
       const data = await response.json()
       if (data.success && data.data?.ledger) {
-        const list = data.data.ledger.filter((t: any) => 
-          t.description.toLowerCase().includes('opay') ||
-          t.description.toLowerCase().includes('paystack') ||
-          t.description.toLowerCase().includes('converted')
-        )
+        const list = data.data.ledger.filter((t: any) => {
+          const description=String(t.description || '').toLowerCase()
+          return description.includes('opay') ||
+            description.includes('paystack') ||
+            description.includes('converted')
+        })
         setConversions(list.slice(0, 5))
       }
     } catch (e) {
@@ -187,6 +212,10 @@ export default function WalletDepositWithdrawPage() {
       return
     }
 
+    if (balance===null) {
+      setMessage('Live wallet balance is unavailable. Try refreshing before withdrawing.')
+      return
+    }
     if (parseFloat(amount) > balance) {
       setMessage('Insufficient balance')
       return
@@ -232,6 +261,10 @@ export default function WalletDepositWithdrawPage() {
   const handleOpayWithdraw = async () => {
     if (!amount || parseFloat(amount) <= 0) {
       setMessage('Please enter a valid amount')
+      return
+    }
+    if (balance===null) {
+      setMessage('Live wallet balance is unavailable. Try refreshing before withdrawing.')
       return
     }
     if (parseFloat(amount) > balance) {
@@ -310,9 +343,16 @@ export default function WalletDepositWithdrawPage() {
                 <div>
                   <p className="text-slate-400 text-sm mb-1">Current Balance</p>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-4xl font-bold text-cyan-400">{balance.toFixed(2)}</span>
+                    <span className="text-4xl font-bold text-cyan-400">{balanceLabel}</span>
                     <span className="text-xl text-slate-400">Flame Coin</span>
                   </div>
+                  <p className="mt-2 text-[10px] text-slate-400">
+                    {balanceUpdatedAt ? 'Last persisted balance: '+new Date(balanceUpdatedAt).toLocaleString()
+                      : 'Loading persistent wallet balance…'}
+                  </p>
+                  {balanceError && <p role="alert" className="mt-2 text-xs text-amber-200">
+                    {balanceError}. {balance===null?'No balance assumed.':'Showing the last confirmed amount.'}
+                  </p>}
                   {isOpayRole && (
                     <p className="text-[10px] text-slate-500 mt-2 flex items-center gap-1">
                       <Check className="h-3 w-3 text-green-500" />
@@ -421,7 +461,9 @@ export default function WalletDepositWithdrawPage() {
                   <Button onClick={()=>{void fetchClientDeposits();void fetchBalance()}} variant="outline" size="sm">Refresh deposits</Button>
                 </div>
                 <div className="mt-4 space-y-2">
-                  {clientDeposits.length===0 ? <p className="text-sm text-slate-400">No deposit records yet.</p> : clientDeposits.map(item=>(
+                  {depositHistoryError && <p role="alert" className="mb-2 text-xs text-amber-200">{depositHistoryError}</p>}
+                   {!depositHistoryLoaded ? <p className="text-sm text-slate-400">Loading deposit records…</p>
+                    : clientDeposits.length===0 ? <p className="text-sm text-slate-400">No deposit records yet.</p> : clientDeposits.map(item=>(
                     <div key={item.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-white/10 bg-black/20 p-3">
                       <div><p className="font-bold text-white">{item.method==='paystack' ? `₦${Number(item.amount_usd||0).toLocaleString()} · ${Number(item.amount_trx).toLocaleString()} Flame Coin` : `${Number(item.amount_trx).toLocaleString()} TRX`}</p><p className="mt-1 text-xs text-slate-400">{new Date(item.created_at).toLocaleString()}</p>
                         <p className="mt-1 max-w-[260px] truncate font-mono text-[10px] text-cyan-200">{item.receipt_data||(item.method==='paystack'?'Missing Paystack reference':'Missing transaction hash')}</p></div>
@@ -461,7 +503,7 @@ export default function WalletDepositWithdrawPage() {
 
                   {conversions.length > 0 && (
                     <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
-                      <h3 className="text-lg font-bold text-white mb-4">Conversion History</h3>
+                      <h3 className="text-lg font-bold text-white mb-4">Recent conversions</h3>
                       <div className="space-y-3">
                         {conversions.map((conv) => (
                           <div key={conv.id} className="flex items-center justify-between p-3 bg-slate-800/30 rounded-lg border border-slate-700/50">
@@ -502,7 +544,7 @@ export default function WalletDepositWithdrawPage() {
                         placeholder="Enter Flame Coin amount"
                         className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
                       />
-                      <p className="text-slate-500 text-sm mt-2">Available: {balance.toFixed(2)} Flame Coin</p>
+                      <p className="text-slate-500 text-sm mt-2">Available: {balanceLabel} Flame Coin</p>
                       {amount && flameCoinRate && (
                         <p className="text-xs text-orange-400 mt-2">
                           You'll receive: <span className="font-bold">₦{(parseFloat(amount) * flameCoinRate * (1 - platformFeePercent / 100)).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
@@ -552,7 +594,7 @@ export default function WalletDepositWithdrawPage() {
 
                     <Button
                       onClick={handleOpayWithdraw}
-                      disabled={loading || !amount || !withdrawBankName || !withdrawAccountNumber || !withdrawAccountName}
+                      disabled={loading || balance===null || !amount || !withdrawBankName || !withdrawAccountNumber || !withdrawAccountName}
                       className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white border-0 py-6 text-lg"
                     >
                       {loading ? 'Processing...' : 'Withdraw'}
@@ -576,7 +618,7 @@ export default function WalletDepositWithdrawPage() {
                         placeholder="Enter Flame Coin amount"
                         className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
                       />
-                      <p className="text-slate-500 text-sm mt-2">Available: {balance.toFixed(2)} Flame Coin</p>
+                      <p className="text-slate-500 text-sm mt-2">Available: {balanceLabel} Flame Coin</p>
                     </div>
 
                     <div className="mb-6">
@@ -598,7 +640,7 @@ export default function WalletDepositWithdrawPage() {
 
                     <Button
                       onClick={handleWithdraw}
-                      disabled={loading || !amount || !withdrawAddress}
+                      disabled={loading || balance===null || !amount || !withdrawAddress}
                       className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white border-0 py-6 text-lg"
                     >
                       {loading ? 'Processing...' : 'Withdraw'}
@@ -629,7 +671,7 @@ export default function WalletDepositWithdrawPage() {
 
             <section className="rounded-3xl border border-sky-300/15 bg-sky-400/[0.04] p-4">
               <div className="flex items-center gap-2"><Wallet className="h-4 w-4 text-sky-300"/><p className="text-[9px] font-black uppercase tracking-[0.18em] text-sky-300">Recorded balance</p></div>
-              <p className="mt-3 text-2xl font-black text-white">{balance.toFixed(2)}</p>
+              <p className="mt-3 text-2xl font-black text-white">{balanceLabel}</p>
               <p className="text-xs font-black text-slate-300">Flame Coin</p>
               <Link href="/ledger" className="mt-4 inline-flex w-full items-center justify-between rounded-xl border border-sky-300/15 bg-sky-400/[0.06] px-3 py-2.5 text-[10px] font-black uppercase tracking-[0.1em] text-sky-100">Open Record <ArrowRight className="h-3.5 w-3.5"/></Link>
             </section>

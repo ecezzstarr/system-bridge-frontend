@@ -24,16 +24,43 @@ export async function GET(request: NextRequest) {
     let users
     if (filter === 'unassigned') {
       users = await sql`
-        SELECT id, email, username, name, role, departmental_code, assigned_agent_id, created_at
-        FROM users 
-        WHERE role != 'admin' AND (departmental_code IS NULL OR assigned_agent_id IS NULL)
-        ORDER BY created_at DESC
+        SELECT u.id,u.email,u.username,u.name,u.role,u.departmental_code,
+               u.assigned_agent_id,u.created_at,
+               w.balance_trx AS platform_wallet_balance,
+               COALESCE(e.locked,0) AS escrow_balance
+        FROM users u
+        LEFT JOIN LATERAL (
+          SELECT balance_trx FROM wallets
+          WHERE user_id=u.id AND is_primary=true
+          ORDER BY created_at ASC LIMIT 1
+        ) w ON true
+        LEFT JOIN LATERAL (
+          SELECT SUM(amount) AS locked FROM escrow
+          WHERE user_id=u.id AND status='locked'
+            AND currency IN ('Flame Coin','TRX')
+        ) e ON true
+        WHERE u.role != 'admin' AND (u.departmental_code IS NULL OR u.assigned_agent_id IS NULL)
+        ORDER BY u.created_at DESC
       `
     } else {
       users = await sql`
-        SELECT id, email, username, name, role, departmental_code, assigned_agent_id, created_at
-        FROM users WHERE role != 'admin'
-        ORDER BY created_at DESC
+        SELECT u.id,u.email,u.username,u.name,u.role,u.departmental_code,
+               u.assigned_agent_id,u.created_at,
+               w.balance_trx AS platform_wallet_balance,
+               COALESCE(e.locked,0) AS escrow_balance
+        FROM users u
+        LEFT JOIN LATERAL (
+          SELECT balance_trx FROM wallets
+          WHERE user_id=u.id AND is_primary=true
+          ORDER BY created_at ASC LIMIT 1
+        ) w ON true
+        LEFT JOIN LATERAL (
+          SELECT SUM(amount) AS locked FROM escrow
+          WHERE user_id=u.id AND status='locked'
+            AND currency IN ('Flame Coin','TRX')
+        ) e ON true
+        WHERE u.role != 'admin'
+        ORDER BY u.created_at DESC
       `
     }
 
@@ -41,7 +68,9 @@ export async function GET(request: NextRequest) {
       success: true,
       users: (users || []).map(u => ({
         id: u.id, email: u.email, username: u.username, name: u.name, role: u.role,
-        departmental_code: u.departmental_code, platform_wallet_balance: 0, escrow_balance: 0,
+        departmental_code: u.departmental_code,
+        platform_wallet_balance: u.platform_wallet_balance == null ? null : Number(u.platform_wallet_balance),
+        escrow_balance: Number(u.escrow_balance),
         assigned_agent_id: u.assigned_agent_id, created_at: u.created_at,
       })),
     })

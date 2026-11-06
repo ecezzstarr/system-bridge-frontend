@@ -33,6 +33,7 @@ export function AppHeader({ user }: AppHeaderProps) {
       return
     }
 
+    setFlameCoinBalance(null)
     const token = localStorage.getItem('ssb_auth_token')
     const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {}
     // Balance refresh must not wait on slow/failed Paystack gateway requests.
@@ -42,7 +43,10 @@ export function AppHeader({ user }: AppHeaderProps) {
       })
       if (!result.ok) return
       const data = await result.json()
-      if (!signal.aborted && data.success) setFlameCoinBalance(data.flameCoinBalance)
+      if (!signal.aborted && data.success &&
+          Number.isFinite(Number(data.flameCoinBalance))) {
+        setFlameCoinBalance(Number(data.flameCoinBalance))
+      }
     }
     const stopBalance = visiblePoll(refreshWallet, 20000)
     const stopRecovery = ['admin', 'agent', 'bridger', 'client'].includes(authUser.role || '')
@@ -214,7 +218,7 @@ export function AppHeader({ user }: AppHeaderProps) {
           data-phone-chrome="value"
           className="h-9 w-9 shrink-0 rounded-full px-0 text-slate-300 hover:bg-cyan-300/[0.06] hover:text-white"
           onClick={() => router.push('/wallet')}
-          aria-label={flameCoinBalance !== null ? `Open Flame Coin wallet, balance ${flameCoinBalance.toLocaleString()}` : 'Open Flame Coin wallet'}
+          aria-label={flameCoinBalance !== null ? `Open Flame Coin wallet, balance ${flameCoinBalance.toLocaleString(undefined,{maximumFractionDigits:6})}` : 'Open Flame Coin wallet'}
         >
           <Wallet className="h-4 w-4 text-cyan-300" />
         </Button>
@@ -260,7 +264,7 @@ export function AppHeader({ user }: AppHeaderProps) {
           >
             <Wallet className="h-4 w-4 text-cyan-400" />
             <span data-weave-live-word="station" className="font-mono text-xs">
-              {flameCoinBalance !== null ? `${flameCoinBalance.toLocaleString()} Flame Coin` : '—'}
+              {flameCoinBalance !== null ? `${flameCoinBalance.toLocaleString(undefined,{maximumFractionDigits:6})} Flame Coin` : '—'}
             </span>
           </Button>
 
