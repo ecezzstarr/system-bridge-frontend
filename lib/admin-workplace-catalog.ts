@@ -179,9 +179,9 @@ export const ADMIN_SPACES:readonly AdminSpace[]=[
     "description": "Review documented TRX sales and exchange movement."
   },
   {
-    "title": "Client Folder Upgrades",
-    "href": "/admin/client-folder-upgrades",
-    "description": "Approve supported File Folder upgrades from verified payments."
+    "title": "Pro Folder Activation · Forensics",
+    "href": "/admin/pro-activations",
+    "description": "Review signed Pro agreements, Client business plans and manually verified one-time 680 USDT TRC-20 payments."
   },
   {
     "title": "CJ Crypto Exchange Review",
