@@ -54,6 +54,7 @@ jobs:
           node tests/system-switch-multiplayer-postgres.cjs
           node tests/mandate-guidance-postgres.cjs
           node tests/today-food-postgres.cjs
+          node tests/phone-push-postgres.cjs
 
       - name: Core recent-feature regression
         run: node tests/recent-features.cjs
@@ -90,6 +91,7 @@ jobs:
       - name: WEAVE food regressions
         run: |
           node tests/admin-order-notification-coverage.cjs
+          node tests/phone-push-regression.cjs
           node tests/carrier-food-payment-regression.cjs
           node tests/electrolyte-independent-home-regression.cjs
           node tests/ember-food-flow-regression.cjs
