@@ -1,5 +1,5 @@
 import { isFileFolderPlatformKind } from '@/lib/file-folder-platform-projects'
-import {getClientFolderUpgrade,clientUpgradePublicView} from '@/lib/client-folder-upgrade'
+import {getProActivationState} from '@/lib/pro-file-folder-activation'
 import { allowedBuildPartSystems } from '@/lib/file-folder-build-compatibility'
 import { NextRequest, NextResponse } from 'next/server'
 import { issueWeaveReceipt } from '@/lib/weave-receipts'
@@ -48,11 +48,11 @@ async function resolveClientWorld(request: NextRequest) {
     return { sql, error: NextResponse.json({ error: 'Active File Folder required' }, { status: 409 }) }
   }
 
-  const upgrade=await getClientFolderUpgrade(sql,String(client.id),String(client.file_number))
-  if(upgrade&&upgrade.status!=='ready')
+  const activation=await getProActivationState(String(client.id),String(client.file_number))
+  if(activation&&activation.status!=='active')
     return {sql,error:NextResponse.json({
-      error:'Your Pro File Folder world is under construction; repayment must be verified before entry.',
-      gate:'construction',upgrade:clientUpgradePublicView(upgrade),
+      error:'Your private Pro File Folder requires signed agreement, business plan and verified 680 USDT TRC-20 activation.',
+      gate:'construction',activation,activationUrl:'/client/pro-activation',
     },{status:423,headers:{'Cache-Control':'private, no-store'}})}
 
   const [folder] = await sql`
