@@ -109,18 +109,80 @@ async function main() {
     } while(cursor)
     assert.equal(seen.size,56,'All 56 historical rows remain accessible')
 
-    // On SQL failure no financial read may return a fictitious zero balance or
-    // an empty ledger as if it were the real record.
+    // One failed optional financial source must NOT blank other records.
+    // This was the live bug: a missing escrow table blocked every role.
+    await pool.query('ALTER TABLE escrow RENAME TO missing_escrow')
+    const missingEscrow=await getFinancialRecordPage(userId,20)
+    assert.equal(missingEscrow.balance.available,7.475)
+    assert.equal(missingEscrow.balance.locked,null)
+    assert.equal(missingEscrow.balance.total,null)
+    assert.equal(missingEscrow.sections.escrow,'unavailable')
+    assert.equal(missingEscrow.sections.ledger,'available')
+    assert.equal(missingEscrow.ledger.length,20)
+    assert.ok(missingEscrow.warnings.some(item=>item.includes('Escrow records')))
+    await pool.query('ALTER TABLE missing_escrow RENAME TO escrow')
+
     await pool.query('ALTER TABLE wallets RENAME TO missing_wallets')
-    await assert.rejects(getFinancialRecordPage(userId,20))
+    const missingWallet=await getFinancialRecordPage(userId,20)
+    assert.equal(missingWallet.balance.available,null)
+    assert.equal(missingWallet.sections.wallet,'unavailable')
+    assert.equal(missingWallet.sections.ledger,'available')
+    assert.equal(missingWallet.ledger.length,20)
     await assert.rejects(getUserTotalBalance(userId))
     await pool.query('ALTER TABLE missing_wallets RENAME TO wallets')
+
     await pool.query('ALTER TABLE ledger_entries RENAME TO missing_ledger_entries')
+    const missingLedger=await getFinancialRecordPage(userId,20)
+    assert.equal(missingLedger.sections.ledger,'unavailable')
+    assert.deepEqual(missingLedger.ledger,[])
+    assert.equal(missingLedger.balance.available,7.475)
     await assert.rejects(getUserLedger(userId))
     await pool.query('ALTER TABLE missing_ledger_entries RENAME TO ledger_entries')
+
+    // Every account role can read their own surviving record, even a
+    // historical user without a correctly designated primary wallet.
+    const roles=['agent','bridger','client','admin']
+    for(const role of roles) {
+      const roleId=randomUUID()
+      await pool.query('INSERT INTO users(id,role,name) VALUES($1,$2,$3)',[roleId,role,'Old '+role])
+      await pool.query('INSERT INTO wallets(user_id,is_primary,balance_trx) VALUES($1,false,$2)',[roleId,9.123456])
+      await pool.query(
+        "INSERT INTO ledger_entries(user_id,entry_type,amount,currency,description) VALUES($1,'deposit',9.123456,'Flame Coin','Original credit')",
+        [roleId],
+      )
+      const old=await getFinancialRecordPage(roleId)
+      assert.equal(old.balance.available,9.123456)
+      assert.equal(old.sections.wallet,'legacy_wallet')
+      assert.equal(old.sections.ledger,'available')
+      assert.equal(old.ledger.length,1)
+    }
+    const walletless=randomUUID()
+    await pool.query("INSERT INTO users(id,role,name) VALUES($1,'agent','Legacy walletless agent')",[walletless])
+    await pool.query(
+      "INSERT INTO ledger_entries(user_id,entry_type,amount,currency,description) VALUES($1,'earning',1,'Flame Coin','Old commission')",
+      [walletless],
+    )
+    const noWallet=await getFinancialRecordPage(walletless)
+    assert.equal(noWallet.sections.wallet,'missing')
+    assert.equal(noWallet.balance.available,null)
+    assert.equal(noWallet.ledger.length,1)
+
+    // Multiple non-primary wallets are ambiguous; do not invent or add
+    // their balances and do not erase their transaction history.
+    const ambiguous=randomUUID()
+    await pool.query("INSERT INTO users(id,role,name) VALUES($1,'bridger','Ambiguous wallets')",[ambiguous])
+    await pool.query(
+      "INSERT INTO wallets(user_id,is_primary,balance_trx) VALUES($1,false,2),($1,false,5)",
+      [ambiguous],
+    )
+    const unresolved=await getFinancialRecordPage(ambiguous)
+    assert.equal(unresolved.sections.wallet,'ambiguous')
+    assert.equal(unresolved.balance.available,null)
     const final=await getFinancialRecordPage(userId,20)
     assert.equal(final.balance.available,7.475)
-    console.log('PASS: PostgreSQL persistence, atomic ledger, rollback, snapshot, precision, paginated history and fail-closed reads')
+    assert.equal(final.sections.escrow,'available')
+    assert.equal(final.sections.ledger,'available')
+    console.log('PASS: PostgreSQL role-specific Record resilience, legacy wallets, missing escrow, ledger, partial failures, atomic rollback and pagination')
   } finally {
     if (shared) await shared.end().catch(()=>{})
     if (pool) await pool.end().catch(()=>{})
