@@ -96,13 +96,13 @@ export async function requireProActivationClient(user:{id:string;role:string;fil
  */
 export async function signProActivationAgreement(clientId:string,fileNumber:string,typedName:string,acknowledgement:boolean){
   if(acknowledgement!==true)throw new Error('Read and explicitly accept the Pro File Folder agreement.')
-  const name=typedName.trim().replace(/\\s+/g,' ')
+  const name=typedName.trim().replace(/\s+/g,' ')
   if(name.length<4||name.length>255)throw new Error('Type your full registered name as your signature.')
   await ensureProActivationSchema()
   const [owner]=await sql`SELECT id,name FROM users
     WHERE id=${clientId}::uuid AND file_number=${fileNumber}
       AND role='client' AND COALESCE(is_active,true)=true LIMIT 1`
-  if(!owner||String(owner.name||'').trim().replace(/\\s+/g,' ').toLowerCase()!==name.toLowerCase())
+  if(!owner||String(owner.name||'').trim().replace(/\s+/g,' ').toLowerCase()!==name.toLowerCase())
     throw new Error('The signature must match the full Client name on the registered File Number.')
   const [row]=await sql`UPDATE pro_file_folder_activations
     SET client_signature_name=${name},client_signature_at=now(),
