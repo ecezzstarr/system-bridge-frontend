@@ -5,7 +5,10 @@ import {useAuth} from '@/lib/auth-provider'
 
 type Activation={status:string;file_number?:string;fileNumber?:string;feeUSDT:number;network?:string;
  walletAddress?:string|null;payment_tx_hash?:string|null;business_plan?:Record<string,string>|null;
- signed_agreement_verified_at?:string|null;rejection_reason?:string|null}
+ signed_agreement_verified_at?:string|null;rejection_reason?:string|null;
+ client_signature_name?:string|null;client_signature_at?:string|null}
+type SiblingsEvent={eventName:string;reportedAmountUSDT:number;verifiedAmountUSDT:number;
+ status:string;proActivated:boolean;workspaceAccess:boolean;availableForWithdrawal:boolean;notice:string}
 const fields=[
  ['businessName','Business name'],
  ['businessActivity','What your business will do'],
@@ -18,6 +21,9 @@ export default function ProActivationPage(){
  const {token,user,isInitialized}=useAuth()
  const [activation,setActivation]=useState<Activation|null>(null)
  const [notRequired,setNotRequired]=useState(false)
+ const [siblingsEvent,setSiblingsEvent]=useState<SiblingsEvent|null>(null)
+ const [signedName,setSignedName]=useState('')
+ const [termsAccepted,setTermsAccepted]=useState(false)
  const [plan,setPlan]=useState<Record<string,string>>({})
  const [hash,setHash]=useState('')
  const [busy,setBusy]=useState(false)
@@ -29,19 +35,23 @@ export default function ProActivationPage(){
   const body=await res.json()
   if(!res.ok)throw new Error(body.error||'Activation status unavailable')
   setNotRequired(!body.required)
+  setSiblingsEvent(body.siblingsEvent||null)
   setActivation(body.activation||null)
   if(body.activation?.business_plan)setPlan(body.activation.business_plan)
  },[token])
  useEffect(()=>{if(token)void reload().catch(e=>setError(e.message))},[token,reload])
- async function submit(action:'business_plan'|'submit_payment'){
+ async function submit(action:'sign_agreement'|'business_plan'|'submit_payment'){
   setBusy(true);setError('');setMessage('')
   try{
    const res=await fetch('/api/client/pro-activation',{method:'POST',
     headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
-    body:JSON.stringify(action==='business_plan'?{action,plan} :{action,txHash:hash,expectedWallet:activation?.walletAddress})})
+    body:JSON.stringify(action==='sign_agreement'?{action,signedName,acceptedTerms:termsAccepted}:
+      action==='business_plan'?{action,plan}:{action,txHash:hash,expectedWallet:activation?.walletAddress})})
    const body=await res.json()
    if(!res.ok)throw new Error(body.error||'Submission unavailable')
-   setMessage(action==='business_plan'
+   setMessage(action==='sign_agreement'
+    ?'Your electronic signature is recorded. Administration must review it before the business-plan stage.'
+    : action==='business_plan'
     ?'Business plan recorded. Read the official wallet details and transfer exactly 680 USDT on TRC-20.'
     :'Payment evidence received. Forensics must independently verify the blockchain transaction before your private File Folder opens.')
    await reload()
@@ -49,7 +59,17 @@ export default function ProActivationPage(){
   finally{setBusy(false)}
  }
  if(!isInitialized)return <main className="min-h-screen p-8 text-white">Loading Client workspace…</main>
- if(!token||user?.role!=='client')return <main className="min-h-screen p-8 text-white">Client login required. <Link href="/client/login" className="underline">Sign in</Link></main>
+ if(!token||user?.role!=='client')return <main className="min-h-screen bg-[#050c18] px-5 py-12 text-white">
+  <div className="mx-auto max-w-xl space-y-5 rounded-2xl border border-cyan-300/25 p-7">
+   <p className="text-xs uppercase tracking-widest text-cyan-200">WEAVE of Presence · Pro Client</p>
+   <h1 className="text-3xl font-bold">File Folder agreement and activation</h1>
+   <p className="text-sm leading-6 text-slate-200">Sign in using your issued Client File Number and password to read and electronically sign your Pro agreement, submit a business plan, and view your private activation status.</p>
+   <p className="text-xl font-bold">One-time activation: 680 USDT</p>
+   <p className="text-xs text-slate-300">USDT on TRON (TRC-20). Payment is requested only after you review and sign the terms; Forensics verifies it manually.</p>
+   <Link href="/client/login?fileNumber=WEAVE-2026-0907-0001" className="inline-block rounded-lg bg-cyan-300 px-5 py-3 font-bold text-slate-950">Continue to Client sign-in</Link>
+   <p className="text-xs text-slate-400">If you have not completed your private employee registration, ask Administration for your existing approved invitation. Do not open a second account.</p>
+  </div>
+ </main>
  if(notRequired)return <main className="min-h-screen p-8 text-white">No new Pro activation fee is due on this account. <Link href="/client/dashboard" className="underline">Return to dashboard</Link></main>
  const status=activation?.status||'loading'
  return <main className="min-h-screen bg-[#050c18] px-4 py-8 text-white" data-pro-file-folder-activation="true">
@@ -68,14 +88,46 @@ export default function ProActivationPage(){
    </header>
    {error&&<p role="alert" className="rounded-xl border border-rose-300/30 p-4 text-sm text-rose-100">{error}</p>}
    {message&&<p role="status" className="rounded-xl border border-cyan-300/30 p-4 text-sm text-cyan-100">{message}</p>}
+   {siblingsEvent&&<section className="rounded-2xl border border-violet-300/25 bg-violet-300/[.05] p-6" data-siblings-event-status="true">
+     <p className="text-xs uppercase tracking-widest text-violet-200">Siblings Event · Mandate business earnings</p>
+     <h2 className="mt-2 text-3xl font-bold">{siblingsEvent.reportedAmountUSDT.toLocaleString()} USDT</h2>
+     <p className="mt-1 text-sm text-amber-200">Reported Siblings Funds · Mandate/source verification pending</p>
+     <p className="mt-3 text-xs leading-6 text-slate-300">{siblingsEvent.notice}</p>
+     <p className="mt-2 text-xs text-slate-400">Verified earnings: {siblingsEvent.verifiedAmountUSDT.toLocaleString()} USDT · Available for withdrawal: not established.</p>
+     <p className="mt-2 text-xs text-slate-400">Other funds: Pending verification. No funds are credited or automatically released by activating a File Folder.</p>
+   </section>}
    <section className="rounded-2xl border border-white/10 p-6">
     <h2 className="text-lg font-bold">Activation progress</h2>
     <p className="mt-2 text-sm capitalize text-slate-300">{status.replaceAll('_',' ')}</p>
     {status==='awaiting_preparation'&&<p className="mt-3 text-sm text-amber-200">Administration must reconcile your existing File Number and prepare this Pro activation. No payment is requested yet.</p>}
-    {status==='awaiting_signature'&&<p className="mt-3 text-sm text-amber-200">Sign the Pro File Folder agreement provided by Administration. Forensics will verify the signed document before you submit the business plan.</p>}
+    {status==='awaiting_signature'&&<p className="mt-3 text-sm text-amber-200">{activation?.client_signature_at
+     ? 'Your electronic signature was received. Administration is reviewing the signed agreement before business planning.'
+     : 'Read the agreement below and sign electronically. Administration will review your signature before business planning.'}</p>}
     {status==='pending_forensics'&&<p className="mt-3 text-sm text-amber-200">Payment evidence submitted. Forensics will verify 680 USDT on the TRON blockchain. Do not send a second transfer unless advised after review.</p>}
     {status==='active'&&<div className="mt-3 space-y-3"><p className="text-sm text-emerald-200">The one-time fee was verified. Your private Pro File Folder is open.</p><Link href="/client/system-switch" className="inline-block rounded-lg bg-cyan-300 px-5 py-3 font-semibold text-slate-950">Enter System Switch</Link></div>}
    </section>
+   {status==='awaiting_signature'&&<section className="space-y-4 rounded-2xl border border-cyan-300/20 p-6" data-pro-electronic-agreement="true">
+    <h2 className="text-xl font-bold">Pro File Folder · Client Agreement</h2>
+    <p className="text-sm text-slate-200">The Client identified by the assigned File Number requests one Pro File Folder, subject to Company approval and the Client's submitted business plan. A one-time activation fee of <strong>680 USDT</strong> is payable to the verified WEAVE TRON (TRC-20) receiving address only after the business-plan stage.</p>
+    <p className="text-sm text-slate-200">The Pro File Folder contains private business systems, approved workspaces and the System Switch crossing. Payment evidence alone does not activate the private Folder. Forensics independently verifies the payment and authorizes activation.</p>
+    <p className="text-sm text-slate-200">The 680 USDT is a service activation fee, not a personal loan or deposit into the Client's wallet. Separate business earnings, including the Siblings Event claim, require their own Mandate and source verification. Paying this fee does not establish, guarantee or release a 9,000 USDT wallet balance.</p>
+    <p className="text-sm text-slate-200">By signing, I accept the stated fee and activation procedure. I may retain access to my existing authorized employee workspace while the private Pro File Folder remains closed. Existing employment, identity and independent financial obligations are not extinguished or changed by this document.</p>
+    {activation?.client_signature_at
+     ?<p className="rounded-lg border border-cyan-300/30 p-3 text-sm text-cyan-100">Signed electronically by {activation.client_signature_name} · {new Date(activation.client_signature_at).toLocaleString()} · Awaiting Administration review</p>
+     :<div className="space-y-3 border-t border-white/10 pt-4">
+      <label className="block text-sm">Full registered Client name (electronic signature)
+       <input value={signedName} onChange={e=>setSignedName(e.target.value)} autoComplete="name"
+         className="mt-2 w-full rounded-lg border border-white/20 bg-slate-900 p-3 text-white"/>
+      </label>
+      <label className="flex items-start gap-2 text-sm text-slate-200">
+       <input type="checkbox" checked={termsAccepted} onChange={e=>setTermsAccepted(e.target.checked)} className="mt-1"/>
+       I have read the Pro File Folder agreement, acknowledge the one-time 680 USDT activation fee, and consent to my typed name being recorded as my electronic signature.
+      </label>
+      <button type="button" disabled={busy||!termsAccepted||signedName.trim().length<4}
+        onClick={()=>void submit('sign_agreement')}
+        className="rounded-xl bg-cyan-300 px-5 py-3 font-bold text-slate-950 disabled:opacity-40">Sign Pro File Folder agreement</button>
+     </div>}
+   </section>}
    {status==='business_plan_required'&&<section className="space-y-4 rounded-2xl border border-cyan-300/20 p-6">
     <h2 className="text-lg font-bold">Submit your business plan</h2>
     <p className="text-sm text-slate-300">The plan forms the first direction of your Pro File Folder and its workshop.</p>
