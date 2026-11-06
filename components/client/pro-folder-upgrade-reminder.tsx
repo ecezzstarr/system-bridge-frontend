@@ -3,7 +3,7 @@ import Link from 'next/link'
 import {useEffect,useState} from 'react'
 import {useAuth} from '@/lib/auth-provider'
 type Status={fileNumber:string;tier:string;status:string;notice:string;constructionNote:string;
- loan:{remaining:number|null;display:string;agreementConfirmed:boolean;fundingConfirmed:boolean}}
+ loan:{principal:number;remaining:number|null;display:string;agreementConfirmed:boolean;fundingConfirmed:boolean}}
 export default function ProFolderUpgradeReminder(){
  const {token,user}=useAuth()
  const [upgrade,setUpgrade]=useState<Status|null>(null)
