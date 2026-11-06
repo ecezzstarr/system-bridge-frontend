@@ -3,6 +3,9 @@ import { getAuthUser } from '@/lib/auth-api'
 import { getPool,sql } from '@/lib/db'
 import { CJ_PRO_FOLDER_NUMBER,clientUpgradePublicView,ensureClientFolderUpgrades } from '@/lib/client-folder-upgrade'
 import { CJ_EMPLOYEE_LOAN_USDT } from '@/lib/cj-dorado-loan'
+import { ensureFneTables } from '@/lib/fne'
+import { ensureCjDoradoFolder } from '@/lib/client-file-folder'
+import { ensureCompanyClientStaffSchema } from '@/lib/company-client-staff'
 export const dynamic='force-dynamic'
 const headers={'Cache-Control':'private, no-store'}
 async function admin(request:NextRequest){
@@ -38,6 +41,39 @@ export async function POST(request:NextRequest){
  const action=String(body.action||'')
  try{
   await ensureClientFolderUpgrades()
+
+  if(action==='prepare_employee_file_number'){
+    if(body.confirmation!=='PREPARE CJ FILE NUMBER')
+      return NextResponse.json({error:'Confirm PREPARE CJ FILE NUMBER'},{status:400})
+    await ensureCompanyClientStaffSchema()
+    if(!await ensureFneTables())throw new Error('File Number Engine is unavailable')
+    const offers=await sql`SELECT id,candidate_name,candidate_email,candidate_phone,client_id,status
+      FROM company_client_staff_offers WHERE file_number=${CJ_PRO_FOLDER_NUMBER} LIMIT 2`
+    if(offers.length!==1||offers[0].status!=='approved'||
+      offers[0].client_id||!/\bcj\s+dorado\b/i.test(String(offers[0].candidate_name||'')))
+      return NextResponse.json({error:'Exactly one approved, unclaimed CJ employee offer is required before preparing the existing File Number.'},{status:409})
+    const owner=await sql`SELECT id FROM users WHERE file_number=${CJ_PRO_FOLDER_NUMBER}
+      OR lower(email)=lower(${offers[0].candidate_email}) LIMIT 2`
+    if(owner.length)return NextResponse.json({error:'An existing Client account must be reconciled; no second employee identity or File Number was created.'},{status:409})
+    const folders=await sql`SELECT file_number,client_id,status FROM file_folders
+      WHERE file_number=${CJ_PRO_FOLDER_NUMBER} LIMIT 1`
+    if(folders[0]&&(folders[0].client_id||folders[0].status!=='pending'))
+      return NextResponse.json({error:'Existing File Number Engine record is not an unclaimed pending record; manual ownership review required.'},{status:409})
+    // Unique File Number and approved private staff invitation are both necessary;
+    // never publish an independent open registration claim for this employee.
+    if(!folders.length){
+      await sql`INSERT INTO file_folders(file_number,status,identity_data)
+        VALUES(${CJ_PRO_FOLDER_NUMBER},'pending',
+        ${JSON.stringify({name:offers[0].candidate_name,phone:offers[0].candidate_phone||''})}::jsonb)
+        ON CONFLICT (file_number) DO NOTHING`
+    }
+    const folder=await ensureCjDoradoFolder()
+    if(folder?.client_id)return NextResponse.json({error:'File Folder belongs to an existing Client; no replacement was created.'},{status:409})
+    return NextResponse.json({success:true,fileNumber:CJ_PRO_FOLDER_NUMBER,
+      status:'pending_employee_registration',
+      notice:'Use only the approved private employee invitation. Registration establishes the Client identity but cannot open a session before the verified 680 USDT loan is paid.'},
+      {headers})
+  }
   if(action==='prepare_cj_pro'){
     if(body.confirmation!=='PREPARE CJ PRO')return NextResponse.json({error:'Confirm PREPARE CJ PRO'},{status:400})
     const clients=await sql`SELECT id,name,file_number FROM users
