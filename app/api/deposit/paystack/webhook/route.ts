@@ -5,6 +5,7 @@ import { getPool } from '@/lib/db'
 import { notifyAdministrators } from '@/lib/deposit-notifications'
 import { settleDepartmentEntryPaystackTicket } from '@/lib/department-entry-paystack'
 import { settleFileFolderPaystackPurchase } from '@/lib/file-folder-paystack'
+import { settleCjLoan } from '@/lib/cj-dorado-loan'
 
 export const dynamic = 'force-dynamic'
 
@@ -21,7 +22,9 @@ export async function POST(request: NextRequest) {
     if (event?.event === 'charge.success' && reference) {
       // The server generates distinct references for each payment product.
       // Route recognized references directly, avoiding unrelated schema queries.
-      if (reference.startsWith('ENTRY-')) {
+      if (reference.startsWith('CJLOAN-')) {
+        await settleCjLoan(reference)
+      } else if (reference.startsWith('ENTRY-')) {
         await settleDepartmentEntryPaystackTicket(reference)
       } else if (reference.startsWith('FOLDER-')) {
         await settleFileFolderPaystackPurchase(reference)
