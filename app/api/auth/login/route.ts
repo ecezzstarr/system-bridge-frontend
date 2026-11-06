@@ -5,7 +5,6 @@ import { usableBcryptPasswordHash } from '@/lib/password-hash'
 import { randomBytes, randomUUID } from 'node:crypto'
 import { getDivineShieldState } from '@/lib/weave-infrastructure'
 import { ensureUserReferralCode } from '@/lib/user-referral'
-import { getCjLoanGate, issueCjLoanGrant } from '@/lib/cj-dorado-loan'
 
 const PLATFORM_ADMIN_EMAIL = 'ecezzstarr@gmail.com'
 
@@ -110,18 +109,6 @@ export async function POST(request: NextRequest) {
     const shield = await getDivineShieldState()
     if (shield.active && user.role !== 'admin') {
       return NextResponse.json({ error: 'WEAVE is under maintenance. Divine Shield is active.' }, { status: 423 })
-    }
-
-    const loanGate = await getCjLoanGate(user)
-    if (loanGate && loanGate.status !== 'cleared') {
-      return NextResponse.json({
-        error: loanGate.status === 'payment_required'
-          ? 'CJ Dorado: settle the verified employee loan before account entry.'
-          : 'CJ Dorado: Administration must verify the employee loan before checkout.',
-        code: loanGate.status === 'payment_required' ? 'CJ_LOAN_PAYMENT_REQUIRED' : 'CJ_LOAN_SETUP_PENDING',
-        amountUSDT: loanGate.remainingUSDT,
-        ...(loanGate.status === 'payment_required' ? { checkoutGrant: await issueCjLoanGrant(user.id) } : {}),
-      }, { status: 423, headers: { 'Cache-Control': 'private, no-store' } })
     }
 
     const referralCode = ['agent', 'bridger', 'client'].includes(user.role)
