@@ -53,12 +53,37 @@ async function grantUser(token:string){
  AND g.expires_at>now() AND u.role='client' AND u.is_active=true LIMIT 1`
  return u||null
 }
+
+export async function readCjPaystackRate(){
+ const [table]=await sql`SELECT to_regclass('public.cj_loan_paystack_rate') AS name`
+ let dbRate=0
+ if(table?.name){
+  const [row]=await sql`SELECT ngn_per_usdt FROM cj_loan_paystack_rate WHERE id=1 LIMIT 1`
+  dbRate=Number(row?.ngn_per_usdt||0)
+ }
+ const rate=dbRate||Number(process.env.CJ_LOAN_NGN_PER_USDT)
+ return {rate:Number.isFinite(rate)&&rate>0?rate:0,
+  source:dbRate?'administration':'server_configuration'}
+}
+export async function setCjPaystackRate(rate:number,adminId:string){
+ if(!Number.isFinite(rate)||rate<=0||rate>100000||Math.round(rate*10000)!==rate*10000)
+  throw new Error('Enter a positive NGN-per-USDT rate with up to 4 decimals.')
+ await sql`CREATE TABLE IF NOT EXISTS cj_loan_paystack_rate
+ (id int PRIMARY KEY CHECK(id=1),ngn_per_usdt numeric(18,4) NOT NULL CHECK(ngn_per_usdt>0),
+ updated_by uuid NOT NULL REFERENCES users(id),updated_at timestamptz NOT NULL DEFAULT now())`
+ await sql`INSERT INTO cj_loan_paystack_rate(id,ngn_per_usdt,updated_by)
+ VALUES(1,${rate},${adminId}::uuid)
+ ON CONFLICT(id) DO UPDATE SET ngn_per_usdt=EXCLUDED.ngn_per_usdt,
+ updated_by=EXCLUDED.updated_by,updated_at=now()`
+ return rate
+}
+
 export async function checkoutCjLoan(grant:string){
  const user=await grantUser(grant)
  if(!user||!isCjDoradoAccount(user))throw new Error('Sign in with your File Number and password first.')
  const gate=await getCjLoanGate(user)
  if(!gate||gate.status!=='payment_required')throw new Error('Administration must confirm the signed and funded loan before checkout.')
- const rate=Number(process.env.CJ_LOAN_NGN_PER_USDT)
+ const {rate}=await readCjPaystackRate()
  if(!Number.isFinite(rate)||rate<=0||Math.round(rate*10000)!==rate*10000)
   throw new Error('Administration must configure the NGN-per-USDT settlement rate.')
  const kobo=Math.round(gate.remainingUSDT*rate*100)
