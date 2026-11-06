@@ -958,7 +958,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
 
         {surface === 'business' && (
           <ClientWorkshopWorld
-            initialModule="Business Store"
+            initialModule={data.workshop?.type==='crypto_exchange'?'Market':'Business Store'}
             client={data.client}
             folder={data.file_folder}
             vault={data.vault}
