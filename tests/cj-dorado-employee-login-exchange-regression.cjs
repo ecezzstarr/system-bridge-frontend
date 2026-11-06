@@ -60,7 +60,7 @@ assert.ok(read('app/api/client/staff-workspace/route.ts').includes('company_clie
  'Employee workspace remains intact')
 assert.ok(read('app/api/client/cj-loan-paystack/route.ts').includes('status:410'),
  'Wrong Paystack loan checkout is retired')
-assert.ok(read('app/api/admin/client-folder-upgrades/route.ts').includes("action!=='prepare_employee_file_number'"),
+assert.ok(read('app/api/admin/client-folder-upgrades/route.ts').includes("new Set(['prepare_employee_file_number']).has(action)"),
  'Legacy Administration loan collection is retired')
 assert.ok(read('components/system-switch/client-workshop-world.tsx').includes('crypto_exchange'),
  'Existing Crypto Exchange Workshop remains connected')
