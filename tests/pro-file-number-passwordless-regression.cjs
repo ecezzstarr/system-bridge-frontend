@@ -37,7 +37,7 @@ assert.ok(!publicRoute.includes('getCjSiblingsEvent')&&!publicRoute.includes('en
  'Public File Number verification never reveals CJ or another Client money balances')
 assert.ok(publicPage.includes('File Folder business name')&&
  publicPage.includes('Submit business plan and signed agreement')&&
- publicPage.includes('no password'),
+ publicPage.includes('do not need a password'),
  'Recipient starts with File Number and submits a named business plan without password')
 assert.ok(adminRoute.includes("user?.role==='admin'")&&
  adminRoute.includes('independentlyVerified')&&
