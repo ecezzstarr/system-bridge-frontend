@@ -52,6 +52,7 @@ export default function ClientFolderUpgradeAdmin(){
  const remaining=up?Number(up.loan_principal_usdt)-Number(up.repayment_verified_usdt):0
  return <main className="mx-auto max-w-5xl space-y-6 px-4 py-7 text-white" data-admin-client-pro-upgrade="true">
   <Link href="/admin/file-folder-world-releases" className="text-xs text-cyan-200">← File Folder Update Engine</Link>
+  <Link href="/admin/cj-exchange" className="inline-block text-sm text-cyan-200 underline">Review CJ Crypto Exchange orders</Link>
   <header className="space-y-2">
    <p className="text-xs font-bold uppercase tracking-widest text-cyan-200">Administration · Client entitlement</p>
    <h1 className="text-3xl font-black">CJ Dorado · Pro File Folder</h1>
