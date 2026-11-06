@@ -49,7 +49,7 @@ export async function POST(request:NextRequest){
  if(!user)return NextResponse.json({error:'Administration required'},{status:403})
  const body=await request.json().catch(()=>({}))
  const action=String(body.action||'')
- if(action!=='prepare_employee_file_number')
+ if(!new Set(['prepare_employee_file_number']).has(action))
    return NextResponse.json({error:'Loan and Paystack collection actions are retired. Use /admin/pro-activations for the one-time 680 USDT Pro activation and manual Forensics review.'},
      {status:410,headers})
  try{
