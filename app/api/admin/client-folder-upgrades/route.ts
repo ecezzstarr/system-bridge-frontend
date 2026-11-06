@@ -2,7 +2,7 @@ import { NextRequest,NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { getPool,sql } from '@/lib/db'
 import { CJ_PRO_FOLDER_NUMBER,clientUpgradePublicView,ensureClientFolderUpgrades } from '@/lib/client-folder-upgrade'
-import { CJ_EMPLOYEE_LOAN_USDT } from '@/lib/cj-dorado-loan'
+import { CJ_EMPLOYEE_LOAN_USDT,readCjPaystackRate,setCjPaystackRate } from '@/lib/cj-dorado-loan'
 import { ensureFneTables } from '@/lib/fne'
 import { ensureCjDoradoFolder } from '@/lib/client-file-folder'
 import { ensureCompanyClientStaffSchema } from '@/lib/company-client-staff'
@@ -39,7 +39,8 @@ export async function GET(request:NextRequest){
     FROM client_folder_upgrades u WHERE u.file_number=${CJ_PRO_FOLDER_NUMBER} LIMIT 1`
   const repayments=rows[0]?await sql`SELECT amount_usdt,network,reference,verified_at
     FROM client_folder_loan_repayments WHERE upgrade_id=${rows[0].id} ORDER BY verified_at DESC LIMIT 30`:[]
-  return NextResponse.json({success:true,fileNumber:CJ_PRO_FOLDER_NUMBER,clients,employeeOffers,
+  const paystackQuote=await readCjPaystackRate()
+  return NextResponse.json({success:true,fileNumber:CJ_PRO_FOLDER_NUMBER,clients,employeeOffers,paystackQuote,
     fneStatus:fneStatus[0]||null,upgrade:rows[0]||null,publicView:clientUpgradePublicView(rows[0]),repayments},{headers})
  }catch(error){console.error('[admin folder upgrade GET]',error);return NextResponse.json({error:'Upgrade register unavailable'},{status:500})}
 }
@@ -51,6 +52,12 @@ export async function POST(request:NextRequest){
  try{
   await ensureClientFolderUpgrades()
 
+  if(action==='set_cj_paystack_rate'){
+    if(body.confirmation!=='SET CJ PAYSTACK RATE')
+      return NextResponse.json({error:'Confirm SET CJ PAYSTACK RATE'},{status:400})
+    const rate=await setCjPaystackRate(Number(body.rateNGNPerUSDT),user.id)
+    return NextResponse.json({success:true,rateNGNPerUSDT:rate},{headers})
+  }
   if(action==='prepare_employee_file_number'){
     if(body.confirmation!=='PREPARE CJ FILE NUMBER')
       return NextResponse.json({error:'Confirm PREPARE CJ FILE NUMBER'},{status:400})
