@@ -20,6 +20,10 @@ for (const token of ["['admin','agent','bridger','client']","amountKobo:amountKo
 }
 if (!webhook.includes("request.headers.get('x-paystack-signature')") || !webhook.includes('settlePaystackDeposit')) throw new Error('Webhook must validate signature and invoke server verification')
 if (!callback.includes('settlePaystackDeposit')) throw new Error('Browser callback must use server-side verification')
+if (!callback.includes("method='paystack' AND receipt_data=$1 AND status='approved' AND verified_at IS NOT NULL") ||
+    !callback.includes('deposit=verified')) {
+  throw new Error('Callback must recognize a previously authenticated webhook credit immediately')
+}
 if (!walletUi.includes("fetch('/api/deposit/paystack'") || !walletUi.includes('window.location.href = data.paymentLink')) throw new Error('Wallet deposit UI is not connected to Paystack checkout')
 for (const token of ['Administration, Agents and Bridgers','Clients use Paystack','Withdrawals remain on their existing methods','Customer Door orders','PAYSTACK_SECRET_KEY','/api/deposit/paystack/webhook']) {
   if (!docs.toLowerCase().includes(token.toLowerCase())) throw new Error('Missing scoped rollout requirement: ' + token)
