@@ -16,6 +16,7 @@ export async function GET(request: NextRequest) {
       publicOrigin: config.publicOrigin,
       mode: config.mode,
       verifiedAt: config.verifiedAt,
+      webhookSigningConfigured: config.webhookSigningConfigured,
       source: config.configured ? 'server_configuration' : 'missing',
     }, { headers: { 'Cache-Control': 'private, no-store, max-age=0', Vary: 'Authorization' } })
   } catch (error) {

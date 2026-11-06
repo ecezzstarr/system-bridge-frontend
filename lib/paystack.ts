@@ -1,5 +1,5 @@
 import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto'
-import { getPaystackSecretKey } from '@/lib/paystack-config'
+import { getPaystackSecretKey, getPaystackWebhookSigningSecret } from '@/lib/paystack-config'
 
 const PAYSTACK_API = 'https://api.paystack.co'
 export type PaystackInitializeInput = { email: string; amountKobo: number; reference?: string; callbackUrl: string; metadata: Record<string, unknown> }
@@ -38,12 +38,42 @@ export async function verifyPaystackTransaction(reference: string): Promise<Pays
   return payload.data as PaystackTransaction
 }
 
-export async function verifyPaystackWebhookSignature(rawBody: string | Buffer, signature: string | null) {
-  if (!signature || !/^[a-f0-9]{128}$/i.test(signature)) return false
+/**
+ * Verify the current timestamped Paystack-Signature header using whsec_,
+ * or the legacy x-paystack-signature HMAC for accounts not migrated yet.
+ * Never downgrade a present but invalid modern header to the legacy path.
+ */
+export async function verifyPaystackWebhookSignature(
+  rawBody: string | Buffer, legacySignature: string | null, modernHeader?: string | null,
+) {
+  if (modernHeader) {
+    let secret: string
+    try { secret = await getPaystackWebhookSigningSecret() } catch { return false }
+    if (!secret.startsWith('whsec_')) return false
+    const fields = modernHeader.split(',').map(part => part.trim())
+    const timestampField = fields.find(part => part.startsWith('t='))
+    const timestamp = timestampField?.slice(2) || ''
+    if (!/^\\d{10}$/.test(timestamp)) return false
+    const seconds = Number(timestamp)
+    if (!Number.isSafeInteger(seconds) || Math.abs(Date.now() / 1000 - seconds) > 300) return false
+    const expected = createHmac('sha512', secret)
+      .update(timestamp).update('.').update(rawBody).digest()
+    const signatures = fields.filter(part => part.startsWith('v1='))
+    for (const candidate of signatures) {
+      const pair = candidate.slice(3)
+      const colon = pair.indexOf(':')
+      if (colon < 1 || !/^whk_[A-Za-z0-9_-]+$/.test(pair.slice(0, colon))) continue
+      const hex = pair.slice(colon + 1)
+      if (!/^[a-f0-9]{128}$/i.test(hex)) continue
+      if (timingSafeEqual(expected, Buffer.from(hex, 'hex'))) return true
+    }
+    return false
+  }
+  if (!legacySignature || !/^[a-f0-9]{128}$/i.test(legacySignature)) return false
   let secret: string
   try { secret = await getPaystackSecretKey() } catch { return false }
   const expected = createHmac('sha512', secret).update(rawBody).digest()
-  const received = Buffer.from(signature, 'hex')
+  const received = Buffer.from(legacySignature, 'hex')
   return received.length === expected.length && timingSafeEqual(received, expected)
 }
 

@@ -96,3 +96,22 @@ used to initiate the checkout. A wrong live/test merchant secret, blocked
 webhook delivery, missing original reference, refund or owner/amount
 mismatch is an unresolved payment exception, never a reason to issue
 unverified wallet funds.
+
+
+### Modern Paystack webhook authentication (2026)
+Paystack accepts a timestamped `Paystack-Signature` header with
+`t=<Unix epoch seconds>,v1=<whk_id>:<hex HMAC-SHA512>`. It signs the
+exact byte sequence `timestamp + '.' + raw body` with the separate
+`whsec_` webhook signing secret. Weave validates the timestamp within
+five minutes and compares signatures using a constant-time operation.
+The original `x-paystack-signature` raw-body HMAC is supported only when
+the modern header is absent; an invalid modern header cannot downgrade
+to a legacy signature.
+
+Administration can store `whsec_` encrypted in Paystack Integration
+Workshop or an operator can supply `PAYSTACK_WEBHOOK_SIGNING_SECRET`
+in the secure server environment. The signing secret is distinct from
+`PAYSTACK_SECRET_KEY` and must correspond to the merchant's live/test
+mode. An absent or mismatched signing secret blocks modern webhooks and
+therefore blocks instant webhook settlement; the callback still has
+independent server-side transaction verification as a fallback.

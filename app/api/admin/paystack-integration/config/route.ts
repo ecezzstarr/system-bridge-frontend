@@ -30,8 +30,8 @@ export async function POST(request: NextRequest) {
     if (typeof body?.secretKey !== 'string' || typeof body?.publicOrigin !== 'string' || !['test','live'].includes(body?.mode)) {
       return NextResponse.json({ error: 'Provide the Paystack secret key, canonical HTTPS origin, and test/live mode.' }, { status: 400 })
     }
-    const saved = await savePaystackConfig({ secretKey: body.secretKey, publicOrigin: body.publicOrigin, mode: body.mode, adminId: admin.id })
-    return NextResponse.json({ success: true, ...saved, message: 'Paystack credentials validated and stored encrypted. Test deposits and webhook settlement are still required before live use.' }, { headers: { 'Cache-Control': 'no-store' } })
+    const saved = await savePaystackConfig({ secretKey: body.secretKey, webhookSigningSecret: typeof body.webhookSigningSecret === 'string' ? body.webhookSigningSecret : '', publicOrigin: body.publicOrigin, mode: body.mode, adminId: admin.id })
+    return NextResponse.json({ success: true, ...saved, message: 'Paystack merchant credentials verified. New webhook signing secret, if supplied, was stored encrypted. Verify signed webhook delivery in the Paystack dashboard.' }, { headers: { 'Cache-Control': 'no-store' } })
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : 'Paystack configuration failed.' }, { status: 400, headers: { 'Cache-Control': 'no-store' } })
   }

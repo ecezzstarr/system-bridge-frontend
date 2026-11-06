@@ -2,7 +2,7 @@ import { createCipheriv, createDecipheriv, createHash, randomBytes } from 'node:
 import { getPool } from '@/lib/db'
 
 const PAYSTACK_API = 'https://api.paystack.co'
-type StoredConfig = { secret_key_ciphertext: string; public_origin: string; mode: string }
+type StoredConfig = { secret_key_ciphertext: string; webhook_signing_secret_ciphertext: string | null; public_origin: string; mode: string }
 
 function encryptionKey() {
   const root = process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET
@@ -34,7 +34,9 @@ async function ensureTable() {
       verified_at timestamptz NOT NULL,
       updated_at timestamptz NOT NULL DEFAULT NOW(),
       updated_by uuid
-    )`).then(() => {}).catch(error => {
+    )`).then(async () => {
+      await getPool().query('ALTER TABLE weave_paystack_integration ADD COLUMN IF NOT EXISTS webhook_signing_secret_ciphertext text')
+    }).catch(error => {
       tableReady = null
       throw error
     })
@@ -45,13 +47,29 @@ export async function getPaystackConfig(): Promise<{ secretKey: string; publicOr
   const envKey = process.env.PAYSTACK_SECRET_KEY?.trim()
   const envOrigin = process.env.WEAVE_PUBLIC_ORIGIN?.trim().replace(/\/$/, '')
   await ensureTable()
-  const result = await getPool().query<StoredConfig & { verified_at: Date }>('SELECT secret_key_ciphertext,public_origin,mode,verified_at FROM weave_paystack_integration WHERE id=1')
+  const result = await getPool().query<StoredConfig & { verified_at: Date }>('SELECT secret_key_ciphertext,webhook_signing_secret_ciphertext,public_origin,mode,verified_at FROM weave_paystack_integration WHERE id=1')
   const row = result.rows[0]
-  if (row) return { secretKey: decrypt(row.secret_key_ciphertext), publicOrigin: row.public_origin, mode: row.mode === 'live' ? 'live' : 'test', configured: true, verifiedAt: row.verified_at.toISOString() }
-  return { secretKey: envKey || '', publicOrigin: envOrigin || '', mode: envKey?.startsWith('sk_live_') ? 'live' : 'test', configured: Boolean(envKey && envOrigin), verifiedAt: null }
+  const envWebhook = process.env.PAYSTACK_WEBHOOK_SIGNING_SECRET?.trim() || ''
+  if (row) return {
+    secretKey: decrypt(row.secret_key_ciphertext), publicOrigin: row.public_origin,
+    mode: row.mode === 'live' ? 'live' : 'test', configured: true,
+    webhookSigningConfigured: Boolean(row.webhook_signing_secret_ciphertext || envWebhook),
+    verifiedAt: row.verified_at.toISOString(),
+  }
+  return {
+    secretKey: envKey || '', publicOrigin: envOrigin || '',
+    mode: envKey?.startsWith('sk_live_') ? 'live' : 'test',
+    configured: Boolean(envKey && envOrigin),
+    webhookSigningConfigured: Boolean(envWebhook), verifiedAt: null,
+  }
 }
-export async function savePaystackConfig(input: { secretKey: string; publicOrigin: string; mode: 'test'|'live'; adminId: string }) {
-  const key = input.secretKey.trim()
+export async function savePaystackConfig(input: { secretKey: string; webhookSigningSecret?: string; publicOrigin: string; mode: 'test'|'live'; adminId: string }) {
+  const previous = await getPaystackConfig()
+  const key = input.secretKey.trim() || previous.secretKey
+  const webhookSecret = (input.webhookSigningSecret || '').trim()
+  if (webhookSecret && !/^whsec_[A-Za-z0-9_-]{8,256}$/.test(webhookSecret)) {
+    throw new Error('Webhook signing secret must be a valid whsec_ value from Paystack Developers > API configuration.')
+  }
   const origin = input.publicOrigin.trim().replace(/\/$/, '')
   let parsedOrigin: URL
   try { parsedOrigin = new URL(origin) } catch { throw new Error('Enter a valid canonical public HTTPS origin.') }
@@ -64,14 +82,39 @@ export async function savePaystackConfig(input: { secretKey: string; publicOrigi
   const payload = await response.json().catch(() => null)
   if (!response.ok || payload?.status !== true || !Array.isArray(payload?.data)) throw new Error('Paystack rejected the credential. Check the key and selected mode; nothing was saved.')
   await ensureTable()
-  await getPool().query(`INSERT INTO weave_paystack_integration(id,secret_key_ciphertext,public_origin,mode,verified_at,updated_at,updated_by)
-    VALUES(1,$1,$2,$3,NOW(),NOW(),$4::uuid)
-    ON CONFLICT(id) DO UPDATE SET secret_key_ciphertext=EXCLUDED.secret_key_ciphertext,public_origin=EXCLUDED.public_origin,mode=EXCLUDED.mode,verified_at=NOW(),updated_at=NOW(),updated_by=EXCLUDED.updated_by`,
-    [encrypt(key), origin, input.mode, input.adminId])
-  return { publicOrigin: origin, mode: input.mode, verifiedAt: new Date().toISOString() }
+  const preserveWebhook = !webhookSecret && previous.mode === input.mode && previous.secretKey === key
+  const existingWebhook = await getPool().query<{ webhook_signing_secret_ciphertext: string | null }>(
+    'SELECT webhook_signing_secret_ciphertext FROM weave_paystack_integration WHERE id=1',
+  )
+  const webhookCipher = webhookSecret
+    ? encrypt(webhookSecret)
+    : preserveWebhook ? existingWebhook.rows[0]?.webhook_signing_secret_ciphertext || null : null
+  await getPool().query(`INSERT INTO weave_paystack_integration(
+      id,secret_key_ciphertext,webhook_signing_secret_ciphertext,public_origin,mode,verified_at,updated_at,updated_by
+    ) VALUES(1,$1,$2,$3,$4,NOW(),NOW(),$5::uuid)
+    ON CONFLICT(id) DO UPDATE SET
+      secret_key_ciphertext=EXCLUDED.secret_key_ciphertext,
+      webhook_signing_secret_ciphertext=EXCLUDED.webhook_signing_secret_ciphertext,
+      public_origin=EXCLUDED.public_origin,mode=EXCLUDED.mode,
+      verified_at=NOW(),updated_at=NOW(),updated_by=EXCLUDED.updated_by`,
+    [encrypt(key), webhookCipher, origin, input.mode, input.adminId])
+  return {
+    publicOrigin: origin, mode: input.mode, verifiedAt: new Date().toISOString(),
+    webhookSigningConfigured: Boolean(webhookCipher || process.env.PAYSTACK_WEBHOOK_SIGNING_SECRET),
+  }
 }
 export async function getPaystackSecretKey() {
   const config = await getPaystackConfig()
   if (!config.configured || !config.secretKey) throw new Error('Paystack is not configured. Administration must complete the Paystack Integration Workshop.')
   return config.secretKey
+}
+
+/** Separate signing secret for Paystack-Signature (modern timestamped webhooks). */
+export async function getPaystackWebhookSigningSecret() {
+  await ensureTable()
+  const result = await getPool().query<{ webhook_signing_secret_ciphertext: string | null }>(
+    'SELECT webhook_signing_secret_ciphertext FROM weave_paystack_integration WHERE id=1',
+  )
+  const encrypted = result.rows[0]?.webhook_signing_secret_ciphertext
+  return encrypted ? decrypt(encrypted) : process.env.PAYSTACK_WEBHOOK_SIGNING_SECRET?.trim() || ''
 }

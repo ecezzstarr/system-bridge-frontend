@@ -124,4 +124,21 @@ if (!settlement.includes("FOR UPDATE OF d") || !settlement.includes("credits > 0
 if (!adminTerminal.includes('Automatic Wallet Credit') || !adminTerminal.includes('no manual approval is needed')) {
   throw new Error('Administration must see that verified Paystack wallet funding is automatic')
 }
+const webhookSetup = read('app/(app)/admin/paystack-integration-workshop/page.tsx')
+const webhookConfig = read('lib/paystack-config.ts')
+const webhookStatus = read('app/api/admin/paystack-integration/status/route.ts')
+for (const token of ["getPaystackWebhookSigningSecret", "PAYSTACK_WEBHOOK_SIGNING_SECRET", "webhook_signing_secret_ciphertext", "webhookSigningSecret?: string", "encrypt(webhookSecret)"]) {
+  if (!webhookConfig.includes(token)) throw new Error('Missing encrypted Paystack signing secret support: ' + token)
+}
+for (const token of ["modernHeader?: string | null", "Date.now() / 1000 - seconds", "Math.abs", "whsec_", "whk_", "timingSafeEqual", "modernHeader.split(',')"]) {
+  if (!source.includes(token)) throw new Error('Current timestamped Paystack-Signature verification missing: ' + token)
+}
+if (!webhook.includes("request.headers.get('paystack-signature')") ||
+    !webhook.includes("request.headers.get('x-paystack-signature')")) {
+  throw new Error('Both modern and legacy authenticated Paystack webhook events must work')
+}
+if (!webhookSetup.includes('webhookSigningSecret') || !webhookSetup.includes('whsec_') ||
+    !webhookStatus.includes('webhookSigningConfigured')) {
+  throw new Error('Administration must configure current Paystack webhook signing secret securely')
+}
 console.log('Paystack verified deposits, secured Administration review, and legacy endpoint regressions passed')

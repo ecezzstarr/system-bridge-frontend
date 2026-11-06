@@ -10,7 +10,9 @@ export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
   const rawBody = await request.text()
-  if (!(await verifyPaystackWebhookSignature(rawBody, request.headers.get('x-paystack-signature')))) {
+  if (!(await verifyPaystackWebhookSignature(
+    rawBody, request.headers.get('x-paystack-signature'), request.headers.get('paystack-signature'),
+  ))) {
     return NextResponse.json({error:'Invalid Paystack signature'},{status:401})
   }
   try {

@@ -14,6 +14,8 @@ const tasks = [
 export default function PaystackIntegrationWorkshopPage() {
   const { user, token, isInitialized } = useAuth()
   const [secretKey, setSecretKey] = useState('')
+  const [webhookSigningSecret, setWebhookSigningSecret] = useState('')
+  const [webhookSigningConfigured, setWebhookSigningConfigured] = useState(false)
   const [publicOrigin, setPublicOrigin] = useState('')
   const [mode, setMode] = useState<'test'|'live'>('test')
   const [status, setStatus] = useState('Loading integration status…')
@@ -29,6 +31,7 @@ export default function PaystackIntegrationWorkshopPage() {
     const data = await response.json()
     if (!response.ok) throw new Error(data.error || 'Could not read Paystack status.')
     setConfigured(Boolean(data.configured))
+    setWebhookSigningConfigured(Boolean(data.webhookSigningConfigured))
     setPublicOrigin(data.publicOrigin || '')
     setMode(data.mode === 'live' ? 'live' : 'test')
     setVerifiedAt(data.verifiedAt || '')
@@ -39,7 +42,7 @@ export default function PaystackIntegrationWorkshopPage() {
     if (!isInitialized || !token || user?.role !== 'admin') return
     let active = true
     fetch('/api/admin/paystack-integration/status', { headers: { Authorization: 'Bearer ' + token }, cache: 'no-store' })
-      .then(async response => { const data = await response.json(); if (!response.ok) throw new Error(data.error || 'Could not read Paystack status.'); if (active) { setConfigured(Boolean(data.configured)); setPublicOrigin(data.publicOrigin || ''); setMode(data.mode === 'live' ? 'live' : 'test'); setVerifiedAt(data.verifiedAt || ''); setStatus(data.configured ? 'Server configuration is available. Complete the test-mode checks before live collection.' : 'Paystack is not configured. Enter the credentials and canonical HTTPS origin below.') } })
+      .then(async response => { const data = await response.json(); if (!response.ok) throw new Error(data.error || 'Could not read Paystack status.'); if (active) { setConfigured(Boolean(data.configured)); setWebhookSigningConfigured(Boolean(data.webhookSigningConfigured)); setPublicOrigin(data.publicOrigin || ''); setMode(data.mode === 'live' ? 'live' : 'test'); setVerifiedAt(data.verifiedAt || ''); setStatus(data.configured ? 'Server configuration is available. Complete the test-mode checks before live collection.' : 'Paystack is not configured. Enter the credentials and canonical HTTPS origin below.') } })
       .catch(error => { if (active) setStatus(error instanceof Error ? error.message : 'Status unavailable.') })
     return () => { active = false }
   }, [isInitialized, token, user?.role])
@@ -52,11 +55,13 @@ export default function PaystackIntegrationWorkshopPage() {
       const response = await fetch('/api/admin/paystack-integration/config', {
         method: 'POST',
         headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ secretKey, publicOrigin, mode }),
+        body: JSON.stringify({ secretKey, webhookSigningSecret, publicOrigin, mode }),
       })
       const data = await response.json()
       if (!response.ok) throw new Error(data.error || 'Paystack setup failed.')
       setSecretKey('')
+      setWebhookSigningSecret('')
+      setWebhookSigningConfigured(Boolean(data.webhookSigningConfigured))
       setConfigured(true)
       setVerifiedAt(data.verifiedAt || '')
       setStatus('Paystack credentials verified with Paystack and stored encrypted.')
@@ -81,12 +86,21 @@ export default function PaystackIntegrationWorkshopPage() {
       <h2 className="text-xl font-black">Integration status</h2>
       <p className="mt-3 text-sm leading-6 text-slate-300">{status}</p>
       <p className="mt-2 text-sm text-slate-400">Mode: {mode.toUpperCase()} · {verifiedAt ? 'Last credential validation: ' + new Date(verifiedAt).toLocaleString() : 'Credential validation not recorded'}</p>
+      <p className="mt-2 text-sm text-slate-300">Modern signed webhooks: {webhookSigningConfigured ? 'Signing secret configured' : 'Signing secret missing · Add whsec_ for Paystack-Signature events'}</p>
       <p className="mt-3 text-xs leading-5 text-slate-500">A successful credential check does not replace end-to-end test deposits, webhook verification, or duplicate-settlement checks.</p>
     </section>
 
     <form onSubmit={saveConfiguration} className="space-y-4 rounded-3xl border border-white/10 bg-black/20 p-5">
       <div><h2 className="text-xl font-black">1. Configure connection</h2><p className="mt-2 text-sm leading-6 text-slate-300">Use a Paystack test secret first. The secret is submitted only to the authenticated server endpoint and encrypted before database storage.</p></div>
-      <label className="block space-y-2"><span className="text-sm font-bold">Paystack secret key</span><input required autoComplete="new-password" type="password" value={secretKey} onChange={event => setSecretKey(event.target.value)} placeholder={configured ? 'Enter a new key to replace the stored key' : 'sk_test_…'} className="w-full rounded-xl border border-white/15 bg-slate-950 px-4 py-3 text-sm outline-none focus:border-cyan-300" /></label>
+      <label className="block space-y-2"><span className="text-sm font-bold">Paystack secret key</span><input required={!configured} autoComplete="new-password" type="password" value={secretKey} onChange={event => setSecretKey(event.target.value)} placeholder={configured ? 'Enter a new key to replace the stored key' : 'sk_test_…'} className="w-full rounded-xl border border-white/15 bg-slate-950 px-4 py-3 text-sm outline-none focus:border-cyan-300" /></label>
+      <label className="block space-y-2">
+        <span className="text-sm font-bold">Paystack webhook signing secret (whsec_)</span>
+        <input autoComplete="new-password" type="password" value={webhookSigningSecret}
+          onChange={event => setWebhookSigningSecret(event.target.value)}
+          placeholder={webhookSigningConfigured ? 'Leave blank to retain current signing secret' : 'whsec_…'}
+          className="w-full rounded-xl border border-white/15 bg-slate-950 px-4 py-3 text-sm outline-none focus:border-cyan-300" />
+        <span className="block text-xs text-slate-500">Under Paystack Dashboard → Developers → API configuration, generate the webhook signing secret for this mode. It differs from the sk_live_/sk_test_ merchant API key. It is encrypted and never sent back to the browser. Legacy webhooks using x-paystack-signature remain supported.</span>
+      </label>
       <label className="block space-y-2"><span className="text-sm font-bold">Canonical public HTTPS origin</span><input required type="url" value={publicOrigin} onChange={event => setPublicOrigin(event.target.value)} placeholder="https://weave.example.com" className="w-full rounded-xl border border-white/15 bg-slate-950 px-4 py-3 text-sm outline-none focus:border-cyan-300" /><span className="block text-xs text-slate-500">Enter the deployed origin only; no query string or fragment.</span></label>
       <fieldset className="space-y-2"><legend className="text-sm font-bold">Connection mode</legend><div className="flex gap-5 text-sm"><label className="flex items-center gap-2"><input type="radio" name="mode" checked={mode === 'test'} onChange={() => setMode('test')} /> Test mode</label><label className="flex items-center gap-2"><input type="radio" name="mode" checked={mode === 'live'} onChange={() => setMode('live')} /> Live mode</label></div><p className="text-xs leading-5 text-amber-200">Live mode requires a live secret key. Do not switch to live collection until all test deposits and settlement checks have passed.</p></fieldset>
       <button disabled={busy} type="submit" className="rounded-xl bg-emerald-400 px-5 py-3 text-sm font-black text-slate-950 disabled:opacity-50">{busy ? 'Validating and saving…' : 'Validate connection and save'}</button>
@@ -95,7 +109,7 @@ export default function PaystackIntegrationWorkshopPage() {
 
     <section className="rounded-3xl border border-white/10 bg-black/20 p-5">
       <h2 className="text-xl font-black">2. Register webhook</h2>
-      <p className="mt-2 text-sm leading-6 text-slate-300">In the Paystack dashboard, register this full URL:</p>
+      <p className="mt-2 text-sm leading-6 text-slate-300">In the Paystack dashboard, register this full HTTPS URL for the current live/test mode, subscribe to charge.success and confirm its webhook delivery. For modern Paystack-Signature events, configure the separate whsec_ signing secret above.</p>
       <code className="mt-3 block break-all rounded-xl bg-slate-950 p-3 text-sm text-emerald-200">{publicOrigin.replace(/\/$/, '')}/api/deposit/paystack/webhook</code>
       <a href="https://dashboard.paystack.com/" target="_blank" rel="noreferrer noopener" className="mt-4 inline-flex rounded-xl border border-white/15 px-4 py-3 text-sm font-bold">Open Paystack Dashboard ↗</a>
     </section>
