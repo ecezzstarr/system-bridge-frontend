@@ -604,7 +604,6 @@ function DepositApprovalSection({ user }: { user: any }) {
         },
         body: JSON.stringify({
           action:'manual_credit',depositId:deposit.id,
-          paystackTransactionId:manualTransactionId,
           confirmedInPaystackDashboard:manualConfirmed,
           evidenceNote:manualNote,
           paystackTransactionId:manualTransactionId.trim(),
