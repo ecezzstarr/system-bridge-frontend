@@ -50,6 +50,9 @@ export default function ProActivationsAdmin(){
  const selected=state?.activations.find(a=>a.file_number===fileNumber)
  return <main className="mx-auto max-w-5xl space-y-6 px-4 py-8 text-white" data-admin-pro-activation="true">
   <Link href="/admin/dashboard" className="text-xs text-cyan-200">Administration</Link>
+  <Link href="/admin/pro-file-number-verifications" className="inline-block rounded-lg border border-cyan-300/30 px-4 py-2 text-sm text-cyan-200">
+   Open File Number verification register (no Client password)
+  </Link>
   <header><p className="text-xs uppercase tracking-widest text-cyan-200">Forensics · Manual authority</p>
    <h1 className="mt-2 text-3xl font-bold">Pro File Folder Activation</h1>
    <p className="mt-2 text-sm text-slate-300">One-time 680 USDT fee. Independently verify the signed agreement, identity, business-plan submission, and exact TRC-20 receipt. No Paystack loan.</p>
