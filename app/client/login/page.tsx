@@ -31,50 +31,6 @@ export default function ClientLoginPage() {
   const [fileNumber, setFileNumber] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-  const [cjGrant, setCjGrant] = useState('')
-  const [cjRemaining, setCjRemaining] = useState<number | null>(null)
-  const [cjQuote, setCjQuote] = useState<{paymentLink:string;amountNGN:number;amountUSDT:number;rateNGNPerUSDT:number}|null>(null)
-  const [cjBusy, setCjBusy] = useState(false)
-  const [cjMessage, setCjMessage] = useState('')
-  useEffect(() => {
-    const reference = new URLSearchParams(window.location.search).get('cjLoanReference')
-    const grant = sessionStorage.getItem('cj_employee_loan_checkout_grant')
-    if (!reference || !grant) return
-    let active = true
-    fetch('/api/client/cj-loan-paystack?reference='+encodeURIComponent(reference), {
-      headers:{'x-cj-checkout-grant':grant},cache:'no-store',
-    }).then(async response => {
-      const data = await response.json()
-      if(!response.ok) throw new Error(data.error||'Payment verification is still pending.')
-      if(active){
-        setCjMessage(data.settled
-          ? 'Paystack verified the employee loan repayment. Enter your File Number and password again to open your existing workspace.'
-          : 'Payment verification is still pending. Sign in again to check.')
-        if(data.settled) sessionStorage.removeItem('cj_employee_loan_checkout_grant')
-      }
-    }).catch(error => { if(active) setCjMessage(error instanceof Error?error.message:'Payment verification pending.') })
-    return () => { active = false }
-  }, [])
-  const prepareCjCheckout = async () => {
-    if(!cjGrant) return
-    setCjBusy(true)
-    try {
-      const response = await fetch('/api/client/cj-loan-paystack',{
-        method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({grant:cjGrant}),
-      })
-      const data = await response.json()
-      if(!response.ok) throw new Error(data.error||'Paystack checkout unavailable.')
-      if(!String(data.paymentLink||'').startsWith('https://checkout.paystack.com/'))
-        throw new Error('Paystack returned an invalid checkout destination.')
-      sessionStorage.setItem('cj_employee_loan_checkout_grant',cjGrant)
-      setCjQuote(data)
-    }catch(error){setCjMessage(error instanceof Error?error.message:'Checkout unavailable.')}
-    finally{setCjBusy(false)}
-  }
-
-
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!fileNumber || !password) return
@@ -91,17 +47,7 @@ export default function ClientLoginPage() {
       if (result.success) {
         toast.success('Welcome back')
         setSession(result.token, result.user)
-        router.replace(await isFlameEventActive() ? '/client/event' : '/client/dashboard')
-      } else if (result.code === 'CJ_LOAN_PAYMENT_REQUIRED') {
-        setCjGrant(result.checkoutGrant || '')
-        setCjRemaining(Number(result.amountUSDT))
-        setCjQuote(null)
-        setCjMessage(result.error || 'Verified loan repayment is required before entry.')
-      } else if (result.code === 'CJ_LOAN_SETUP_PENDING') {
-        setCjGrant('')
-        setCjRemaining(null)
-        setCjQuote(null)
-        setCjMessage(result.error || 'Administration must complete loan verification.')
+        router.replace(result.activationRequired ? '/client/pro-activation' : (await isFlameEventActive() ? '/client/event' : '/client/dashboard'))
       } else if (result.code === 'PASSWORD_SETUP_REQUIRED') {
         toast.message('Set a password for this Client account to continue.')
         router.push('/forgot-password?portal=client')
@@ -142,17 +88,6 @@ export default function ClientLoginPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-4">
-          {cjMessage&&<p role="status" className="mb-4 rounded-xl border border-amber-300/30 bg-amber-300/5 p-4 text-sm leading-6 text-amber-100">{cjMessage}</p>}
-          {cjGrant&&<section className="mb-5 space-y-3 rounded-xl border border-cyan-300/25 bg-cyan-300/5 p-4" data-cj-employee-loan-gate="true">
-            <p className="text-sm font-semibold text-cyan-100">CJ Dorado · Employee loan</p>
-            <p className="text-sm text-slate-200">{cjRemaining?.toFixed(2)} USDT remaining. Paystack charges NGN at the recorded settlement rate, not USDT.</p>
-            {!cjQuote?<Button type="button" onClick={prepareCjCheckout} disabled={cjBusy} className="w-full">{cjBusy?'Preparing Paystack…':'View Paystack payment quote'}</Button>
-              :<div className="space-y-2">
-                <p className="text-base font-semibold text-white">₦{cjQuote.amountNGN.toLocaleString()} to settle {cjQuote.amountUSDT.toFixed(2)} USDT</p>
-                <p className="text-xs text-slate-300">Rate: ₦{cjQuote.rateNGNPerUSDT.toLocaleString()} per USDT. Review before continuing.</p>
-                <a href={cjQuote.paymentLink} className="block rounded-lg bg-cyan-300 px-4 py-3 text-center text-sm font-bold text-slate-950">Continue to Paystack checkout</a>
-              </div>}
-          </section>}
           <form onSubmit={handleLogin} className="space-y-5">
             <div className="space-y-2">
               <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">{WEAVE_WRITING.clientAccess.fileNumber}</label>
