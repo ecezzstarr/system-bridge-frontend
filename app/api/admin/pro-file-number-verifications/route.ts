@@ -162,6 +162,11 @@ export async function POST(request:NextRequest){
      if(inserted.rows.length!==1)throw new Error('New Pro activation could not be finalized.')
      activationId=String(inserted.rows[0].id)
     }
+    // Set the approved File Folder business name only where one has not already
+    // been established. Never silently rename an existing live business.
+    await db.query(`UPDATE users SET business_name=$1
+     WHERE id=$2::uuid AND (business_name IS NULL OR btrim(business_name)='')`,
+     [row.business_name,clientId])
     await db.query(`INSERT INTO pro_activation_audit(activation_id,action,actor_id,details)
      VALUES($1::uuid,'passwordless_pro_finalized',$2::uuid,$3::jsonb)`,
      [activationId,user.id,JSON.stringify({verificationId:id,feeUSDT:680,receipt:String(row.payment_tx_hash).trim()})])
