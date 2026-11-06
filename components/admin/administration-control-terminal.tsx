@@ -566,6 +566,7 @@ function DepositApprovalSection({ user }: { user: any }) {
     flame_coin: number | string
     created_at: string
     verified_at: string | null
+    manual_credited?: boolean
   }
   const [deposits, setDeposits] = useState<ReviewDeposit[]>([])
   const [loading, setLoading] = useState(true)
@@ -574,6 +575,57 @@ function DepositApprovalSection({ user }: { user: any }) {
   type Inspection = {paymentStatus:string;mode:string;matched:boolean;canResolve:boolean;credits:number;creditedAmount:number;refunds:number;guidance:string}
   const [inspections, setInspections] = useState<Record<string, Inspection>>({})
   const [inspectingId, setInspectingId] = useState<string | null>(null)
+  const [manualId, setManualId] = useState<string | null>(null)
+  const [manualTransactionId, setManualTransactionId] = useState('')
+  const [manualReference, setManualReference] = useState('')
+  const [manualNgn, setManualNgn] = useState('')
+  const [manualNote, setManualNote] = useState('')
+  const [manualPhrase, setManualPhrase] = useState('')
+  const [manualConfirmed, setManualConfirmed] = useState(false)
+  const [manualBusy, setManualBusy] = useState(false)
+
+  const openManualCredit = (deposit: ReviewDeposit) => {
+    setManualId(deposit.id)
+    setManualTransactionId('')
+    setManualReference('')
+    setManualNgn('')
+    setManualNote('')
+    setManualPhrase('')
+    setManualConfirmed(false)
+  }
+  const closeManualCredit = () => { if (!manualBusy) setManualId(null) }
+  const creditAfterManualConfirmation = async (deposit: ReviewDeposit) => {
+    if (manualBusy || !manualConfirmed) return
+    if (!window.confirm('Confirm this successful Paystack charge was independently checked in the original merchant dashboard? This will CREDIT the user wallet immediately.')) return
+    setManualBusy(true)
+    try {
+      const token = localStorage.getItem('ssb_auth_token')
+      const response = await fetch('/api/admin/deposit/paystack', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          action:'manual_credit',depositId:deposit.id,
+          paystackTransactionId:manualTransactionId,
+          observedReference:manualReference,
+          observedAmountNgn:Number(manualNgn),
+          evidenceNote:manualNote,
+          confirmation:manualPhrase,
+        }),
+      })
+      const result = await response.json()
+      if (!response.ok || !result.success || result.credited !== true) {
+        throw new Error(result.error || 'Manual Paystack credit was refused; no wallet funds moved.')
+      }
+      toast.success(result.message || 'Manual Paystack credit recorded.')
+      setManualId(null)
+      await fetchPendingDeposits(true)
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Manual credit unavailable.')
+    } finally { setManualBusy(false) }
+  }
 
   useEffect(() => {
     void fetchPendingDeposits()
@@ -683,7 +735,7 @@ function DepositApprovalSection({ user }: { user: any }) {
           <p className="max-w-xl text-xs leading-5 text-slate-400">
             Paystack-confirmed payments credit the user's wallet automatically and immediately.
             Administration receives a payment and credit notification; no manual approval is needed.
-            Use inspection and reconciliation only for transactions with missing or conflicting payment evidence.
+            For older stuck payments, Administration may credit once after personally confirming the original successful charge in the Paystack merchant dashboard. Each exceptional credit is recorded for audit.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -710,7 +762,7 @@ function DepositApprovalSection({ user }: { user: any }) {
                 </div>
                 <div className="flex flex-col items-end gap-2">
                   <span className={deposit.status === 'approved' && deposit.verified_at ? 'text-xs font-bold text-emerald-300' : deposit.status === 'rejected' ? 'text-xs font-bold text-red-300' : 'text-xs font-bold text-amber-300'}>
-                    {deposit.status === 'approved' ? (deposit.verified_at ? 'Paystack verified · Wallet credited' : 'Approval without Paystack proof · Investigate') : deposit.status === 'rejected' ? 'Verification failed · Review' : 'Awaiting Paystack verification'}
+                    {deposit.status === 'approved' ? (deposit.manual_credited ? 'Administration-confirmed · Wallet credited' : deposit.verified_at ? 'Paystack verified · Wallet credited' : 'Approval without Paystack proof · Investigate') : deposit.status === 'rejected' ? 'Verification failed · Review' : 'Awaiting Paystack verification'}
                   </span>
                   {(deposit.status === 'pending' || deposit.status === 'rejected' || (deposit.status === 'approved' && !deposit.verified_at)) && (
                     <div className="flex flex-wrap justify-end gap-2">
@@ -720,10 +772,64 @@ function DepositApprovalSection({ user }: { user: any }) {
                       <Button size="sm" disabled={processingId === deposit.id} onClick={() => void verifyDeposit(deposit.id)}>
                         {processingId === deposit.id ? 'Verifying...' : deposit.status === 'pending' ? 'Verify with Paystack' : deposit.status === 'rejected' ? 'Retry verified recovery' : 'Attach verified proof'}
                       </Button>
+                      {(deposit.status === 'pending' || deposit.status === 'rejected') && Number(deposit.amount_ngn) <= 10000 && (
+                        <Button size="sm" variant="outline"
+                          disabled={manualBusy}
+                          onClick={() => openManualCredit(deposit)}>
+                          Manual credit after Paystack confirmation
+                        </Button>
+                      )}
                     </div>
                   )}
                 </div>
               </div>
+              {manualId === deposit.id && (
+                <div className="mt-4 space-y-3 rounded-xl border border-amber-300/25 bg-black/30 p-4">
+                  <p className="text-sm font-bold text-amber-100">Administration manual Paystack confirmation</p>
+                  <p className="text-xs leading-5 text-slate-300">Open the original Paystack merchant dashboard and confirm the transaction is successful, not pending, failed, reversed or refunded. Match this exact deposit reference and NGN amount before continuing. A user receipt alone is insufficient.</p>
+                  <p className="break-all font-mono text-[11px] text-white">{deposit.reference} · ₦{Number(deposit.amount_ngn).toLocaleString()} · {Number(deposit.flame_coin).toLocaleString()} Flame Coin</p>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <label className="text-xs text-slate-200">Paystack transaction ID (numeric)
+                      <input type="text" inputMode="numeric" autoComplete="off" value={manualTransactionId}
+                        onChange={e => setManualTransactionId(e.target.value)}
+                        placeholder="ID shown in Paystack Dashboard" className="mt-1 w-full rounded-lg border border-white/20 bg-[#0a1a25] p-3 text-sm text-white" />
+                    </label>
+                    <label className="text-xs text-slate-200">Confirmed NGN amount
+                      <input type="number" min="1" max="10000" step="0.01" value={manualNgn}
+                        onChange={e => setManualNgn(e.target.value)}
+                        placeholder="Exact amount received" className="mt-1 w-full rounded-lg border border-white/20 bg-[#0a1a25] p-3 text-sm text-white" />
+                    </label>
+                  </div>
+                  <label className="block text-xs text-slate-200">Full Paystack transaction reference
+                    <input type="text" autoComplete="off" value={manualReference}
+                      onChange={e => setManualReference(e.target.value)}
+                      placeholder="Type the reference shown in Paystack" className="mt-1 w-full rounded-lg border border-white/20 bg-[#0a1a25] p-3 text-sm text-white" />
+                  </label>
+                  <label className="block text-xs text-slate-200">Evidence and verification notes
+                    <textarea rows={2} maxLength={800} value={manualNote}
+                      onChange={e => setManualNote(e.target.value)}
+                      placeholder="Successful charge confirmed on merchant dashboard; date/time and payment details checked"
+                      className="mt-1 w-full rounded-lg border border-white/20 bg-[#0a1a25] p-3 text-sm text-white" />
+                  </label>
+                  <label className="flex items-start gap-2 text-xs leading-5 text-slate-200">
+                    <input type="checkbox" checked={manualConfirmed} onChange={e => setManualConfirmed(e.target.checked)} className="mt-1" />
+                    I personally confirmed a successful payment in the Paystack merchant dashboard, matching this user, reference and amount; no refund or reversal is shown.
+                  </label>
+                  <p className="text-xs text-slate-300">Type <strong className="break-all text-amber-100">CREDIT {deposit.reference}</strong> to authorize the exact stored Flame Coin amount.</p>
+                  <input type="text" autoComplete="off" value={manualPhrase}
+                    onChange={e => setManualPhrase(e.target.value)}
+                    placeholder="CREDIT plus full reference" className="w-full rounded-lg border border-white/20 bg-[#0a1a25] p-3 text-sm text-white" />
+                  <div className="flex flex-wrap gap-2">
+                    <Button size="sm" disabled={manualBusy || !manualConfirmed || manualPhrase !== 'CREDIT ' + deposit.reference ||
+                        manualReference !== deposit.reference || !/^\\d{5,40}$/.test(manualTransactionId) ||
+                        Math.round(Number(manualNgn)*100) !== Math.round(Number(deposit.amount_ngn)*100) || manualNote.trim().length < 20}
+                      onClick={() => void creditAfterManualConfirmation(deposit)}>
+                      {manualBusy ? 'Crediting wallet...' : 'Confirm and credit Flame Coin once'}
+                    </Button>
+                    <Button size="sm" variant="outline" disabled={manualBusy} onClick={closeManualCredit}>Cancel</Button>
+                  </div>
+                </div>
+              )}
               {inspections[deposit.id] && (
                 <div className="mt-3 rounded-lg border border-sky-300/15 bg-black/25 p-3 text-xs leading-5 text-slate-300" role="status">
                   <p className="font-bold text-sky-100">Paystack evidence · {inspections[deposit.id].paymentStatus} · {inspections[deposit.id].mode} mode</p>

@@ -15,7 +15,16 @@ export async function GET(request: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   try {
     const result = await getPool().query(
-      "SELECT id, amount_usd, amount_trx, method, currency, status, receipt_data, created_at, verified_at FROM deposits WHERE user_id=$1::uuid AND method='paystack' ORDER BY created_at DESC LIMIT 30",
+      `SELECT d.id,d.amount_usd,d.amount_trx,d.method,d.currency,d.status,d.receipt_data,
+         d.created_at,d.verified_at,
+         EXISTS(
+           SELECT 1 FROM ledger_entries l
+           WHERE l.user_id=d.user_id AND l.entry_type='deposit' AND l.amount>0
+             AND l.metadata->>'deposit_id'=d.id::text
+             AND l.metadata->>'event_type'='paystack.manual_admin_credit'
+         ) AS manual_credited
+       FROM deposits d WHERE d.user_id=$1::uuid AND d.method='paystack'
+       ORDER BY d.created_at DESC LIMIT 30`,
       [user.id],
     )
     return NextResponse.json({ success: true, deposits: result.rows }, {

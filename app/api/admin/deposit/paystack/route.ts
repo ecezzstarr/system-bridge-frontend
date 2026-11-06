@@ -3,6 +3,7 @@ import { getAuthUser } from '@/lib/auth-api'
 import { getPool } from '@/lib/db'
 import { settlePaystackDeposit } from '@/lib/paystack-deposits'
 import { inspectPaystackDeposit } from '@/lib/paystack-inspection'
+import { manualCreditStuckPaystack } from '@/lib/manual-paystack-recovery'
 
 export const dynamic = 'force-dynamic'
 
@@ -15,7 +16,13 @@ export async function GET(request: NextRequest) {
     const result = await getPool().query(`
       SELECT d.id, d.user_id, d.status, d.receipt_data AS reference,
              d.amount_usd AS amount_ngn, d.amount_trx AS flame_coin,
-             d.created_at, d.verified_at, u.name, u.email, u.role
+             d.created_at, d.verified_at, u.name, u.email, u.role,
+             EXISTS(
+               SELECT 1 FROM ledger_entries l
+               WHERE l.user_id=d.user_id AND l.entry_type='deposit' AND l.amount>0
+                 AND l.metadata->>'deposit_id'=d.id::text
+                 AND l.metadata->>'event_type'='paystack.manual_admin_credit'
+             ) AS manual_credited
       FROM deposits d
       JOIN users u ON u.id = d.user_id
       WHERE d.method = 'paystack'
@@ -42,6 +49,33 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const depositId = String(body?.depositId || '')
     const validId = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(depositId)
+
+    if (body?.action === 'manual_credit') {
+      if (!validId) return NextResponse.json({error:'A valid deposit ID is required.'}, {status:400})
+      // Emergency recovery is intentionally separate from Paystack's automatic
+      // confirmation. The admin must have personally seen charge.success in
+      // the Paystack merchant dashboard and supply its transaction ID.
+      try {
+        const result = await manualCreditStuckPaystack({
+          depositId,adminId:String(admin.id),
+          paystackTransactionId:String(body.paystackTransactionId || ''),
+          observedReference:String(body.observedReference || ''),
+          observedAmountNgn:Number(body.observedAmountNgn),
+          evidenceNote:String(body.evidenceNote || ''),
+          confirmation:String(body.confirmation || ''),
+        })
+        return NextResponse.json({
+          success:true, credited:result.credited, depositId:result.depositId,
+          flameCoin:result.flameCoin,
+          message:'Administration confirmed the Paystack charge and credited '+result.flameCoin.toLocaleString()+' Flame Coin once.',
+        },{headers:{'Cache-Control':'private, no-store',Vary:'Authorization'}})
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Manual credit refused.'
+        // Expected validation/duplicate conflicts are not a gateway outage.
+        console.error('[Administration manual Paystack credit refused]', message)
+        return NextResponse.json({error:message},{status:409,headers:{'Cache-Control':'no-store'}})
+      }
+    }
 
     if (body?.action === 'inspect') {
       if (!validId) return NextResponse.json({ error: 'A valid deposit ID is required.' }, { status: 400 })

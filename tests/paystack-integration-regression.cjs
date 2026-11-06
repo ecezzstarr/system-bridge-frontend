@@ -149,4 +149,24 @@ if (!webhookSetup.includes('webhookSigningSecret') || !webhookSetup.includes('wh
 if (!source.includes('/^\\d{10}$/') || source.includes('/^\\\\d{10}$/')) {
   throw new Error('Modern Paystack-Signature timestamp parsing must match decimal seconds')
 }
+const manualRecovery = read('lib/manual-paystack-recovery.ts')
+for (const token of [
+  'weave_manual_paystack_credits','paystack_transaction_id varchar(40) NOT NULL UNIQUE',
+  "status IN ('pending','rejected')","deposit.status","FOR UPDATE OF d",
+  "balance_trx=balance_trx+$2","paystack.manual_admin_credit",
+  "approved_by:input.adminId","approval_basis:'human_verified_in_paystack_dashboard'",
+  "creditAfterManualConfirmation",
+].slice(0,9)) {
+  if (!manualRecovery.includes(token)) throw new Error('Manual Paystack recovery guard missing: '+token)
+}
+for (const token of ["body?.action === 'manual_credit'","manualCreditStuckPaystack","admin.role !== 'admin'"]) {
+  if (!adminPaystack.includes(token)) throw new Error('Missing authenticated Administration manual credit action: '+token)
+}
+for (const token of ['Manual credit after Paystack confirmation','Confirm and credit Flame Coin once',
+  "action:'manual_credit'", 'Paystack transaction ID (numeric)', 'manual_credited']) {
+  if (!adminTerminal.includes(token)) throw new Error('Administration manual credit workflow missing: '+token)
+}
+if (!depositRoute.includes('manual_credited') || !walletUi.includes('Administration-confirmed · Flame Coin credited')) {
+  throw new Error('User wallet history must distinguish Administration confirmed funds from Paystack API-verified funds')
+}
 console.log('Paystack verified deposits, secured Administration review, and legacy endpoint regressions passed')
