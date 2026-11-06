@@ -84,13 +84,18 @@ export async function POST(request:NextRequest){
   if(action==='confirm_signature'){
    const reference=String(body.agreementReference||'').trim()
    if(!body.signatureChecked||reference.length<6||reference.length>255)
-    throw new Error('Independently review the Client signature and enter its documentary reference.')
+    throw new Error('Independently review the Client electronic signature and record its reference.')
+   const [signed]=await sql`SELECT client_signature_name,client_signature_at
+     FROM pro_file_folder_activations WHERE client_id=${client.id}::uuid
+      AND file_number=${fileNumber} AND status='awaiting_signature' LIMIT 1`
+   if(!signed?.client_signature_name||!signed?.client_signature_at)
+    throw new Error('The Client must electronically sign the 680 USDT Pro agreement before Administration verification.')
    const [a]=await sql`UPDATE pro_file_folder_activations
       SET signed_agreement_reference=${reference},signed_agreement_verified_at=now(),
           signed_agreement_verified_by=${user.id}::uuid,
           status='business_plan_required',updated_at=now()
       WHERE client_id=${client.id}::uuid AND file_number=${fileNumber}
-        AND status='awaiting_signature'
+        AND status='awaiting_signature' AND client_signature_at IS NOT NULL
       RETURNING id`
    if(!a)throw new Error('Already signed, activated, or not prepared. Do not overwrite signed terms.')
    await writeProActivationAudit(String(a.id),'signature_verified',user.id,{reference})
