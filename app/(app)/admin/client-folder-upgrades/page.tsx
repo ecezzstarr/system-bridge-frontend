@@ -84,11 +84,11 @@ export default function ClientFolderUpgradeAdmin(){
     </section>}
   {up?.status==='construction'&&!up.loan_funded_at&&Number(up.loan_principal_usdt)===680&&<section className="space-y-3 rounded-2xl border border-white/10 p-5">
     <h2 className="text-lg font-bold">Verify actual personal loan</h2>
-    <p className="text-xs leading-6 text-slate-300">Only mark funded after the recipient agrees to documented terms and the separate 100 USDT transfer has been verified. Otherwise the account sees a proposed loan, not a debt.</p>
+    <p className="text-xs leading-6 text-slate-300">Only mark funded after the recipient agrees to documented terms and the separate 680 USDT transfer has been verified. Otherwise the account sees a proposed loan, not a debt.</p>
     <label className="block text-sm">Accepted loan agreement reference<input value={agreement} onChange={e=>setAgreement(e.target.value)} className="mt-2 w-full rounded-lg border border-white/20 bg-slate-950 p-3"/></label>
     <label className="block text-sm">Verified 680 USDT loan transfer reference<input value={funding} onChange={e=>setFunding(e.target.value)} className="mt-2 w-full rounded-lg border border-white/20 bg-slate-950 p-3"/></label>
     <label className="flex gap-3 text-sm"><input type="checkbox" checked={accepted} onChange={e=>setAccepted(e.target.checked)}/> The Client accepted the loan terms.</label>
-    <label className="flex gap-3 text-sm"><input type="checkbox" checked={checked} onChange={e=>setChecked(e.target.checked)}/> I independently verified the actual 100 USDT loan transfer.</label>
+    <label className="flex gap-3 text-sm"><input type="checkbox" checked={checked} onChange={e=>setChecked(e.target.checked)}/> I independently verified the actual 680 USDT loan transfer.</label>
     <button disabled={busy||!accepted||!checked||agreement.length<6||funding.length<6} onClick={()=>void act('confirm_loan',{agreementReference:agreement,fundingReference:funding,loanAccepted:accepted,loanFundingChecked:checked})} className="rounded-xl bg-cyan-300 px-5 py-3 font-bold text-slate-950 disabled:opacity-40">Confirm accepted and funded loan</button>
    </section>}
   {up?.status==='repayment_required'&&<section className="space-y-3 rounded-2xl border border-white/10 p-5">
