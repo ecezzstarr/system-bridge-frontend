@@ -4,7 +4,7 @@ import { resolveClientToken } from '@/lib/client-vault'
 import { ensureClientWorkshopSchema } from '@/lib/client-system-workshop'
 import { ensureClientMoneyEnvironment } from '@/lib/client-money-environment'
 import { activatePurchasedFileFolderForClient } from '@/lib/file-folder-purchase-activation'
-import {getClientFolderUpgrade,clientUpgradePublicView} from '@/lib/client-folder-upgrade'
+import {getProActivationState} from '@/lib/pro-file-folder-activation'
 
 type GateStage =
   | 'bridge_file_folder'
@@ -51,18 +51,17 @@ export async function GET(request: NextRequest) {
     if (!client) return NextResponse.json({ error: 'Client record not found' }, { status: 404 })
 
     const money = await ensureClientMoneyEnvironment(sql, client.id)
-    // Account-specific construction gate; never invent a paid loan or overwrite ownership.
-    if (client.file_number) {
-      const upgrade=await getClientFolderUpgrade(sql,String(client.id),String(client.file_number))
-      if (upgrade && upgrade.status!=='ready') {
-        const view=clientUpgradePublicView(upgrade)
-        return NextResponse.json({
-          success:true,active:false,
-          gate:{stage:'construction' as GateStage,title:'Pro File Folder · World in construction',detail:view?.notice},
-          client:{id:client.id,name:client.name,file_number:client.file_number},
-          upgrade:view,bridger:null,money
-        },{headers:{'Cache-Control':'private, no-store'}})
-      }
+    // Existing Client dashboard and employment remain accessible. Only the private
+    // Pro world is locked until the signed plan and manual Forensics approval.
+    const proGate=client.file_number
+      ? await getProActivationState(String(client.id),String(client.file_number)) : null
+    if(proGate&&proGate.status!=='active'){
+      return NextResponse.json({success:true,active:false,
+        gate:{stage:'construction' as GateStage,title:'Pro File Folder · Activation',
+          detail:'One-time 680 USDT Pro activation requires signed agreement, business plan, TRC-20 payment and manual Forensics confirmation.'},
+        client:{id:client.id,name:client.name,file_number:client.file_number},
+        activation:proGate,bridger:null,money
+      },{headers:{'Cache-Control':'private, no-store'}})
     }
 
     const [{ purchase_table }] = await sql`
