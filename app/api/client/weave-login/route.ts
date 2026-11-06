@@ -5,7 +5,7 @@ import { usableBcryptPasswordHash } from '@/lib/password-hash'
 import { randomBytes } from 'node:crypto'
 import { getDivineShieldState } from '@/lib/weave-infrastructure'
 import { ensureUserReferralCode } from '@/lib/user-referral'
-import { getCjLoanGate, issueCjLoanGrant } from '@/lib/cj-dorado-loan'
+import { getProActivationState } from '@/lib/pro-file-folder-activation'
 
 
 export async function POST(request: NextRequest) {
@@ -59,18 +59,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const loanGate = await getCjLoanGate(user)
-    if (loanGate && loanGate.status !== 'cleared') {
-      return NextResponse.json({
-        error: loanGate.status === 'payment_required'
-          ? 'CJ Dorado: the accepted 680 USDT employee loan must be settled through verified Paystack checkout before account entry.'
-          : 'CJ Dorado: Administration must verify the 680 USDT loan agreement, actual funding and account ownership before checkout.',
-        code: loanGate.status === 'payment_required' ? 'CJ_LOAN_PAYMENT_REQUIRED' : 'CJ_LOAN_SETUP_PENDING',
-        amountUSDT: loanGate.remainingUSDT,
-        ...(loanGate.status === 'payment_required' ? { checkoutGrant: await issueCjLoanGrant(user.id) } : {}),
-      }, { status: 423, headers: { 'Cache-Control': 'private, no-store' } })
-    }
-
     const referralCode = user.referral_code || await ensureUserReferralCode(user.id)
 
     const token = `ssb_${randomBytes(32).toString('base64url')}`
@@ -79,8 +67,10 @@ export async function POST(request: NextRequest) {
       VALUES (gen_random_uuid(), ${user.id}::uuid, ${token}, NOW(), NOW() + INTERVAL '7 days')
     `
 
+    const proActivation=await getProActivationState(String(user.id),String(user.file_number||''))
     return NextResponse.json({
       success: true,
+      activationRequired:Boolean(proActivation&&proActivation.status!=='active'),
       token,
       user: {
         id: user.id,
