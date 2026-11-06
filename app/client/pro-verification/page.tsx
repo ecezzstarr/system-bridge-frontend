@@ -3,7 +3,8 @@ import {useCallback,useEffect,useState} from 'react'
 import Link from 'next/link'
 type Verification={reference:string;fileNumber:string;businessName:string;
  status:string;feeUSDT:number;network:string;walletAddress:string|null;
- paymentVerified:boolean;rejectionReason?:string|null}
+ paymentVerified:boolean;rejectionReason?:string|null;
+ siblingsEvent?:{reportedAmountUSDT:number;verifiedAmountUSDT:number;status:string;availableForWithdrawal:boolean}|null}
 const PLAN_FIELDS=[
  ['businessActivity','Business activity and purpose'],
  ['customers','Customers and intended market'],
@@ -134,6 +135,13 @@ export default function ProFileNumberVerification(){
     <p className="text-sm">File Folder business: <strong>{verification.businessName}</strong></p>
     <p className="text-sm capitalize text-amber-200">Status: {verification.status.replaceAll('_',' ')}</p>
     <p className="text-xs text-slate-400">Application reference: {verification.reference}</p>
+    {verification.siblingsEvent&&<div className="rounded-xl border border-violet-300/25 bg-violet-300/[.05] p-4" data-verified-cj-siblings-event="true">
+     <p className="text-xs uppercase tracking-widest text-violet-200">CJ Dorado · Siblings Event · Mandate business earnings</p>
+     <p className="mt-2 text-3xl font-bold">{verification.siblingsEvent.reportedAmountUSDT.toLocaleString()} USDT</p>
+     <p className="mt-1 text-sm text-amber-200">Reported amount · Source verification pending / restricted</p>
+     <p className="mt-2 text-xs text-slate-300">Reconciled earnings recorded: {verification.siblingsEvent.verifiedAmountUSDT.toLocaleString()} USDT · No withdrawable amount established. Other types of funds: Pending verification.</p>
+     <p className="mt-2 text-xs text-slate-400">Your Siblings Event information is separate from the one-time Pro service fee. Paying 680 USDT does not establish or automatically release these funds.</p>
+    </div>}
     <details className="text-xs text-slate-300"><summary className="cursor-pointer">Save private verification code</summary>
      <p className="mt-2 break-all font-mono">{ticket}</p>
      <p className="mt-2">Keep this code private. It is needed if you resume the verification on another device. Do not post it publicly.</p>
