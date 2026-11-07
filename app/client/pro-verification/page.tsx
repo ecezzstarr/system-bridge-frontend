@@ -2,18 +2,15 @@
 import {useCallback,useEffect,useState} from 'react'
 import Link from 'next/link'
 import './pro-verification.css'
+import {PRO_MANAGER_COMPANY_PURPOSE,PRO_MANAGER_FILE_FOLDER_DISTINCTION,
+ PRO_MANAGER_PLAN_QUESTIONS,PRO_MANAGER_AGREEMENT_SECTIONS} from '@/lib/pro-regional-manager-language'
 type Verification={reference:string;fileNumber:string;businessName:string;
  status:string;feeUSDT:number;network:string;walletAddress:string|null;
  paymentVerified:boolean;rejectionReason?:string|null;
  companyPosition?:{title:string;monthlySalaryUSDT:number|null;salaryStatus:string}|null;
  operatingLocation?:{country:string;region:string;city:string}|null;
  siblingsEvent?:{reportedAmountUSDT:number;verifiedAmountUSDT:number;status:string;availableForWithdrawal:boolean}|null}
-const PLAN_FIELDS=[
- ['businessActivity','Business activity and purpose'],
- ['customers','Customers and intended market'],
- ['revenueModel','Products, services and how the business earns'],
- ['operations','How the Client will operate the File Folder business'],
-] as const
+const PLAN_FIELDS=PRO_MANAGER_PLAN_QUESTIONS
 const SESSION_KEY='weave-pro-number-verification-secret'
 export default function ProFileNumberVerification(){
  const [step,setStep]=useState<'file'|'plan'|'status'>('file')
@@ -163,7 +160,11 @@ export default function ProFileNumberVerification(){
    </section>}
    {step==='plan'&&<section className="pv-panel space-y-4" data-pro-stage="business-plan">
     <h2 className="text-xl font-bold">02 · Your Pro File Folder business</h2>
-    <p className="text-sm text-slate-600">Pro defines the Folder tier, not your profession. Describe the business you actually carry in life and the systems you intend to build through Weave.</p>
+    <p className="text-sm text-slate-600">{PRO_MANAGER_FILE_FOLDER_DISTINCTION}</p>
+    <div className="rounded-xl border border-sky-200 bg-sky-50 p-4" data-pro-reciprocal-company-purpose="true">
+     <h3 className="font-semibold text-sky-900">Your success is how Weave grows</h3>
+     <p className="mt-2 text-sm leading-7 text-sky-900">{PRO_MANAGER_COMPANY_PURPOSE}</p>
+    </div>
     <p className="font-mono text-xs text-cyan-200">Issued File Number: {fileNumber}</p>
     <label className="block text-sm">File Folder business name
      <input value={businessName} onChange={e=>setBusinessName(e.target.value)}
@@ -192,17 +193,22 @@ export default function ProFileNumberVerification(){
        placeholder="Your actual contact address in the company operating location"
        className="mt-2 w-full rounded-lg border border-white/20 bg-slate-900 p-3"/></label>
     </div>
-    <h3 className="text-lg font-semibold">3. Submit your business plan</h3>
-    {PLAN_FIELDS.map(([key,label])=><label key={key} className="block text-sm text-slate-200">{label}
-     <textarea rows={3} maxLength={3000} value={plan[key]||''}
+    <h3 className="text-lg font-semibold">3. Business plan · From your work to a functioning enterprise</h3>
+    <p className="text-sm leading-7 text-slate-600">Explain the actual people, systems, responsibilities and verifiable value behind your business. Administration reviews the plan as a model for sustained operations, not as a claim that income already exists.</p>
+    {PLAN_FIELDS.map(({key,title,guidance})=><label key={key} className="block text-sm text-slate-200">{title}
+     <span className="mt-1 block text-xs leading-6 text-slate-600">{guidance}</span>
+     <textarea rows={4} maxLength={3000} minLength={10} required value={plan[key]||''}
       onChange={e=>setPlan(p=>({...p,[key]:e.target.value}))}
       className="mt-2 w-full rounded-lg border border-white/20 bg-slate-900 p-3 text-white"/>
     </label>)}
     <div className="space-y-3 rounded-xl border border-white/15 p-4">
-     <h3 className="font-semibold">4. Pro File Folder agreement and signature</h3>
-     <p className="text-sm leading-6 text-slate-200">I request a Pro File Folder under my issued File Number. I acknowledge the one-time <strong>680 USDT activation fee</strong>, paid exclusively through the official TRON USDT (TRC-20) wallet shown after independent identity and plan review. Payment evidence must be verified by Weave Forensics before activation. This fee is not a personal loan, wallet deposit or recurring subscription.</p>
-     <p className="text-sm leading-6 text-slate-200">This Pro File Folder is for a WEAVE employee with a separately approved company position. The monthly salary, employment responsibilities and actual payments are controlled by the employee's recorded company appointment, not by this 680 USDT activation charge. The Folder fee does not buy a job or guarantee salary.</p>
-     <p className="text-sm leading-6 text-slate-200">My business plan and name form the operating direction of my Folder. My existing verified business earnings, including any Siblings Event claims, require separate accounting; paying this fee does not establish or guarantee withdrawal of funds. Private Folder access requires identity and payment verification and correct account ownership.</p>
+     <h3 className="font-semibold">4. Pro File Folder · Company agreement and signature</h3>
+     <p className="text-sm leading-7 text-slate-700">Read the following obligations as part of the agreement you are signing. They explain what your Pro File Folder enables, how your business contributes to Weave, and what remains subject to separately approved employment and financial records.</p>
+     {PRO_MANAGER_AGREEMENT_SECTIONS.map(section=><div key={section.title} className="rounded-lg border border-sky-200 bg-white p-4">
+      <h4 className="font-semibold text-sky-950">{section.title}</h4>
+      <p className="mt-2 text-sm leading-7 text-slate-700">{section.body}</p>
+     </div>)}
+     <p className="text-sm leading-7 text-slate-700">I request a Pro File Folder under my issued File Number and accept that access is conditional on verified company approval, correct account ownership, signed terms and independently checked payment evidence. In particular, existing business or Siblings Event claims require separate accounting and are not made withdrawable by this activation.</p>
      <label className="block text-sm">Your full registered name · electronic signature
       <input value={signedName} onChange={e=>setSignedName(e.target.value)} autoComplete="name"
        className="mt-2 w-full rounded-lg border border-white/20 bg-slate-900 p-3"/>
@@ -215,7 +221,7 @@ export default function ProFileNumberVerification(){
     <button disabled={busy||!accepted||businessName.trim().length<3||signedName.trim().length<4||
       operatingCountry.trim().length<2||operatingRegion.trim().length<2||
       operatingCity.trim().length<2||contactAddress.trim().length<6||
-      PLAN_FIELDS.some(([key])=>(plan[key]||'').trim().length<10)}
+      PLAN_FIELDS.some(({key})=>(plan[key]||'').trim().length<10)}
       onClick={()=>void submitPlan()} className="rounded-lg bg-cyan-300 px-5 py-3 font-semibold text-slate-950 disabled:opacity-40">
       {busy?'Submitting…':'Submit business plan and signed agreement'}
     </button>
