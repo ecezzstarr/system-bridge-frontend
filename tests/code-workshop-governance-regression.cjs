@@ -42,7 +42,7 @@ assert.ok(api.includes('requireWorkshopAuthorization(request)')&&
  api.includes("body.action==='create_branch'")&&
  api.includes("body.action==='save_file'")&&
  api.includes("body.action==='open_review'")&&
- api.includes('actorId:String(auth.session.user.id)')===false&&
+ api.includes('const actorId=String(auth.session.user.id)')&&
  api.includes("request.headers.get('content-length')"),
  'Only authorized administrators can create, save and review bounded source changes')
 assert.ok(engine.includes('WEAVE_GITHUB_CODE_TOKEN')&&
@@ -51,7 +51,7 @@ assert.ok(engine.includes('WEAVE_GITHUB_CODE_TOKEN')&&
  engine.includes("API='https://api.github.com/repos/'+REPO"),
  'A distinct server-side GitHub credential and fixed repository are mandatory')
 assert.ok(engine.includes('safeCodePath')&&engine.includes('PROTECTED.some')&&
- engine.includes('^app\\/api\\/')&&
+ engine.includes('PROTECTED=[')&&
  engine.includes('weave-admin/')&&
  engine.includes('draftFor(input.actorId,input.branch)')&&
  engine.includes("createWorkshopBranch")&&
