@@ -5,6 +5,7 @@ import {useEffect,useState,type FormEvent} from 'react'
 import {useRouter,useSearchParams} from 'next/navigation'
 import {ArrowRight,BookOpen,CheckCircle2,Compass,Search,ShieldCheck} from 'lucide-react'
 import {useAuth} from '@/lib/auth-provider'
+import {useEnvironmentOrganizer} from '@/components/world/environment-organizer-provider'
 import type {WeaveSearchDestination,WeaveSearchRole} from '@/lib/weave-action-search'
 
 type SearchResponse={
@@ -38,6 +39,7 @@ const accessText:Record<string,string>={
 
 export default function WeaveCompanySearchPage(){
   const {token,user,isInitialized}=useAuth()
+  const {ready:visibilityReady,isVisible}=useEnvironmentOrganizer()
   const router=useRouter()
   const params=useSearchParams()
   const query=(params.get('q')||'').trim()
@@ -73,7 +75,7 @@ export default function WeaveCompanySearchPage(){
   }
   const role=response?.role||(user?.role==='agent'||user?.role==='bridger'||user?.role==='client'||user?.role==='admin'?user.role:'client')
   const suggestions=examples[role]||examples.client
-  const items=response?.results||[]
+  const items=(response?.results||[]).filter(item=>!visibilityReady||isVisible(item.href))
   return <main className="mx-auto w-full max-w-6xl space-y-5 px-3 py-5 text-white sm:px-6 sm:py-8" data-weave-company-search="role-aware">
     <header className="rounded-2xl border border-sky-300/25 bg-[#081b2b] p-5 sm:p-7">
       <div className="flex items-center gap-2 text-sm font-semibold text-sky-200"><Compass className="h-5 w-5"/> WEAVE · Company Search</div>
@@ -112,7 +114,7 @@ export default function WeaveCompanySearchPage(){
           <h2 className="text-xl font-bold">{query?'Relevant company places':'Good places to begin'}</h2>
           <p className="mt-1 text-sm text-slate-300">{query?'Showing places relevant to “'+query+'”.':'Start with one actual company function. All existing work remains in its original page.'}</p>
         </div>
-        {response&&<span className="text-xs text-slate-400">{response.count} shown · {response.indexedCount} indexed destinations</span>}
+        {response&&<span className="text-xs text-slate-400">{items.length} visible · {response.indexedCount} indexed destinations</span>}
       </div>
 
       {loading&&<p role="status" className="py-8 text-sm text-slate-300">Finding the correct places for your role…</p>}
