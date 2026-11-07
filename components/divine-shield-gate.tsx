@@ -91,6 +91,9 @@ export function DivineShieldGate({children}:{children:ReactNode}){
     }
   },[isInitialized,token,logout])
 
+  // Only the narrow, separately authenticated recovery desk stays available.
+  if(pathname==='/admin-continuity')return <>{children}</>
+
   if(!isInitialized || !state.checked){
     return <div className="relative z-10 flex min-h-screen items-center justify-center bg-[#020815]/92"><Loader2 className="h-7 w-7 animate-spin text-sky-300" aria-label="Opening WEAVE" /></div>
   }
@@ -111,6 +114,7 @@ export function DivineShieldGate({children}:{children:ReactNode}){
             Your WEAVE session has been closed for maintenance. Your records and position remain preserved. Sign in again after Administration releases the shield.
           </div>
           <Link href="/login?administration=1" className="mt-5 inline-flex rounded-full border border-sky-300/15 px-4 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-slate-500 transition hover:text-sky-200">Administration access</Link>
+          <Link href="/admin-continuity" className="ml-3 text-xs text-cyan-300">Recover Administration access</Link>
         </section>
       </main>
     )

@@ -55,6 +55,8 @@ jobs:
           node tests/mandate-guidance-postgres.cjs
           node tests/today-food-postgres.cjs
           node tests/phone-push-postgres.cjs
+          node tests/admin-continuity-postgres.cjs
+          python3 -m py_compile selfhost/bootstrap-admin-continuity.py
 
       - name: Core recent-feature regression
         run: node tests/recent-features.cjs

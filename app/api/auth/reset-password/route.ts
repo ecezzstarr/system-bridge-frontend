@@ -1,3 +1,4 @@
+import { ensureContinuitySchema, invalidateAdminContinuity } from '@/lib/admin-continuity'
 import crypto from 'node:crypto'
 
 import bcrypt from 'bcryptjs'
@@ -48,12 +49,14 @@ export async function POST(request:NextRequest){
 
     await Promise.all([
       ensurePasswordRecoverySchema(),
+      ensureContinuitySchema(),
       ensureAdminAccessRecoverySchema(),
       ensureRecoveryRequestSchema(),
     ])
 
     client=await pool.connect()
     await client.query('BEGIN')
+    await client.query('SELECT id FROM users WHERE LOWER(email)=LOWER($1) FOR UPDATE',[email])
 
     const challenges=await client.query(
       `SELECT c.id,c.user_id,c.code_hash,c.attempts,c.expires_at,u.role
@@ -139,6 +142,7 @@ export async function POST(request:NextRequest){
     await client.query('DELETE FROM sessions WHERE user_id=$1::uuid',[recovery.user_id])
     await client.query("UPDATE access_recovery_requests SET status='used',code_ciphertext=NULL WHERE user_id=$1::uuid AND status IN ('pending','approved')",[recovery.user_id])
 
+    await invalidateAdminContinuity(client,recovery.user_id)
     await client.query('COMMIT')
 
     return NextResponse.json({
