@@ -26,7 +26,7 @@ assert.ok(!eligibility.includes('file_folder_purchases')&&!eligibility.includes(
  'Retail purchases or upgrades do not grant staff-company position')
 assert.ok(eligibility.includes('CJ_DORADO_FILE_NUMBER')&&
  eligibility.includes('candidate_name')&&eligibility.includes('position_title')&&
- eligibility.includes('regional'),"CJ's company role must match Regional Manager")
+ eligibility.includes('isProRegionalManagerPosition'),"CJ's company position must resolve to Pro Regional Manager")
 assert.ok(eligibility.includes('operatingCountry')&&eligibility.includes('operatingRegion')&&
  eligibility.includes('operatingCity')&&eligibility.includes('contactAddress'),
  'File Number intake records actual operating location and address')
@@ -48,21 +48,28 @@ assert.ok(publicUi.includes('contactAddress')&&publicUi.includes('operatingCity'
  publicUi.includes('operatingRegion')&&publicUi.includes('operatingCountry'),
  'Applicant can supply address, country, city, region during activation')
 const staffUi=read(paths[4])
-assert.ok(staffUi.includes('Client Regional Manager · Business Expansion')&&
+assert.ok(staffUi.includes('Pro Regional Manager · Dream Lovely Business Expansion')&&
  staffUi.includes('Dream Lovely · Client Department')&&
  staffUi.includes('Client business expansion register'),
- 'Client Regional Manager workspace operates Dream Lovely business expansion')
+ 'Client Pro Regional Manager workspace operates Dream Lovely business expansion')
 assert.ok(!staffUi.includes('Food Distribution Managers')&&
  !staffUi.includes('/weave/lifestyles/regional-manager')&&
  !staffUi.includes('student and worker daily-meal'),
- 'No Agent/Stability or generic Agent/Bridger Regional Manager workflow in Client workspace')
+ 'No Agent/Stability or ordinary Agent/Bridger Regional Manager workflow in Pro Client workspace')
 const staffApi=read(paths[5])
 assert.ok(staffApi.includes("grant.user.role==='client'")&&
  staffApi.includes("String(grant.offer.folder_tier)==='pro'")&&
  staffApi.includes("scope:'client_business_expansion'")&&
  staffApi.includes('pro_file_number_verifications'),
  'Region is the scoped Client position with submitted identity-verified location')
+const proPolicy=read('lib/pro-regional-manager-policy.ts')
+assert.ok(proPolicy.includes("['bridger','agent','client']")&&
+ proPolicy.includes("PRO_REGIONAL_MANAGER_POSITION='pro_regional_manager'"),'Pro Regional Manager is a distinct three-department company position')
+assert.ok(proPolicy.includes("isProRegionalManagerPosition")&&
+ proPolicy.includes('WEAVE-2026-0907-0001'), 'Legacy CJ title resolves to Pro only with her verified File Number')
+assert.ok(read('app/api/admin/pro-file-number-verifications/route.ts').includes('isProRegionalManagerPosition'),
+ 'Pro Forensics approval never confuses CJ with ordinary manager')
 const migration=read('migrations/20261106_pro_file_number_verification.sql')
 assert.ok(migration.includes('operating_country')&&migration.includes('contact_address'),
  'Migration persists the address and company operating country')
-console.log('Client Dream Lovely Regional Manager department boundary, Spanish address and Pro onboarding regression passed')
+console.log('Pro Regional Manager department boundaries, CJ Spanish address and Pro onboarding regression passed')
