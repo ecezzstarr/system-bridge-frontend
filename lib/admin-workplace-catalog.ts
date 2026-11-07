@@ -89,7 +89,12 @@ export const ADMIN_SPACES:readonly AdminSpace[]=[
   {
     "title": "Regional Manager Applications",
     "href": "/admin/regional-manager-applications",
-    "description": "Review and decide on regional supervision applications."
+    "description": "Review ordinary Bridger/Agent regional supervision applications without File Folders."
+  },
+  {
+    "title": "Pro Regional Manager Applications",
+    "href": "/admin/pro-regional-manager-applications",
+    "description": "Review Agent and Bridger Pro position applications and independently agreed staff terms."
   },
   {
     "title": "Client Staff Offers",
