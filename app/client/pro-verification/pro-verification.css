@@ -239,3 +239,61 @@
   #weave-pro-verification .pv-panel button{transition:none;}
   #weave-pro-verification .pv-panel button:not(:disabled):hover{transform:none;}
 }
+
+
+/* Role and systems first: company opportunity before private financial steps. */
+#weave-pro-verification .pv-hero-explore{
+ display:inline-flex;align-items:center;justify-content:center;min-height:43px;
+ margin-top:22px;padding:10px 15px;border:1px solid rgba(182,231,251,.45);
+ border-radius:11px;background:rgba(210,242,254,.12);color:#e7f9ff !important;
+ font-size:12px;font-weight:800;text-decoration:none !important;
+}
+#weave-pro-verification .pv-hero-explore:focus-visible{outline:3px solid #bceeff;outline-offset:3px}
+#weave-pro-verification .pv-feature-section{padding:30px 0 9px;scroll-margin-top:16px}
+#weave-pro-verification .pv-feature-heading{display:flex;align-items:end;justify-content:space-between;gap:25px;margin-bottom:22px}
+#weave-pro-verification .pv-feature-heading h2{
+ max-width:630px;margin:8px 0 0;color:#193e5e !important;
+ font-size:clamp(25px,2.6vw,34px);font-weight:850;line-height:1.18 !important;
+}
+#weave-pro-verification .pv-feature-heading>p{margin:0;max-width:360px;color:#45687e !important;font-size:12px;line-height:1.78 !important}
+#weave-pro-verification .pv-benefit-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+#weave-pro-verification .pv-benefit{
+ min-width:0;padding:22px;border:1px solid #cee2ed !important;border-radius:20px;
+ background:linear-gradient(145deg,#fff,#f1f9ff) !important;
+ box-shadow:0 11px 30px rgba(32,91,129,.055);
+}
+#weave-pro-verification .pv-benefit-icon{
+ display:grid;place-items:center;width:45px;height:45px;margin-bottom:18px;
+ border:1px solid #c2deed;border-radius:13px;background:#e2f1fb;color:#29688f;
+}
+#weave-pro-verification .pv-benefit h3{font-size:17px;font-weight:800;line-height:1.3 !important;color:#1b4865 !important;margin:0 0 10px}
+#weave-pro-verification .pv-benefit p{font-size:12px;line-height:1.75 !important;color:#486b80 !important;margin:0}
+#weave-pro-verification .pv-growth-band{
+ display:flex;align-items:center;gap:22px;margin-top:17px;padding:21px 24px;
+ border:1px solid #c0ddea;border-radius:18px;background:linear-gradient(110deg,#e6f5ff,#f8fcff) !important;
+}
+#weave-pro-verification .pv-growth-band strong{
+ flex:0 0 230px;color:#18496c !important;font-size:17px;line-height:1.35 !important;
+}
+#weave-pro-verification .pv-growth-band span{font-size:12px;line-height:1.8;color:#456981 !important}
+#weave-pro-verification .pv-activation-disclosure{
+ border:1px solid #c8ddea;border-radius:13px;padding:14px 15px;background:#fff !important;
+}
+#weave-pro-verification .pv-activation-disclosure summary{
+ cursor:pointer;color:#265f83 !important;font-size:12px;font-weight:850;
+}
+#weave-pro-verification .pv-activation-disclosure p{font-size:12px;line-height:1.8 !important;color:#496a7e !important;margin:12px 0 0}
+#weave-pro-verification .pv-activation-disclosure strong{color:#245e85 !important}
+@media(max-width:920px){
+ #weave-pro-verification .pv-benefit-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:700px){
+ #weave-pro-verification .pv-feature-heading{display:block}
+ #weave-pro-verification .pv-feature-heading>p{margin-top:11px;max-width:none}
+ #weave-pro-verification .pv-growth-band{display:block;padding:19px}
+ #weave-pro-verification .pv-growth-band strong{display:block;margin-bottom:9px}
+}
+@media(max-width:480px){
+ #weave-pro-verification .pv-benefit-grid{grid-template-columns:1fr;gap:11px}
+ #weave-pro-verification .pv-benefit{padding:19px}
+}
