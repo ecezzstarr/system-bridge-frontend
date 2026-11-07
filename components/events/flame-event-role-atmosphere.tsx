@@ -59,7 +59,7 @@ export function FlameEventRoleAtmosphere({
         >
           <span className="inline-flex min-w-0 items-center gap-2">
             {loopTwo?<span className="h-3 w-3 shrink-0 rounded-sm bg-[linear-gradient(90deg,#008751_0_33%,white_33%_67%,#008751_67%_100%)]" aria-hidden="true"/>:loopThree?<span className="inline-flex h-4 w-4 items-center justify-center rounded border border-white/30 text-[9px]" aria-hidden="true">3</span>:<Waves className="h-3 w-3 shrink-0 text-sky-200/70"/>}
-            <span className="truncate">{loopTwo?"One Nigerian · Company Loop 2 · Flame Event Live":loopThree?"Company Loop 3 · Flame Event · Started January 12, 2027":"Burning River · Flame Event Live · The River that Burns"}</span>
+            <span className="truncate">{loopTwo?"Country Formation · Company Loop 2 · Country Event Live":loopThree?"Self Upliftment · Company Loop 3 · Individual Event · Started January 12, 2027":"Burning River · Flame Event Live · The River that Burns"}</span>
             {!loopTwo&&!loopThree&&<Flame className="h-3 w-3 shrink-0 text-orange-200/80"/>}
           </span>
           <span className="hidden shrink-0 text-white/30 sm:inline">
