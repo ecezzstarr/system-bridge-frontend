@@ -38,7 +38,7 @@ const publicUi=read(paths[3])
 assert.ok(publicUi.includes('Company Staff Verification')&&
  publicUi.includes('Monthly salary:')&&publicUi.includes('companyPosition'),
  'Recipient's verification explains salaried employment separately from the Folder fee')
-assert.ok(publicUi.includes('680 USDT')&&publicUi.includes('no password'),
+assert.ok(publicUi.includes('680 USDT')&&publicUi.includes('do not need a password'),
  'The one-time 680 USDT Pro verification remains passwordless')
 const staffUi=read(paths[4])
 assert.ok(staffUi.includes('Regional Management Workspace')&&
