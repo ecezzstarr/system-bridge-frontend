@@ -117,6 +117,8 @@ jobs:
           node tests/bridger-bridge-radiance-purchase-regression.cjs
           node tests/selfhost-deployment-regression.cjs
           node tests/release-workshop-regression.cjs
+          python3 tests/release-worker-failure-evidence.py
+          bash -n selfhost/deploy-production.sh
           node tests/notification-staff-workspace-regression.cjs
           node tests/company-client-staff-ticket-regression.cjs
           node tests/file-folder-plus-contract-regression.cjs

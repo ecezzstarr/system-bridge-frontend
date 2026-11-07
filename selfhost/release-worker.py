@@ -65,6 +65,69 @@ def cmd(*args, env=None, timeout=3600):
                           stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=timeout).stdout
 
 
+def safe_executor_excerpt(output, values):
+    """Retain only a redacted, bounded host-only tail; never store raw env data."""
+    recent = (output or "").splitlines()[-90:]
+    excerpt = "\n".join(recent)[-18000:]
+    for key, value in values.items():
+        label = str(key).upper()
+        if any(marker in label for marker in ("TOKEN", "SECRET", "PASSWORD", "PRIVATE_KEY",
+                                             "DATABASE_URL", "API_KEY", "AUTH", "SMTP")):
+            if isinstance(value, str) and len(value) >= 6:
+                excerpt = excerpt.replace(value, "[redacted]")
+    excerpt = re.sub(r"(?i)(authorization:\s*bearer\s+)\S+", r"\1[redacted]", excerpt)
+    excerpt = re.sub(r"(?i)(://[^:/\s]+:)[^@/\s]+@", r"\1[redacted]@", excerpt)
+    excerpt = re.sub(r"(?i)((?:token|secret|password|api[_-]?key)=)[^\s&]+",
+                     r"\1[redacted]", excerpt)
+    return excerpt
+
+
+def summarize_executor_failure(output, returncode, values):
+    """Return safe, actionable phase + recovery evidence for the Admin request."""
+    stage = re.findall(r"\[WEAVE deploy\] FAILED_STAGE=([a-z_]+)", output or "")
+    if not stage:
+        stage = re.findall(r"\[WEAVE deploy\] STAGE=([a-z_]+)", output or "")
+    phase = stage[-1] if stage else "preflight_or_unreported"
+    recovery = "not_confirmed"
+    if re.search(r"\[WEAVE deploy\] RECOVERY_STATUS=verified\b", output or ""):
+        recovery = "verified_previous_release"
+    elif re.search(r"\[WEAVE deploy\] RECOVERY_STATUS=manual_required\b", output or ""):
+        recovery = "manual_recovery_required"
+    excerpt = safe_executor_excerpt(output, values)
+    diagnostic = "inspect the private host executor failure log and journal"
+    for line in reversed(excerpt.splitlines()):
+        if re.search(r"(?i)\b(no space left on device|out of memory|cannot connect to the docker daemon|"
+                     r"permission denied|failed to solve|did not become healthy|build failed|"
+                     r"uncommitted source changes|missing selfhost/.env)\b", line):
+            diagnostic = re.sub(r"\s+", " ", line.strip())[-200:]
+            break
+    return (f"Executor exit={returncode}; stage={phase}; recovery={recovery}; "
+            f"diagnostic={diagnostic}")
+
+
+def journal_executor_failure(output, values, summary):
+    """Keep a permission-restricted redacted failure tail on the host only."""
+    target = ROOT / "selfhost" / "release-executor-failures.log"
+    excerpt = safe_executor_excerpt(output, values)
+    evidence = (f"\n[WEAVE Release] {time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}\n"
+                f"{summary}\n{excerpt}\n")
+    flags = os.O_WRONLY | os.O_APPEND | os.O_CREAT
+    if hasattr(os, "O_NOFOLLOW"):
+        flags |= os.O_NOFOLLOW
+    fd = os.open(str(target), flags, 0o600)
+    try:
+        os.fchmod(fd, 0o600)
+        with os.fdopen(fd, "a", encoding="utf-8") as report:
+            report.write(evidence)
+    except BaseException:
+        # fdopen owns the descriptor after success; close on early failure.
+        try:
+            os.close(fd)
+        except OSError:
+            pass
+        raise
+
+
 def is_good_ci(sha, github_token):
     if not SHA.fullmatch(sha):
         raise RuntimeError("Invalid target release identity")
@@ -147,7 +210,13 @@ def execute(job, values):
         cwd=ROOT, env=process_env, text=True, capture_output=True, timeout=3600,
     )
     if result.returncode:
-        raise RuntimeError("Deployment script failed and attempted automatic recovery; inspect host journal and Sovereign + Flame records")
+        summary = summarize_executor_failure(result.stdout, result.returncode, values)
+        try:
+            journal_executor_failure(result.stdout, values, summary)
+        except OSError as error:
+            print(f"[WEAVE Release] Could not write private failure log: {type(error).__name__}",
+                  file=sys.stderr, flush=True)
+        raise RuntimeError(summary)
     final = get_local_release()
     if final != target:
         raise RuntimeError("Host did not report the requested healthy release after operation")
