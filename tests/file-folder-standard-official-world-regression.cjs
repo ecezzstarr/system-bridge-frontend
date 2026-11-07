@@ -26,7 +26,9 @@ assert.ok(scene.includes('not proof of completed businesses'),
 assert.ok(engine.includes("fileFolderTier==='standard'")&&engine.includes('<FileFolderStandardLivingWorld'),
   'Every verified Standard tier opens its distinct Standard world, not Plus or a generic map')
 assert.ok(client.includes('fileFolderTier={data.file_folder_tier}'), 'Server tier must be forwarded to renderer')
-assert.ok(switchApi.includes('file_folder_tier:fileFolderTier')&&switchApi.includes("getFileFolderTier("),
-  'Server must determine the purchased or granted tier rather than browser-provided choice')
+assert.ok(switchApi.includes('file_folder_tier:fileFolderTier')&&
+  switchApi.includes('resolveVerifiedClientFileFolderTier')&&
+  read('lib/client-file-folder-tier.ts').includes('getFileFolderTier('),
+  'Server must determine the verified purchased or granted tier rather than browser-provided choice')
 assert.ok(gate.includes('client.file_number'), 'File number and verified ownership remain mandatory')
 console.log('Standard official Customer Door world, real systems, verified tiers, and all seven 3D districts passed')
