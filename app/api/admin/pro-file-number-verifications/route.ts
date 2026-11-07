@@ -1,6 +1,7 @@
 import {NextRequest,NextResponse} from 'next/server'
 import {getAuthUser} from '@/lib/auth-api'
 import {sql,getPool} from '@/lib/db'
+import {ensureCompanyClientStaffSchema} from '@/lib/company-client-staff'
 import {ensureProFileNumberVerificationSchema,getApprovedProStaffOffer,proVerificationPublicHeaders} from '@/lib/pro-file-number-verification'
 import {ensureProActivationSchema,isTronAddress,PRO_ACTIVATION_FEE_USDT} from '@/lib/pro-file-folder-activation'
 export const dynamic='force-dynamic'
@@ -13,13 +14,18 @@ export async function GET(request:NextRequest){
  if(!user)return NextResponse.json({error:'Administration required'},{status:403,headers:proVerificationPublicHeaders})
  try{
   await ensureProFileNumberVerificationSchema()
-  const rows=await sql`SELECT id,file_number,business_name,business_plan,signed_name,
-   terms_accepted_at,identity_reference,identity_verified_at,
-   payment_wallet,payment_tx_hash,payment_submitted_at,payment_verified_at,
-   payment_verified_amount_usdt,rejection_reason,status,created_at
-   FROM pro_file_number_verifications ORDER BY
-    CASE status WHEN 'pending_forensics' THEN 0 WHEN 'pending_identity' THEN 1
-      WHEN 'paid_pending_account' THEN 2 ELSE 3 END,created_at DESC LIMIT 100`
+  await ensureCompanyClientStaffSchema()
+  const rows=await sql`SELECT v.id,v.file_number,v.business_name,v.business_plan,v.signed_name,
+   v.terms_accepted_at,v.identity_reference,v.identity_verified_at,
+   v.payment_wallet,v.payment_tx_hash,v.payment_submitted_at,v.payment_verified_at,
+   v.payment_verified_amount_usdt,v.rejection_reason,v.status,v.created_at,
+   offer.position_title AS staff_position_title,offer.monthly_salary_usdt AS staff_monthly_salary_usdt,
+   offer.candidate_name AS staff_candidate_name
+   FROM pro_file_number_verifications v
+   LEFT JOIN company_client_staff_offers offer
+    ON offer.file_number=v.file_number AND offer.status='approved' AND offer.folder_tier='pro'
+   ORDER BY CASE v.status WHEN 'pending_forensics' THEN 0 WHEN 'pending_identity' THEN 1
+      WHEN 'paid_pending_account' THEN 2 ELSE 3 END,v.created_at DESC LIMIT 100`
   return NextResponse.json({success:true,applications:rows},{headers:proVerificationPublicHeaders})
  }catch(e){console.error('[Pro number Forensics] register',e)
   return NextResponse.json({error:'Unable to read verification register'},{status:500,headers:proVerificationPublicHeaders})
