@@ -67,7 +67,9 @@ export default function CompanyClientStaffWorkspace(){
         <section className="space-y-3 rounded-2xl border border-cyan-200/20 bg-cyan-300/[.06] p-5">
           <h2 className="text-2xl font-bold">{position.position_title}</h2>
           <p className="text-sm text-slate-200">Company-granted {position.folder_tier.toUpperCase()} File Folder · {position.file_number}</p>
-          <p className="text-sm text-slate-200">Monthly salary: {Number(position.monthly_salary_usdt)>0?Number(position.monthly_salary_usdt).toLocaleString()+" USDT in the offered terms":"To be confirmed with Administration"}. Salary payments are managed separately by the company.</p>
+          <p className="text-sm text-slate-200">Agreed monthly company staff salary: {Number(position.monthly_salary_usdt)>0
+           ?Number(position.monthly_salary_usdt).toLocaleString()+' USDT under the approved employment agreement'
+           :'Missing approved salary amount in company records — Administration must reconcile the original agreed terms.'} Payments are made through the company payroll, independently of the Pro activation fee.</p>
           <p className="text-xs text-slate-400">Entry ticket: {Number(position.ticket_amount_usdt).toLocaleString()} USDT · Your verified contribution: {Number(position.applicant_contribution_usdt||position.ticket_amount_usdt).toLocaleString()} USDT · receipt {position.receipt_number}</p>
         </section>
         {siblingsEvent&&<section className="rounded-2xl border border-violet-300/25 bg-violet-300/[.06] p-5" data-cj-siblings-event="true">
@@ -99,7 +101,10 @@ export default function CompanyClientStaffWorkspace(){
            <div className="rounded-xl border border-white/10 bg-slate-950/35 p-4">
             <p className="text-xs text-sky-200">Operating department</p>
             <p className="mt-2 font-semibold">Dream Lovely · Client Business Expansion</p>
-            <p className="mt-2 text-xs text-slate-400">Salary follows approved staff terms; business income follows verified Client transactions and records.</p>
+            <p className="mt-2 text-sm text-sky-100">Agreed monthly salary: {Number(position.monthly_salary_usdt)>0
+              ?Number(position.monthly_salary_usdt).toLocaleString()+' USDT'
+              :'Company record requires reconciliation'}</p>
+            <p className="mt-2 text-xs text-slate-400">Her fixed monthly employment salary is recorded in the approved Client staff agreement. Verified Client business revenue and commissions are independent, and neither depends on a Bridger or Agent Lifestyle.</p>
            </div>
           </div>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -134,7 +139,7 @@ export default function CompanyClientStaffWorkspace(){
             <label className="text-sm">Organization<input value={org} onChange={e=>setOrg(e.target.value)} className="mt-2 w-full rounded-lg border border-white/20 bg-slate-950 p-3"/></label>
             <label className="text-sm">{clientRegional?'Expansion relationship stage':'Conversation stage'}<select value={stage} onChange={e=>setStage(e.target.value)} className="mt-2 w-full rounded-lg border border-white/20 bg-slate-950 p-3">{stages.map(s=><option key={s} value={s}>{s.replaceAll('_',' ')}</option>)}</select></label>
             <label className="text-sm">Next action<input value={next} onChange={e=>setNext(e.target.value)} className="mt-2 w-full rounded-lg border border-white/20 bg-slate-950 p-3"/></label>
-            <button disabled={busy} className="rounded-xl bg-cyan-300 px-5 py-3 font-bold text-slate-950 disabled:opacity-40 md:col-span-2">{busy?'Recording…':'Record conversation'}</button>
+            <button disabled={busy} className="rounded-xl bg-cyan-300 px-5 py-3 font-bold text-slate-950 disabled:opacity-40 md:col-span-2">{busy?'Recording…':clientRegional?'Record expansion activity':'Record conversation'}</button>
           </form>
         </section>
         <section className="space-y-3">
@@ -144,7 +149,7 @@ export default function CompanyClientStaffWorkspace(){
             <p className="mt-2 text-sm text-slate-300">Next: {item.next_action||'Awaiting next movement'}</p>
             {item.stage!=='completed'&&<button type="button" disabled={busy} onClick={()=>void send({id:item.id,stage:'follow_up',nextAction:item.next_action||''},'PATCH')} className="mt-3 text-xs text-cyan-200 underline disabled:opacity-40">Mark follow-up</button>}
           </article>)}
-          {!items.length&&<p className="text-sm text-slate-400">No conversations recorded yet.</p>}
+          {!items.length&&<p className="text-sm text-slate-400">No verified Client business expansion activities recorded yet.</p>}
         </section>
       </>}
     </div>
