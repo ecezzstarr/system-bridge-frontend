@@ -97,6 +97,15 @@ export async function POST(request:NextRequest){
        ||!isTronAddress(wallet)||amount!==PRO_ACTIVATION_FEE_USDT)
       throw new Error('Forensics must independently confirm exactly 680 USDT TRC-20 to the recorded destination.')
      await ensureProActivationSchema()
+     // The same independently verified blockchain payment must never activate
+     // both an external Client Pro File Folder and an Agent/Bridger Pro Folder.
+     await db.query("SELECT pg_advisory_xact_lock(hashtext('weave_pro_manager_tx:'||$1))",[hash])
+     const [proManagerTable]=(await db.query("SELECT to_regclass('public.weave_pro_regional_manager_activations') AS name")).rows
+     if(proManagerTable?.name){
+      const managerDuplicate=await db.query(
+       'SELECT user_id FROM weave_pro_regional_manager_activations WHERE payment_tx_hash=$1 LIMIT 1',[hash])
+      if(managerDuplicate.rows.length)throw new Error('This blockchain transaction is already claimed by a Pro Regional Manager activation.')
+     }
      const duplicate=await db.query('SELECT id FROM pro_file_folder_activations WHERE payment_tx_hash=$1 LIMIT 1',[hash])
      if(duplicate.rows.length)throw new Error('This blockchain receipt was already assigned to another Pro activation.')
      await db.query(`UPDATE pro_file_number_verifications
