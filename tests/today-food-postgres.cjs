@@ -40,7 +40,7 @@ async function run(){
  assert.equal(Number((await pool.query("SELECT count(*) FROM notifications WHERE type='food_preparation_start'")).rows[0].count),1)
  assert.equal(Number((await pool.query("SELECT count(*) FROM weave_food_forensic_stock_splits")).rows[0].count),1,'One allocation per verified stock order')
  const {rows:finance}=await pool.query("SELECT administration_ngn,family_support_ngn,lead_preparation_ngn,agent_expected_margin_ngn FROM weave_food_forensic_stock_splits LIMIT 1")
- assert.equal(Number(finance[0].administration_ngn),8000,'Ten packages allocate ₦8,000 to Administration')
+ assert.equal(Number(finance[0].administration_ngn),8000,'Ten packages allocate ₦8,000 to Administrations')
  assert.equal(Number(finance[0].family_support_ngn),2000,'Ten packages allocate ₦2,000 to Child/Parents Support')
  assert.equal(Number(finance[0].lead_preparation_ngn),20000,'Remaining ₦20,000 goes to the Stability Lead preparation budget')
  assert.equal(Number(finance[0].agent_expected_margin_ngn),10000,'Agent can later earn ₦10,000 from 10 Carrier sales')

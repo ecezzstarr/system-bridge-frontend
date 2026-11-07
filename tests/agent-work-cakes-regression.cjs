@@ -69,8 +69,8 @@ assert.ok(agentApi.includes("action==='verify_payment'"),'Agent verifies custome
 assert.ok(agentApi.includes("status='paid'"),'verified Daisy Pastries payment enters paid state')
 
 const adminApi=read('app/api/admin/cakes/route.ts')
-assert.ok(adminApi.includes('nextCakeAdministrationStatus'),'Administration controls cake production stages')
-assert.ok(adminApi.includes("payment_status!=='paid'"),'Administration cannot prepare before payment is verified')
+assert.ok(adminApi.includes('nextCakeAdministrationStatus'),'Administrations controls cake production stages')
+assert.ok(adminApi.includes("payment_status!=='paid'"),'Administrations cannot prepare before payment is verified')
 
 const carrierPage=read('app/carrier/food/[code]/page.tsx')
 assert.ok(carrierPage.includes('AgentCakeCarrierPublic'),'Agent Carrier Door renders Daisy Pastries')
@@ -100,7 +100,7 @@ assert.ok(work.includes("name:'Daisy Pastries'")&&work.includes('DAISY_PASTRIES_
 assert.ok(foodOrderPage.includes('href="/agent/work"'),'Agility returns to the parent Agent Work space')
 
 const adminCakePage=read('app/(app)/admin/cakes/page.tsx')
-assert.ok(adminCakePage.includes('DAISY PASTRIES FULFILLMENT'),'Administration recognizes Daisy Pastries as the cake production system')
+assert.ok(adminCakePage.includes('DAISY PASTRIES FULFILLMENT'),'Administrations recognizes Daisy Pastries as the cake production system')
 
 console.log('agent-work-cakes-regression: ok')
 

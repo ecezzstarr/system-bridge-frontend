@@ -47,10 +47,10 @@ assert(pro.includes("status IN ('rejected','withdrawn')")&&
 assert(admin.includes("status='pending'")&&
  admin.includes("u.role IN ('agent','bridger')")&&
  admin.includes("approved_pending_verification"),
- 'Administration reviews only eligible Pro candidates and does not activate Folder')
+ 'Administrations reviews only eligible Pro candidates and does not activate Folder')
 assert(admin.includes('independentlyVerified')&&admin.includes('employmentTermsReference')&&
  admin.includes('monthlySalaryUSDT'),
- 'Administration records independently agreed company salary and written terms')
+ 'Administrations records independently agreed company salary and written terms')
 assert(schema.includes('weave_pro_regional_manager_applications')&&
  migration.includes("source_role IN ('agent','bridger')")&&
  !schema.includes('CREATE TABLE IF NOT EXISTS weave_regional_manager_appointments'),
@@ -67,5 +67,5 @@ assert(clientPage.includes("const SESSION_KEY='weave-pro-number-verification-sec
  'External Client starts through issued File Number and private session, not Lifestyle')
 assert(adminHub.includes('/admin/pro-regional-manager-applications')&&
  adminHub.includes('/admin/pro-file-number-verifications'),
- 'Administration has two separate review queues')
+ 'Administrations has two separate review queues')
 console.log('Pro Regional Manager dual-entry Lifestyle and external Client verification regression passed')

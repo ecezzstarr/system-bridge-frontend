@@ -63,4 +63,4 @@ const src=ts.transpileModule(
  (pricing.match(/export function fileFolderTierLabel\([\s\S]+?\n\}/)||[])[0]||'',
  {compilerOptions:{target:ts.ScriptTarget.ES2020,module:ts.ModuleKind.CommonJS}}).outputText
 assert.ok(src.includes('Plus'))
-console.log('Four File Folder tiers, 680 USDT Pro activation and global Administration release regression passed')
+console.log('Four File Folder tiers, 680 USDT Pro activation and global Administrations release regression passed')

@@ -47,7 +47,7 @@ async function run(){
  assert.equal((await staff.POST(request('POST','worker',{department:'forensic',requesterId:ids.unopened,content:'Cannot invent a requester thread.'}))).status,404)
  res=await reply();assert.equal(res.status,201);const sent=(await res.json()).message;assert.equal(sent.userId,ids.worker);assert.equal(sent.senderRole,'agent');assert.match(sent.sender,/Forensics/)
  res=await original.GET(request('GET','requester',null,'?position=forensic'));assert((await res.json()).messages.some(m=>m.id===sent.id),'The original requester sees the assigned reply')
- res=await original.GET(request('GET','admin',null,'?requesterId='+ids.requester+'&position=forensic'));assert((await res.json()).messages.some(m=>m.id===sent.id),'Administration sees the same original conversation')
+ res=await original.GET(request('GET','admin',null,'?requesterId='+ids.requester+'&position=forensic'));assert((await res.json()).messages.some(m=>m.id===sent.id),'Administrations sees the same original conversation')
  await pool.query('ALTER TABLE notifications RENAME TO qa_notifications_unavailable');try{assert.equal((await reply()).status,201,'Notification failure never falsely rolls back a committed reply')}finally{await pool.query('ALTER TABLE qa_notifications_unavailable RENAME TO notifications')}
  // Revoke inside a held transaction while a previously authorized request reaches
  // its final assignment lock. It must re-evaluate the new status before inserting.
@@ -68,7 +68,7 @@ async function run(){
  await pool.query("UPDATE users SET role='bridger' WHERE id=$1",[ids.worker]);assert.equal((await staff.GET(request('GET','worker',null,'?department=forensic'))).status,403,'An appointment cannot silently transfer to another base role')
  await pool.query("UPDATE users SET role='agent',is_active=false WHERE id=$1",[ids.worker]);assert.equal((await reply()).status,403)
  await pool.query('UPDATE users SET is_active=true WHERE id=$1',[ids.worker])
- assert.equal((await review.PATCH(request('PATCH','admin',decision(item.id,'revoked')))).status,200,'Administration revokes through its normal review API')
+ assert.equal((await review.PATCH(request('PATCH','admin',decision(item.id,'revoked')))).status,200,'Administrations revokes through its normal review API')
  assert.equal((await reply()).status,403)
  console.log('PASS: Mandate migration idempotency, real bearer and Lifestyle checks, pending/approved/revoked lifecycle, cross-department isolation, original requester/Admin replies, role binding, notification failure and revocation race')
 }

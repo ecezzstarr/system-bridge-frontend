@@ -95,7 +95,7 @@ assert(notificationsApi.includes("notificationType.startsWith('order_')"),'Users
 const publicFileFolder=read('app/api/public/file-folder/purchase/route.ts')
 assert(publicFileFolder.includes('submitFileFolderPurchase(request)'),'One sale must not emit duplicate notifications through the public wrapper')
 const entry=read('lib/department-entry-tickets.ts')
-assert(entry.includes('await notifyAdmins('),'Entry Ticket payment already alerts Administration')
+assert(entry.includes('await notifyAdmins('),'Entry Ticket payment already alerts Administrations')
 assert(read('app/api/deposit/paystack/route.ts').includes('notifyDepositSubmitted('),'Active Paystack deposit route retains deposit verification alerts')
 for(const path of ['app/api/deposit/opay/route.ts','app/api/deposit/tron/route.ts'])
   assert(read(path).includes('status: 410'),path+' is retired and cannot create duplicate deposit alerts')

@@ -20,7 +20,7 @@ for(const [product,unitCost,retailPrice,expectedPrep] of examples){
   const units=10
   const split=calculate({id:'qa',agent_id:'qa',payment_status:'paid',package_count:units,box_count:1,
     total_ngn:units*unitCost,retail_unit_price_ngn:retailPrice,agent_unit_cost_ngn:unitCost})
-  assert.equal(split.administrationNgn,8000,product+' Administration')
+  assert.equal(split.administrationNgn,8000,product+' Administrations')
   assert.equal(split.familySupportNgn,2000,product+' family support')
   assert.equal(split.leadPreparationNgn,units*expectedPrep,product+' Lead preparation')
   assert.equal(split.agentExpectedMarginNgn,10000,product+' later Carrier gross margin')

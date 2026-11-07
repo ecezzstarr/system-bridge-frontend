@@ -31,7 +31,7 @@ function scan(dir){
  }
 }
 scan(adminRoot)
-assert.ok(originalAdminPages.length>=60,'Administration contains its full operating page inventory')
+assert.ok(originalAdminPages.length>=60,'Administrations contains its full operating page inventory')
 for(const p of originalAdminPages){
  const relative=path.relative(adminRoot,path.dirname(p)).replaceAll(path.sep,'/')
  if(!relative) continue // /admin itself is a deliberately preserved redirect.
@@ -52,7 +52,7 @@ for(const image of ['agility.jpeg','electrolyte.jpeg','ember.jpg','daisy-pastrie
  const src='/weave-food/'+image
  assert.ok(exists('public'+src),'Existing official product artwork is available: '+src)
  assert.ok(agentCatalog.includes(src),'Agent displays the official '+image)
- assert.ok(adminCatalog.includes(src),'Administration displays the official '+image)
+ assert.ok(adminCatalog.includes(src),'Administrations displays the official '+image)
 }
 assert.ok(agent.includes('station.officialImage')&&admin.includes('station.officialImage'),
   'Workplaces show actual existing product assets')
@@ -73,4 +73,4 @@ for(const role of ['bridger','agent','admin']){
 assert.ok(read('app/(app)/weave/market/prospects/page.tsx').includes('My Prospects'),
  'The original Bridger My Prospects remains untouched')
 console.log('Workplace route and official product asset preservation passed: '+
-  originalAgentPages.length+' Agent pages, '+originalAdminPages.length+' Administration pages.')
+  originalAgentPages.length+' Agent pages, '+originalAdminPages.length+' Administrations pages.')

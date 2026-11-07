@@ -26,7 +26,7 @@ const adminPage=read(files[4])
 assert.ok(verification.includes('randomBytes(32)')&&verification.includes('createHash'),
  'The anonymous File Number does not function as an authentication token')
 assert.ok(verification.includes("status='pending_identity'")||verification.includes("'pending_identity'"),
- 'The first step must require independent Administration identity review')
+ 'The first step must require independent Administrations identity review')
 assert.ok(verification.includes('identity_verified_at IS NOT NULL')&&verification.includes("status='pending_forensics'"),
  'Payment evidence must follow verified identity and business-plan intake')
 assert.ok(verification.includes('eligibleProNumber')&&verification.includes("folder_tier='pro'"),
@@ -51,7 +51,7 @@ assert.ok(read('app/client/pro-activation/page.tsx').includes('href="/client/pro
  read('app/client/login/page.tsx').includes('href="/client/pro-verification"'),
  'Existing Client routes direct no-password Pro recipients to the separate workspace')
 assert.ok(adminPage.includes("act('verify_identity'")&&adminPage.includes("act('approve_payment'"),
- 'Administration has a real review interface')
+ 'Administrations has a real review interface')
 assert.ok(read('migrations/20261106_pro_file_number_verification.sql').includes('access_token_hash char(64) NOT NULL UNIQUE'),
  'New migration has unique secret-hash references')
 console.log('Passwordless Pro File Number verification regression contracts passed')

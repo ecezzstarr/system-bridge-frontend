@@ -24,7 +24,7 @@ assert.match(engine,/SELECT 1 FROM market_prospect_contacts WHERE phone=\$1 LIMI
 assert.match(engine,/SELECT country_code FROM prospect_auto_publications ORDER BY seq DESC LIMIT \$1/)
 assert.match(engine,/if \(sources\.length < PROSPECT_COUNTRY_SPACING\+1\)/)
 assert.match(engine,/countrySequenceChoice\(available\.map/)
-assert.match(engine,/Unverified candidate generated from an Administration-supplied country series/)
+assert.match(engine,/Unverified candidate generated from an Administrations-supplied country series/)
 assert.match(engine,/country_code,seed_phone,next_offset,enabled/)
 assert.match(engine,/count\*1\.1/)
 assert.match(reconcile,/runProspectMarketAuto\(\)/)

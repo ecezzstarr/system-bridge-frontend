@@ -35,7 +35,7 @@ assert.ok(!eligibility.includes('UPDATE company_client_staff_offers'),
 const forensics=read(paths[1])
 assert.ok(forensics.includes('getApprovedProStaffOffer')&&
  forensics.includes("row.file_number==='WEAVE-2026-0907-0001'")&&
- forensics.includes('operating_country'), 'Administration verifies staff identity and CJ Spain')
+ forensics.includes('operating_country'), 'Administrations verifies staff identity and CJ Spain')
 assert.ok(forensics.includes("offer.status='approved' AND offer.folder_tier='pro'"),
  'Admin register joins independently approved staff position')
 const publicUi=read(paths[3])
