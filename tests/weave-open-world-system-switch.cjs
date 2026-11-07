@@ -28,10 +28,10 @@ assert.ok(world.includes('data-company-loop-event="burning-river"'),'Burning Riv
 assert.ok(atlas.includes('<h1>Weave Open World</h1>'),'Correct public world name is shown')
 assert.ok(visual.includes('Company Loop 1 · Burning River')&&visual.includes("feed.event?.status==='active'"),'Burning River is a dated event within the world, not the world')
 assert.ok(visual.includes('data-weave-open-world="system-switch-file-folder-world"'),'Shared real-world rendering belongs to System Switch')
-assert.ok(land.includes('data-weave-world-landscape="physical-ground-forest-and-paths"'),'3D geography is real geometry')
+assert.ok(land.includes('name="physical-ground-forest-and-paths"'),'3D geography is real geometry')
 assert.ok(land.includes('CanvasTexture')&&land.includes('LandMaterial')&&land.includes('WorldFootpath'),'The shared landscape has actual terrain material and verified building approaches')
 assert.ok(land.includes('function WorldRidge')&&land.includes('snow-peaks')&&land.includes('ember-highlands'),'Burning River reference informs real snowy and ember terrain geometry')
-assert.ok(land.includes('function RiverCrossing')&&land.includes('data-world-reference-crossing="bridge-of-radiance"'),'Bridge of Radiance crossings are physical geometry in the shared world')
+assert.ok(land.includes('function RiverCrossing')&&land.includes('name="bridge-of-radiance"'),'Bridge of Radiance crossings are physical geometry in the shared world')
 assert.ok(land.includes('Approved Burning River art guides the real scene')&&!land.includes('backgroundImage'),'Approved world-map art guides live geography without replacing it with wallpaper')
 assert.ok(exists('public/weave/flame-event/burning-river-open-world-official.webp'),'Approved File Folder world-map artwork is installed in the repository')
 assert.ok(scene.includes('<WeaveOpenWorldLandscape domains={domains} placing={placing} onPlace={onPlace}/>'),'Physical landscape is mounted under Client domains')
@@ -39,7 +39,7 @@ assert.ok(!visual.includes("backgroundImage:\"url('/weave/flame-event/burning-ri
 assert.ok(scene.includes('new THREE.ShaderMaterial')&&scene.includes('water.uniforms.time.value'),'Event water and fire move on actual 3D surfaces')
 assert.ok(scene.includes('<DomainCastle')&&visual.includes('publicHref(selectedDomain)')&&visual.includes('tapCastle'),'Real Client-built world and commissioned Customer Door gates remain clickable')
 assert.ok(visual.includes('requestedDoor')&&visual.includes('setSelected(match.domainId)'),'A direct Client link focuses the actual public building')
-assert.ok(scene.includes('<BurningRiverFoodStore3D carrierCode={carrierCode}/>')&&food.includes('data-weave-real-food-photo-panels'),'Existing real product photos stay inside the 3D store')
+assert.ok(scene.includes('<BurningRiverFoodStore3D carrierCode={carrierCode}/>')&&food.includes('name="weave-real-food-photo-panels"'),'Existing real product photos stay inside the 3D store')
 assert.ok(visual.includes('data-weave-food-direct-carrier-order="true"'),'A compact Carrier purchase link is kept in the open world')
 assert.ok(visual.includes("'/api/system-switch/open-world?page='"),'World data reads from canonical System Switch endpoint')
 assert.ok(api.includes('readVerifiedClientDomains')&&source.includes('getPublicBurningRiverWorld'),'Canonical API preserves source-of-truth purchases, builds and open doors')
@@ -81,6 +81,10 @@ for(const label of ['Staff Entrance','Visitor Entrance','Customer Door','World M
 }
 assert.ok(atlas.includes('element.showModal()')&&visual.includes("doorList?Boolean(publicHref(d))"),
   'Use one dialog and list only commissioned public entrances under Customer Doors')
+for(const source of [scene,land,food]){
+  assert.doesNotMatch(source,/<(?:group|mesh)\b[^<]*?\sdata-[\w-]+(?:=|\s|>)/,
+    'Three.js scene nodes must use native properties rather than DOM data attributes')
+}
 const worldFeed=read('app/api/events/flame/open-world/route.ts')
 assert.ok(worldFeed.includes('void reconciliation.catch')&&worldFeed.includes("getFlameEvent().catch"),
   'Database maintenance and event metadata cannot block already verified public Client land')

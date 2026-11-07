@@ -49,7 +49,7 @@ function Woodland(){
   const x=Math.cos(theta)*radius,z=Math.sin(theta)*radius
   return {x,z,height:1.2+(i%7)*.3,size:.56+(i%5)*.12}
  }).filter(t=>Math.abs(t.x-9)>16||Math.abs(t.z+5)>15),[])
- return <group data-weave-natural-land="living-woodland">
+ return <group name="living-woodland">
   {trees.map((tree,i)=><group key={i} position={[tree.x,0,tree.z]}>
     <mesh castShadow position={[0,tree.height*.44,0]}>
      <cylinderGeometry args={[.13,.20,tree.height*.88,6]}/>
@@ -86,7 +86,7 @@ function WorldFootpath({domain}:{domain:PublicWorldDomain}){
 }
 
 function WorldRidge({x,z,scale=1,snow=false}:{x:number;z:number;scale?:number;snow?:boolean}){
- return <group position={[x,0,z]} scale={scale} data-world-reference-ridge={snow?'snow-peaks':'ember-highlands'}>
+ return <group position={[x,0,z]} scale={scale} name={snow?'snow-peaks':'ember-highlands'}>
   {[[-2.8,3.1,1.3],[0,4.4,1.7],[2.5,2.8,1.2]].map(([px,h,r],i)=><group key={i} position={[px,0,i%2?-.8:.6]}>
    <mesh position={[0,h*.43,0]} castShadow receiveShadow><coneGeometry args={[r*1.25,h,7]}/><meshStandardMaterial color={snow?'#7f9aaa':'#49382f'} roughness={.98}/></mesh>
    {snow&&<mesh position={[0,h*.82,0]} castShadow><coneGeometry args={[r*.52,h*.36,7]}/><meshStandardMaterial color="#e7edf0" roughness={.88}/></mesh>}
@@ -95,7 +95,7 @@ function WorldRidge({x,z,scale=1,snow=false}:{x:number;z:number;scale?:number;sn
  </group>
 }
 function RiverCrossing({x,z,rotation=0}:{x:number;z:number;rotation?:number}){
- return <group position={[x,-.04,z]} rotation={[0,rotation,0]} data-world-reference-crossing="bridge-of-radiance">
+ return <group position={[x,-.04,z]} rotation={[0,rotation,0]} name="bridge-of-radiance">
   <mesh position={[0,.38,0]} castShadow><boxGeometry args={[8,.24,1.35]}/><meshStandardMaterial color="#b6a078" metalness={.3} roughness={.55}/></mesh>
   {[-3.3,3.3].map(side=><group key={side} position={[side,0,0]}>
    <mesh position={[0,.05,0]} castShadow><boxGeometry args={[.5,.65,1.7]}/><meshStandardMaterial color="#655346" roughness={.92}/></mesh>
@@ -104,7 +104,7 @@ function RiverCrossing({x,z,rotation=0}:{x:number;z:number;rotation?:number}){
  </group>
 }
 export function WeaveOpenWorldLandscape({domains,placing=false,onPlace}:{domains:PublicWorldDomain[];placing?:boolean;onPlace?:(location:{x:number;z:number})=>void}){
- return <group data-weave-world-landscape="physical-ground-forest-and-paths">
+ return <group name="physical-ground-forest-and-paths">
   <mesh rotation={[-Math.PI/2,0,0]} position={[0,-.52,0]} receiveShadow
     onClick={event=>{if(placing&&onPlace){event.stopPropagation();onPlace({x:event.point.x,z:event.point.z})}}}>
    <planeGeometry args={[260,260,1,1]}/>

@@ -35,7 +35,7 @@ function FoodPhotos({carrierCode}:{carrierCode?:string|null}){
       texture.needsUpdate=true
     }
   },[textures])
-  return <group data-weave-real-food-photo-panels>
+  return <group name="weave-real-food-photo-panels">
     {BURNING_RIVER_FOOD_PRODUCTS.map((item,i)=>{
       const x=COLUMNS[i%3],y=i<3?5.35:2.55
       return <group key={item.id} position={[x,y,1.42]}>
@@ -46,8 +46,7 @@ function FoodPhotos({carrierCode}:{carrierCode?:string|null}){
         <mesh onClick={event=>{event.stopPropagation();window.location.assign(burningRiverFoodHref(carrierCode,item.anchor))}}
           onPointerOver={()=>{document.body.style.cursor='pointer'}}
           onPointerOut={()=>{document.body.style.cursor='auto'}}
-          userData={{weaveFood:item.id,image:item.image}}
-          data-weave-real-food-image={item.id}>
+          userData={{weaveFood:item.id,image:item.image}}>
           <planeGeometry args={[2.78,1.83]}/>
           <meshBasicMaterial map={textures[i]} toneMapped={false} side={THREE.DoubleSide}/>
         </mesh>
@@ -76,7 +75,7 @@ function PhotoLoading(){
  * marked family-products illustration, and one live-supplier Farm entrance.
  */
 export function BurningRiverFoodStore3D({carrierCode}:{carrierCode?:string|null}){
-  return <group position={SHOP_POSITION} rotation={[0,-.12,0]} data-burning-river-3d-food-store>
+  return <group position={SHOP_POSITION} rotation={[0,-.12,0]} name="burning-river-3d-food-store">
     <mesh position={[0,-.18,0]} receiveShadow>
       <boxGeometry args={[11.8,.45,4.25]}/>
       <meshStandardMaterial color="#606c64" roughness={.88}/>

@@ -78,7 +78,7 @@ function MovingBurningRiver(){
   fire.uniforms.time.value=clock.elapsedTime
  })
  useEffect(()=>()=>{water.dispose();fire.dispose()},[water,fire])
- return <group data-live-burning-river="flowing-fire-and-water" data-company-loop-one-event="burning-river">
+ return <group name="flowing-fire-and-water" userData={{companyLoopEvent:"burning-river"}}>
    <mesh geometry={river} material={water}/>
    <mesh geometry={river} material={fire} position={[1.05,-.035,0]} scale={[.38,.82,1]}/>
  </group>
@@ -144,7 +144,7 @@ function DomainCastle({domain,selected,onSelect}:{
         <mesh position={[0,1.42,0]}><coneGeometry args={[1.13,1.22,4]}/>
           <meshStandardMaterial color={roof} metalness={.48}/></mesh>
       </group>):null}
-    {isBuilding&&<group data-world-domain-construction="recorded">
+    {isBuilding&&<group name="recorded-domain-construction">
       {[-1,1].map(side=><mesh key={side} position={[side*2.02,buildHeight/2,1.3]}>
         <boxGeometry args={[.1,buildHeight,.14]}/>
         <meshStandardMaterial color="#efbd66" metalness={.76} roughness={.24}/>
