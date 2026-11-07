@@ -10,6 +10,8 @@ const paths=[
  'app/(app)/admin/pro-file-number-verifications/page.tsx',
  'app/client/pro-verification/page.tsx',
  'app/client/staff-workspace/page.tsx',
+ 'app/api/client/staff-workspace/route.ts',
+ 'app/api/public/pro-file-number-verification/route.ts',
 ]
 for(const p of paths){
  const parsed=ts.transpileModule(read(p),{fileName:p,reportDiagnostics:true,
@@ -17,31 +19,50 @@ for(const p of paths){
  assert.equal((parsed.diagnostics||[]).filter(x=>x.category===ts.DiagnosticCategory.Error).length,0,'Invalid TypeScript: '+p)
 }
 const eligibility=read(paths[0])
-assert.ok(eligibility.includes('getApprovedProStaffOffer')&&eligibility.includes("status='approved' AND folder_tier='pro'"),
+assert.ok(eligibility.includes('getApprovedProStaffOffer')&&
+ eligibility.includes("status='approved' AND folder_tier='pro'"),
  'Only approved WEAVE company employment makes a Pro File Number eligible')
-assert.ok(!eligibility.includes("file_folder_purchases")&&!eligibility.includes("client_folder_upgrades"),
- 'Retail File Folder purchases or upgrades cannot grant passwordless company staff activation')
-assert.ok(eligibility.includes('CJ_DORADO_FILE_NUMBER')&&eligibility.includes('candidate_name')&&
- eligibility.includes('regional')&&eligibility.includes('position_title'),
- "CJ's named Pro entitlement must be Regional Manager, not a generic Client role")
-assert.ok(eligibility.includes('monthly_salary_usdt')&&eligibility.includes('companyPosition'),
- 'Verified recipients see real company position and monthly salary from the offer')
+assert.ok(!eligibility.includes('file_folder_purchases')&&!eligibility.includes('client_folder_upgrades'),
+ 'Retail purchases or upgrades do not grant staff-company position')
+assert.ok(eligibility.includes('CJ_DORADO_FILE_NUMBER')&&
+ eligibility.includes('candidate_name')&&eligibility.includes('position_title')&&
+ eligibility.includes('regional'),"CJ's company role must match Regional Manager")
+assert.ok(eligibility.includes('operatingCountry')&&eligibility.includes('operatingRegion')&&
+ eligibility.includes('operatingCity')&&eligibility.includes('contactAddress'),
+ 'File Number intake records actual operating location and address')
 assert.ok(!eligibility.includes('UPDATE company_client_staff_offers'),
- 'The public File Number route never creates an employment offer or modifies salaries')
+ 'Public File Number route does not assign employment or salary')
 const forensics=read(paths[1])
-assert.ok(forensics.includes('getApprovedProStaffOffer')&&forensics.includes('signed applicant')&&
- forensics.includes('approved company employee')&&forensics.includes("row.file_number==='WEAVE-2026-0907-0001'"),
- 'Forensics confirms approved Pro staff appointment and CJ Regional Manager before release')
-assert.ok(forensics.includes("offer.status='approved' AND offer.folder_tier='pro'")&&
- forensics.includes('staff_position_title'),'Forensics register includes approved staff role')
+assert.ok(forensics.includes('getApprovedProStaffOffer')&&
+ forensics.includes("row.file_number==='WEAVE-2026-0907-0001'")&&
+ forensics.includes('operating_country'), 'Administration verifies staff identity and CJ Spain')
+assert.ok(forensics.includes("offer.status='approved' AND offer.folder_tier='pro'"),
+ 'Admin register joins independently approved staff position')
 const publicUi=read(paths[3])
 assert.ok(publicUi.includes('Company Staff Verification')&&
- publicUi.includes('Monthly salary:')&&publicUi.includes('companyPosition'),
- 'Recipient's verification explains salaried employment separately from the Folder fee')
-assert.ok(publicUi.includes('680 USDT')&&publicUi.includes('do not need a password'),
- 'The one-time 680 USDT Pro verification remains passwordless')
+ publicUi.includes('companyPosition')&&publicUi.includes('Monthly salary:'),
+ 'Client verification shows verified employment separately from folder fee')
+assert.ok(publicUi.includes('do not need a password')&&publicUi.includes('680 USDT'),
+ 'Passwordless Pro entry and unchanged fee remain clearly presented')
+assert.ok(publicUi.includes('contactAddress')&&publicUi.includes('operatingCity')&&
+ publicUi.includes('operatingRegion')&&publicUi.includes('operatingCountry'),
+ 'Applicant can supply address, country, city, region during activation')
 const staffUi=read(paths[4])
-assert.ok(staffUi.includes('Regional Management Workspace')&&
- staffUi.includes('Food Distribution Managers')&&staffUi.includes('gift-card escrow'),
- 'Regional Manager employee workspace reflects company responsibilities')
-console.log('Approved Pro company staff and CJ Regional Manager salary/position regression passed')
+assert.ok(staffUi.includes('Client Regional Manager · Business Expansion')&&
+ staffUi.includes('Dream Lovely · Client Department')&&
+ staffUi.includes('Client business expansion register'),
+ 'Client Regional Manager workspace operates Dream Lovely business expansion')
+assert.ok(!staffUi.includes('Food Distribution Managers')&&
+ !staffUi.includes('/weave/lifestyles/regional-manager')&&
+ !staffUi.includes('student and worker daily-meal'),
+ 'No Agent/Stability or generic Agent/Bridger Regional Manager workflow in Client workspace')
+const staffApi=read(paths[5])
+assert.ok(staffApi.includes("grant.user.role==='client'")&&
+ staffApi.includes("String(grant.offer.folder_tier)==='pro'")&&
+ staffApi.includes("scope:'client_business_expansion'")&&
+ staffApi.includes('pro_file_number_verifications'),
+ 'Region is the scoped Client position with submitted identity-verified location')
+const migration=read('migrations/20261106_pro_file_number_verification.sql')
+assert.ok(migration.includes('operating_country')&&migration.includes('contact_address'),
+ 'Migration persists the address and company operating country')
+console.log('Client Dream Lovely Regional Manager department boundary, Spanish address and Pro onboarding regression passed')
