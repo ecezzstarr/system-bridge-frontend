@@ -73,6 +73,20 @@ export default function ProFileNumberVerification(){
   }catch(e){setError(e instanceof Error?e.message:'Payment review unavailable')}
   finally{setBusy(false)}
  }
+ async function requestRegistrationInvite(){
+  if(!ticket)return
+  setBusy(true);setError('');setMessage('')
+  try{
+   const response=await fetch('/api/public/pro-file-number-verification',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({action:'send_registration_invite',ticket}),
+   })
+   const body=await response.json()
+   if(!response.ok)throw new Error(body.error||'Secure invitation could not be sent')
+   setMessage(body.message||'Check the approved company email for your private registration link.')
+  }catch(e){setError(e instanceof Error?e.message:'Secure registration unavailable')}
+  finally{setBusy(false)}
+ }
  return <main className="min-h-dvh bg-[#050c18] px-4 py-9 text-white" data-pro-file-number-verification="true">
   <div className="mx-auto max-w-3xl space-y-6">
    <header className="rounded-2xl border border-cyan-300/20 bg-slate-900 p-6">
@@ -219,8 +233,14 @@ export default function ProFileNumberVerification(){
       className="rounded-lg bg-cyan-300 px-5 py-3 font-semibold text-slate-950 disabled:opacity-40">Send payment evidence to Forensics</button>
     </div>}
     {verification.status==='pending_forensics'&&<p className="text-sm text-slate-200">Your transaction hash was received. Forensics is checking the actual blockchain receipt, amount and receiving address. Do not send a duplicate payment.</p>}
-    {verification.status==='paid_pending_account'&&<p className="text-sm text-slate-200">Forensics verified the 680 USDT transaction. Administration must confirm your original File Folder ownership and Client account before enabling private Folder access.</p>}
-    {verification.status==='active'&&<p className="text-sm text-emerald-200">Pro File Folder activated. Use your authorized Client account or ask Administration for the secure account-access process; this verification code is not a general Client login.</p>}
+    {verification.status==='paid_pending_account'&&<section className="space-y-3 rounded-xl border border-cyan-300/25 p-5">
+      <h3 className="text-lg font-semibold">6. Secure Client account registration</h3>
+      <p className="text-sm text-slate-200">Forensics has independently verified your Pro activation. Request a private account-registration link to the email address already recorded in your approved company employment offer. Your File Number is not a login or a password. Create your own secure Client account using the link; Administration then verifies account ownership and finalizes the existing Pro File Folder. Do not make another activation payment.</p>
+      <button type="button" disabled={busy} onClick={()=>void requestRegistrationInvite()}
+       className="rounded-lg bg-cyan-300 px-5 py-3 text-sm font-semibold text-slate-950 disabled:opacity-40">Email me my verified company registration link</button>
+      <p className="text-xs text-slate-400">If you already received an approved private company invitation, you may use that invitation instead. No registration token is displayed in this public workspace.</p>
+     </section>}
+    {verification.status==='active'&&<p className="text-sm text-emerald-200">Pro File Folder activated. Sign in with the secure Client account you registered through the approved company email invitation, then open your private File Folder and company workspace. This verification code is not a login.</p>}
     {verification.status==='rejected'&&<p className="text-sm text-rose-200">Verification requires Administration attention. Contact the company using your application reference.</p>}
     <button type="button" disabled={busy} onClick={()=>void refresh(ticket).catch(e=>setError(e.message))}
      className="rounded-lg border border-cyan-300/30 px-4 py-2 text-sm">Refresh verification status</button>
