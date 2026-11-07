@@ -111,6 +111,7 @@ export default function ProFileNumberVerification(){
       <span>Your own business world</span>
       <span>Customer Door & systems</span>
       <span>Employees & regional growth</span>
+      <span>Administration + Forensics</span>
      </div>
      <a className="pv-hero-explore" href="#pro-client-file-folder-features">Explore what your File Folder can do</a>
     </div>
