@@ -4,6 +4,7 @@ import Link from 'next/link'
 import {useAuth} from '@/lib/auth-provider'
 type Application={
  id:string;file_number:string;business_name:string;business_plan:Record<string,string>;
+ staff_position_title?:string|null;staff_monthly_salary_usdt?:number|null;staff_candidate_name?:string|null;
  signed_name:string;terms_accepted_at:string;identity_reference?:string|null;
  payment_wallet?:string|null;payment_tx_hash?:string|null;payment_submitted_at?:string|null;
  payment_verified_at?:string|null;payment_verified_amount_usdt?:number|null;
@@ -53,7 +54,7 @@ export default function ProFileNumberAdministration(){
   <header className="space-y-2">
    <Link href="/admin/pro-activations" className="text-xs text-cyan-200 underline">Pro activation control center</Link>
    <h1 className="text-3xl font-bold">Pro File Number Verification</h1>
-   <p className="text-sm text-slate-300">Recipients begin with an issued File Number, not a password. Administration independently verifies signed business plans and applicants before displaying the payment address. Forensics approves real TRON receipts. No funds are credited automatically.</p>
+   <p className="text-sm text-slate-300">Only approved WEAVE company staff are eligible for this Pro File Folder workspace. Recipients begin with an issued File Number, not a password. Administration independently verifies their position, signed business plans and identity before displaying payment instructions. Forensics approves real TRON receipts. No funds are credited automatically.</p>
    <p className="text-xs text-cyan-200">Public Client starting page: <Link href="/client/pro-verification" className="underline">/client/pro-verification</Link></p>
   </header>
   {error&&<p role="alert" className="rounded-xl border border-rose-300/25 p-4 text-rose-200">{error}</p>}
@@ -78,6 +79,17 @@ export default function ProFileNumberAdministration(){
      <p className="text-sm">{selected.file_number}</p>
      <p className="text-sm">File Folder business: <strong>{selected.business_name}</strong></p>
      <p className="text-sm">Electronic signature: <strong>{selected.signed_name}</strong></p>
+     <div className="rounded-lg border border-cyan-300/20 bg-cyan-300/[.04] p-3">
+      <p className="text-xs uppercase tracking-widest text-cyan-200">Approved WEAVE company employment</p>
+      {selected.staff_position_title?<div className="mt-2 space-y-1 text-sm">
+       <p>Position: <strong>{selected.staff_position_title}</strong></p>
+       <p>Approved employee: <strong>{selected.staff_candidate_name||'Employee identity pending'}</strong></p>
+       <p>Monthly salary: {Number(selected.staff_monthly_salary_usdt)>0
+        ?Number(selected.staff_monthly_salary_usdt).toLocaleString()+' USDT in recorded offer'
+        :'To be confirmed by Administration payroll'}</p>
+      </div>:<p className="mt-2 text-sm text-amber-200">No approved company staff offer for this File Number. Do not approve payment until employment records are reconciled.</p>}
+      {selected.file_number==='WEAVE-2026-0907-0001'&&<p className="mt-2 text-xs text-cyan-200">CJ Dorado: required company position — Regional Manager. Verify the approved staff offer matches before proceeding.</p>}
+     </div>
      <p className="text-xs text-slate-400">Terms accepted: {new Date(selected.terms_accepted_at).toLocaleString()}</p>
      <details open className="rounded-lg border border-white/10 p-3"><summary className="text-sm font-semibold text-cyan-200">Submitted business plan</summary>
       {Object.entries(selected.business_plan||{}).map(([key,value])=><div key={key} className="mt-3">
