@@ -32,7 +32,7 @@ export async function GET(request:NextRequest){
   if(!active)return NextResponse.json({success:true,active:false,position,
     message:'Pro File Folder work opens only after approved company employment, signed agreement, independently verified activation and original account ownership.'},{headers})
   await ensureProRegionalManagerActivationSchema()
-  const world=await getFileFolderWorldSnapshot(sql,String(user.id),String(row.file_number))
+  const world=await getFileFolderWorldSnapshot(sql,String(user.id),String(row.file_number),String(row.business_name))
   const store=await ensureClientBusinessStore(sql,String(user.id),String(row.file_number),
     String(row.business_name),false)
   const [items,orders,doorSystems,activity]=await Promise.all([
