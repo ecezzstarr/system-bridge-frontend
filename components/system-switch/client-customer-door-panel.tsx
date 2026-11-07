@@ -24,6 +24,7 @@ type Props={
   buildFunding?:any|null
   world?:any|null
   onOpenConstruction?:(district:string)=>void
+  storeApiPath?:string
 }
 
 const PRESETS=[
@@ -110,6 +111,7 @@ export default function ClientCustomerDoorPanel({
   buildFunding,
   world,
   onOpenConstruction,
+  storeApiPath='/api/client/business-store',
 }:Props){
   const [data,setData]=useState<any>({
     store:initialStore||null,
@@ -168,7 +170,7 @@ export default function ClientCustomerDoorPanel({
 
   const refreshStore=async()=>{
     const token=getClientToken()
-    const response=await fetch('/api/client/business-store',{headers:{Authorization:`Bearer ${token}`},cache:'no-store'})
+    const response=await fetch(storeApiPath,{headers:{Authorization:`Bearer ${token}`},cache:'no-store'})
     const body=await response.json()
     if(!response.ok)throw new Error(body.error||'Unable to reload store')
     setData({
@@ -195,7 +197,7 @@ export default function ClientCustomerDoorPanel({
     setBusy('offer');setMessage('')
     try{
       const token=getClientToken()
-      const response=await fetch('/api/client/business-store',{
+      const response=await fetch(storeApiPath,{
         method:'POST',
         headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},
         body:JSON.stringify({...form,price:Number(form.price)}),
@@ -217,7 +219,7 @@ export default function ClientCustomerDoorPanel({
     setBusy('world-hosting');setMessage('')
     try{
       const token=getClientToken()
-      const response=await fetch('/api/client/business-store',{
+      const response=await fetch(storeApiPath,{
         method:'PATCH',
         headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},
         body:JSON.stringify({
@@ -238,7 +240,7 @@ export default function ClientCustomerDoorPanel({
     setBusy('design');setMessage('')
     try{
       const token=getClientToken()
-      const response=await fetch('/api/client/business-store',{
+      const response=await fetch(storeApiPath,{
         method:'PATCH',
         headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},
         body:JSON.stringify({
@@ -265,7 +267,7 @@ export default function ClientCustomerDoorPanel({
         label:String(system.public_label||system.title||''),
         summary:String(system.public_summary||''),
       }
-      const response=await fetch('/api/client/business-store',{
+      const response=await fetch(storeApiPath,{
         method:'PATCH',
         headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},
         body:JSON.stringify({
