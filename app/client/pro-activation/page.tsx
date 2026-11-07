@@ -3,7 +3,7 @@ import {useCallback,useEffect,useState} from 'react'
 import Link from 'next/link'
 import ProManagerRoleShowcase from '@/components/client/pro-manager-role-showcase'
 import {useAuth} from '@/lib/auth-provider'
-import {PRO_MANAGER_FILE_FOLDER_DISTINCTION,
+import {PRO_MANAGER_COMPANY_PURPOSE,PRO_MANAGER_FILE_FOLDER_DISTINCTION,
  PRO_MANAGER_PLAN_QUESTIONS,PRO_MANAGER_AGREEMENT_SECTIONS} from '@/lib/pro-regional-manager-language'
 
 type Activation={status:string;file_number?:string;fileNumber?:string;feeUSDT:number;network?:string;
@@ -87,6 +87,7 @@ export default function ProActivationPage(){
     <p className="text-xs font-bold uppercase tracking-widest text-sky-800">Dream Lovely · Your verified company pathway</p>
     <h2 className="text-xl font-bold text-slate-900">Your position and File Folder verification</h2>
     <p className="text-sm leading-7 text-slate-700">{PRO_MANAGER_FILE_FOLDER_DISTINCTION}</p>
+    <p className="text-sm leading-7 text-slate-700">{PRO_MANAGER_COMPANY_PURPOSE}</p>
     <p className="break-all text-sm text-slate-700">Issued File Number: <span className="font-mono font-semibold">{user?.file_number||activation?.file_number||activation?.fileNumber||'Pending company File Number'}</span></p>
     <p className="text-xs leading-6 text-slate-600">Your company salary and approved employment are separate from your File Folder business and any later activation requirement.</p>
    </section>
