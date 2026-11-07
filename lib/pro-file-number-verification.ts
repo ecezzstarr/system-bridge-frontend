@@ -54,8 +54,8 @@ export async function getApprovedProStaffOffer(fileNumber:string) {
    AND status='approved' AND folder_tier='pro' LIMIT 1`
  if(!offer||!offer.position_title||!offer.candidate_name)return null
  if(fileNumber===CJ_DORADO_FILE_NUMBER){
-  if(!/\\bcj\\s+dorado\\b/i.test(String(offer.candidate_name))||
-     !/^regional\\s+manager$/i.test(String(offer.position_title).trim()))return null
+  if(!/\bcj\s+dorado\b/i.test(String(offer.candidate_name))||
+     !/^regional\s+manager$/i.test(String(offer.position_title).trim()))return null
  }
  return offer
 }
