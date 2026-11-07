@@ -6,6 +6,14 @@
 
 **Pro Regional Manager** is a separate, global company position open to eligible Bridgers, Agents, and Clients. Each approved Pro manager has a verified company appointment, independently documented agreed salary and other written terms, a personal Pro File Folder and business plan, a recorded operating location/address, an independent Pro activation process, and department-specific operating functions. A person retains their original Hope, Stability, or Dream Lovely department.
 
+## Pro is the Folder tier, not the workshop business
+
+Every approved Pro Regional Manager has a **Pro-tier File Folder**. The tier establishes the Folder's grade and visual operating environment, while the person's own life, skills, experience, interests and approved business plan determine the actual business formed inside it. **Pro Regional Manager is an employment position, not a workshop category.** Do not assign every new Pro manager a crypto business, a generic manager workshop, or another person's profession. New Agent/Bridger Pro folders begin in business formation with the applicant's approved business name; the owner builds their own systems and Customer Door within the verified Pro world.
+
+CJ Dorado is the individually owned **Crypto Exchange Workshop** case, not the Pro template. Her existing Client File Number, crypto workshop identity, private exchange journal and Customer Door stay hers alone. Her authorized employees expand her business and its ideals from their assigned role permissions, linking activity and records to the owner Folder and its systems. Other Pro Regional Managers' staff support **their** different businesses; employment titles do not grant employee access to CJ's exchange or alter unrelated business worlds.
+
+The manager's company salary, the File Folder's earned commercial income, employee earnings, activation charges and recorded custody/settlement evidence remain separate. A business plan may describe potential systems without implying that trading, custody or money movement is live.
+
 An approved Pro appointment is not a purchase: neither a payment nor a File Number alone creates a company job or salary. A Pro activation fee is never a refundable deposit, a loan repayment, or a precondition for releasing unrelated funds.
 
 | Position | Eligible source role | File Folder | Program |
