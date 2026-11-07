@@ -8,6 +8,53 @@ import { settleFileFolderPaystackPurchase } from '@/lib/file-folder-paystack'
 
 export const dynamic = 'force-dynamic'
 
+async function recordWalletEvent(reference: string, eventType: string, data: Record<string, unknown>, reason?: string) {
+  const client = await getPool().connect()
+  const eventId = String(data.refund_reference || data.id || '').slice(0, 200)
+  const eventKey = eventId || JSON.stringify([data.amount ?? null, data.currency ?? null, data.refunded_at ?? null])
+  try {
+    await client.query('BEGIN')
+    const {rows: [deposit]} = await client.query(
+      "SELECT id,user_id,status FROM deposits WHERE method='paystack' AND receipt_data=$1 FOR UPDATE",
+      [reference],
+    )
+    if (deposit) {
+      const inserted = await client.query(
+        `INSERT INTO ledger_entries(user_id,entry_type,amount,currency,description,metadata)
+         SELECT $1::uuid,'deposit',0,'Flame Coin',$2,$3::jsonb
+         WHERE NOT EXISTS (
+           SELECT 1 FROM ledger_entries
+           WHERE user_id=$1::uuid AND metadata->>'deposit_id'=$4
+             AND metadata->>'event_type'=$5
+             AND COALESCE(metadata->>'event_key',metadata->>'event_id','')=$6
+         )`,
+        [deposit.user_id, 'Paystack payment requires Administration review',
+          JSON.stringify({deposit_id:deposit.id,payment_method:'Paystack',reference,
+            event_type:eventType,event_id:eventId || null,event_key:eventKey,provider_amount:data.amount ?? null,
+            currency:data.currency ?? null,reason,requires_administration_review:true}),
+          deposit.id,eventType,eventKey],
+      )
+      if (eventType === 'charge.failed' && deposit.status === 'pending') {
+        await client.query("UPDATE deposits SET status='rejected',updated_at=NOW() WHERE id=$1::uuid AND status='pending'", [deposit.id])
+      }
+      if (inserted.rowCount) {
+        await client.query(
+          `INSERT INTO notifications(user_id,type,title,content,from_user_name,link)
+           SELECT id,'deposit_payment_event','Paystack payment requires review',$1,'WEAVE Paystack','/admin/control-center#deposits'
+           FROM users WHERE role='admin' AND COALESCE(is_active,true)`,
+          [`Paystack ${eventType} for ${reference}. ${reason || 'Inspect the payment evidence before changing the wallet.'}`],
+        )
+      }
+    }
+    await client.query('COMMIT')
+  } catch (error) {
+    await client.query('ROLLBACK').catch(() => {})
+    throw error
+  } finally {
+    client.release()
+  }
+}
+
 export async function POST(request: NextRequest) {
   const rawBody = await request.text()
   if (!(await verifyPaystackWebhookSignature(
@@ -17,7 +64,14 @@ export async function POST(request: NextRequest) {
   }
   try {
     const event=JSON.parse(rawBody)
-    const reference=typeof event?.data?.reference==='string'?event.data.reference:''
+    const providerReference = event?.event === 'refund.processed'
+      ? event?.data?.transaction_reference ?? event?.data?.transaction?.reference ?? event?.data?.reference
+      : event?.data?.reference
+    const reference = typeof providerReference === 'string' ? providerReference.trim() : ''
+    const settleWallet = async () => {
+      const result = await settlePaystackDeposit(reference, event.data)
+      if (!result.settled) await recordWalletEvent(reference, 'charge.success.review', event.data, result.reason)
+    }
     if (event?.event === 'charge.success' && reference) {
       // The server generates distinct references for each payment product.
       // Route recognized references directly, avoiding unrelated schema queries.
@@ -35,13 +89,13 @@ export async function POST(request: NextRequest) {
       } else if (reference.startsWith('FOLDER-')) {
         await settleFileFolderPaystackPurchase(reference)
       } else if (/^(ADMIN|AGENT|BRIDGER|CLIENT)-/.test(reference)) {
-        await settlePaystackDeposit(reference, event.data)
+        await settleWallet()
       } else {
         // Keep compatibility with older Paystack references that lack a role prefix.
         const ticketResult = await settleDepartmentEntryPaystackTicket(reference)
         if (!ticketResult.matched) {
           const fileFolderResult = await settleFileFolderPaystackPurchase(reference)
-          if (!fileFolderResult.matched) await settlePaystackDeposit(reference, event.data)
+          if (!fileFolderResult.matched) await settleWallet()
         }
       }
     } else if ((event?.event === 'charge.failed' || event?.event === 'refund.processed') && reference) {
@@ -54,20 +108,7 @@ export async function POST(request: NextRequest) {
         })
         return NextResponse.json({received:true})
       }
-      const pool=getPool()
-      const client=await pool.connect()
-      try {
-        await client.query('BEGIN')
-        const found=await client.query("SELECT id,user_id,amount_usd,amount_trx,status FROM deposits WHERE method='paystack' AND receipt_data=$1 FOR UPDATE",[reference])
-        const deposit=found.rows[0]
-        if (deposit) {
-          if (event.event==='charge.failed' && deposit.status==='pending') await client.query("UPDATE deposits SET status='rejected',updated_at=NOW() WHERE id=$1::uuid AND status='pending'",[deposit.id])
-          await client.query("INSERT INTO ledger_entries(user_id,entry_type,amount,currency,description,metadata) VALUES($1::uuid,'deposit',0,'Flame Coin',$2,$3::jsonb)",[deposit.user_id,event.event==='refund.processed'?'Paystack refund/reversal event recorded':'Paystack charge failure recorded',JSON.stringify({deposit_id:deposit.id,payment_method:'Paystack',reference,event_type:event.event,event_id:event.data?.id||null,amount_ngn:Number(deposit.amount_usd),flame_coin_amount:Number(deposit.amount_trx),deposit_status:deposit.status,requires_administration_review:true})])
-          await client.query('COMMIT')
-          await notifyAdministrators({type:'deposit_payment_event',title:event.event==='refund.processed'?'Paystack refund requires review':'Paystack payment failed',content:`Paystack event ${event.event} was recorded for deposit ${deposit.id} (reference ${reference}). Review the deposit ledger before taking any wallet action.`,link:'/admin/control-center#deposits',fromUserName:'WEAVE Paystack'})
-        } else await client.query('COMMIT')
-      } catch(error) { await client.query('ROLLBACK').catch(()=>{}); throw error }
-      finally { client.release() }
+      await recordWalletEvent(reference, event.event, event.data)
     }
     return NextResponse.json({received:true})
   } catch(error) {

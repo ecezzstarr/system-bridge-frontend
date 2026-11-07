@@ -23,7 +23,7 @@ assert.ok(header.includes('data-weave-phone-order="presence-interaction-value-si
 for (const station of ['presence','interaction','value','signal']) {
   assert.ok(header.includes(`data-phone-chrome="${station}"`), `Phone header keeps ${station} as a distinct ordered station`)
 }
-assert.ok(header.includes("'Hope'") && header.includes("'Stability'") && header.includes("'Lord/Lady'") && header.includes("'A Cat'"), 'Phone Presence station preserves WEAVE position language')
+assert.ok(header.includes("'Hope'") && header.includes("'Stability'") && header.includes("'Lord/Lady'") && header.includes("'A Time'"), 'Phone Presence station preserves WEAVE position language')
 assert.ok(dashboard.includes('data-mobile-world-order="presence-district-place-service"'), 'Phone role world keeps Presence before District before Place and secondary services')
 assert.ok(dashboard.indexOf('data-role-presence-gate={role}') < dashboard.indexOf('Presence → District → Place'), 'Phone world starts from Presence before district travel')
 assert.ok(dashboard.indexOf('Presence → District → Place') < dashboard.indexOf('data-mobile-world-service="after-movement"'), 'Shared services no longer jump ahead of role movement on phones')

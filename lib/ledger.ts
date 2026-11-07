@@ -228,6 +228,17 @@ export async function getUserTotalBalance(userId: string): Promise<{
   return {available,locked,total:available+locked}
 }
 
+type MainWalletRow = { is_primary: boolean | null; balance_trx: string | number | null }
+
+export function selectMainWallet<T extends MainWalletRow>(rows: T[]) {
+  const primary = rows.filter(row => row.is_primary === true)
+  const wallet = primary.length === 1 ? primary[0] : primary.length === 0 && rows.length === 1 ? rows[0] : null
+  if (!wallet) return {status: rows.length ? 'ambiguous' : 'missing', wallet: null, balance: null} as const
+  const balance = wallet.balance_trx === null ? NaN : Number(wallet.balance_trx)
+  if (!Number.isFinite(balance)) return {status: 'unavailable', wallet: null, balance: null} as const
+  return {status: primary.length ? 'available' : 'legacy_wallet', wallet, balance} as const
+}
+
 function decodeRecordCursor(cursor:string|null) {
   if (!cursor) return null
   if (cursor.length > 256) throw new Error('Invalid record page cursor')
@@ -277,38 +288,20 @@ export async function getFinancialRecordPage(
       }
     }
 
-    let walletStatus:'available'|'legacy_wallet'|'missing'|'ambiguous'|'unavailable'='unavailable'
-    let available:number|null=null
-    // The registration path creates primary wallets, but older accounts may
-    // have exactly one wallet marked false/null. Read its existing value
-    // without changing it; never sum or arbitrarily select multiple wallets.
-    let wallet=await optional('wallet',
-      'SELECT id,balance_trx,is_primary FROM wallets WHERE user_id=$1::uuid ORDER BY created_at ASC,id ASC',
+    const wallet = await optional('wallet',
+      'SELECT id,balance_trx,is_primary FROM wallets WHERE user_id=$1::uuid',
       [userId])
-    if (!wallet) {
-      warnings.push('Main wallet could not be read. Its balance is unavailable, not zero.')
-    } else {
-      const primary=wallet.rows.filter(row=>row.is_primary===true)
-      const selected=primary.length===1?primary[0]:
-        primary.length===0&&wallet.rows.length===1?wallet.rows[0]:null
-      if (selected) {
-        available=Number(selected.balance_trx)
-        if (!Number.isFinite(available)) {
-          available=null
-          warnings.push('Stored wallet amount is invalid; no balance was assumed.')
-        } else {
-          walletStatus=primary.length===1?'available':'legacy_wallet'
-          if (walletStatus==='legacy_wallet') {
-            warnings.push('A legacy wallet balance is displayed. Administration should review its missing primary-wallet designation; no funds were moved.')
-          }
-        }
-      } else if (wallet.rows.length===0) {
-        walletStatus='missing'
-        warnings.push('No wallet record exists for this account. Ledger history may still be available; Administration must investigate without creating a replacement zero balance.')
-      } else {
-        walletStatus='ambiguous'
-        warnings.push('More than one wallet could be primary. Administration must reconcile wallet identity; balances were not combined.')
-      }
+    const selection = wallet ? selectMainWallet(wallet.rows) : null
+    const walletStatus = selection?.status ?? 'unavailable'
+    const available = selection?.balance ?? null
+    if (walletStatus === 'unavailable') {
+      warnings.push('Main wallet could not be read. Its balance is unavailable.')
+    } else if (walletStatus === 'legacy_wallet') {
+      warnings.push('A legacy wallet balance is displayed. Administration can review its primary-wallet designation.')
+    } else if (walletStatus === 'missing') {
+      warnings.push('No wallet record exists for this account. Ledger history may still be available.')
+    } else if (walletStatus === 'ambiguous') {
+      warnings.push('More than one wallet could be primary. Administration must reconcile wallet identity.')
     }
 
     let escrowStatus:'available'|'unavailable'='unavailable'
@@ -338,7 +331,13 @@ export async function getFinancialRecordPage(
     let hasMore=false
     let nextCursor:string|null=null
     const history=await optional('ledger',
-      "SELECT * FROM ledger_entries WHERE user_id=$1::uuid AND ($2::timestamptz IS NULL OR (created_at,id)<($2::timestamptz,$3::uuid)) ORDER BY created_at DESC,id DESC LIMIT $4",
+      `SELECT l.*, to_char(l.created_at AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"') AS cursor_time
+       FROM ledger_entries l
+       WHERE l.user_id=$1::uuid AND ($2::timestamptz IS NULL OR (l.created_at,l.id)<(
+         COALESCE((SELECT created_at FROM ledger_entries WHERE user_id=$1::uuid AND id=$3::uuid),$2::timestamptz),
+         $3::uuid
+       ))
+       ORDER BY l.created_at DESC,l.id DESC LIMIT $4`,
       [userId,previous?.createdAt||null,previous?.id||null,pageSize+1])
     if (history) {
       ledgerStatus='available'
@@ -346,9 +345,9 @@ export async function getFinancialRecordPage(
       const entries=history.rows.slice(0,pageSize)
       const last=entries[entries.length-1]
       nextCursor=hasMore&&last
-        ?Buffer.from(new Date(last.created_at).toISOString()+'|'+last.id).toString('base64url')
+        ?Buffer.from(last.cursor_time+'|'+last.id).toString('base64url')
         :null
-      historyEntries=entries.map(row=>({
+      historyEntries=entries.map(({cursor_time, ...row})=>({
         ...row,amount:Number(row.amount),
         balance_before:row.balance_before==null?null:Number(row.balance_before),
         balance_after:row.balance_after==null?null:Number(row.balance_after),

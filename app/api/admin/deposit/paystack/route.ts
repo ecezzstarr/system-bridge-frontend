@@ -6,11 +6,15 @@ import { inspectPaystackDeposit } from '@/lib/paystack-inspection'
 import { manualCreditStuckPaystack, ManualPaystackCreditError } from '@/lib/manual-paystack-recovery'
 
 export const dynamic = 'force-dynamic'
+const depositUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 /** Read-only Administration reconciliation queue; no unverified payment is credited here. */
 export async function GET(request: NextRequest) {
   const admin = await getAuthUser(request)
   if (!admin || admin.role !== 'admin') return NextResponse.json({ error: 'Administration only' }, { status: 403 })
+
+  const reference = request.nextUrl.searchParams.get('reference')?.trim() || null
+  if (reference && reference.length > 128) return NextResponse.json({error:'Invalid Paystack reference'}, {status:400})
 
   try {
     const result = await getPool().query(`
@@ -22,15 +26,21 @@ export async function GET(request: NextRequest) {
                WHERE l.user_id=d.user_id AND l.entry_type='deposit' AND l.amount>0
                  AND l.metadata->>'deposit_id'=d.id::text
                  AND l.metadata->>'event_type'='paystack.manual_admin_credit'
-             ) AS manual_credited
+             ) AS manual_credited,
+             (SELECT l.metadata->>'event_type' FROM ledger_entries l
+              WHERE l.user_id=d.user_id AND l.metadata->>'deposit_id'=d.id::text
+                AND l.metadata->>'event_type' IN ('refund.processed','charge.success.review','charge.failed')
+              ORDER BY (l.metadata->>'event_type'='refund.processed') DESC,l.created_at DESC
+              LIMIT 1) AS review_event
       FROM deposits d
       JOIN users u ON u.id = d.user_id
       WHERE d.method = 'paystack'
+        AND ($1::text IS NULL OR d.receipt_data=$1)
         AND u.role IN ('agent', 'bridger', 'admin', 'client')
       ORDER BY CASE WHEN d.status='approved' AND d.verified_at IS NULL THEN 0 WHEN d.status='rejected' THEN 1 WHEN d.status='pending' THEN 2 ELSE 3 END,
                d.created_at DESC
       LIMIT 100
-    `)
+    `, [reference])
     return NextResponse.json({ success: true, deposits: result.rows }, {
       headers: { 'Cache-Control': 'private, no-store', Vary: 'Authorization' },
     })
@@ -48,7 +58,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const depositId = String(body?.depositId || '')
-    const validId = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(depositId)
+    const validId = depositUuid.test(depositId)
 
     if (body?.action === 'manual_credit') {
       if (!validId) return NextResponse.json({error:'A valid deposit ID is required.'}, {status:400})
@@ -90,17 +100,23 @@ export async function POST(request: NextRequest) {
     // payments for users who are currently offline. This does NOT grant
     // manual approval; each reference must pass independent Paystack checks.
     if (body?.reconcilePending === true) {
+      const after = String(body.afterDepositId || '')
+      if (after && !depositUuid.test(after)) return NextResponse.json({error:'Invalid reconciliation cursor'}, {status:400})
       const queue = await getPool().query(
-        `SELECT receipt_data AS reference
-         FROM deposits
+        `SELECT id, receipt_data AS reference
+         FROM deposits d
          WHERE method='paystack'
            AND (status IN ('pending','rejected') OR (status='approved' AND verified_at IS NULL))
            AND receipt_data IS NOT NULL
-           AND created_at > NOW() - INTERVAL '90 days'
-         ORDER BY created_at DESC LIMIT 12`,
+           AND ($1::uuid IS NULL OR (d.created_at,d.id) > (
+             SELECT created_at,id FROM deposits WHERE id=$1::uuid AND method='paystack'
+           ))
+         ORDER BY d.created_at,d.id LIMIT 13`,
+        [after || null],
       )
+      const batch = queue.rows.slice(0, 12)
       const results = await Promise.allSettled(
-        queue.rows.map(row => settlePaystackDeposit(String(row.reference))),
+        batch.map(row => settlePaystackDeposit(String(row.reference))),
       )
       let credited = 0
       let proofAttached = 0
@@ -114,7 +130,8 @@ export async function POST(request: NextRequest) {
         }
       }
       return NextResponse.json({
-        success: true, checked: queue.rowCount || 0,
+        success: true, checked: batch.length,
+        nextDepositId: queue.rows.length > batch.length ? batch.at(-1)?.id : null,
         credited, proofAttached, unresolved,
         message: `${credited} wallet credit(s), ${proofAttached} historic proof record(s) reconciled; ${unresolved} unresolved. Inspect each unresolved deposit for Paystack evidence.`,
       }, { headers: { 'Cache-Control': 'private, no-store', Vary: 'Authorization' } })

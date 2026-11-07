@@ -35,6 +35,8 @@ export default function AgentDistributionPage(){
   const [orders,setOrders]=useState<StockOrder[]>([])
   const [message,setMessage]=useState('')
   const [working,setWorking]=useState<string|null>(null)
+  const outletRequestIds=useRef(new Map<string,string>())
+  const outletRequestInProgress=useRef(false)
   const [receivingAddress,setReceivingAddress]=useState('')
   const [receivingPhone,setReceivingPhone]=useState('')
   const [cartons,setCartons]=useState<Record<string,number>>(()=>Object.fromEntries(AGILITY_VARIANTS.map(v=>[v.id,5])))
@@ -169,15 +171,26 @@ export default function AgentDistributionPage(){
   }
 
   const postAction=async(body:Record<string,unknown>,key:string,successMessage:string)=>{
-    if(!token)return
+    if(!token || outletRequestInProgress.current)return
+    outletRequestInProgress.current=true
     setWorking(key)
-    try{
-      const response=await fetch('/api/agent/distribution',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify(body)})
+    const actionKey=JSON.stringify([user?.id,body.action,body.placementId,body.soldPackages,body.amountNgn])
+    let requestId=outletRequestIds.current.get(actionKey)
+    try {
+      try { requestId ||= sessionStorage.getItem(actionKey) || undefined } catch {}
+      requestId ||= crypto.randomUUID()
+      outletRequestIds.current.set(actionKey,requestId)
+      try { sessionStorage.setItem(actionKey,requestId) } catch {}
+      const response=await fetch('/api/agent/distribution',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({...body,requestId})})
       const result=await response.json().catch(()=>({}))
+      if(response.ok && result.success || response.status >= 400 && response.status < 500){
+        outletRequestIds.current.delete(actionKey)
+        try { sessionStorage.removeItem(actionKey) } catch {}
+      }
       if(!response.ok||!result.success)throw new Error(result.error||'Unable to update distribution movement')
       setMessage(successMessage);await load()
     }catch(error){setMessage(error instanceof Error?error.message:'Unable to update distribution movement')}
-    finally{setWorking(null)}
+    finally{outletRequestInProgress.current=false;setWorking(null)}
   }
 
   const cartonsAvailable=useMemo(()=>data.stock.reduce((sum,item)=>sum+(Number(item.available_packages||0)/Number(item.packages_per_box||AGILITY_PACKAGES_PER_BOX)),0),[data.stock])

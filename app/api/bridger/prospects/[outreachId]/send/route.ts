@@ -2,10 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { sql } from '@/lib/db'
 
-// POST - the Bridger's Send First Message click is the WEAVE send confirmation.
-// The browser then hands the prepared message to WhatsApp for the Bridger to
-// perform the final send. This endpoint is intentionally idempotent so mobile
-// retries / returning from WhatsApp do not break the movement.
+import { ensureMarketTables } from '@/lib/market'
+
+// Opening the external composer and confirming the send are separate actions.
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ outreachId: string }> }
@@ -16,16 +15,30 @@ export async function POST(
   }
 
   const body = await request.json().catch(() => null)
-  if (body?.confirmedSent !== true) {
+  const handoff = body?.action === 'handoff'
+  if (!handoff && body?.confirmedSent !== true) {
     return NextResponse.json({ error: 'Send confirmation required' }, { status: 400 })
   }
 
   const { outreachId } = await params
-  if (!outreachId) {
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(outreachId)) {
     return NextResponse.json({ success: false, error: 'Missing outreachId' }, { status: 400 })
   }
 
   try {
+    if (!await ensureMarketTables()) throw new Error('Prospect Market unavailable')
+    if (handoff) {
+      const [outreach] = await sql`
+        UPDATE market_prospect_outreach
+        SET whatsapp_handoff_at=COALESCE(whatsapp_handoff_at,NOW())
+        WHERE id=${outreachId}::uuid AND bridger_id=${authUser.id}::uuid AND status='pending'
+        RETURNING id,status,whatsapp_handoff_at
+      `
+      return outreach
+        ? NextResponse.json({success:true,outreach})
+        : NextResponse.json({success:false,error:'Pending prospect not found'}, {status:404})
+    }
+
     const result = await sql`
       UPDATE market_prospect_outreach
       SET status = 'sent',
@@ -34,6 +47,7 @@ export async function POST(
       WHERE id = ${outreachId}::uuid
         AND bridger_id = ${authUser.id}::uuid
         AND status = 'pending'
+        AND whatsapp_handoff_at IS NOT NULL
       RETURNING id, status, sent_at
     `
 
@@ -58,7 +72,7 @@ export async function POST(
     }
 
     return NextResponse.json(
-      { success: false, error: `Prospect cannot be sent from status ${existing[0].status}` },
+      { success: false, error: existing[0].status === 'pending' ? 'Open WhatsApp before confirming the message was sent.' : `Prospect cannot be sent from status ${existing[0].status}` },
       { status: 409 }
     )
   } catch (error) {

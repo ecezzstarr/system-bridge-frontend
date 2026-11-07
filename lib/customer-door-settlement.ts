@@ -76,9 +76,10 @@ export async function settleCustomerDoorPayment(input:{
     await conn.query('BEGIN')
     const found=await conn.query(`
       SELECT o.id,o.store_id,o.amount,o.currency,o.payment_status,o.payment_reference,o.status,
-             o.customer_name,s.client_id,s.name AS store_name
+             o.customer_name,s.client_id,s.name AS store_name,owner.role AS merchant_role
       FROM client_store_orders o
       JOIN client_business_stores s ON s.id=o.store_id
+      JOIN users owner ON owner.id=s.client_id
       WHERE o.id=$1::uuid FOR UPDATE OF o
     `,[input.orderId])
     const order=found.rows[0]
@@ -200,8 +201,9 @@ export async function settleCustomerDoorPayment(input:{
     await conn.query(`
       INSERT INTO notifications(user_id,type,title,content,from_user_name,link)
       VALUES ($1::uuid,'customer_door_payment','Customer Door sale credited',
-       $2,'WEAVE Customer Door','/client/system-switch#business')
-    `,[order.client_id,'Order '+order.id+' paid. '+flame+' Flame Coin credited to your Main Client Wallet. Receipt '+receiptNumber])
+       $2,'WEAVE Customer Door',$3)
+    `,[order.client_id,'Order '+order.id+' paid. '+flame+' Flame Coin credited to your Main Wallet. Receipt '+receiptNumber,
+       ['agent','bridger'].includes(order.merchant_role) ? '/weave/lifestyles/pro-regional-manager/workspace#pro-customer-door' : '/client/system-switch#business'])
     await conn.query('COMMIT');committed=true
     return {success:true,orderId:order.id,clientId:order.client_id,settlementId,
       amountFlameCoin:flame,clientBalanceAfter:balanceAfter,receiptNumber}

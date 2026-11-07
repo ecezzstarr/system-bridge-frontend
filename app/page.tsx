@@ -25,7 +25,7 @@ const departments = [
   { name: 'Stability', people: 'Agents' },
   { name: 'Hope', people: 'Bridgers' },
   { name: 'A Time', people: 'Administration' },
-  { name: 'Dream', people: 'Clients' },
+  { name: 'Dream Lovely', people: 'Clients' },
 ] as const
 
 const systems = [
@@ -49,7 +49,7 @@ const systems = [
 const staffEntrances = [
   { name: 'Agent', department: 'Stability', enter: '/login', registration: '/register?role=agent', registrationLabel: 'Join as an Agent' },
   { name: 'Bridger', department: 'Hope', enter: '/login', registration: '/register?role=bridger', registrationLabel: 'Join as a Bridger' },
-  { name: 'Client', department: 'Dream', enter: '/client/login', registration: '/client/register', registrationLabel: 'Register with File Number' },
+  { name: 'Client', department: 'Dream Lovely', enter: '/client/login', registration: '/client/register', registrationLabel: 'Register with File Number' },
   { name: 'Administration', department: 'A Time', enter: '/login?portal=admin', registration: null, registrationLabel: null },
 ] as const
 

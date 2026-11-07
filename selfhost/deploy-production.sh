@@ -209,23 +209,25 @@ replay_journal() {
 }
 
 health_matches() {
-  local url="$1" expected="$2"
+  local url="$1" expected="$2" require_database="${3:-}"
   local body
+  if [[ "$require_database" == "ready" ]]; then url+="?ready=1"; fi
   body="$(curl -fsS --max-time 15 "$url")" || return 1
-  python3 - "$expected" "$body" <<'PY'
+  python3 - "$expected" "$body" "$require_database" <<'PY'
 import json,sys
 expected=sys.argv[1]
 try: data=json.loads(sys.argv[2])
 except Exception: raise SystemExit(1)
-raise SystemExit(0 if data.get('status')=='healthy' and data.get('releaseSha')==expected else 1)
+database_ready=sys.argv[3]!='ready' or data.get('databaseReady') is True
+raise SystemExit(0 if data.get('status')=='healthy' and data.get('releaseSha')==expected and database_ready else 1)
 PY
 }
 
 wait_for_health() {
-  local url="$1" expected="$2" label="$3"
+  local url="$1" expected="$2" label="$3" require_database="${4:-}"
   local attempt
   for attempt in $(seq 1 36); do
-    if health_matches "$url" "$expected"; then
+    if health_matches "$url" "$expected" "$require_database"; then
       log "$label verified at $expected"
       return 0
     fi
@@ -293,12 +295,14 @@ BUILD_FINISHED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 "${COMPOSE[@]}" up -d --remove-orphans
 RESTARTED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
-wait_for_health http://127.0.0.1:3000/api/health "$TARGET_SHA" "Local WEAVE"
+REQUIRE_DATABASE=ready
+if [[ -n "$ROLLBACK_TARGET" ]]; then REQUIRE_DATABASE=; fi
+wait_for_health http://127.0.0.1:3000/api/health "$TARGET_SHA" "Local WEAVE" "$REQUIRE_DATABASE"
 replay_journal || true
 post_record built "$TARGET_SHA" "$PREVIOUS_SHA" "Self-host image built successfully" "{\"buildStartedAt\":\"$BUILD_STARTED_AT\",\"buildFinishedAt\":\"$BUILD_FINISHED_AT\"}" || true
 post_record restarted "$TARGET_SHA" "$PREVIOUS_SHA" "Docker Compose restarted WEAVE and Caddy without orphaned services" "{\"restartedAt\":\"$RESTARTED_AT\"}" || true
 
-wait_for_health "https://${DOMAIN}/api/health" "$TARGET_SHA" "Public WEAVE"
+wait_for_health "https://${DOMAIN}/api/health" "$TARGET_SHA" "Public WEAVE" "$REQUIRE_DATABASE"
 
 VERIFIED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 if [[ -n "$ROLLBACK_TARGET" ]]; then

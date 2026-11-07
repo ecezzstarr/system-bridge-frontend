@@ -1133,7 +1133,7 @@ assert.ok(recordPageSource.includes('isInitialized'),'Record waits for WEAVE aut
 assert.ok(recordPageSource.includes('Authorization:') && recordPageSource.includes('Bearer ') &&
   recordPageSource.includes("cache:'no-store'"),'Record uses the initialized WEAVE session token and never caches money')
 assert.ok(ledgerLibSource.includes('function moneyNumber'),'Ledger normalizes PostgreSQL NUMERIC values before Record renders')
-assert.ok(ledgerLibSource.includes("walletStatus=primary.length===1?'available':'legacy_wallet'")&&ledgerLibSource.includes('available=Number(selected.balance_trx)'),'Record restores one unambiguous legacy wallet without assuming zero')
+assert.ok(ledgerLibSource.includes('selectMainWallet(wallet.rows)')&&ledgerLibSource.includes("'legacy_wallet'"),'Record uses the shared selection of an unambiguous legacy wallet')
 assert.ok(ledgerLibSource.includes("escrowStatus='available'")&&ledgerLibSource.includes('locked=amount'),'Record keeps an independently verified escrow balance and makes unavailable locked funds explicit')
 assert.ok(ledgerLibSource.includes('amount:Number(row.amount)'),'Record entries normalize saved amounts at the ledger boundary')
 assert.ok(balanceSummarySource.includes('available == null || !Number.isFinite(Number(available))'),'Record distinguishes missing balances from zero and supports numeric-string amounts')

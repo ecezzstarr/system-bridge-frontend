@@ -79,6 +79,16 @@ async function initializeAgentDistributionSchema() {
   `
   await sql`CREATE INDEX IF NOT EXISTS idx_agility_outlet_collections_agent ON agility_outlet_collections(agent_id, collected_at DESC)`
   await sql`CREATE INDEX IF NOT EXISTS idx_agility_outlet_collections_placement ON agility_outlet_collections(placement_id, collected_at DESC)`
+  await sql`
+    CREATE TABLE IF NOT EXISTS agility_outlet_operations (
+      placement_id uuid NOT NULL REFERENCES agility_outlet_placements(id),
+      request_id uuid NOT NULL,
+      action text NOT NULL,
+      amount numeric(14,2) NOT NULL,
+      created_at timestamptz NOT NULL DEFAULT NOW(),
+      PRIMARY KEY (placement_id, request_id)
+    )
+  `
 }
 
 export function ensureAgentDistributionSchema() {
