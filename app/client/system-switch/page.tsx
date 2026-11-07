@@ -73,6 +73,12 @@ export default function ClientSystemSwitchPage() {
           }
           throw new Error(body.error || 'Unable to open System Switch')
         }
+        if(!body?.verified||!body?.workshop||!body?.file_folder_tier){
+          throw new Error('Your File Folder ownership or operating environment is incomplete. Open your Client dashboard or request a File Folder account review.')
+        }
+        // Verified owners enter their PRIVATE purchased File Folder first.
+        // The shared visitor room remains an explicit optional destination.
+        setPrivateWorkshop(new URLSearchParams(window.location.search).get('view')!=='shared')
         setData(body)
       } catch (err) {
         if(controller.signal.aborted){
@@ -163,12 +169,26 @@ export default function ClientSystemSwitchPage() {
         <p>{WEAVE_WRITING.systemSwitch.client}</p>
         <p className="mt-1 text-xs text-sky-100">{WEAVE_WRITING.systemSwitch.privacy}</p>
       </section>}
-      {privateWorkshop?<ClientFileFolderOperatingEnvironment data={data} />:<SharedSystemSwitchWorld role="client" getToken={getClientToken} onPrivateWorkshop={()=>setPrivateWorkshop(true)}/>}
+      {!privateWorkshop&&<div className="mx-3 mb-3 flex flex-wrap gap-3 sm:mx-5">
+        <button type="button" onClick={()=>setPrivateWorkshop(true)}
+          data-client-enter-private-file-folder="true"
+          className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-amber-200/60 bg-amber-200 px-5 py-3 text-sm font-bold text-[#18120b]">
+          <FolderOpen className="h-5 w-5"/> Enter my private {String(data.file_folder_tier||'').toUpperCase()} File Folder
+        </button>
+        <p className="self-center text-sm text-sky-100">Your private buildings and business records are separate from this shared visitor world.</p>
+      </div>}
+      {privateWorkshop
+        ? <div data-client-private-file-folder="owned-world" data-client-private-tier={String(data.file_folder_tier)}>
+            <ClientFileFolderOperatingEnvironment data={data}/>
+          </div>
+        : <SharedSystemSwitchWorld role="client" getToken={getClientToken} onPrivateWorkshop={()=>setPrivateWorkshop(true)}/>}
       <details className="ff-page-actions">
         <summary aria-label="File Folder menu"><Menu aria-hidden="true" className="h-5 w-5"/></summary>
         <nav aria-label="File Folder actions">
           <p>File Folder</p>
-          {privateWorkshop&&<button type="button" onClick={()=>setPrivateWorkshop(false)}>Return to shared System Switch</button>}
+          {privateWorkshop
+            ? <button type="button" onClick={()=>setPrivateWorkshop(false)}>Visit shared System Switch world</button>
+            : <button type="button" onClick={()=>setPrivateWorkshop(true)}>Enter my private File Folder</button>}
           <Link href="/system-switch/world"><ArrowLeft className="h-4 w-4"/>Return to Weave Open World</Link>
           <Link href="/client/system-store" data-file-folder-publish-system="true"><PackageOpen className="h-4 w-4"/>Publish System</Link>
           <Link href="/client/system-switch/flame-event" data-file-folder-flame-event="inside"><Flame className="h-4 w-4"/>Flame Event</Link>
