@@ -30,6 +30,25 @@ export default function PrivacyPage() {
             applicable legal obligations.
           </p>
           <p>
+            Information is accessed according to the permissions of the person’s role and
+            assigned work. Customer orders, File Folder business records, employment terms,
+            financial verification and system audit information should be available only to
+            the people authorized to operate or review those functions.
+          </p>
+          <p>
+            Weave may rely on hosting, payment processors, email or communication providers,
+            and technology integrations for the services a user selects. Relevant provider
+            notices and transaction terms may apply. Do not assume that an AI-generated
+            record substitutes for authorization or proof of payment.
+          </p>
+          <p>
+            Users may contact Support to ask about inaccurate records, suspected unauthorized
+            access or applicable privacy rights. Records are retained or corrected according
+            to the service purpose, documented legal obligations and applicable law; this
+            notice does not promise a fixed deletion period that has not been established.
+          </p>
+          <p>
+            Weave does not require a person to provide more information          <p>
             Weave does not require a person to provide more information than is needed for the function they choose to use.
             Users should not place passwords, private keys, or other account secrets into ordinary messages or referral context.
           </p>
@@ -37,6 +56,7 @@ export default function PrivacyPage() {
 
         <div className="flex flex-wrap gap-3 text-sm">
           <Link className="rounded-full border border-white/10 px-4 py-2 hover:bg-white/5" href="/terms">Terms</Link>
+          <Link className="rounded-full border border-white/10 px-4 py-2 hover:bg-white/5" href="/policies">Company policies</Link>
           <Link className="rounded-full border border-white/10 px-4 py-2 hover:bg-white/5" href="/support">Support</Link>
           <Link className="rounded-full border border-white/10 px-4 py-2 hover:bg-white/5" href="/">Return to Weave</Link>
         </div>
