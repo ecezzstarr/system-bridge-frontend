@@ -2,6 +2,7 @@
 import {useCallback,useEffect,useState} from 'react'
 import Link from 'next/link'
 import {useAuth} from '@/lib/auth-provider'
+import {PRO_MANAGER_PLAN_QUESTIONS} from '@/lib/pro-regional-manager-language'
 type Application={
  id:string;file_number:string;business_name:string;business_plan:Record<string,string>;
  staff_position_title?:string|null;staff_monthly_salary_usdt?:number|null;staff_candidate_name?:string|null;
@@ -105,7 +106,8 @@ export default function ProFileNumberAdministration(){
      </div>
      <p className="text-xs text-slate-400">Terms accepted: {new Date(selected.terms_accepted_at).toLocaleString()}</p>
      <details open className="rounded-lg border border-white/10 p-3"><summary className="text-sm font-semibold text-cyan-200">Submitted business plan</summary>
-      {Object.entries(selected.business_plan||{}).map(([key,value])=><div key={key} className="mt-3">
+      <p className="mt-3 text-xs leading-6 text-slate-300">Assess whether this person's actual work, customer needs, realistic economics, employees and daily systems can create and document real value. Weave grows through verified business success, not an activation charge.</p>
+      {PRO_MANAGER_PLAN_QUESTIONS.map(({key,title})=><div key={key} className="mt-3">
        <p className="text-xs capitalize text-cyan-200">{key.replaceAll(/([A-Z])/g,' $1')}</p>
        <p className="whitespace-pre-wrap break-words text-sm text-slate-200">{value}</p>
       </div>)}
