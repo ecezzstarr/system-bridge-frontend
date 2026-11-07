@@ -695,6 +695,7 @@ export async function getFileFolderWorldSnapshot(
   sql: any,
   clientId: string,
   fileNumber: string,
+  approvedProBusinessName?: string | null,
 ): Promise<FileFolderWorldSnapshot> {
   await ensureFileFolderWorldSchema(sql)
   await ensureClientBusinessStoreSchema(sql)
@@ -713,7 +714,7 @@ export async function getFileFolderWorldSnapshot(
     VALUES (
       ${clientId}::uuid,
       ${fileNumber},
-      ${clientIdentity?.business_name || clientIdentity?.name || 'Client Business'},
+      ${approvedProBusinessName?.trim() || clientIdentity?.business_name || clientIdentity?.name || 'Client Business'},
       'forming'
     )
     ON CONFLICT (client_id) DO UPDATE SET
