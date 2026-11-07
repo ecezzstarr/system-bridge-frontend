@@ -1,8 +1,10 @@
+-- Ordinary Regional Manager is a Bridger/Agent position without a File Folder.
+-- Do not use this table for Pro Regional Manager appointments or Pro activation.
 -- Regional Manager applications are independent of the number of active appointments.
 -- No fixed application-count ceiling: Administration reviews applications in paginated batches.
 CREATE TABLE IF NOT EXISTS weave_regional_manager_applications (
   user_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
-  source_role VARCHAR(20) NOT NULL CHECK (source_role IN ('client','bridger','agent')),
+  source_role VARCHAR(20) NOT NULL CHECK (source_role IN ('bridger','agent')),
   region VARCHAR(120) NOT NULL,
   experience TEXT NOT NULL,
   motivation TEXT NOT NULL,
