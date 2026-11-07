@@ -5,6 +5,7 @@ type Verification={reference:string;fileNumber:string;businessName:string;
  status:string;feeUSDT:number;network:string;walletAddress:string|null;
  paymentVerified:boolean;rejectionReason?:string|null;
  companyPosition?:{title:string;monthlySalaryUSDT:number|null;salaryStatus:string}|null;
+ operatingLocation?:{country:string;region:string;city:string}|null;
  siblingsEvent?:{reportedAmountUSDT:number;verifiedAmountUSDT:number;status:string;availableForWithdrawal:boolean}|null}
 const PLAN_FIELDS=[
  ['businessActivity','Business activity and purpose'],
@@ -18,6 +19,11 @@ export default function ProFileNumberVerification(){
  const [fileNumber,setFileNumber]=useState('')
  const [businessName,setBusinessName]=useState('')
  const [signedName,setSignedName]=useState('')
+ const [operatingCountry,setOperatingCountry]=useState('')
+ const [operatingRegion,setOperatingRegion]=useState('')
+ const [operatingCity,setOperatingCity]=useState('')
+ const [contactAddress,setContactAddress]=useState('')
+ const [postalCode,setPostalCode]=useState('')
  const [accepted,setAccepted]=useState(false)
  const [plan,setPlan]=useState<Record<string,string>>({})
  const [ticket,setTicket]=useState('')
@@ -41,7 +47,8 @@ export default function ProFileNumberVerification(){
   try{
    const response=await fetch('/api/public/pro-file-number-verification',{
     method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({action:'submit_plan',fileNumber,businessName,plan,signedName,termsAccepted:accepted}),
+    body:JSON.stringify({action:'submit_plan',fileNumber,businessName,plan,signedName,termsAccepted:accepted,
+     operatingCountry,operatingRegion,operatingCity,contactAddress,postalCode}),
    })
    const json=await response.json()
    if(!response.ok)throw new Error(json.error||'Unable to submit business plan')
@@ -105,6 +112,28 @@ export default function ProFileNumberVerification(){
       placeholder="The name your customers will recognize" maxLength={180}
       className="mt-2 w-full rounded-lg border border-white/20 bg-slate-900 p-3"/>
     </label>
+    <div className="space-y-3 rounded-xl border border-white/15 p-4" data-client-regional-location-intake="true">
+      <h3 className="font-semibold">Your company operating address and location</h3>
+      <p className="text-xs text-slate-300">Provide your real country, city, region and contact address. Administration verifies the company territory before opening the Pro File Folder. A location does not create an appointment by itself.</p>
+      <div className="grid gap-3 sm:grid-cols-2">
+       <label className="block text-sm">Country<input required maxLength={100} autoComplete="country-name"
+        value={operatingCountry} onChange={e=>setOperatingCountry(e.target.value)}
+        placeholder="Spain" className="mt-2 w-full rounded-lg border border-white/20 bg-slate-900 p-3"/></label>
+       <label className="block text-sm">Region or province<input required maxLength={150}
+        value={operatingRegion} onChange={e=>setOperatingRegion(e.target.value)}
+        placeholder="Region / province" className="mt-2 w-full rounded-lg border border-white/20 bg-slate-900 p-3"/></label>
+       <label className="block text-sm">City or town<input required maxLength={150}
+        value={operatingCity} onChange={e=>setOperatingCity(e.target.value)}
+        placeholder="City / town" className="mt-2 w-full rounded-lg border border-white/20 bg-slate-900 p-3"/></label>
+       <label className="block text-sm">Postal code, if applicable<input maxLength={30}
+        value={postalCode} onChange={e=>setPostalCode(e.target.value)}
+        className="mt-2 w-full rounded-lg border border-white/20 bg-slate-900 p-3"/></label>
+      </div>
+      <label className="block text-sm">Street / contact address<textarea required rows={2} maxLength={500}
+       value={contactAddress} onChange={e=>setContactAddress(e.target.value)}
+       placeholder="Your actual contact address in the company operating location"
+       className="mt-2 w-full rounded-lg border border-white/20 bg-slate-900 p-3"/></label>
+    </div>
     <h3 className="text-lg font-semibold">3. Submit your business plan</h3>
     {PLAN_FIELDS.map(([key,label])=><label key={key} className="block text-sm text-slate-200">{label}
      <textarea rows={3} maxLength={3000} value={plan[key]||''}
@@ -126,6 +155,8 @@ export default function ProFileNumberVerification(){
      </label>
     </div>
     <button disabled={busy||!accepted||businessName.trim().length<3||signedName.trim().length<4||
+      operatingCountry.trim().length<2||operatingRegion.trim().length<2||
+      operatingCity.trim().length<2||contactAddress.trim().length<6||
       PLAN_FIELDS.some(([key])=>(plan[key]||'').trim().length<10)}
       onClick={()=>void submitPlan()} className="rounded-lg bg-cyan-300 px-5 py-3 font-semibold text-slate-950 disabled:opacity-40">
       {busy?'Submitting…':'Submit business plan and signed agreement'}
@@ -135,6 +166,9 @@ export default function ProFileNumberVerification(){
     <h2 className="text-xl font-bold">Your verification workspace</h2>
     <p className="font-mono text-xs text-cyan-200">{verification.fileNumber}</p>
     <p className="text-sm">File Folder business: <strong>{verification.businessName}</strong></p>
+    {verification.operatingLocation&&<p className="text-sm text-slate-200" data-pro-verified-operating-location="true">
+      Submitted operating location: {verification.operatingLocation.city}, {verification.operatingLocation.region}, {verification.operatingLocation.country} · subject to Administration territory approval
+    </p>}
     {verification.companyPosition?<div className="rounded-xl border border-cyan-300/20 bg-cyan-300/[.04] p-4">
       <p className="text-xs uppercase tracking-widest text-cyan-200">Administration-approved WEAVE employment</p>
       <p className="mt-1 text-lg font-semibold">{verification.companyPosition.title}</p>
