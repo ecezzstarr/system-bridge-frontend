@@ -27,6 +27,9 @@ export async function POST(request:NextRequest){
    const result=await submitProFileNumberPlan({
     fileNumber:body.fileNumber,businessName:body.businessName,
     plan:body.plan||{},signedName:body.signedName,termsAccepted:body.termsAccepted,
+    operatingCountry:body.operatingCountry,operatingRegion:body.operatingRegion,
+    operatingCity:body.operatingCity,contactAddress:body.contactAddress,
+    postalCode:body.postalCode,
    })
    return NextResponse.json(result,{status:201,headers:proVerificationPublicHeaders})
   }
