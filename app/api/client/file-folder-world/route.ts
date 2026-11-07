@@ -1,5 +1,6 @@
 import { isFileFolderPlatformKind } from '@/lib/file-folder-platform-projects'
 import {getProActivationState} from '@/lib/pro-file-folder-activation'
+import {resolveVerifiedClientFileFolderTier} from '@/lib/client-file-folder-tier'
 import {getActiveProRegionalManager} from '@/lib/pro-regional-manager-activation'
 import { allowedBuildPartSystems } from '@/lib/file-folder-build-compatibility'
 import { NextRequest, NextResponse } from 'next/server'
@@ -64,11 +65,18 @@ async function resolveClientWorld(request: NextRequest) {
   }
 
   const activation=await getProActivationState(String(client.id),String(client.file_number))
-  if(activation&&activation.status!=='active')
-    return {sql,error:NextResponse.json({
-      error:'Your private Pro File Folder requires signed agreement, business plan and verified 680 USDT TRC-20 activation.',
-      gate:'construction',activation,activationUrl:'/client/pro-activation',
-    },{status:423,headers:{'Cache-Control':'private, no-store'}})}
+  if(activation&&activation.status!=='active'){
+    // The pending Pro enrollment restricts only Pro entry, not a separately
+    // verified higher-tier Premium/Plus purchase already owned by this Client.
+    const verifiedTier=await resolveVerifiedClientFileFolderTier(sql,{
+      clientId:String(client.id),fileNumber:String(client.file_number),proActivation:activation,
+    })
+    if(verifiedTier!=='premium'&&verifiedTier!=='plus')
+      return {sql,error:NextResponse.json({
+        error:'Your private Pro File Folder requires signed agreement, business plan and verified 680 USDT TRC-20 activation.',
+        gate:'construction',activation,activationUrl:'/client/pro-activation',
+      },{status:423,headers:{'Cache-Control':'private, no-store'}})}
+  }
 
   const [folder] = await sql`
     SELECT id,file_number,status,workshop_type
