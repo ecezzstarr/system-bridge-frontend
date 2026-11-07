@@ -43,7 +43,7 @@ assert.ok(activation.includes("to_regclass('public.file_folders')")&&activation.
 assert.ok(activation.includes("to_regclass('public.file_folder_purchases')")&&activation.includes('if (purchase_table)'),'Legacy Client activation does not require the newer purchase table to exist')
 assert.ok(entry.includes("folder.status !== 'active'")&&entry.includes("!sameId(workshop.file_number,client.file_number)")&&entry.includes("folder.workshop_type === 'pending_personalization'"),'File Folder entry protects incomplete legacy movements and verifies workshop File Number ownership')
 assert.ok(systemSwitch.includes("folder.status !== 'active'")&&systemSwitch.includes("!workshop || folder.workshop_type === 'pending_personalization'"),'System Switch still requires real activation and a workshop record')
-assert.ok(/<ClientFileFolderOperatingEnvironment data=\\{data\\}\s*\/>/.test(systemSwitchPage),'Successful System Switch entry renders the Client File Folder operating environment')
+assert.ok(systemSwitchPage.includes('<ClientFileFolderOperatingEnvironment data={data}/>') || systemSwitchPage.includes('<ClientFileFolderOperatingEnvironment data={data} />'),'Successful System Switch entry renders the Client File Folder operating environment')
 
 for(const part of ['door_foundation_frame','door_identity_facade','door_customer_intake','door_service_interface','door_fulfilment_interface','door_public_commissioning']){
   assert.ok(provisioning.includes(part),`Automatic Customer Door includes ${part}`)
