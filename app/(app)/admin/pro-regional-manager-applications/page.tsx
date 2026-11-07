@@ -50,10 +50,25 @@ export default function AdminProRegionalManagerApplications(){
   }catch(e){setError(e instanceof Error?e.message:'Unable to record review')}
   finally{setWorking('')}
  }
+ async function prepare(userId:string){
+  if(!token)return
+  setWorking(userId);setError('');setNotice('')
+  try{
+   const response=await fetch('/api/admin/pro-regional-manager-activations',
+    {method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
+     body:JSON.stringify({userId,action:'prepare'})})
+   const body=await response.json()
+   if(!response.ok)throw new Error(body.error||'Pro File Number could not be prepared')
+   setNotice('Approved Pro applicant File Number confirmed. Signing is available in the applicant workspace.')
+   await load(filter,page.offset)
+  }catch(e){setError(e instanceof Error?e.message:'Unable to prepare Pro File Number')}
+  finally{setWorking('')}
+ }
  if(!isInitialized)return <main className="p-6">Opening Administration…</main>
  if(user?.role!=='admin')return <main className="p-6">Administration permission required.</main>
  return <main className="mx-auto max-w-6xl space-y-6 p-5 text-white" data-admin-pro-regional-manager-applications="true">
   <Link href="/admin/control-center" className="text-sm text-sky-200 underline">Administration Control Center</Link>
+  <Link href="/admin/pro-regional-manager-activations" className="ml-4 text-sm text-sky-200 underline">Pro activation Forensics</Link>
   <header className="space-y-2">
    <p className="text-xs uppercase tracking-widest text-sky-200">A Time · Pro company appointments</p>
    <h1 className="text-3xl font-bold">Pro Regional Manager Applications</h1>
@@ -86,7 +101,11 @@ export default function AdminProRegionalManagerApplications(){
      <p className="mt-3 whitespace-pre-wrap text-sm"><strong>Daily regional operations:</strong> {a.daily_work_plan}</p>
     </details>
     {a.review_note&&<p className="text-xs text-slate-300">Review notes: {a.review_note}</p>}
-    {a.status==='approved_pending_verification'&&<p className="text-xs text-sky-200">Agreed salary recorded: {Number(a.agreed_monthly_salary_usdt||0).toLocaleString()} USDT monthly. Pro File Folder activation and original-role account verification are not yet complete.</p>}
+    {a.status==='approved_pending_verification'&&<div className="space-y-2">
+     <p className="text-xs text-sky-200">Agreed salary recorded: {Number(a.agreed_monthly_salary_usdt||0).toLocaleString()} USDT monthly. The applicant must still sign the agreement and obtain independent File Folder activation verification.</p>
+     <button disabled={!!working} onClick={()=>void prepare(a.user_id)}
+      className="rounded-lg border border-sky-300/30 px-4 py-2 text-xs font-semibold text-sky-100 disabled:opacity-40">Confirm or repair Pro File Number reservation</button>
+    </div>}
     {a.status==='pending'&&<>
      <label className="block text-sm">Administration review notes
       <textarea rows={2} maxLength={2000} value={notes[a.user_id]||''}
