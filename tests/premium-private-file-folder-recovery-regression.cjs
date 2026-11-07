@@ -116,6 +116,8 @@ const king=read('lib/file-folder-kingdom-identity.ts')
 const premium3d=read('components/system-switch/file-folder-premium-world.tsx')
 const operating=read('components/system-switch/client-file-folder-operating-environment.tsx')
 const healthApi=read('app/api/admin/file-folder-health/route.ts')
+const worldApi=read('app/api/client/file-folder-world/route.ts')
+const loginApi=read('app/api/client/weave-login/route.ts')
 const healthPage=read('app/(app)/admin/file-folder-health/page.tsx')
 
 assert(client.includes("setPrivateWorkshop(new URLSearchParams(window.location.search).get('view')!=='shared')"),
@@ -153,4 +155,10 @@ assert(healthApi.includes("user.role!=='admin'")&&
 assert(healthPage.includes('/api/admin/file-folder-health')&&
   read('lib/admin-workplace-catalog.ts').includes('/admin/file-folder-health'),
   'Administration has an accessible owner integrity check')
+assert(worldApi.includes('resolveVerifiedClientFileFolderTier')&&
+  worldApi.includes("verifiedTier!=='premium'&&verifiedTier!=='plus'"),
+  'All private File Folder read/write operations remain open for verified Premium and Plus owners')
+assert(loginApi.includes('resolveVerifiedClientFileFolderTier')&&
+  loginApi.includes("entitledTier==='premium'||entitledTier==='plus'"),
+  'Premium and Plus owners are not redirected from login by an unrelated Pro enrollment')
 verify().then(()=>console.log('PASS: Premium owner entry, all tiers, Pro non-downgrade, private access, WebGL fallback and Administration integrity')).catch(error=>{console.error(error);process.exitCode=1})
