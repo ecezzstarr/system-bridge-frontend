@@ -4,7 +4,7 @@ import { useEffect, type ReactNode } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth-provider'
 
-const PUBLIC_CLIENT_PATHS = new Set(['/client', '/client/login', '/client/register'])
+const PUBLIC_CLIENT_PATHS = new Set(['/client', '/client/login', '/client/register', '/client/pro-verification', '/client/pro-activation'])
 
 export function ClientRouteGuard({ children }: { children: ReactNode }) {
   const pathname = usePathname()
