@@ -23,7 +23,7 @@ export async function requireWorkshopAuthorization(req?: NextRequest): Promise<W
     `
     if (!rows.length || rows[0].role !== 'admin') return null
 
-    // Multiple Administration identities can be active simultaneously.
+    // Multiple Administrations identities can be active simultaneously.
     // Source control, GitHub promotion, and production release remain restricted
     // to explicitly appointed operators. A missing/invalid allowlist never
     // authorizes additional administrators.
