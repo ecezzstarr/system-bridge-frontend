@@ -49,6 +49,14 @@ export async function ensureProActivationSchema() {
     updated_by uuid NOT NULL REFERENCES users(id),
     updated_at timestamptz NOT NULL DEFAULT now()
   )`
+  await sql`CREATE TABLE IF NOT EXISTS pro_activation_wallet_change_audit (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    previous_wallet varchar(64),
+    new_wallet varchar(64) NOT NULL,
+    changed_by uuid NOT NULL REFERENCES users(id),
+    change_reason text NOT NULL,
+    changed_at timestamptz NOT NULL DEFAULT now()
+  )`
   await sql`CREATE TABLE IF NOT EXISTS pro_activation_audit (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     activation_id uuid NOT NULL REFERENCES pro_file_folder_activations(id),
@@ -63,6 +71,54 @@ export async function getReceivingWallet() {
   const address = String(config?.wallet_address || process.env.WEAVE_PRO_USDT_TRC20_WALLET || '').trim()
   return isTronAddress(address) ? address : null
 }
+/**
+ * Administration-only active receiving-wallet change for Pro File Folder fees.
+ * This is the same configured destination used by Client and original-role
+ * Agent/Bridger Pro activation. It does NOT alter the separate TRX funding
+ * address, rewrite historical transaction evidence or verify wallet ownership.
+ *
+ * Advisory locking + optimistic current-address check stop competing Admin
+ * updates, and every actual change is preserved in the audit register.
+ */
+export async function configureProReceivingWallet(input:{
+  actorId:string;address:string;reason:string;expectedCurrent:string|null
+}){
+  const next=String(input.address||'').trim()
+  const reason=String(input.reason||'').trim()
+  if(!isTronAddress(next))throw new Error('Enter a valid TRON receiving address beginning with T.')
+  if(reason.length<12||reason.length>1000)
+    throw new Error('Record a meaningful reason for changing the company receiving wallet (12–1000 characters).')
+  await ensureProActivationSchema()
+  const db=await getPool().connect()
+  let committed=false
+  try{
+    await db.query('BEGIN')
+    await db.query("SELECT pg_advisory_xact_lock(hashtext('weave_pro_activation_receiving_wallet'))")
+    const {rows}=await db.query('SELECT wallet_address FROM pro_activation_wallet_config WHERE id=1 FOR UPDATE')
+    const configured=String(rows[0]?.wallet_address||'').trim()
+    const fallback=String(process.env.WEAVE_PRO_USDT_TRC20_WALLET||'').trim()
+    const current=isTronAddress(configured)?configured:isTronAddress(fallback)?fallback:null
+    if(input.expectedCurrent!==current)
+      throw new Error('The company wallet changed during review. Reload the current address before saving.')
+    if(next===current){
+      await db.query('COMMIT');committed=true
+      return {wallet:next,previousWallet:current,changed:false}
+    }
+    await db.query(`INSERT INTO pro_activation_wallet_config(id,wallet_address,updated_by,updated_at)
+      VALUES(1,$1,$2::uuid,now())
+      ON CONFLICT(id) DO UPDATE SET wallet_address=EXCLUDED.wallet_address,
+      updated_by=EXCLUDED.updated_by,updated_at=now()`,[next,input.actorId])
+    await db.query(`INSERT INTO pro_activation_wallet_change_audit
+      (previous_wallet,new_wallet,changed_by,change_reason)
+      VALUES($1,$2,$3::uuid,$4)`,[current,next,input.actorId,reason])
+    await db.query('COMMIT');committed=true
+    return {wallet:next,previousWallet:current,changed:true}
+  }catch(error){
+    if(!committed)await db.query('ROLLBACK').catch(()=>{})
+    throw error
+  }finally{db.release()}
+}
+
 export async function getProActivationState(clientId: string, fileNumber: string) {
   const [table] = await sql`SELECT to_regclass('public.pro_file_folder_activations') AS name`
   if (!table?.name) return fileNumber === CJ_DORADO_FILE_NUMBER
