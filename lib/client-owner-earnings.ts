@@ -165,8 +165,16 @@ export async function recordOwnerCost(input:{
       SELECT id,category,amount,currency,description,recorded_at,client_request_id
       FROM client_file_folder_operating_costs WHERE client_id=$1::uuid AND client_request_id=$2
     `,[input.clientId,input.requestId])
+    const saved=result.rows[0]
+    if(!saved||String(saved.category)!==input.category||
+      String(saved.currency)!==input.currency||
+      Number(saved.amount)!==input.amount||
+      String(saved.description)!==input.description.trim()){
+      await db.query('ROLLBACK')
+      return {ok:false,error:'This cost request was already used with different details. Start a new record.'} as const
+    }
     await db.query('COMMIT');committed=true
-    return {ok:true,cost:result.rows[0]} as const
+    return {ok:true,cost:saved} as const
   }catch(e){
     if(!committed)await db.query('ROLLBACK').catch(()=>{})
     throw e
