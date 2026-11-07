@@ -141,7 +141,7 @@ export default function ProRegionalManagerWorkspace(){
      <ClientFileFolder3D activeSurface={surface} onSurfaceChange={move}
       activeBuilds={activeBuilds} liveSystems={liveSystems} premiumSound={false}
       fileFolderTier="pro" businessName={position?.businessName||'Pro File Folder'}
-      presenceKey={String(user.id)}
+      presenceKey=""
       marketLevel={(world.systems||[]).some((s:any)=>s.status==='active'&&s.system_type==='marketplace_network')?3:
        (world.systems||[]).some((s:any)=>s.status==='active'&&s.system_type==='commerce_storefront')?2:
        (world.systems||[]).some((s:any)=>s.status==='active'&&s.system_type==='customer_door')?1:0}
