@@ -109,4 +109,22 @@ assert(read('app/api/public/pro-file-number-verification/route.ts').includes("bo
 assert(read('migrations/20261107_pro_regional_manager_activation_and_work.sql').includes('weave_pro_regional_manager_activations')&&
  read('migrations/20261107_pro_regional_manager_activation_and_work.sql').includes('weave_pro_regional_manager_work'),
  'Separate Pro activation and daily work migrations exist')
+// The Pro appointment and tier never dictate an owner's business category.
+const proWorldRoute=read('app/api/client/file-folder-world/route.ts')
+const folderWorld=read('lib/client-file-folder-world.ts')
+const cjWorkshop=read('lib/client-system-workshop.ts')
+const cjExchange=read('app/api/client/crypto-exchange/route.ts')
+assert(admin.includes("VALUES($1::uuid,$2,$3,'formation','active',now())")&&
+ admin.includes("VALUES($1::uuid,$2,'formation',")&&
+ !admin.includes("'pro_regional_manager','active',now()"),
+ 'Pro employment is not a workshop type: the Folder begins with the manager’s own business formation')
+assert(folderWorld.includes('approvedProBusinessName?.trim()')&&
+ workspace.includes('String(row.business_name))')&&
+ proWorldRoute.includes('proBusinessName:pro.row.business_name')&&
+ proWorldRoute.includes('ctx.proBusinessName'),
+ 'The approved personal business identity seeds the original-role Pro Folder, including subsequent world actions')
+assert(cjWorkshop.includes("'crypto_exchange'")&&
+ cjWorkshop.includes('CJ_DORADO_FILE_NUMBER')&&
+ cjExchange.includes('file_number=${CJ_DORADO_FILE_NUMBER}'),
+ 'CJ alone retains her existing Client-owned crypto exchange workshop and access gates')
 console.log('Pro Regional Manager end-to-end department, payment, File Folder, Customer Door, external Client and daily work contracts passed')
