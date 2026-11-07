@@ -167,7 +167,9 @@ export function BridgerWorkplace({
             </label>
           </div>
 
-          <Link href="/search" data-role-company-search="bridger" className="mt-4 inline-flex min-h-11 items-center rounded-lg border border-[#b38b51] bg-white/80 px-4 py-2 text-sm font-semibold text-[#5e4823]">Describe a task instead: find Clients, explain File Folders, or follow a job.</Link>\n\n          {selected === 'desk' && !trimmedSearch && (
+          <Link href="/search" data-role-company-search="bridger" className="mt-4 inline-flex min-h-11 items-center rounded-lg border border-[#b38b51] bg-white/80 px-4 py-2 text-sm font-semibold text-[#5e4823]">Describe a task instead: find Clients, explain File Folders, or follow a job.</Link>
+
+          {selected === 'desk' && !trimmedSearch && (
             <section className="mt-6 rounded-2xl bg-[#f2f3f0] p-4 sm:p-5" aria-label="How to begin working">
               <div className="flex items-center gap-2 text-[#70551e]"><BookOpen className="h-5 w-5"/><h3 className="text-base font-semibold">How to begin your day</h3></div>
               <p className="mt-1 text-sm leading-6 text-[#53646a]">These are learning steps, not artificial daily targets. Your actual work stays in the corresponding system.</p>
