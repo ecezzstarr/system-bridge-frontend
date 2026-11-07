@@ -69,7 +69,9 @@ export default function CompanyClientStaffWorkspace(){
           <p className="text-sm text-slate-200">Company-granted {position.folder_tier.toUpperCase()} File Folder · {position.file_number}</p>
           <p className="text-sm text-slate-200">Agreed monthly company staff salary: {Number(position.monthly_salary_usdt)>0
            ?Number(position.monthly_salary_usdt).toLocaleString()+' USDT under the approved employment agreement'
-           :'Missing approved salary amount in company records — Administration must reconcile the original agreed terms.'} Payments are made through the company payroll, independently of the Pro activation fee.</p>
+           :position.file_number==='WEAVE-2026-0907-0001'
+             ?'Salary record discrepancy — CJ has an agreed salary that Administration must reconcile.'
+             :'To be confirmed with Administration'} Payments are made through the company payroll, independently of the Pro activation fee.</p>
           <p className="text-xs text-slate-400">Entry ticket: {Number(position.ticket_amount_usdt).toLocaleString()} USDT · Your verified contribution: {Number(position.applicant_contribution_usdt||position.ticket_amount_usdt).toLocaleString()} USDT · receipt {position.receipt_number}</p>
         </section>
         {siblingsEvent&&<section className="rounded-2xl border border-violet-300/25 bg-violet-300/[.06] p-5" data-cj-siblings-event="true">
