@@ -6,7 +6,7 @@ import { getClientToken } from '@/lib/client-auth'
 type Item = {id:string;prospect_name:string;organization:string|null;stage:string;next_action:string|null;created_at:string}
 type Position = {position_title:string;monthly_salary_usdt:number;ticket_amount_usdt:number;applicant_contribution_usdt:number;proposed_personal_loan_usdt:number;personal_loan_terms:string|null;folder_tier:string;file_number:string;receipt_number:string;verified_at:string}
 type SiblingsEvent={reportedAmountUSDT:number;verifiedAmountUSDT:number;status:string;notice:string;proActivated:boolean;workspaceAccess:boolean}
-type ClientRegional={department:'Dream Lovely';scope:'client_business_expansion';country:string|null;
+type ClientRegional={positionType:'pro_regional_manager';department:'Dream Lovely';scope:'client_business_expansion';country:string|null;
  region:string|null;city:string|null;locationStatus:string}
 const stages=['introduced','conversation','follow_up','proposal','completed'] as const
 
@@ -65,7 +65,7 @@ export default function CompanyClientStaffWorkspace(){
       {notEmployed&&<p className="rounded-xl border border-white/20 p-5 text-sm">This workspace is reserved for Clients with an Administration-approved employee offer. <Link href="/file-folder" className="text-cyan-200 underline">Return to File Folder</Link></p>}
       {position&&<>
         <section className="space-y-3 rounded-2xl border border-cyan-200/20 bg-cyan-300/[.06] p-5">
-          <h2 className="text-2xl font-bold">{position.position_title}</h2>
+          <h2 className="text-2xl font-bold">{clientRegional?'Pro Regional Manager · Dream Lovely':position.position_title}</h2>
           <p className="text-sm text-slate-200">Company-granted {position.folder_tier.toUpperCase()} File Folder · {position.file_number}</p>
           <p className="text-sm text-slate-200">Agreed monthly company staff salary: {Number(position.monthly_salary_usdt)>0
            ?Number(position.monthly_salary_usdt).toLocaleString()+' USDT under the approved employment agreement'
@@ -83,11 +83,11 @@ export default function CompanyClientStaffWorkspace(){
           <Link href="/client/pro-activation" className="mt-3 inline-block text-sm text-cyan-200 underline">View Pro activation and signing</Link>
         </section>}
         {clientRegional&&<section className="space-y-4 rounded-2xl border border-sky-300/30 p-5"
-         data-client-regional-manager="dream-lovely" data-company-operating-department="client"
+         data-pro-regional-manager="dream-lovely" data-company-operating-department="client"
          style={{background:'linear-gradient(130deg,color-mix(in srgb,var(--kingdom-ground,#243d57) 55%,#071524),#071422)'}}>
           <div className="flex flex-wrap items-center justify-between gap-3">
            <div><p className="text-xs uppercase tracking-widest text-sky-200">Dream Lovely · Client Department</p>
-            <h2 className="mt-2 text-2xl font-bold">Client Regional Manager · Business Expansion</h2>
+            <h2 className="mt-2 text-2xl font-bold">Pro Regional Manager · Dream Lovely Business Expansion</h2>
            </div>
            <span className="rounded-full border border-sky-300/30 px-3 py-1 text-xs text-sky-100">Pro File Folder · Radiant Blue</span>
           </div>
@@ -122,7 +122,7 @@ export default function CompanyClientStaffWorkspace(){
             <p className="mt-2 text-xs leading-5 text-slate-300">{detail}</p>
            </Link>)}
           </div>
-          <p className="text-xs text-slate-400">Agent food distribution, gift-card escrow, distribution management and Bridger Prospect Market do not form part of this Client Regional Manager appointment.</p>
+          <p className="text-xs text-slate-400">Agent food distribution, gift-card escrow, distribution management and Bridger Prospect Market do not form part of this Pro Regional Manager appointment.</p>
         </section>}
         {!clientRegional&&<section className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
           {[
