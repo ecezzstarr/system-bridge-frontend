@@ -1,220 +1,146 @@
 'use client'
 
-import { FormEvent, useEffect, useMemo, useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import {
-  BookOpen,
-  CalendarDays,
-  Lightbulb,
-  Loader2,
-  Quote,
-  Radio,
-  Search,
-  Send,
-  ShieldCheck,
-} from 'lucide-react'
+import Link from 'next/link'
+import {useEffect,useState,type FormEvent} from 'react'
+import {useRouter,useSearchParams} from 'next/navigation'
+import {ArrowRight,BookOpen,CheckCircle2,Compass,Search,ShieldCheck} from 'lucide-react'
+import {useAuth} from '@/lib/auth-provider'
+import type {WeaveSearchDestination,WeaveSearchRole} from '@/lib/weave-action-search'
 
-interface Cadence {
-  id: string
-  cadence_type: 'thought' | 'quote' | 'experience' | 'lesson' | 'event'
-  content: string
-  context?: string | null
-  created_at: string
-  author_id: string
-  author_name: string
+type SearchResponse={
+  role:WeaveSearchRole
+  roleName:string
+  query:string
+  indexedCount:number
+  count:number
+  results:WeaveSearchDestination[]
+  guidance:string
+}
+const examples:Record<WeaveSearchRole,string[]>={
+  agent:['I want to sell food to shops','How do I order stock?','Where are my commissions?','Find a company job'],
+  bridger:['How do I contact Prospects?','Explain the File Folder','Where is Bridge AI?','How do I get a Client?'],
+  client:['How do I build my store?','How do I earn with my File Folder?','Show my business records','My approved company position'],
+  admin:['Where are pending payments?','Approve a staff application','Find company users','How do I deploy a release?'],
+  legion:['My Client duties','What can I do next?'],
+}
+const help:Record<WeaveSearchRole,string>={
+  agent:'Stability: sell and distribute real WEAVE products. Search by the work you want to do, not by a page name.',
+  bridger:'Hope: introduce WEAVE through real conversations. Search for an outreach task or a Client crossing step.',
+  client:'Dream Lovely: form systems and serve customers through your owned File Folder. Search by the business you want to operate.',
+  admin:'A Time: maintain the company and its authorized records. Search by the decision, verification or workshop you need.',
+  legion:'Your Client employment is exclusive while active. Find only authorized Legion work and guidance.',
+}
+const accessText:Record<string,string>={
+  approval:'Approval or appointment required',
+  lifestyle:'Lifestyle eligibility required',
+  preview:'Preview only; full operation may be unavailable',
 }
 
-const typeMeta = {
-  thought: { label:'Thought', icon:Lightbulb, tone:'text-amber-300 border-amber-300/15 bg-amber-400/[0.04]' },
-  quote: { label:'Quote', icon:Quote, tone:'text-violet-300 border-violet-300/15 bg-violet-400/[0.04]' },
-  experience: { label:'Experience', icon:Radio, tone:'text-emerald-300 border-emerald-300/15 bg-emerald-400/[0.04]' },
-  lesson: { label:'Lesson', icon:BookOpen, tone:'text-sky-300 border-sky-300/15 bg-sky-400/[0.04]' },
-  event: { label:'Event', icon:CalendarDays, tone:'text-cyan-300 border-cyan-300/15 bg-cyan-400/[0.04]' },
-}
-
-export default function HumanCadenceEnginePage() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const query = searchParams.get('q')?.trim() || ''
-  const [value, setValue] = useState(query)
-  const [cadences, setCadences] = useState<Cadence[]>([])
-  const [loading, setLoading] = useState(false)
-  const [publishing, setPublishing] = useState(false)
-  const [content, setContent] = useState('')
-  const [context, setContext] = useState('')
-  const [cadenceType, setCadenceType] = useState<Cadence['cadence_type']>('thought')
-  const [publishError, setPublishError] = useState('')
-
-  useEffect(()=>setValue(query),[query])
-
+export default function WeaveCompanySearchPage(){
+  const {token,user,isInitialized}=useAuth()
+  const router=useRouter()
+  const params=useSearchParams()
+  const query=(params.get('q')||'').trim()
+  const [draft,setDraft]=useState(query)
+  const [response,setResponse]=useState<SearchResponse|null>(null)
+  const [loading,setLoading]=useState(true)
+  const [error,setError]=useState('')
+  useEffect(()=>setDraft(query),[query])
   useEffect(()=>{
-    let cancelled=false
-    setLoading(true)
-    fetch(`/api/cadences${query ? `?q=${encodeURIComponent(query)}` : ''}`, { cache:'no-store' })
-      .then(response=>response.ok?response.json():Promise.reject(new Error('Search failed')))
-      .then(data=>{ if(!cancelled) setCadences(data.cadences || []) })
-      .catch(()=>{ if(!cancelled) setCadences([]) })
-      .finally(()=>{ if(!cancelled) setLoading(false) })
-    return ()=>{cancelled=true}
-  },[query])
+    if(!isInitialized)return
+    const controller=new AbortController()
+    let active=true
+    setLoading(true);setError('')
+    const headers:HeadersInit=token?{Authorization:'Bearer '+token}:{}
+    void fetch('/api/weave/search'+(query?'?q='+encodeURIComponent(query):''),{
+      headers,cache:'no-store',signal:controller.signal,
+    }).then(async res=>{
+      const body=await res.json().catch(()=>({}))
+      if(!res.ok)throw new Error(body.error||'Your role search is unavailable')
+      return body as SearchResponse
+    }).then(body=>{
+      if(active)setResponse(body)
+    }).catch(e=>{
+      if(active&&!controller.signal.aborted){setResponse(null);setError(e instanceof Error?e.message:'Unable to search WEAVE')}
+    }).finally(()=>{if(active)setLoading(false)})
+    return ()=>{active=false;controller.abort()}
+  },[query,token,isInitialized])
 
-  const authors=useMemo(()=>new Set(cadences.map(cadence=>cadence.author_id)).size,[cadences])
-  const types=useMemo(()=>new Set(cadences.map(cadence=>cadence.cadence_type)).size,[cadences])
-
-  function submitSearch(event:FormEvent<HTMLFormElement>) {
+  function submit(event:FormEvent<HTMLFormElement>){
     event.preventDefault()
-    const next=value.trim()
-    router.push(next ? `/search?q=${encodeURIComponent(next)}` : '/search')
+    const value=draft.trim()
+    router.push(value?'/search?q='+encodeURIComponent(value):'/search')
   }
+  const role=response?.role||(user?.role==='agent'||user?.role==='bridger'||user?.role==='client'||user?.role==='admin'?user.role:'client')
+  const suggestions=examples[role]||examples.client
+  const items=response?.results||[]
+  return <main className="mx-auto w-full max-w-6xl space-y-5 px-3 py-5 text-white sm:px-6 sm:py-8" data-weave-company-search="role-aware">
+    <header className="rounded-2xl border border-sky-300/25 bg-[#081b2b] p-5 sm:p-7">
+      <div className="flex items-center gap-2 text-sm font-semibold text-sky-200"><Compass className="h-5 w-5"/> WEAVE · Company Search</div>
+      <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">Tell WEAVE what you want to do.</h1>
+      <p className="mt-3 max-w-3xl text-base leading-7 text-slate-200">
+        You do not need to know the name of a system. Describe your task, and WEAVE will show the original working page, what it does and what you need first.
+      </p>
+      <p className="mt-3 text-sm text-sky-100">{response?.roleName||'Your company position'}</p>
+      <p className="mt-1 max-w-3xl text-sm leading-6 text-slate-300">{help[role]}</p>
+      <form className="mt-6 flex flex-col gap-3 sm:flex-row" onSubmit={submit} role="search">
+        <label className="relative block flex-1">
+          <span className="sr-only">Describe what you need to do at WEAVE</span>
+          <Search className="absolute left-4 top-4 h-5 w-5 text-sky-200"/>
+          <input value={draft} onChange={e=>setDraft(e.target.value)} type="search"
+            maxLength={160}
+            placeholder={role==='agent'?'Example: I want to sell food to shops':role==='bridger'?'Example: How do I find Clients?':role==='admin'?'Example: Where are pending approvals?':'Example: How do I open my store?'}
+            className="min-h-14 w-full rounded-xl border border-sky-200/30 bg-black/30 py-3 pl-12 pr-4 text-base text-white placeholder:text-slate-400 focus:border-sky-200 focus:outline-none"/>
+        </label>
+        <button type="submit" className="min-h-14 rounded-xl bg-sky-200 px-7 py-3 text-base font-semibold text-[#071a2a]">Find my next step</button>
+      </form>
+      <div className="mt-4 flex flex-wrap gap-2" aria-label="Example tasks">
+        {suggestions.map(q=><button key={q} type="button" onClick={()=>{setDraft(q);router.push('/search?q='+encodeURIComponent(q))}}
+          className="rounded-full border border-sky-300/20 bg-sky-200/[.04] px-3 py-2 text-sm text-sky-100 hover:border-sky-200/50">{q}</button>)}
+      </div>
+      <nav className="mt-6 flex flex-wrap gap-3 border-t border-white/10 pt-4 text-sm" aria-label="Search categories">
+        <span className="rounded-lg bg-sky-200/15 px-4 py-2 font-semibold text-sky-100" aria-current="page">Company work and systems</span>
+        <Link href={'/search/cadences'+(query?'?q='+encodeURIComponent(query):'')} className="rounded-lg border border-white/20 px-4 py-2 text-slate-200 hover:bg-white/5">
+          <BookOpen className="mr-2 inline h-4 w-4"/>Human Cadence Engine · Recorded knowledge
+        </Link>
+      </nav>
+    </header>
 
-  async function publishCadence(event:FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    setPublishError('')
-    setPublishing(true)
-    try {
-      const response=await fetch('/api/cadences',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({content,context,cadenceType}),
-      })
-      const data=await response.json()
-      if(!response.ok) throw new Error(data.error || 'Unable to publish cadence')
-      setContent('')
-      setContext('')
-      setCadences(current=>[data.cadence,...current])
-    } catch(error) {
-      setPublishError(error instanceof Error ? error.message : 'Unable to publish cadence')
-    } finally {
-      setPublishing(false)
-    }
-  }
-
-  return (
-    <main className="mx-auto w-full max-w-6xl p-3 md:p-6">
-      <section className="weave-system-depth overflow-hidden rounded-[2rem] border border-sky-300/15 bg-[#030a15]/72">
-        <header className="border-b border-white/10 bg-[radial-gradient(circle_at_14%_0%,rgba(14,165,233,.13),transparent_34%),radial-gradient(circle_at_88%_0%,rgba(245,158,11,.07),transparent_28%)] p-5 md:p-7">
-          <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
-            <div>
-              <p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.22em] text-sky-300">Human Cadence Engine</p>
-              <h1 className="mt-2 text-2xl font-black text-white md:text-3xl">Human experience remains attributed, searchable and reusable as institutional knowledge.</h1>
-              <p className="mt-3 max-w-4xl text-sm leading-7 text-slate-300">
-                Search what people have actually recorded in WEAVE. Results are human cadences, not generated answers. Adding a cadence creates a new attributed record in the same stream.
-              </p>
-            </div>
-            <div className="grid grid-cols-3 gap-2 text-center">
-              <Metric label="Records" value={cadences.length} tone="sky"/>
-              <Metric label="Humans" value={authors} tone="emerald"/>
-              <Metric label="Types" value={types} tone="amber"/>
-            </div>
-          </div>
-        </header>
-
-        <div className="grid gap-4 p-4 md:p-6 lg:grid-cols-[1fr_320px]">
-          <section className="space-y-4">
-            <div className="weave-reading-surface rounded-3xl p-4 md:p-5">
-              <form onSubmit={submitSearch} className="flex flex-col gap-2 sm:flex-row">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500"/>
-                  <input
-                    autoFocus
-                    value={value}
-                    onChange={event=>setValue(event.target.value)}
-                    placeholder="Search a thought, problem, lesson or event"
-                    className="h-12 w-full rounded-xl border border-white/10 bg-black/25 pl-10 pr-3 text-sm text-white outline-none focus:border-sky-300/30"
-                    aria-label="Search Human Cadences"
-                  />
-                </div>
-                <button type="submit" className="rounded-xl bg-sky-300 px-5 py-3 text-[10px] font-black uppercase tracking-[0.12em] text-slate-950">Search records</button>
-              </form>
-
-              <div className="mt-5 border-t border-white/10 pt-5">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-[9px] font-black uppercase tracking-[0.18em] text-violet-300">Create a human record</p>
-                    <p className="mt-1 text-xs text-slate-400">What you publish remains attributed to you.</p>
-                  </div>
-                  <Send className="h-4 w-4 text-violet-300"/>
-                </div>
-
-                <form onSubmit={publishCadence} className="mt-4 space-y-3">
-                  <div className="flex flex-wrap gap-2">
-                    {(Object.keys(typeMeta) as Cadence['cadence_type'][]).map(type=>{
-                      const meta=typeMeta[type]
-                      const Icon=meta.icon
-                      const active=cadenceType===type
-                      return <button key={type} type="button" onClick={()=>setCadenceType(type)} className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 text-[9px] font-black uppercase tracking-[0.08em] transition ${active?meta.tone:'border-white/10 bg-black/20 text-slate-400'}`}><Icon className="h-3.5 w-3.5"/>{meta.label}</button>
-                    })}
-                  </div>
-                  <textarea value={content} onChange={event=>setContent(event.target.value)} maxLength={2000} placeholder="What happened, what did you notice, or what did you learn?" required rows={4} className="w-full rounded-xl border border-white/10 bg-black/25 p-3 text-sm text-white outline-none focus:border-violet-300/30"/>
-                  <input value={context} onChange={event=>setContext(event.target.value)} maxLength={1000} placeholder="Optional context: where, when or why" className="h-11 w-full rounded-xl border border-white/10 bg-black/25 px-3 text-xs text-white outline-none focus:border-violet-300/30"/>
-                  {publishError && <div className="rounded-xl border border-rose-300/15 bg-rose-400/[0.05] px-4 py-3 text-xs text-rose-100">{publishError}</div>}
-                  <button type="submit" disabled={publishing || !content.trim()} className="inline-flex items-center gap-2 rounded-xl border border-violet-300/15 bg-violet-400/[0.08] px-4 py-2.5 text-[10px] font-black uppercase tracking-[0.1em] text-violet-100 disabled:opacity-40"><Send className="h-3.5 w-3.5"/>{publishing?'Recording…':'Record cadence'}</button>
-                </form>
-              </div>
-            </div>
-
-            <section className="weave-reading-surface rounded-3xl p-4 md:p-5">
-              <div className="border-b border-white/10 pb-4">
-                <p className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-300">{query ? `Records around “${query}”` : 'Recent human records'}</p>
-                <p className="mt-1 text-xs text-slate-400">Every result remains tied to the human who contributed it.</p>
-              </div>
-
-              {loading ? (
-                <div className="flex justify-center py-16 text-slate-400"><Loader2 className="mr-2 h-5 w-5 animate-spin"/>Listening across WEAVE…</div>
-              ) : cadences.length===0 ? (
-                <div className="mt-4 rounded-2xl border border-dashed border-white/10 p-8 text-center">
-                  <Search className="mx-auto h-8 w-8 text-slate-500"/>
-                  <p className="mt-3 text-sm font-black text-white">No human cadence matches this view.</p>
-                  <p className="mt-2 text-xs leading-5 text-slate-400">Try another phrase or create the first attributed record around this subject.</p>
-                </div>
-              ) : (
-                <div className="mt-4 space-y-3">
-                  {cadences.map(cadence=>{
-                    const meta=typeMeta[cadence.cadence_type] || typeMeta.thought
-                    const Icon=meta.icon
-                    return (
-                      <article key={cadence.id} className={`rounded-2xl border p-4 ${meta.tone}`}>
-                        <div className="flex flex-wrap items-center gap-2 text-[8px] font-black uppercase tracking-[0.1em]">
-                          <Icon className="h-3.5 w-3.5"/>
-                          <span>{meta.label}</span>
-                          <span className="text-white/25">·</span>
-                          <span className="text-slate-300">{cadence.author_name}</span>
-                          <span className="text-white/25">·</span>
-                          <time className="text-slate-400" dateTime={cadence.created_at}>{new Date(cadence.created_at).toLocaleDateString()}</time>
-                        </div>
-                        <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-white">{cadence.content}</p>
-                        {cadence.context && <p className="mt-3 border-l-2 border-white/15 pl-3 text-[11px] leading-5 text-slate-300">Context: {cadence.context}</p>}
-                      </article>
-                    )
-                  })}
-                </div>
-              )}
-            </section>
-          </section>
-
-          <aside className="space-y-4">
-            <section className="rounded-3xl border border-emerald-300/15 bg-emerald-400/[0.04] p-4">
-              <div className="flex items-center gap-2"><BookOpen className="h-4 w-4 text-emerald-300"/><p className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-300">Knowledge causality</p></div>
-              <div className="mt-3 space-y-2 text-xs font-semibold text-slate-300">
-                <p>Human notices → record.</p>
-                <p>Record → searchable cadence.</p>
-                <p>Search → recognition.</p>
-                <p>Recognition → new movement.</p>
-              </div>
-            </section>
-
-            <section className="rounded-3xl border border-sky-300/15 bg-sky-400/[0.04] p-4">
-              <div className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-sky-300"/><p className="text-[9px] font-black uppercase tracking-[0.18em] text-sky-300">Attribution rule</p></div>
-              <p className="mt-3 text-xs leading-5 text-slate-300">WEAVE does not rewrite these records into anonymous system knowledge. The contributor and date remain visible so interpretation stays anchored to source.</p>
-            </section>
-          </aside>
+    <section className="rounded-2xl border border-white/10 bg-[#071522]/90 p-4 sm:p-6" aria-live="polite">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-4">
+        <div>
+          <h2 className="text-xl font-bold">{query?'Relevant company places':'Good places to begin'}</h2>
+          <p className="mt-1 text-sm text-slate-300">{query?'Showing places relevant to “'+query+'”.':'Start with one actual company function. All existing work remains in its original page.'}</p>
         </div>
-      </section>
-    </main>
-  )
-}
+        {response&&<span className="text-xs text-slate-400">{response.count} shown · {response.indexedCount} indexed destinations</span>}
+      </div>
 
-function Metric({label,value,tone}:{label:string;value:number;tone:'sky'|'emerald'|'amber'}) {
-  const color=tone==='emerald'?'text-emerald-300 border-emerald-300/15 bg-emerald-400/[0.04]':tone==='amber'?'text-amber-300 border-amber-300/15 bg-amber-400/[0.04]':'text-sky-300 border-sky-300/15 bg-sky-400/[0.04]'
-  return <div className={`rounded-xl border px-3 py-3 ${color}`}><p className="text-[8px] font-black uppercase tracking-wider">{label}</p><p className="mt-1 text-xl font-black text-white">{value}</p></div>
+      {loading&&<p role="status" className="py-8 text-sm text-slate-300">Finding the correct places for your role…</p>}
+      {error&&<div role="alert" className="mt-4 rounded-xl border border-rose-300/30 p-4 text-sm text-rose-100">{error}</div>}
+      {!loading&&!error&&!items.length&&<div className="mt-5 rounded-xl border border-dashed border-white/20 p-5">
+        <p className="font-semibold">No matching authorized workstation was found.</p>
+        <p className="mt-2 text-sm text-slate-300">Try the task in simpler words. You can search for “money”, “job”, “product” or “File Folder”. A missing result is not proof a service is available to you.</p>
+        <button type="button" onClick={()=>{setDraft('');router.push('/search')}} className="mt-4 rounded-lg border border-sky-200/30 px-4 py-2 text-sm text-sky-100">See where to begin</button>
+      </div>}
+      {!loading&&!error&&items.length>0&&<div className="mt-5 grid gap-4 md:grid-cols-2">
+        {items.map(result=><article key={result.href} className="flex min-w-0 flex-col rounded-xl border border-white/15 bg-[#10273a]/65 p-5" data-weave-search-result={result.href}>
+          <p className="text-xs font-semibold uppercase tracking-wide text-sky-200">{result.department}</p>
+          <h3 className="mt-2 text-lg font-bold">{result.title}</h3>
+          <p className="mt-2 text-sm leading-6 text-slate-200">{result.description}</p>
+          <div className="mt-4 space-y-3 border-t border-white/10 pt-4 text-sm">
+            <p className="text-slate-200"><strong className="text-white">Before you begin:</strong> {result.requirements}</p>
+            <p className="text-slate-200"><strong className="text-white">Your next step:</strong> {result.nextStep}</p>
+            {result.access!=='available'&&<p className="text-amber-200"><ShieldCheck className="mr-1 inline h-4 w-4"/>{accessText[result.access]||'Check requirements first'}</p>}
+          </div>
+          <Link href={result.href} className="mt-5 inline-flex min-h-12 items-center justify-between rounded-lg bg-sky-200 px-4 py-2 font-semibold text-[#071a2a]">
+            Open the existing work page <ArrowRight className="h-5 w-5"/>
+          </Link>
+        </article>)}
+      </div>}
+      <p className="mt-5 flex gap-2 border-t border-white/10 pt-4 text-sm leading-6 text-slate-400">
+        <CheckCircle2 className="mt-1 h-4 w-4 shrink-0"/>
+        {response?.guidance||'Search explains what exists. Every payment, company approval, Client access and fulfilled order is independently verified.'}
+      </p>
+    </section>
+  </main>
 }
