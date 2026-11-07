@@ -84,6 +84,12 @@ export default function ProRegionalManagerLifestyleApplication(){
     <p className="text-sm">Location: {[application.operating_city,application.operating_region,application.operating_country].filter(Boolean).join(', ')}</p>
     <p className="text-sm">Application status: <strong>{application.status.replaceAll('_',' ')}</strong></p>
     {application.status==='approved_pending_verification'&&<>
+     <div className="flex flex-wrap gap-3">
+      <Link href="/weave/lifestyles/pro-regional-manager/activation"
+       className="rounded-lg border border-sky-300/35 bg-sky-300/10 px-4 py-3 text-sm font-semibold text-sky-100">Continue signed Pro activation</Link>
+      <Link href="/weave/lifestyles/pro-regional-manager/workspace"
+       className="rounded-lg border border-sky-300/35 px-4 py-3 text-sm font-semibold text-sky-100">My Pro Regional Manager workspace</Link>
+     </div>
      <p className="text-sm">Agreed monthly salary in Administration record: {Number(application.agreed_monthly_salary_usdt)>0?Number(application.agreed_monthly_salary_usdt).toLocaleString()+' USDT':'Company record needs reconciliation'}</p>
      <p className="text-xs text-sky-100">Administration reviewed your application and employment terms. Your Pro File Folder, secure account ownership, business-plan verification, activation and departmental workspace must still be completed. Do not assume active Pro status or send an unsolicited activation payment.</p>
     </>}
