@@ -2,6 +2,7 @@ import { notifyAdminOrder } from '@/lib/admin-order-notifications'
 import { NextRequest, NextResponse } from 'next/server'
 import { getFileFolderDb } from '@/lib/client-file-folder'
 import { resolveClientToken } from '@/lib/client-vault'
+import {getActiveProRegionalManager} from '@/lib/pro-regional-manager-activation'
 import { ensureClientBusinessStoreSchema } from '@/lib/client-business-store'
 import { ensureCustomerDoorSettlementSchema, validDoorUuid } from '@/lib/customer-door-settlement'
 
@@ -10,8 +11,10 @@ const allowed = new Set(['payment_received', 'fulfilled', 'cancelled'])
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const sql = getFileFolderDb()
   const token = request.headers.get('authorization')?.replace(/^Bearer\s+/i, '').trim() || null
-  const clientId = await resolveClientToken(token, sql)
-  if (!clientId) return NextResponse.json({ error: 'Client login required' }, { status: 401 })
+  const pro=request.nextUrl.pathname.startsWith('/api/pro-regional-manager/business-store/orders/')
+   ?await getActiveProRegionalManager(request):null
+  const clientId=pro?String(pro.user.id):await resolveClientToken(token,sql)
+  if (!clientId || (request.nextUrl.pathname.startsWith('/api/pro-regional-manager/')&&!pro)) return NextResponse.json({ error: 'Active verified File Folder owner required' }, { status: 403 })
   const { id } = await params
   if(!validDoorUuid(id))return NextResponse.json({error:'Invalid Customer Door order'},{status:400})
   const body = await request.json().catch(() => ({}))
@@ -19,7 +22,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   if (!allowed.has(action)) return NextResponse.json({ error: 'Invalid order action' }, { status: 400 })
   await ensureClientBusinessStoreSchema(sql)
   await ensureCustomerDoorSettlementSchema()
-  const [store] = await sql`SELECT id FROM client_business_stores WHERE client_id=${clientId}::uuid LIMIT 1`
+  const [store] = await sql`SELECT id FROM client_business_stores WHERE client_id=${clientId}::uuid
+    AND (${pro?String(pro.row.file_number):null}::text IS NULL OR file_number=${pro?String(pro.row.file_number):null}) LIMIT 1`
   if (!store) return NextResponse.json({ error: 'Business Store not found' }, { status: 404 })
   const [existing]=await sql`
     SELECT o.id,o.payment_status,o.payment_reference,o.status,s.id AS settlement_id
@@ -30,9 +34,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   if(!existing)return NextResponse.json({error:'Order not found'},{status:404})
 
   if(action==='payment_received'){
-    if(existing.settlement_id)return NextResponse.json({success:true,alreadyPaid:true,message:'The verified transfer has already been credited to your Main Client Wallet.'})
+    if(existing.settlement_id)return NextResponse.json({success:true,alreadyPaid:true,message:'The verified transfer has already been credited to the verified store owner's wallet.'})
     if(!existing.payment_reference||String(existing.payment_reference).trim().length<8){
-      return NextResponse.json({error:'A real external payment reference is required for Administration Forensics. A Client cannot create wallet funds by marking an order paid.'},{status:409})
+      return NextResponse.json({error:'A real external payment reference is required for Administration Forensics. A File Folder owner cannot create wallet funds by marking an order paid.'},{status:409})
     }
     if(!['awaiting_payment','payment_reported'].includes(existing.payment_status)){
       return NextResponse.json({error:'Payment proof cannot be accepted in this order state'},{status:409})
@@ -49,13 +53,13 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       detail:'Client reports an external payment. Verify actual WEAVE bank receipt and funded treasury balance before crediting the Main Client Wallet.',
       adminPath:'/admin/customer-door-settlements',actorId:clientId,actorName:'Client'})
     return NextResponse.json({success:true,order,
-      message:'Reference submitted for Administration verification. Client Main Wallet is not credited until funds are independently verified.'})
+      message:'Reference submitted for Administration verification. The store owner's wallet is not credited until funds are independently verified.'})
   }
   if(action==='cancelled'&&existing.settlement_id){
     return NextResponse.json({error:'This order is already settled. Use a documented refund/reversal process instead of cancelling a credited payment.'},{status:409})
   }
   if(action==='fulfilled'&&!existing.settlement_id){
-    return NextResponse.json({error:'Customer Door payment must be settled to the Client Main Wallet before the order can be marked fulfilled.'},{status:409})
+    return NextResponse.json({error:'Customer Door payment must be independently settled before the order can be marked fulfilled.'},{status:409})
   }
   const [order]=await sql`
     UPDATE client_store_orders SET status=${action},updated_at=NOW()
