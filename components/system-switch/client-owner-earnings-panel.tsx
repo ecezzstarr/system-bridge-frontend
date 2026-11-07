@@ -143,16 +143,16 @@ export default function ClientOwnerEarningsPanel({storeApiPath,systems=[]}:{
           <h4 className="text-sm font-bold">Record an operating cost</h4>
           <p className="mt-1 text-xs text-slate-400">Costs are reported by the owner. Recording does not debit a wallet, pay a worker, or verify a receipt.</p>
           <div className="mt-3 grid gap-3">
-            <label className="text-xs text-slate-300">Cost category<select value={category} onChange={e=>setCategory(e.target.value)} className="mt-1 w-full rounded-lg border border-white/15 bg-[#0d263b] p-3">
+            <label className="text-xs text-slate-300">Cost category<select value={category} onChange={e=>{setCategory(e.target.value);setRequestId('')}} className="mt-1 w-full rounded-lg border border-white/15 bg-[#0d263b] p-3">
               {categories.map(([key,label])=><option key={key} value={key}>{label}</option>)}
             </select></label>
             <div className="grid grid-cols-2 gap-2">
-              <label className="text-xs text-slate-300">Amount<input type="number" min="0.00000001" step="any" value={amount} onChange={e=>setAmount(e.target.value)} className="mt-1 w-full rounded-lg border border-white/15 bg-[#0d263b] p-3"/></label>
-              <label className="text-xs text-slate-300">Currency<select value={currency} onChange={e=>setCurrency(e.target.value)} className="mt-1 w-full rounded-lg border border-white/15 bg-[#0d263b] p-3">{currencies.map(c=><option key={c}>{c}</option>)}</select></label>
+              <label className="text-xs text-slate-300">Amount<input type="number" min="0.00000001" step="any" value={amount} onChange={e=>{setAmount(e.target.value);setRequestId('')}} className="mt-1 w-full rounded-lg border border-white/15 bg-[#0d263b] p-3"/></label>
+              <label className="text-xs text-slate-300">Currency<select value={currency} onChange={e=>{setCurrency(e.target.value);setRequestId('')}} className="mt-1 w-full rounded-lg border border-white/15 bg-[#0d263b] p-3">{currencies.map(c=><option key={c}>{c}</option>)}</select></label>
             </div>
-            <label className="text-xs text-slate-300">Purpose or obligation<input value={description} maxLength={300} onChange={e=>setDescription(e.target.value)} className="mt-1 w-full rounded-lg border border-white/15 bg-[#0d263b] p-3" placeholder="For example, production material purchase"/></label>
-            <label className="text-xs text-slate-300">Evidence reference (optional)<input value={evidence} maxLength={160} onChange={e=>setEvidence(e.target.value)} className="mt-1 w-full rounded-lg border border-white/15 bg-[#0d263b] p-3" placeholder="Receipt or invoice reference"/></label>
-            {systems.filter(s=>s.status==='active').length>0&&<label className="text-xs text-slate-300">Built system (optional)<select value={systemId} onChange={e=>setSystemId(e.target.value)} className="mt-1 w-full rounded-lg border border-white/15 bg-[#0d263b] p-3"><option value="">General File Folder business</option>{systems.filter(s=>s.status==='active').map(s=><option key={s.id} value={s.id}>{s.title}</option>)}</select></label>}
+            <label className="text-xs text-slate-300">Purpose or obligation<input value={description} maxLength={300} onChange={e=>{setDescription(e.target.value);setRequestId('')}} className="mt-1 w-full rounded-lg border border-white/15 bg-[#0d263b] p-3" placeholder="For example, production material purchase"/></label>
+            <label className="text-xs text-slate-300">Evidence reference (optional)<input value={evidence} maxLength={160} onChange={e=>{setEvidence(e.target.value);setRequestId('')}} className="mt-1 w-full rounded-lg border border-white/15 bg-[#0d263b] p-3" placeholder="Receipt or invoice reference"/></label>
+            {systems.filter(s=>s.status==='active').length>0&&<label className="text-xs text-slate-300">Built system (optional)<select value={systemId} onChange={e=>{setSystemId(e.target.value);setRequestId('')}} className="mt-1 w-full rounded-lg border border-white/15 bg-[#0d263b] p-3"><option value="">General File Folder business</option>{systems.filter(s=>s.status==='active').map(s=><option key={s.id} value={s.id}>{s.title}</option>)}</select></label>}
             <button type="button" disabled={busy||!description.trim()||!(Number(amount)>0)} onClick={()=>void addCost()} className="rounded-lg bg-sky-200 px-4 py-3 text-sm font-semibold text-slate-950 disabled:opacity-40">{busy?'Recording…':'Record operating cost'}</button>
           </div>
         </div>
