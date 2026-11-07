@@ -1,0 +1,241 @@
+/*
+ * Client Pro staff verification · official radiant-blue File Folder identity.
+ * This is a public intake surface, not an unlocked owner's private kingdom.
+ * Scoped by ID to beat company-wide Plus presentation without changing the
+ * Plus theme used by the rest of WEAVE or the Flame Event.
+ */
+#weave-pro-verification.pv-shell {
+  --pv-ink:#19344c;--pv-blue:#264d77;--pv-deep:#0c2744;
+  --pv-sky:#74cbe9;--pv-glow:#a4e4ff;--pv-paper:#f6fbff;
+  --pv-line:#c4ddeb;--pv-muted:#526b7f;
+  position:relative;isolation:isolate;min-height:100dvh;
+  padding:24px 18px 64px;color:var(--pv-ink) !important;
+  background:radial-gradient(ellipse 66% 27% at 4% 0%,#cce9fc 0%,transparent 80%),
+    radial-gradient(ellipse 40% 40% at 99% 6%,#a6d7f1 0%,transparent 75%),
+    linear-gradient(180deg,#e7f5ff 0%,#f8fcff 49%,#eff7fb 100%) !important;
+  font-family:inherit;
+}
+#weave-pro-verification *{box-sizing:border-box;}
+#weave-pro-verification .pv-atmosphere {
+  position:absolute;inset:0 0 auto;height:510px;z-index:-1;pointer-events:none;
+  background:repeating-linear-gradient(120deg,transparent 0 118px,rgba(60,132,188,.055) 119px,transparent 120px),
+    radial-gradient(ellipse 45% 58% at 76% 0%,rgba(101,188,229,.25),transparent 77%);
+}
+#weave-pro-verification .pv-container{max-width:1190px;margin:0 auto;}
+#weave-pro-verification .pv-masthead{
+  display:flex;align-items:center;justify-content:space-between;gap:18px;
+  padding:7px 2px 19px;border-bottom:1px solid rgba(61,112,154,.19);
+}
+#weave-pro-verification .pv-brand{display:inline-flex;align-items:center;gap:12px;text-decoration:none !important;color:#193d5c !important;min-width:0;}
+#weave-pro-verification .pv-brand-mark{
+  width:43px;height:43px;display:grid;place-items:center;flex-shrink:0;
+  background:linear-gradient(145deg,#265b8b,#0b2746);color:#ebfaff;
+  border:1px solid rgba(119,201,233,.5);border-radius:13px;
+  box-shadow:0 7px 20px rgba(21,73,113,.2);font-size:23px;font-weight:900;letter-spacing:-.1em;
+}
+#weave-pro-verification .pv-brand-name{display:block;font-size:15px;font-weight:850;letter-spacing:.24em;}
+#weave-pro-verification .pv-brand-sub{display:block;font-size:9px;letter-spacing:.125em;text-transform:uppercase;color:#50728b;}
+#weave-pro-verification .pv-company-caption{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#476882;text-align:center;}
+#weave-pro-verification .pv-role-pill {
+  padding:9px 14px;border:1px solid rgba(53,125,172,.28);border-radius:99px;
+  background:rgba(255,255,255,.65);font-size:11px;font-weight:750;
+  letter-spacing:.07em;color:#1d5b82;white-space:nowrap;
+}
+#weave-pro-verification .pv-hero{
+  margin-top:19px;position:relative;overflow:hidden;display:grid;grid-template-columns:minmax(0,1.22fr) minmax(270px,.78fr);
+  align-items:center;gap:24px;padding:38px 43px;min-height:339px;
+  border:1px solid rgba(111,197,232,.34) !important;border-radius:30px;
+  background:linear-gradient(115deg,#102c49 0%,#17456b 55%,#296ba0 100%) !important;
+  color:#e9f8ff !important;box-shadow:0 26px 70px rgba(29,75,117,.2),inset 0 1px 0 rgba(255,255,255,.16);
+}
+#weave-pro-verification .pv-hero:before{
+  content:'';position:absolute;width:500px;height:500px;border:1px solid rgba(164,228,255,.14);
+  border-radius:50%;top:-300px;right:-100px;box-shadow:0 0 0 42px rgba(164,228,255,.045),0 0 0 108px rgba(164,228,255,.025);pointer-events:none;
+}
+#weave-pro-verification .pv-hero-copy{position:relative;z-index:2;max-width:660px;}
+#weave-pro-verification .pv-eyebrow{
+  margin:0 0 13px;color:#9fe3fb !important;font-size:11px;font-weight:800;
+  text-transform:uppercase;letter-spacing:.17em;
+}
+#weave-pro-verification .pv-hero h1{
+  margin:0;font-size:clamp(31px,3.4vw,51px);font-weight:820;letter-spacing:-.036em;
+  line-height:1.1 !important;color:#fff !important;text-wrap:balance;
+}
+#weave-pro-verification .pv-hero h1 span{display:block;color:#b6eaff !important;font-weight:570;}
+#weave-pro-verification .pv-hero-description{
+  max-width:620px;margin:21px 0 0;font-size:13px;line-height:1.75 !important;
+  color:#d2eafa !important;
+}
+#weave-pro-verification .pv-hero-signals{display:flex;flex-wrap:wrap;gap:9px;margin-top:23px;}
+#weave-pro-verification .pv-hero-signals span{
+  display:inline-flex;align-items:center;padding:8px 11px;border-radius:99px;
+  color:#e0f7ff !important;background:rgba(210,241,255,.09) !important;
+  border:1px solid rgba(184,228,252,.27) !important;font-size:11px;font-weight:650;
+}
+#weave-pro-verification .pv-hero-visual{position:relative;height:265px;display:grid;place-items:center;isolation:isolate;}
+#weave-pro-verification .pv-hero-visual:before{
+  content:'';position:absolute;width:290px;height:206px;border-radius:50%;
+  border:1px solid rgba(171,233,255,.25);
+  transform:rotate(-19deg);box-shadow:0 0 0 29px rgba(149,218,245,.055),0 0 0 63px rgba(149,218,245,.03);
+}
+#weave-pro-verification .pv-folder{
+  width:240px;height:171px;position:relative;transform:perspective(800px) rotateY(-12deg) rotateX(6deg);
+  border:1px solid rgba(197,237,255,.72);border-radius:15px 20px 19px 19px;
+  background:linear-gradient(143deg,rgba(221,245,255,.96),rgba(105,182,223,.91) 63%,rgba(41,112,160,.94));
+  box-shadow:10px 23px 35px rgba(5,24,48,.38),inset 0 0 0 5px rgba(255,255,255,.12),0 0 52px rgba(145,224,255,.34);
+  display:flex;align-items:center;justify-content:center;
+}
+#weave-pro-verification .pv-folder:before{
+  content:'';position:absolute;top:-22px;left:9px;width:112px;height:35px;
+  background:linear-gradient(115deg,#d9f4ff,#9ed4f0);border-radius:12px 22px 0 0;
+  border:1px solid rgba(197,237,255,.72);border-bottom:0;z-index:-1;
+}
+#weave-pro-verification .pv-folder-tab{
+  position:absolute;top:-16px;left:28px;color:#15466b !important;font-weight:900;
+  letter-spacing:.24em;font-size:11px;
+}
+#weave-pro-verification .pv-folder-inner{
+  width:83%;height:76%;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  border-radius:12px;border:1px solid rgba(255,255,255,.72);
+  background:linear-gradient(150deg,rgba(17,72,119,.9),rgba(28,100,152,.88));
+  box-shadow:inset 0 0 28px rgba(164,228,255,.2);text-align:center;
+}
+#weave-pro-verification .pv-folder-inner strong{color:#eafaff !important;font-size:53px;line-height:1;font-weight:900;letter-spacing:-.12em;}
+#weave-pro-verification .pv-folder-inner span{color:#d8f3ff !important;font-size:9px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;}
+#weave-pro-verification .pv-visual-tag{
+  position:absolute;z-index:2;border:1px solid rgba(194,238,255,.4);background:rgba(8,47,78,.8);
+  color:#e7f9ff !important;padding:8px 12px;border-radius:11px;
+  font-size:10px;letter-spacing:.055em;box-shadow:0 12px 24px rgba(6,22,43,.2);
+}
+#weave-pro-verification .pv-visual-tag-left{left:0;top:29px;}
+#weave-pro-verification .pv-visual-tag-right{right:0;bottom:21px;}
+#weave-pro-verification .pv-process{
+  display:flex;align-items:center;justify-content:space-between;gap:14px;
+  padding:24px 3px 20px;flex-wrap:wrap;
+}
+#weave-pro-verification .pv-process-label{
+  color:#3a6c8f;font-size:11px;font-weight:850;letter-spacing:.13em;text-transform:uppercase;
+}
+#weave-pro-verification .pv-steps{display:flex;gap:9px;flex-wrap:wrap;}
+#weave-pro-verification .pv-step{
+  display:flex;align-items:center;gap:9px;padding:9px 13px;border:1px solid #ccdfed;
+  border-radius:99px;background:#fff;color:#567084;font-size:11px;font-weight:700;
+}
+#weave-pro-verification .pv-step-count{
+  display:grid;place-items:center;width:21px;height:21px;border:1px solid #aec9d9;border-radius:50%;
+  font-size:10px;color:#436985;
+}
+#weave-pro-verification .pv-step[data-current="true"]{
+  background:#18466b;border-color:#18466b;color:#fff;box-shadow:0 7px 20px rgba(32,95,144,.18);
+}
+#weave-pro-verification .pv-step[data-current="true"] .pv-step-count{
+  border-color:rgba(218,248,255,.7);color:#fff;
+}
+#weave-pro-verification .pv-step[data-done="true"]{color:#256a82;background:#e6f7ff;border-color:#b1def0;}
+#weave-pro-verification .pv-workgrid{
+  display:grid;grid-template-columns:minmax(0,1fr) 304px;gap:22px;align-items:start;
+}
+#weave-pro-verification .pv-main-column{min-width:0;display:flex;flex-direction:column;gap:14px;}
+#weave-pro-verification .pv-panel{
+  border:1px solid #c6dfec !important;background:rgba(255,255,255,.96) !important;
+  border-radius:24px !important;padding:26px !important;
+  color:#28485e !important;box-shadow:0 15px 45px rgba(45,98,134,.08) !important;
+}
+#weave-pro-verification .pv-panel > h2{
+  margin:0 0 19px;color:#193e5c !important;font-size:22px;font-weight:800;letter-spacing:-.02em;
+}
+#weave-pro-verification .pv-panel h3{color:#244a65 !important;}
+#weave-pro-verification .pv-panel :is(label,p,details,summary){color:#3b596c !important;}
+#weave-pro-verification .pv-panel label{font-weight:620;}
+#weave-pro-verification .pv-panel :is(input:not([type="checkbox"]),textarea,select){
+  display:block;width:100%;min-height:46px;
+  background:#fafdff !important;color:#1b3d56 !important;border:1px solid #b7d0e0 !important;
+  border-radius:11px !important;padding:12px 14px !important;
+  box-shadow:inset 0 1px 3px rgba(40,90,120,.04) !important;
+}
+#weave-pro-verification .pv-panel textarea{min-height:76px;resize:vertical;}
+#weave-pro-verification .pv-panel :is(input,textarea)::placeholder{color:#677f91 !important;}
+#weave-pro-verification .pv-panel :is(input,textarea):focus-visible{
+  outline:3px solid rgba(71,172,220,.36) !important;outline-offset:1px;border-color:#3d94c7 !important;
+}
+#weave-pro-verification .pv-panel input[type="checkbox"]{
+  width:18px;height:18px;flex-shrink:0;accent-color:#1d709f;
+}
+#weave-pro-verification .pv-panel button{
+  min-height:43px;padding:11px 19px;border-radius:11px !important;
+  background:#1b638f !important;color:#fff !important;border:1px solid #1b638f !important;
+  font-size:13px;font-weight:800;line-height:1.35;
+  box-shadow:0 8px 18px rgba(25,94,137,.13);
+  transition:background-color .18s ease,transform .18s ease;
+}
+#weave-pro-verification .pv-panel button:not(:disabled):hover{background:#114b72 !important;transform:translateY(-1px);}
+#weave-pro-verification .pv-panel button:disabled{opacity:.43 !important;cursor:not-allowed;box-shadow:none;}
+#weave-pro-verification .pv-panel .pv-secondary{
+  background:#f4faff !important;color:#245a7b !important;border-color:#bfd8e6 !important;box-shadow:none;
+}
+#weave-pro-verification .pv-panel .pv-secondary:hover{background:#e7f4fb !important;}
+#weave-pro-verification .pv-panel details{
+  padding:15px;border:1px solid #d5e6ef;border-radius:13px;background:#f5faff !important;
+}
+#weave-pro-verification .pv-panel summary{font-weight:750;cursor:pointer;color:#245a7b !important;}
+#weave-pro-verification .pv-panel :is(a){color:#176992 !important;}
+#weave-pro-verification .pv-side-panel{
+  position:sticky;top:24px;display:flex;flex-direction:column;gap:19px;
+  padding:24px;border-radius:24px;border:1px solid rgba(73,126,168,.22) !important;
+  background:linear-gradient(180deg,#e8f5fe,#f8fcff 42%,#fff) !important;
+  color:#23435d !important;box-shadow:0 15px 45px rgba(42,97,137,.07);
+}
+#weave-pro-verification .pv-side-kicker{font-size:10px;letter-spacing:.14em;font-weight:850;color:#296d91 !important;text-transform:uppercase;}
+#weave-pro-verification .pv-side-panel h2{font-size:21px;font-weight:850;color:#193d58 !important;line-height:1.25 !important;}
+#weave-pro-verification .pv-side-panel p{font-size:12px;line-height:1.75 !important;color:#4c6a7e !important;}
+#weave-pro-verification .pv-side-flow{display:flex;flex-direction:column;gap:14px;margin:0;padding:0;list-style:none;}
+#weave-pro-verification .pv-side-flow li{display:flex;gap:11px;align-items:flex-start;}
+#weave-pro-verification .pv-side-number{
+  display:grid;place-items:center;width:27px;height:27px;flex-shrink:0;border-radius:10px;
+  background:#d3ecfa;color:#245979 !important;font-size:11px;font-weight:850;
+}
+#weave-pro-verification .pv-side-flow strong{display:block;color:#24455d !important;font-size:12px;font-weight:800;}
+#weave-pro-verification .pv-side-flow small{display:block;color:#5c7386 !important;font-size:11px;line-height:1.55;}
+#weave-pro-verification .pv-fee{
+  padding:17px 18px;background:#163c5f !important;color:#effaff !important;border-radius:16px;
+}
+#weave-pro-verification .pv-fee span{display:block;font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:#b7e6f9 !important;}
+#weave-pro-verification .pv-fee strong{display:block;font-size:29px;font-weight:850;color:#fff !important;line-height:1.35;}
+#weave-pro-verification .pv-fee small{display:block;font-size:11px;color:#d0e7f6 !important;line-height:1.6;}
+#weave-pro-verification .pv-footer{
+  display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;
+  margin-top:22px;padding:20px 4px;color:#547187 !important;border-top:1px solid #cbdfea;
+}
+#weave-pro-verification .pv-footer p{margin:0;color:#547187 !important;font-size:11px;line-height:1.6 !important;}
+#weave-pro-verification .pv-footer a{color:#225f87 !important;font-size:12px;font-weight:750;text-decoration:underline;}
+@media(max-width:920px){
+  #weave-pro-verification .pv-hero{grid-template-columns:minmax(0,1fr) 220px;padding:31px;gap:10px;}
+  #weave-pro-verification .pv-hero-visual{transform:scale(.83);}
+  #weave-pro-verification .pv-workgrid{grid-template-columns:minmax(0,1fr) 262px;gap:14px;}
+}
+@media(max-width:700px){
+  #weave-pro-verification.pv-shell{padding:14px 12px 48px;}
+  #weave-pro-verification .pv-company-caption{display:none;}
+  #weave-pro-verification .pv-brand-name{font-size:13px;}
+  #weave-pro-verification .pv-role-pill{font-size:10px;padding:8px 10px;}
+  #weave-pro-verification .pv-masthead{padding-bottom:14px;}
+  #weave-pro-verification .pv-hero{grid-template-columns:1fr;padding:28px 23px 19px;border-radius:22px;gap:4px;}
+  #weave-pro-verification .pv-hero h1{font-size:clamp(30px,7vw,40px);}
+  #weave-pro-verification .pv-hero-description{font-size:12px;}
+  #weave-pro-verification .pv-hero-visual{height:175px;transform:scale(.73);margin:-8px auto -13px;width:290px;max-width:100%;}
+  #weave-pro-verification .pv-process{align-items:flex-start;padding:20px 0 14px;}
+  #weave-pro-verification .pv-steps{width:100%;}
+  #weave-pro-verification .pv-step{flex:1;justify-content:center;padding:9px 5px;font-size:10px;white-space:nowrap;}
+  #weave-pro-verification .pv-workgrid{display:flex;flex-direction:column;}
+  #weave-pro-verification .pv-main-column,#weave-pro-verification .pv-side-panel{width:100%;}
+  #weave-pro-verification .pv-panel{padding:19px !important;border-radius:19px !important;}
+  #weave-pro-verification .pv-side-panel{position:static;padding:19px;border-radius:19px;}
+}
+@media(max-width:365px){
+  #weave-pro-verification .pv-role-pill{display:none;}
+  #weave-pro-verification .pv-step{font-size:9px;gap:5px;}
+}
+@media(prefers-reduced-motion:reduce){
+  #weave-pro-verification .pv-panel button{transition:none;}
+  #weave-pro-verification .pv-panel button:not(:disabled):hover{transform:none;}
+}
