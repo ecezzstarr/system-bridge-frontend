@@ -57,7 +57,7 @@ export default function ClientOwnerEarningsPanel({storeApiPath,systems=[]}:{
   const [description,setDescription]=useState('')
   const [evidence,setEvidence]=useState('')
   const [systemId,setSystemId]=useState('')
-  const [requestId,setRequestId]=useState(()=>Math.random().toString(36).slice(2))
+  const [requestId,setRequestId]=useState('')
 
   const load=useCallback(async()=>{
     const token=getClientToken()
@@ -77,6 +77,8 @@ export default function ClientOwnerEarningsPanel({storeApiPath,systems=[]}:{
     if(!Number.isFinite(n)||n<=0||!description.trim())return
     setBusy(true);setError('');setMessage('')
     const token=getClientToken()
+    const requestKey=requestId||crypto.randomUUID()
+    setRequestId(requestKey)
     try{
       const r=await fetch(storeApiPath+'/earnings',{
         method:'POST',
@@ -84,14 +86,13 @@ export default function ClientOwnerEarningsPanel({storeApiPath,systems=[]}:{
         body:JSON.stringify({
           category,currency,amount:n,description:description.trim(),
           evidenceReference:evidence.trim(),systemId:systemId||undefined,
-          requestId:requestId.padEnd(32,'0').slice(0,32).replace(
-            /^(........)(....)(....)(....)(............)$/, '$1-$2-$3-$4-$5')
+          requestId:requestKey
         }),
       })
       const data=await r.json()
       if(!r.ok)throw Error(data.error||'Cost was not recorded')
       setAmount('');setDescription('');setEvidence('');setSystemId('')
-      setRequestId(Math.random().toString(36).slice(2))
+      setRequestId('')
       setMessage(data.message||'Cost recorded.')
       await load()
     }catch(e){setError(e instanceof Error?e.message:'Unable to record cost')}
