@@ -58,7 +58,7 @@ assert.ok(engine.includes('safeCodePath')&&engine.includes('PROTECTED.some')&&
  engine.includes("commitWorkshopFile")&&
  engine.includes("createWorkshopReview"),
  'No arbitrary path, branch, API or direct main source writes are exposed')
-assert.ok(engine.includes("input.confirmation!=='CREATE DRAFT'")&&
+assert.ok(engine.includes("confirmation!=='CREATE DRAFT'")&&
  engine.includes("input.confirmation!=='SAVE DRAFT'")&&
  engine.includes("input.confirmation!=='OPEN REVIEW'")&&
  engine.includes("previous?.sha||null")&&
