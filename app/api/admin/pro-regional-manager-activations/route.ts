@@ -125,16 +125,20 @@ export async function POST(request:NextRequest){
      WHERE file_number=$2 AND status='pending' AND client_id IS NULL
      RETURNING id`,[id,row.file_number])
    if(reserved.rows.length!==1)throw new Error('The original reserved Pro File Number is unavailable; reconcile ownership before activating.')
+   // Pro defines the Folder tier and the owner's company position, not a
+   // workshop industry. Each manager's approved business plan determines what
+   // this otherwise unformed workshop will become. CJ's crypto workshop is a
+   // separate, individually owned Client business and must not be copied here.
    const folder=await db.query(`INSERT INTO client_file_folders
     (client_id,file_number,client_name,workshop_type,status,claimed_at)
-    VALUES($1::uuid,$2,$3,'pro_regional_manager','active',now())
+    VALUES($1::uuid,$2,$3,'formation','active',now())
     ON CONFLICT(file_number) DO NOTHING RETURNING id`,[id,row.file_number,row.name])
    if(folder.rows.length!==1)throw new Error('Pro File Folder ownership could not be created without conflict.')
    const workshop=await db.query(`INSERT INTO client_system_workshops
     (client_id,file_number,workshop_type,title,description)
-    VALUES($1::uuid,$2,'pro_regional_manager',
-      'Pro Regional Manager · '||$3,
-      'Verified private Pro File Folder for departmental business formation and public Customer Door.')
+    VALUES($1::uuid,$2,'formation',
+      $3||' · Pro File Folder',
+      'Your Pro File Folder carries your approved individual business plan. Build the workshop and services that belong to your own work in life.')
     ON CONFLICT(client_id) DO NOTHING RETURNING id`,[id,row.file_number,row.business_name])
    if(workshop.rows.length!==1)throw new Error('Pro Manager workshop conflicts with an existing workspace.')
    const activated=await db.query(`UPDATE weave_pro_regional_manager_activations
