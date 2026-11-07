@@ -58,7 +58,6 @@ export default function TermsPage() {
             published operating explanation does not silently replace an existing contract.
           </p>
           <p>
-            References to ChatGPT or OpenAI          <p>
             References to ChatGPT or OpenAI identify the technical source of an integration where applicable and do not imply
             endorsement, partnership, exclusivity, or a guarantee by OpenAI.
           </p>
