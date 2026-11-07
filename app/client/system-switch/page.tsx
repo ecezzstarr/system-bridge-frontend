@@ -34,7 +34,7 @@ export default function ClientSystemSwitchPage() {
 
   useEffect(() => {
     const controller=new AbortController()
-    const timeout=window.setTimeout(()=>controller.abort(),12000)
+    const timeout=window.setTimeout(()=>controller.abort(),20000)
     const localClient = getClientUser()
     const token = getClientToken()
     if (!localClient || !token) {
@@ -139,7 +139,7 @@ export default function ClientSystemSwitchPage() {
   if (entry && !entry.active) return <ClientFileFolderGate entry={entry} />
 
   if (error || !data?.verified || !data?.workshop) {
-    return <main className="min-h-screen bg-transparent text-white p-4 flex items-center justify-center"><div className="w-full max-w-lg border-y border-cyan-200/10 bg-[#040a12]/92 p-8 text-center backdrop-blur-xl"><FolderOpen className="mx-auto h-10 w-10 text-sky-400" /><h1 className="mt-5 text-2xl font-semibold">File Folder</h1><p className="mt-3 text-sm leading-6 text-slate-400">{error || 'Your File Folder could not be opened.'}</p><Link href="/system-switch/world" className="mt-6 inline-flex rounded-full border border-white/10 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em]">Return to Weave Open World</Link></div></main>
+    return <main className="min-h-screen bg-transparent text-white p-4 flex items-center justify-center"><div className="w-full max-w-lg border-y border-cyan-200/10 bg-[#040a12]/92 p-8 text-center backdrop-blur-xl"><FolderOpen className="mx-auto h-10 w-10 text-sky-400" /><h1 className="mt-5 text-2xl font-semibold">File Folder</h1><p className="mt-3 text-sm leading-6 text-slate-400">{error || 'Your File Folder could not be opened.'}</p><div className="mt-5 flex flex-wrap justify-center gap-3"><button type="button" onClick={()=>window.location.reload()} className="inline-flex min-h-11 items-center justify-center rounded-lg bg-amber-200 px-5 py-2 text-sm font-bold text-[#211914]">Retry private File Folder</button><Link href="/client/dashboard" className="inline-flex min-h-11 items-center justify-center rounded-lg border border-sky-200/25 px-5 py-2 text-sm text-sky-100">Client Home</Link></div><Link href="/system-switch/world" className="mt-6 inline-flex rounded-full border border-white/10 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em]">Return to Weave Open World</Link></div></main>
   }
 
   return (
