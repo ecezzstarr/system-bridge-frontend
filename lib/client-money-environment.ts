@@ -54,6 +54,7 @@ export async function ensureClientMoneySchema(sql: any) {
 export async function ensureClientMoneyEnvironment(
   sql: any,
   clientId: string,
+  existingMainWallet?: {balance_trx: string | number; balance_usdt: string | number | null},
 ): Promise<ClientMoneyEnvironment> {
   await ensureClientMoneySchema(sql)
 
@@ -79,42 +80,47 @@ export async function ensureClientMoneyEnvironment(
     RETURNING balance_flame_coin, balance_trx, balance_usdt
   `
 
-  await sql`
-    INSERT INTO wallets (
-      id,
-      user_id,
-      balance_trx,
-      balance_usdt,
-      is_primary,
-      is_eight_engine_controlled,
-      created_at,
-      updated_at
-    )
-    SELECT
-      gen_random_uuid(),
-      ${clientId}::uuid,
-      0,
-      0,
-      true,
-      true,
-      NOW(),
-      NOW()
-    WHERE NOT EXISTS (
-      SELECT 1
+  let mainWallet = existingMainWallet
+  if (!mainWallet) {
+    await sql`
+      INSERT INTO wallets (
+        id,
+        user_id,
+        balance_trx,
+        balance_usdt,
+        is_primary,
+        is_eight_engine_controlled,
+        created_at,
+        updated_at
+      )
+      SELECT
+        gen_random_uuid(),
+        ${clientId}::uuid,
+        0,
+        0,
+        true,
+        true,
+        NOW(),
+        NOW()
+      WHERE NOT EXISTS (
+        SELECT 1
+        FROM wallets
+        WHERE user_id = ${clientId}::uuid
+          AND is_primary = true
+      )
+    `
+
+    const [storedWallet] = await sql`
+      SELECT balance_trx, balance_usdt
       FROM wallets
       WHERE user_id = ${clientId}::uuid
         AND is_primary = true
-    )
-  `
+      ORDER BY created_at ASC
+      LIMIT 1
+    `
 
-  const [mainWallet] = await sql`
-    SELECT balance_trx, balance_usdt
-    FROM wallets
-    WHERE user_id = ${clientId}::uuid
-      AND is_primary = true
-    ORDER BY created_at ASC
-    LIMIT 1
-  `
+    mainWallet = storedWallet
+  }
 
   return {
     vault: {

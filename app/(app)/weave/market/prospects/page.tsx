@@ -25,6 +25,7 @@ interface MyProspect {
   status: 'pending' | 'sent' | 'responded' | 'opened' | 'converted' | 'invalid_number'
   messageSent: string
   sentAt: string | null
+  whatsappHandoffAt: string | null
   lastActivityAt: string
   name: string
   country: string | null
@@ -184,24 +185,42 @@ export default function ProspectMarketPage() {
 
     setSendingId(p.outreachId)
     try {
-      // The Bridger's button click is the WEAVE confirmation. Record it first,
-      // then perform a direct mobile-safe WhatsApp handoff. The Bridger's own
-      // saved WhatsApp number is not required to open the prospect conversation.
       const res = await fetch(`/api/bridger/prospects/${p.outreachId}/send`, {
         method: 'POST',
         headers: getAuthHeaders(),
-        body: JSON.stringify({ confirmedSent: true }),
+        body: JSON.stringify({ action: 'handoff' }),
         keepalive: true,
       })
       const data = await res.json()
       if (!res.ok || !data.success) {
-        toast.error(data.error || 'WEAVE could not record the send')
+        toast.error(data.error || 'WEAVE could not open WhatsApp')
         return
       }
 
+      setMyProspects(rows => rows.map(row => row.outreachId === p.outreachId
+        ? {...row,whatsappHandoffAt:data.outreach.whatsapp_handoff_at}
+        : row))
       openWhatsApp(target, p.messageSent)
     } catch (error) {
       toast.error('WEAVE could not open this Prospect movement')
+    } finally {
+      setSendingId(null)
+    }
+  }
+
+  const confirmWhatsAppSend = async (p: MyProspect) => {
+    setSendingId(p.outreachId)
+    try {
+      const response = await fetch(`/api/bridger/prospects/${p.outreachId}/send`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ confirmedSent: true }),
+      })
+      const data = await response.json()
+      if (!response.ok || !data.success) throw new Error(data.error || 'WEAVE could not record the send')
+      await fetchMine()
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'WEAVE could not record the send')
     } finally {
       setSendingId(null)
     }
@@ -393,7 +412,7 @@ export default function ProspectMarketPage() {
                         <Badge variant="outline" className={`mt-1 text-[10px] ${st.color}`}>{st.label}</Badge>
                       </div>
                       {p.status === 'pending' ? (
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap gap-2">
                           <Button
                             size="sm"
                             disabled={sendingId === p.outreachId}
@@ -401,8 +420,14 @@ export default function ProspectMarketPage() {
                             className="bg-blue-600 hover:bg-blue-700"
                           >
                             {sendingId === p.outreachId ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Send className="h-3 w-3 mr-1" />}
-                            Send First Message
+                            {p.whatsappHandoffAt ? 'Reopen WhatsApp' : 'Open WhatsApp'}
                           </Button>
+                          {p.whatsappHandoffAt && (
+                            <Button size="sm" variant="outline" disabled={sendingId === p.outreachId}
+                              onClick={() => void confirmWhatsAppSend(p)}>
+                              I sent the message
+                            </Button>
+                          )}
                           <Button
                             size="sm"
                             variant="outline"

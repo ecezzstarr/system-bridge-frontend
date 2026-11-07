@@ -10,6 +10,7 @@ const preview=read('components/public/pro-file-folder-preview.tsx')
 const bridgePurchase=read('app/api/bridge/file-folder/purchase/route.ts')
 const verify=read('app/api/admin/bridge-deposits/verify/route.ts')
 const register=read('app/api/client/weave-register/route.ts')
+const activation=read('lib/file-folder-purchase-activation.ts')
 
 assert.ok(preview.includes('href="/file-folder"')&&preview.includes('Purchase File Folder'),'Homepage File Folder preview routes visitors into the purchase crossing')
 assert.ok(publicPage.includes('/api/public/file-folder/purchase'),'Public File Folder page submits and restores the public purchase crossing')
@@ -19,6 +20,6 @@ assert.ok(publicApi.includes('public_file_folder_purchase_access')&&publicApi.in
 assert.ok(publicApi.includes('registerUrl')&&publicApi.includes('/client/register?fileNumber='),'Approved public purchases release the issued File Number into Client registration')
 assert.ok(bridgePurchase.includes('file_folder_purchases'),'Bridger and public purchases share file_folder_purchases')
 assert.ok(verify.includes('const bridgerId = purchase.bridger_id ? String(purchase.bridger_id) : null'),'Administration supports direct purchases without requiring a Bridger')
-assert.ok(register.includes('UPDATE client_file_folders')&&register.includes("status = 'active'")&&register.includes("router")===false,'Client registration claims and activates the pre-provisioned File Folder on the server')
+assert.ok(register.includes('await activatePurchasedFileFolderForClient(')&&activation.includes('INSERT INTO client_file_folders')&&activation.includes("status='active'"),'Client registration claims and activates the pre-provisioned File Folder on the server')
 
 console.log('public File Folder homepage crossing regression checks passed')

@@ -314,89 +314,89 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  if (action === 'report_sales') {
+  if (action === 'report_sales' || action === 'record_collection') {
+    const sale = action === 'report_sales'
     const placementId = String(body.placementId || '').trim()
-    const soldPackages = Number(body.soldPackages)
-    if (!placementId || !Number.isInteger(soldPackages) || soldPackages < 1) {
-      return NextResponse.json({ success: false, error: 'Enter the number of packs the outlet has sold' }, { status: 400 })
-    }
-
-    const [placement] = await sql`
-      SELECT * FROM agility_outlet_placements
-      WHERE id=${placementId}::uuid AND agent_id=${user.id}::uuid
-      LIMIT 1
-    `
-    if (!placement || placement.supply_mode !== 'pay_after_sale') {
-      return NextResponse.json({ success: false, error: 'Pay-after-sale placement required' }, { status: 404 })
-    }
-    const nextSold = Number(placement.packages_reported_sold) + soldPackages
-    if (nextSold > Number(placement.package_count)) {
-      return NextResponse.json({ success: false, error: 'Reported sales cannot exceed the stock placed at this outlet' }, { status: 409 })
-    }
-    const nextStatus = nextSold === Number(placement.package_count)
-      ? (Number(placement.amount_collected_ngn) >= Number(placement.agreed_amount_ngn) ? 'settled' : 'sold_out_awaiting_settlement')
-      : 'with_outlet'
-    const [updated] = await sql`
-      UPDATE agility_outlet_placements
-      SET packages_reported_sold=${nextSold},status=${nextStatus},updated_at=NOW(),
-          settled_at=CASE WHEN ${nextStatus}='settled' THEN COALESCE(settled_at,NOW()) ELSE settled_at END
-      WHERE id=${placementId}::uuid AND agent_id=${user.id}::uuid
-      RETURNING *
-    `
-    return NextResponse.json({ success: true, placement: updated })
-  }
-
-  if (action === 'record_collection') {
-    const placementId = String(body.placementId || '').trim()
-    const amountNgn = Number(body.amountNgn)
+    const requestId = String(body.requestId || '').trim()
+    const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+    const amount = Number(sale ? body.soldPackages : body.amountNgn)
     const note = String(body.note || '').trim().slice(0, 300)
-    if (!placementId || !Number.isFinite(amountNgn) || amountNgn <= 0) {
-      return NextResponse.json({ success: false, error: 'Enter the amount collected from the outlet' }, { status: 400 })
+    const units = Math.round(amount * (sale ? 1 : 100))
+    if (!uuid.test(placementId) || (requestId && !uuid.test(requestId)) || !Number.isSafeInteger(units) ||
+        units <= 0 || units / (sale ? 1 : 100) !== amount) {
+      return NextResponse.json({
+        success: false,
+        error: sale ? 'Enter a whole number of packs sold' : 'Enter the amount collected to the nearest kobo',
+      }, { status: 400 })
     }
 
     let db: PoolClient | undefined
+    let committed = false
     try {
       db = await getPool().connect()
       await db.query('BEGIN')
-      const result = await db.query(
-        `SELECT * FROM agility_outlet_placements WHERE id=$1::uuid AND agent_id=$2::uuid FOR UPDATE`,
-        [placementId, user.id]
+      const {rows: [placement]} = await db.query(
+        `SELECT * FROM agility_outlet_placements
+         WHERE id=$1::uuid AND agent_id=$2::uuid AND supply_mode='pay_after_sale' FOR UPDATE`,
+        [placementId, user.id],
       )
-      const placement = result.rows[0]
-      if (!placement || placement.supply_mode !== 'pay_after_sale') {
-        await db.query('ROLLBACK')
+      if (!placement) {
         return NextResponse.json({ success: false, error: 'Pay-after-sale placement required' }, { status: 404 })
       }
-      const outstanding = Number(placement.agreed_amount_ngn) - Number(placement.amount_collected_ngn)
-      if (amountNgn > outstanding) {
-        await db.query('ROLLBACK')
-        return NextResponse.json({ success: false, error: `Only ₦${outstanding.toLocaleString()} remains outstanding` }, { status: 409 })
+      if (requestId) {
+        const {rows: [previous]} = await db.query(
+          'SELECT action,amount FROM agility_outlet_operations WHERE placement_id=$1::uuid AND request_id=$2::uuid',
+          [placementId, requestId],
+        )
+        if (previous) {
+          if (previous.action !== action || Number(previous.amount) !== amount) {
+            return NextResponse.json({ success: false, error: 'This request reference was used for a different update' }, { status: 409 })
+          }
+          return NextResponse.json({ success: true, placement })
+        }
       }
-      const nextCollected = Number(placement.amount_collected_ngn) + amountNgn
-      const settled = nextCollected >= Number(placement.agreed_amount_ngn)
-      const soldOut = Number(placement.packages_reported_sold) >= Number(placement.package_count)
-      const nextStatus = settled ? 'settled' : soldOut ? 'sold_out_awaiting_settlement' : 'with_outlet'
-
-      await db.query(
-        `INSERT INTO agility_outlet_collections (placement_id,agent_id,amount_ngn,note)
-         VALUES ($1::uuid,$2::uuid,$3,$4)`,
-        [placementId, user.id, amountNgn, note || null]
-      )
-      const updatedResult = await db.query(
+      const packageCount = Number(placement.package_count)
+      const agreedKobo = Math.round(Number(placement.agreed_amount_ngn) * 100)
+      const collectedKobo = Math.round(Number(placement.amount_collected_ngn) * 100)
+      const nextSold = Number(placement.packages_reported_sold) + (sale ? units : 0)
+      const nextCollectedKobo = collectedKobo + (sale ? 0 : units)
+      if (nextSold > packageCount) {
+        return NextResponse.json({ success: false, error: 'Reported sales cannot exceed the stock placed at this outlet' }, { status: 409 })
+      }
+      if (nextCollectedKobo > agreedKobo) {
+        return NextResponse.json({
+          success: false, error: `Only ₦${((agreedKobo - collectedKobo) / 100).toLocaleString()} remains outstanding`,
+        }, { status: 409 })
+      }
+      const nextStatus = nextCollectedKobo === agreedKobo ? 'settled'
+        : nextSold === packageCount ? 'sold_out_awaiting_settlement' : 'with_outlet'
+      if (!sale) {
+        await db.query(
+          'INSERT INTO agility_outlet_collections (placement_id,agent_id,amount_ngn,note) VALUES ($1::uuid,$2::uuid,$3,$4)',
+          [placementId, user.id, amount, note || null],
+        )
+      }
+      if (requestId) {
+        await db.query(
+          'INSERT INTO agility_outlet_operations (placement_id,request_id,action,amount) VALUES ($1::uuid,$2::uuid,$3,$4)',
+          [placementId, requestId, action, amount],
+        )
+      }
+      const {rows: [updated]} = await db.query(
         `UPDATE agility_outlet_placements
-         SET amount_collected_ngn=$1,status=$2,updated_at=NOW(),
-             settled_at=CASE WHEN $2='settled' THEN COALESCE(settled_at,NOW()) ELSE settled_at END
-         WHERE id=$3::uuid AND agent_id=$4::uuid
-         RETURNING *`,
-        [nextCollected, nextStatus, placementId, user.id]
+         SET packages_reported_sold=$1,amount_collected_ngn=$2,status=$3,updated_at=NOW(),
+             settled_at=CASE WHEN $3='settled' THEN COALESCE(settled_at,NOW()) ELSE settled_at END
+         WHERE id=$4::uuid AND agent_id=$5::uuid RETURNING *`,
+        [nextSold, nextCollectedKobo / 100, nextStatus, placementId, user.id],
       )
       await db.query('COMMIT')
-      return NextResponse.json({ success: true, placement: updatedResult.rows[0] })
+      committed = true
+      return NextResponse.json({ success: true, placement: updated })
     } catch (error) {
-      if (db) await db.query('ROLLBACK').catch(() => {})
-      console.error('[agent/distribution] collection failed', error)
-      return NextResponse.json({ success: false, error: 'Unable to record outlet collection' }, { status: 500 })
+      console.error('[agent/distribution] outlet update failed', error)
+      return NextResponse.json({ success: false, error: 'Unable to record this outlet update' }, { status: 500 })
     } finally {
+      if (!committed && db) await db.query('ROLLBACK').catch(() => {})
       db?.release()
     }
   }

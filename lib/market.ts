@@ -77,6 +77,8 @@ export async function ensureMarketTables() {
       )
     `
 
+    await sql`ALTER TABLE market_prospect_outreach ADD COLUMN IF NOT EXISTS whatsapp_handoff_at TIMESTAMPTZ`
+
     return true
   } catch (error) {
     console.error('Failed to ensure market tables:', error)

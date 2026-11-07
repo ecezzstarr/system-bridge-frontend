@@ -109,6 +109,24 @@ async function main() {
     } while(cursor)
     assert.equal(seen.size,56,'All 56 historical rows remain accessible')
 
+    // The pg Date parser discards microseconds. A prior cursor must still
+    // recover the boundary from the saved row, even across a release.
+    const newest=randomUUID(), older=randomUUID()
+    await pool.query(
+      `INSERT INTO ledger_entries(id,user_id,entry_type,amount,created_at)
+       VALUES ($1,$3,'earning',1,'2099-01-01T12:00:00.123456Z'),
+              ($2,$3,'earning',1,'2099-01-01T12:00:00.123123Z')`,
+      [newest,older,userId],
+    )
+    const precise=await getFinancialRecordPage(userId,1)
+    assert.equal(precise.ledger[0].id,newest)
+    assert.ok(precise.nextCursor)
+    assert.equal((await getFinancialRecordPage(userId,1,precise.nextCursor)).ledger[0].id,older)
+    const oldCursor=Buffer.from('2099-01-01T12:00:00.123Z|'+newest).toString('base64url')
+    assert.equal((await getFinancialRecordPage(userId,1,oldCursor)).ledger[0].id,older)
+    await pool.query('DELETE FROM ledger_entries WHERE id=ANY($1::uuid[])',[[newest,older]])
+
+
     // One failed optional financial source must NOT blank other records.
     // This was the live bug: a missing escrow table blocked every role.
     await pool.query('ALTER TABLE escrow RENAME TO missing_escrow')

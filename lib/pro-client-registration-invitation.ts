@@ -37,9 +37,7 @@ function sourceOrigin(requestOrigin:string){
   return url.origin
  }catch{throw new Error('Public HTTPS website origin is not configured for secure Client registration emails.')}
 }
-async function deliverProClientInvitation(email:string,name:string,link:string){
- const provider=await passwordRecoveryEmailProvider()
- if(provider==='none')throw new Error('Company email delivery is unavailable; contact Administration for secure onboarding.')
+async function deliverProClientInvitation(provider:'gmail'|'resend',email:string,name:string,link:string){
  const subject='WEAVE Pro File Folder · Verified Client registration'
  const message=`Hello ${name},
 
@@ -62,7 +60,7 @@ WEAVE of Presence · Pro Staff Verification`
   if(!apiKey||!from)throw new Error('Company mail transport is unavailable')
   const response=await fetch('https://api.resend.com/emails',{
    method:'POST',headers:{Authorization:'Bearer '+apiKey,'Content-Type':'application/json'},
-   body:JSON.stringify({from,to:[email],subject,text:message}),cache:'no-store'})
+   body:JSON.stringify({from,to:[email],subject,text:message}),cache:'no-store',signal:AbortSignal.timeout(12000)})
   if(!response.ok)throw new Error('Company registration invitation could not be delivered')
  }
 }
@@ -75,7 +73,6 @@ export async function sendVerifiedProClientRegistrationInvite(ticket:string,requ
  await ensureProClientRegistrationInvitationSchema()
  const hash=createHash('sha256').update(ticket.toLowerCase()).digest('hex')
  const db=await getPool().connect()
- let delivery:null|{email:string;name:string;fileNumber:string;token:string}=null
  try{
   await db.query('BEGIN')
   const rows=await db.query(`SELECT v.id,v.file_number,v.status,v.signed_name,v.identity_verified_at,
@@ -116,14 +113,12 @@ export async function sendVerifiedProClientRegistrationInvite(ticket:string,requ
      window_started_at=CASE WHEN $2 THEN pro_client_registration_invitation_delivery.window_started_at ELSE now() END,
      sent_count=CASE WHEN $2 THEN pro_client_registration_invitation_delivery.sent_count+1 ELSE 1 END,
      last_sent_at=now(),updated_at=now()`,[row.id,Boolean(inWindow)])
-  delivery={email:String(row.candidate_email),name:String(row.candidate_name),
-   fileNumber:String(row.file_number),token}
+  const link=origin+'/client/register?fileNumber='+encodeURIComponent(row.file_number)+
+   '&staffOffer='+encodeURIComponent(token)
+  // Keep the previous token and resend allowance if the bounded transport fails.
+  await deliverProClientInvitation(provider,row.candidate_email,row.candidate_name,link)
   await db.query('COMMIT')
  }catch(e){await db.query('ROLLBACK').catch(()=>{});throw e}
  finally{db.release()}
- if(!delivery)throw new Error('Unable to prepare registration invitation')
- const link=origin+'/client/register?fileNumber='+encodeURIComponent(delivery.fileNumber)+
-  '&staffOffer='+encodeURIComponent(delivery.token)
- await deliverProClientInvitation(delivery.email,delivery.name,link)
  return {success:true,message:'A private account registration link has been sent to the company-approved email address. Check your inbox. Never share the link. No new activation payment is required.'}
 }

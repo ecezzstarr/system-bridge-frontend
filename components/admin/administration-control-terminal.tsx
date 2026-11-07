@@ -577,11 +577,15 @@ function DepositApprovalSection({ user }: { user: any }) {
     created_at: string
     verified_at: string | null
     manual_credited?: boolean
+    review_event?: string
   }
   const [deposits, setDeposits] = useState<ReviewDeposit[]>([])
   const [loading, setLoading] = useState(true)
   const [processingId, setProcessingId] = useState<string | null>(null)
   const [reconciling, setReconciling] = useState(false)
+  const [nextDepositId, setNextDepositId] = useState<string | null>(null)
+  const [referenceInput, setReferenceInput] = useState('')
+  const [reference, setReference] = useState('')
   type Inspection = {paymentStatus:string;mode:string;matched:boolean;canResolve:boolean;credits:number;creditedAmount:number;refunds:number;guidance:string}
   const [inspections, setInspections] = useState<Record<string, Inspection>>({})
   const [inspectingId, setInspectingId] = useState<string | null>(null)
@@ -637,13 +641,13 @@ function DepositApprovalSection({ user }: { user: any }) {
     void fetchPendingDeposits()
     const stop = visiblePoll(() => fetchPendingDeposits(true), 8000, false)
     return stop
-  }, [])
+  }, [reference])
 
   const fetchPendingDeposits = async (silent = false) => {
     if (!silent) setLoading(true)
     try {
       const token = localStorage.getItem('ssb_auth_token')
-      const response = await fetch('/api/admin/deposit/paystack', {
+      const response = await fetch('/api/admin/deposit/paystack' + (reference ? '?reference=' + encodeURIComponent(reference) : ''), {
         cache: 'no-store',
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       })
@@ -720,10 +724,11 @@ function DepositApprovalSection({ user }: { user: any }) {
           'Content-Type': 'application/json',
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ reconcilePending: true }),
+        body: JSON.stringify({ reconcilePending: true, afterDepositId: nextDepositId }),
       })
       const data = await response.json()
       if (!response.ok || !data.success) throw new Error(data.error || 'Reconciliation unavailable')
+      setNextDepositId(data.nextDepositId || null)
       toast.success(data.message || 'Reconciliation checked')
       await fetchPendingDeposits(true)
     } catch (error) {
@@ -746,11 +751,24 @@ function DepositApprovalSection({ user }: { user: any }) {
         </div>
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" size="sm" disabled={reconciling} onClick={() => void reconcileExisting()}>
-            {reconciling ? 'Checking Paystack...' : 'Reconcile previous deposits'}
+            {reconciling ? 'Checking Paystack...' : nextDepositId ? 'Reconcile next deposits' : 'Reconcile previous deposits'}
           </Button>
           <Button variant="outline" size="sm" onClick={() => void fetchPendingDeposits()}>Refresh</Button>
         </div>
       </div>
+      <form className="mt-4 flex flex-wrap gap-2" onSubmit={event => {
+        event.preventDefault()
+        setReference(referenceInput.trim())
+      }}>
+        <input aria-label="Exact Paystack reference" placeholder="Exact Paystack reference"
+          className="rounded-md border border-white/20 bg-black/30 px-3 text-sm text-white"
+          value={referenceInput} maxLength={128} onChange={event => setReferenceInput(event.target.value)} />
+        <Button type="submit" size="sm" variant="outline">Find payment</Button>
+        {reference && <Button type="button" size="sm" variant="outline" onClick={() => {
+          setReferenceInput('')
+          setReference('')
+        }}>Clear search</Button>}
+      </form>
       {loading ? (
         <p className="py-8 text-center text-xs text-slate-400">Loading Paystack deposits...</p>
       ) : deposits.length === 0 ? (
@@ -770,15 +788,17 @@ function DepositApprovalSection({ user }: { user: any }) {
                   <span className={deposit.status === 'approved' && deposit.verified_at ? 'text-xs font-bold text-emerald-300' : deposit.status === 'rejected' ? 'text-xs font-bold text-red-300' : 'text-xs font-bold text-amber-300'}>
                     {deposit.status === 'approved' ? (deposit.manual_credited ? 'Administration-confirmed · Wallet credited' : deposit.verified_at ? 'Paystack verified · Wallet credited' : 'Approval without Paystack proof · Investigate') : deposit.status === 'rejected' ? 'Verification failed · Review' : 'Awaiting Paystack verification'}
                   </span>
-                  {(deposit.status === 'pending' || deposit.status === 'rejected' || (deposit.status === 'approved' && !deposit.verified_at)) && (
+                  {deposit.review_event === 'refund.processed' && <span className="text-xs font-bold text-red-300">Paystack refund · Forensics review required</span>}
+                  {deposit.review_event === 'charge.success.review' && deposit.status !== 'approved' && <span className="text-xs font-bold text-amber-300">Payment confirmation mismatch · Inspect evidence</span>}
+                  {(deposit.review_event === 'refund.processed' || deposit.status === 'pending' || deposit.status === 'rejected' || (deposit.status === 'approved' && !deposit.verified_at)) && (
                     <div className="flex flex-wrap justify-end gap-2">
                       <Button variant="outline" size="sm" disabled={inspectingId === deposit.id} onClick={() => void inspectDeposit(deposit.id)}>
                         {inspectingId === deposit.id ? 'Inspecting...' : 'Inspect Paystack'}
                       </Button>
-                      <Button size="sm" disabled={processingId === deposit.id} onClick={() => void verifyDeposit(deposit.id)}>
+                      <Button size="sm" disabled={processingId === deposit.id || deposit.review_event === 'refund.processed'} onClick={() => void verifyDeposit(deposit.id)}>
                         {processingId === deposit.id ? 'Verifying...' : deposit.status === 'pending' ? 'Verify with Paystack' : deposit.status === 'rejected' ? 'Retry verified recovery' : 'Attach verified proof'}
                       </Button>
-                      {(deposit.status === 'pending' || deposit.status === 'rejected') && Number(deposit.amount_ngn) <= 10000 && (
+                      {(deposit.status === 'pending' || deposit.status === 'rejected') && deposit.review_event !== 'refund.processed' && Number(deposit.amount_ngn) <= 10000 && (
                         <Button size="sm" variant="outline"
                           disabled={manualBusy}
                           onClick={() => openManualCredit(deposit)}>
