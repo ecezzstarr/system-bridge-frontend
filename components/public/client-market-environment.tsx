@@ -239,13 +239,14 @@ export function ClientMarketEnvironment({
                 </div>
                 <form action={`/api/public/store/${encodeURIComponent(slug)}/orders`} method="POST" className="rounded-2xl border border-white/10 bg-black/25 p-4">
                   <input name="item_id" value={item.id} type="hidden"/>
-                  <p className="text-[9px] font-black uppercase tracking-[0.18em] text-slate-500">Purchase counter</p>
+                  <p className="text-[9px] font-black uppercase tracking-[0.18em] text-slate-500">{item.offer_type==='crypto'?'Exchange enquiry':'Purchase counter'}</p>
+                  {item.offer_type==='crypto'&&<p className="mt-2 text-xs leading-5 text-amber-200">An enquiry is not a verified crypto trade. Do not transfer assets or payment based on an unverified order; execution requires a separately authorized provider and proof of settlement.</p>}
                   <input name="customer_name" required placeholder="Your name" className="mt-3 w-full rounded-xl border border-white/10 bg-white/[0.045] px-3 py-2.5 text-sm outline-none"/>
                   <input name="customer_contact" required placeholder="Email or phone" className="mt-2 w-full rounded-xl border border-white/10 bg-white/[0.045] px-3 py-2.5 text-sm outline-none"/>
                   {store.customer_wallet_required&&<input name="customer_wallet" required placeholder="Receiving crypto wallet" className="mt-2 w-full rounded-xl border border-white/10 bg-white/[0.045] px-3 py-2.5 text-sm outline-none"/>}
                   <input name="payment_reference" placeholder="Payment reference (if paid)" className="mt-2 w-full rounded-xl border border-white/10 bg-white/[0.045] px-3 py-2.5 text-sm outline-none"/>
                   <textarea name="customer_note" rows={2} placeholder="Delivery/request note" className="mt-2 w-full rounded-xl border border-white/10 bg-white/[0.045] px-3 py-2.5 text-sm outline-none"/>
-                  <button className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-xs font-black text-slate-950">Purchase / Request <ArrowRight className="h-4 w-4"/></button>
+                  <button className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-xs font-black text-slate-950">{item.offer_type==='crypto'?'Send enquiry':'Purchase / Request'} <ArrowRight className="h-4 w-4"/></button>
                 </form>
               </div>
             </article>)}
