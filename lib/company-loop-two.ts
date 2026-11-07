@@ -6,17 +6,18 @@
 export const ONE_NIGERIAN_LOOP = {
   key: 'flame-event-02',
   loopNumber: 2,
-  name: 'One Nigerian',
-  title: 'Company Loop 2 — Flame Event: One Nigerian',
+  name: 'Country Formation',
+  title: 'Company Loop 2 — Country Event: Country Formation',
   startsAt: '2027-01-01T00:00:00+01:00',
   endsAt: '2027-01-11T23:59:59.999+01:00',
   flag: ['#008751', '#FFFFFF', '#008751'] as const,
 } as const
 
-/** Loop 3 begins immediately after One Nigerian closes. Its identity and ending are unannounced. */
+/** Loop 3 — Self Upliftment — begins immediately after Country Formation closes. Its ending is unannounced. */
 export const COMPANY_LOOP_THREE_STARTS_AT = '2027-01-12T00:00:00+01:00' as const
+export const COMPANY_LOOP_THREE_TITLE = 'Self Upliftment' as const
 
-/** Do not infer an ending or theme for Company Loop 3. */
+/** Self Upliftment has no invented ending or theme; only its name is now official. */
 export function hasCompanyLoopThreeStarted(now:Date = new Date()):boolean {
   return now.getTime() >= Date.parse(COMPANY_LOOP_THREE_STARTS_AT)
 }
