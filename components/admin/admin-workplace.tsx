@@ -95,10 +95,10 @@ export function AdminWorkplace({userName,onOpenDistricts}:{userName?:string|null
          <label className="flex min-h-11 w-full items-center gap-2 rounded-xl border border-[#d4c199] bg-[#fffefa] px-3 sm:w-72">
            <Search className="h-4 w-4 text-[#987233]"/>
            <span className="sr-only">Search Administration workshops</span>
-           <input type="search" placeholder="Find company workshop..." value={search} onChange={e=>setSearch(e.target.value)} className="w-full bg-transparent py-3 text-sm outline-none placeholder:text-[#74818a]"/>
+           <input type="search" placeholder="Example: approve staff or verify deposits" value={search} onChange={e=>setSearch(e.target.value)} className="w-full bg-transparent py-3 text-sm outline-none placeholder:text-[#74818a]"/>
          </label>
        </div>
-       {active==='desk'&&!q&&<section className="mt-6 rounded-xl border border-[#e2d2b3] bg-[#f6f1e6] p-4 sm:p-5">
+       <Link href="/search" data-role-company-search="admin" className="mt-4 inline-flex min-h-11 items-center rounded-lg border border-[#b38b51] bg-white/80 px-4 py-2 text-sm font-semibold text-[#5e4823]">Find a company function by describing the decision or work to perform.</Link>\n       {active==='desk'&&!q&&<section className="mt-6 rounded-xl border border-[#e2d2b3] bg-[#f6f1e6] p-4 sm:p-5">
          <h3 className="flex items-center gap-2 text-base font-semibold"><ClipboardCheck className="h-5 w-5 text-[#96732f]"/> Begin with verified company movement</h3>
          <p className="mt-1 text-sm leading-6 text-[#55656b]">These are permanent entrances to real source records, not manufactured alerts or approvals.</p>
          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
