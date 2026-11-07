@@ -97,6 +97,11 @@ export const ADMIN_SPACES:readonly AdminSpace[]=[
     "description": "Review Agent and Bridger Pro position applications and independently agreed staff terms."
   },
   {
+    "title": "Pro Regional Manager Activation Forensics",
+    "href": "/admin/pro-regional-manager-activations",
+    "description": "Independently verify original-role Pro Manager signed terms and TRC-20 activation before opening a File Folder."
+  },
+  {
     "title": "Client Staff Offers",
     "href": "/admin/client-staff-offers",
     "description": "Manage Client staff offers and documented employment terms."
