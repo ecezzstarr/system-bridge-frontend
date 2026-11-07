@@ -17,6 +17,7 @@ export async function GET(request:NextRequest){
   await ensureCompanyClientStaffSchema()
   const rows=await sql`SELECT v.id,v.file_number,v.business_name,v.business_plan,v.signed_name,
    v.terms_accepted_at,v.identity_reference,v.identity_verified_at,
+   v.operating_country,v.operating_region,v.operating_city,v.contact_address,v.postal_code,
    v.payment_wallet,v.payment_tx_hash,v.payment_submitted_at,v.payment_verified_at,
    v.payment_verified_amount_usdt,v.rejection_reason,v.status,v.created_at,
    offer.position_title AS staff_position_title,offer.monthly_salary_usdt AS staff_monthly_salary_usdt,
@@ -41,7 +42,8 @@ export async function POST(request:NextRequest){
   return NextResponse.json({error:'Select a valid Pro verification record.'},{status:400,headers:proVerificationPublicHeaders})
  try{
   await ensureProFileNumberVerificationSchema()
-  const [current]=await sql`SELECT id,file_number,business_name,signed_name,status
+  const [current]=await sql`SELECT id,file_number,business_name,signed_name,status,operating_country,operating_region,
+   operating_city,contact_address,postal_code
    FROM pro_file_number_verifications WHERE id=${id}::uuid LIMIT 1`
   if(!current)throw new Error('Pro verification request not found.')
   if(action==='verify_identity'){
@@ -49,6 +51,11 @@ export async function POST(request:NextRequest){
    if(body.independentlyVerified!==true)throw new Error('Independent File Number identity review required.')
    const ref=String(body.identityReference||'').trim()
    if(ref.length<8||ref.length>255)throw new Error('Provide an identifiable Administration verification reference.')
+   if(!current.operating_country||!current.operating_region||!current.operating_city||
+     !current.contact_address)throw new Error('The applicant must provide real operating location and contact address.')
+   if(String(current.file_number)==='WEAVE-2026-0907-0001'&&
+      String(current.operating_country).trim().toLowerCase()!=='spain')
+      throw new Error('CJ is assigned to Spain. Verify the country and territory before approval.')
    const offer=await getApprovedProStaffOffer(String(current.file_number))
    if(!offer)throw new Error('An approved Pro company staff appointment is required. CJ Dorado must have an approved Regional Manager offer.')
    const applicant=String(current.signed_name||'').trim().toLowerCase()
