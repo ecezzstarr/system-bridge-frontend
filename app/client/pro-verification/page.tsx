@@ -4,6 +4,7 @@ import Link from 'next/link'
 type Verification={reference:string;fileNumber:string;businessName:string;
  status:string;feeUSDT:number;network:string;walletAddress:string|null;
  paymentVerified:boolean;rejectionReason?:string|null;
+ companyPosition?:{title:string;monthlySalaryUSDT:number|null;salaryStatus:string}|null;
  siblingsEvent?:{reportedAmountUSDT:number;verifiedAmountUSDT:number;status:string;availableForWithdrawal:boolean}|null}
 const PLAN_FIELDS=[
  ['businessActivity','Business activity and purpose'],
@@ -69,10 +70,10 @@ export default function ProFileNumberVerification(){
   <div className="mx-auto max-w-3xl space-y-6">
    <header className="rounded-2xl border border-cyan-300/20 bg-slate-900 p-6">
     <p className="text-xs uppercase tracking-widest text-cyan-200">Weave of Presence · Dream Lovely</p>
-    <h1 className="mt-2 text-3xl font-bold">Pro File Folder Verification</h1>
-    <p className="mt-3 text-sm leading-6 text-slate-200">Start with your issued File Number. You do not need a password or a new account to submit your File Folder business name and business plan.</p>
+    <h1 className="mt-2 text-3xl font-bold">Pro File Folder · Company Staff Verification</h1>
+    <p className="mt-3 text-sm leading-6 text-slate-200">Pro File Folders in this workflow are assigned to approved WEAVE company staff. Start with your issued File Number; no password is needed to submit the File Folder business name, plan and staff activation agreement.</p>
     <p className="mt-4 text-3xl font-bold">680 USDT</p>
-    <p className="mt-1 text-sm text-slate-300">One-time Pro File Folder activation · USDT on TRON (TRC-20) · Forensics verification.</p>
+    <p className="mt-1 text-sm text-slate-300">One-time company-staff Pro File Folder activation · USDT on TRON (TRC-20) · Forensics verification. Monthly salary is a separate company payroll obligation, not an activation refund.</p>
     <p className="mt-2 text-xs text-slate-400">A File Number alone is not identity verification and does not provide access to any Client's funds, wallet, employment or private Folder.</p>
    </header>
    {error&&<p role="alert" className="rounded-xl border border-rose-300/30 p-4 text-sm text-rose-200">{error}</p>}
@@ -113,6 +114,7 @@ export default function ProFileNumberVerification(){
     <div className="space-y-3 rounded-xl border border-white/15 p-4">
      <h3 className="font-semibold">4. Pro File Folder agreement and signature</h3>
      <p className="text-sm leading-6 text-slate-200">I request a Pro File Folder under my issued File Number. I acknowledge the one-time <strong>680 USDT activation fee</strong>, paid exclusively through the official TRON USDT (TRC-20) wallet shown after independent identity and plan review. Payment evidence must be verified by Weave Forensics before activation. This fee is not a personal loan, wallet deposit or recurring subscription.</p>
+     <p className="text-sm leading-6 text-slate-200">This Pro File Folder is for a WEAVE employee with a separately approved company position. The monthly salary, employment responsibilities and actual payments are controlled by the employee's recorded company appointment, not by this 680 USDT activation charge. The Folder fee does not buy a job or guarantee salary.</p>
      <p className="text-sm leading-6 text-slate-200">My business plan and name form the operating direction of my Folder. My existing verified business earnings, including any Siblings Event claims, require separate accounting; paying this fee does not establish or guarantee withdrawal of funds. Private Folder access requires identity and payment verification and correct account ownership.</p>
      <label className="block text-sm">Your full registered name · electronic signature
       <input value={signedName} onChange={e=>setSignedName(e.target.value)} autoComplete="name"
@@ -133,6 +135,14 @@ export default function ProFileNumberVerification(){
     <h2 className="text-xl font-bold">Your verification workspace</h2>
     <p className="font-mono text-xs text-cyan-200">{verification.fileNumber}</p>
     <p className="text-sm">File Folder business: <strong>{verification.businessName}</strong></p>
+    {verification.companyPosition?<div className="rounded-xl border border-cyan-300/20 bg-cyan-300/[.04] p-4">
+      <p className="text-xs uppercase tracking-widest text-cyan-200">Administration-approved WEAVE employment</p>
+      <p className="mt-1 text-lg font-semibold">{verification.companyPosition.title}</p>
+      <p className="mt-1 text-sm text-slate-200">Monthly salary: {verification.companyPosition.monthlySalaryUSDT!==null
+       ?verification.companyPosition.monthlySalaryUSDT.toLocaleString()+' USDT according to the approved company offer'
+       :'Pending confirmation in the company salary record'}</p>
+      <p className="mt-1 text-xs text-slate-400">Position and payroll are verified independently from the Pro File Folder activation fee. Salary is not automatically credited by activating the Folder.</p>
+     </div>:<p className="text-sm text-amber-200">Company employment status and salary: awaiting Administration verification of an approved Pro staff appointment.</p>}
     <p className="text-sm capitalize text-amber-200">Status: {verification.status.replaceAll('_',' ')}</p>
     <p className="text-xs text-slate-400">Application reference: {verification.reference}</p>
     {verification.siblingsEvent&&<div className="rounded-xl border border-violet-300/25 bg-violet-300/[.05] p-4" data-verified-cj-siblings-event="true">
