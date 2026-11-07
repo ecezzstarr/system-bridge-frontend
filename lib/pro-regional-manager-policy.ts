@@ -7,9 +7,12 @@
  * entitlement, and independent verification of the activation payment.
  * No role, File Number, salary or folder is granted by this policy alone.
  *
- * Current activation records and private File Folder APIs are Client-scoped.
- * Bridger and Agent Pro onboarding MUST NOT be treated as functional until
- * their authenticated ownership and activation paths are implemented.
+ * Pro describes the File Folder tier, not the business inside it.
+ * Each approved manager's original department and own business plan determine
+ * their operating work. CJ's Client-owned crypto exchange is an individual
+ * workshop, never a default or entitlement for other Pro managers.
+ * Bridger and Agent Pro Folder ownership has a separate original-role,
+ * signed and independently verified activation path.
  */
 export type ProRegionalManagerSourceRole='bridger'|'agent'|'client'
 export const PRO_REGIONAL_MANAGER_POSITION='pro_regional_manager' as const
