@@ -18,6 +18,7 @@ if [[ -n "${WEAVE_DEPLOY_REQUESTED_BY:-}" ]]; then
 fi
 DEPLOY_STARTED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 ROLLING_BACK=0
+DEPLOY_STAGE="preflight"
 
 log() { printf '[WEAVE deploy] %s\n' "$*"; }
 
@@ -241,10 +242,10 @@ rollback() {
   ROLLING_BACK=1
   trap - ERR
   set +e
-  log "Deployment failed at line $line. Restoring $PREVIOUS_SHA"
+  log "FAILED_STAGE=$DEPLOY_STAGE exit_code=$exit_code line=$line; restoring previous release $PREVIOUS_SHA"
 
-  post_record failed "$TARGET_SHA" "$PREVIOUS_SHA" "Deployment failed before final verification at line $line" "{\"failedLine\":\"$line\"}" || true
-  post_record rollback_started "$TARGET_SHA" "$PREVIOUS_SHA" "Automatic rollback started" "$(printf '{"failedLine":"%s"}' "$line")" || true
+  post_record failed "$TARGET_SHA" "$PREVIOUS_SHA" "Deployment failed during $DEPLOY_STAGE (exit $exit_code, line $line)" "{\"failedLine\":\"$line\"}" || true
+  post_record rollback_started "$TARGET_SHA" "$PREVIOUS_SHA" "Automatic rollback started after $DEPLOY_STAGE" "$(printf '{"failedLine":"%s"}' "$line")" || true
 
   git reset --hard "$PREVIOUS_SHA"
   set_env_value WEAVE_RELEASE_SHA "$PREVIOUS_SHA"
@@ -257,8 +258,10 @@ rollback() {
   "${COMPOSE[@]}" up -d --remove-orphans
   if wait_for_health http://127.0.0.1:3000/api/health "$PREVIOUS_SHA" "Rollback local health" \
      && wait_for_health "https://${DOMAIN}/api/health" "$PREVIOUS_SHA" "Rollback public health"; then
+    log "RECOVERY_STATUS=verified rollback_sha=$PREVIOUS_SHA"
     post_record rolled_back "$PREVIOUS_SHA" "$TARGET_SHA" "Automatic rollback verified locally and publicly after failure at line $line" "$(printf '{"failedRelease":"%s"}' "$TARGET_SHA")" || true
   else
+    log "RECOVERY_STATUS=manual_required rollback_sha=$PREVIOUS_SHA"
     post_record failed "$PREVIOUS_SHA" "$TARGET_SHA" "Automatic rollback could not verify previous release locally and publicly; operator recovery required" "$(printf '{"failedRelease":"%s","recovery":"manual_required"}' "$TARGET_SHA")" || true
   fi
   replay_journal || true
@@ -279,10 +282,16 @@ else
   post_record started "$TARGET_SHA" "$PREVIOUS_SHA" "Verified canonical main selected for production deployment" "{\"startedAt\":\"$DEPLOY_STARTED_AT\"}" || true
 fi
 
+DEPLOY_STAGE="checkout"
+log "STAGE=$DEPLOY_STAGE"
 git reset --hard "$TARGET_SHA"
+DEPLOY_STAGE="release_environment"
+log "STAGE=$DEPLOY_STAGE"
 set_env_value WEAVE_RELEASE_SHA "$TARGET_SHA"
 export WEAVE_RELEASE_SHA="$TARGET_SHA"
 BUILD_STARTED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+DEPLOY_STAGE="image_build"
+log "STAGE=$DEPLOY_STAGE"
 if [[ -n "$ROLLBACK_TARGET" ]] && docker image inspect "weave-release:$TARGET_SHA" >/dev/null 2>&1; then
   log "Reusing retained verified release image $TARGET_SHA"
 else
@@ -290,14 +299,20 @@ else
 fi
 BUILD_FINISHED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
+DEPLOY_STAGE="compose_restart"
+log "STAGE=$DEPLOY_STAGE"
 "${COMPOSE[@]}" up -d --remove-orphans
 RESTARTED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
+DEPLOY_STAGE="local_health"
+log "STAGE=$DEPLOY_STAGE"
 wait_for_health http://127.0.0.1:3000/api/health "$TARGET_SHA" "Local WEAVE"
 replay_journal || true
 post_record built "$TARGET_SHA" "$PREVIOUS_SHA" "Self-host image built successfully" "{\"buildStartedAt\":\"$BUILD_STARTED_AT\",\"buildFinishedAt\":\"$BUILD_FINISHED_AT\"}" || true
 post_record restarted "$TARGET_SHA" "$PREVIOUS_SHA" "Docker Compose restarted WEAVE and Caddy without orphaned services" "{\"restartedAt\":\"$RESTARTED_AT\"}" || true
 
+DEPLOY_STAGE="public_health"
+log "STAGE=$DEPLOY_STAGE"
 wait_for_health "https://${DOMAIN}/api/health" "$TARGET_SHA" "Public WEAVE"
 
 VERIFIED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
@@ -308,6 +323,8 @@ else
 fi
 replay_journal || true
 
+DEPLOY_STAGE="postdeploy_diagnostics"
+log "STAGE=$DEPLOY_STAGE"
 "${COMPOSE[@]}" ps
 "${COMPOSE[@]}" logs --tail=80 weave || true
 "${COMPOSE[@]}" logs --tail=80 caddy || true
