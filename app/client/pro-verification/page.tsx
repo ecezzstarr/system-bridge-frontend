@@ -78,7 +78,7 @@ export default function ProFileNumberVerification(){
    <header className="rounded-2xl border border-cyan-300/20 bg-slate-900 p-6">
     <p className="text-xs uppercase tracking-widest text-cyan-200">Weave of Presence · Dream Lovely</p>
     <h1 className="mt-2 text-3xl font-bold">Pro File Folder · Company Staff Verification</h1>
-    <p className="mt-3 text-sm leading-6 text-slate-200">Pro File Folders in this workflow are assigned to approved WEAVE company staff. Start with your issued File Number. You do not need a password or a new account to submit the File Folder business name, plan and staff activation agreement.</p>
+    <p className="mt-3 text-sm leading-6 text-slate-200">External Clients who receive a Pro Regional Manager or other approved Client Pro staff appointment verify here, outside the Agent/Bridger Lifestyle application route. Start with your issued File Number. You do not need a password or a new account to submit the File Folder business name, plan and staff activation agreement. Administration independently confirms the Client company position before activation; the File Number alone never opens private operations.</p>
     <p className="mt-4 text-3xl font-bold">680 USDT</p>
     <p className="mt-1 text-sm text-slate-300">One-time company-staff Pro File Folder activation · USDT on TRON (TRC-20) · Forensics verification. Monthly salary is a separate company payroll obligation, not an activation refund.</p>
     <p className="mt-2 text-xs text-slate-400">A File Number alone is not identity verification and does not provide access to any Client's funds, wallet, employment or private Folder.</p>
