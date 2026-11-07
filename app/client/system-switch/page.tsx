@@ -143,7 +143,7 @@ export default function ClientSystemSwitchPage() {
   }
 
   return (
-    <main className="weave-file-folder-page min-h-dvh bg-transparent pt-16 text-white sm:pt-0" data-client-file-folder-entry="crossing-to-open-world" data-system-switch-gate="crossed" data-system-switch-flame-event="burning-river" data-weave-world="file-folder">
+    <main className="weave-file-folder-page min-h-dvh bg-transparent pt-16 text-white sm:pt-0" data-client-file-folder-entry="crossing-to-open-world" data-system-switch-gate="crossed" data-system-switch-flame-event="burning-river" data-weave-world="file-folder" data-client-private-file-folder={privateWorkshop?'owned-world':'shared-world'} data-client-private-tier={privateWorkshop?String(data.file_folder_tier):undefined}>
       <Link href="/system-switch/world" data-client-return-weave-open-world="true"
         className="fixed left-3 top-[max(4.25rem,env(safe-area-inset-top))] z-[90] inline-flex min-h-11 max-w-[calc(100vw-1.5rem)] items-center gap-2 rounded-full border border-sky-200/35 bg-[#06182a]/95 px-3 py-2 text-[11px] font-bold text-sky-100 shadow-xl backdrop-blur-xl sm:left-5">
         <ArrowLeft className="h-4 w-4 shrink-0"/> Return to Weave Open World
@@ -178,9 +178,7 @@ export default function ClientSystemSwitchPage() {
         <p className="self-center text-sm text-sky-100">Your private buildings and business records are separate from this shared visitor world.</p>
       </div>}
       {privateWorkshop
-        ? <div data-client-private-file-folder="owned-world" data-client-private-tier={String(data.file_folder_tier)}>
-            <ClientFileFolderOperatingEnvironment data={data}/>
-          </div>
+        ? <ClientFileFolderOperatingEnvironment data={data}/>
         : <SharedSystemSwitchWorld role="client" getToken={getClientToken} onPrivateWorkshop={()=>setPrivateWorkshop(true)}/>}
       <details className="ff-page-actions">
         <summary aria-label="File Folder menu"><Menu aria-hidden="true" className="h-5 w-5"/></summary>
