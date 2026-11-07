@@ -1,5 +1,5 @@
 'use client'
-import {useMemo,useRef,useState} from 'react'
+import {Component,useMemo,useRef,useState,type ReactNode} from 'react'
 import {Canvas,useFrame} from '@react-three/fiber'
 import {OrbitControls,Text} from '@react-three/drei'
 import type {Group} from 'three'
@@ -7,6 +7,22 @@ import {DoubleSide} from 'three'
 import {buildFormationProgress} from '@/lib/file-folder-world-runtime'
 import {PREMIUM_FILE_FOLDER_REFERENCE,type FileFolderWorldAppearance} from '@/lib/file-folder-world-presets'
 
+// Premium owners must still be able to operate their purchased File Folder
+// when mobile WebGL, GPU context creation, or a 3D asset fails. The real
+// workshop links below remain available regardless of rendering capability.
+class Premium3DRecoveryBoundary extends Component<{children:ReactNode},{failed:boolean}>{
+  state={failed:false}
+  static getDerivedStateFromError(){return {failed:true}}
+  componentDidCatch(error:Error){console.error('[Premium File Folder 3D]',error.message)}
+  render(){
+    if(this.state.failed)return <div data-premium-3d-recovery="renderer-error"
+      className="flex h-full flex-col items-center justify-center gap-3 bg-[#1d1820] px-5 text-center">
+      <p className="text-lg font-bold text-[#f7ddb0]">Your Premium File Folder remains available.</p>
+      <p className="max-w-md text-sm leading-6 text-[#dfc9a6]">The 3D view cannot be displayed on this device. Use the six working district buttons below to access your real systems, builds and Customer Door.</p>
+    </div>
+    return this.props.children
+  }
+}
 type District={key:string;label:string}
 type RecordRow={id?:string;title?:string;status?:string;system_type?:string;completes_at?:string;started_at?:string;created_at?:string}
 type Props={
@@ -244,10 +260,16 @@ export default function FileFolderPremiumWorld({
    </div>
   </header>
   <div className="h-[390px] w-full sm:h-[540px]" aria-label="Interactive Premium black-and-gold citadel, six operating districts, water, connected terraces and ongoing verified construction">
-   <Canvas camera={{position:[26,22,30],fov:47,near:.1,far:140}}
-    dpr={[1,1.5]} gl={{alpha:false,antialias:true,powerPreference:'high-performance'}}>
-    <Scene selected={selected} onSelect={setSelected} builds={builds} systems={systemRecords} now={now} onEnter={go}/>
-   </Canvas>
+   <Premium3DRecoveryBoundary>
+    <Canvas camera={{position:[26,22,30],fov:47,near:.1,far:140}}
+     dpr={[1,1.5]} gl={{alpha:false,antialias:true,powerPreference:'high-performance'}}
+     fallback={<div data-premium-3d-recovery="webgl-unavailable"
+       className="flex h-full items-center justify-center bg-[#1d1820] p-5 text-center text-sm leading-6 text-[#f7ddb0]">
+       Your private Premium systems are ready below. This device does not support the interactive 3D view; use the working district buttons.
+     </div>}>
+     <Scene selected={selected} onSelect={setSelected} builds={builds} systems={systemRecords} now={now} onEnter={go}/>
+    </Canvas>
+   </Premium3DRecoveryBoundary>
   </div>
   <div className="border-t border-[#b99355]/30 bg-[#252029] p-4 sm:p-5">
    <p className="text-xs font-bold uppercase tracking-widest text-[#ebc485]">Enter an area of your Premium world</p>
