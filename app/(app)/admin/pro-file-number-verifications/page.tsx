@@ -108,8 +108,8 @@ export default function ProFileNumberAdministration(){
      <details open className="rounded-lg border border-white/10 p-3"><summary className="text-sm font-semibold text-cyan-200">Submitted business plan</summary>
       <p className="mt-3 text-xs leading-6 text-slate-300">Assess whether this person's actual work, customer needs, realistic economics, employees and daily systems can create and document real value. Weave grows through verified business success, not an activation charge.</p>
       {PRO_MANAGER_PLAN_QUESTIONS.map(({key,title})=><div key={key} className="mt-3">
-       <p className="text-xs capitalize text-cyan-200">{key.replaceAll(/([A-Z])/g,' $1')}</p>
-       <p className="whitespace-pre-wrap break-words text-sm text-slate-200">{value}</p>
+       <p className="text-xs font-semibold text-cyan-200">{title}</p>
+       <p className="whitespace-pre-wrap break-words text-sm text-slate-200">{selected.business_plan?.[key]||'Not provided'}</p>
       </div>)}
      </details>
      {selected.status==='pending_identity'&&<div className="space-y-3 border-t border-white/15 pt-4">
