@@ -53,7 +53,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       detail:'Client reports an external payment. Verify actual WEAVE bank receipt and funded treasury balance before crediting the Main Client Wallet.',
       adminPath:'/admin/customer-door-settlements',actorId:clientId,actorName:'Client'})
     return NextResponse.json({success:true,order,
-      message:'Reference submitted for Administration verification. The store owner's wallet is not credited until funds are independently verified.'})
+      message:'Reference submitted for Administration verification. The store wallet is not credited until funds are independently verified.'})
   }
   if(action==='cancelled'&&existing.settlement_id){
     return NextResponse.json({error:'This order is already settled. Use a documented refund/reversal process instead of cancelling a credited payment.'},{status:409})
