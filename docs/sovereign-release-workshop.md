@@ -97,6 +97,43 @@ Further routine deploy/rollback operations then use Administration.
    worker reaches the queue (check its journal). Until the worker is installed,
    clicking Deploy only creates a **queued** record; it cannot apply updates.
 
+### Diagnose a failed release before retrying
+
+A Release Workshop **failed** result does not prove whether the previous release was restored.
+A successful GitHub Production Check does not prove the production host passed Docker or public health checks.
+
+On the actual Linux deployment host, run these **read-only** checks before recovery:
+
+```bash
+sudo journalctl -u weave-release-worker -n 160 --no-pager
+cd /opt/weave/system-bridge-frontend   # or the actual host checkout
+docker compose -f docker-compose.selfhost.yml ps
+curl -fsS --max-time 10 http://127.0.0.1:3000/api/health
+curl -fsS --max-time 10 https://weavingsystem.online/api/health
+df -h
+docker system df
+docker compose -f docker-compose.selfhost.yml logs --tail=80 weave
+```
+
+Compare the local and public health responses' releaseSha values with the requested and last verified healthy release.
+In Administration > Deployment Records (Sovereign + Flame), inspect failed, rollback_started, rolled_back and healthy events.
+Never infer a successful rollback from a statement that automatic recovery was attempted.
+
+The host journal spool is selfhost/deployment-history.log. Updated release workers additionally preserve
+a **redacted, mode 0600** private report at selfhost/release-executor-failures.log.
+The failed Administration request records stage=image_build, stage=compose_restart,
+stage=local_health, stage=public_health or another exact stage, and reports
+recovery=verified_previous_release, recovery=manual_recovery_required, or recovery=not_confirmed.
+
+Earlier worker versions discarded captured deployment output. Thus the old
+'Deployment script failed and attempted automatic recovery' message is generic.
+Source review alone cannot reconstruct discarded logs or establish whether the host rolled back.
+Inspect existing host and Sovereign + Flame evidence to determine the actual failure.
+
+Do not restart a worker while it is running a job; do not run parallel deploys, delete
+deployment journals, prune retained Docker images or modify persistent media during diagnosis.
+A source change merged to GitHub does not update an old host worker until the host
+has safely installed it. Diagnose the current host release before initiating another deploy.
 ### Recovery if the web app or the worker is offline
 
 The manual GitHub workflow
