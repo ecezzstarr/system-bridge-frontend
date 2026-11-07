@@ -81,6 +81,9 @@ installations, arbitrary Git commands, or changes to a running container.
 No browser access to the Docker socket, filesystem secrets or Oracle keys
 is created. This is an intentional safeguard, not an incomplete shell.
 
+Every source promotion requires independent review, a passing Production Check,
+and a separately verified company release authorization.
+
 A draft commit or PR is never represented as deployed production code.
 Each creation, source commit and PR opening is recorded with the actor,
 branch and relevant identifiers. GitHub remains the definitive source
