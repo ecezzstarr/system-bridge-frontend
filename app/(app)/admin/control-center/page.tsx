@@ -10,6 +10,10 @@ export default function AdministrationControlCenter(){
       <Link href="/admin/regional-manager-applications" data-admin-regional-manager-review-link="true" className="ml-2 inline-flex min-h-10 items-center border border-cyan-300/25 bg-cyan-300/[.05] px-4 py-2 text-xs font-black text-cyan-100">
         Regional Manager Applications · Review queue →
       </Link>
+      <Link href="/admin/pro-regional-manager-activations" data-admin-pro-regional-manager-activation-link="true"
+        className="ml-2 inline-flex min-h-10 items-center border border-sky-300/25 bg-sky-300/[.05] px-4 py-2 text-xs font-black text-sky-100">
+        Pro Manager Activation · Forensics
+      </Link>
       <Link href="/admin/pro-regional-manager-applications" data-admin-pro-regional-manager-review-link="true"
         className="ml-2 inline-flex min-h-10 items-center border border-sky-300/25 bg-sky-300/[.05] px-4 py-2 text-xs font-black text-sky-100">
         Pro Regional Manager · Agent and Bridger applications
