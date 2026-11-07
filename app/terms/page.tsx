@@ -34,6 +34,31 @@ export default function TermsPage() {
             transaction.
           </p>
           <p>
+            The company distinguishes Agents (Stability), Bridgers (Hope), Clients (Dream Lovely)
+            and Administration (A Time). A role, File Number, application, or payment is not
+            an approved employment contract. Salary, employee assignments, commercial returns
+            and customer fees are governed by the individually approved written terms.
+          </p>
+          <p>
+            A File Folder is a system for authorized business work, not a guarantee of
+            customers, profits or withdrawal. All financial records must distinguish actual
+            confirmed receipts, business earnings, employee compensation and company fees.
+            Payments to a public blockchain address are not automatically reversible.
+          </p>
+          <p>
+            Users must respect personal information, customer records, intellectual property,
+            human consent and applicable laws. Unauthorized automation, impersonation,
+            fraud, harassment, unsolicited prohibited marketing, credential exposure and
+            interference with other people’s systems are not permitted.
+          </p>
+          <p>
+            Company policies explain departmental responsibilities, transaction verification,
+            data handling, service corrections and software changes. Material changes to
+            binding terms require appropriate notice and acceptance where applicable; a
+            published operating explanation does not silently replace an existing contract.
+          </p>
+          <p>
+            References to ChatGPT or OpenAI          <p>
             References to ChatGPT or OpenAI identify the technical source of an integration where applicable and do not imply
             endorsement, partnership, exclusivity, or a guarantee by OpenAI.
           </p>
@@ -41,6 +66,7 @@ export default function TermsPage() {
 
         <div className="flex flex-wrap gap-3 text-sm">
           <Link className="rounded-full border border-white/10 px-4 py-2 hover:bg-white/5" href="/privacy">Privacy</Link>
+          <Link className="rounded-full border border-white/10 px-4 py-2 hover:bg-white/5" href="/policies">Company policies</Link>
           <Link className="rounded-full border border-white/10 px-4 py-2 hover:bg-white/5" href="/support">Support</Link>
           <Link className="rounded-full border border-white/10 px-4 py-2 hover:bg-white/5" href="/">Return to Weave</Link>
         </div>
