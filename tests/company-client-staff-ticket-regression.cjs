@@ -44,7 +44,9 @@ assert.ok(migration.includes('company_client_staff_offers')&&migration.includes(
   'Employee ticket and work records are independent and receipted')
 assert.ok(register.includes('staffOfferTokenHash')&&register.includes('candidate_email')&&register.includes('client_id='),
   'A company-granted File Number requires an intended recipient and private offer token')
-assert.ok(tierEndpoint.includes('company_client_staff_offers')&&tierEndpoint.includes("status='approved'"),
+assert.ok(tierEndpoint.includes('resolveVerifiedClientFileFolderTier')&&
+  read('lib/client-file-folder-tier.ts').includes('company_client_staff_offers')&&
+  read('lib/client-file-folder-tier.ts').includes("status='approved'"),
   'Client System Switch must recognize verified employee tiers without fabricating a purchase')
 assert.ok(office.includes("role!=='client'")&&office.includes("status='approved'"),
   'Employee work is authenticated and limited to granted Clients')
