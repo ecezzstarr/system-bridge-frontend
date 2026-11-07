@@ -66,4 +66,6 @@ assert.ok(migration.includes('loan_funding_reference')&&migration.includes('pers
   'Loan proposal, consent and funding audit fields must be durable')
 console.log('Company employee tickets, separate ledger, grant and workspace regression passed')
 
-assert.ok(read('app/api/client/system-switch/route.ts').includes("tierOrder.indexOf(grant.folder_tier)>tierOrder.indexOf(persistedTier||'')"),'Employee grants must not downgrade a purchased Client world');
+assert.ok(read('app/api/client/system-switch/route.ts').includes('resolveVerifiedClientFileFolderTier')&&
+  read('lib/client-file-folder-tier.ts').includes('higherVerifiedFileFolderTier(tier,validFileFolderTier(grant.folder_tier)?grant.folder_tier:null)'),
+  'Approved employee grants use the common resolver and must not downgrade a purchased Client world');
