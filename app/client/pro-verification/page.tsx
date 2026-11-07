@@ -99,7 +99,7 @@ export default function ProFileNumberVerification(){
    </nav>
    <header className="pv-hero">
     <div className="pv-hero-copy">
-     <p className="pv-eyebrow">WEAVE of Presence · The Company of Time · Client Pro Staff Verification</p>
+     <p className="pv-eyebrow">WEAVE of Presence · The Company of Time · Company Staff Verification</p>
      <h1>Pro Regional Manager <span>Your business. Your Pro world.</span></h1>
      <p className="pv-hero-description">
       Your Pro File Folder turns your work in life into an organized business environment inside Weave:
@@ -108,7 +108,7 @@ export default function ProFileNumberVerification(){
       This is a distinct company position, not an ordinary Regional Manager appointment.
      </p>
      <div className="pv-hero-signals" aria-label="Pro business features">
-      <span>Private Pro business world</span>
+      <span>Your own business world</span>
       <span>Customer Door & systems</span>
       <span>Employees & regional growth</span>
      </div>
@@ -165,7 +165,7 @@ export default function ProFileNumberVerification(){
    {message&&<p role="status" className="rounded-xl border border-cyan-300/30 p-4 text-sm text-cyan-100">{message}</p>}
    {step==='file'&&<section className="pv-panel space-y-4" data-pro-stage="file-number">
     <h2 className="text-xl font-bold">01 · Identify your company File Folder</h2>
-    <p className="text-sm text-slate-600">Use only the File Number formally issued to you by Weave Administration. No payment or password is required at this stage.</p>
+    <p className="text-sm text-slate-600">Use only the File Number formally issued to you by Weave Administration. You do not need a password or a new account to begin. No payment is required at this stage.</p>
     <label className="block text-sm text-slate-200">Client File Number
      <input autoComplete="off" value={fileNumber} onChange={e=>setFileNumber(e.target.value.toUpperCase().trim())}
       placeholder="WEAVE-..." className="mt-2 w-full rounded-lg border border-white/20 bg-slate-900 p-3 font-mono text-white"/>
