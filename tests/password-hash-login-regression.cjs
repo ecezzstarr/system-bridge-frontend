@@ -82,6 +82,7 @@ function clientRoute(current) {
     'next/server': next, bcryptjs: bcrypt,
     '@/lib/password-hash': { usableBcryptPasswordHash },
     '@/lib/pro-file-folder-activation': { getProActivationState: async () => null },
+    '@/lib/client-file-folder-tier': { resolveVerifiedClientFileFolderTier: async () => 'standard' },
     '@/lib/db': { sql: sqlFor(current) },
     '@/lib/weave-infrastructure': { getDivineShieldState: async () => ({ active: false }) },
     '@/lib/user-referral': { ensureUserReferralCode: async () => 'TEST-REFERRAL' },

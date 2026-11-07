@@ -337,7 +337,9 @@ assert.ok(!clientFileFolder.includes('studioDistricts.map((item,index)=><button'
 assert.ok(clientFileFolder3d.includes('territoryMode ? "h-full min-h-[540px] sm:min-h-[680px]" : "h-[390px] sm:h-[500px] lg:h-[590px]"'),'File Folder 3D keeps a phone-safe persistent depth while expanding to full territory depth from small screens upward')
 assert.ok(clientFileFolder.includes('data-file-folder-world="persistent-territory-interface"'),'Client File Folder declares the persistent world-as-interface runtime')
 assert.ok(read('app/client/system-switch/page.tsx').includes('data-client-file-folder-entry="crossing-to-open-world"'),'Client File Folder opens directly as the world after gate resolution')
-assert.ok(read('app/client/system-switch/page.tsx').includes('<ClientFileFolderOperatingEnvironment data={data} />')&&!read('app/client/system-switch/page.tsx').includes('FLAME_EVENT'),'Crossing hands directly into the File Folder open world without a duplicate Flame Event page wrapper')
+assert.ok((read('app/client/system-switch/page.tsx').includes('<ClientFileFolderOperatingEnvironment data={data}/>')||
+  read('app/client/system-switch/page.tsx').includes('<ClientFileFolderOperatingEnvironment data={data} />'))&&
+  !read('app/client/system-switch/page.tsx').includes('FLAME_EVENT'),'Crossing opens the Client File Folder world without a duplicate Flame Event page wrapper')
 assert.ok(!read('components/world/weave-dashboard-world.tsx').includes("bg-[#0c0907]/76"),'Dashboard world no longer uses the brown shell')
 assert.ok(read('components/world/weave-dashboard-world.tsx').includes('data-client-world={role===')&&read('components/world/weave-dashboard-world.tsx').includes("'open-territory'"),'Client World identifies as an open territory rather than a dashboard or HUD shell')
 assert.ok(!read('components/world/weave-dashboard-world.tsx').includes('animate-pulse rounded-full border border-cyan-300/10'),'Client World beacons do not run redundant infinite pulse animations')
@@ -489,7 +491,7 @@ const loadStabilityDevelopmentFoundry=read('app/(app)/admin/development-agents/p
 const loadStabilityPositionEvent=read('components/events/position-event-world.tsx')
 
 assert.ok(cleanRevealTransit2026.includes('absoluteMaximum')&&cleanRevealTransit2026.includes('elapsed<absoluteMaximum'),'Global environment cover has an absolute ceiling even when a destination leaves a pending marker mounted')
-assert.ok(loadStabilityClientFolder.includes('new AbortController()')&&loadStabilityClientFolder.includes('12000')&&loadStabilityClientFolder.includes('signal:controller.signal'),'Client File Folder boot has a bounded network wait')
+assert.ok(loadStabilityClientFolder.includes('new AbortController()')&&loadStabilityClientFolder.includes('20000')&&loadStabilityClientFolder.includes('signal:controller.signal')&&loadStabilityClientFolder.includes('Retry private File Folder'),'Client File Folder boot has a bounded network wait and a visible recovery action')
 assert.ok(loadStabilitySupportFolder.includes("redirect('/event')"),'Retired staff File Folder route has no private world network load and returns to Flame Event')
 assert.ok(loadStabilityFetch.includes('Request timed out. Check the connection and try again.'),'Blocking user actions have one reusable timeout failure mode')
 assert.ok(loadStabilityAuth.includes("fetchWithTimeout('/api/auth/register'")&&loadStabilityAuth.includes("fetchWithTimeout('/api/auth/login'"),'Staff/Bridger/Agent authentication cannot spin forever on a stalled request')

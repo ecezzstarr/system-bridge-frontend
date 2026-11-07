@@ -159,6 +159,11 @@ export const ADMIN_SPACES:readonly AdminSpace[]=[
     "description": "Review authorized Client vault movements and withdrawals."
   },
   {
+    "title": "Client File Folder Health",
+    "href": "/admin/file-folder-health",
+    "description": "Audit real Client File Number ownership, private Folder activation and first workshops before production problems spread."
+  },
+  {
     "title": "Customer Door Settlements",
     "href": "/admin/customer-door-settlements",
     "description": "Settle verified public Customer Door purchases."

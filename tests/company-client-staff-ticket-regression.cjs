@@ -44,7 +44,9 @@ assert.ok(migration.includes('company_client_staff_offers')&&migration.includes(
   'Employee ticket and work records are independent and receipted')
 assert.ok(register.includes('staffOfferTokenHash')&&register.includes('candidate_email')&&register.includes('client_id='),
   'A company-granted File Number requires an intended recipient and private offer token')
-assert.ok(tierEndpoint.includes('company_client_staff_offers')&&tierEndpoint.includes("status='approved'"),
+assert.ok(tierEndpoint.includes('resolveVerifiedClientFileFolderTier')&&
+  read('lib/client-file-folder-tier.ts').includes('company_client_staff_offers')&&
+  read('lib/client-file-folder-tier.ts').includes("status='approved'"),
   'Client System Switch must recognize verified employee tiers without fabricating a purchase')
 assert.ok(office.includes("role!=='client'")&&office.includes("status='approved'"),
   'Employee work is authenticated and limited to granted Clients')
@@ -66,4 +68,6 @@ assert.ok(migration.includes('loan_funding_reference')&&migration.includes('pers
   'Loan proposal, consent and funding audit fields must be durable')
 console.log('Company employee tickets, separate ledger, grant and workspace regression passed')
 
-assert.ok(read('app/api/client/system-switch/route.ts').includes("tierOrder.indexOf(grant.folder_tier)>tierOrder.indexOf(persistedTier||'')"),'Employee grants must not downgrade a purchased Client world');
+assert.ok(read('app/api/client/system-switch/route.ts').includes('resolveVerifiedClientFileFolderTier')&&
+  read('lib/client-file-folder-tier.ts').includes('higherVerifiedFileFolderTier(tier,validFileFolderTier(grant.folder_tier)?grant.folder_tier:null)'),
+  'Approved employee grants use the common resolver and must not downgrade a purchased Client world');

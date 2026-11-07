@@ -106,7 +106,7 @@ assert.ok(client.includes('validWriteOrigin(request)') &&
 assert.ok(api.includes('await readyWorldStorage(sql)')&&
  api.includes('lastReconciliation')&&api.includes('initialization'),
  'Open-world polling cannot recreate schema/catalog on every public request')
-assert.ok(db.includes("AND d.tier='unclassified'"),
+assert.ok(db.includes("ARRAY['unclassified','standard','pro','premium','plus']::text[]")&&db.includes('o.folder_tier::text)')&&db.includes('d.tier::text)'),
  'Older staff grants cannot silently downgrade verified purchased worlds')
 assert.ok(client.includes(".catch((error)=>console.error('[Burning River notification delivery]',error))"),
  'Notification service failures do not falsely report an already committed event action as failed')

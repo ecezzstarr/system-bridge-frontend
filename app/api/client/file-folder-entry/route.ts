@@ -5,6 +5,7 @@ import { ensureClientWorkshopSchema } from '@/lib/client-system-workshop'
 import { ensureClientMoneyEnvironment } from '@/lib/client-money-environment'
 import { activatePurchasedFileFolderForClient } from '@/lib/file-folder-purchase-activation'
 import {getProActivationState} from '@/lib/pro-file-folder-activation'
+import {resolveVerifiedClientFileFolderTier} from '@/lib/client-file-folder-tier'
 
 type GateStage =
   | 'bridge_file_folder'
@@ -56,7 +57,12 @@ export async function GET(request: NextRequest) {
     const proGate=client.file_number
       ? await getProActivationState(String(client.id),String(client.file_number)) : null
     if(proGate&&proGate.status!=='active'){
-      return NextResponse.json({success:true,active:false,
+      const existingTier=await resolveVerifiedClientFileFolderTier(sql,{
+        clientId:String(client.id),fileNumber:String(client.file_number),proActivation:proGate,
+      })
+      // An unrelated unfinished Pro enrollment never hides a verified Premium
+      // or Plus owner world. Actual Pro-only entry remains locked.
+      if(existingTier!=='premium'&&existingTier!=='plus')return NextResponse.json({success:true,active:false,
         gate:{stage:'construction' as GateStage,title:'Pro File Folder · Activation',
           detail:'One-time 680 USDT Pro activation requires signed agreement, business plan, TRC-20 payment and manual Forensics confirmation.'},
         client:{id:client.id,name:client.name,file_number:client.file_number},
@@ -195,6 +201,7 @@ export async function GET(request: NextRequest) {
     }
 
     const folderConflict = Boolean(folder?.client_id && !sameId(folder.client_id, client.id))
+    const workshopConflict = Boolean(workshop?.client_id && !sameId(workshop.client_id, client.id))
     const fneConflict = Boolean(fneFolder?.client_id && !sameId(fneFolder.client_id, client.id))
     const folderEvidence = Boolean(folder && String(folder.file_number) === String(client.file_number))
     const fneEvidence = Boolean(fneFolder)
@@ -210,11 +217,14 @@ export async function GET(request: NextRequest) {
       folder.status !== 'active' ||
       !folder.client_id ||
       !sameId(folder.client_id, client.id) ||
+      !sameId(folder.file_number, client.file_number) ||
       !workshop ||
+      !sameId(workshop.client_id, client.id) ||
+      !sameId(workshop.file_number, client.file_number) ||
       folder.workshop_type === 'pending_personalization'
     )
 
-    if (needsEnvironmentRepair && ownershipEvidence && !folderConflict && !fneConflict) {
+    if (needsEnvironmentRepair && ownershipEvidence && !folderConflict && !workshopConflict && !fneConflict) {
       try {
         await activatePurchasedFileFolderForClient({
           sql,
@@ -309,7 +319,10 @@ export async function GET(request: NextRequest) {
       folder.status === 'active' &&
       folder.client_id &&
       sameId(folder.client_id, client.id) &&
+      sameId(folder.file_number, client.file_number) &&
       workshop &&
+      sameId(workshop.client_id, client.id) &&
+      sameId(workshop.file_number, client.file_number) &&
       folder.workshop_type !== 'pending_personalization'
     )
 
@@ -338,13 +351,13 @@ export async function GET(request: NextRequest) {
         title = 'File Folder Gate'
         detail = 'This Client account exists outside the normal Bridge path. Return to the Bridge with your Bridger and establish the File Folder before System Switch.'
       }
-    } else if (folder.status !== 'active' || !folder.client_id || !sameId(folder.client_id, client.id)) {
+    } else if (folder.status !== 'active' || !folder.client_id || !sameId(folder.client_id, client.id) || !sameId(folder.file_number, client.file_number)) {
       stage = paymentConfirmed ? 'administration' : 'forensics'
       title = paymentConfirmed ? 'System Switch Gate' : 'Forensics Gate'
       detail = paymentConfirmed
         ? 'The File Folder exists and payment is recognized. Administration must open System Switch for this Client.'
         : 'The File Folder exists, but verification is not complete.'
-    } else if (!workshop || folder.workshop_type === 'pending_personalization') {
+    } else if (!workshop || !sameId(workshop.client_id,client.id) || !sameId(workshop.file_number,client.file_number) || folder.workshop_type === 'pending_personalization') {
       stage = 'personalization'
       title = 'Workshop Formation Gate'
       detail = 'Your crossing is recognized. Your first workshop is being repaired from the established File Folder movement.'

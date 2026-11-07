@@ -34,7 +34,7 @@ export default function ClientSystemSwitchPage() {
 
   useEffect(() => {
     const controller=new AbortController()
-    const timeout=window.setTimeout(()=>controller.abort(),12000)
+    const timeout=window.setTimeout(()=>controller.abort(),20000)
     const localClient = getClientUser()
     const token = getClientToken()
     if (!localClient || !token) {
@@ -73,6 +73,12 @@ export default function ClientSystemSwitchPage() {
           }
           throw new Error(body.error || 'Unable to open System Switch')
         }
+        if(!body?.verified||!body?.workshop||!body?.file_folder_tier){
+          throw new Error('Your File Folder ownership or operating environment is incomplete. Open your Client dashboard or request a File Folder account review.')
+        }
+        // Verified owners enter their PRIVATE purchased File Folder first.
+        // The shared visitor room remains an explicit optional destination.
+        setPrivateWorkshop(new URLSearchParams(window.location.search).get('view')!=='shared')
         setData(body)
       } catch (err) {
         if(controller.signal.aborted){
@@ -133,11 +139,11 @@ export default function ClientSystemSwitchPage() {
   if (entry && !entry.active) return <ClientFileFolderGate entry={entry} />
 
   if (error || !data?.verified || !data?.workshop) {
-    return <main className="min-h-screen bg-transparent text-white p-4 flex items-center justify-center"><div className="w-full max-w-lg border-y border-cyan-200/10 bg-[#040a12]/92 p-8 text-center backdrop-blur-xl"><FolderOpen className="mx-auto h-10 w-10 text-sky-400" /><h1 className="mt-5 text-2xl font-semibold">File Folder</h1><p className="mt-3 text-sm leading-6 text-slate-400">{error || 'Your File Folder could not be opened.'}</p><Link href="/system-switch/world" className="mt-6 inline-flex rounded-full border border-white/10 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em]">Return to Weave Open World</Link></div></main>
+    return <main className="min-h-screen bg-transparent text-white p-4 flex items-center justify-center"><div className="w-full max-w-lg border-y border-cyan-200/10 bg-[#040a12]/92 p-8 text-center backdrop-blur-xl"><FolderOpen className="mx-auto h-10 w-10 text-sky-400" /><h1 className="mt-5 text-2xl font-semibold">File Folder</h1><p className="mt-3 text-sm leading-6 text-slate-400">{error || 'Your File Folder could not be opened.'}</p><div className="mt-5 flex flex-wrap justify-center gap-3"><button type="button" onClick={()=>window.location.reload()} className="inline-flex min-h-11 items-center justify-center rounded-lg bg-amber-200 px-5 py-2 text-sm font-bold text-[#211914]">Retry private File Folder</button><Link href="/client/dashboard" className="inline-flex min-h-11 items-center justify-center rounded-lg border border-sky-200/25 px-5 py-2 text-sm text-sky-100">Client Home</Link></div><Link href="/system-switch/world" className="mt-6 inline-flex rounded-full border border-white/10 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em]">Return to Weave Open World</Link></div></main>
   }
 
   return (
-    <main className="weave-file-folder-page min-h-dvh bg-transparent pt-16 text-white sm:pt-0" data-client-file-folder-entry="crossing-to-open-world" data-system-switch-gate="crossed" data-system-switch-flame-event="burning-river" data-weave-world="file-folder">
+    <main className="weave-file-folder-page min-h-dvh bg-transparent pt-16 text-white sm:pt-0" data-client-file-folder-entry="crossing-to-open-world" data-system-switch-gate="crossed" data-system-switch-flame-event="burning-river" data-weave-world="file-folder" data-client-private-file-folder={privateWorkshop?'owned-world':'shared-world'} data-client-private-tier={privateWorkshop?String(data.file_folder_tier):undefined}>
       <Link href="/system-switch/world" data-client-return-weave-open-world="true"
         className="fixed left-3 top-[max(4.25rem,env(safe-area-inset-top))] z-[90] inline-flex min-h-11 max-w-[calc(100vw-1.5rem)] items-center gap-2 rounded-full border border-sky-200/35 bg-[#06182a]/95 px-3 py-2 text-[11px] font-bold text-sky-100 shadow-xl backdrop-blur-xl sm:left-5">
         <ArrowLeft className="h-4 w-4 shrink-0"/> Return to Weave Open World
@@ -163,12 +169,24 @@ export default function ClientSystemSwitchPage() {
         <p>{WEAVE_WRITING.systemSwitch.client}</p>
         <p className="mt-1 text-xs text-sky-100">{WEAVE_WRITING.systemSwitch.privacy}</p>
       </section>}
-      {privateWorkshop?<ClientFileFolderOperatingEnvironment data={data} />:<SharedSystemSwitchWorld role="client" getToken={getClientToken} onPrivateWorkshop={()=>setPrivateWorkshop(true)}/>}
+      {!privateWorkshop&&<div className="mx-3 mb-3 flex flex-wrap gap-3 sm:mx-5">
+        <button type="button" onClick={()=>setPrivateWorkshop(true)}
+          data-client-enter-private-file-folder="true"
+          className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-amber-200/60 bg-amber-200 px-5 py-3 text-sm font-bold text-[#18120b]">
+          <FolderOpen className="h-5 w-5"/> Enter my private {String(data.file_folder_tier||'').toUpperCase()} File Folder
+        </button>
+        <p className="self-center text-sm text-sky-100">Your private buildings and business records are separate from this shared visitor world.</p>
+      </div>}
+      {privateWorkshop
+        ? <ClientFileFolderOperatingEnvironment data={data}/>
+        : <SharedSystemSwitchWorld role="client" getToken={getClientToken} onPrivateWorkshop={()=>setPrivateWorkshop(true)}/>}
       <details className="ff-page-actions">
         <summary aria-label="File Folder menu"><Menu aria-hidden="true" className="h-5 w-5"/></summary>
         <nav aria-label="File Folder actions">
           <p>File Folder</p>
-          {privateWorkshop&&<button type="button" onClick={()=>setPrivateWorkshop(false)}>Return to shared System Switch</button>}
+          {privateWorkshop
+            ? <button type="button" onClick={()=>setPrivateWorkshop(false)}>Visit shared System Switch world</button>
+            : <button type="button" onClick={()=>setPrivateWorkshop(true)}>Enter my private File Folder</button>}
           <Link href="/system-switch/world"><ArrowLeft className="h-4 w-4"/>Return to Weave Open World</Link>
           <Link href="/client/system-store" data-file-folder-publish-system="true"><PackageOpen className="h-4 w-4"/>Publish System</Link>
           <Link href="/client/system-switch/flame-event" data-file-folder-flame-event="inside"><Flame className="h-4 w-4"/>Flame Event</Link>

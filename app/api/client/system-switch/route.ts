@@ -8,8 +8,7 @@ import { ensureClientInternationalPaymentProfile } from '@/lib/client-internatio
 import { ensureEnterpriseDreamSchema, getEnterpriseDream } from '@/lib/enterprise-dream'
 import { ensureClientMoneyEnvironment } from '@/lib/client-money-environment'
 import { getFileFolderWorldSnapshot } from '@/lib/client-file-folder-world'
-import { FILE_FOLDER_PRICING, getFileFolderTier } from '@/lib/file-folder-pricing'
-import {getClientFolderUpgrade} from '@/lib/client-folder-upgrade'
+import { resolveVerifiedClientFileFolderTier } from '@/lib/client-file-folder-tier'
 import {getProActivationState} from '@/lib/pro-file-folder-activation'
 import {getPublishedFileFolderRelease} from '@/lib/file-folder-world-release'
 
@@ -46,10 +45,17 @@ export async function GET(request: NextRequest) {
     const money = await ensureClientMoneyEnvironment(sql, client.id)
     const proGate=client.file_number
       ? await getProActivationState(String(client.id),String(client.file_number)) : null
-    if(proGate&&proGate.status!=='active')
-      return NextResponse.json({error:'Pro activation is incomplete. Visit the activation workspace.',
-        gate:'construction',activation:proGate,activationUrl:'/client/pro-activation'},
-        {status:423,headers:{'Cache-Control':'private, no-store'}})
+    // A pending Pro application may not close a previously verified Premium or
+    // Plus File Folder. It only gates the specific Pro enrollment.
+    if(proGate&&proGate.status!=='active'){
+      const existingTier=await resolveVerifiedClientFileFolderTier(sql,{
+        clientId:String(client.id),fileNumber:String(client.file_number),proActivation:proGate,
+      })
+      if(existingTier!=='premium'&&existingTier!=='plus')
+        return NextResponse.json({error:'Pro activation is incomplete. Visit the activation workspace.',
+          gate:'construction',activation:proGate,activationUrl:'/client/pro-activation'},
+          {status:423,headers:{'Cache-Control':'private, no-store'}})
+    }
 
     if (!client.file_number) {
       return NextResponse.json(
@@ -58,22 +64,26 @@ export async function GET(request: NextRequest) {
       )
     }
 
+    // Both values must match. A File Number or user ID alone never authorizes
+    // somebody else's private environment, even after legacy repair.
     const [folder] = await sql`
       SELECT *
       FROM client_file_folders
       WHERE client_id = ${client.id}::uuid
-         OR file_number = ${client.file_number}
-      ORDER BY CASE WHEN client_id = ${client.id}::uuid THEN 0 ELSE 1 END
+        AND file_number = ${client.file_number}
       LIMIT 1
     `
 
     if (!folder) {
+      // The Client already has a File Number. Do not send an established owner
+      // back to purchase: request an ownership reconciliation instead.
       return NextResponse.json(
         {
-          error: 'Your Client account exists, but its File Folder has not been established through the required movement.',
-          gate: 'bridge_file_folder',
+          error: 'Your File Number is recorded, but the private File Folder ownership record needs Administration reconciliation. No second purchase is required.',
+          gate: 'administration',
+          recovery: 'file_folder_ownership_review',
         },
-        { status: 409 }
+        { status: 409, headers: { 'Cache-Control': 'private, no-store' } }
       )
     }
 
@@ -93,6 +103,7 @@ export async function GET(request: NextRequest) {
       SELECT id, workshop_type, title, description
       FROM client_system_workshops
       WHERE client_id = ${client.id}::uuid
+        AND file_number = ${client.file_number}
       LIMIT 1
     `
 
@@ -156,69 +167,16 @@ export async function GET(request: NextRequest) {
     const enterpriseState=await getEnterpriseDream(sql,client.id)
     const fileFolderWorld=await getFileFolderWorldSnapshot(sql,client.id,client.file_number)
 
-    const [purchaseTable] = await sql`SELECT to_regclass('public.file_folder_purchases') AS table_name`
-    let persistedTier: string | null = null
-    if (purchaseTable?.table_name) {
-      await sql`ALTER TABLE file_folder_purchases ADD COLUMN IF NOT EXISTS file_folder_tier varchar(20)`
-      await sql`ALTER TABLE file_folder_purchases ADD COLUMN IF NOT EXISTS amount_usdt numeric(30,8)`
-      const [purchaseTier] = await sql`
-        SELECT amount_trx,amount_usdt,payment_method,file_folder_tier,status
-        FROM file_folder_purchases
-        WHERE (client_id=${client.id}::uuid OR file_number=${client.file_number})
-          AND status IN ('confirmed','approved','paid_pending_folder')
-        ORDER BY COALESCE(confirmed_at,created_at) DESC
-        LIMIT 1
-      `
-      if (purchaseTier) {
-        persistedTier = purchaseTier.file_folder_tier === 'plus'
-          && ['confirmed','approved'].includes(String(purchaseTier.status))
-          && ((purchaseTier.payment_method === 'trx' && Number(purchaseTier.amount_trx) === FILE_FOLDER_PRICING.plusTrx)
-            || (purchaseTier.payment_method === 'usdt' && Number(purchaseTier.amount_usdt) === FILE_FOLDER_PRICING.plusUsdt))
-          ? 'plus'
-          : purchaseTier.file_folder_tier === 'plus' ? null : getFileFolderTier(Number(purchaseTier.amount_trx), purchaseTier.file_folder_tier)
-
-      }
-    }
-
-    if (!persistedTier) {
-      const [bridgeDepositTable] = await sql`SELECT to_regclass('public.bridge_deposits') AS table_name`
-      if (bridgeDepositTable?.table_name) {
-        const [bridgeDeposit] = await sql`
-          SELECT tier_trx
-          FROM bridge_deposits
-          WHERE file_number=${client.file_number}
-            AND status='approved'
-          ORDER BY COALESCE(verified_at,created_at) DESC
-          LIMIT 1
-        `
-        if (bridgeDeposit) {
-          const amount = Number(bridgeDeposit.tier_trx)
-          persistedTier = amount === FILE_FOLDER_PRICING.premiumFlameCoin
-            ? getFileFolderTier(amount, 'premium')
-            : getFileFolderTier(amount, 'pro')
-        }
-      }
-    }
-
-    // Employee-granted tiers are sourced from their separate verified company
-    // tickets, not from a fabricated retail File Folder purchase.
-    {
-      const [staffTable] = await sql`SELECT to_regclass('public.company_client_staff_offers') AS name`
-      if (staffTable?.name) {
-        const [grant] = await sql`
-          SELECT folder_tier FROM company_client_staff_offers
-          WHERE status='approved' AND client_id=${client.id}::uuid AND file_number=${client.file_number}
-          LIMIT 1
-        `
-        const tierOrder=['standard','pro','premium','plus']
-        if (grant && tierOrder.includes(grant.folder_tier) && tierOrder.indexOf(grant.folder_tier)>tierOrder.indexOf(persistedTier||'')) persistedTier = grant.folder_tier
-      }
-    }
-
-    const directUpgrade=await getClientFolderUpgrade(sql,String(client.id),String(client.file_number))
-    if (directUpgrade?.status==='ready') persistedTier=directUpgrade.tier
-    if (proGate?.status==='active') persistedTier='pro'
-    const fileFolderTier = persistedTier || getFileFolderTier(Number(fileFolderWorld.buildFunding.initialFileFolderFlameCoin)) || 'standard'
+    // A single owner-scoped resolver is shared by the private File Folder,
+    // tier themes and Client employment environments. Older folder_issued
+    // purchases and verified higher tiers can no longer silently fall back to
+    // Standard or be downgraded by a later Pro activation.
+    const fileFolderTier=await resolveVerifiedClientFileFolderTier(sql,{
+      clientId:String(client.id),
+      fileNumber:String(client.file_number),
+      fallbackFlameCoin:Number(fileFolderWorld.buildFunding.initialFileFolderFlameCoin),
+      proActivation:proGate,
+    })
 
     const workshopType=workshop.workshop_type
     const isCrypto=workshopType==='crypto_exchange'
