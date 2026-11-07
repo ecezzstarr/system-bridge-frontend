@@ -1,6 +1,7 @@
 import {NextRequest,NextResponse} from 'next/server'
 import {getAuthUser} from '@/lib/auth-api'
 import {sql,getPool} from '@/lib/db'
+import {isProRegionalManagerPosition} from '@/lib/pro-regional-manager-policy'
 import {ensureCompanyClientStaffSchema} from '@/lib/company-client-staff'
 import {ensureProFileNumberVerificationSchema,getApprovedProStaffOffer,proVerificationPublicHeaders} from '@/lib/pro-file-number-verification'
 import {ensureProActivationSchema,isTronAddress,PRO_ACTIVATION_FEE_USDT} from '@/lib/pro-file-folder-activation'
@@ -57,7 +58,7 @@ export async function POST(request:NextRequest){
       String(current.operating_country).trim().toLowerCase()!=='spain')
       throw new Error('CJ is assigned to Spain. Verify the country and territory before approval.')
    const offer=await getApprovedProStaffOffer(String(current.file_number))
-   if(!offer)throw new Error('An approved Pro company staff appointment is required. CJ Dorado must have an approved Regional Manager offer.')
+   if(!offer)throw new Error('An approved Pro company staff appointment is required. CJ Dorado must have an approved Pro Regional Manager offer.')
    const applicant=String(current.signed_name||'').trim().toLowerCase()
    if(String(offer.candidate_name||'').trim().toLowerCase()!==applicant)
     throw new Error('The signed applicant must match the approved company employee.')
@@ -146,8 +147,8 @@ export async function POST(request:NextRequest){
        String(row.signed_name||'').trim().toLowerCase())
      throw new Error('Approved staff and signed applicant identity mismatch.')
     if(row.file_number==='WEAVE-2026-0907-0001'&&
-      !/^(?:client\s+)?regional\s+manager$/i.test(String(approvedOffer.position_title||'').trim()))
-     throw new Error('CJ Dorado must be approved as Regional Manager.')
+      !isProRegionalManagerPosition(approvedOffer.position_title,row.file_number))
+     throw new Error('CJ Dorado must have an approved Pro Regional Manager appointment.')
     if(String(owner.rows[0].name||'').trim().toLowerCase()!==
        String(row.signed_name||'').trim().toLowerCase())
      throw new Error('Client identity and signed name do not match.')
