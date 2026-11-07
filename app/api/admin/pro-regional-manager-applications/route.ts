@@ -2,6 +2,7 @@ import {NextRequest,NextResponse} from 'next/server'
 import {getAuthUser} from '@/lib/auth-api'
 import {sql} from '@/lib/db'
 import {ensureProRegionalManagerApplicationsSchema} from '@/lib/pro-regional-manager-applications'
+import {prepareApprovedProRegionalManager} from '@/lib/pro-regional-manager-activation'
 export const dynamic='force-dynamic'
 const headers={'Cache-Control':'private, no-store'}
 async function reviewer(request:NextRequest){
@@ -68,7 +69,16 @@ export async function POST(request:NextRequest){
      AND u.role IN ('agent','bridger')
    RETURNING a.user_id,a.source_role,a.status,a.business_name,a.agreed_monthly_salary_usdt`
   if(!approved)return NextResponse.json({error:'Application was already reviewed or applicant role is no longer eligible.'},{status:409,headers})
-  return NextResponse.json({success:true,application:approved,
+  let prepared:null|{file_number:string;status:string}=null
+  if(decision==='approve'){
+   try{prepared=await prepareApprovedProRegionalManager(id)}
+   catch(e){
+    console.error('[Pro Regional Manager File Number preparation]',e)
+    return NextResponse.json({success:true,application:approved,activationPrepared:false,
+      notice:'Employment verified and approved, but secure File Number preparation requires Administration retry. Do not ask the applicant to pay until it is prepared.'},{headers})
+   }
+  }
+  return NextResponse.json({success:true,application:approved,activationPrepared:Boolean(prepared),
     notice:decision==='approve'
      ?'Employment terms reviewed. Pro File Folder and activation remain pending independent identity, original-role folder ownership and payment checks.'
      :'Application rejected with a recorded Administration reason.'},{headers})
