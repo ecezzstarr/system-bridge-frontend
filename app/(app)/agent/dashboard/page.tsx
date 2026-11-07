@@ -7,8 +7,8 @@ import { useAuth } from '@/lib/auth-provider'
 import { WeaveDashboardWorld } from '@/components/world/weave-dashboard-world'
 import { AgentWorkplace } from '@/components/agent/agent-workplace'
 import { ArrowLeft } from 'lucide-react'
-import { AgilityAgentLoginAd, AGILITY_AGENT_LOGIN_AD_KEY } from '@/components/agility-agent-login-ad'
-import { Loop1AgentLoginAd, LOOP1_AGENT_LOGIN_AD_KEY } from '@/components/agent/loop1-agent-login-ad'
+import { AgilityAgentLoginAd } from '@/components/agility-agent-login-ad'
+import { Loop1AgentLoginAd } from '@/components/agent/loop1-agent-login-ad'
 import { ManagerLifestyleEntry } from '@/components/manager-lifestyle-entry'
 import { useRouter } from 'next/navigation'
 
@@ -16,30 +16,25 @@ export default function AgentWorld() {
   const { user } = useAuth()
   const router = useRouter()
   const [originalWorld,setOriginalWorld]=useState(false)
-  const [showLoop1Ad,setShowLoop1Ad]=useState(false)
-  const [showAgilityAd,setShowAgilityAd]=useState(false)
-  const [agilityQueued,setAgilityQueued]=useState(false)
+  const [briefing, setBriefing] = useState<'commissions' | 'distribution' | null>(null)
 
-  useEffect(()=>{
-    if(!user)return
-    if(user.role!=='agent'){router.replace('/dashboard');return}
-    const loop=sessionStorage.getItem(LOOP1_AGENT_LOGIN_AD_KEY)==='1'
-    const agility=sessionStorage.getItem(AGILITY_AGENT_LOGIN_AD_KEY)==='1'
-    if(loop)sessionStorage.removeItem(LOOP1_AGENT_LOGIN_AD_KEY)
-    if(agility)sessionStorage.removeItem(AGILITY_AGENT_LOGIN_AD_KEY)
-    if(loop){setShowLoop1Ad(true);setAgilityQueued(agility)}
-    else if(agility)setShowAgilityAd(true)
-  },[user,router])
+  useEffect(() => {
+    if (user && user.role !== 'agent') router.replace('/dashboard')
+  }, [user, router])
 
   if(!user||user.role!=='agent')return null
 
   return <>
     <Loop1AgentLoginAd
-      open={showLoop1Ad}
-      onOpenChange={open=>{setShowLoop1Ad(open);if(!open&&agilityQueued){setAgilityQueued(false);setShowAgilityAd(true)}}}
-      onOpenContinuance={()=>{setShowLoop1Ad(false);router.push('/agent/commissions')}}
+      open={briefing === 'commissions'}
+      onOpenChange={open => { if (!open) setBriefing(null) }}
+      onOpenContinuance={()=>{setBriefing(null);router.push('/agent/commissions')}}
     />
-    <AgilityAgentLoginAd open={showAgilityAd} onOpenChange={setShowAgilityAd} onBuy={()=>{setShowAgilityAd(false);router.push('/agility')}} />
+    <AgilityAgentLoginAd
+      open={briefing === 'distribution'}
+      onOpenChange={open => { if (!open) setBriefing(null) }}
+      onBuy={()=>{setBriefing(null);router.push('/agility')}}
+    />
     {originalWorld ? (
       <div data-agent-original-district-world="preserved">
         <button type="button" onClick={()=>setOriginalWorld(false)}
@@ -49,21 +44,23 @@ export default function AgentWorld() {
         <WeaveDashboardWorld role="agent" userName={user.name} />
       </div>
     ) : (
-      <AgentWorkplace userName={user.name} onOpenDistricts={()=>setOriginalWorld(true)}/>
+      <AgentWorkplace userName={user.name} onOpenDistricts={()=>setOriginalWorld(true)} onOpenBriefing={setBriefing} />
     )}
     <ManagerLifestyleEntry />
     <div className="sr-only focus-within:not-sr-only">
       <Link href="/agility">Agility home</Link>
       <Link href="/electrolyte">Electrolyte home</Link>
     </div>
-    <Link href="/agent/work" data-core-function="agent-work" className="fixed bottom-60 right-4 z-30 inline-flex items-center gap-2 rounded-full border border-pink-300/25 bg-[#160b11]/95 px-4 py-3 text-[10px] font-black uppercase tracking-[.12em] text-pink-100 shadow-2xl backdrop-blur md:right-7">
-      <BriefcaseBusiness className="h-4 w-4"/>Agent Work · Agility · Electrolyte · Commission · Daisy Pastries
-    </Link>
-    <Link href="/agent/distribution" data-core-function="agent-distribution" className="fixed bottom-40 right-4 z-30 inline-flex items-center gap-2 rounded-full border border-cyan-300/25 bg-[#07141a]/95 px-4 py-3 text-[10px] font-black uppercase tracking-[.12em] text-cyan-100 shadow-2xl backdrop-blur md:right-7">
-      <Truck className="h-4 w-4"/>Distribution Route · Supply Outlets
-    </Link>
-    <Link href="/referrals" data-core-function="referral-movement" className="fixed bottom-24 right-4 z-30 inline-flex items-center gap-2 rounded-full border border-emerald-300/25 bg-[#071711]/95 px-4 py-3 text-[10px] font-black uppercase tracking-[.12em] text-emerald-100 shadow-2xl backdrop-blur md:right-7">
-      <Share2 className="h-4 w-4"/>Referral Movement · ₦500
-    </Link>
+    <nav aria-label="Agent shortcuts" className="mx-auto flex w-full max-w-[1580px] flex-wrap gap-2 px-4 pb-12 sm:px-8 lg:px-12">
+      <Link href="/agent/work" data-core-function="agent-work" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#d0b783] bg-[#fffefa] px-4 py-2 text-sm font-semibold text-[#493b26]">
+        <BriefcaseBusiness className="h-4 w-4 shrink-0"/> <span>Agent Work · Agility · Electrolyte · Commission · Daisy Pastries</span>
+      </Link>
+      <Link href="/agent/distribution" data-core-function="agent-distribution" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#d0b783] bg-[#fffefa] px-4 py-2 text-sm font-semibold text-[#493b26]">
+        <Truck className="h-4 w-4 shrink-0"/> Distribution Route
+      </Link>
+      <Link href="/referrals" data-core-function="referral-movement" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#d0b783] bg-[#fffefa] px-4 py-2 text-sm font-semibold text-[#493b26]">
+        <Share2 className="h-4 w-4 shrink-0"/> Referral Movement · ₦500
+      </Link>
+    </nav>
   </>
 }

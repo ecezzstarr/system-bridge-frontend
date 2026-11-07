@@ -18,7 +18,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 
-export const LOOP1_AGENT_LOGIN_AD_KEY = 'weave:show-loop1-agent-ad'
 
 type Props = {
   open: boolean
@@ -30,7 +29,7 @@ export function Loop1AgentLoginAd({ open, onOpenChange, onOpenContinuance }: Pro
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        showCloseButton={false}
+        showCloseButton={false} data-weave-arrival-surface="agent-commission"
         className="max-h-[92vh] w-[calc(100%-1rem)] max-w-5xl overflow-y-auto border-emerald-300/25 bg-[#06110d] p-0 text-white shadow-2xl shadow-emerald-950/60"
       >
         <DialogTitle className="sr-only">Loop 1 Agent Commission</DialogTitle>
@@ -46,7 +45,7 @@ export function Loop1AgentLoginAd({ open, onOpenChange, onOpenContinuance }: Pro
             type="button"
             aria-label="Close Loop 1 commission advertisement"
             onClick={() => onOpenChange(false)}
-            className="absolute right-3 top-3 z-20 flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-black/45 text-white backdrop-blur transition hover:bg-black/70"
+            className="absolute right-3 top-3 z-20 flex h-10 w-10 items-center justify-center rounded-full border border-[#bbac92] bg-[#fffefa] text-[#243d50] transition hover:bg-[#ede5d5]"
           >
             <X className="h-5 w-5" />
           </button>

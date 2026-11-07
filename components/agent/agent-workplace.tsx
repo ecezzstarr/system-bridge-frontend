@@ -38,7 +38,11 @@ function Station({station}:{station:AgentStation}) {
   </Link>
 }
 
-export function AgentWorkplace({userName,onOpenDistricts}:{userName?:string|null;onOpenDistricts?:()=>void}){
+export function AgentWorkplace({userName,onOpenDistricts,onOpenBriefing}:{
+  userName?:string|null
+  onOpenDistricts?:()=>void
+  onOpenBriefing:(briefing:'commissions'|'distribution')=>void
+}){
   const [active,setActive]=useState<AgentSpaceId>('desk')
   const [search,setSearch]=useState('')
   const {isVisible}=useEnvironmentOrganizer()
@@ -58,7 +62,7 @@ export function AgentWorkplace({userName,onOpenDistricts}:{userName?:string|null
         <div className="pointer-events-none absolute right-[-6rem] top-[-9rem] h-80 w-80 rounded-full border-[44px] border-[#dfc28c]/15 [transform:perspective(400px)_rotateX(25deg)]"/>
         <div className="relative flex flex-wrap items-start justify-between gap-6">
           <div className="max-w-3xl">
-            <WeaveLogo size="sm"/>
+            <WeaveLogo size="sm" className="rounded-lg bg-[#0d263b] px-3 py-2" />
             <p className="mt-4 text-xs font-semibold uppercase tracking-[.2em] text-[#99712c]">Stability · Agent Department</p>
             <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">Your company workplace</h1>
             {userName&&<p className="mt-1 text-base font-medium text-[#65716c]">{userName}</p>}
@@ -76,6 +80,16 @@ export function AgentWorkplace({userName,onOpenDistricts}:{userName?:string|null
               <Building2 className="h-4 w-4"/> Original districts
             </button>}
           </div>
+        </div>
+        <div className="relative mt-4 flex flex-wrap gap-2 border-t border-[#d8c5a0] pt-4" aria-label="Stability briefings">
+          <button type="button" onClick={()=>onOpenBriefing('distribution')}
+            className="min-h-11 rounded-xl border border-[#d0b783] bg-[#fffefa] px-3 py-2 text-sm font-semibold text-[#493b26]">
+            Distribution briefing
+          </button>
+          <button type="button" onClick={()=>onOpenBriefing('commissions')}
+            className="min-h-11 rounded-xl border border-[#d0b783] bg-[#fffefa] px-3 py-2 text-sm font-semibold text-[#493b26]">
+            Loop 1 commissions
+          </button>
         </div>
       </header>
 

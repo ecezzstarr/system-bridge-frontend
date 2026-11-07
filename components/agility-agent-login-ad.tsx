@@ -12,17 +12,16 @@ import {
 
 const naira=(value:number)=>new Intl.NumberFormat('en-NG',{style:'currency',currency:'NGN',maximumFractionDigits:0}).format(value)
 
-export const AGILITY_AGENT_LOGIN_AD_KEY='weave:show-agility-agent-ad'
 
 type Props={open:boolean;onOpenChange:(open:boolean)=>void;onBuy:()=>void}
 
 export function AgilityAgentLoginAd({open,onOpenChange,onBuy}:Props){
   return <Dialog open={open} onOpenChange={onOpenChange}>
-    <DialogContent showCloseButton={false} className="max-h-[92vh] w-[calc(100%-1rem)] max-w-5xl overflow-y-auto border-cyan-300/20 bg-[#081014] p-0 text-white shadow-2xl">
+    <DialogContent showCloseButton={false} data-weave-arrival-surface="agent-distribution" className="max-h-[92vh] w-[calc(100%-1rem)] max-w-5xl overflow-y-auto border-cyan-300/20 bg-[#081014] p-0 text-white shadow-2xl">
       <DialogTitle className="sr-only">WEAVE Agent Distribution</DialogTitle>
       <DialogDescription className="sr-only">Agents buy WEAVE food cartons and distribute them through existing neighborhood outlets.</DialogDescription>
       <div className="relative overflow-hidden rounded-lg">
-        <button type="button" aria-label="Close" onClick={()=>onOpenChange(false)} className="absolute right-3 top-3 z-20 flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-black/45 text-white"><X className="h-5 w-5"/></button>
+        <button type="button" aria-label="Close" onClick={()=>onOpenChange(false)} className="absolute right-3 top-3 z-20 flex h-10 w-10 items-center justify-center rounded-full border border-[#bbac92] bg-[#fffefa] text-[#243d50]"><X className="h-5 w-5"/></button>
 
         <section className="border-b border-cyan-300/15 bg-gradient-to-br from-cyan-500/15 via-transparent to-emerald-500/10 px-5 pb-7 pt-9 sm:px-8">
           <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-[10px] font-black uppercase tracking-[.24em] text-cyan-200"><Sparkles className="h-3.5 w-3.5"/>WEAVE · Agent Position</div>
