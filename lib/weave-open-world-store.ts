@@ -93,8 +93,12 @@ export async function provisionPurchasedWorldDomain(params:{
       AND f.file_number=${fileNumber}
       AND f.status='active' AND u.role='client' AND COALESCE(u.is_active,true)=true
     ON CONFLICT(file_number) DO UPDATE SET
-      tier=CASE WHEN EXCLUDED.tier='unclassified' THEN weave_open_world_domains.tier
-        ELSE EXCLUDED.tier END,
+      -- A later lower-tier action may never replace an already verified
+      -- Premium/Plus exterior. Upgrade only; unclassified does not overwrite.
+      tier=CASE
+        WHEN array_position(ARRAY['unclassified','standard','pro','premium','plus']::text[], EXCLUDED.tier::text)
+           > array_position(ARRAY['unclassified','standard','pro','premium','plus']::text[], weave_open_world_domains.tier::text)
+        THEN EXCLUDED.tier ELSE weave_open_world_domains.tier END,
       updated_at=now()
     WHERE weave_open_world_domains.client_id=EXCLUDED.client_id
     RETURNING id,world_slot,tier
@@ -117,7 +121,9 @@ export async function reconcileExistingWorldDomains(sql:any){
     ON CONFLICT DO NOTHING
     RETURNING id
   `
-  // Files bought in older versions may have their tier only in a confirmed sale.
+  // Preserve the highest independently confirmed purchase tier even if a
+  // Client later purchases a smaller product. The exterior world must never
+  // downgrade a Premium or Plus File Folder because of transaction ordering.
   const [tables]=await sql`
     SELECT to_regclass('public.file_folder_purchases')::text AS purchases
   `
@@ -132,10 +138,13 @@ export async function reconcileExistingWorldDomains(sql:any){
         WHERE status='confirmed'
           AND file_folder_tier IN ('standard','pro','premium','plus')
           AND file_number IS NOT NULL
-        ORDER BY file_number,confirmed_at DESC NULLS LAST,created_at DESC
+        ORDER BY file_number,
+          array_position(ARRAY['standard','pro','premium','plus']::text[],file_folder_tier::text) DESC,
+          confirmed_at DESC NULLS LAST,created_at DESC
       ) confirmed
       WHERE d.file_number=confirmed.file_number
-        AND d.tier IS DISTINCT FROM confirmed.file_folder_tier
+        AND array_position(ARRAY['unclassified','standard','pro','premium','plus']::text[],confirmed.file_folder_tier::text)
+          > array_position(ARRAY['unclassified','standard','pro','premium','plus']::text[],d.tier::text)
     `
   }
   // Employee Client File Folders are issued via approved company offers,
@@ -153,9 +162,10 @@ export async function reconcileExistingWorldDomains(sql:any){
         AND o.file_number=d.file_number
         AND o.status='approved'
         AND o.folder_tier IN ('standard','pro','premium','plus')
-        -- A verified retail upgrade takes precedence over an older staff grant.
-        -- Approved staff offers fill previously unknown Client entitlements.
-        AND d.tier='unclassified'
+        -- An approved employee grant can raise the world tier, but cannot
+        -- downgrade an already verified Premium or Plus Client purchase.
+        AND array_position(ARRAY['unclassified','standard','pro','premium','plus']::text[],o.folder_tier::text)
+          > array_position(ARRAY['unclassified','standard','pro','premium','plus']::text[],d.tier::text)
     `
   }
   return result.length
