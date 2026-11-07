@@ -2,6 +2,8 @@
 import Link from 'next/link'
 import {useCallback,useEffect,useState} from 'react'
 import {useAuth} from '@/lib/auth-provider'
+import {PRO_MANAGER_COMPANY_PURPOSE,PRO_MANAGER_FILE_FOLDER_DISTINCTION,
+ PRO_MANAGER_AGREEMENT_SECTIONS} from '@/lib/pro-regional-manager-language'
 type Activation={
  success:boolean;applicationStatus:string;businessName:string;fileNumber:string|null;
  department:string;companyRole:string;country:string;region:string;city:string;
@@ -71,7 +73,8 @@ export default function ProRegionalManagerActivation(){
    <header className="space-y-3 rounded-2xl border border-sky-200/25 bg-[#08263e] p-6">
     <p className="text-xs uppercase tracking-widest text-sky-200">WEAVE Pro File Folder · Company Verification</p>
     <h1 className="text-3xl font-semibold">Pro Regional Manager Activation</h1>
-    <p className="text-sm text-slate-200">Your original department is {data?.department||'pending'}. A Pro manager has a separate File Folder and company business plan, never an ordinary Regional Manager File Folder.</p>
+    <p className="text-sm leading-7 text-slate-200">Your original department is {data?.department||'pending'}. Your approved Pro Regional Manager appointment and your personally owned Pro File Folder are distinct from an ordinary Regional Manager position.</p>
+    <p className="text-sm leading-7 text-slate-200">{PRO_MANAGER_COMPANY_PURPOSE}</p>
     <p className="text-sm">Business: {data?.businessName||'Pending company approval'}</p>
     <p className="font-mono text-xs">Pro File Number: {data?.fileNumber||'Pending official allocation'}</p>
     <p className="text-sm">Company position: {data?.applicationStatus||'not submitted'} · Pro activation: {status.replaceAll('_',' ')}</p>
@@ -86,12 +89,20 @@ export default function ProRegionalManagerActivation(){
    </section>}
    {approved&&status==='awaiting_signature'&&<section className="space-y-4 rounded-2xl border border-sky-200/25 p-5">
     <h2 className="text-xl font-semibold">1. Confirm signed employment and Pro File Folder terms</h2>
-    <p className="text-sm leading-6 text-slate-200">Your approved Pro Regional Manager appointment includes the recorded monthly salary and business plan. Separately, the Pro File Folder activation charge is a one-time {data?.feeUSDT} USDT on TRON (TRC-20). It is not a loan, wallet deposit, income guarantee, or fee for an ordinary Regional Manager position. No payment is due before your signature.</p>
+    <p className="text-sm leading-7 text-slate-200">{PRO_MANAGER_FILE_FOLDER_DISTINCTION}</p>
+    <p className="text-sm leading-7 text-slate-200">Before signing, review the terms below alongside your separately approved company employment agreement. The monthly salary is recorded by Administration and is not funded by, or automatically conditional on, a File Folder activation fee.</p>
+    <div className="space-y-3" data-pro-manager-reciprocal-agreement="true">
+     {PRO_MANAGER_AGREEMENT_SECTIONS.map(section=><article key={section.title} className="rounded-xl border border-sky-200/20 bg-[#0b2a42] p-4">
+      <h3 className="text-sm font-semibold text-sky-100">{section.title}</h3>
+      <p className="mt-2 text-sm leading-7 text-slate-200">{section.body}</p>
+     </article>)}
+    </div>
+    <p className="text-sm leading-7 text-slate-200">Your approved Pro Regional Manager appointment includes the agreed monthly salary and recorded business plan. Separately, the Pro File Folder activation charge is a one-time {data?.feeUSDT} USDT on TRON (TRC-20). No payment is due before your signature, and payment is never proof of salary or guaranteed income.</p>
     <p className="text-xs text-slate-400">Approved agreement reference: {data?.salary.agreementReference}</p>
     <label className="block text-sm">Your full registered name<input value={signedName} onChange={e=>setSignedName(e.target.value)}
      maxLength={255} className="mt-2 w-full rounded-lg border border-white/20 bg-slate-900 p-3"/></label>
     <label className="flex gap-3 text-sm leading-6 text-slate-200"><input type="checkbox" checked={accepted} onChange={e=>setAccepted(e.target.checked)}
-     className="mt-1"/>I have reviewed and accept my approved Pro company employment agreement and the separate one-time File Folder activation terms. My typed name is my electronic signature.</label>
+     className="mt-1"/>I have read the business ownership, Weave participation, employee, salary, company-wallet and verification terms above, and reviewed my separately approved company employment agreement. I accept the one-time Pro File Folder activation terms. My typed name is my electronic signature.</label>
     <button disabled={busy||!accepted||signedName.trim().length<3} onClick={()=>void act('sign_agreement')}
      className="rounded-lg bg-sky-300 px-5 py-3 font-semibold text-slate-950 disabled:opacity-40">Sign and continue</button>
    </section>}

@@ -194,6 +194,11 @@ export const ADMIN_SPACES:readonly AdminSpace[]=[
     "description": "Historical Client File Folder records and File Number preparation; old loan collection is retired."
   },
   {
+    "title": "Company Active Wallet · Administration",
+    "href": "/admin/company-active-wallet",
+    "description": "Configure and audit the active company USDT TRC-20 receiving address for Pro File Folder activation, separately from TRX funding."
+  },
+  {
     "title": "Pro Folder Activation · Forensics",
     "href": "/admin/pro-activations",
     "description": "Review signed Pro agreements, Client business plans and manually verified one-time 680 USDT TRC-20 payments."

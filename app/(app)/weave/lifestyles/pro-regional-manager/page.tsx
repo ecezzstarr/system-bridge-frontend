@@ -3,6 +3,8 @@ import Link from 'next/link'
 import {useCallback,useEffect,useState} from 'react'
 import {useAuth} from '@/lib/auth-provider'
 import {proRegionalManagerDepartment} from '@/lib/pro-regional-manager-policy'
+import {PRO_MANAGER_COMPANY_PURPOSE,PRO_MANAGER_FILE_FOLDER_DISTINCTION,
+ PRO_MANAGER_PLAN_QUESTIONS} from '@/lib/pro-regional-manager-language'
 
 type Application={
  source_role:'agent'|'bridger';business_name:string;operating_country:string;
@@ -10,12 +12,7 @@ type Application={
  agreed_monthly_salary_usdt:number|null;employment_terms_reference:string|null;
  review_note:string|null
 }
-const fields=[
- ['businessActivity','What business will your Pro File Folder operate?'],
- ['customers','Who will your customers and partners be?'],
- ['revenueModel','How will this business generate verified revenue?'],
- ['operations','How will you operate your File Folder and daily business systems?'],
-] as const
+const fields=PRO_MANAGER_PLAN_QUESTIONS
 const empty={operatingCountry:'',operatingRegion:'',operatingCity:'',contactAddress:'',
  businessName:'',dailyWorkPlan:''}
 
@@ -68,7 +65,8 @@ export default function ProRegionalManagerLifestyleApplication(){
    <header className="space-y-3 rounded-2xl border border-sky-300/25 bg-sky-300/[.05] p-5">
     <p className="text-xs uppercase tracking-widest text-sky-200">WEAVE · Pro company employment</p>
     <h1 className="text-3xl font-bold">Pro Regional Manager</h1>
-    <p className="text-sm leading-6 text-slate-200">This position is separate from ordinary Regional Manager. A Pro Regional Manager operates a Pro File Folder business, submits a business plan and activates the File Folder after independent company verification. Your original department determines your daily work.</p>
+    <p className="text-sm leading-7 text-slate-200">This is a distinct WEAVE company appointment, not the ordinary Regional Manager position. Every approved Pro Regional Manager operates a Pro-tier File Folder; the business inside it comes from the person's own work in life. Your original department determines your company work, while your business plan determines what your File Folder will become.</p>
+    <p className="text-sm leading-7 text-slate-200">{PRO_MANAGER_COMPANY_PURPOSE}</p>
     <p className="text-sm text-sky-100">Your department: <strong>{department?.department||'Not eligible through Lifestyle'}</strong>{department?' · '+department.dailyWork:''}</p>
     <p className="text-xs text-slate-300">Administration must approve your application, written salary agreement and File Folder identity before any activation payment is requested. Applying or paying does not by itself create a company appointment or a File Folder. Do not send funds using application details.</p>
    </header>
@@ -107,19 +105,25 @@ export default function ProRegionalManagerLifestyleApplication(){
         value={values[key]} onChange={e=>setValues(current=>({...current,[key]:e.target.value}))}
         className="mt-2 w-full rounded-lg border border-white/15 bg-slate-900 p-3 text-white" /></label>)}
     </div>
-    <h3 className="font-semibold">Pro File Folder business plan</h3>
-    {fields.map(([key,label])=><label key={key} className="block text-sm">{label}
-      <textarea required rows={3} maxLength={3000} value={plan[key]||''}
+    <div className="space-y-2 rounded-xl border border-sky-300/30 bg-sky-300/[.06] p-4" data-pro-own-business-plan="true">
+     <h3 className="text-lg font-semibold">Business plan · The work that will grow through your File Folder</h3>
+     <p className="text-sm leading-7 text-slate-200">{PRO_MANAGER_FILE_FOLDER_DISTINCTION}</p>
+     <p className="text-xs leading-6 text-slate-300">Describe real services, people, obligations and measurable outcomes. Administration evaluates whether the plan can operate, how employees will contribute and how value will be recorded. A projection is not evidence of income.</p>
+    </div>
+    {fields.map(({key,title,guidance})=><label key={key} className="block text-sm">{title}
+      <span className="mt-2 block text-xs leading-6 text-slate-300">{guidance}</span>
+      <textarea required rows={4} minLength={10} maxLength={3000} value={plan[key]||''}
        onChange={e=>setPlan(current=>({...current,[key]:e.target.value}))}
        className="mt-2 w-full rounded-lg border border-white/15 bg-slate-900 p-3 text-white"/></label>)}
-    <label className="block text-sm">How will you work daily in your department and develop this region?
-     <textarea required rows={4} maxLength={2500} value={values.dailyWorkPlan}
+    <label className="block text-sm">Regional operating plan · What will you and your authorized team do each day?
+     <span className="mt-2 block text-xs leading-6 text-slate-300">Explain your operating territory, specific daily actions, customers, employees, verified results and the tasks belonging to your original department. This is separate from an ordinary manager role.</span>
+     <textarea required rows={4} minLength={10} maxLength={2500} value={values.dailyWorkPlan}
       onChange={e=>setValues(current=>({...current,dailyWorkPlan:e.target.value}))}
       className="mt-2 w-full rounded-lg border border-white/15 bg-slate-900 p-3 text-white"/>
     </label>
     <label className="flex items-start gap-3 text-sm leading-6 text-slate-300">
      <input type="checkbox" checked={accepted} onChange={e=>setAccepted(e.target.checked)} className="mt-1"/>
-     I understand that Pro employment, salary, Pro File Folder ownership and activation require separate Administration verification and signed terms. No payment or activation is due when submitting this application.
+     I understand that my Pro File Folder will operate my own approved business, that Weave grows through real verified work and my enterprise's success, and that employee assignments, customer obligations and commercial income require proper records. Pro employment, salary, ownership and activation require separate Administration verification and signed terms. No payment is due when submitting this application.
     </label>
     <button type="button" disabled={busy||!accepted} onClick={()=>void submit()}
      className="min-h-11 rounded-xl bg-sky-300 px-5 py-3 font-bold text-slate-950 disabled:opacity-40">

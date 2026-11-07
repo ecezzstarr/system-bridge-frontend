@@ -2,6 +2,8 @@
 import {useCallback,useEffect,useState} from 'react'
 import Link from 'next/link'
 import {useAuth} from '@/lib/auth-provider'
+import {PRO_MANAGER_COMPANY_PURPOSE,PRO_MANAGER_FILE_FOLDER_DISTINCTION,
+ PRO_MANAGER_PLAN_QUESTIONS,PRO_MANAGER_AGREEMENT_SECTIONS} from '@/lib/pro-regional-manager-language'
 
 type Activation={status:string;file_number?:string;fileNumber?:string;feeUSDT:number;network?:string;
  walletAddress?:string|null;payment_tx_hash?:string|null;business_plan?:Record<string,string>|null;
@@ -10,11 +12,8 @@ type Activation={status:string;file_number?:string;fileNumber?:string;feeUSDT:nu
 type SiblingsEvent={eventName:string;reportedAmountUSDT:number;verifiedAmountUSDT:number;
  status:string;proActivated:boolean;workspaceAccess:boolean;availableForWithdrawal:boolean;notice:string}
 const fields=[
- ['businessName','Business name'],
- ['businessActivity','What your business will do'],
- ['customers','Who your customers are'],
- ['revenueModel','How the business earns money'],
- ['operations','How you will operate your systems and serve customers'],
+ {key:'businessName',title:'Business name',guidance:'Name the business customers will recognize in your Pro File Folder and Customer Door.'},
+ ...PRO_MANAGER_PLAN_QUESTIONS,
 ] as const
 
 export default function ProActivationPage(){
@@ -84,7 +83,9 @@ export default function ProActivationPage(){
     <p className="mt-2 text-sm text-slate-300">Your File Number: <span className="font-mono">{user?.file_number||activation?.file_number||activation?.fileNumber||'Assigned Client File Number'}</span></p>
     <p className="mt-4 text-4xl font-bold">680 USDT</p>
     <p className="mt-1 text-sm text-slate-300">One-time Pro File Folder activation fee · USDT on TRON (TRC-20) · Forensics manual verification.</p>
-    <p className="mt-3 text-xs text-slate-400">This is not a personal loan, a deposit to your wallet, or an automatically recurring fee. Your employment workspace stays attached to your account.</p>
+    <p className="mt-3 text-sm leading-7 text-slate-200">{PRO_MANAGER_FILE_FOLDER_DISTINCTION}</p>
+    <p className="mt-3 text-sm leading-7 text-slate-200">{PRO_MANAGER_COMPANY_PURPOSE}</p>
+    <p className="mt-3 text-xs text-slate-400">This is not a personal loan, a deposit to your wallet, or an automatically recurring fee. Your separately approved employment workspace and company salary records stay attached to your account.</p>
    </header>
    {error&&<p role="alert" className="rounded-xl border border-rose-300/30 p-4 text-sm text-rose-100">{error}</p>}
    {message&&<p role="status" className="rounded-xl border border-cyan-300/30 p-4 text-sm text-cyan-100">{message}</p>}
@@ -108,10 +109,14 @@ export default function ProActivationPage(){
    </section>
    {status==='awaiting_signature'&&<section className="space-y-4 rounded-2xl border border-cyan-300/20 p-6" data-pro-electronic-agreement="true">
     <h2 className="text-xl font-bold">Pro File Folder · Client Agreement</h2>
-    <p className="text-sm text-slate-200">The Client identified by the assigned File Number requests one Pro File Folder, subject to Company approval and the Client's submitted business plan. A one-time activation fee of <strong>680 USDT</strong> is payable to the verified WEAVE TRON (TRC-20) receiving address only after the business-plan stage.</p>
-    <p className="text-sm text-slate-200">The Pro File Folder contains private business systems, approved workspaces and the System Switch crossing. Payment evidence alone does not activate the private Folder. Forensics independently verifies the payment and authorizes activation.</p>
-    <p className="text-sm text-slate-200">The 680 USDT is a service activation fee, not a personal loan or deposit into the Client's wallet. Separate business earnings, including the Siblings Event claim, require their own Mandate and source verification. Paying this fee does not establish, guarantee or release a 9,000 USDT wallet balance.</p>
-    <p className="text-sm text-slate-200">By signing, I accept the stated fee and activation procedure. I may retain access to my existing authorized employee workspace while the private Pro File Folder remains closed. Existing employment, identity and independent financial obligations are not extinguished or changed by this document.</p>
+    <p className="text-sm leading-7 text-slate-200">Your Pro File Folder is the operating world for the business you bring to Weave. Read the terms before signing. This agreement does not replace an approved employment offer, authorize unverified financial services or create guaranteed income.</p>
+    <div className="space-y-3" data-client-pro-reciprocal-agreement="true">
+     {PRO_MANAGER_AGREEMENT_SECTIONS.map(section=><article key={section.title} className="rounded-xl border border-sky-200/20 bg-slate-900/50 p-4">
+      <h3 className="font-semibold text-sky-100">{section.title}</h3>
+      <p className="mt-2 text-sm leading-7 text-slate-200">{section.body}</p>
+     </article>)}
+    </div>
+    <p className="text-sm leading-7 text-slate-200">For any reported Siblings Event business earnings or other historical balance, source verification and separate Mandate accounting remain required. This fee does not establish or release a 9,000 USDT balance, and existing employment or personal financial obligations remain unchanged.</p>
     {activation?.client_signature_at
      ?<p className="rounded-lg border border-cyan-300/30 p-3 text-sm text-cyan-100">Signed electronically by {activation.client_signature_name} · {new Date(activation.client_signature_at).toLocaleString()} · Awaiting Administration review</p>
      :<div className="space-y-3 border-t border-white/10 pt-4">
@@ -121,7 +126,7 @@ export default function ProActivationPage(){
       </label>
       <label className="flex items-start gap-2 text-sm text-slate-200">
        <input type="checkbox" checked={termsAccepted} onChange={e=>setTermsAccepted(e.target.checked)} className="mt-1"/>
-       I have read the Pro File Folder agreement, acknowledge the one-time 680 USDT activation fee, and consent to my typed name being recorded as my electronic signature.
+       I have read the Pro File Folder agreement, understand how my business growth and participation contribute to Weave, acknowledge the one-time 680 USDT activation fee and independent verification, and consent to my typed name being recorded as my electronic signature.
       </label>
       <button type="button" disabled={busy||!termsAccepted||signedName.trim().length<4}
         onClick={()=>void submit('sign_agreement')}
@@ -130,13 +135,14 @@ export default function ProActivationPage(){
    </section>}
    {status==='business_plan_required'&&<section className="space-y-4 rounded-2xl border border-cyan-300/20 p-6">
     <h2 className="text-lg font-bold">Submit your business plan</h2>
-    <p className="text-sm text-slate-300">The plan forms the first direction of your Pro File Folder and its workshop.</p>
-    {fields.map(([key,title])=><label key={key} className="block text-sm text-slate-200">{title}
-     <textarea rows={3} required minLength={10} maxLength={3000} value={plan[key]||''}
+    <p className="text-sm leading-7 text-slate-200">The plan gives your Pro File Folder its specific business direction. Describe your actual services, customers, how real work becomes verified value, and how employees and systems will expand it. Weave grows as your business serves customers successfully—not because you simply activate a Folder.</p>
+    {fields.map(({key,title,guidance})=><label key={key} className="block text-sm text-slate-200">{title}
+     <span className="mt-2 block text-xs leading-6 text-slate-300">{guidance}</span>
+     <textarea rows={4} required minLength={10} maxLength={3000} value={plan[key]||''}
        onChange={e=>setPlan(v=>({...v,[key]:e.target.value}))}
        className="mt-2 w-full rounded-xl border border-white/20 bg-slate-900 p-3 text-white" />
     </label>)}
-    <button disabled={busy||fields.some(([key])=>(plan[key]||'').trim().length<10)}
+    <button disabled={busy||fields.some(({key})=>(plan[key]||'').trim().length<10)}
       onClick={()=>void submit('business_plan')} className="rounded-xl bg-cyan-300 px-5 py-3 font-bold text-slate-950 disabled:opacity-40">Save business plan</button>
    </section>}
    {(status==='payment_required'||status==='rejected')&&<section className="space-y-4 rounded-2xl border border-amber-300/25 p-6">
