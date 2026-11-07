@@ -39,39 +39,28 @@ export async function ensureProFileNumberVerificationSchema(){
  await sql`CREATE INDEX IF NOT EXISTS pro_file_number_verifications_file_status
   ON pro_file_number_verifications(file_number,status,created_at DESC)`
 }
+/**
+ * The passwordless Pro intake is ONLY for Administration-approved WEAVE
+ * employees. A retail Pro purchase, an upgrade, or possession of a File Number
+ * never establishes company employment or a monthly salary.
+ */
+export async function getApprovedProStaffOffer(fileNumber:string) {
+ if(!proNumberPattern.test(fileNumber))return null
+ const [table]=await sql`SELECT to_regclass('public.company_client_staff_offers') AS name`
+ if(!table?.name)return null
+ const [offer]=await sql`SELECT id,file_number,candidate_name,position_title,
+   monthly_salary_usdt,client_id,folder_tier,status,verified_at
+  FROM company_client_staff_offers WHERE file_number=${fileNumber}
+   AND status='approved' AND folder_tier='pro' LIMIT 1`
+ if(!offer||!offer.position_title||!offer.candidate_name)return null
+ if(fileNumber===CJ_DORADO_FILE_NUMBER){
+  if(!/\\bcj\\s+dorado\\b/i.test(String(offer.candidate_name))||
+     !/^regional\\s+manager$/i.test(String(offer.position_title).trim()))return null
+ }
+ return offer
+}
 export async function eligibleProNumber(fileNumber:string){
- if(!proNumberPattern.test(fileNumber))return false
- // A File Number is a locator, not authentication. Never disclose who owns it.
- await ensureClientFileFolderSchema(sql)
- if(fileNumber===CJ_DORADO_FILE_NUMBER)await ensureCjDoradoFolder(sql)
- const [folder]=await sql`SELECT file_number,client_id FROM client_file_folders
-  WHERE file_number=${fileNumber} LIMIT 1`
- if(fileNumber===CJ_DORADO_FILE_NUMBER)return Boolean(folder)
- const [activationTable]=await sql`SELECT to_regclass('public.pro_file_folder_activations') AS name`
- if(activationTable?.name){
-  const [row]=await sql`SELECT 1 FROM pro_file_folder_activations WHERE file_number=${fileNumber} LIMIT 1`
-  if(row)return true
- }
- const [offerTable]=await sql`SELECT to_regclass('public.company_client_staff_offers') AS name`
- if(offerTable?.name){
-  const [offer]=await sql`SELECT 1 FROM company_client_staff_offers
-   WHERE file_number=${fileNumber} AND status='approved' AND folder_tier='pro' LIMIT 1`
-  if(offer)return true
- }
- const [purchaseTable]=await sql`SELECT to_regclass('public.file_folder_purchases') AS name`
- if(purchaseTable?.name){
-  const [purchase]=await sql`SELECT 1 FROM file_folder_purchases
-   WHERE file_number=${fileNumber} AND file_folder_tier='pro'
-    AND status IN ('confirmed','approved') LIMIT 1`
-  if(purchase)return true
- }
- const [upgradeTable]=await sql`SELECT to_regclass('public.client_folder_upgrades') AS name`
- if(upgradeTable?.name){
-  const [upgrade]=await sql`SELECT 1 FROM client_folder_upgrades
-   WHERE file_number=${fileNumber} AND tier='pro' LIMIT 1`
-  if(upgrade)return true
- }
- return false
+ return Boolean(await getApprovedProStaffOffer(fileNumber))
 }
 export async function submitProFileNumberPlan(input:{
  fileNumber:unknown;businessName:unknown;plan:Record<string,unknown>;
@@ -91,8 +80,9 @@ export async function submitProFileNumberPlan(input:{
    throw new Error('Complete each business-plan section (10–3000 characters).')
   plan[field]=value
  }
- if(!await eligibleProNumber(fileNumber))
-  throw new Error('This File Number is not ready for Pro verification. Contact Administration.')
+ // Accept the signed intake without publicly confirming whether a File Number
+ // exists. Payment and activation remain blocked unless Administration has an
+ // approved Pro employee offer for the same named person and File Number.
  await ensureProFileNumberVerificationSchema()
  const [volume]=await sql`SELECT COUNT(*)::int AS total FROM pro_file_number_verifications
   WHERE file_number=${fileNumber} AND created_at>now()-interval '1 hour'`
@@ -131,6 +121,18 @@ export async function readProFileNumberVerification(ticket:string){
   }
   siblingsEvent={reportedAmountUSDT,verifiedAmountUSDT,status,availableForWithdrawal:false}
  }
+ let companyPosition:null|{title:string;monthlySalaryUSDT:number|null;salaryStatus:string}=null
+ if(row.identity_verified_at){
+  const offer=await getApprovedProStaffOffer(String(row.file_number))
+  if(offer){
+   const salary=Number(offer.monthly_salary_usdt)
+   companyPosition={
+    title:String(offer.position_title),
+    monthlySalaryUSDT:Number.isFinite(salary)&&salary>0?salary:null,
+    salaryStatus:Number.isFinite(salary)&&salary>0?'approved_offer':'pending_company_confirmation'
+   }
+  }
+ }
  const paymentReady=String(row.status)==='payment_required'
  let receivingWallet:string|null=null
  if(paymentReady){
@@ -141,7 +143,7 @@ export async function readProFileNumberVerification(ticket:string){
   reference:String(row.id),fileNumber:String(row.file_number),businessName:String(row.business_name),
   status:String(row.status),feeUSDT:PRO_ACTIVATION_FEE_USDT,network:'USDT TRON (TRC-20)',
   walletAddress:receivingWallet,
-  paymentVerified:Boolean(row.payment_verified_at),siblingsEvent,
+  paymentVerified:Boolean(row.payment_verified_at),siblingsEvent,companyPosition,
   rejectionReason:row.rejection_reason||null,
  }
 }
