@@ -41,7 +41,7 @@ const loopTwoStart=source.indexOf('weave-home-loop-country')
 const loopThreeStart=source.indexOf('weave-home-loop-time')
 assert.ok(loopTwoStart>=0 && loopThreeStart>loopTwoStart,'Keep distinct Loop 2 and Loop 3 sections')
 const loopTwoCopy=source.slice(loopTwoStart,loopThreeStart)
-assert.match(loopTwoCopy,/\bNigeria(?:n)?\b/i,'Loop 2 keeps its country identity')
+assert.match(loopTwoCopy,/Country Formation/,'Loop 2 keeps its official country event identity')
 const outsideLoopTwo=source.slice(0,loopTwoStart)+source.slice(loopThreeStart)
 assert.doesNotMatch(outsideLoopTwo,/\bNigeria(?:n)?\b/i,
   'Homepage must not use Nigeria/Nigerian outside Company Loop 2')
