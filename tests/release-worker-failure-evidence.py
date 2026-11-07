@@ -3,7 +3,9 @@
 import importlib.util
 from pathlib import Path
 import re
+import tempfile
 import unittest
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parent.parent
 MODULE = ROOT / "selfhost" / "release-worker.py"
@@ -54,6 +56,30 @@ class ReleaseFailureEvidence(unittest.TestCase):
         self.assertIn("stage=preflight_or_unreported", message)
         self.assertIn("recovery=not_confirmed", message)
         self.assertIn("exit=3", message)
+
+    def test_executor_preflight_stderr_reaches_the_redacted_diagnostic(self):
+        sha = "a" * 40
+        token = "private_worker_token_123456789"
+        with tempfile.TemporaryDirectory() as directory:
+            executor = Path(directory) / "executor.sh"
+            executor.write_text(
+                "printf '%s\\n' 'Server checkout has uncommitted source changes.' >&2\n"
+                f"printf '%s\\n' 'Authorization: Bearer {token}' >&2\n"
+                "exit 3\n"
+            )
+            values = {"WEAVE_RELEASE_EXECUTOR": str(executor), "WEAVE_RELEASE_CONTROL_TOKEN": token}
+            job = {"action": "deploy_latest", "target_sha": sha}
+            with patch.object(worker, "validate_origin"), \
+                    patch.object(worker, "cmd", return_value=sha), \
+                    patch.object(worker, "is_good_ci", return_value=True), \
+                    patch.object(worker, "get_local_release", return_value="b" * 40), \
+                    patch.object(worker, "journal_executor_failure") as journal:
+                with self.assertRaisesRegex(RuntimeError, "uncommitted source changes") as raised:
+                    worker.execute(job, values)
+                self.assertNotIn(token, str(raised.exception))
+                output, settings, _ = journal.call_args.args
+                self.assertIn("uncommitted source changes", output)
+                self.assertNotIn(token, worker.safe_executor_excerpt(output, settings))
 
     def test_script_emits_structured_failure_stages_and_preserves_rollback(self):
         shell = (ROOT / "selfhost" / "deploy-production.sh").read_text()

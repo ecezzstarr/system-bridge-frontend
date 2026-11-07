@@ -207,7 +207,8 @@ def execute(job, values):
         raise RuntimeError("Configured host release executor is unavailable")
     result = subprocess.run(
         ["bash", str(executor)],
-        cwd=ROOT, env=process_env, text=True, capture_output=True, timeout=3600,
+        cwd=ROOT, env=process_env, text=True, stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT, timeout=3600,
     )
     if result.returncode:
         summary = summarize_executor_failure(result.stdout, result.returncode, values)
