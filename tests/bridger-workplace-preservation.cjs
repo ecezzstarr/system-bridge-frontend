@@ -41,7 +41,7 @@ assert.ok(dashboard.includes('onOpenDistricts'), 'The original world is reachabl
 assert.ok(atmosphere.includes("pathname === '/bridger/dashboard' && userRole === 'bridger'"),
   'Only Bridger dashboard bypasses the old atmosphere override')
 assert.ok(atmosphere.includes('<WeaveDashboardWorld'),
-  'Agent and Administration world handling remains untouched')
+  'Agent and Administrations world handling remains untouched')
 
 // No new prospects table or social records are introduced in this rollout.
 assert.ok(catalog.includes("label: 'My Prospects', href: '/weave/market/prospects'"),

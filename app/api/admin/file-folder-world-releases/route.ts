@@ -10,7 +10,7 @@ async function authorize(request:NextRequest){
 }
 export async function GET(request:NextRequest){
  const user=await authorize(request)
- if(!user)return NextResponse.json({error:'Administration only'},{status:403})
+ if(!user)return NextResponse.json({error:'Administrations only'},{status:403})
  try{
   const [published,releases]=await Promise.all([getPublishedFileFolderRelease(),listFileFolderReleases()])
   return NextResponse.json({success:true,published,releases,
@@ -19,7 +19,7 @@ export async function GET(request:NextRequest){
 }
 export async function POST(request:NextRequest){
  const user=await authorize(request)
- if(!user)return NextResponse.json({error:'Administration only'},{status:403})
+ if(!user)return NextResponse.json({error:'Administrations only'},{status:403})
  try{
   const body=await request.json().catch(()=>({}))
   const action=String(body.action||'')

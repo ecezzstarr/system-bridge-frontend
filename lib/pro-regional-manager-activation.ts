@@ -56,7 +56,7 @@ export async function ensureProRegionalManagerActivationSchema(){
    ON weave_pro_regional_manager_work(user_id,created_at DESC)`
 }
 
-/** Allocate a separate Pro File Number only after Administration has reviewed
+/** Allocate a separate Pro File Number only after Administrations have reviewed
  * the actual employment terms. This never alters the original user role or
  * ordinary department File Number. The allocation and reservation are atomic. */
 export async function prepareApprovedProRegionalManager(userId:string){

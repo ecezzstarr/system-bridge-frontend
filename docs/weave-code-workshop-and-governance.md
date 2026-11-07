@@ -1,9 +1,9 @@
-# WEAVE Code Workshop — Administration source control and corporate guardrails
+# WEAVE Code Workshop — Administrations source control and corporate guardrails
 
 ## Institutional purpose
 
 WEAVE is one continuing company, not a collection of independent pages.
-Administration (A Time) establishes permissions, systems, policies, reviews and
+Administrations (A Time) establishes permissions, systems, policies, reviews and
 records so that Agents (Stability), Bridgers (Hope), and Clients (Dream Lovely)
 can carry their own authorized work into measurable value. The company's
 infrastructure must support participants without confusing company control
@@ -14,9 +14,9 @@ a public web shell. It is connected to the canonical GitHub repository
 `ecezzstarr/system-bridge-frontend` and hands off reviewed releases to the
 existing GitHub → Oracle deployment workflow.
 
-## Source authoring from inside Administration
+## Source authoring from inside Administrations
 
-1. Open `/admin/code-workshop` from the Administration workplace or Control Center.
+1. Open `/admin/code-workshop` from the Administrations workplace or Control Center.
 2. Log in as an explicitly appointed privileged administrator. Do not use
    a public Client, Agent, Bridger or ordinary non-authorized Admin session.
 3. Browse the allowed source directories and open a file. The `main` branch
@@ -33,7 +33,7 @@ existing GitHub → Oracle deployment workflow.
    merge requires the **exact reviewed head SHA**, passing PR Production Check
    and any required external review; type `MERGE #<number>` only after review.
 8. The new `main` SHA must pass a **different push-to-main Production Check**.
-   Administration may then request the exact SHA in the Release Workshop.
+   Administrations may then request the exact SHA in the Release Workshop.
    The independent Oracle host worker must verify local and public health
    before the release is recorded as healthy in Sovereign + Flame.
 9. If the server is unavailable, use the existing privileged manual recovery
@@ -44,7 +44,7 @@ existing GitHub → Oracle deployment workflow.
 On the actual private application server, set:
 
 - `WEAVE_WORKSHOP_ADMIN_IDS`: comma-separated, exact UUIDs of the approved
-  active Administration accounts that can operate source, merge and release
+  active Administrations accounts that can operate source, merge and release
   workshops. These UUIDs are **not** passwords and cannot be supplied by a
   browser. For an installation with multiple active admins, privileged
   access remains denied until this is explicitly configured. A single

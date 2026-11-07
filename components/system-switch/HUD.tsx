@@ -352,7 +352,7 @@ export function HUD({
                   },
                   {
                     id: 'admin',
-                    name: 'Administration',
+                    name: 'Administrations',
                     icon: UserCog,
                     description: 'Elevation',
                   },
@@ -514,7 +514,7 @@ export function HUD({
                     { id: 'mandate', name: 'Mandate', icon: ClipboardList },
                     { id: 'lawyer', name: 'Attorney', icon: Scale },
                     { id: 'forensic', name: 'Forensic', icon: Search },
-                    { id: 'admin', name: 'Administration', icon: UserCog },
+                    { id: 'admin', name: 'Administrations', icon: UserCog },
                   ].map((pos) => {
                     const Icon = pos.icon
 

@@ -1,6 +1,6 @@
 "use server"
 
-// Eight - Administration build intelligence for WEAVE of Presence
+// Eight - Administrations build intelligence for WEAVE of Presence
 // Eight is the ecosystem builder AI - capable of understanding, refining, and building the platform
 // Works alongside you (the user) to continuously improve the system
 
@@ -83,20 +83,20 @@ You are not just a helper - you are a co-builder. You understand the entire WEAV
 - AI: Google Gemini (you), OpenAI (fallback)
 - Auth: Custom JWT auth with PostgreSQL
 - Places: role worlds, Client File Folders, role districts, Enterprise Systems Exchange, Arena
-- Client visibility boundary: System Switch is the shared crossing used by Client, Administration, Agent and Bridger avatars. Client-published Customer Doors, Client branding and broadcasts appear in that shared world and Flame Event. The Client's private workshop, records and ownership remain private; crossing a public Door never grants private authority. Staff discover Client Doors through System Switch and Flame Event rather than a general Customer Market discovery page. Public visitors discover Customer Doors from the WEAVE homepage/Customer Market or a Client-shared direct Door link. Never recreate a staff File Folder viewer or Bridge Plaza path.
+- Client visibility boundary: System Switch is the shared crossing used by Client, Administrations, Agent and Bridger avatars. Client-published Customer Doors, Client branding and broadcasts appear in that shared world and Flame Event. The Client's private workshop, records and ownership remain private; crossing a public Door never grants private authority. Staff discover Client Doors through System Switch and Flame Event rather than a general Customer Market discovery page. Public visitors discover Customer Doors from the WEAVE homepage/Customer Market or a Client-shared direct Door link. Never recreate a staff File Folder viewer or Bridge Plaza path.
 
 ## Key Systems
-- Positions: Clients (players), Bridgers (partners), Agents (employees), Administration (institutional authority)
+- Positions: Clients (players), Bridgers (partners), Agents (employees), Administrations (institutional authority)
 - Wallets: platform_balance, escrow_balance, TRX on TRON
 - Arena: Casino games, multiplayer matches with escrow
-- Eight Engine: Administration build intelligence for code, infrastructure and system formation
+- Eight Engine: Administrations build intelligence for code, infrastructure and system formation
 - Development Foundry: Eight leads persistent specialist coding agents for world systems, Client File Folder, participation movement, infrastructure and regression verification
 
 ## World-as-System Rule
 WEAVE must behave as the environment, not describe an environment. Do not substitute HUD labels, decorative world copy, floating cards or dashboard language for spatial continuity, causal interaction, live system state and movement. A HUD is allowed only where it is genuinely a control overlay on top of an already-existing world.
 
 ## Development Foundry Rule
-When acting for a Development Foundry agent, stay inside that agent's mandate and owned source context. Produce concrete source-level work and verification evidence. Never claim code is live, pushed or deployed until those operations are actually verified through Administration authority.
+When acting for a Development Foundry agent, stay inside that agent's mandate and owned source context. Produce concrete source-level work and verification evidence. Never claim code is live, pushed or deployed until those operations are actually verified through Administrations authority.
 
 ## Your Capabilities
 1. **Code Generation**: Generate complete, production-ready code

@@ -1,10 +1,10 @@
 # WEAVE Video Studio — original stories and production
 
-This extends the existing Video Ad Studio. It does **not** replace the order, wallet, pricing, receipts, Administration placement, or media workflows.
+This extends the existing Video Ad Studio. It does **not** replace the order, wallet, pricing, receipts, Administrations placement, or media workflows.
 
 ## Features implemented by this change
 
-1. Administration can create a video from **exact authored narration text**. Enter a production name, paste the manuscript in *Original Words*, and choose a duration. The full source is saved without AI rewriting in `admin_video_ad_projects.narration_script`; readable caption excerpts are formed into scene slots. A paced-speech guard prevents fitting long readings into unrealistically short videos.
+1. Administrations can create a video from **exact authored narration text**. Enter a production name, paste the manuscript in *Original Words*, and choose a duration. The full source is saved without AI rewriting in `admin_video_ad_projects.narration_script`; readable caption excerpts are formed into scene slots. A paced-speech guard prevents fitting long readings into unrealistically short videos.
 2. Upload an image or clip into one scene of an original-script production. Unfilled scenes reuse that first media, so one approved Burning River cover can carry an entire episode. Other scenes can be replaced individually.
 3. Record a microphone track in the browser, or upload licensed MP3, M4A, WAV, OGG or WEBM narration through the existing authenticated WEAVE storage. Original narration stays editable as text but **does not falsely appear as generated audio**.
 4. Optionally generate narration with a self-hosted neural voice engine if the server has a licensed Piper-compatible local model installed and `WEAVE_PIPER_BIN` and `WEAVE_PIPER_MODEL` configured. Without a model, the button is unavailable; microphone/upload remains functional. This is not an external voice subscription.
@@ -13,7 +13,7 @@ This extends the existing Video Ad Studio. It does **not** replace the order, wa
 
 ## Narration release procedure — Book One: Burning River
 
-- Sign in to Administration and open **Video Ad Studio**.
+- Sign in to Administrations and open **Video Ad Studio**.
 - Give the production a name, paste the author's exact Prelude, and choose a duration long enough for a deliberate storyteller voice.
 - Form the production, upload the approved Burning River image, and check the on-screen caption excerpts.
 - Record the reading, upload a professionally read version, or use WEAVE Local Voice when configured.
@@ -38,7 +38,7 @@ Without both settings, WEAVE does not claim that voice generation exists. It off
 ## Distinctions and further production work
 
 - Available: exact-script story formation, manual scene editing, real voice recording/upload, optional locally hosted speech generation, audio mixing, source-preserving caption scenes, own-video export.
-- Existing: service-door orders, paid production, receipts, Administration placements.
+- Existing: service-door orders, paid production, receipts, Administrations placements.
 - **Not yet delivered by this change:** automated speech-to-text alignment, voice cloning/consent management, full multitrack frame-accurate editing, AI video generation, AI music composition, multi-format export presets, and direct TikTok API publishing from the new editor. Do not show these as working controls until implemented and tested.
 - Production video generation and local speech are compute-intensive. Render jobs currently run on the application runtime; a durable worker queue is recommended before high-volume usage.
 

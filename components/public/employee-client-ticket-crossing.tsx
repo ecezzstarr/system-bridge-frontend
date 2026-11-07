@@ -74,7 +74,7 @@ export default function EmployeeClientTicketCrossing({offerToken}:{offerToken:st
             <p className="text-sm text-amber-100">Proposed personal loan: <strong>{offer.proposedPersonalLoanUSDT.toLocaleString()} USDT</strong>. This is not yet proof of funds. The offer needs your agreement and separate verification of loan funding.</p>
             <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-200">{offer.personalLoanTerms}</p>
           </div>}
-          <p className="text-xs text-slate-400">Paying a ticket is not a File Folder purchase or an automatic salary payment. Employment is governed by the company's accepted terms and Administration approval.</p>
+          <p className="text-xs text-slate-400">Paying a ticket is not a File Folder purchase or an automatic salary payment. Employment is governed by the company's accepted terms and Administrations approval.</p>
           <p className="text-sm text-cyan-200">Status: {offer.status.replaceAll('_',' ')}</p>
         </div>
         {offer.status==='offered'&&<form onSubmit={e=>{e.preventDefault();void submit('accept')}} className="space-y-3">
@@ -91,23 +91,23 @@ export default function EmployeeClientTicketCrossing({offerToken}:{offerToken:st
           <button disabled={busy||(offer.proposedPersonalLoanUSDT>0&&!loanTermsAccepted)} type="submit" className="rounded-xl bg-cyan-300 px-5 py-3 font-bold text-slate-950 disabled:opacity-50">{busy?'Recording…':'Accept company offer'}</button>
         </form>}
         {offer.status==='accepted'&&<form onSubmit={e=>{e.preventDefault();void submit('submit_payment')}} className="space-y-3">
-          <p className="text-sm text-slate-200">Follow the verified payment instructions in your official company offer. Record your {offer.applicantContributionUSDT.toLocaleString()} USDT contribution payment network and actual transaction reference here for Administration to examine. No payment is sent by this page.</p>
+          <p className="text-sm text-slate-200">Follow the verified payment instructions in your official company offer. Record your {offer.applicantContributionUSDT.toLocaleString()} USDT contribution payment network and actual transaction reference here for Administrations to examine. No payment is sent by this page.</p>
           <label className="block text-sm">Payment network
             <input required value={network} placeholder="USDT network used" onChange={e=>setNetwork(e.target.value)} className="mt-2 w-full rounded-lg border border-white/20 bg-slate-950 p-3"/>
           </label>
           <label className="block text-sm">USDT transaction reference
             <input required minLength={6} value={reference} onChange={e=>setReference(e.target.value)} className="mt-2 w-full rounded-lg border border-white/20 bg-slate-950 p-3"/>
           </label>
-          <button disabled={busy} type="submit" className="rounded-xl bg-cyan-300 px-5 py-3 font-bold text-slate-950 disabled:opacity-50">{busy?'Recording…':'Submit ticket for Administration verification'}</button>
+          <button disabled={busy} type="submit" className="rounded-xl bg-cyan-300 px-5 py-3 font-bold text-slate-950 disabled:opacity-50">{busy?'Recording…':'Submit ticket for Administrations verification'}</button>
         </form>}
-        {offer.status==='pending_verification'&&<p className="rounded-xl border border-amber-200/30 p-4 text-sm text-amber-100">Ticket reference received. Administration must independently verify payment before a File Number can be issued. <button className="ml-2 underline" onClick={()=>void refresh()} type="button">Check status</button></p>}
+        {offer.status==='pending_verification'&&<p className="rounded-xl border border-amber-200/30 p-4 text-sm text-amber-100">Ticket reference received. Administrations must independently verify payment before a File Number can be issued. <button className="ml-2 underline" onClick={()=>void refresh()} type="button">Check status</button></p>}
         {offer.status==='approved'&&<div className="space-y-3">
-          <p className="text-sm text-emerald-200">Administration verified the ticket. Your <strong>{offer.grantedTier?.toUpperCase()}</strong> File Folder is granted through the company, not purchased.</p>
+          <p className="text-sm text-emerald-200">Administrations verified the ticket. Your <strong>{offer.grantedTier?.toUpperCase()}</strong> File Folder is granted through the company, not purchased.</p>
           <p className="text-sm">Issued File Number: <strong>{offer.fileNumber}</strong></p>
           <p className="text-xs text-slate-300">Verified ticket receipt: {offer.receiptNumber}</p>
           {offer.registerUrl&&<Link href={offer.existingClient?offer.registerUrl:offer.registerUrl+'&staffOffer='+encodeURIComponent(offerToken)} className="inline-flex rounded-xl bg-cyan-300 px-5 py-3 font-bold text-slate-950">{offer.existingClient?'Sign in and open my company position →':'Open Client registration →'}</Link>}
         </div>}
-        {offer.status==='rejected'&&<p className="text-sm text-rose-200">Administration did not verify the submitted ticket. {offer.rejectionReason}</p>}
+        {offer.status==='rejected'&&<p className="text-sm text-rose-200">Administrations did not verify the submitted ticket. {offer.rejectionReason}</p>}
       </section>}
     </div>
   </main>

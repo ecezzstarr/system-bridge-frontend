@@ -96,7 +96,7 @@ export default function PublicFileFolderPurchasePage() {
             accessToken: String(parsed.accessToken),
             status: 'pending_admin_confirmation',
           })
-          setMessage('Restoring your File Folder purchase while Administration verification continues.')
+          setMessage('Restoring your File Folder purchase while Administrations verification continues.')
         }
       }
     } catch {}
@@ -147,15 +147,15 @@ export default function PublicFileFolderPurchasePage() {
           setRegisterUrl(nextUrl)
           setMessage(
             body.crossing.systemSwitchUrl
-              ? `Administration verified your payment and File Number ${body.purchase.fileNumber} is now attached to your Client File Folder.`
-              : `Administration verified your payment and issued File Number ${body.purchase.fileNumber}. You can now create your Client account.`
+              ? `Administrations verified your payment and File Number ${body.purchase.fileNumber} is now attached to your Client File Folder.`
+              : `Administrations verified your payment and issued File Number ${body.purchase.fileNumber}. You can now create your Client account.`
           )
           try { window.localStorage.removeItem(STORAGE_KEY) } catch {}
           return
         }
 
         if (body.purchase?.status === 'rejected') {
-          setMessage('Administration could not verify this payment. Review the TRX transaction reference before submitting a new File Folder purchase.')
+          setMessage('Administrations could not verify this payment. Review the TRX transaction reference before submitting a new File Folder purchase.')
           try { window.localStorage.removeItem(STORAGE_KEY) } catch {}
           return
         }
@@ -220,7 +220,7 @@ export default function PublicFileFolderPurchasePage() {
         window.location.assign(body.paymentLink)
         return
       }
-      setMessage(body.message || 'Payment recorded. Administration verification is now open.')
+      setMessage(body.message || 'Payment recorded. Administrations verification is now open.')
     } catch (error: any) {
       setMessage(error?.message || 'Unable to record File Folder purchase')
     } finally {
@@ -238,7 +238,7 @@ export default function PublicFileFolderPurchasePage() {
 
   if (staffOfferToken) return <EmployeeClientTicketCrossing offerToken={staffOfferToken} />
 
-  const stages = ['Recognize', 'Choose File Folder', 'Record payment', 'Administration', 'Become Client']
+  const stages = ['Recognize', 'Choose File Folder', 'Record payment', 'Administrations', 'Become Client']
 
   return (
     <main className="min-h-screen bg-[#03060b] text-white">
@@ -258,14 +258,14 @@ export default function PublicFileFolderPurchasePage() {
             <div>
               <p className="text-[9px] font-black uppercase tracking-[.22em] text-orange-200">Public Client Crossing · File Folder</p>
               <h1 className="mt-3 max-w-4xl text-3xl font-black tracking-tight sm:text-5xl">Purchase your File Folder. Enter WEAVE as a Client.</h1>
-              <p className="mt-3 max-w-3xl text-sm leading-6 text-stone-400">Visitors do not need a Bridger link to become Clients. Choose a File Folder, pay securely in Naira through Paystack or keep using the existing TRX wallet method. Administration verifies the payment and issues your File Number before the Client crossing opens.</p>
+              <p className="mt-3 max-w-3xl text-sm leading-6 text-stone-400">Visitors do not need a Bridger link to become Clients. Choose a File Folder, pay securely in Naira through Paystack or keep using the existing TRX wallet method. Administrations verify the payment and issues your File Number before the Client crossing opens.</p>
             </div>
             <div className="border-l border-white/10 pl-4">
               <p className="text-[8px] font-black uppercase tracking-[.18em] text-white/35">Current state</p>
               <p className="mt-1 text-sm font-black">
-                {purchase?.status === 'confirmed' ? 'File Number issued' : purchase?.status === 'rejected' ? 'Payment not verified' : purchase ? 'Administration verification' : 'Ready to begin'}
+                {purchase?.status === 'confirmed' ? 'File Number issued' : purchase?.status === 'rejected' ? 'Payment not verified' : purchase ? 'Administrations verification' : 'Ready to begin'}
               </p>
-              {purchase?.status === 'pending_admin_confirmation' && <p className="mt-2 inline-flex items-center gap-2 text-[9px] text-amber-200"><Radio className="h-3.5 w-3.5" /> {checking ? 'Checking decision…' : 'Waiting for Administration'}</p>}
+              {purchase?.status === 'pending_admin_confirmation' && <p className="mt-2 inline-flex items-center gap-2 text-[9px] text-amber-200"><Radio className="h-3.5 w-3.5" /> {checking ? 'Checking decision…' : 'Waiting for Administrations'}</p>}
             </div>
           </header>
 
@@ -287,7 +287,7 @@ export default function PublicFileFolderPurchasePage() {
 
               <div className="mt-8 rounded-2xl border border-cyan-300/10 bg-cyan-300/[.035] p-4">
                 <div className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-cyan-200" /><p className="text-[9px] font-black uppercase tracking-[.15em] text-cyan-100">What happens after approval</p></div>
-                <p className="mt-3 text-xs leading-5 text-slate-400">Administration issues your File Number. Existing Clients are attached directly to the verified File Folder; new visitors continue once through Client registration and then enter the same operating environment.</p>
+                <p className="mt-3 text-xs leading-5 text-slate-400">Administrations issue your File Number. Existing Clients are attached directly to the verified File Folder; new visitors continue once through Client registration and then enter the same operating environment.</p>
               </div>
             </section>
 
@@ -297,7 +297,7 @@ export default function PublicFileFolderPurchasePage() {
                 <button type="button" disabled={Boolean(purchase)} onClick={()=>setTier('standard')} className={`min-h-36 border-b border-white/10 p-4 text-left sm:border-b-0 sm:border-r ${tier==='standard'?'bg-sky-300/[.07]':'bg-black/15'}`}><div className="flex items-center gap-2"><Wallet className="h-4 w-4 text-sky-200" /><span className="text-[9px] font-black uppercase tracking-[.14em]">Standard</span></div><p className="mt-5 text-2xl font-black">{FILE_FOLDER_PRICING.standardMinimumFlameCoin.toLocaleString()}–{FILE_FOLDER_PRICING.standardMaximumFlameCoin.toLocaleString()}</p><p className="mt-1 text-[9px] text-stone-500">Flame Coin · building power</p></button>
                 <div className="min-h-36 border-b border-white/10 p-4 text-left sm:border-b-0 sm:border-r"><div className="flex items-center gap-2"><FolderOpen className="h-4 w-4 text-cyan-200"/><span className="text-[9px] font-black uppercase tracking-[.14em]">Pro</span></div><p className="mt-5 text-sm font-black">Negotiated company offer</p><p className="mt-2 text-[9px] leading-5 text-stone-400">Pro Folder sales and company-granted employee Pro access follow separately verified offers.</p></div>
                 <button type="button" disabled={Boolean(purchase)} onClick={()=>setTier('premium')} className={`min-h-36 border-b border-white/10 p-4 text-left sm:border-b-0 sm:border-r ${tier==='premium'?'bg-orange-300/[.07]':'bg-black/15'}`}><div className="flex items-center gap-2"><Crown className="h-4 w-4 text-orange-200" /><span className="text-[9px] font-black uppercase tracking-[.14em]">Premium</span></div><p className="mt-5 text-2xl font-black">{FILE_FOLDER_PRICING.premiumFlameCoin.toLocaleString()}</p><p className="mt-1 text-[9px] text-stone-500">Flame Coin · fixed · same amount in TRX</p></button>
-                <button type="button" disabled={Boolean(purchase)} onClick={()=>setTier('plus')} className={`min-h-36 border-t border-white/10 p-4 text-left sm:col-span-2 ${tier==='plus'?'bg-emerald-300/[.07]':'bg-black/15'}`}><div className="flex items-center gap-2"><Crown className="h-4 w-4 text-emerald-200" /><span className="text-[9px] font-black uppercase tracking-[.14em]">Plus · Completed systems</span></div><p className="mt-3 text-2xl font-black">{FILE_FOLDER_PRICING.plusFlameCoin.toLocaleString()} Flame Coin</p><p className="mt-1 text-[10px] text-stone-300">Pay {FILE_FOLDER_PRICING.plusTrx.toLocaleString()} TRX · {FILE_FOLDER_PRICING.plusUsdt.toLocaleString()} USDT reference</p><p className="mt-1 text-[9px] text-stone-500">Administration-defined package quote, not a live exchange rate. Payment on this page is TRX only.</p></button>
+                <button type="button" disabled={Boolean(purchase)} onClick={()=>setTier('plus')} className={`min-h-36 border-t border-white/10 p-4 text-left sm:col-span-2 ${tier==='plus'?'bg-emerald-300/[.07]':'bg-black/15'}`}><div className="flex items-center gap-2"><Crown className="h-4 w-4 text-emerald-200" /><span className="text-[9px] font-black uppercase tracking-[.14em]">Plus · Completed systems</span></div><p className="mt-3 text-2xl font-black">{FILE_FOLDER_PRICING.plusFlameCoin.toLocaleString()} Flame Coin</p><p className="mt-1 text-[10px] text-stone-300">Pay {FILE_FOLDER_PRICING.plusTrx.toLocaleString()} TRX · {FILE_FOLDER_PRICING.plusUsdt.toLocaleString()} USDT reference</p><p className="mt-1 text-[9px] text-stone-500">Administrations-defined package quote, not a live exchange rate. Payment on this page is TRX only.</p></button>
               </div>
 
               {tier === 'standard' && <label className="mt-4 block"><span className="text-[9px] font-bold uppercase tracking-[.12em] text-stone-500">Standard amount · {FILE_FOLDER_PRICING.standardMinimumFlameCoin.toLocaleString()} to {FILE_FOLDER_PRICING.standardMaximumFlameCoin.toLocaleString()}</span><input inputMode="decimal" type="number" min={FILE_FOLDER_PRICING.standardMinimumFlameCoin} max={FILE_FOLDER_PRICING.standardMaximumFlameCoin} value={standardAmount} onChange={e=>setStandardAmount(e.target.value)} disabled={Boolean(purchase)} className="mt-2 w-full rounded-xl border border-white/10 bg-black/25 px-4 py-3 text-sm outline-none" /></label>}
@@ -310,10 +310,10 @@ export default function PublicFileFolderPurchasePage() {
               {paymentMethod === 'trx' ? <div className="mt-5 rounded-2xl border border-emerald-300/10 bg-emerald-300/[.035] p-4">
                 <p className="text-[8px] font-black uppercase tracking-[.16em] text-emerald-200">WEAVE company TRX wallet</p>
                 <div className="mt-3 flex gap-2"><div className="min-w-0 flex-1 rounded-xl border border-white/10 bg-black/30 px-3 py-3 font-mono text-[10px] text-slate-300 break-all">{walletLoading?'Loading wallet…':wallet||'Company wallet is unavailable'}</div><Button type="button" variant="outline" disabled={!wallet} onClick={copyWallet}><Copy className="h-4 w-4" /> {copied?'Copied':'Copy'}</Button></div>
-                <p className="mt-3 text-[10px] leading-5 text-slate-500">Send exactly <strong className="text-white">{Number.isFinite(amount)?amount.toLocaleString():'—'} TRX</strong>. {tier==='plus' ? `Plus is valued at ${FILE_FOLDER_PRICING.plusFlameCoin.toLocaleString()} Flame Coin, with a ${FILE_FOLDER_PRICING.plusUsdt.toLocaleString()} USDT reference. Your payment is in TRX, not USDT. Ready systems activate only after Administration verifies payment and attaches your Client File Folder.` : 'For Standard and Premium, the amount paid in TRX is the same numeric File Folder value in Flame Coin.'}</p>
+                <p className="mt-3 text-[10px] leading-5 text-slate-500">Send exactly <strong className="text-white">{Number.isFinite(amount)?amount.toLocaleString():'—'} TRX</strong>. {tier==='plus' ? `Plus is valued at ${FILE_FOLDER_PRICING.plusFlameCoin.toLocaleString()} Flame Coin, with a ${FILE_FOLDER_PRICING.plusUsdt.toLocaleString()} USDT reference. Your payment is in TRX, not USDT. Ready systems activate only after Administrations verify payment and attaches your Client File Folder.` : 'For Standard and Premium, the amount paid in TRX is the same numeric File Folder value in Flame Coin.'}</p>
               </div> : null}
 
-              {paymentMethod === 'trx' ? <label className="mt-5 block"><span className="text-[9px] font-bold uppercase tracking-[.12em] text-stone-500">TRX transaction hash</span><div className="mt-2 flex items-center gap-3 rounded-xl border border-white/10 bg-black/25 px-3"><FileKey2 className="h-4 w-4 text-orange-200" /><input value={reference} onChange={e=>setReference(e.target.value)} disabled={Boolean(purchase)} placeholder="Paste transaction hash after payment" className="w-full bg-transparent py-3 text-sm outline-none placeholder:text-white/20 disabled:opacity-50" /></div></label> : <div className="mt-5 rounded-2xl border border-cyan-200/15 bg-cyan-300/[.04] p-4"><p className="text-xs font-bold text-cyan-100">Paystack secure checkout</p><p className="mt-2 text-[10px] leading-5 text-slate-400">Your current File Folder value will be quoted in Naira using the configured payment rate. Payment verification and Administration approval remain required.</p></div>}
+              {paymentMethod === 'trx' ? <label className="mt-5 block"><span className="text-[9px] font-bold uppercase tracking-[.12em] text-stone-500">TRX transaction hash</span><div className="mt-2 flex items-center gap-3 rounded-xl border border-white/10 bg-black/25 px-3"><FileKey2 className="h-4 w-4 text-orange-200" /><input value={reference} onChange={e=>setReference(e.target.value)} disabled={Boolean(purchase)} placeholder="Paste transaction hash after payment" className="w-full bg-transparent py-3 text-sm outline-none placeholder:text-white/20 disabled:opacity-50" /></div></label> : <div className="mt-5 rounded-2xl border border-cyan-200/15 bg-cyan-300/[.04] p-4"><p className="text-xs font-bold text-cyan-100">Paystack secure checkout</p><p className="mt-2 text-[10px] leading-5 text-slate-400">Your current File Folder value will be quoted in Naira using the configured payment rate. Payment verification and Administrations approval remain required.</p></div>}
 
               {!purchase && <Button onClick={submitPurchase} disabled={busy || !validAmount || !name.trim() || !phone.trim() || (paymentMethod === 'trx' && (!wallet || !reference.trim())) || (paymentMethod === 'paystack' && !email.trim())} className="mt-5 h-12 w-full bg-white font-black text-[#090605] hover:bg-stone-100">{busy?<Loader2 className="mr-2 h-4 w-4 animate-spin"/>:<ArrowRight className="mr-2 h-4 w-4"/>}{busy ? (paymentMethod === 'paystack' ? 'Opening Paystack…' : 'Submitting purchase…') : paymentMethod === 'paystack' ? 'Continue to Paystack' : 'Submit File Folder purchase'}</Button>}
 

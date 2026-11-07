@@ -95,7 +95,7 @@ async function verify(){
   }),input),'premium','Approved premium Bridge deposit retains purchased tier')
   assert.equal(await tier.resolveVerifiedClientFileFolderTier(ownerSql({
     grants:[{folder_tier:'premium'}],
-  }),input),'premium','Administration-approved Premium staff grant is recognized')
+  }),input),'premium','Administrations-approved Premium staff grant is recognized')
   assert.equal(await tier.resolveVerifiedClientFileFolderTier(ownerSql({
     domain:'premium',
   }),input),'premium','Persisted authorized Premium world domain retains the tier')
@@ -152,7 +152,7 @@ assert(premium3d.includes('Premium3DRecoveryBoundary')&&
 assert(healthApi.includes("user.role!=='admin'")&&
   healthApi.includes('missing_folders')&&healthApi.includes('missing_workshops')&&
   healthApi.includes('mismatched_folders')&&!healthApi.includes('UPDATE client_file_folders'),
-  'Administration-only audit detects ownership drift without silently granting or overwriting records')
+  'Administrations-only audit detects ownership drift without silently granting or overwriting records')
 assert(domainStore.includes("ARRAY['unclassified','standard','pro','premium','plus']::text[]")&&
   domainStore.includes('THEN EXCLUDED.tier ELSE weave_open_world_domains.tier END')&&
   domainStore.includes('confirmed.file_folder_tier::text)')&&
@@ -160,11 +160,11 @@ assert(domainStore.includes("ARRAY['unclassified','standard','pro','premium','pl
   'Shared Open World prevents downgrade from later lower-tier purchases and employee grants')
 assert(healthPage.includes('/api/admin/file-folder-health')&&
   read('lib/admin-workplace-catalog.ts').includes('/admin/file-folder-health'),
-  'Administration has an accessible owner integrity check')
+  'Administrations has an accessible owner integrity check')
 assert(worldApi.includes('resolveVerifiedClientFileFolderTier')&&
   worldApi.includes("verifiedTier!=='premium'&&verifiedTier!=='plus'"),
   'All private File Folder read/write operations remain open for verified Premium and Plus owners')
 assert(loginApi.includes('resolveVerifiedClientFileFolderTier')&&
   loginApi.includes("entitledTier==='premium'||entitledTier==='plus'"),
   'Premium and Plus owners are not redirected from login by an unrelated Pro enrollment')
-verify().then(()=>console.log('PASS: Premium owner entry, all tiers, Pro non-downgrade, private access, WebGL fallback and Administration integrity')).catch(error=>{console.error(error);process.exitCode=1})
+verify().then(()=>console.log('PASS: Premium owner entry, all tiers, Pro non-downgrade, private access, WebGL fallback and Administrations integrity')).catch(error=>{console.error(error);process.exitCode=1})

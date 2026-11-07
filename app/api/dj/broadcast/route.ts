@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic'
 // Returns the synchronized institutional broadcast. Signed-in WEAVE positions
 // receive the full state. Public registration may read only the live track so
 // Department Entry can remain inside the same sound current without creating a
-// second player or exposing Administration announcements.
+// second player or exposing Administrations announcements.
 export async function GET(request: NextRequest) {
   const user = await getAuthUser(request)
   const signedInRole = Boolean(user && ['admin', 'agent', 'bridger', 'client'].includes(user.role))

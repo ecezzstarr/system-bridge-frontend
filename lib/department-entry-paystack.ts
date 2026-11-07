@@ -19,7 +19,7 @@ export async function initializeDepartmentEntryPaystackTicket(input: { accessTok
   const reference = createPaystackReference('ENTRY')
   const config = await getPaystackConfig()
   const origin = (config.publicOrigin || process.env.WEAVE_PUBLIC_ORIGIN || '').replace(/\/$/, '')
-  if (!origin.startsWith('https://')) throw new Error('Administration must configure the canonical HTTPS origin in the Paystack Integration Workshop.')
+  if (!origin.startsWith('https://')) throw new Error('Administrations must configure the canonical HTTPS origin in the Paystack Integration Workshop.')
   const checkout = await initializePaystackTransaction({
     email: input.payerEmail,
     amountKobo,
@@ -62,7 +62,7 @@ export async function settleDepartmentEntryPaystackTicket(reference: string) {
       await sql`
         INSERT INTO notifications (user_id, type, title, content, from_user_name, link)
         SELECT id, 'department_entry', ${ticket.department + ' ticket Paystack payment verified'},
-          ${'Paystack verified payment for ' + ticket.ticket_number + '. Administration approval is still required before issuing the departmental code.'},
+          ${'Paystack verified payment for ' + ticket.ticket_number + '. Administrations approval is still required before issuing the departmental code.'},
           'WEAVE Paystack', '/admin/departmental-registration'
         FROM users WHERE role = 'admin' AND COALESCE(is_active, true) = true
       `

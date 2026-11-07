@@ -28,7 +28,7 @@ These locations are a spatial foundation supplied to **every verified Standard o
 - `components/system-switch/file-folder-standard-living-world.tsx`: dedicated interactive React Three Fiber 3D world, river scene, architectural stations, Customer Door, real builds and linked workshops
 - `components/system-switch/file-folder-open-world.tsx`: server-recognized `fileFolderTier==='standard'` selects this exact world, leaving Pro/Premium/Plus distinct
 - `app/api/client/system-switch/route.ts` remains the server-side tier and ownership authority
-- `app/(app)/admin/file-folder-world-releases/page.tsx`: Administration updates whitelisted theme/equipment/realness settings without remaking the underlying Standard ownership or replacing the seven company-defined locations
+- `app/(app)/admin/file-folder-world-releases/page.tsx`: Administrations updates whitelisted theme/equipment/realness settings without remaking the underlying Standard ownership or replacing the seven company-defined locations
 
 ## Acceptance criteria
 
@@ -37,4 +37,4 @@ These locations are a spatial foundation supplied to **every verified Standard o
 3. Construction does not instantly appear completed. Public Customer Door opens only when the Client has a real public slug; otherwise it enters the relevant formation workspace.
 4. All seven districts lead to existing capabilities, and an empty workshop shows future-building pathways instead of counterfeit businesses.
 5. Environment updates preserve all existing Client records, paid entitlements, workspaces, business identities and public links.
-6. Source changes to the 3D engine require ordinary GitHub review and release; configuration changes remain versioned in the Administration File Folder Update Engine.
+6. Source changes to the 3D engine require ordinary GitHub review and release; configuration changes remain versioned in the Administrations File Folder Update Engine.

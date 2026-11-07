@@ -238,7 +238,7 @@ export function HostedFileFolderVisit({slug,entrance}:{slug:string;entrance:'mar
           <Link href={checkoutUrl} className="mt-4 inline-flex items-center gap-2 text-xs text-sky-200">Buy from Client <ArrowRight className="h-4 w-4"/></Link>
         </div>)}
       </div>
-      <p className="pb-8 text-xs text-stone-500"><ShieldCheck className="mr-1 inline h-4 w-4"/>Buyer payments and orders continue through the Client’s existing Customer Door. Avatar access never authorizes private construction, wallets or Administration.</p>
+      <p className="pb-8 text-xs text-stone-500"><ShieldCheck className="mr-1 inline h-4 w-4"/>Buyer payments and orders continue through the Client’s existing Customer Door. Avatar access never authorizes private construction, wallets or Administrations.</p>
     </section>}
   </main>
 }

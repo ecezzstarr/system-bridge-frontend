@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
   try {
     const user = await getAuthUser(request)
     if (!user) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
-    if (user.role !== 'admin') return NextResponse.json({ success: false, error: 'Administration access required' }, { status: 403 })
+    if (user.role !== 'admin') return NextResponse.json({ success: false, error: 'Administrations access required' }, { status: 403 })
 
     const formData = await request.formData()
     const file = formData.get('file') as File | null

@@ -105,7 +105,7 @@ assert(invitation.includes('passwordRecoveryEmailProvider')&&
 assert(read('app/api/public/pro-file-number-verification/route.ts').includes("body.action==='send_registration_invite'")&&
  read('app/client/pro-verification/page.tsx').includes('requestRegistrationInvite')&&
  read('app/api/admin/pro-file-number-verifications/route.ts').includes("if(action==='finalize')"),
- 'External Client completes independent payment, secure account registration and Administration finalization')
+ 'External Client completes independent payment, secure account registration and Administrations finalization')
 assert(read('migrations/20261107_pro_regional_manager_activation_and_work.sql').includes('weave_pro_regional_manager_activations')&&
  read('migrations/20261107_pro_regional_manager_activation_and_work.sql').includes('weave_pro_regional_manager_work'),
  'Separate Pro activation and daily work migrations exist')

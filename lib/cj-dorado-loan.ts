@@ -82,10 +82,10 @@ export async function checkoutCjLoan(grant:string){
  const user=await grantUser(grant)
  if(!user||!isCjDoradoAccount(user))throw new Error('Sign in with your File Number and password first.')
  const gate=await getCjLoanGate(user)
- if(!gate||gate.status!=='payment_required')throw new Error('Administration must confirm the signed and funded loan before checkout.')
+ if(!gate||gate.status!=='payment_required')throw new Error('Administrations must confirm the signed and funded loan before checkout.')
  const {rate}=await readCjPaystackRate()
  if(!Number.isFinite(rate)||rate<=0||Math.round(rate*10000)!==rate*10000)
-  throw new Error('Administration must configure the NGN-per-USDT settlement rate.')
+  throw new Error('Administrations must configure the NGN-per-USDT settlement rate.')
  const kobo=Math.round(gate.remainingUSDT*rate*100)
  if(!Number.isSafeInteger(kobo)||kobo<100)throw new Error('Invalid Paystack settlement quote.')
  const config=await getPaystackConfig()
@@ -138,7 +138,7 @@ export async function settleCjLoan(reference:string){
   if(!up||up.status!=='repayment_required'||!up.loan_agreed_at||!up.loan_funded_at||
    Number(up.loan_principal_usdt)!==CJ_EMPLOYEE_LOAN_USDT||
    Math.round((Number(up.loan_principal_usdt)-Number(up.repayment_verified_usdt))*100)!==Math.round(Number(p.amount_usdt)*100))
-   throw new Error('Loan ledger changed. Administration must reconcile this payment.')
+   throw new Error('Loan ledger changed. Administrations must reconcile this payment.')
   await connection.query(`INSERT INTO client_folder_loan_repayments
   (upgrade_id,amount_usdt,network,reference,verified_by,verification_method)
   VALUES($1,$2,'Paystack NGN',$3,NULL,'paystack_provider')`,[up.id,p.amount_usdt,reference])

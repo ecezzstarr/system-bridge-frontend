@@ -26,7 +26,7 @@ const ROLE_COPY:Record<StudioRole,{title:string;description:string}>={
   agent:{title:'AGENT SOCIAL PRESENCE',description:'Build a visible Agent presence around your real movement, Agility work and the people you want to reach.'},
   bridger:{title:'BRIDGER SOCIAL PRESENCE',description:'Build trust before the conversation begins. Carry clear Prospect-facing movement from your social channels into the right WEAVE entrance.'},
   client:{title:'CLIENT SOCIAL PRESENCE',description:'Grow the public presence of your own business and carry people from social media toward your Customer Door, store or other Client destination.'},
-  admin:{title:'ADMINISTRATION SOCIAL PRESENCE',description:'Operate a personal Administration distribution presence. Institutional oversight remains in the Administration Distribution Studio.'},
+  admin:{title:'ADMINISTRATION SOCIAL PRESENCE',description:'Operate a personal Administrations distribution presence. Institutional oversight remains in the Administrations Distribution Studio.'},
 }
 
 function isStudioRole(value:unknown):value is StudioRole{return typeof value==='string'&&ROLES.includes(value as StudioRole)}

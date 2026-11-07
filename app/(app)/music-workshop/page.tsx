@@ -125,7 +125,7 @@ export default function MusicWorkshop(){
      <button className={button+' mt-4'} onClick={()=>void share()}>Copy private studio entrance</button>
      <label className="mt-5 block text-xs text-slate-300">Invite a staff username
       <input value={username} onChange={e=>setUsername(e.target.value)}
-       placeholder="Agent, Bridger or Administration username" className="mt-2 w-full rounded-xl border border-white/15 bg-slate-950 p-3 text-sm"/></label>
+       placeholder="Agent, Bridger or Administrations username" className="mt-2 w-full rounded-xl border border-white/15 bg-slate-950 p-3 text-sm"/></label>
      <button className={button+' mt-2'} disabled={busy||!username.trim()} onClick={grant}>Approve collaborator</button>
      {collaborators.map(c=><div key={c.id} className="mt-3 flex items-center justify-between gap-2 border-b border-white/10 pb-3 text-xs">
       <div><p className="font-semibold">{c.name||c.username}</p><p className="text-slate-500">{c.role}</p></div>

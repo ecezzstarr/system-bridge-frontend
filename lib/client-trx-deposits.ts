@@ -51,7 +51,7 @@ export async function decideClientTronDeposit(input:{
   confirmation:string;verifiedAmountTrx?:unknown
 }){
   if(!uuid.test(input.depositId))throw new Error('Invalid deposit identity')
-  if(!uuid.test(input.adminId))throw new Error('Invalid Administration identity')
+  if(!uuid.test(input.adminId))throw new Error('Invalid Administrations identity')
   if(!['approved','rejected'].includes(input.decision))throw new Error('Invalid decision')
   if(input.confirmation!==(input.decision==='approved'?'VERIFIED TRX':'REJECT TRX'))
     throw new Error('Confirm the deposit decision before continuing')

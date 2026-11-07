@@ -36,7 +36,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   if(action==='payment_received'){
     if(existing.settlement_id)return NextResponse.json({success:true,alreadyPaid:true,message:"The verified transfer has already been credited to the verified store owner's wallet."})
     if(!existing.payment_reference||String(existing.payment_reference).trim().length<8){
-      return NextResponse.json({error:'A real external payment reference is required for Administration Forensics. A File Folder owner cannot create wallet funds by marking an order paid.'},{status:409})
+      return NextResponse.json({error:'A real external payment reference is required for Administrations Forensics. A File Folder owner cannot create wallet funds by marking an order paid.'},{status:409})
     }
     if(!['awaiting_payment','payment_reported'].includes(existing.payment_status)){
       return NextResponse.json({error:'Payment proof cannot be accepted in this order state'},{status:409})
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       detail:'Client reports an external payment. Verify actual WEAVE bank receipt and funded treasury balance before crediting the Main Client Wallet.',
       adminPath:'/admin/customer-door-settlements',actorId:clientId,actorName:'Client'})
     return NextResponse.json({success:true,order,
-      message:'Reference submitted for Administration verification. The store wallet is not credited until funds are independently verified.'})
+      message:'Reference submitted for Administrations verification. The store wallet is not credited until funds are independently verified.'})
   }
   if(action==='cancelled'&&existing.settlement_id){
     return NextResponse.json({error:'This order is already settled. Use a documented refund/reversal process instead of cancelling a credited payment.'},{status:409})

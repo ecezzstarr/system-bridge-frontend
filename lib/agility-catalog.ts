@@ -114,7 +114,7 @@ export const AGILITY_PROCESS = [
   },
   {
     stage: 'Verify',
-    detail: 'Administration verifies the OPay proof. The order does not enter food preparation until payment is approved.',
+    detail: 'Administrations verify the OPay proof. The order does not enter food preparation until payment is approved.',
   },
   {
     stage: 'Prepare',

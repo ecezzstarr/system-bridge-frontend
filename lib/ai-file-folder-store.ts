@@ -134,7 +134,7 @@ export async function ensureAiFileFolderStore(sql:any){
   `
 
   // The company begins with one Flame AI field identity, but no free File Folder,
-  // systems, parts, boosts or operating balance. Administration must fund it.
+  // systems, parts, boosts or operating balance. Administrations must fund it.
   await sql`
     INSERT INTO weave_ai_file_folders(ai_id,department,chosen_name,chosen_logo,tier,status)
     VALUES('flame-0001','flame_ai','Ember Works',NULL,'none','awaiting_file_folder')
@@ -619,7 +619,7 @@ export async function purchaseAiProductFromWallet(sql:any,input:{
 export async function adminCreditAiOperatingFlameCoin(sql:any,input:{aiId:string;amountFlameCoin:number;adminReference:string;description?:string}){
   await ensureAiFileFolderStore(sql)
   const amount=Math.max(0,Number(input.amountFlameCoin)||0)
-  if(amount<=0)throw new Error('Administration credit must be greater than zero.')
+  if(amount<=0)throw new Error('Administrations credit must be greater than zero.')
   const rows=await sql`
     WITH credited AS (
       UPDATE weave_ai_file_folders
@@ -630,7 +630,7 @@ export async function adminCreditAiOperatingFlameCoin(sql:any,input:{aiId:string
     ledger AS (
       INSERT INTO weave_ai_earnings_ledger(ai_id,movement_type,amount_flame_coin,beneficiary,source_id,description)
       SELECT ai_id,'admin_operating_credit',${amount},'ai_operating_wallet',${input.adminReference},
-        ${input.description||'Administration Flame Coin operating allocation'}
+        ${input.description||'Administrations Flame Coin operating allocation'}
       FROM credited
       RETURNING id
     )

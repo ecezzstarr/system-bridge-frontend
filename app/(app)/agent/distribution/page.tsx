@@ -108,7 +108,7 @@ export default function AgentDistributionPage(){
       const response=await fetchWithTimeout(product.id.startsWith('ember')?'/api/ember/stock':product.id.startsWith('electrolyte')?'/api/electrolyte/stock':'/api/agility/stock',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({variantId:product.id,boxCount,distributionMode:'wholesaler',deliveryAddress:receivingAddress,deliveryPhone:receivingPhone,note:'Agent neighborhood distribution stock'})})
       const result=await response.json().catch(()=>({}))
       if(!response.ok||!result.success)throw new Error(result.error||'Unable to order WEAVE stock')
-      feedback(`${product.name}: ${formatWeaveFoodCartonQuantity(boxCount)} ordered. Pay ${money(result.payment.amountNgn)} to OPay ${result.payment.accountNumber}. Order reference: ${result.payment.reference}. Submit your payment proof below for Administration verification.`)
+      feedback(`${product.name}: ${formatWeaveFoodCartonQuantity(boxCount)} ordered. Pay ${money(result.payment.amountNgn)} to OPay ${result.payment.accountNumber}. Order reference: ${result.payment.reference}. Submit your payment proof below for Administrations verification.`)
       await load()
     }catch(error){feedback(error instanceof Error?error.message:'Unable to order WEAVE stock')}
     finally{orderInFlight.current=false;setWorking(null)}
@@ -123,7 +123,7 @@ export default function AgentDistributionPage(){
       const response=await fetch(order.variant_id.startsWith('ember')?'/api/ember/payment/opay/receipt':order.variant_id.startsWith('electrolyte')?'/api/electrolyte/payment/opay/receipt':'/api/agility/payment/opay/receipt',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({orderId:order.id,receipt})})
       const result=await response.json().catch(()=>({}))
       if(!response.ok||!result.success)throw new Error(result.error||'Unable to submit proof')
-      setProof(current=>({...current,[order.id]:''}));setMessage('Payment proof sent to Administration. Preparation begins after verification.');await load()
+      setProof(current=>({...current,[order.id]:''}));setMessage('Payment proof sent to Administrations. Preparation begins after verification.');await load()
     }catch(error){setMessage(error instanceof Error?error.message:'Unable to submit proof')}
     finally{setWorking(null)}
   }

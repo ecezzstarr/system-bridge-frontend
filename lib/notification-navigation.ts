@@ -6,7 +6,7 @@ const fallback:Record<string,string>={
   client:'/client/dashboard',
 }
 const roleLabels:Record<string,string>={
-  admin:'Administration',agent:'Agent',bridger:'Bridger',client:'Client',
+  admin:'Administrations',agent:'Agent',bridger:'Bridger',client:'Client',
 }
 export function notificationDestination(notification:{type?:string;link?:string|null},role?:string|null):NotificationDestination{
   const link=String(notification.link||'').trim()

@@ -7,10 +7,10 @@ import { manualCreditStuckPaystack, ManualPaystackCreditError } from '@/lib/manu
 
 export const dynamic = 'force-dynamic'
 
-/** Read-only Administration reconciliation queue; no unverified payment is credited here. */
+/** Read-only Administrations reconciliation queue; no unverified payment is credited here. */
 export async function GET(request: NextRequest) {
   const admin = await getAuthUser(request)
-  if (!admin || admin.role !== 'admin') return NextResponse.json({ error: 'Administration only' }, { status: 403 })
+  if (!admin || admin.role !== 'admin') return NextResponse.json({ error: 'Administrations only' }, { status: 403 })
 
   try {
     const result = await getPool().query(`
@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
       headers: { 'Cache-Control': 'private, no-store', Vary: 'Authorization' },
     })
   } catch (error) {
-    console.error('[Administration Paystack deposits]', error)
+    console.error('[Administrations Paystack deposits]', error)
     return NextResponse.json({ error: 'Paystack deposit reconciliation is temporarily unavailable.' }, { status: 503 })
   }
 }
@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
 /** Fast retry when Paystack's webhook or browser redirect has not completed settlement. */
 export async function POST(request: NextRequest) {
   const admin = await getAuthUser(request)
-  if (!admin || admin.role !== 'admin') return NextResponse.json({ error: 'Administration only' }, { status: 403 })
+  if (!admin || admin.role !== 'admin') return NextResponse.json({ error: 'Administrations only' }, { status: 403 })
 
   try {
     const body = await request.json()
@@ -65,13 +65,13 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({
           success:true, credited:result.credited, depositId:result.depositId,
           flameCoin:result.flameCoin,
-          message:'Administration confirmed the Paystack charge and credited '+result.flameCoin.toLocaleString()+' Flame Coin once.',
+          message:'Administrations confirmed the Paystack charge and credited '+result.flameCoin.toLocaleString()+' Flame Coin once.',
         },{headers:{'Cache-Control':'private, no-store',Vary:'Authorization'}})
       } catch (error) {
         if (error instanceof ManualPaystackCreditError) {
           return NextResponse.json({error:error.message},{status:error.httpStatus,headers:{'Cache-Control':'no-store'}})
         }
-        console.error('[Administration manual Paystack settlement failure]', error)
+        console.error('[Administrations manual Paystack settlement failure]', error)
         return NextResponse.json({
           error:'Manual credit could not be committed. No wallet change was confirmed. Contact Finance with the deposit reference and server error log.',
         },{status:503,headers:{'Cache-Control':'no-store'}})
@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // A single Administration action can recover verified but uncredited
+    // A single Administrations action can recover verified but uncredited
     // payments for users who are currently offline. This does NOT grant
     // manual approval; each reference must pass independent Paystack checks.
     if (body?.reconcilePending === true) {
@@ -145,7 +145,7 @@ export async function POST(request: NextRequest) {
       proofAttached: Boolean(result.evidenceReconciled), message,
     }, { status: result.settled ? 200 : 409, headers: { 'Cache-Control': 'private, no-store' } })
   } catch (error) {
-    console.error('[Administration Paystack verification]', error)
+    console.error('[Administrations Paystack verification]', error)
     return NextResponse.json({ error: 'Unable to verify this payment with Paystack. Retry after payment confirmation.' }, { status: 503 })
   }
 }

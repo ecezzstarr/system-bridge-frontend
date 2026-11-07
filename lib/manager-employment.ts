@@ -17,7 +17,7 @@ export const DISTRIBUTION_MANAGER_LIFESTYLE = DISTRIBUTION_MANAGER_LIFESTYLE_KEY
 // itself is now named Distribution Manager; it remains an overlay on Agent/Bridger.
 export const MANAGER_LIFESTYLE = DISTRIBUTION_MANAGER_LIFESTYLE
 export const POSITION_MONTHLY_SUBSCRIPTION_NGN = 0 // Retired: no monthly Bridger subscription
-export const DISTRIBUTION_MANAGER_CORE_DUTY = 'Distribute WEAVE across public channels, carry verified Agent and Bridger acquisition, coordinate campaign movement, coach field distribution, and report distribution movement to Administration.'
+export const DISTRIBUTION_MANAGER_CORE_DUTY = 'Distribute WEAVE across public channels, carry verified Agent and Bridger acquisition, coordinate campaign movement, coach field distribution, and report distribution movement to Administrations.'
 // Compatibility alias for the existing Manager API/UI. This amount renews the
 // underlying Agent/Bridger monthly position subscription, not a Manager-only fee.
 export const MANAGER_CONTINUANCE_NGN = POSITION_MONTHLY_SUBSCRIPTION_NGN
@@ -59,7 +59,7 @@ export async function ensureManagerEmploymentTable() {
       verification_note TEXT,
       monthly_salary_ngn NUMERIC(12,2) NOT NULL DEFAULT 70000,
       probation_target INTEGER NOT NULL DEFAULT 300,
-      core_duty TEXT NOT NULL DEFAULT 'Distribute WEAVE across public channels, carry verified Agent and Bridger acquisition, coordinate campaign movement, coach field distribution, and report distribution movement to Administration.',
+      core_duty TEXT NOT NULL DEFAULT 'Distribute WEAVE across public channels, carry verified Agent and Bridger acquisition, coordinate campaign movement, coach field distribution, and report distribution movement to Administrations.',
       created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
       updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
       ended_at TIMESTAMPTZ
@@ -67,7 +67,7 @@ export async function ensureManagerEmploymentTable() {
   `
   await sql`ALTER TABLE manager_employment ADD COLUMN IF NOT EXISTS accepted_name TEXT`
   // Legacy appointments retain their original probation dates. Only newly signed
-  // applications have no dates until a verified Administration decision.
+  // applications have no dates until a verified Administrations decision.
   await sql`ALTER TABLE manager_employment ALTER COLUMN probation_started_at DROP NOT NULL`
   await sql`ALTER TABLE manager_employment ALTER COLUMN probation_ends_at DROP NOT NULL`
   await sql`ALTER TABLE manager_employment ADD COLUMN IF NOT EXISTS verified_by UUID REFERENCES users(id)`
@@ -165,7 +165,7 @@ export async function acceptManagerEmploymentDocument(userId: string, acceptedNa
     await client.query('COMMIT')
     try{
       await sql`INSERT INTO notifications (user_id,type,title,content,from_user_name)
-        VALUES (${userId}::uuid,'manager_application','Distribution Manager verification pending','Your signed application is recorded. Administration must verify it before your one-month probation, salary qualification and team appointment permissions begin.','WEAVE Administration')`
+        VALUES (${userId}::uuid,'manager_application','Distribution Manager verification pending','Your signed application is recorded. Administrations must verify it before your one-month probation, salary qualification and team appointment permissions begin.','WEAVE Administrations')`
       await notifyAdministrationOfCompanyApplication({
         kind:'distribution_manager',applicationId:userId,applicantId:userId,
         positionTitle:'Distribution Manager',name:String(user.name||'Agent or Bridger'),
@@ -176,7 +176,7 @@ export async function acceptManagerEmploymentDocument(userId: string, acceptedNa
   }catch(error){try{await client.query('ROLLBACK')}catch{};console.error('[manager-employment] acceptance failed',error);return {success:false as const,reason:'error' as const}}finally{client.release()}
 }
 
-// Administration verifies the signed document. Only this transaction starts probation.
+// Administrations verify the signed document. Only this transaction starts probation.
 export async function reviewManagerEmployment(adminId:string, applicantId:string, decision:'approve'|'reject', note:string) {
   await ensureManagerEmploymentTable()
   if(!['approve','reject'].includes(decision)||note.trim().length>1200)
@@ -216,8 +216,8 @@ export async function reviewManagerEmployment(adminId:string, applicantId:string
       await sql`INSERT INTO notifications (user_id,type,title,content,from_user_name)
         VALUES (${applicantId}::uuid,'manager_verification',
           ${approved?'Distribution Manager verified · probation started':'Distribution Manager application not approved'},
-          ${approved?'Administration has verified your signed Distribution Manager appointment. Your one-month probation starts now; open your team workspace, appoint up to two assistants and work the verified monthly team target.':'Administration has not approved your Distribution Manager application. Review the decision in Lifestyle and submit a new application if appropriate.'},
-          'WEAVE Administration')`
+          ${approved?'Administrations have verified your signed Distribution Manager appointment. Your one-month probation starts now; open your team workspace, appoint up to two assistants and work the verified monthly team target.':'Administrations have not approved your Distribution Manager application. Review the decision in Lifestyle and submit a new application if appropriate.'},
+          'WEAVE Administrations')`
     }catch(error){console.error('[manager-employment] review notification failed',error)}
     return {success:true as const,employment:updated[0]}
   }catch(error){try{await client.query('ROLLBACK')}catch{};console.error('[manager-employment] verification failed',error);return {success:false as const,reason:'error' as const}}finally{client.release()}

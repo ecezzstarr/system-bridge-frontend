@@ -80,7 +80,7 @@ export default function FileFolderPurchase({
       const storedPurchaseId = window.sessionStorage.getItem(purchaseStorageKey)
       if (storedPurchaseId) {
         setPurchase({ id: storedPurchaseId, status: 'pending_admin_confirmation' })
-        setMessage('Restoring this File Folder crossing while Administration verification is pending…')
+        setMessage('Restoring this File Folder crossing while Administrations verification is pending…')
       }
     } catch {
       // Session storage is optional. The live Bridge still works without it.
@@ -93,7 +93,7 @@ export default function FileFolderPurchase({
     if (purchaseStorageKey) {
       try { window.sessionStorage.removeItem(purchaseStorageKey) } catch {}
     }
-    setMessage(`Administration verified the payment and issued File Number ${fileNumber || ''}. Opening the Client crossing…`)
+    setMessage(`Administrations verified the payment and issued File Number ${fileNumber || ''}. Opening the Client crossing…`)
     window.setTimeout(() => router.replace(url), 900)
   }
 
@@ -127,7 +127,7 @@ export default function FileFolderPurchase({
         }
 
         if (next.status === 'rejected') {
-          setMessage('Administration could not verify this File Folder payment. Contact Administration before starting another checkout.')
+          setMessage('Administrations could not verify this File Folder payment. Contact Administrations before starting another checkout.')
           return
         }
       } catch {
@@ -226,7 +226,7 @@ export default function FileFolderPurchase({
             </p>
             {['pending_payment', 'pending_admin_confirmation'].includes(purchase?.status || '') && (
               <p className="mt-1 inline-flex items-center gap-1.5 text-[8px] font-bold uppercase tracking-[.14em] text-amber-200">
-                <Radio className="h-3 w-3" /> {checking ? 'Reading Administration decision' : 'Awaiting Administration verification'}
+                <Radio className="h-3 w-3" /> {checking ? 'Reading Administrations decision' : 'Awaiting Administrations verification'}
               </p>
             )}
           </div>
@@ -327,7 +327,7 @@ export default function FileFolderPurchase({
                   />
                   <span className="pb-1 text-[9px] font-bold uppercase tracking-[.12em] text-stone-500">Flame Coin</span>
                 </div>
-                <p className="mt-2 text-[9px] leading-4 text-stone-500">Normal Pro starting value is {PRO_STARTING_PRICE.toLocaleString()} Flame Coin. Administration may approve a negotiated Pro sale down to {PRO_NEGOTIATED_MIN.toLocaleString()}.</p>
+                <p className="mt-2 text-[9px] leading-4 text-stone-500">Normal Pro starting value is {PRO_STARTING_PRICE.toLocaleString()} Flame Coin. Administrations may approve a negotiated Pro sale down to {PRO_NEGOTIATED_MIN.toLocaleString()}.</p>
               </div>
             )}
 
@@ -359,7 +359,7 @@ export default function FileFolderPurchase({
             {!purchase && (
               <>
                 <p className="mt-4 text-xs leading-6 text-stone-400">
-                  Continue to Paystack to pay the File Folder amount. After Paystack verifies the payment, Administration reviews the purchase before the File Number is issued and the Client crossing opens.
+                  Continue to Paystack to pay the File Folder amount. After Paystack verifies the payment, Administrations review the purchase before the File Number is issued and the Client crossing opens.
                 </p>
                 <button
                   type="button"
@@ -378,8 +378,8 @@ export default function FileFolderPurchase({
                   <ShieldCheck className="h-6 w-6 text-amber-200" />
                 </div>
                 <h3 className="mt-4 text-xl font-black text-white">{WEAVE_WRITING.fileFolderCrossing.pendingTitle}</h3>
-                <p className="mt-2 text-xs leading-6 text-stone-400">Paystack has verified your payment and sent the purchase to Administration. The crossing stays closed until Administration approves it and issues your File Number.</p>
-                <p className="mt-4 text-[8px] font-black uppercase tracking-[.16em] text-amber-200">{purchase?.status === 'pending_payment' ? 'Waiting for Paystack payment verification' : checking ? 'Reading Administration verification…' : 'Waiting for Administration approval and File Number'}</p>
+                <p className="mt-2 text-xs leading-6 text-stone-400">Paystack has verified your payment and sent the purchase to Administrations. The crossing stays closed until Administrations approve it and issues your File Number.</p>
+                <p className="mt-4 text-[8px] font-black uppercase tracking-[.16em] text-amber-200">{purchase?.status === 'pending_payment' ? 'Waiting for Paystack payment verification' : checking ? 'Reading Administrations verification…' : 'Waiting for Administrations approval and File Number'}</p>
               </div>
             )}
 

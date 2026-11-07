@@ -58,11 +58,11 @@ export function AdminWorkplace({userName,onOpenDistricts}:{userName?:string|null
        <div className="relative flex flex-wrap items-start justify-between gap-5">
          <div className="max-w-3xl">
            <WeaveLogo size="sm"/>
-           <p className="mt-4 text-xs font-semibold uppercase tracking-[.18em] text-[#97712f]">A Time · Administration Department</p>
+           <p className="mt-4 text-xs font-semibold uppercase tracking-[.18em] text-[#97712f]">A Time · Administrations Department</p>
            <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">Institutional Workplace</h1>
            {userName&&<p className="mt-1 text-base text-[#607077]">{userName}</p>}
            <p className="mt-3 max-w-2xl text-sm leading-6 text-[#4e6368] sm:text-base">
-             Administration organizes people, verifies money and work, maintains infrastructure,
+             Administrations organize people, verifies money and work, maintains infrastructure,
              and directs the company Loop without taking over the work that belongs to each position.
            </p>
          </div>
@@ -76,7 +76,7 @@ export function AdminWorkplace({userName,onOpenDistricts}:{userName?:string|null
          </div>
        </div>
      </header>
-     <nav className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5" aria-label="Administration working destinations">
+     <nav className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5" aria-label="Administrations working destinations">
        {ADMIN_SPACES.map(x=>{
          const Icon=ICONS[x.id],selected=x.id===active&&!q
          return <button key={x.id} type="button" aria-pressed={selected} onClick={()=>{setActive(x.id);setSearch('')}}
@@ -94,7 +94,7 @@ export function AdminWorkplace({userName,onOpenDistricts}:{userName?:string|null
          </div>
          <label className="flex min-h-11 w-full items-center gap-2 rounded-xl border border-[#d4c199] bg-[#fffefa] px-3 sm:w-72">
            <Search className="h-4 w-4 text-[#987233]"/>
-           <span className="sr-only">Search Administration workshops</span>
+           <span className="sr-only">Search Administrations workshops</span>
            <input type="search" placeholder="Find company workshop..." value={search} onChange={e=>setSearch(e.target.value)} className="w-full bg-transparent py-3 text-sm outline-none placeholder:text-[#74818a]"/>
          </label>
        </div>

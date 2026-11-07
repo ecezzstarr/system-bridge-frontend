@@ -76,7 +76,7 @@ try {
   const bridgerDeposit=await insert(bridgerId,'rejected',2200,5.141,refBridger)
   // Regression: the historic form incorrectly required all duplicate inputs,
   // and approval attempted CREATE TABLE at runtime. Only one recorded checkout
-  // plus active Administration affirmation is now needed.
+  // plus active Administrations affirmation is now needed.
   const bridgerResult=await manualCreditStuckPaystack(request(bridgerDeposit,'1234567'))
   assert.equal(bridgerResult.credited,true)
   assert.equal(bridgerResult.flameCoin,5.141)
@@ -106,7 +106,7 @@ try {
   assert.equal(resultAgent.credited,true)
   const agentBalance=await transactionPool.query('SELECT balance_trx FROM wallets WHERE user_id=$1',[agentId])
   assert.equal(Number(agentBalance.rows[0].balance_trx),2.334)
-  // Two simultaneous Administration requests for one checkout: exactly once.
+  // Two simultaneous Administrations requests for one checkout: exactly once.
   const raceDeposit=await insert(bridgerId,'pending',200,0.4,'BRIDGER-race-'+randomUUID().slice(0,8))
   const race=await Promise.allSettled([
     manualCreditStuckPaystack(request(raceDeposit,'7654321')),
@@ -120,7 +120,7 @@ try {
   assert.equal(raceLedger.rows[0].count,1)
   const afterRace=await transactionPool.query('SELECT balance_trx FROM wallets WHERE user_id=$1',[bridgerId])
   assert.equal(Number(afterRace.rows[0].balance_trx),5.541)
-  // Recorded reversal/refund prevents credit, even if Administration affirms.
+  // Recorded reversal/refund prevents credit, even if Administrations affirms.
   const refundDeposit=await insert(agentId,'rejected',100,0.2,'AGENT-refund-'+randomUUID().slice(0,8))
   await transactionPool.query(
     "INSERT INTO ledger_entries(user_id,entry_type,amount,currency,description,metadata) VALUES($1,'deposit',0,'Flame Coin','refund',$2::jsonb)",

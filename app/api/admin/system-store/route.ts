@@ -6,7 +6,7 @@ import { ensureWeaveSystemStoreSchema } from '@/lib/weave-system-store'
 async function requireAdmin(request:NextRequest){
   const user=await getAuthUser(request)
   if(!user)return {user:null,error:NextResponse.json({error:'Unauthorized'},{status:401})}
-  if(user.role!=='admin')return {user:null,error:NextResponse.json({error:'Administration access required'},{status:403})}
+  if(user.role!=='admin')return {user:null,error:NextResponse.json({error:'Administrations access required'},{status:403})}
   return {user,error:null}
 }
 
@@ -86,7 +86,7 @@ export async function PATCH(request:NextRequest){
     try{
       await sql`
         INSERT INTO notifications (user_id,type,title,content,link)
-        VALUES (${version.client_id}::uuid,'system_store','System approved for WEAVE Store',${`Your system version has passed Administration verification and is now published as ${publication.system_name}.`},${`/system-store/${publication.public_slug}`})
+        VALUES (${version.client_id}::uuid,'system_store','System approved for WEAVE Store',${`Your system version has passed Administrations verification and is now published as ${publication.system_name}.`},${`/system-store/${publication.public_slug}`})
       `
     }catch(error){console.error('[system-store] approval notification failed',error)}
     return NextResponse.json({success:true,publication})
@@ -106,7 +106,7 @@ export async function PATCH(request:NextRequest){
     try{
       await sql`
         INSERT INTO notifications (user_id,type,title,content,link)
-        VALUES (${version.client_id}::uuid,'system_store','System Store review needs changes',${reviewNote||'Administration did not approve this submitted system version.'},'/client/system-store')
+        VALUES (${version.client_id}::uuid,'system_store','System Store review needs changes',${reviewNote||'Administrations did not approve this submitted system version.'},'/client/system-store')
       `
     }catch(error){console.error('[system-store] rejection notification failed',error)}
     return NextResponse.json({success:true})

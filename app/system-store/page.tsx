@@ -27,12 +27,12 @@ export default async function WeaveSystemStorePage(){
       <div className="mx-auto max-w-7xl">
         <p className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[.24em] text-cyan-300"><Boxes className="h-4 w-4"/>WEAVE System Store</p>
         <h1 className="mt-4 max-w-5xl text-4xl font-black tracking-tight sm:text-6xl">WEAVE distributes itself, then the systems built inside it.</h1>
-        <p className="mt-5 max-w-3xl text-base leading-7 text-slate-300">Install the official live WEAVE release, then discover Administration-verified systems formed by Clients inside their File Folders. The official WEAVE installation remains connected to the current Cloud release instead of freezing on an old package.</p>
+        <p className="mt-5 max-w-3xl text-base leading-7 text-slate-300">Install the official live WEAVE release, then discover Administrations-verified systems formed by Clients inside their File Folders. The official WEAVE installation remains connected to the current Cloud release instead of freezing on an old package.</p>
         <div className="mt-7 flex flex-wrap gap-2 text-[9px] font-black uppercase tracking-wider text-slate-400">
           <span className="rounded-full border border-white/10 px-4 py-2">Official WEAVE release</span>
           <span className="rounded-full border border-white/10 px-4 py-2">Publisher identity</span>
           <span className="rounded-full border border-white/10 px-4 py-2">Version history</span>
-          <span className="rounded-full border border-white/10 px-4 py-2">Administration verification</span>
+          <span className="rounded-full border border-white/10 px-4 py-2">Administrations verification</span>
         </div>
       </div>
     </section>
@@ -52,7 +52,7 @@ export default async function WeaveSystemStorePage(){
         <Link href="/marketplace" className="inline-flex items-center gap-2 rounded-full border border-amber-300/20 px-4 py-2 text-[10px] font-black uppercase tracking-wider text-amber-200">WEAVE Enterprise Catalogue<ArrowRight className="h-3.5 w-3.5"/></Link>
       </div>
 
-      {systems.length===0?<div className="rounded-[2rem] border border-dashed border-white/10 p-12 text-center"><Store className="mx-auto h-8 w-8 text-slate-600"/><p className="mt-4 text-sm text-slate-500">The official WEAVE release is live above. Client system versions will appear here after Administration approval.</p></div>:<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      {systems.length===0?<div className="rounded-[2rem] border border-dashed border-white/10 p-12 text-center"><Store className="mx-auto h-8 w-8 text-slate-600"/><p className="mt-4 text-sm text-slate-500">The official WEAVE release is live above. Client system versions will appear here after Administrations approval.</p></div>:<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {systems.map((system:any)=>{
           const downloadable=Boolean(system.storage_object||system.package_url)
           const launchable=Boolean(system.entry_url)

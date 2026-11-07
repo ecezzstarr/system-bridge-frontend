@@ -55,7 +55,7 @@ export function clientUpgradePublicView(row:any){
     },
     notice:row.status==='ready'
       ?'Your Pro File Folder is ready.'
-      :'Your Pro File Folder world is under construction. Entry remains closed until the verified personal-loan repayment and Administration release.',
+      :'Your Pro File Folder world is under construction. Entry remains closed until the verified personal-loan repayment and Administrations release.',
     constructionNote:String(row.construction_note||'The Pro File Folder world is being formed.'),
   }
 }

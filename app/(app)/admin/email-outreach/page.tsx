@@ -37,7 +37,7 @@ export default function AdminEmailOutreachPage(){
       if(!state.ok)throw new Error(body.error||'Unable to open email outreach')
       setData(body)
       setSourceEmail(body.sender?.source_email||body.sender?.reply_email||body.accountEmail||'')
-      setDisplayName(body.sender?.display_name||'WEAVE Administration')
+      setDisplayName(body.sender?.display_name||'WEAVE Administrations')
       setEnabled(Boolean(body.automation?.enabled))
       setDailyLimit(Number(body.automation?.daily_limit||120))
       setSubject(String(body.automation?.subject_template||''))
@@ -66,11 +66,11 @@ export default function AdminEmailOutreachPage(){
         method:'POST',headers:getAuthHeaders(),body:JSON.stringify({sourceEmail,displayName,appPassword}),
       })
       const body=await response.json()
-      if(!response.ok)throw new Error(body.error||'Unable to save Administration email')
+      if(!response.ok)throw new Error(body.error||'Unable to save Administrations email')
       setAppPassword('')
-      setNotice(body.mailbox?.status==='connected'?'Administration Google mailbox authenticated and active for outreach.':'Administration source email saved and active through the WEAVE fallback transport.')
+      setNotice(body.mailbox?.status==='connected'?'Administrations Google mailbox authenticated and active for outreach.':'Administrations source email saved and active through the WEAVE fallback transport.')
       await load()
-    }catch(e:any){setError(e?.message||'Unable to save Administration email')}
+    }catch(e:any){setError(e?.message||'Unable to save Administrations email')}
     finally{setBusy('')}
   }
 
@@ -149,7 +149,7 @@ export default function AdminEmailOutreachPage(){
     finally{setBusy('')}
   }
 
-  if(loading)return <main className="flex min-h-[55vh] items-center justify-center text-sm text-slate-400">Opening Administration Email Outreach…</main>
+  if(loading)return <main className="flex min-h-[55vh] items-center justify-center text-sm text-slate-400">Opening Administrations Email Outreach…</main>
 
   if(!data)return <main className="px-4 py-16 text-white"><p role="alert">{error||'Email Outreach could not open.'}</p><button onClick={load} className="mt-4 border border-white/20 px-4 py-2">Retry Email Outreach</button></main>
 
@@ -157,9 +157,9 @@ export default function AdminEmailOutreachPage(){
     <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_16%_8%,rgba(56,189,248,.12),transparent_26%),radial-gradient(circle_at_84%_72%,rgba(249,115,22,.08),transparent_32%)]"/>
     <div className="relative mx-auto max-w-6xl">
       <header className="border-b border-white/10 pb-6">
-        <div className="flex items-center gap-2 text-sky-300"><Mail className="h-4 w-4"/><span className="text-[9px] font-black uppercase tracking-[.2em]">Administration · Email Outreach</span></div>
+        <div className="flex items-center gap-2 text-sky-300"><Mail className="h-4 w-4"/><span className="text-[9px] font-black uppercase tracking-[.2em]">Administrations · Email Outreach</span></div>
         <h1 className="mt-3 text-3xl font-black">Email Prospect Engine</h1>
-        <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">Form or load unverified email Prospect candidates, give each one a cryptographic WEAVE lead reference, control daily Administration movement, and inspect Bridger/Admin send reports from one place.</p>
+        <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">Form or load unverified email Prospect candidates, give each one a cryptographic WEAVE lead reference, control daily Administrations movement, and inspect Bridger/Admin send reports from one place.</p>
       </header>
 
       {(error||notice)&&<div className={`mt-5 border-l-2 px-4 py-3 text-sm ${error?'border-rose-400 text-rose-200':'border-emerald-400 text-emerald-200'}`}>{error||notice}</div>}
@@ -169,7 +169,7 @@ export default function AdminEmailOutreachPage(){
         <div className="border-y border-white/10 py-5">
           <p className="text-[8px] font-black uppercase tracking-[.18em] text-sky-300">Email Source Engine</p>
           <input value={sourceEmail} onChange={e=>setSourceEmail(e.target.value)} className="mt-4 w-full border border-white/10 bg-black/20 px-3 py-3 text-sm outline-none" placeholder="weavebridge@gmail.com"/>
-          <input value={displayName} onChange={e=>setDisplayName(e.target.value)} className="mt-3 w-full border border-white/10 bg-black/20 px-3 py-3 text-sm outline-none" placeholder="WeaveBridge · WEAVE Administration"/>
+          <input value={displayName} onChange={e=>setDisplayName(e.target.value)} className="mt-3 w-full border border-white/10 bg-black/20 px-3 py-3 text-sm outline-none" placeholder="WeaveBridge · WEAVE Administrations"/>
           <input type="password" value={appPassword} onChange={e=>setAppPassword(e.target.value)} className="mt-3 w-full border border-white/10 bg-black/20 px-3 py-3 text-sm outline-none" placeholder="Google app password · only needed to authenticate/change mailbox" autoComplete="new-password"/>
           <button onClick={saveSender} disabled={busy==='sender'} className="mt-4 flex items-center gap-2 border border-sky-300/30 px-4 py-2.5 text-[9px] font-black uppercase tracking-[.12em] disabled:opacity-40"><Save className="h-3.5 w-3.5"/>{busy==='sender'?'Authenticating…':'Activate source'}</button>
           <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener noreferrer" className="mt-3 block text-xs text-sky-300 underline">Open Google app passwords</a><p className="mt-2 text-xs text-slate-400">Enable Google 2-Step Verification first. Create an app password for the same mailbox entered above.</p>

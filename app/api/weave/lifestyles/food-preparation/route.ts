@@ -109,7 +109,7 @@ export async function POST(request:NextRequest){
     const client=await getPool().connect()
     try{
       await client.query('BEGIN')
-      // Serialize capacity decisions across applicants and Administration.
+      // Serialize capacity decisions across applicants and Administrations.
       await client.query('SELECT pg_advisory_xact_lock(20261021, 51)')
       const {rows:existing}=await client.query(`
         SELECT id,status FROM weave_food_preparation_managers
@@ -149,11 +149,11 @@ export async function POST(request:NextRequest){
           name:String(user.name||'Agent applicant'),applicationNote:note,
         })
       } catch (notificationError) {
-        console.error('[food preparation] Administration application alert failed',notificationError)
+        console.error('[food preparation] Administrations application alert failed',notificationError)
       }
       return NextResponse.json({
         success:true,appointment:rows[0],
-        message:`Application sent to Administration. The ₦${foodPreparationSalary(position).toLocaleString('en-NG')} monthly salary applies only after approval and is not an automatic wallet payment.`,
+        message:`Application sent to Administrations. The ₦${foodPreparationSalary(position).toLocaleString('en-NG')} monthly salary applies only after approval and is not an automatic wallet payment.`,
       },{status:201})
     }catch(error){
       await client.query('ROLLBACK').catch(()=>{})
@@ -207,7 +207,7 @@ export async function PATCH(request:NextRequest){
           :await client.query('SELECT * FROM agility_stock_orders WHERE id=$1::uuid FOR UPDATE',[task.source_order_id])
         const order=orders[0]
         if(!order||order.payment_status!=='paid'||(task.product==='daisy'&&!order.preparation_released_at))
-          throw new PreparationAccessError('Only verified, Administration-released food can be assigned.',409)
+          throw new PreparationAccessError('Only verified, Administrations-released food can be assigned.',409)
         const status=String(task.product==='daisy'?order.status:order.fulfillment_status)
         if(!preparationNextStage(task.product,status))
           throw new PreparationAccessError('This order has no unfinished preparation/dispatch step.',409)

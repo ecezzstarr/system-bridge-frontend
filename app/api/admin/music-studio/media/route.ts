@@ -15,7 +15,7 @@ const MAX=16*1024*1024
 const fail=(error:string,status:number)=>NextResponse.json({success:false,error},{status})
 export async function POST(request:NextRequest){
  const admin=await requireMusicAdministrator(request)
- if(!admin)return fail('Administration only.',403)
+ if(!admin)return fail('Administrations only.',403)
  try{
   await ensureAdminMusicSchema()
   const form=await request.formData()
@@ -27,7 +27,7 @@ export async function POST(request:NextRequest){
   const pool=getPool()
   const count=(await pool.query('SELECT COUNT(*)::int AS count,COALESCE(SUM(size_bytes),0)::bigint AS size FROM weave_admin_music_assets')).rows[0]
   if(Number(count.count)>=100||Number(count.size)+file.size>512*1024*1024)
-   return fail('Administration Music Studio has reached its 100-clip or 512 MB sound storage limit.',409)
+   return fail('Administrations Music Studio has reached its 100-clip or 512 MB sound storage limit.',409)
   const object='weave-private/admin-music/'+randomUUID()+'.'+ext
   await saveMediaObject(object,Buffer.from(await file.arrayBuffer()),{contentType:file.type,cacheControl:'private, no-store'})
   const inserted=await pool.query(
@@ -40,14 +40,14 @@ export async function POST(request:NextRequest){
 }
 export async function GET(request:NextRequest){
  const admin=await requireMusicAdministrator(request)
- if(!admin)return fail('Administration only.',403)
+ if(!admin)return fail('Administrations only.',403)
  try{
   await ensureAdminMusicSchema()
   const id=request.nextUrl.searchParams.get('assetId')
   if(!musicUuid(id))return fail('Select a valid studio recording.',400)
   const pool=getPool()
   const asset=(await pool.query('SELECT object_name,media_type FROM weave_admin_music_assets WHERE id=$1::uuid',[id])).rows[0]
-  if(!asset)return fail('Administration recording not found.',404)
+  if(!asset)return fail('Administrations recording not found.',404)
   const info=await getMediaObjectInfo(String(asset.object_name))
   if(info.size>MAX)return fail('Recording exceeds the permitted playback size.',413)
   const bytes=await readFile(info.filePath)

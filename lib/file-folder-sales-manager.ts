@@ -313,7 +313,7 @@ async function collectEchoSalesCandidates(): Promise<EchoSalesCandidate[]> {
       ownerRole: 'admin',
       targetRef: String(row.id),
       ageHours: Number(row.age_hours || 0),
-      evidence: `A File Folder purchase from ${row.buyer_name || row.buyer_email || 'a prospect'} is waiting for Administration verification.`,
+      evidence: `A File Folder purchase from ${row.buyer_name || row.buyer_email || 'a prospect'} is waiting for Administrations verification.`,
     })
   }
   for (const row of bridgeDeposits.rows) {
@@ -324,7 +324,7 @@ async function collectEchoSalesCandidates(): Promise<EchoSalesCandidate[]> {
       ownerRole: 'admin',
       targetRef: String(row.id),
       ageHours: Number(row.age_hours || 0),
-      evidence: `A Bridger-guided File Folder payment for ${row.prospect_name || 'a prospect'} is waiting for Administration verification.`,
+      evidence: `A Bridger-guided File Folder payment for ${row.prospect_name || 'a prospect'} is waiting for Administrations verification.`,
     })
   }
   for (const row of whatsapp.rows) {
@@ -438,7 +438,7 @@ async function runEightSalesIntelligence(
   return askEight(
     `Act as the WEAVE File Folder commercial intelligence manager.
 
-Review only the supplied evidence. The weekly target is ${weeklyTarget} confirmed File Folder sale(s). Echo is the active movement coordinator; your role is to diagnose the funnel and tell Administration where the constraint is.
+Review only the supplied evidence. The weekly target is ${weeklyTarget} confirmed File Folder sale(s). Echo is the active movement coordinator; your role is to diagnose the funnel and tell Administrations where the constraint is.
 
 Required output:
 - state the current pace without claiming sales can be guaranteed;
@@ -483,7 +483,7 @@ export async function runFileFolderSalesManager() {
         metrics,
         candidates,
       })
-    : { summary: 'Echo sales coordination is paused by Administration.', actions: [] }
+    : { summary: 'Echo sales coordination is paused by Administrations.', actions: [] }
 
   await persistEchoActions(metrics.weekStart, echo)
   const eight = await runEightSalesIntelligence(config.weekly_target, metrics, echo)

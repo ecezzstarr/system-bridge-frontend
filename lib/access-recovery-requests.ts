@@ -142,7 +142,7 @@ export async function handleRecoveryRequest(input: { adminId: string; requestId:
       await client.query(`INSERT INTO notifications (user_id,type,title,content,from_user_id,from_user_name,link)
         VALUES ($1::uuid,'access_recovery','Recovery passcode issued',
           'Return to the recovery desk in the browser where you requested access. Your passcode expires in 15 minutes.',
-          $2::uuid,'Administration','/forgot-password')`, [request.user_id, input.adminId])
+          $2::uuid,'Administrations','/forgot-password')`, [request.user_id, input.adminId])
     } else {
       await client.query(`UPDATE access_recovery_requests SET status='denied',handled_at=NOW() WHERE id=$1::uuid`, [request.id])
     }

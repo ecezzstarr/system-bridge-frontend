@@ -69,7 +69,7 @@ export default function AdminAgentYieldRegistryPage() {
         <header className="border-b border-white/10 bg-[radial-gradient(circle_at_14%_0%,rgba(245,158,11,.14),transparent_34%),radial-gradient(circle_at_88%_0%,rgba(16,185,129,.07),transparent_28%)] p-5 md:p-7">
           <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
             <div>
-              <p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.22em] text-amber-300">Administration · Agent Yield Registry</p>
+              <p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.22em] text-amber-300">Administrations · Agent Yield Registry</p>
               <h1 className="mt-2 text-2xl font-black text-white md:text-3xl">Recognition and settlement are separate financial states.</h1>
               <p className="mt-3 max-w-4xl text-sm leading-7 text-slate-300">
                 Agent Yield is calculated from real active Bridgers assigned to the Agent. This registry shows the recognized monthly state. It does not claim that recognition has already credited an external or cross-currency wallet.
@@ -135,7 +135,7 @@ export default function AdminAgentYieldRegistryPage() {
                 <p>Assigned Bridgers → active count.</p>
                 <p>Active count → Yield tier.</p>
                 <p>Yield tier → recognized NGN value.</p>
-                <p>Administration → settlement decision.</p>
+                <p>Administrations → settlement decision.</p>
               </div>
             </section>
 

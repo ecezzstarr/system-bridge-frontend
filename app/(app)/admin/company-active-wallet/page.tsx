@@ -63,18 +63,18 @@ export default function CompanyActiveWalletSettings(){
  }
 
  if(!isInitialized||loading)return <main className="mx-auto max-w-5xl p-6">Opening company wallet controls…</main>
- if(user?.role!=='admin')return <main className="mx-auto max-w-5xl p-6">Administration access required.</main>
+ if(user?.role!=='admin')return <main className="mx-auto max-w-5xl p-6">Administrations access required.</main>
  return <main className="weave-operating-environment mx-auto min-h-dvh max-w-5xl space-y-6 px-4 py-8"
   data-admin-company-active-wallet="true">
   <nav className="flex flex-wrap gap-4 text-sm">
-   <Link href="/admin/control-center" className="underline">Administration Control Center</Link>
+   <Link href="/admin/control-center" className="underline">Administrations Control Center</Link>
    <Link href="/admin/pro-activations" className="underline">Pro Client activation register</Link>
    <Link href="/admin/pro-regional-manager-activations" className="underline">Pro Manager Forensics</Link>
   </nav>
   <header className="space-y-3 rounded-2xl border border-sky-300/30 bg-sky-300/[.07] p-6">
-   <p className="text-xs font-bold uppercase tracking-widest text-sky-700">WEAVE of Presence · Administration · A Time</p>
+   <p className="text-xs font-bold uppercase tracking-widest text-sky-700">WEAVE of Presence · Administrations · A Time</p>
    <h1 className="text-3xl font-bold">Company Active Wallet</h1>
-   <p className="max-w-3xl text-sm leading-7">This Administration setting designates the official company receiving address for
+   <p className="max-w-3xl text-sm leading-7">This Administrations setting designates the official company receiving address for
     <strong> Pro File Folder activation payments in USDT on TRON (TRC-20)</strong>. The same destination is used by
     eligible Client, Agent and Bridger Pro Regional Manager verification flows. It does not authorize an
     unverified payment, modify previous receipts or change salaries and business earnings.</p>
@@ -85,7 +85,7 @@ export default function CompanyActiveWalletSettings(){
    <div className="space-y-2">
     <p className="text-xs font-bold uppercase tracking-widest text-sky-800">Company payment rail · Pro activation</p>
     <h2 className="text-xl font-bold">Active USDT TRC-20 receiving address</h2>
-    <p className="text-sm">The active destination appears to an applicant only after Administration independently
+    <p className="text-sm">The active destination appears to an applicant only after Administrations independently
      approves identity and company employment. The applicant must confirm the same address when providing
      a transaction hash. Forensics separately confirms the actual amount, token, network and destination.</p>
    </div>
@@ -93,11 +93,11 @@ export default function CompanyActiveWalletSettings(){
     <p className="text-xs font-semibold uppercase text-sky-800">Current active destination</p>
     <p className="mt-2 break-all font-mono text-sm">{settings?.activeWallet||'Not configured — do not request transfers'}</p>
     <p className="mt-2 text-xs">{settings?.configuredInAdministration
-     ?'Configured by Administration and persisted in the Pro wallet register.'
+     ?'Configured by Administrations and persisted in the Pro wallet register.'
      :settings?.activeWallet
-       ?'Environment fallback is active. Save through Administration to establish an audited setting.'
+       ?'Environment fallback is active. Save through Administrations to establish an audited setting.'
        :'No valid Pro receiving address available.'}</p>
-    {settings?.lastUpdatedAt&&<p className="mt-2 text-xs">Last Administration update: {new Date(settings.lastUpdatedAt).toLocaleString()}</p>}
+    {settings?.lastUpdatedAt&&<p className="mt-2 text-xs">Last Administrations update: {new Date(settings.lastUpdatedAt).toLocaleString()}</p>}
    </div>
    <label className="block text-sm font-semibold">New official company Pro wallet · TRON address
     <input autoComplete="off" spellCheck={false} value={draft} onChange={e=>setDraft(e.target.value.trim())}
@@ -117,7 +117,7 @@ export default function CompanyActiveWalletSettings(){
     and have checked the full address and TRON network. I understand that a public address is not
     proof of wallet control and that earlier customer transfers remain attached to their original destination.
    </label>
-   <label className="block text-sm font-semibold">Administration confirmation
+   <label className="block text-sm font-semibold">Administrations confirmation
     <input autoComplete="off" value={confirmation} onChange={e=>setConfirmation(e.target.value)}
      placeholder="Type SET COMPANY PRO WALLET" className="mt-2 w-full rounded-xl border border-sky-300 bg-white p-3 text-sm"/>
    </label>
@@ -130,13 +130,13 @@ export default function CompanyActiveWalletSettings(){
   <section className="space-y-3 rounded-2xl border border-slate-200 bg-white/90 p-6">
    <h2 className="text-xl font-bold">Separate company TRX funding rail</h2>
    <p className="text-sm leading-7">WEAVE also records a TRX funding destination for its separate
-    Flame Coin funding workflow. That rail is not edited here. If Administration chooses the same
+    Flame Coin funding workflow. That rail is not edited here. If Administrations chooses the same
     receiving address for both, each payment must still be verified in its correct asset and ledger.</p>
    <p className="break-all rounded-xl border border-slate-200 bg-slate-50 p-3 font-mono text-sm">{settings?.companyTrxFundingWallet||'Unavailable'}</p>
   </section>
   <section className="space-y-3 rounded-2xl border border-slate-200 bg-white/90 p-6">
    <h2 className="text-xl font-bold">Wallet change history</h2>
-   <p className="text-sm">Each change made through the company wallet control is recorded for Administration audit.
+   <p className="text-sm">Each change made through the company wallet control is recorded for Administrations audit.
     Changing the active destination never rewrites a submitted receipt.</p>
    {!settings?.history.length&&<p className="text-sm text-slate-600">No changes recorded in this wallet control yet.</p>}
    {settings?.history.map((entry,index)=><article key={entry.changed_at+index} className="space-y-2 rounded-xl border border-slate-200 p-4">

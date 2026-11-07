@@ -123,16 +123,16 @@ export default function EnterpriseSystemsAdminPage() {
   }
 
   if (!isInitialized) return <main className="p-8 text-base text-slate-300">Opening Enterprise Systems Workshop...</main>
-  if (user?.role !== 'admin') return <main className="p-8 text-base text-red-300">Administration access required.</main>
+  if (user?.role !== 'admin') return <main className="p-8 text-base text-red-300">Administrations access required.</main>
 
   return (
     <main className="mx-auto max-w-[1500px] space-y-8 p-5 text-white md:p-8">
       <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
-          <p className="text-sm font-black uppercase tracking-[0.18em] text-cyan-300">Administration · Enterprise Systems</p>
+          <p className="text-sm font-black uppercase tracking-[0.18em] text-cyan-300">Administrations · Enterprise Systems</p>
           <h1 className="mt-2 text-4xl font-black md:text-5xl">Enterprise Systems Workshop</h1>
           <p className="mt-3 max-w-4xl text-base leading-7 text-slate-300">
-            Operate the high-value systems sold through the Enterprise Exchange. GBP remains the contract denomination; WEAVE also records the Flame Coin equivalent at the live TRX/GBP rate because 1 Flame Coin = 1 TRX. Administration controls publication and advances each acquisition through review, contract, build and delivery.
+            Operate the high-value systems sold through the Enterprise Exchange. GBP remains the contract denomination; WEAVE also records the Flame Coin equivalent at the live TRX/GBP rate because 1 Flame Coin = 1 TRX. Administrations control publication and advances each acquisition through review, contract, build and delivery.
           </p>
         </div>
         <button onClick={() => void load()} className="inline-flex items-center gap-2 rounded-full border border-white/10 px-4 py-2 text-sm font-bold">
@@ -234,7 +234,7 @@ export default function EnterpriseSystemsAdminPage() {
                       value={order.admin_note || ''}
                       onChange={event => setOrders(prev => prev.map((row, i) => i === index ? { ...row, admin_note: event.target.value } : row))}
                       rows={3}
-                      placeholder="Administration note..."
+                      placeholder="Administrations note..."
                       className="mt-3 w-full resize-none rounded-xl border border-white/10 bg-slate-950 p-3 text-base text-white"
                     />
                     <button onClick={() => void updateOrder(order)} disabled={busy === `order:${order.id}`} className="mt-3 w-full rounded-xl bg-emerald-400 px-4 py-3 text-sm font-black text-slate-950 disabled:opacity-50">

@@ -46,7 +46,7 @@ export async function PATCH(request: NextRequest,{ params }: { params: Promise<{
     const match = matchResult.rows[0]
     if (!match) { await client.query('ROLLBACK'); return NextResponse.json({ error: 'Arena game not found' }, { status: 404 }) }
     const canControl = user.role === 'admin' || String(match.host_id) === String(user.id)
-    if (!canControl) { await client.query('ROLLBACK'); return NextResponse.json({ error: 'Only the Ace or Administration can control this game' }, { status: 403 }) }
+    if (!canControl) { await client.query('ROLLBACK'); return NextResponse.json({ error: 'Only the Ace or Administrations can control this game' }, { status: 403 }) }
     const economics={ lifestyle:match.ace_lifestyle || 'ace', earningRate:Number(match.ace_earning_rate || 0.30) }
 
     if (action === 'start') {

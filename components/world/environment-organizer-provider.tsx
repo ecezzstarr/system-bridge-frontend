@@ -76,7 +76,7 @@ export function EnvironmentPageGuard({children}:{children:React.ReactNode}){
       <EyeOff className="mx-auto h-8 w-8 text-amber-300"/>
       <p className="mt-4 text-[9px] font-black uppercase tracking-[0.22em] text-amber-300">Environment surface removed</p>
       <h1 className="mt-2 text-2xl font-black text-white">{surface.label}</h1>
-      <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-400">Administration has removed this surface from the active WEAVE environment. Its source and records remain preserved so it can be restored from Environment Organizer without rebuilding the application.</p>
+      <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-400">Administrations have removed this surface from the active WEAVE environment. Its source and records remain preserved so it can be restored from Environment Organizer without rebuilding the application.</p>
       <Link href="/" className="mt-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-5 py-2.5 text-xs font-black text-white"><Home className="h-4 w-4"/>Return to WEAVE</Link>
     </section>
   </main>

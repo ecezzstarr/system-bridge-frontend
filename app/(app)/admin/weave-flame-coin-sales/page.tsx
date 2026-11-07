@@ -37,12 +37,12 @@ export default function FlameCoinSalesForensics(){
     }catch(e){setError(e instanceof Error?e.message:'Unable to complete action')}finally{setBusy('')}
   }
   return <main className="mx-auto max-w-6xl space-y-5 px-4 py-8 text-white">
-    <Link href="/admin/dashboard" className="text-xs text-amber-200">← Administration</Link>
+    <Link href="/admin/dashboard" className="text-xs text-amber-200">← Administrations</Link>
     <h1 className="text-3xl font-black">Flame Coin · Prospect Purchase Forensics</h1>
-    <p className="text-sm leading-6 text-slate-300">Prospects choose bank, card, TRX, USDT or BTC. Administration issues a method-specific quote only for authorized rails, then independently verifies bank/card settlement or the correct crypto transfer. The buyer receives Flame Coin in their WEAVE Main Wallet, not the payment asset.</p>
+    <p className="text-sm leading-6 text-slate-300">Prospects choose bank, card, TRX, USDT or BTC. Administrations issue a method-specific quote only for authorized rails, then independently verifies bank/card settlement or the correct crypto transfer. The buyer receives Flame Coin in their WEAVE Main Wallet, not the payment asset.</p>
     <div className="rounded-xl border border-amber-300/20 p-4">
       <p className="text-xs font-black uppercase text-amber-200">Payment rail authorizations</p><p className="mt-2 text-xs text-slate-300">{Object.entries(enabledMethods).map(([m,allowed])=>`${m.toUpperCase()}: ${allowed?'configured':'on hold'}`).join(' · ')}</p>
-      <p className="mt-2 text-sm text-white">Funded Administration Main Wallet: <strong>{reserve.toLocaleString()} Flame Coin</strong></p>
+      <p className="mt-2 text-sm text-white">Funded Administrations Main Wallet: <strong>{reserve.toLocaleString()} Flame Coin</strong></p>
       <p className="mt-2 text-xs text-slate-400">Configuration flags alone are not proof of authorization. Verify local licensing, provider permissions, receiving-wallet ownership and transaction history. Do not use Wise transfers for coin purchases or collect raw card data.</p>
     </div>
     <button onClick={()=>void reload()} className="rounded-lg border border-white/15 px-4 py-2 text-xs">Refresh queue</button>

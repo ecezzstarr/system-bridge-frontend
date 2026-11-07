@@ -37,7 +37,7 @@ assert.ok(applicant.includes("action==='accept'")&&applicant.includes("action===
 assert.ok(applicant.includes('staffOfferTokenHash')&&applicant.includes("status='pending_verification'"),
   'Private token-scoped payment reports must remain pending')
 assert.ok(admin.includes('paymentChecked')&&admin.includes("status='pending_verification'")&&admin.includes('SAVEPOINT file_number_attempt'),
-  'Administration must verify tickets before issuing collision-safe File Numbers')
+  'Administrations must verify tickets before issuing collision-safe File Numbers')
 assert.ok(!admin.includes('INSERT INTO file_folder_purchases')&&!applicant.includes('INSERT INTO file_folder_purchases'),
   'Employment tickets cannot create retail purchase rows')
 assert.ok(migration.includes('company_client_staff_offers')&&migration.includes('company_client_staff_work')&&migration.includes('receipt_number'),
@@ -55,7 +55,7 @@ assert.ok(normalPurchase.includes('file_folder_purchases'),
 assert.ok(admin.includes('applicantContributionUSDT')&&admin.includes('proposedPersonalLoanUSDT')&&admin.includes('personalLoanTerms'),
   'Employment loans must be separate from the applicant contribution with written terms')
 assert.ok(admin.includes('loanChecked')&&admin.includes('loanFundingReference')&&admin.includes('personal_loan_accepted_at'),
-  'Administration must verify actual separate loan funding and consent before granting Pro')
+  'Administrations must verify actual separate loan funding and consent before granting Pro')
 assert.ok(admin.includes('existingClient')&&admin.includes('client.rows[0].file_number !== fileNumber'),
   'Existing Clients retain their owned File Number when a company position is granted')
 assert.ok(applicant.includes('personalLoanTermsAccepted')&&invite.includes('loanTermsAccepted'),

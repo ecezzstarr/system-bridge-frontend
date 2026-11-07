@@ -323,7 +323,7 @@ async function runOneAgent(agent: DevelopmentAgentDefinition, force = false) {
       UPDATE weave_development_agents
       SET last_pulse_at=NOW(),
           next_pulse_at=NOW() + (${agent.cadenceMinutes}::text || ' minutes')::interval,
-          last_summary=${`Awaiting Administration on: ${existingProposal[0].title}`},
+          last_summary=${`Awaiting Administrations on: ${existingProposal[0].title}`},
           updated_at=NOW()
       WHERE agent_key=${agent.key}
     `

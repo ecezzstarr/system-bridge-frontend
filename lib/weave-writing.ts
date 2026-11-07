@@ -10,7 +10,7 @@ export const WEAVE_WRITING_STYLE = {
     'Client',
     'Agent',
     'Bridger',
-    'Administration',
+    'Administrations',
     'Attorney',
     'Mandate',
     'Forensics',
@@ -85,29 +85,29 @@ export const WEAVE_WRITING = {
     eyebrow: 'File Folder Crossing',
     title: 'Establish the Client world.',
     detail:
-      'The File Folder is the Client’s persistent operating environment. Record the TRX movement here. Administration verifies it, issues the File Number and opens the Client crossing into System Switch.',
+      'The File Folder is the Client’s persistent operating environment. Record the TRX movement here. Administrations verify it, issues the File Number and opens the Client crossing into System Switch.',
     stages: [
       'Prospect',
       'File Folder Value',
       'TRX Movement',
-      'Administration',
+      'Administrations',
       'Client Position',
     ],
     state: 'Crossing state',
     recognition: 'Prospect recognition',
     value: 'File Folder value',
     trx: 'TRX movement',
-    administration: 'Administration verification',
+    administration: 'Administrations verification',
     paymentAction: 'Record payment movement',
-    pendingTitle: 'Administration verification in progress.',
+    pendingTitle: 'Administrations verification in progress.',
     pendingDetail:
-      'The payment movement is recorded. When Administration verifies it, the File Number appears here. No second purchase is required.',
+      'The payment movement is recorded. When Administrations verify it, the File Number appears here. No second purchase is required.',
     confirmedTitle: 'File Number issued.',
     confirmedDetail:
       'The File Number now carries this movement into the Client position. Establish the Client identity to open System Switch.',
     rejectedTitle: 'Verification not completed.',
     rejectedDetail:
-      'Administration did not verify this TRX movement. Confirm the transaction details before recording another File Folder movement.',
+      'Administrations did not verify this TRX movement. Confirm the transaction details before recording another File Folder movement.',
     clientAction: 'Establish Client Position',
   },
 
@@ -115,7 +115,7 @@ export const WEAVE_WRITING = {
     registerEyebrow: 'Client Crossing',
     registerTitle: 'Establish Client Identity',
     recognizeTitle: 'Recognize File Number',
-    recognizeDetail: 'Enter the File Number issued by Administration.',
+    recognizeDetail: 'Enter the File Number issued by Administrations.',
     detailsTitle: 'Complete Client Position',
     detailsDetail: 'Set the access details attached to this Client File Folder.',
     fileNumber: 'File Number',
@@ -135,7 +135,7 @@ export const WEAVE_WRITING = {
 
   positionAccess: {
     access: 'WEAVE · Position Access',
-    administrationAccess: 'WEAVE · Administration Access',
+    administrationAccess: 'WEAVE · Administrations Access',
     divider: 'Interaction in Motion',
     clientAccess: 'Client Access',
     chooseTitle: 'Choose Your Position',

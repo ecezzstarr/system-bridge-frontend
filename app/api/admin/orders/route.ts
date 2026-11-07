@@ -4,7 +4,7 @@ import { sql } from '@/lib/db'
 
 export async function GET(request:NextRequest){
   const user=await getAuthUser(request)
-  if(!user||user.role!=='admin')return NextResponse.json({success:false,error:'Administration only'},{status:403})
+  if(!user||user.role!=='admin')return NextResponse.json({success:false,error:'Administrations only'},{status:403})
   try{
     const page=Math.min(30,Math.max(0,Number.parseInt(request.nextUrl.searchParams.get('page')||'0',10)||0))
     const offset=page*100
@@ -21,6 +21,6 @@ export async function GET(request:NextRequest){
       {headers:{'Cache-Control':'private, no-store'}})
   }catch(error){
     console.error('[admin orders inbox] Unable to fetch order alerts',error)
-    return NextResponse.json({success:false,error:'Unable to load Administration order alerts'},{status:500})
+    return NextResponse.json({success:false,error:'Unable to load Administrations order alerts'},{status:500})
   }
 }

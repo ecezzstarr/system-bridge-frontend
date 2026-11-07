@@ -14,7 +14,7 @@ export class GoogleMailError extends Error {
 export function mailboxErrorResponse(error:unknown){
   if(error instanceof GoogleMailError)return {error:error.message,code:error.code,status:error.code==='MAIL_AUTH_REJECTED'||error.code==='MAIL_CREDENTIALS_INVALID'?400:503}
   if((error as {code?:string})?.code==='23505')return {error:'This mailbox is already connected to another WEAVE account.',code:'MAILBOX_IN_USE',status:409}
-  return {error:'WEAVE could not securely save the mailbox. Administration must check database access and the mail encryption configuration.',code:'MAILBOX_STORAGE_FAILED',status:503}
+  return {error:'WEAVE could not securely save the mailbox. Administrations must check database access and the mail encryption configuration.',code:'MAILBOX_STORAGE_FAILED',status:503}
 }
 
 export type GmailCredential={
@@ -83,7 +83,7 @@ async function withGmailSession<T>(credential:GmailCredential,work:(ctx:{
   let dataSubmitted=false
   let rejectConnection:(error:Error)=>void=()=>{}
   const failed=new Promise<never>((_,reject)=>{rejectConnection=reject})
-  const onError=()=>rejectConnection(new GoogleMailError('WEAVE could not connect securely to Google mail. Retry, then ask Administration to check outbound mail connectivity.','MAIL_CONNECTION_FAILED',dataSubmitted))
+  const onError=()=>rejectConnection(new GoogleMailError('WEAVE could not connect securely to Google mail. Retry, then ask Administrations to check outbound mail connectivity.','MAIL_CONNECTION_FAILED',dataSubmitted))
   socket.on('error',onError)
   const deadline=setTimeout(()=>{
     rejectConnection(new GoogleMailError('Google mail did not answer in time. Check the connection and retry.','MAIL_TIMEOUT',dataSubmitted))

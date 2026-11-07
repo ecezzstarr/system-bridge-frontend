@@ -29,7 +29,7 @@ export async function GET(request:NextRequest){
     })
   }catch(error){
     console.error('[Divine Shield] status error:',error)
-    // Fail closed for public/non-admin access. Administration remains reachable
+    // Fail closed for public/non-admin access. Administrations remains reachable
     // through the dedicated maintenance entrance so infrastructure can be repaired.
     return NextResponse.json({
       success:false,
@@ -37,7 +37,7 @@ export async function GET(request:NextRequest){
       administrationBypass,
       sessionValid:administrationBypass,
       title:'WEAVE maintenance boundary',
-      message:'WEAVE cannot currently verify the maintenance control. Participation remains outside while Administration restores the infrastructure.',
+      message:'WEAVE cannot currently verify the maintenance control. Participation remains outside while Administrations restores the infrastructure.',
       error:'Divine Shield status unavailable',
     },{status:200,headers:{'Cache-Control':'no-store, max-age=0'}})
   }

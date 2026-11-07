@@ -5,7 +5,7 @@ import { getAllAgentSalaries } from '@/lib/agent-salary'
 export async function GET(request: NextRequest) {
   const user = await getAuthUser(request)
   if (!user) return NextResponse.json({ success:false, error:'Unauthorized' }, { status:401 })
-  if (user.role !== 'admin') return NextResponse.json({ success:false, error:'Administration access required' }, { status:403 })
+  if (user.role !== 'admin') return NextResponse.json({ success:false, error:'Administrations access required' }, { status:403 })
 
   try {
     const agents = await getAllAgentSalaries()
@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
       agents,
       settlement: {
         state: 'administration_required',
-        detail: 'Yield recognition does not by itself credit an external or cross-currency wallet. Settlement remains an Administration-controlled financial step.',
+        detail: 'Yield recognition does not by itself credit an external or cross-currency wallet. Settlement remains an Administrations-controlled financial step.',
       },
     })
   } catch (error) {

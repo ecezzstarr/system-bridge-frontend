@@ -42,7 +42,7 @@ assert.ok(visual.includes('data-weave-food-direct-carrier-order="true"'),'A comp
 assert.ok(visual.includes("'/api/system-switch/open-world?page='"),'World data reads from canonical System Switch endpoint')
 assert.ok(api.includes('readVerifiedClientDomains')&&source.includes('getPublicBurningRiverWorld'),'Canonical API preserves source-of-truth purchases, builds and open doors')
 assert.ok(publicDomains.includes('customerDoor:{open:doorOpen,href:doorOpen'),'No Customer Door link is published without verified commissioning')
-assert.ok(staffGate.includes('href="/system-switch/world?via=system-switch"'),'Agent, Bridger and Administration cross the actual System Switch Gate')
+assert.ok(staffGate.includes('href="/system-switch/world?via=system-switch"'),'Agent, Bridger and Administrations cross the actual System Switch Gate')
 assert.ok(eventGate.includes('/system-switch/world'),'Company Loop event entrance opens permanent Weave world')
 assert.ok(eventGate.includes('<Link href={customerHref}')&&!eventGate.includes('onCustomerDoor'),'The official Customer Door hotspot always enters Weave Open World, never mounts a second mini-world')
 const eventArrival=read('components/events/flame-event-public-mobile.tsx')

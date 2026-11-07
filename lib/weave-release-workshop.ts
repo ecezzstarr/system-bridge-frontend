@@ -85,7 +85,7 @@ export async function requestReleaseJob(input:{action:ReleaseAction;targetSha?:s
       server_key,action,target_sha,requested_by,verification
     ) VALUES (
       ${serverKey()},${input.action},${input.targetSha},
-      ${input.userId}::uuid,'Administration approved exact GitHub release SHA'
+      ${input.userId}::uuid,'Administrations approved exact GitHub release SHA'
     ) RETURNING id,server_key,action,target_sha,status,requested_at`
     return job
   }catch(error:any){
@@ -145,7 +145,7 @@ export async function cancelQueuedReleaseJob(id:string,userId:string){
   if(!/^[0-9a-f-]{36}$/i.test(id))throw new Error('Invalid release job identifier')
   const [job]=await sql`UPDATE weave_release_jobs
     SET status='cancelled',finished_at=now(),
-      verification=${'Queued release cancelled by Administration before host execution'},
+      verification=${'Queued release cancelled by Administrations before host execution'},
       details=jsonb_set(details,'{cancelledBy}',to_jsonb(${userId}::text),true)
     WHERE id=${id}::uuid AND server_key=${serverKey()} AND status='queued'
     RETURNING id,status,finished_at`

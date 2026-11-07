@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Break-glass compatibility: accept the pre-existing server-side fallback
-    // secret only for the original Administration identity, and only when that
+    // secret only for the original Administrations identity, and only when that
     // identity still exists as an active admin in the database. Never create
     // a privileged identity or session without a real database account.
     const fallbackPassword = process.env.PLATFORM_ADMIN_FALLBACK_PASSWORD

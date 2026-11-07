@@ -80,7 +80,7 @@ export async function issueAdminRecoveryGrant(input:{
       `SELECT id,role FROM users WHERE id=$1::uuid AND role='admin' AND is_active=true LIMIT 1 FOR UPDATE`,
       [input.adminId],
     )
-    if(!adminResult.rows[0])throw new Error('Administration authority is not active')
+    if(!adminResult.rows[0])throw new Error('Administrations authority is not active')
 
     const targetResult=await client.query(
       `SELECT id,name,email,username,role,file_number
@@ -95,7 +95,7 @@ export async function issueAdminRecoveryGrant(input:{
     const target=targetResult.rows[0]
     if(!target)throw new Error('Active WEAVE user not found')
     if(target.role==='admin'&&String(target.id)!==String(input.adminId)){
-      throw new Error('Administration may not issue recovery access for another Administration account')
+      throw new Error('Administrations may not issue recovery access for another Administrations account')
     }
 
     const reason=String(input.reason||'').trim()
@@ -109,7 +109,7 @@ export async function issueAdminRecoveryGrant(input:{
       [input.adminId],
     )
     if(Number(hourly.rows[0]?.count||0)>=ADMIN_RECOVERY_MAX_ISSUES_PER_HOUR){
-      throw new Error('Administration recovery issue limit reached for this hour')
+      throw new Error('Administrations recovery issue limit reached for this hour')
     }
 
     const recent=await client.query(

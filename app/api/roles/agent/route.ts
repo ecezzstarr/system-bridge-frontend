@@ -36,7 +36,7 @@ export async function PUT(request: NextRequest) {
   const auth = await requireAgent(request)
   if (auth.response) return auth.response
   return NextResponse.json(
-    { error: 'Agent profile terms and commission rates are controlled by Administration.' },
+    { error: 'Agent profile terms and commission rates are controlled by Administrations.' },
     { status: 403 }
   )
 }

@@ -8,7 +8,7 @@ import { decideClientTronDeposit } from '@/lib/client-trx-deposits'
 export const dynamic='force-dynamic'
 export async function POST(request:NextRequest){
   const admin=await getAuthUser(request)
-  if(!admin||admin.role!=='admin')return NextResponse.json({error:'Administration only'},{status:403})
+  if(!admin||admin.role!=='admin')return NextResponse.json({error:'Administrations only'},{status:403})
   try{
     const body=await request.json()
     if(!['approved','rejected'].includes(body?.status))

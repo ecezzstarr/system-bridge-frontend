@@ -395,7 +395,7 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
     : showClientBriefing
       ? 'Client training · File Folder'
       : showAdminBriefing
-        ? 'Administration · Work Introduction'
+        ? 'Administrations · Work Introduction'
         : showHopeBriefing
     ? 'Hope · forming the Bridger field'
     : showFlameBriefing

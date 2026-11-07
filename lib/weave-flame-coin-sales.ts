@@ -97,7 +97,7 @@ export async function creditVerifiedFlameCoinPurchase(input:{
  orderId:string; adminId:string; recipientId:string
 }){
   if(![input.orderId,input.adminId,input.recipientId].every(validFlameCoinOrderId))
-    return {success:false,error:'Valid order, Administration and recipient required',status:400}
+    return {success:false,error:'Valid order, Administrations and recipient required',status:400}
   await ensureFlameCoinSalesSchema()
   const db=await getPool().connect()
   let committed=false
@@ -120,7 +120,7 @@ export async function creditVerifiedFlameCoinPurchase(input:{
     }
     const [admin]=(await db.query("SELECT id FROM users WHERE id=$1::uuid AND role='admin' AND is_active=true",[input.adminId])).rows
     if(!admin){
-      await db.query('ROLLBACK');return {success:false,error:'Administration authorization required',status:403}
+      await db.query('ROLLBACK');return {success:false,error:'Administrations authorization required',status:403}
     }
     const [recipient]=(await db.query(
       "SELECT id,role,email FROM users WHERE id=$1::uuid AND is_active=true AND role IN ('agent','bridger','client')",
@@ -143,11 +143,11 @@ export async function creditVerifiedFlameCoinPurchase(input:{
     const funder=walletRows.find(x=>String(x.user_id)===input.adminId)
     const receiver=walletRows.find(x=>String(x.user_id)===input.recipientId)
     if(!funder||!receiver){
-      await db.query('ROLLBACK');return {success:false,error:'Funded Administration and recipient Main Wallets must both exist',status:409}
+      await db.query('ROLLBACK');return {success:false,error:'Funded Administrations and recipient Main Wallets must both exist',status:409}
     }
     if(Number(funder.balance_trx)<amount){
       await db.query('ROLLBACK')
-      return {success:false,error:'Insufficient backed Flame Coin in Administration reserve; no credit made',status:409}
+      return {success:false,error:'Insufficient backed Flame Coin in Administrations reserve; no credit made',status:409}
     }
     const [debit]=(await db.query(
       'UPDATE wallets SET balance_trx=balance_trx-$1,updated_at=NOW() WHERE id=$2::uuid AND balance_trx>=$1 RETURNING balance_trx',
@@ -186,7 +186,7 @@ export async function creditVerifiedFlameCoinPurchase(input:{
     `,[order.id,input.recipientId,funder.id,receiver.id,Number(debit.balance_trx),Number(credit.balance_trx),receiptNumber])
     await db.query(`
       INSERT INTO notifications(user_id,type,title,content,from_user_name,link)
-      VALUES($1::uuid,'flame_coin_purchase','Purchased Flame Coin credited',$2,'WEAVE Administration','/wallet')
+      VALUES($1::uuid,'flame_coin_purchase','Purchased Flame Coin credited',$2,'WEAVE Administrations','/wallet')
     `,[input.recipientId,`${amount} Flame Coin credited to your WEAVE Main Wallet · Receipt ${receiptNumber}`])
     await db.query('COMMIT');committed=true
     return {success:true,amountFlameCoin:amount,recipientId:input.recipientId,

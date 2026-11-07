@@ -23,7 +23,7 @@ export async function POST(request:NextRequest){
     return NextResponse.json({success:false,error:'Choose a valid update type and message'},{status:400})
   try{
     const result=await postDistributionTeamUpdate(user.id,kind as DistributionTeamUpdateKind,body.content)
-    if(!result.success)return NextResponse.json({success:false,error:result.reason==='not_employed'?'Administration verification or an approved assistant appointment is required':result.reason==='position_inactive'?'Underlying Agent or Bridger position is inactive':'Message must be 2–2000 characters'},{status:403})
+    if(!result.success)return NextResponse.json({success:false,error:result.reason==='not_employed'?'Administrations verification or an approved assistant appointment is required':result.reason==='position_inactive'?'Underlying Agent or Bridger position is inactive':'Message must be 2–2000 characters'},{status:403})
     return NextResponse.json(result,{headers:{'Cache-Control':'private, no-store'}})
   }catch(error){console.error('[distribution team] post failed',error)
     return NextResponse.json({success:false,error:'Unable to post team update'},{status:500})}

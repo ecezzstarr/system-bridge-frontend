@@ -18,7 +18,7 @@ import type {WeaveLoadingBrief,WeaveLoadingRole} from '@/lib/weave-loading-guida
 
 const labels:Record<LoaderCopyRole,string>={
   visitor:'Visitors',agent:'Agent · Stability',bridger:'Bridger · Hope',
-  client:'Client · File Folder',admin:'Administration', 'flame-event':'Flame Event',
+  client:'Client · File Folder',admin:'Administrations', 'flame-event':'Flame Event',
 }
 type RuntimeResponse={success:boolean;runtime?:{config:EnvironmentRuntimeConfig;version:number;updatedAt:string|null};error?:string}
 type DurationField='bootMinMs'|'transitMinMs'|'autoAdvanceMs'|'maxWaitMs'
@@ -109,9 +109,9 @@ export default function LoaderWorkshop(){
       <Link href="/admin/environment-organizer" className="inline-flex items-center gap-2 text-xs text-sky-200"><ArrowLeft className="h-4 w-4"/> Environment Organizer</Link>
       <header className="mt-5 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="text-[10px] font-black uppercase tracking-[.2em] text-amber-200">Administration · System Workshop</p>
+          <p className="text-[10px] font-black uppercase tracking-[.2em] text-amber-200">Administrations · System Workshop</p>
           <h1 className="mt-2 text-3xl font-black">Loader Workshop</h1>
-          <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">Control WEAVE's single automatic loader across Visitors, Stability, Hope, Clients, Administration and Flame Event. Publish live wordings and speed to Cloud SQL without redeploying the application.</p>
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">Control WEAVE's single automatic loader across Visitors, Stability, Hope, Clients, Administrations and Flame Event. Publish live wordings and speed to Cloud SQL without redeploying the application.</p>
         </div>
         <div className="rounded-xl border border-white/10 p-3 text-xs text-slate-400">Live version <strong className="text-white">v{version||'—'}</strong>{updatedAt&&<p className="mt-1">{new Date(updatedAt).toLocaleString()}</p>}</div>
       </header>

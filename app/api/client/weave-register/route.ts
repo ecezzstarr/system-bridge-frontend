@@ -128,7 +128,7 @@ export async function POST(request: NextRequest) {
     // account entered outside the normal Bridge path.
     await ensureClientMoneyEnvironment(sql, user.id)
 
-    // The File Number was issued by Administration before registration. Claim
+    // The File Number was issued by Administrations before registration. Claim
     // that exact persistent folder, attach the purchase to the new Client, and
     // start the included Customer Door formation in one idempotent movement.
     const activation = await activatePurchasedFileFolderForClient({
@@ -147,7 +147,7 @@ export async function POST(request: NextRequest) {
         RETURNING id
       `
       if (!claimed) throw new Error('Staff File Folder has already been claimed')
-      // The company ticket is already verified by Administration. Record its
+      // The company ticket is already verified by Administrations. Record its
       // receipt against the new Client identity without adding a retail sale.
       try {
         await issueWeaveReceipt({

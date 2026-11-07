@@ -9,7 +9,7 @@ import { assignPaidOrderToPreparationManager } from '@/lib/food-preparation-rout
 export async function POST(request: NextRequest) {
   const admin = await getAuthUser(request)
   if (!admin || admin.role !== 'admin') {
-    return NextResponse.json({ success: false, error: 'Administration required' }, { status: 403 })
+    return NextResponse.json({ success: false, error: 'Administrations required' }, { status: 403 })
   }
 
   const body = await request.json().catch(() => ({}))
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
       await db.query('ROLLBACK')
       return NextResponse.json({
         success: false,
-        error: 'The Agent must submit Electrolyte OPay proof before Administration can verify this order',
+        error: 'The Agent must submit Electrolyte OPay proof before Administrations can verify this order',
       }, { status: 409 })
     }
 
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
         await db.query(
           `INSERT INTO notifications (user_id,type,title,content,from_user_name,link)
            VALUES ($1::uuid,'electrolyte_stock','Electrolyte OPay proof rejected',$2,'WEAVE','/electrolyte')`,
-          [rejectedOrder.agent_id, 'Administration could not verify the submitted Electrolyte OPay proof. Open Electrolyte and submit the correct transaction reference or receipt.']
+          [rejectedOrder.agent_id, 'Administrations could not verify the submitted Electrolyte OPay proof. Open Electrolyte and submit the correct transaction reference or receipt.']
         )
       } catch (notificationError) {
         console.error('[admin/electrolyte/opay] rejection notification failed', notificationError)
@@ -137,7 +137,7 @@ export async function POST(request: NextRequest) {
       preparation,
       message: preparation.assigned
         ? 'Electrolyte payment approved. Food Preparation Manager was notified to begin preparation with delivery instructions.'
-        : 'Electrolyte payment approved. Administration must assign a Food Preparation Manager.',
+        : 'Electrolyte payment approved. Administrations must assign a Food Preparation Manager.',
     })
   } catch (error) {
     console.error('[admin/electrolyte/opay] verification failed', error)

@@ -36,13 +36,13 @@ export async function GET(request: NextRequest) {
       salaryPaidAutomatically:false,
       probationMonths:1,
       administrationVerificationRequired:true,
-      probationStartRule:'Probation begins only after Administration verifies a signed Distribution Manager appointment.',
+      probationStartRule:'Probation begins only after Administrations verify a signed Distribution Manager appointment.',
       documentVersion:MANAGER_DOCUMENT_VERSION,
       continuanceNgn:agentFree ? 0 : MANAGER_CONTINUANCE_NGN,
       positionSubscriptionNgn:agentFree ? 0 : POSITION_MONTHLY_SUBSCRIPTION_NGN,
       subscriptionRule:agentFree
         ? 'The active Agent position opens Distribution Manager Lifestyle without a monthly subscription.'
-        : 'A one-time payment of 11 Flame Coin attains Agentic-Bridger, which enables Lifestyle access and eligibility to apply for Distribution Manager employment. Appointment requires Administration verification. There is no monthly Bridger subscription.',
+        : 'A one-time payment of 11 Flame Coin attains Agentic-Bridger, which enables Lifestyle access and eligibility to apply for Distribution Manager employment. Appointment requires Administrations verification. There is no monthly Bridger subscription.',
       coreDuty:DISTRIBUTION_MANAGER_CORE_DUTY,
     },
   }, { headers:{ 'Cache-Control':'private, no-store' } })

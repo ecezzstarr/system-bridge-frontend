@@ -42,9 +42,9 @@ assert.ok(purchase.includes('file_folder_tier varchar(20)'),'Purchase schema per
 assert.ok(purchase.includes('getFileFolderTier(amountFlameCoin, requestedTier)'),'Purchase API validates amount against explicit sale classification')
 assert.ok(purchase.includes('amount_trx,file_folder_tier'),'Purchase status reads persisted tier')
 assert.ok(publicPurchase.includes('file_folder_tier'),'Public crossing returns persisted tier')
-assert.ok(adminPending.includes('purchase.file_folder_tier'),'Administration queue preserves explicit Pro classification')
-assert.ok(adminVerify.includes('purchase.file_folder_tier'),'Administration verification preserves explicit Pro classification')
-assert.ok(adminVerify.includes('fileFolderTierLabel'),'Administration commission and notification labels understand Pro')
+assert.ok(adminPending.includes('purchase.file_folder_tier'),'Administrations queue preserves explicit Pro classification')
+assert.ok(adminVerify.includes('purchase.file_folder_tier'),'Administrations verification preserves explicit Pro classification')
+assert.ok(adminVerify.includes('fileFolderTierLabel'),'Administrations commission and notification labels understand Pro')
 const tierEntitlement=read('lib/client-file-folder-tier.ts')
 assert.ok(systemSwitch.includes('resolveVerifiedClientFileFolderTier')&&
   tierEntitlement.includes("status IN ('confirmed','approved','folder_issued','paid_pending_folder')"),

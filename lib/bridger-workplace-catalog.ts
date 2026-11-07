@@ -54,7 +54,7 @@ export const BRIDGER_WORKPLACE_SPACES: readonly BridgerWorkplaceSpace[] = [
       { label: 'Number Bay', href: '/bridger/numbers', detail: 'Purchase numbers by country and follow delivery or verification.' },
       { label: 'Image Creative Studio', href: '/agent/creative', detail: 'Prepare graphics for your existing outreach channels.' },
       { label: 'Video Ad Studio', href: '/video-ad-studio', detail: 'Prepare promotional video work; this is not a live video call.' },
-      { label: 'Direct Communication', href: '/communications', detail: 'Continue authorized conversations with Prospects, Clients, Agents and Administration.' },
+      { label: 'Direct Communication', href: '/communications', detail: 'Continue authorized conversations with Prospects, Clients, Agents and Administrations.' },
       { label: 'Carrier', href: '/weave/carrier', detail: 'Use eligible Carrier access for approved public activity.', access: 'lifestyle' },
     ],
   },

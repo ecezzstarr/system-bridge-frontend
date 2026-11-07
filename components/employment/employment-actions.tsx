@@ -66,9 +66,9 @@ export function EmploymentActions({position,employeeId,administration=false,onSt
     :title[position]
   const statusText=thread?.record.exit_kind==='withdrawn'?'Application withdrawn'
     :thread?.record.exit_kind==='resigned'?'Resigned from position'
-    :thread?.record.exit_kind==='fired'?'Dismissed by Administration'
+    :thread?.record.exit_kind==='fired'?'Dismissed by Administrations'
     :thread?.record.exit_kind==='lead_departed'?'Appointment ended after lead Manager departure'
-    :current==='pending_verification'?'Application awaiting Administration verification'
+    :current==='pending_verification'?'Application awaiting Administrations verification'
     :current==='pending'?'Application awaiting appointment decision'
     :current==='probation'?'Verified appointment · probation in progress'
     :current==='approved'||current==='active'?'Employment active'
@@ -88,7 +88,7 @@ export function EmploymentActions({position,employeeId,administration=false,onSt
       <div><h3 className="text-sm font-black">Employment messages · {positionLabel}</h3>
         <p className="mt-1 text-[11px] leading-5 text-slate-400">{isAdmin?
           'Send employment messages and record dismissal decisions here. Distribution team work messages remain separate and cannot be edited here.':
-          'Send employment questions or responses directly to Administration. This is not your team discussion or a customer channel.'}</p>
+          'Send employment questions or responses directly to Administrations. This is not your team discussion or a customer channel.'}</p>
       </div>
       <Button size="sm" variant="outline" onClick={()=>load().catch(e=>setError(e.message))}>Refresh</Button>
     </header>
@@ -97,12 +97,12 @@ export function EmploymentActions({position,employeeId,administration=false,onSt
     {thread&&<p className="text-xs text-slate-400">Appointment standing: <strong className="text-white">{statusText}</strong></p>}
     <div className="max-h-60 space-y-2 overflow-auto border-y border-white/10 py-3">
       {thread?.messages.map(m=><article key={m.id} className="border border-white/10 p-3">
-        <p className="text-[10px] font-bold text-cyan-200">{m.author_role==='administration'?'WEAVE Administration':m.author_name} · {new Date(m.created_at).toLocaleString('en-NG')}</p>
+        <p className="text-[10px] font-bold text-cyan-200">{m.author_role==='administration'?'WEAVE Administrations':m.author_name} · {new Date(m.created_at).toLocaleString('en-NG')}</p>
         <p className="mt-1 whitespace-pre-wrap break-words text-xs leading-5 text-slate-200">{m.message}</p>
       </article>)}
       {!thread?.messages.length&&<p className="text-xs text-slate-400">No employment messages recorded yet. The record remains accessible after withdrawal or employment ending.</p>}
     </div>
-    <label htmlFor={`reply-${position}-${id}`} className="block text-xs font-semibold">{isAdmin?'Message to employee':'Message to Administration'}</label>
+    <label htmlFor={`reply-${position}-${id}`} className="block text-xs font-semibold">{isAdmin?'Message to employee':'Message to Administrations'}</label>
     <textarea id={`reply-${position}-${id}`} rows={3} maxLength={2000} value={content}
       onChange={e=>setContent(e.target.value)} placeholder={isAdmin?'Respond about the application, appointment or employment decision.':'Write an employment question, clarification or reply.'}
       className="w-full border border-white/15 bg-slate-950 p-3 text-sm text-white"/>
@@ -112,7 +112,7 @@ export function EmploymentActions({position,employeeId,administration=false,onSt
       {thread.exits.slice(0,4).map((e,i)=><p key={i} className="mt-2 text-[11px] text-slate-400">{e.exit_kind==='fired'?'Dismissal':e.exit_kind==='withdrawn'?'Application withdrawal':e.exit_kind==='resigned'?'Resignation':e.exit_kind==='lead_departed'?'Lead Manager departure':e.exit_kind} · {new Date(e.recorded_at).toLocaleString('en-NG')} · {e.reason}</p>)}
     </div>:null}
     {(canResign||canFire)&&<div className="border-t border-rose-300/20 pt-4">
-      <p className="text-xs font-bold text-rose-200">{canFire?'Administration · Dismiss from employment':isApplication?'Application withdrawal':'Resignation'}</p>
+      <p className="text-xs font-bold text-rose-200">{canFire?'Administrations · Dismiss from employment':isApplication?'Application withdrawal':'Resignation'}</p>
       <p className="mt-1 text-[11px] text-slate-400">{isApplication?'Withdrawing closes the pending application. No appointment, probation or salary eligibility begins.':'This immediately ends the appointment and work permissions. Existing employment and payment records remain available for verification.'} The underlying WEAVE account remains intact. {impact}</p>
       {!pendingAction?<Button type="button" variant="outline" onClick={()=>setPendingAction(canFire?'fire':'resign')}
         className="mt-3 border-rose-300/30 text-rose-200">{canFire?'Dismiss employee':exitLabel}</Button>:

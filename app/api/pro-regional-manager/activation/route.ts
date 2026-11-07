@@ -34,7 +34,7 @@ export async function POST(request:NextRequest){
   const ctx=await getProManagerApplicant(request)
   if(!ctx)return NextResponse.json({error:'Approved Agent or Bridger application required.'},{status:403,headers})
   if(ctx.row.application_status!=='approved_pending_verification')
-   return NextResponse.json({error:'Administration must approve and independently verify your agreed employment terms first.'},{status:409,headers})
+   return NextResponse.json({error:'Administrations must approve and independently verify your agreed employment terms first.'},{status:409,headers})
   const body=await request.json().catch(()=>null)
   if(!body||typeof body!=='object')
    return NextResponse.json({error:'Complete the activation request.'},{status:400,headers})

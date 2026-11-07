@@ -11,7 +11,7 @@ async function requireAdmin(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   const admin = await requireAdmin(request)
-  if (!admin) return NextResponse.json({ error: 'Administration only' }, { status: 403 })
+  if (!admin) return NextResponse.json({ error: 'Administrations only' }, { status: 403 })
 
   try {
     await ensureFileFolderWorldSchema(sql)
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   const admin = await requireAdmin(request)
-  if (!admin) return NextResponse.json({ error: 'Administration only' }, { status: 403 })
+  if (!admin) return NextResponse.json({ error: 'Administrations only' }, { status: 403 })
 
   try {
     await ensureFileFolderWorldSchema(sql)

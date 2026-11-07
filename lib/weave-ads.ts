@@ -71,7 +71,7 @@ export async function ensureWeaveAdsSchema() {
   await sql`CREATE INDEX IF NOT EXISTS weave_public_movement_events_ad_idx ON weave_public_movement_events(ad_id, event_type, created_at DESC)`
 
   // Company Loop 1 · Day 2 Blueprint movement. This is seeded once and then
-  // remains fully editable from Administration Ad Workshop.
+  // remains fully editable from Administrations Ad Workshop.
   await sql`
     INSERT INTO weave_ads (
       title, body, target_roles, placements, action_label, action_url,

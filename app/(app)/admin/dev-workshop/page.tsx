@@ -83,7 +83,7 @@ export default function WeaveIntegrityEnginePage(){
           <div className="max-w-3xl">
             <div className="flex items-center gap-2 text-cyan-300">
               <ShieldCheck className="h-4 w-4"/>
-              <span className="text-[9px] font-black uppercase tracking-[.2em]">Administration · WEAVE Integrity Engine</span>
+              <span className="text-[9px] font-black uppercase tracking-[.2em]">Administrations · WEAVE Integrity Engine</span>
             </div>
             <h1 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">Observe the live system. Repair only proven drift.</h1>
             <p className="mt-3 text-sm leading-6 text-slate-400">

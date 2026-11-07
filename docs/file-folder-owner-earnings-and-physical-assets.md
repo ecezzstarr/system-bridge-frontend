@@ -11,7 +11,7 @@ A purchased File Folder is an independently owned operating environment within W
 1. An active Client or independently activated Pro Regional Manager owns a File Number and store.
 2. Owner publishes a real product, digital service or other authorized offer.
 3. Public Customer Door collects an order. Existing Legion Carrier parameters attribute only eligible active employee introductions. Attribution is not a payout.
-4. An actual wallet payment atomically debits the buyer and credits the owner, or Administration verifies real funds received into the WEAVE treasury and settles from an already funded treasury account. Each settlement has a unique receipt.
+4. An actual wallet payment atomically debits the buyer and credits the owner, or Administrations verify real funds received into the WEAVE treasury and settles from an already funded treasury account. Each settlement has a unique receipt.
 5. The Owner Earnings tab reads the settlement table and summarizes credited Flame Coin, paid orders, fulfillment progress and worker attribution. It does not treat pending orders as earnings.
 6. Owner can record incurred operating expenses with category, currency, optional built system and reference. These entries are **owner reports**, not third-party receipts or wallet debits. A unique per-request key prevents retry duplicates.
 7. The dashboard shows a provisional Flame Coin remainder after self-reported Flame Coin costs. Different currencies remain separate; no invented conversion or return on investment.

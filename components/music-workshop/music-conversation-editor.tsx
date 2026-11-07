@@ -56,7 +56,7 @@ function Waveform({samples}:{samples?:number[]}){
 }
 export default function MusicConversationEditor({project,assets,fileNumber,mode='client',onSaved,onAsset,onClose}:Props){
  const mediaEndpoint=mode==='administration'?'/api/admin/music-studio/media':'/api/music-workshop/media'
- const collectionName=mode==='administration'?'WEAVE Administration Sound Library':'Client File Folder'
+ const collectionName=mode==='administration'?'WEAVE Administrations Sound Library':'Client File Folder'
  const [draft,setDraft]=useState(project)
  const [beat,setBeat]=useState(0)
  const [playing,setPlaying]=useState(false)

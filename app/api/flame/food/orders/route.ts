@@ -124,7 +124,7 @@ export async function PATCH(request:NextRequest){
       await client.query('COMMIT')
       return NextResponse.json({success:true,order:{id,status:'accepted'},escrow,
         paymentAccountNumber:FARM_ESCROW_ACCOUNT_NUMBER,
-        message:'Pay the exact quoted total to WEAVE using the unique FARM reference; submit actual payment proof for Administration verification. Do not send money to the farmer.'})
+        message:'Pay the exact quoted total to WEAVE using the unique FARM reference; submit actual payment proof for Administrations verification. Do not send money to the farmer.'})
     }
     if(action==='submit_payment_proof'){
       if(order.status!=='accepted'){
@@ -154,7 +154,7 @@ export async function PATCH(request:NextRequest){
         `,['Farm order '+id+' buyer confirmed receipt. Review and send seller payout less the flat ₦1,000 WEAVE service fee.'])
         await client.query('COMMIT')
         return NextResponse.json({success:true,order:{id,status:'delivered'},escrowStatus:'release_due',
-          message:'Delivery acknowledged. WEAVE Administration must pay the farmer and record the bank payout reference.'})
+          message:'Delivery acknowledged. WEAVE Administrations must pay the farmer and record the bank payout reference.'})
       }
       if(action==='dispute'&&order.status==='dispatched'&&escrow.status==='held'){
         const note=safeText(body.disputeNote,500)
@@ -176,12 +176,12 @@ export async function PATCH(request:NextRequest){
       await client.query('ROLLBACK');return NextResponse.json({error:'Paid or dispatched orders require a refund/dispute review, not cancellation.'},{status:409})
     }
     // A submitted bank proof may represent actual funds: do not allow instant
-    // stock restoration/cancellation until Administration rejects/refunds.
+    // stock restoration/cancellation until Administrations rejects/refunds.
     const {rows:payments}=await client.query(`
       SELECT status FROM weave_food_escrow WHERE order_id=$1::uuid FOR UPDATE
     `,[id])
     if(payments.length && payments[0].status!=='awaiting_payment'){
-      await client.query('ROLLBACK');return NextResponse.json({error:'Payment proof is under review. Contact WEAVE Administration before cancelling.'},{status:409})
+      await client.query('ROLLBACK');return NextResponse.json({error:'Payment proof is under review. Contact WEAVE Administrations before cancelling.'},{status:409})
     }
     await client.query(`UPDATE weave_food_direct_orders SET status='cancelled',updated_at=NOW() WHERE id=$1::uuid`,[id])
     await client.query(`

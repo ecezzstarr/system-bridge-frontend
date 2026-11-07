@@ -18,7 +18,7 @@ assert.ok(publicApi.includes('submitFileFolderPurchase'),'Public route reuses th
 assert.ok(publicApi.includes('public_file_folder_purchase_access')&&publicApi.includes("createHash('sha256')"),'Public pending purchases use a private hashed return token')
 assert.ok(publicApi.includes('registerUrl')&&publicApi.includes('/client/register?fileNumber='),'Approved public purchases release the issued File Number into Client registration')
 assert.ok(bridgePurchase.includes('file_folder_purchases'),'Bridger and public purchases share file_folder_purchases')
-assert.ok(verify.includes('const bridgerId = purchase.bridger_id ? String(purchase.bridger_id) : null'),'Administration supports direct purchases without requiring a Bridger')
+assert.ok(verify.includes('const bridgerId = purchase.bridger_id ? String(purchase.bridger_id) : null'),'Administrations supports direct purchases without requiring a Bridger')
 assert.ok(register.includes('UPDATE client_file_folders')&&register.includes("status = 'active'")&&register.includes("router")===false,'Client registration claims and activates the pre-provisioned File Folder on the server')
 
 console.log('public File Folder homepage crossing regression checks passed')

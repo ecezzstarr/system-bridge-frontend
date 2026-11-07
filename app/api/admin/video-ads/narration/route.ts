@@ -23,7 +23,7 @@ function voiceSettings() {
 export async function GET(request: NextRequest) {
   const user = await getAuthUser(request)
   if (!user) return NextResponse.json({ success:false, error:'Unauthorized' },{status:401})
-  if (user.role !== 'admin') return NextResponse.json({ success:false, error:'Administration access required' },{status:403})
+  if (user.role !== 'admin') return NextResponse.json({ success:false, error:'Administrations access required' },{status:403})
   const voice = voiceSettings()
   return NextResponse.json({ success:true, available:voice.enabled, engine:'WEAVE Local Voice', message:voice.enabled?'Local voice engine configured':'Local voice engine not yet configured. Record or upload narration in the Studio.' })
 }
@@ -46,7 +46,7 @@ async function synthesize(executable: string, model: string, script: string, des
 export async function POST(request: NextRequest) {
   const user = await getAuthUser(request)
   if (!user) return NextResponse.json({ success:false, error:'Unauthorized' },{status:401})
-  if (user.role !== 'admin') return NextResponse.json({ success:false, error:'Administration access required' },{status:403})
+  if (user.role !== 'admin') return NextResponse.json({ success:false, error:'Administrations access required' },{status:403})
   const voice = voiceSettings()
   if (!voice.enabled) return NextResponse.json({ success:false, error:'WEAVE Local Voice is not configured on this server. Record or upload a narration track instead.' },{status:503})
   let folder=''

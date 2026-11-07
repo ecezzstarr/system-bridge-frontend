@@ -77,7 +77,7 @@ export async function POST(request:NextRequest) {
         RETURNING id,status
       `
       if (submitted) {
-        // Bring the pending ticket to Administration's notification inbox.
+        // Bring the pending ticket to Administrations' notification inbox.
         try {
           await sql`
             INSERT INTO notifications(user_id,type,title,content,from_user_name,link)

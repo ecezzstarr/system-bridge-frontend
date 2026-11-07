@@ -356,7 +356,7 @@ export default function VisualSystemsWorkshop(){
 
   return <WeaveSystemRoom
     roomKey="administration-visual-systems"
-    eyebrow="Administration · Runtime Design Authority"
+    eyebrow="Administrations · Runtime Design Authority"
     title="Visual Systems Workshop · Interaction in Motion"
     detail="Operate WEAVE as motion itself. Control live Flame Field, Burning River, route current, system emergence and registered artifacts from one runtime authority; preview, publish and roll back without a Cloud Run deployment."
     tone="violet"

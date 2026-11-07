@@ -30,7 +30,7 @@ function normalizeCandidateDomain(value: unknown) {
 export async function GET(request: NextRequest) {
   const user = await getAuthUser(request)
   if (!user || user.role !== 'admin') {
-    return NextResponse.json({ error: 'Administration authentication required' }, { status: 401 })
+    return NextResponse.json({ error: 'Administrations authentication required' }, { status: 401 })
   }
 
   try {
@@ -101,7 +101,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const user = await getAuthUser(request)
   if (!user || user.role !== 'admin') {
-    return NextResponse.json({ error: 'Administration authentication required' }, { status: 401 })
+    return NextResponse.json({ error: 'Administrations authentication required' }, { status: 401 })
   }
 
   let body: any

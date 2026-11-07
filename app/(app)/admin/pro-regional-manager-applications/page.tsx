@@ -65,10 +65,10 @@ export default function AdminProRegionalManagerApplications(){
   }catch(e){setError(e instanceof Error?e.message:'Unable to prepare Pro File Number')}
   finally{setWorking('')}
  }
- if(!isInitialized)return <main className="p-6">Opening Administration…</main>
- if(user?.role!=='admin')return <main className="p-6">Administration permission required.</main>
+ if(!isInitialized)return <main className="p-6">Opening Administrations…</main>
+ if(user?.role!=='admin')return <main className="p-6">Administrations permission required.</main>
  return <main className="mx-auto max-w-6xl space-y-6 p-5 text-white" data-admin-pro-regional-manager-applications="true">
-  <Link href="/admin/control-center" className="text-sm text-sky-200 underline">Administration Control Center</Link>
+  <Link href="/admin/control-center" className="text-sm text-sky-200 underline">Administrations Control Center</Link>
   <Link href="/admin/pro-regional-manager-activations" className="ml-4 text-sm text-sky-200 underline">Pro activation Forensics</Link>
   <header className="space-y-2">
    <p className="text-xs uppercase tracking-widest text-sky-200">A Time · Pro company appointments</p>
@@ -109,7 +109,7 @@ export default function AdminProRegionalManagerApplications(){
       className="rounded-lg border border-sky-300/30 px-4 py-2 text-xs font-semibold text-sky-100 disabled:opacity-40">Confirm or repair Pro File Number reservation</button>
     </div>}
     {a.status==='pending'&&<>
-     <label className="block text-sm">Administration review notes
+     <label className="block text-sm">Administrations review notes
       <textarea rows={2} maxLength={2000} value={notes[a.user_id]||''}
        onChange={e=>setNotes(current=>({...current,[a.user_id]:e.target.value}))}
        className="mt-2 w-full rounded-lg border border-white/15 bg-slate-900 p-3"/></label>

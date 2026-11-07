@@ -38,7 +38,7 @@ export async function ensureCompanyLoopsSchema(sql = getDb()) {
   `
 
   // Official Company Loop 2 is independent of the preserved Burning River row.
-  // Existing Administration-authored Loop 2 records are never overwritten.
+  // Existing Administrations-authored Loop 2 records are never overwritten.
   await sql`
     INSERT INTO company_loops (
       loop_number, title, purpose, stage, position, functions,
@@ -50,7 +50,7 @@ export async function ensureCompanyLoopsSchema(sql = getDb()) {
       'Company Loop 2 — Country Event: Country Formation operates January 1–11, 2027, with WEAVE taking on a green–white–green national environment.',
       'Scheduled',
       'all',
-      'Agents operate Stability; Bridgers carry Hope; Clients build and operate their File Folder worlds; Administration organizes and verifies movement.',
+      'Agents operate Stability; Bridgers carry Hope; Clients build and operate their File Folder worlds; Administrations organize and verifies movement.',
       'Each position follows its authorized operating systems, records real work and checks the status of approvals, orders and builds.',
       'The daily scroll explains the current place but does not confirm employment, payments, orders or completed systems.',
       ARRAY['client','agent','bridger','admin']::text[],
@@ -59,7 +59,7 @@ export async function ensureCompanyLoopsSchema(sql = getDb()) {
     WHERE NOT EXISTS (SELECT 1 FROM company_loops WHERE loop_number = 2)
   `
 
-  // Reconcile only the original generated description, never an edited Administration record.
+  // Reconcile only the original generated description, never an edited Administrations record.
   // Renaming the event preserves its scheduled dates, existing records and authored department scrolls.
   await sql`
     UPDATE company_loops
@@ -94,7 +94,7 @@ export async function ensureCompanyLoopsSchema(sql = getDb()) {
       NOW()
     WHERE NOT EXISTS (SELECT 1 FROM company_loops WHERE loop_number = 3)
   `
-  // Rename only known generated titles; do not replace Administration-authored
+  // Rename only known generated titles; do not replace Administrations-authored
   // individual-event purposes or agreements with boilerplate.
   await sql`
     UPDATE company_loops

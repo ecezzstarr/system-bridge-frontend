@@ -269,8 +269,8 @@ async function seedFileFolderWorld(sql: any) {
     ['market_network_kit', 'Marketplace Network Kit', 'business', 'Components for multi-offer marketplace movement, sellers, buyers, orders and records.', 1200],
     ['creator_booth_kit', 'Creator Booth Kit', 'streaming', 'Core room, interface and publishing components for the first Client-owned media production space.', 180],
     ['broadcast_studio_kit', 'Broadcast Studio Kit', 'streaming', 'Studio control, program formation and broadcast workflow components for a Client media operation.', 520],
-    ['animation_production_kit', 'Animation Production Kit', 'streaming', 'The 3D object timeline, textured materials and camera recording workstation for Client-owned film creation. Administration must set the kit price before publication.', 0, false],
-    ['music_studio_kit', 'Music Studio Kit', 'streaming', 'Real multitrack audio composition: words, recorded sounds, beat-locked Self and Environment response loops, and sound export. Administration sets the kit price before publication.', 0, false],
+    ['animation_production_kit', 'Animation Production Kit', 'streaming', 'The 3D object timeline, textured materials and camera recording workstation for Client-owned film creation. Administrations must set the kit price before publication.', 0, false],
+    ['music_studio_kit', 'Music Studio Kit', 'streaming', 'Real multitrack audio composition: words, recorded sounds, beat-locked Self and Environment response loops, and sound export. Administrations set the kit price before publication.', 0, false],
     ['streaming_gate_kit', 'Streaming Open Gate Kit', 'streaming', 'Public broadcast entrance components that open the Client channel to people outside WEAVE.', 950],
     ['media_network_kit', 'Media Network Kit', 'streaming', 'High-capacity components for a larger programming, distribution and audience network.', 1900],
     ['route_station_kit', 'Business Route Station Kit', 'network', 'Infrastructure for connecting completed Client systems and recording real movement between them.', 650],
@@ -391,7 +391,7 @@ async function seedFileFolderWorld(sql: any) {
     ['music_studio', 'Music Studio', 'streaming_district', 'music_studio', 'A real music production environment where recorded voices, lyrics, synthesized instruments and environmental sounds form synchronized repeating conversations, with Client-owned projects and WAV export.', 72, 'music_studio_kit', 1, false],
     ['streaming_gate', 'Streaming Open Gate', 'streaming_district', 'streaming_gate', 'A five-day public broadcast gate that allows people outside WEAVE to visit the Client channel and enter a live source when the Client opens it.', 120, 'streaming_gate_kit', 1],
     ['media_network', 'Media Network', 'streaming_district', 'media_network', 'A ten-day expansion from one public Streaming Gate into a larger programming and media-distribution network.', 240, 'media_network_kit', 1],
-    ['enterprise_door', 'Enterprise Door', 'enterprise_district', 'enterprise_door', 'A seven-day public enterprise entrance unlocked only after Administration approves Lord/Lady elevation and the Client has formed a Marketplace Network.', 168, 'enterprise_door_kit', 1],
+    ['enterprise_door', 'Enterprise Door', 'enterprise_district', 'enterprise_door', 'A seven-day public enterprise entrance unlocked only after Administrations approve Lord/Lady elevation and the Client has formed a Marketplace Network.', 168, 'enterprise_door_kit', 1],
     ['enterprise_hall', 'Enterprise Hall', 'enterprise_district', 'enterprise_hall', 'A fourteen-day enterprise headquarters build that expands the Enterprise Door into a public and internal operating hall.', 336, 'enterprise_hall_kit', 1],
     ['legion_quarters', 'Legion Quarters', 'enterprise_district', 'legion_quarters', 'A seven-day working structure that opens real Legion operating capacity for an approved Lord/Lady enterprise.', 168, 'legion_quarters_kit', 1],
     ['operations_command', 'Operations Command', 'enterprise_district', 'operations_command', 'A ten-day enterprise command structure for recurring operations, approvals, coordinated systems and participant movement.', 240, 'operations_command_kit', 1],
@@ -415,7 +415,7 @@ async function seedFileFolderWorld(sql: any) {
   }
 
 
-  // Batch the sector catalog into three idempotent inserts. Administration may
+  // Batch the sector catalog into three idempotent inserts. Administrations may
   // adjust prices, availability and build durations without seed overwrite.
   await sql`
     INSERT INTO weave_file_folder_items(item_key,name,category,description,price_flame_coin,published)
@@ -442,7 +442,7 @@ async function seedFileFolderWorld(sql: any) {
   `
 
   // Major systems keep long construction horizons. These upgrades only touch the former shipped defaults,
-  // so an Administration-customized duration is preserved.
+  // so an Administrations-customized duration is preserved.
   await sql`UPDATE weave_file_folder_blueprints SET build_hours=24,updated_at=NOW() WHERE blueprint_key='customer_door' AND build_hours=6`
   await sql`UPDATE weave_file_folder_blueprints SET build_hours=72,description='A constructed customer-facing store building inside the public WEAVE Client Market, with offers, order intake, patronage and fulfillment movement.',updated_at=NOW() WHERE blueprint_key='commerce_storefront' AND build_hours=24`
   await sql`UPDATE weave_file_folder_blueprints SET build_hours=168,description='A seven-day base construction that expands the Client storefront into a larger public Market Hall with multi-offer commercial movement, buyers, orders and records.',updated_at=NOW() WHERE blueprint_key='marketplace_network' AND build_hours=120`

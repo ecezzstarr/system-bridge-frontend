@@ -103,7 +103,7 @@ export function AgentFarmCarrierPublic({referralCode}:{referralCode:string}){
       await Promise.all([loadOrder(orderKey),loadOffers()])
       setMessage(action==='accept_quote'
         ? 'Quote accepted. Pay the exact amount to WEAVE and submit your actual bank transfer reference below. Farmer dispatch is blocked until funds are confirmed.'
-        :action==='submit_payment_proof'?'Bank proof received for WEAVE Administration reconciliation. Seller cannot dispatch yet.'
+        :action==='submit_payment_proof'?'Bank proof received for WEAVE Administrations reconciliation. Seller cannot dispatch yet.'
         :action==='dispute'?'Your concern has been recorded and seller payout is blocked.'
         :action==='confirm_delivery'?'Your receipt is recorded. WEAVE will pay the farmer the agreed total less a single ₦1,000 seller service fee.':'Your reserved stock was returned to the farm.')
     }catch(cause){setError(cause instanceof Error?cause.message:'Unable to update your order')}
@@ -214,7 +214,7 @@ export function AgentFarmCarrierPublic({referralCode}:{referralCode:string}){
           {order.status==='accepted'&&<div className="mt-4 border border-emerald-300/25 p-4" data-guest-farm-weave-payment>
             <p className="text-xs font-black text-emerald-200">WEAVE payment holding · flat ₦1,000 fee paid by farmer</p>
             <p className="mt-2 text-sm">Pay <strong>{money(order.buyer_total_ngn)}</strong> to WEAVE OPay <strong>{order.paymentAccountNumber||'Refer to the verified WEAVE order'}</strong>, reference <strong>{order.escrow_reference}</strong>.</p>
-            <p className="mt-2 text-xs text-stone-400">Farmer dispatch begins only when Administration verifies actual receipt of funds.</p>
+            <p className="mt-2 text-xs text-stone-400">Farmer dispatch begins only when Administrations verify actual receipt of funds.</p>
             {order.escrow_status==='awaiting_payment'&&<div className="mt-3 flex flex-wrap gap-2"><input aria-label="Actual bank transfer reference" value={paymentReference} onChange={e=>setPaymentReference(e.target.value)} placeholder="Your OPay/bank transfer reference" className="min-w-48 flex-1 border border-white/10 bg-[#17261b] p-3 text-sm"/><button type="button" disabled={busy||paymentReference.trim().length<8} onClick={()=>void orderAction('submit_payment_proof')} className="bg-emerald-300 px-4 py-2 text-xs font-black text-black">Submit bank proof</button></div>}
             {order.escrow_status==='proof_submitted'&&<p className="mt-2 text-xs text-amber-200">Payment confirmation pending; no seller dispatch until verified.</p>}
           </div>}

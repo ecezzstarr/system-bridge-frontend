@@ -13,7 +13,7 @@ import {
 export async function GET(request: NextRequest) {
   const user = await getAuthUser(request)
   if (!user || user.role !== 'admin') {
-    return NextResponse.json({ success: false, error: 'Administration required' }, { status: 403 })
+    return NextResponse.json({ success: false, error: 'Administrations required' }, { status: 403 })
   }
 
   try {
@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   const user = await getAuthUser(request)
   if (!user || user.role !== 'admin') {
-    return NextResponse.json({ success: false, error: 'Administration required' }, { status: 403 })
+    return NextResponse.json({ success: false, error: 'Administrations required' }, { status: 403 })
   }
 
   try {
@@ -114,7 +114,7 @@ export async function PATCH(request: NextRequest) {
         success: false,
         error: expectedNext
           ? `Next company stage must be ${expectedNext}`
-          : 'This order has completed the Administration fulfillment stages',
+          : 'This order has completed the Administrations fulfillment stages',
       }, { status: 409 })
     }
 

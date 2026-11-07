@@ -79,19 +79,19 @@ const visions:Record<string,Visual>={
     pictures:[RIVER],
   },
   '/admin/cakes':{
-    eyebrow:'Administration · Daisy Pastries',
+    eyebrow:'Administrations · Daisy Pastries',
     title:'Cakes follow a real preparation flow',
     meaning:'Track the existing pastry enquiries, price decisions and confirmed orders.',
     pictures:[DAISY],
   },
   '/admin/agility':{
-    eyebrow:'Administration · Agility',
+    eyebrow:'Administrations · Agility',
     title:'Food orders lead to fulfillment',
     meaning:'Check the real product against verified preparation and stock records.',
     pictures:[AGILITY],
   },
   '/admin/electrolyte':{
-    eyebrow:'Administration · Electrolyte',
+    eyebrow:'Administrations · Electrolyte',
     title:'A real bowl, a recorded order',
     meaning:'Keep the product image, actual stock, payments and delivery evidence distinct.',
     pictures:[ELECTROLYTE],
@@ -111,7 +111,7 @@ const visions:Record<string,Visual>={
   '/weave/lifestyles/mandate':{
     eyebrow:'WEAVE Lifestyle · Company Guidance',
     title:'Service has responsibility',
-    meaning:'Mandate, Forensics and Attorney support each require Administration approval and a defined remit.',
+    meaning:'Mandate, Forensics and Attorney support each require Administrations approval and a defined remit.',
     pictures:[BRIDGE],
   },
   '/weave/lifestyles/legion':{
@@ -171,7 +171,7 @@ const visions:Record<string,Visual>={
   '/agent/channels':{
     eyebrow:'Agent · Department channels',
     title:'A channel is a responsibility',
-    meaning:'Apply through Administration for authorized company duties instead of treating every channel as open access.',
+    meaning:'Apply through Administrations for authorized company duties instead of treating every channel as open access.',
     pictures:[BRIDGE],
   },
   '/bridger/bridge-ai':{
@@ -207,7 +207,7 @@ const visions:Record<string,Visual>={
   '/roles':{
     eyebrow:'WEAVE · Position and identity',
     title:'One institution, distinct responsibilities',
-    meaning:'Your account identity stays yours while Administration, Agent, Bridger and Client positions perform different work.',
+    meaning:'Your account identity stays yours while Administrations, Agent, Bridger and Client positions perform different work.',
     pictures:[BRIDGE],
   },
   '/echo':{
@@ -217,37 +217,37 @@ const visions:Record<string,Visual>={
     pictures:[RIVER],
   },
   '/admin/flame-event':{
-    eyebrow:'Administration · Company Loop 1',
+    eyebrow:'Administrations · Company Loop 1',
     title:'Burning River is the event ground',
-    meaning:'Administration controls the event while real Client, Agent and Bridger activities continue.',
+    meaning:'Administrations control the event while real Client, Agent and Bridger activities continue.',
     pictures:[RIVER],
   },
   '/admin/visual-systems':{
-    eyebrow:'Administration · Visual systems',
+    eyebrow:'Administrations · Visual systems',
     title:'The Weave environment is living',
     meaning:'Visual controls belong to the actual system and its role-aware entrances, not detached decoration.',
     pictures:[RIVER,BRIDGE],
   },
   '/admin/food-bridge':{
-    eyebrow:'Administration · Food Bridge',
+    eyebrow:'Administrations · Food Bridge',
     title:'Food flows through verified work',
     meaning:'Real products, preparation, Agent movement and delivery records form the company food current.',
     pictures:[AGILITY,ELECTROLYTE,EMBER],
   },
   '/admin/food-escrow':{
-    eyebrow:'Administration · Food forensics',
+    eyebrow:'Administrations · Food forensics',
     title:'A completed order has evidence',
     meaning:'Follow receipts and verified food transactions without confusing a published image with actual delivery.',
     pictures:[FAMILY],
   },
   '/admin/distribution-studio':{
-    eyebrow:'Administration · Distribution',
+    eyebrow:'Administrations · Distribution',
     title:'Product supply is organized here',
     meaning:'Company stock, Agents, outlets and fulfilled movements meet in the distribution workflow.',
     pictures:[AGILITY,ELECTROLYTE,EMBER],
   },
   '/admin/agent-channels':{
-    eyebrow:'Administration · Company positions',
+    eyebrow:'Administrations · Company positions',
     title:'Authorize work by responsibility',
     meaning:'Channel appointments connect people to defined activities inside the institution.',
     pictures:[BRIDGE],
@@ -258,7 +258,7 @@ const visions:Record<string,Visual>={
 // Additional WEAVE operating stations. Existing media only; no fabricated state or customers.
 const additionalVisions:Record<string,Visual>={
   "/admin/access-recovery": {
-    "eyebrow": "Administration · Identity",
+    "eyebrow": "Administrations · Identity",
     "title": "Access recovery protects ownership",
     "meaning": "Review verified account recovery without exposing passwords or private identities.",
     "pictures": [
@@ -269,7 +269,7 @@ const additionalVisions:Record<string,Visual>={
     ]
   },
   "/admin/ad-workshop": {
-    "eyebrow": "Administration · Public outreach",
+    "eyebrow": "Administrations · Public outreach",
     "title": "Publish the company message",
     "meaning": "Manage real WEAVE campaigns and their approved destinations.",
     "pictures": [
@@ -280,7 +280,7 @@ const additionalVisions:Record<string,Visual>={
     ]
   },
   "/admin/bridge-ai": {
-    "eyebrow": "Administration · Bridge AI",
+    "eyebrow": "Administrations · Bridge AI",
     "title": "Guide the crossing process",
     "meaning": "Review the actual Bridge AI pathways used to help Prospects become Clients.",
     "pictures": [
@@ -291,7 +291,7 @@ const additionalVisions:Record<string,Visual>={
     ]
   },
   "/admin/bridge-templates": {
-    "eyebrow": "Administration · Bridge Templates",
+    "eyebrow": "Administrations · Bridge Templates",
     "title": "One bridge, consistent guidance",
     "meaning": "Maintain approved crossing templates for Bridgers and the people they guide.",
     "pictures": [
@@ -302,7 +302,7 @@ const additionalVisions:Record<string,Visual>={
     ]
   },
   "/admin/campaign-flame": {
-    "eyebrow": "Administration · Flame campaign",
+    "eyebrow": "Administrations · Flame campaign",
     "title": "The Flame Event is in motion",
     "meaning": "Control communications that point people toward real Company Loop 1 activities.",
     "pictures": [
@@ -313,7 +313,7 @@ const additionalVisions:Record<string,Visual>={
     ]
   },
   "/admin/client-build-catalog": {
-    "eyebrow": "Administration · Client construction",
+    "eyebrow": "Administrations · Client construction",
     "title": "Tools for Client-made systems",
     "meaning": "Organize actual blueprints and building components available in File Folders.",
     "pictures": [
@@ -324,7 +324,7 @@ const additionalVisions:Record<string,Visual>={
     ]
   },
   "/admin/client-deposits": {
-    "eyebrow": "Administration · Client payments",
+    "eyebrow": "Administrations · Client payments",
     "title": "Verification before wallet credit",
     "meaning": "Inspect real deposit evidence before authorizing a Client account update.",
     "pictures": [
@@ -335,7 +335,7 @@ const additionalVisions:Record<string,Visual>={
     ]
   },
   "/admin/client-messages": {
-    "eyebrow": "Administration · Client communication",
+    "eyebrow": "Administrations · Client communication",
     "title": "Respond where the Client is",
     "meaning": "Company replies remain linked to the Client relationship and the actual request.",
     "pictures": [
@@ -346,7 +346,7 @@ const additionalVisions:Record<string,Visual>={
     ]
   },
   "/admin/client-vault": {
-    "eyebrow": "Administration · Client vaults",
+    "eyebrow": "Administrations · Client vaults",
     "title": "Private balances have records",
     "meaning": "Client funds and transactions are controlled by verified records, not estimates.",
     "pictures": [
@@ -357,7 +357,7 @@ const additionalVisions:Record<string,Visual>={
     ]
   },
   "/admin/company-guidance": {
-    "eyebrow": "Administration · Company Guidance",
+    "eyebrow": "Administrations · Company Guidance",
     "title": "One institution, accountable answers",
     "meaning": "Review requests and responses routed to authorized Weave staff.",
     "pictures": [
@@ -368,7 +368,7 @@ const additionalVisions:Record<string,Visual>={
     ]
   },
   "/admin/customer-door-settlements": {
-    "eyebrow": "Administration · Customer payments",
+    "eyebrow": "Administrations · Customer payments",
     "title": "Products connect to settlement",
     "meaning": "Audit real Customer Door payments and fulfillment before recording completion.",
     "pictures": [
@@ -379,7 +379,7 @@ const additionalVisions:Record<string,Visual>={
     ]
   },
   "/admin/departmental-registration": {
-    "eyebrow": "Administration · Work positions",
+    "eyebrow": "Administrations · Work positions",
     "title": "Assign responsibility carefully",
     "meaning": "Review applications for defined company duties and access.",
     "pictures": [
@@ -390,7 +390,7 @@ const additionalVisions:Record<string,Visual>={
     ]
   },
   "/admin/deployment-records": {
-    "eyebrow": "Administration · System releases",
+    "eyebrow": "Administrations · System releases",
     "title": "Changes leave a release record",
     "meaning": "Record actual technical deployments and what became available in WEAVE.",
     "pictures": [
@@ -401,7 +401,7 @@ const additionalVisions:Record<string,Visual>={
     ]
   },
   "/admin/dev-workshop": {
-    "eyebrow": "Administration · Development",
+    "eyebrow": "Administrations · Development",
     "title": "Build the system before release",
     "meaning": "Use the existing Weave workshop to organize technical changes.",
     "pictures": [
@@ -412,7 +412,7 @@ const additionalVisions:Record<string,Visual>={
     ]
   },
   "/admin/development-agents": {
-    "eyebrow": "Administration · Development agents",
+    "eyebrow": "Administrations · Development agents",
     "title": "Assign builds to defined work",
     "meaning": "Development assignments connect requested improvements with accountable implementation.",
     "pictures": [
@@ -423,7 +423,7 @@ const additionalVisions:Record<string,Visual>={
     ]
   },
   "/admin/dj-workshop": {
-    "eyebrow": "Administration · Sound",
+    "eyebrow": "Administrations · Sound",
     "title": "Broadcast belongs to the world",
     "meaning": "Control the sound of shared Flame Event experiences without interrupting work.",
     "pictures": [
@@ -434,7 +434,7 @@ const additionalVisions:Record<string,Visual>={
     ]
   },
   "/admin/email-outreach": {
-    "eyebrow": "Administration · Prospect communication",
+    "eyebrow": "Administrations · Prospect communication",
     "title": "Send only accountable outreach",
     "meaning": "Outreach records show actual sending, response and the next permitted action.",
     "pictures": [
@@ -445,7 +445,7 @@ const additionalVisions:Record<string,Visual>={
     ]
   },
   "/admin/ember": {
-    "eyebrow": "Administration · Food fulfillment",
+    "eyebrow": "Administrations · Food fulfillment",
     "title": "Ember is a real food product",
     "meaning": "Review evening food stock and orders through the existing operations flow.",
     "pictures": [
@@ -456,7 +456,7 @@ const additionalVisions:Record<string,Visual>={
     ]
   },
   "/admin/enterprise-dream": {
-    "eyebrow": "Administration · Client enterprise",
+    "eyebrow": "Administrations · Client enterprise",
     "title": "Enterprise grows from real systems",
     "meaning": "Review completed Client capabilities before authorizing enterprise progression.",
     "pictures": [
@@ -467,7 +467,7 @@ const additionalVisions:Record<string,Visual>={
     ]
   },
   "/admin/enterprise-systems": {
-    "eyebrow": "Administration · Client-built systems",
+    "eyebrow": "Administrations · Client-built systems",
     "title": "Building becomes capability",
     "meaning": "Review operating systems clients can construct and use.",
     "pictures": [
@@ -478,7 +478,7 @@ const additionalVisions:Record<string,Visual>={
     ]
   },
   "/admin/environment-organizer": {
-    "eyebrow": "Administration · Weave environment",
+    "eyebrow": "Administrations · Weave environment",
     "title": "One environment, organized districts",
     "meaning": "Organize where real functions appear without replacing their controllers.",
     "pictures": [
@@ -489,7 +489,7 @@ const additionalVisions:Record<string,Visual>={
     ]
   },
   "/admin/file-folder-sales-manager": {
-    "eyebrow": "Administration · File Folder distribution",
+    "eyebrow": "Administrations · File Folder distribution",
     "title": "A purchase opens Client ownership",
     "meaning": "Review recognized File Folder movement and authorized seller responsibilities.",
     "pictures": [
@@ -500,7 +500,7 @@ const additionalVisions:Record<string,Visual>={
     ]
   },
   "/admin/food-preparation-manager": {
-    "eyebrow": "Administration · Preparation oversight",
+    "eyebrow": "Administrations · Preparation oversight",
     "title": "Orders reach the preparation team",
     "meaning": "Review preparation work, staffing and recorded dispatches.",
     "pictures": [
@@ -519,7 +519,7 @@ const additionalVisions:Record<string,Visual>={
     ]
   },
   "/admin/guidance-staff": {
-    "eyebrow": "Administration · Guidance staffing",
+    "eyebrow": "Administrations · Guidance staffing",
     "title": "Assign the person who can respond",
     "meaning": "Manage who is authorized to give company support.",
     "pictures": [
@@ -530,7 +530,7 @@ const additionalVisions:Record<string,Visual>={
     ]
   },
   "/admin/infrastructure": {
-    "eyebrow": "Administration · Stability",
+    "eyebrow": "Administrations · Stability",
     "title": "The Weave system must remain available",
     "meaning": "Monitor deployed services and maintenance while protecting ongoing work.",
     "pictures": [
@@ -541,7 +541,7 @@ const additionalVisions:Record<string,Visual>={
     ]
   },
   "/admin/legion-releases": {
-    "eyebrow": "Administration · Legion employment",
+    "eyebrow": "Administrations · Legion employment",
     "title": "Employment has a recorded ending",
     "meaning": "Review approved Legion releases and restored position access.",
     "pictures": [
@@ -552,7 +552,7 @@ const additionalVisions:Record<string,Visual>={
     ]
   },
   "/admin/loop-workshop": {
-    "eyebrow": "Administration · Company Loops",
+    "eyebrow": "Administrations · Company Loops",
     "title": "Formation precedes publication",
     "meaning": "Prepare and release the company loop that organizes real participation.",
     "pictures": [
@@ -563,7 +563,7 @@ const additionalVisions:Record<string,Visual>={
     ]
   },
   "/admin/orders": {
-    "eyebrow": "Administration · Order inbox",
+    "eyebrow": "Administrations · Order inbox",
     "title": "Every order deserves attention",
     "meaning": "Follow actual Agent, Bridger and Client order and payment alerts.",
     "pictures": [
@@ -582,7 +582,7 @@ const additionalVisions:Record<string,Visual>={
     ]
   },
   "/admin/origin-systems": {
-    "eyebrow": "Administration · Weave foundation",
+    "eyebrow": "Administrations · Weave foundation",
     "title": "One source, many functions",
     "meaning": "See how System Switch, Client activity and company operations fit together.",
     "pictures": [
@@ -593,7 +593,7 @@ const additionalVisions:Record<string,Visual>={
     ]
   },
   "/admin/outreach": {
-    "eyebrow": "Administration · Outreach",
+    "eyebrow": "Administrations · Outreach",
     "title": "Move the message to people",
     "meaning": "Company outreach follows approved destinations and the resulting response.",
     "pictures": [
@@ -604,7 +604,7 @@ const additionalVisions:Record<string,Visual>={
     ]
   },
   "/admin/payments": {
-    "eyebrow": "Administration · Payment records",
+    "eyebrow": "Administrations · Payment records",
     "title": "Value is recorded and verified",
     "meaning": "Keep payments linked to valid transaction evidence and approvals.",
     "pictures": [
@@ -615,7 +615,7 @@ const additionalVisions:Record<string,Visual>={
     ]
   },
   "/admin/prospect-engine": {
-    "eyebrow": "Administration · Prospects",
+    "eyebrow": "Administrations · Prospects",
     "title": "A possible relationship is not yet a Client",
     "meaning": "Manage actual prospect distribution and resulting responses.",
     "pictures": [
@@ -626,7 +626,7 @@ const additionalVisions:Record<string,Visual>={
     ]
   },
   "/admin/subscriptions": {
-    "eyebrow": "Administration · Continuance",
+    "eyebrow": "Administrations · Continuance",
     "title": "Access follows its real status",
     "meaning": "Track subscription activity and permitted account access.",
     "pictures": [
@@ -637,7 +637,7 @@ const additionalVisions:Record<string,Visual>={
     ]
   },
   "/admin/system-store": {
-    "eyebrow": "Administration · Store control",
+    "eyebrow": "Administrations · Store control",
     "title": "A system purchase must be fulfilled",
     "meaning": "Review verified store orders and published system availability.",
     "pictures": [
@@ -648,7 +648,7 @@ const additionalVisions:Record<string,Visual>={
     ]
   },
   "/admin/video-ad-workshop": {
-    "eyebrow": "Administration · Creative work",
+    "eyebrow": "Administrations · Creative work",
     "title": "Visuals accompany real businesses",
     "meaning": "Prepare customer video advertisements without inventing product claims.",
     "pictures": [
@@ -659,7 +659,7 @@ const additionalVisions:Record<string,Visual>={
     ]
   },
   "/admin/weave-flame-coin-sales": {
-    "eyebrow": "Administration · Flame Coin sales",
+    "eyebrow": "Administrations · Flame Coin sales",
     "title": "Payment and credit need evidence",
     "meaning": "Verify the real Flame Coin purchase flow before recording a balance.",
     "pictures": [
@@ -670,7 +670,7 @@ const additionalVisions:Record<string,Visual>={
     ]
   },
   "/admin/weave-trx-sales": {
-    "eyebrow": "Administration · Exchange desk",
+    "eyebrow": "Administrations · Exchange desk",
     "title": "Purchases require clear settlement",
     "meaning": "Record supported payment evidence before releasing digital value.",
     "pictures": [
@@ -681,7 +681,7 @@ const additionalVisions:Record<string,Visual>={
     ]
   },
   "/admin/workshop": {
-    "eyebrow": "Administration · Workbench",
+    "eyebrow": "Administrations · Workbench",
     "title": "Organize the work of WEAVE",
     "meaning": "Use the institution's existing workshops for real operating changes.",
     "pictures": [

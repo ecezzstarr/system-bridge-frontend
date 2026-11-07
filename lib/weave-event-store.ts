@@ -39,7 +39,7 @@ async function ensureFlameEventCompanyLoop() {
         'The opening of WEAVE to the world through real participation in one shared event ground.',
         'Preparing',
         'all',
-        'Interaction in Motion across Client, Bridger, Agent and Administration positions.',
+        'Interaction in Motion across Client, Bridger, Agent and Administrations positions.',
         'Each position participates according to its function while the Client remains the player.',
         'Flame Event is Company Loop 1. It is not a separate loop or a separate event system.',
         ARRAY['client','bridger','agent','admin']::text[],

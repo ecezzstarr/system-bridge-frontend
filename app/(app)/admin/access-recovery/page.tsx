@@ -135,7 +135,7 @@ export default function AdminAccessRecoveryPage(){
       <header className="border-b border-white/10 pb-6">
         <div className="flex items-center gap-2 text-cyan-300">
           <ShieldCheck className="h-4 w-4"/>
-          <span className="text-[9px] font-black uppercase tracking-[.2em]">Administration · Access Recovery</span>
+          <span className="text-[9px] font-black uppercase tracking-[.2em]">Administrations · Access Recovery</span>
         </div>
         <h1 className="mt-3 text-3xl font-black">Access Recovery Desk</h1>
         <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">
@@ -177,7 +177,7 @@ export default function AdminAccessRecoveryPage(){
             <Copy className="h-3.5 w-3.5"/>Copy code
           </button>
         </div>
-        <p className="mt-5 text-xs leading-5 text-slate-400">Give this code only after identity verification. The user opens <b className="text-white">Forgot password → Use Administration recovery code</b>, enters their registered email and this code, then chooses a new password. Existing sessions close when the reset succeeds.</p>
+        <p className="mt-5 text-xs leading-5 text-slate-400">Give this code only after identity verification. The user opens <b className="text-white">Forgot password → Use Administrations recovery code</b>, enters their registered email and this code, then chooses a new password. Existing sessions close when the reset succeeds.</p>
       </section>}
 
       <section className="mt-8 grid gap-6 lg:grid-cols-[1fr_.8fr]">
@@ -198,7 +198,7 @@ export default function AdminAccessRecoveryPage(){
               <div>
                 <p className="text-sm font-black">{user.name||user.username||'WEAVE user'}</p>
                 <p className="mt-1 text-[10px] text-slate-400">{user.email} · {user.role}{user.file_number?' · '+user.file_number:''}</p>
-                {user.role==='admin'&&!user.canIssue&&<p className="mt-1 text-[10px] text-amber-300">Another Administration account cannot be reset from this desk.</p>}
+                {user.role==='admin'&&!user.canIssue&&<p className="mt-1 text-[10px] text-amber-300">Another Administrations account cannot be reset from this desk.</p>}
               </div>
               <button onClick={()=>issue(user)} disabled={!user.canIssue||reason.trim().length<6||busy==='issue:'+user.id} className="flex items-center justify-center gap-2 border border-white/10 px-4 py-2.5 text-[9px] font-black uppercase tracking-[.12em] disabled:opacity-35">
                 <KeyRound className="h-3.5 w-3.5"/>{busy==='issue:'+user.id?'Issuing…':'Issue recovery'}
@@ -215,7 +215,7 @@ export default function AdminAccessRecoveryPage(){
             <p><b className="text-white">15-minute authority.</b> The issued code expires automatically and may be used once.</p>
             <p><b className="text-white">Five attempts.</b> Repeated wrong entries exhaust the recovery grant.</p>
             <p><b className="text-white">Session closure.</b> A successful reset removes all previous WEAVE sessions for that user.</p>
-            <p><b className="text-white">Administration boundary.</b> An Administrator cannot issue a recovery code for another Administrator account.</p>
+            <p><b className="text-white">Administrations boundary.</b> An Administrator cannot issue a recovery code for another Administrator account.</p>
           </div>
         </div>
       </section>
@@ -238,7 +238,7 @@ export default function AdminAccessRecoveryPage(){
               {active&&<button onClick={()=>revoke(row.id)} disabled={busy==='revoke:'+row.id} className="flex items-center justify-center gap-2 border border-rose-300/20 px-3 py-2 text-[8px] font-black uppercase tracking-[.12em] text-rose-200 disabled:opacity-40"><XCircle className="h-3.5 w-3.5"/>Revoke</button>}
             </div>
           })}
-          {!recent.length&&<p className="py-8 text-center text-xs text-slate-500">No Administration recovery grants have been issued.</p>}
+          {!recent.length&&<p className="py-8 text-center text-xs text-slate-500">No Administrations recovery grants have been issued.</p>}
         </div>
       </section>
     </div>

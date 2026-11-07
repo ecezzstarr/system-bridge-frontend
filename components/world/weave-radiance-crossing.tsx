@@ -8,7 +8,7 @@ import { emitWeaveMotion } from '@/lib/weave-interaction-motion'
 const LOGIN_PATHS = new Set(['/login', '/client/login', '/client-login'])
 
 const ROLE_LABEL: Record<string, string> = {
-  admin: 'Administration · Presence',
+  admin: 'Administrations · Presence',
   agent: 'Agent · Presence',
   bridger: 'Hope · Bridger Presence',
   client: 'Client · Presence',

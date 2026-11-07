@@ -11,7 +11,7 @@ async function reviewer(request:NextRequest){
 }
 export async function GET(request:NextRequest){
  const admin=await reviewer(request)
- if(!admin)return NextResponse.json({error:'Administration access required'},{status:403,headers})
+ if(!admin)return NextResponse.json({error:'Administrations access required'},{status:403,headers})
  try{
   await ensureProRegionalManagerApplicationsSchema()
   const status=request.nextUrl.searchParams.get('status')||'pending'
@@ -38,7 +38,7 @@ export async function GET(request:NextRequest){
 }
 export async function POST(request:NextRequest){
  const admin=await reviewer(request)
- if(!admin)return NextResponse.json({error:'Administration access required'},{status:403,headers})
+ if(!admin)return NextResponse.json({error:'Administrations access required'},{status:403,headers})
  try{
   const body=await request.json().catch(()=>null)
   const id=String(body?.userId||'').trim()
@@ -46,7 +46,7 @@ export async function POST(request:NextRequest){
   const reviewNote=String(body?.reviewNote||'').trim()
   if(!/^[0-9a-f-]{36}$/i.test(id)||!['approve','reject'].includes(decision)||
     reviewNote.length<10||reviewNote.length>2000)
-   return NextResponse.json({error:'Valid applicant, decision and documented Administration review note required.'},{status:400,headers})
+   return NextResponse.json({error:'Valid applicant, decision and documented Administrations review note required.'},{status:400,headers})
   const salary=Number(body.monthlySalaryUSDT)
   const reference=String(body.employmentTermsReference||'').trim()
   if(decision==='approve'&&(
@@ -75,13 +75,13 @@ export async function POST(request:NextRequest){
    catch(e){
     console.error('[Pro Regional Manager File Number preparation]',e)
     return NextResponse.json({success:true,application:approved,activationPrepared:false,
-      notice:'Employment verified and approved, but secure File Number preparation requires Administration retry. Do not ask the applicant to pay until it is prepared.'},{headers})
+      notice:'Employment verified and approved, but secure File Number preparation requires Administrations retry. Do not ask the applicant to pay until it is prepared.'},{headers})
    }
   }
   return NextResponse.json({success:true,application:approved,activationPrepared:Boolean(prepared),
     notice:decision==='approve'
      ?'Employment terms reviewed. Pro File Folder and activation remain pending independent identity, original-role folder ownership and payment checks.'
-     :'Application rejected with a recorded Administration reason.'},{headers})
+     :'Application rejected with a recorded Administrations reason.'},{headers})
  }catch(e){console.error('[Admin Pro Regional Manager review]',e)
   return NextResponse.json({error:'Unable to review the Pro Regional Manager application'},{status:503,headers})}
 }

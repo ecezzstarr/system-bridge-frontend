@@ -108,7 +108,7 @@ export default function AdminTerminal() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
         <div>
           <h1 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-400 mb-1">
-            Administration Control Center
+            Administrations Control Center
           </h1>
           <p className="text-slate-400 text-sm">People, authorization, verification and announcements · {user.name}</p>
         </div>
@@ -249,7 +249,7 @@ function BridgerManagementSection() {
   const [error, setError] = useState('')
 
   const load = async () => {
-    if (!token) { setError('Administration session required'); setLoading(false); return }
+    if (!token) { setError('Administrations session required'); setLoading(false); return }
     setLoading(true)
     setError('')
     try {
@@ -331,7 +331,7 @@ function UserManagementSection() {
       setHasMore(false)
     } else setLoadingMore(true)
     try{
-      if(!token)throw new Error('Administration session unavailable. Sign in again.')
+      if(!token)throw new Error('Administrations session unavailable. Sign in again.')
       const params=new URLSearchParams({filter,q:search.trim(),offset:String(offset)})
       const response=await fetch('/api/admin/users?'+params.toString(),{
         headers:{Authorization:'Bearer '+token},cache:'no-store',
@@ -375,7 +375,7 @@ function UserManagementSection() {
       })
       const payload=await response.json()
       if(response.ok&&Array.isArray(payload.users))setAgents(payload.users)
-    }catch(error){console.error('[Administration] Agent assignment choices unavailable:',error)}
+    }catch(error){console.error('[Administrations] Agent assignment choices unavailable:',error)}
   }
   useEffect(()=>{void loadAgents()},[token])
 
@@ -424,13 +424,13 @@ function UserManagementSection() {
     }),'Account reactivated')
   }
 
-  return <section className="space-y-4 p-4" aria-label="Administration user directory">
+  return <section className="space-y-4 p-4" aria-label="Administrations user directory">
     <div className="flex flex-wrap items-start justify-between gap-3">
       <div>
         <h3 className="font-bold text-white">Registered users</h3>
         <p className="mt-1 text-xs text-slate-400">
           {loading?'Loading directory…':'Showing '+users.length+' of '+total+' matching accounts'}
-          {' · '}Agents, Bridgers, Clients and Administration
+          {' · '}Agents, Bridgers, Clients and Administrations
         </p>
       </div>
       <div className="flex flex-wrap gap-2">
@@ -503,7 +503,7 @@ function UserManagementSection() {
                 </td>
                 <td className="px-2 py-3">
                   {account.role==='admin'||!account.is_active
-                    ?<span className="text-slate-300">{account.role==='admin'?'Administration (protected)':account.departmental_code||account.role}</span>
+                    ?<span className="text-slate-300">{account.role==='admin'?'Administrations (protected)':account.departmental_code||account.role}</span>
                     :<select value={account.departmental_code||''}
                       onChange={event=>assignDepartment(account.id,event.target.value)}
                       disabled={actingOn===account.id}
@@ -535,7 +535,7 @@ function UserManagementSection() {
                 </td>
                 <td className="px-2 py-3 text-slate-300">
                   {!account.is_active?'Deactivated':
-                    account.role==='admin'?'Administration':
+                    account.role==='admin'?'Administrations':
                     account.assigned_agent_id?'Assigned':
                     account.role==='bridger'?'Awaiting Agent':
                     account.departmental_code?'Active':'Department pending'}
@@ -740,8 +740,8 @@ function DepositApprovalSection({ user }: { user: any }) {
           <h3 className="mb-1 font-bold text-white">Paystack Payments · Automatic Wallet Credit</h3>
           <p className="max-w-xl text-xs leading-5 text-slate-400">
             Paystack-confirmed payments credit the user's wallet automatically and immediately.
-            Administration receives a payment and credit notification; no manual approval is needed.
-            For older stuck payments, Administration may credit once after personally confirming the original successful charge in the Paystack merchant dashboard. Each exceptional credit is recorded for audit.
+            Administrations receive a payment and credit notification; no manual approval is needed.
+            For older stuck payments, Administrations may credit once after personally confirming the original successful charge in the Paystack merchant dashboard. Each exceptional credit is recorded for audit.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -768,7 +768,7 @@ function DepositApprovalSection({ user }: { user: any }) {
                 </div>
                 <div className="flex flex-col items-end gap-2">
                   <span className={deposit.status === 'approved' && deposit.verified_at ? 'text-xs font-bold text-emerald-300' : deposit.status === 'rejected' ? 'text-xs font-bold text-red-300' : 'text-xs font-bold text-amber-300'}>
-                    {deposit.status === 'approved' ? (deposit.manual_credited ? 'Administration-confirmed · Wallet credited' : deposit.verified_at ? 'Paystack verified · Wallet credited' : 'Approval without Paystack proof · Investigate') : deposit.status === 'rejected' ? 'Verification failed · Review' : 'Awaiting Paystack verification'}
+                    {deposit.status === 'approved' ? (deposit.manual_credited ? 'Administrations-confirmed · Wallet credited' : deposit.verified_at ? 'Paystack verified · Wallet credited' : 'Approval without Paystack proof · Investigate') : deposit.status === 'rejected' ? 'Verification failed · Review' : 'Awaiting Paystack verification'}
                   </span>
                   {(deposit.status === 'pending' || deposit.status === 'rejected' || (deposit.status === 'approved' && !deposit.verified_at)) && (
                     <div className="flex flex-wrap justify-end gap-2">
@@ -907,7 +907,7 @@ function BridgeDepositApprovalSection({ user }: { user: any }) {
   return (
     <div className="p-4">
       <h3 className="font-bold text-white mb-1">Pending File Folder Crossings</h3>
-      <p className="mb-4 text-[10px] leading-5 text-slate-500">Like Department Entry Tickets: payment arrives here, Administration verifies it, and that verification issues the File Number and opens the Client crossing into System Switch.</p>
+      <p className="mb-4 text-[10px] leading-5 text-slate-500">Like Department Entry Tickets: payment arrives here, Administrations verify it, and that verification issues the File Number and opens the Client crossing into System Switch.</p>
 
       {loading ? (
         <p className="text-slate-500 text-center py-8 text-xs">Loading deposits...</p>

@@ -170,7 +170,7 @@ export async function POST(request: NextRequest) {
       const reserve=await countDailyProspectReserve(client)
       return NextResponse.json({
         success:false,
-        error:'No unused Prospect inventory is available for the daily claim. Administration has been given a clear reserve-state diagnostic.',
+        error:'No unused Prospect inventory is available for the daily claim. Administrations have been given a clear reserve-state diagnostic.',
         gate:'daily_pool_empty',
         reserve,
         repaired:repair,

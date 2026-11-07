@@ -212,10 +212,10 @@ export default function DevelopmentFoundryPage() {
               <ArrowLeft className="h-3.5 w-3.5" />
               Workshops District
             </Link>
-            <p className="mt-5 text-[9px] font-black uppercase tracking-[0.3em] text-cyan-300">Administration · Development Foundry</p>
+            <p className="mt-5 text-[9px] font-black uppercase tracking-[0.3em] text-cyan-300">Administrations · Development Foundry</p>
             <h1 className="mt-2 text-3xl font-black tracking-tight sm:text-5xl">AI engineers inside WEAVE.</h1>
             <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">
-              Eight leads a persistent engineering workforce. Each agent owns a real part of the source, reads that code before acting, develops one bounded movement at a time, and returns evidence to Administration before production authority moves.
+              Eight leads a persistent engineering workforce. Each agent owns a real part of the source, reads that code before acting, develops one bounded movement at a time, and returns evidence to Administrations before production authority moves.
             </p>
           </div>
           <div className="flex items-center gap-2 border-l border-cyan-300/15 pl-4">
@@ -310,7 +310,7 @@ export default function DevelopmentFoundryPage() {
             </Button>
 
             <div className="mt-5 border-t border-cyan-100/10 pt-4 text-xs leading-5 text-slate-500">
-              <div className="flex items-center gap-2 text-slate-300"><ShieldCheck className="h-4 w-4 text-emerald-300" />Production authority stays with Administration.</div>
+              <div className="flex items-center gap-2 text-slate-300"><ShieldCheck className="h-4 w-4 text-emerald-300" />Production authority stays with Administrations.</div>
               <p className="mt-2">Continuous server pulse: {state?.continuousRuntimeReady ? 'armed for scheduler' : 'scheduler secret not armed yet'}. The Foundry also pulses while this floor is open.</p>
             </div>
           </div>
@@ -377,7 +377,7 @@ export default function DevelopmentFoundryPage() {
               )
             })}
             {!loading && proposals.length === 0 && (
-              <div className="py-8 text-sm text-slate-500">The engineering floor is clear. A due pulse or an Administration assignment will create the next movement.</div>
+              <div className="py-8 text-sm text-slate-500">The engineering floor is clear. A due pulse or an Administrations assignment will create the next movement.</div>
             )}
           </div>
         </section>

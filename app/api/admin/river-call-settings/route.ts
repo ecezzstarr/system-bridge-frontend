@@ -6,7 +6,7 @@ import { aiConfigured,ensureRiverCallSchema,twilioConfigured,RIVER_CALL_PRICE_FL
 export const runtime='nodejs'
 export async function GET(request:NextRequest) {
   const user=await getAuthUser(request)
-  if(!user||user.role!=='admin')return NextResponse.json({error:'Administration required'},{status:403})
+  if(!user||user.role!=='admin')return NextResponse.json({error:'Administrations required'},{status:403})
   await ensureRiverCallSchema()
   const pool=getPool()
   const [row,totals]=await Promise.all([
@@ -19,7 +19,7 @@ export async function GET(request:NextRequest) {
 }
 export async function PATCH(request:NextRequest) {
   const user=await getAuthUser(request)
-  if(!user||user.role!=='admin')return NextResponse.json({error:'Administration required'},{status:403})
+  if(!user||user.role!=='admin')return NextResponse.json({error:'Administrations required'},{status:403})
   const body=await request.json().catch(()=>({}))
   if(typeof body.enabled!=='boolean')return NextResponse.json({error:'An enabled setting is required'},{status:400})
   if(body.enabled && (!twilioConfigured()||!aiConfigured()))

@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
   try {
     await ensurePublicPurchaseAccessSchema()
 
-    // Keep one File Folder ledger and one Administration verification movement.
+    // Keep one File Folder ledger and one Administrations verification movement.
     // This public route delegates the actual purchase record to the existing
     // Bridge File Folder purchase endpoint, then adds only a private return key.
     const purchaseResponseResult = await submitFileFolderPurchase(request)

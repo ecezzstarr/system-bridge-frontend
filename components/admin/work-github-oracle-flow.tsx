@@ -91,17 +91,17 @@ export default function WorkGithubOracleFlow({
     ['1','ChatGPT Work','Commit code and create a GitHub pull request',true],
     ['2','GitHub review','Review, approve and merge the requested PR',Boolean(board?.pulls.length===0)],
     ['3','Production Check','Full test and build pass for exact main SHA',Boolean(mainPassed)],
-    ['4','Oracle release worker','Available to execute an Administration-approved SHA',workerOnline],
+    ['4','Oracle release worker','Available to execute an Administrations-approved SHA',workerOnline],
     ['5','Production health','Deployed SHA matches verified main',current],
   ] as const
   return <section className="mt-5 rounded-2xl border border-sky-300/20 bg-[#081825] p-5" data-work-github-oracle-flow="admin">
     <div className="flex flex-wrap items-start justify-between gap-3">
       <div>
-        <p className="text-[10px] font-black uppercase tracking-[.18em] text-sky-200">Administration · Work → GitHub → Oracle</p>
+        <p className="text-[10px] font-black uppercase tracking-[.18em] text-sky-200">Administrations · Work → GitHub → Oracle</p>
         <h2 className="mt-2 text-lg font-black text-white">Complete deployment movement</h2>
         <p className="mt-2 max-w-3xl text-xs leading-6 text-slate-300">
           After ChatGPT Work commits code to GitHub, review the pull request here. A reviewed merge produces a new main commit.
-          GitHub checks that exact commit; Administration then authorizes the independent Oracle host worker to deploy it.
+          GitHub checks that exact commit; Administrations then authorizes the independent Oracle host worker to deploy it.
           Successful production health, not the GitHub merge, closes the movement.
         </p>
       </div>

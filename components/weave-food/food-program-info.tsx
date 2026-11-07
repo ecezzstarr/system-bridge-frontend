@@ -40,7 +40,7 @@ export function AgentFoodPricingInfo({product='both'}:{product?:'agility'|'elect
         <p className="mt-2 text-lg font-black text-emerald-100">{value}</p>
       </div>)}
     </div>
-    <p className="mt-4 text-xs leading-5 text-stone-400">Half-carton Agent stock cost: {money(AGILITY_AGENT_BOX_PRICE_NGN/2)}; full-carton customer sell-out value: {money(AGILITY_RETAIL_UNIT_PRICE_NGN*AGILITY_PACKAGES_PER_BOX)}. These are gross sales margins, not guaranteed wages or additional referral bonuses. OPay stock payment requires Administration verification; shipping/waybill charges are separate where applicable.</p>
+    <p className="mt-4 text-xs leading-5 text-stone-400">Half-carton Agent stock cost: {money(AGILITY_AGENT_BOX_PRICE_NGN/2)}; full-carton customer sell-out value: {money(AGILITY_RETAIL_UNIT_PRICE_NGN*AGILITY_PACKAGES_PER_BOX)}. These are gross sales margins, not guaranteed wages or additional referral bonuses. OPay stock payment requires Administrations verification; shipping/waybill charges are separate where applicable.</p>
   </section>
 }
 
@@ -58,7 +58,7 @@ export function DaisyPricingInfo({audience='agent'}:{audience?:'agent'|'public'|
   return <section className="border border-amber-300/20 bg-amber-300/[.035] p-5 text-white sm:p-6" data-daisy-official-info={audience}>
     <p className="text-[10px] font-black uppercase tracking-[.18em] text-amber-200">Daisy Pastries · Official Price & Work Info</p>
     <h2 className="mt-2 text-xl font-black">Cake Slice {money(DAISY_CAKE_SLICE_PRICE_NGN)} · Selling Agent earns {money(DAISY_AGENT_COMMISSION_NGN)}</h2>
-    <p className="mt-2 text-xs leading-6 text-stone-300">A cake slice costs {money(DAISY_CAKE_SLICE_PRICE_NGN)}. Bento Cake costs ₦10,000. Other cakes follow their published bands or Administration-approved quote. For each successfully paid and completed cake sale, the selling Agent's share is {money(DAISY_AGENT_COMMISSION_NGN)}, regardless of the cake type. This share comes out of the cake price, not on top of it.</p>
+    <p className="mt-2 text-xs leading-6 text-stone-300">A cake slice costs {money(DAISY_CAKE_SLICE_PRICE_NGN)}. Bento Cake costs ₦10,000. Other cakes follow their published bands or Administrations-approved quote. For each successfully paid and completed cake sale, the selling Agent's share is {money(DAISY_AGENT_COMMISSION_NGN)}, regardless of the cake type. This share comes out of the cake price, not on top of it.</p>
     <p className="mt-3 text-xs leading-5 text-stone-400">{audience==='public'?'Your Agent confirms the exact eligible cake price and any delivery/waybill fee before payment.':'Record the sale under the correct Agent and original cake order. A pending quote or payment reference is not a completed sale.'} Preparation follows verified payment and order approval. Transport charges are separate.</p>
   </section>
 }
@@ -76,7 +76,7 @@ export function FarmToFamilySettlementInfo({audience='buyer'}:{audience?:'buyer'
         ['Farmer receives',money(example.sellerPayoutNgn)],
       ].map(([label,value])=><div className="border border-white/10 bg-black/15 p-3" key={label}><p className="text-[10px] text-stone-400">{label}</p><p className="mt-2 text-lg font-black text-emerald-100">{value}</p></div>)}
     </div>
-    <p className="mt-4 text-xs leading-6 text-stone-300"><strong>Buyer orders → Farmer quotes → Buyer pays WEAVE → Administration independently verifies received funds → Farmer is notified to dispatch → Buyer confirms receipt → Administration transfers the net farmer payout.</strong></p>
+    <p className="mt-4 text-xs leading-6 text-stone-300"><strong>Buyer orders → Farmer quotes → Buyer pays WEAVE → Administrations independently verifies received funds → Farmer is notified to dispatch → Buyer confirms receipt → Administrations transfers the net farmer payout.</strong></p>
     <p className="mt-2 text-xs leading-5 text-stone-400">A payment reference alone is not proof that money was received. Disputed transactions are held for review; cancelled/refunded orders do not earn WEAVE the fee. WEAVE currently records external bank settlement and payout references: this does not mean payouts are automatically transferred by the app.</p>
   </section>
 }

@@ -6,7 +6,7 @@ export const WEAVE_DOMAIN_ROLES = {
   },
   'ssbnow.online': {
     role: 'administration',
-    label: 'Administration Workshop',
+    label: 'Administrations Workshop',
     entryPath: '/login?portal=admin',
   },
   'ssbnow.shop': {

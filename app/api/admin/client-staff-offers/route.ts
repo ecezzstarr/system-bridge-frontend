@@ -16,7 +16,7 @@ async function requireAdmin(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   const admin = await requireAdmin(request)
-  if (!admin) return NextResponse.json({ error: 'Administration access required' }, { status: 403 })
+  if (!admin) return NextResponse.json({ error: 'Administrations access required' }, { status: 403 })
   try {
     await ensureCompanyClientStaffSchema()
     const workFor=request.nextUrl.searchParams.get('offerId')
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const admin = await requireAdmin(request)
-  if (!admin) return NextResponse.json({ error: 'Administration access required' }, { status: 403 })
+  if (!admin) return NextResponse.json({ error: 'Administrations access required' }, { status: 403 })
   try {
     const body = await request.json()
     const candidateName = String(body.candidateName || '').trim()
@@ -112,7 +112,7 @@ export async function POST(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   const admin = await requireAdmin(request)
-  if (!admin) return NextResponse.json({ error: 'Administration access required' }, { status: 403 })
+  if (!admin) return NextResponse.json({ error: 'Administrations access required' }, { status: 403 })
   const body = await request.json().catch(() => ({}))
   const offerId = String(body.offerId || '')
   const action = String(body.action || '')
@@ -134,7 +134,7 @@ export async function PATCH(request: NextRequest) {
         : NextResponse.json({ error: 'Only a pending ticket can be rejected' }, { status: 409 })
     }
 
-    // Payment is NOT checked automatically. Administration must independently verify
+    // Payment is NOT checked automatically. Administrations must independently verify
     // the chain/reference, currency and amount before invoking this action.
     if (body.paymentChecked !== true) {
       return NextResponse.json({ error: 'Confirm independent USDT payment verification first' }, { status: 400 })
@@ -222,7 +222,7 @@ export async function PATCH(request: NextRequest) {
             INSERT INTO notifications(user_id,type,title,content,from_user_name,link)
             VALUES (${offer.client_id}::uuid,'company_staff_position',
               'Your company position is approved',
-              ${'Administration verified your company employment ticket. Your new position is now accessible inside your existing Client File Folder.'},
+              ${'Administrations verified your company employment ticket. Your new position is now accessible inside your existing Client File Folder.'},
               'WEAVE Employment','/client/staff-workspace')
           `
         } catch (notificationError) { console.error('[company staff] existing Client notification unavailable',notificationError) }

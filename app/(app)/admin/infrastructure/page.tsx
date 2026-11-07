@@ -61,7 +61,7 @@ export default function InfrastructureWorkshop(){
   async function toggleShield(){
     if(!data) return
     const next=!data.shield.active
-    if(next && !window.confirm('Raise Divine Shield? Every non-Administration user will be held outside WEAVE.')) return
+    if(next && !window.confirm('Raise Divine Shield? Every non-Administrations user will be held outside WEAVE.')) return
     setShieldBusy(true)
     try{
       const response=await fetch('/api/admin/divine-shield',{
@@ -106,7 +106,7 @@ export default function InfrastructureWorkshop(){
       <header className="rounded-[2rem] border border-cyan-300/15 bg-[#03101d]/78 p-6 backdrop-blur-xl md:p-8">
         <div className="flex flex-wrap items-start justify-between gap-5">
           <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.28em] text-cyan-300">Administration · Infrastructure</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.28em] text-cyan-300">Administrations · Infrastructure</p>
             <h1 className="mt-2 text-3xl font-black text-white md:text-5xl">WEAVE Infrastructure Workshop</h1>
             <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">Self-host runtime, Caddy edge, Sovereign + Flame deployment records, EIGHT web access and Divine Shield in one operating surface.</p>
           </div>

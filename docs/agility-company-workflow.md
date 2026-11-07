@@ -14,7 +14,7 @@ Agility is a WEAVE morning-food product family distributed through Agent Stores.
 - Company standard preparation cost: **₦21,000 per box**.
 - Company gross profit target: **₦9,000 per box**.
 
-The company operating standard is ₦21,000 to prepare one full box. Selling that box to the Agent for ₦30,000 produces the company's intended ₦9,000 gross profit per box. Actual cost is still reconciled at delivery so Administration can see whether real performance stayed on standard. Net profit can still be reduced by wider overhead, spoilage, refunds, taxes or other operating costs.
+The company operating standard is ₦21,000 to prepare one full box. Selling that box to the Agent for ₦30,000 produces the company's intended ₦9,000 gross profit per box. Actual cost is still reconciled at delivery so Administrations can see whether real performance stayed on standard. Net profit can still be reduced by wider overhead, spoilage, refunds, taxes or other operating costs.
 
 A standard Agility can include fried egg, bread, butter, akara, pap, sardines, apple, water and milk. Other Agility variants can use fish, meat, pear / avocado, seasonal fruit or other approved morning combinations while preserving the company economics.
 
@@ -28,7 +28,7 @@ Existing OPay receiving account in the codebase:
 
 Agility does **not** use Flutterwave.
 
-The Agility order has its own OPay proof and Administration verification because an Agility payment purchases physical stock. It must not be processed as a wallet deposit or credit the Agent with Flame Coin.
+The Agility order has its own OPay proof and Administrations verification because an Agility payment purchases physical stock. It must not be processed as a wallet deposit or credit the Agent with Flame Coin.
 
 ## Operating movement
 
@@ -36,14 +36,14 @@ The Agility order has its own OPay proof and Administration verification because
 2. **Economics are fixed at order creation** — each box is 10 packages, ₦21,000 company preparation cost, ₦30,000 Agent price, and ₦40,000 sell-out value.
 3. **Agent pays by OPay** — the screen shows the existing WEAVE OPay account, exact NGN amount and unique Agility order reference.
 4. **Agent submits proof** — Agent pastes the OPay transaction reference or receipt.
-5. **Administration verifies OPay** — Administration compares the proof with the exact expected NGN amount and either approves or rejects it.
-6. **Paid queue opens** — only Administration approval changes the order to `paid`. No food preparation can begin before this.
+5. **Administrations verify OPay** — Administrations compares the proof with the exact expected NGN amount and either approves or rejects it.
+6. **Paid queue opens** — only Administrations approval changes the order to `paid`. No food preparation can begin before this.
 7. **Company economics gate** — before heating, the system applies the fixed ₦21,000 preparation standard. At the ₦30,000 Agent price, company gross profit is ₦9,000 per box.
 8. **Heating / preparation** — approved paid stock enters food preparation.
 9. **Packed** — each complete Agility meal is sealed. Milk, water and fruit remain separate from hot-food handling.
 10. **Boxed** — 10 sealed Agility packages are placed into one company delivery box.
 11. **Dispatched** — the company sends the paid box to the Agent Store.
-12. **Delivered + actual-cost reconciliation** — the ₦21,000 company standard is used by default. Administration changes the actual cost only if the completed box cost differed; the system calculates actual company gross contribution and flags a loss if actual cost exceeded wholesale revenue.
+12. **Delivered + actual-cost reconciliation** — the ₦21,000 company standard is used by default. Administrations changes the actual cost only if the completed box cost differed; the system calculates actual company gross contribution and flags a loss if actual cost exceeded wholesale revenue.
 13. **Received** — the Agent confirms physical receipt. Only then does the stock become sellable inventory.
 14. **Agent sale** — a wholesaler can move the complete 10-package box for ₦40,000; a retailer sells the individual packages at ₦4,000 each. Either route gives the Agent a base ₦10,000 gross profit per completed box. Retailers also build direct consumer patronage and repeat demand around their store.
 
@@ -54,11 +54,11 @@ The Agility order has its own OPay proof and Administration verification because
 - An Agility order is **not** a wallet deposit; OPay approval does not credit Flame Coin.
 - Agent payment proof can be rejected and resubmitted.
 - The same normalized OPay proof cannot be attached to more than one Agility order.
-- Administration cannot start fulfillment before OPay payment approval.
-- Administration cannot skip fulfillment stages.
+- Administrations cannot start fulfillment before OPay payment approval.
+- Administrations cannot skip fulfillment stages.
 - Preparation opens with the fixed ₦21,000-per-box preparation standard, producing the planned ₦9,000 company gross profit.
-- Delivery reconciles actual company cost using ₦21,000 by default, with an Administration override when the completed cost differed.
-- The Agent cannot record consumer sales until Administration marks delivery and the Agent confirms receipt.
+- Delivery reconciles actual company cost using ₦21,000 by default, with an Administrations override when the completed cost differed.
+- The Agent cannot record consumer sales until Administrations marks delivery and the Agent confirms receipt.
 - Sales cannot exceed received inventory.
 - Every order keeps its own payment reference, OPay proof, verifying administrator, timestamps, box count, package count and economics.
 
@@ -72,11 +72,11 @@ Agent OPay proof submission:
 
 `/api/agility/payment/opay/receipt`
 
-Administration OPay approval / rejection:
+Administrations OPay approval / rejection:
 
 `/api/admin/agility/payment/opay/verify`
 
-Administration fulfillment:
+Administrations fulfillment:
 
 `/api/admin/agility/stock`
 
@@ -92,7 +92,7 @@ Agent Store UI:
 
 `/agility`
 
-Administration UI:
+Administrations UI:
 
 `/admin/agility`
 

@@ -79,10 +79,10 @@ export async function PATCH(request: NextRequest) {
       await notifyUser(application.client_id, {
         type: 'enterprise_plan_rejected',
         title: 'Enterprise Dream plan returned',
-        content: `Administration returned your enterprise plan for ${application.enterprise_name}.${note ? ` Note: ${note}` : ''}`,
+        content: `Administrations returned your enterprise plan for ${application.enterprise_name}.${note ? ` Note: ${note}` : ''}`,
         link: '/client/system-switch',
         fromUserId: auth.session.user.id,
-        fromUserName: 'WEAVE Administration',
+        fromUserName: 'WEAVE Administrations',
       })
       return NextResponse.json({ success: true, application: rejected })
     }
@@ -144,10 +144,10 @@ export async function PATCH(request: NextRequest) {
     await notifyUser(application.client_id, {
       type: 'enterprise_plan_approved',
       title: 'Enterprise plan approved',
-      content: `Administration approved the enterprise plan for ${application.enterprise_name}. Your subscribed Lord/Lady title remains based on registration gender. Enterprise construction is unlocked; build Legion Quarters to recruit Legions.`,
+      content: `Administrations approved the enterprise plan for ${application.enterprise_name}. Your subscribed Lord/Lady title remains based on registration gender. Enterprise construction is unlocked; build Legion Quarters to recruit Legions.`,
       link: '/client/system-switch',
       fromUserId: auth.session.user.id,
-      fromUserName: 'WEAVE Administration',
+      fromUserName: 'WEAVE Administrations',
     })
 
     return NextResponse.json({ success: true, application: approved })

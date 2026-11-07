@@ -40,7 +40,7 @@ const FREQUENCIES = [
   ['once', 'Once per participant'],
   ['daily', 'Once per day'],
   ['every_login', 'Once per login session'],
-  ['persistent', 'Persistent until Administration stops it'],
+  ['persistent', 'Persistent until Administrations stops it'],
 ] as const
 
 function localDateTime(value?: string | null) {
@@ -276,7 +276,7 @@ export default function AdWorkshopPage() {
           <div>
             <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.22em] text-cyan-300">
               <Megaphone className="h-3.5 w-3.5" />
-              Administration Workshop
+              Administrations Workshop
             </div>
             <h1 className="text-3xl font-black tracking-tight text-white sm:text-5xl">Ad Workshop</h1>
             <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">

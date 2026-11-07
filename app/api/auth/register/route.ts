@@ -187,7 +187,7 @@ export async function POST(request: NextRequest) {
       if (!used.length) {
         await connection.query('ROLLBACK')
         return NextResponse.json({
-          error: 'This Entry Ticket code has already been used or expired. Your account was not charged or created. Contact Administration if you paid for this ticket.',
+          error: 'This Entry Ticket code has already been used or expired. Your account was not charged or created. Contact Administrations if you paid for this ticket.',
           code: 'ENTRY_CODE_UNAVAILABLE',
         }, { status: 409 })
       }
@@ -307,7 +307,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('[WEAVE] Register error:', error)
     return NextResponse.json(
-      { error: 'Registration could not be completed. Your Entry Ticket remains valid if no account was created. Please retry or contact Administration.', code: 'REGISTRATION_UNAVAILABLE' },
+      { error: 'Registration could not be completed. Your Entry Ticket remains valid if no account was created. Please retry or contact Administrations.', code: 'REGISTRATION_UNAVAILABLE' },
       { status: 500 }
     )
   }

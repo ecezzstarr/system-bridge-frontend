@@ -109,7 +109,7 @@ export function initializeOriginSystem() {
     registerSystemToOrigin("SSBNOW.SHOP - Client Service Portal", "cloudrun", "ssbnow.shop", "THGBvmPt3XEb8mbSRXViA93GkW3PpCanJk")
     
     // Register Service System (Child System)
-    registerSystemToOrigin("SSBNOW.ONLINE - Administration Workshop", "cloudrun", "ssbnow.online", "THGBvmPt3XEb8mbSRXViA93GkW3PpCanJk", ORIGIN_SYSTEM_ID)
+    registerSystemToOrigin("SSBNOW.ONLINE - Administrations Workshop", "cloudrun", "ssbnow.online", "THGBvmPt3XEb8mbSRXViA93GkW3PpCanJk", ORIGIN_SYSTEM_ID)
     
     // Register the public WEAVE application domain.
     registerSystemToOrigin("WEAVINGSYSTEM.ONLINE - WEAVE Public App", "cloudrun", "weavingsystem.online", "THGBvmPt3XEb8mbSRXViA93GkW3PpCanJk", ORIGIN_SYSTEM_ID)

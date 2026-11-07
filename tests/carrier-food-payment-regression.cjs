@@ -64,7 +64,7 @@ assert.ok(publicApi.includes('Far-location orders require the waybill fee quoted
 assert.ok(publicApi.includes('foodSubtotalNgn + waybillFeeNgn'),'customer total is food plus waybill')
 assert.ok(publicApi.includes('getCarrierFoodAgentPaymentAccount'),'public checkout reads the Agent receiving account')
 assert.ok(publicApi.includes("VALUES ($1::uuid,'carrier_customer_payment'")&&publicApi.includes("'/weave/carrier/food'"),'customer payment submission notifies the Agent')
-assert.ok(!publicApi.includes("'/admin/carrier-food-payments'"),'customer payment no longer routes to Administration')
+assert.ok(!publicApi.includes("'/admin/carrier-food-payments'"),'customer payment no longer routes to Administrations')
 assert.ok(publicApi.includes('Number.isSafeInteger(quantity)')&&publicApi.includes('quantity < 1'),'customer checkout accepts individual package/bowl quantities starting at one')
 assert.ok(!publicApi.includes('quantity > 10'),'customer checkout has no carton-size ten-unit ceiling')
 assert.ok(!publicApi.includes('isValidWeaveFoodCartonQuantity(quantity)')&&!publicDoor.includes('WEAVE_FOOD_CARTON_STEP'),'customer checkout is not governed by Agent carton-step validation')

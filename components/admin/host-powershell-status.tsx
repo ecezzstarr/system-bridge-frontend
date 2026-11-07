@@ -36,7 +36,7 @@ export function HostPowerShellStatus({token}:{token:string|null}){
   }
   return <section data-weave-powershell-host className="rounded-[2rem] border border-cyan-300/20 bg-[#06131b]/85 p-6">
     <div className="flex flex-wrap items-start justify-between gap-3">
-      <div><p className="text-[9px] font-black uppercase tracking-[.2em] text-cyan-300">Administration · PowerShell host</p>
+      <div><p className="text-[9px] font-black uppercase tracking-[.2em] text-cyan-300">Administrations · PowerShell host</p>
         <h2 className="mt-2 text-xl font-black text-white">Weave Server Operations</h2>
         <p className="mt-2 max-w-2xl text-xs leading-5 text-slate-400">PowerShell 7 sends private server-health reports. The application never executes arbitrary commands. Deployments and historical rollbacks remain in the verified Release Workshop.</p>
       </div>

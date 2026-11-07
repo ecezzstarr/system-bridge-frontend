@@ -26,7 +26,7 @@ export async function passwordRecoveryEmailProvider(): Promise<'gmail' | 'resend
   try {
     if (await getAdministrationGoogleMailboxCredential()) return 'gmail'
   } catch (error) {
-    console.error('[password-recovery] Administration Google mailbox lookup failed', error)
+    console.error('[password-recovery] Administrations Google mailbox lookup failed', error)
   }
   if (process.env.RESEND_API_KEY && process.env.PASSWORD_RECOVERY_EMAIL_FROM) return 'resend'
   return 'none'

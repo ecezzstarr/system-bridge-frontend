@@ -50,7 +50,7 @@ export const WEAVE_LIFESTYLE_CATALOG = {
     label: 'Weave Mandate',
     route: '/weave/lifestyles/mandate',
     roles: ['agent','bridger'],
-    summary: 'Apply through your existing Agent or Bridger standing for a Company Guidance departmental appointment. Administration controls approval and revocation.',
+    summary: 'Apply through your existing Agent or Bridger standing for a Company Guidance departmental appointment. Administrations control approval and revocation.',
     environments: [
       { label: 'Department Applications', href: '/weave/lifestyles/mandate', purpose: 'Apply to Mandate, Forensics or Attorney support.' },
       { label: 'Guidance Department Inbox', href: '/weave/lifestyles/mandate/inbox', purpose: 'Approved staff reply to actual Company Guidance conversations in their assigned department.' },
@@ -61,7 +61,7 @@ export const WEAVE_LIFESTYLE_CATALOG = {
     label: 'Food Preparation Team',
     route: '/weave/lifestyles/food-preparation',
     roles: ['agent'],
-    summary: 'Agent employment within WEAVE Stability led by the Head of the Agent Department, with one Food Preparation Manager position and two Assistant Manager positions. Administration reviews applications and verifies appointments. The approved Stability Lead directs daily kitchen work and assigns orders to approved assistants; Administration does not assign food preparation tasks. Staff prepare, package and dispatch verified paid Agility, Electrolyte, Ember and Daisy Pastries orders.',
+    summary: 'Agent employment within WEAVE Stability led by the Head of the Agent Department, with one Food Preparation Manager position and two Assistant Manager positions. Administrations review applications and verifies appointments. The approved Stability Lead directs daily kitchen work and assigns orders to approved assistants; Administrations do not assign food preparation tasks. Staff prepare, package and dispatch verified paid Agility, Electrolyte, Ember and Daisy Pastries orders.',
     environments: [
       { label: 'Employment Application', href: '/weave/lifestyles/food-preparation', purpose: 'Apply for an available Manager or Assistant Manager position.' },
       { label: 'Daily Kitchen Work Desk', href: '/weave/lifestyles/food-preparation', purpose: 'Prepare and dispatch verified paid orders assigned by the approved Stability Lead; record each handoff.' },
@@ -72,10 +72,10 @@ export const WEAVE_LIFESTYLE_CATALOG = {
     label: 'Food Distribution Manager',
     route: '/weave/lifestyles/food-distribution',
     roles: ['agent'],
-    summary: 'Separate Agent employment for food stock movement, outlet supply, delivery coordination and verified distribution records. Administration approves both Food Distribution Manager and Assistant Food Distribution Manager appointments.',
+    summary: 'Separate Agent employment for food stock movement, outlet supply, delivery coordination and verified distribution records. Administrations approve both Food Distribution Manager and Assistant Food Distribution Manager appointments.',
     environments: [
       { label: 'Employment Application', href: '/weave/lifestyles/food-distribution', purpose: 'Apply for a Food Distribution Manager or Assistant Food Distribution Manager appointment.' },
-      { label: 'Approved Workspaces', href: '/weave/lifestyles/work', purpose: 'Open the food distribution workspace after Administration approval.' },
+      { label: 'Approved Workspaces', href: '/weave/lifestyles/work', purpose: 'Open the food distribution workspace after Administrations approval.' },
       { label: 'Food Store', href: '/food-store', purpose: 'Coordinate distribution against actual WEAVE food products and orders.' },
     ],
   },
@@ -107,7 +107,7 @@ export const WEAVE_LIFESTYLE_CATALOG = {
     label: 'Distribution Manager',
     route: '/manager/dashboard',
     roles: ['agent', 'bridger'],
-    summary: 'A WEAVE employment Lifestyle carried by an existing Agent or Bridger. Signing submits an application for Administration verification; only approval starts the one-month probation and unlocks appointment of up to two assistants. Verified teams use existing Distribution Studio, Video Ad Studio, Carrier and Referral Movement tools, communicate through their own team workspace and file reports visible read-only to Administration.',
+    summary: 'A WEAVE employment Lifestyle carried by an existing Agent or Bridger. Signing submits an application for Administrations verification; only approval starts the one-month probation and unlocks appointment of up to two assistants. Verified teams use existing Distribution Studio, Video Ad Studio, Carrier and Referral Movement tools, communicate through their own team workspace and file reports visible read-only to Administrations.',
     environments: [
       { label: 'Distribution Studio', href: '/distribution-studio', purpose: 'Plan and operate public social distribution.' },
       { label: 'Video Ad Studio', href: '/video-ad-studio', purpose: 'Form video campaigns for WEAVE distribution.' },

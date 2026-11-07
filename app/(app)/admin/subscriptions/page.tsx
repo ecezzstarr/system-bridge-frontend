@@ -26,11 +26,11 @@ export default function ArchivedContinuanceClaimsPage() {
       .finally(()=>setLoading(false))
   },[])
   return <main className="mx-auto max-w-5xl px-5 py-10 text-white" data-legacy-subscription-claims="read-only">
-    <p className="text-xs font-bold uppercase tracking-widest text-emerald-300">Administration · Historical Claims</p>
+    <p className="text-xs font-bold uppercase tracking-widest text-emerald-300">Administrations · Historical Claims</p>
     <h1 className="mt-3 text-3xl font-black">Bridger Continuance Retired</h1>
-    <p className="mt-4 text-sm leading-6 text-slate-300">No recurring Bridger payment may be approved or collected. Outstanding historical proof submissions remain visible for Administration to reconcile and, where appropriate, arrange refunds. Do not treat pending proof as an Agentic-Bridger purchase.</p>
+    <p className="mt-4 text-sm leading-6 text-slate-300">No recurring Bridger payment may be approved or collected. Outstanding historical proof submissions remain visible for Administrations to reconcile and, where appropriate, arrange refunds. Do not treat pending proof as an Agentic-Bridger purchase.</p>
     <p className="mt-3 text-sm text-emerald-200">Current rule: Agentic-Bridger costs 11 Flame Coin once; Bridge AI costs 8 Flame Coin per new template opening; Echo is free.</p>
-    <Link href="/admin/orders" className="mt-5 inline-flex rounded-xl border border-emerald-300/20 px-4 py-3 text-xs font-bold text-emerald-100">Review Administration order records</Link>
+    <Link href="/admin/orders" className="mt-5 inline-flex rounded-xl border border-emerald-300/20 px-4 py-3 text-xs font-bold text-emerald-100">Review Administrations order records</Link>
     {error&&<p role="alert" className="mt-5 text-rose-300">{error}</p>}
     <div className="mt-7 overflow-x-auto rounded-xl border border-white/10">
       <table className="w-full text-left text-sm"><thead className="bg-white/[.05] text-slate-300"><tr><th className="p-3">Bridger</th><th className="p-3">Submitted</th><th className="p-3">Amount</th><th className="p-3">Proof reference</th></tr></thead>

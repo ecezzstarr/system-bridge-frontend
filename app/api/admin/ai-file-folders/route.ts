@@ -24,7 +24,7 @@ async function requireAdmin(request:NextRequest){
 
 export async function GET(request:NextRequest){
   const admin=await requireAdmin(request)
-  if(!admin)return NextResponse.json({error:'Administration only'},{status:403})
+  if(!admin)return NextResponse.json({error:'Administrations only'},{status:403})
   try{
     const agents=await listPublicAiFileFolders(sql)
     const aiId=clean(request.nextUrl.searchParams.get('aiId'),120)
@@ -38,7 +38,7 @@ export async function GET(request:NextRequest){
 
 export async function POST(request:NextRequest){
   const admin=await requireAdmin(request)
-  if(!admin)return NextResponse.json({error:'Administration only'},{status:403})
+  if(!admin)return NextResponse.json({error:'Administrations only'},{status:403})
   try{
     const body=await request.json()
     const action=clean(body.action,80)

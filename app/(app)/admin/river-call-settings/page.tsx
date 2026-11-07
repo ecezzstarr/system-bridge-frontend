@@ -32,8 +32,8 @@ export default function RiverCallSettingsPage(){
   }
   return <main className="min-h-screen bg-slate-950 px-4 py-12 text-white">
     <div className="mx-auto max-w-4xl">
-      <Link href="/admin/dashboard" className="text-xs text-sky-300">← Administration</Link>
-      <h1 className="mt-5 text-3xl font-black">River Call Outreach · Administration</h1>
+      <Link href="/admin/dashboard" className="text-xs text-sky-300">← Administrations</Link>
+      <h1 className="mt-5 text-3xl font-black">River Call Outreach · Administrations</h1>
       <p className="mt-2 text-sm leading-6 text-slate-400">Each River call costs 5 Flame Coin. Activate or suspend calling without redeployment. Activation is restricted until both the verified telephony service and River AI are available.</p>
       <div className="mt-7 grid gap-4 sm:grid-cols-3">
         {[

@@ -48,7 +48,7 @@ assert(folderScene.includes('slice(page*6,page*6+6)'), 'Every group of active si
 assert(folderScene.includes('slice(systemPage*12,systemPage*12+12)'), 'Every commissioned system remains visible by page')
 const sectorSeed=fs.readFileSync('lib/client-file-folder-world.ts','utf8')
 assert(sectorSeed.includes('INSTITUTIONAL_BLUEPRINTS.map(')&&sectorSeed.includes('INSTITUTIONAL_PARTS.map('),'New kits and modules are persisted in existing WEAVE SQL catalog')
-assert(sectorSeed.includes('ON CONFLICT(blueprint_key) DO NOTHING'),'Administration-customized institution blueprints are preserved')
+assert(sectorSeed.includes('ON CONFLICT(blueprint_key) DO NOTHING'),'Administrations-customized institution blueprints are preserved')
 assert(!platform.isFileFolderPlatformKind('fake_kind'))
 assert(!platform.isFileFolderPlatformKind('__proto__'),'Prototype keys must not be accepted as valid projects')
 const shortVideo=platform.platformProjectProgress({kind:'short_video'},[

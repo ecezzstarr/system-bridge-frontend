@@ -62,7 +62,7 @@ export default function CompanyClientStaffWorkspace(){
       </header>
       {error&&<p role="alert" className="rounded-xl border border-rose-300/30 p-4 text-sm text-rose-200">{error}</p>}
       {loading&&<p className="text-sm text-slate-300">Reading your company position…</p>}
-      {notEmployed&&<p className="rounded-xl border border-white/20 p-5 text-sm">This workspace is reserved for Clients with an Administration-approved employee offer. <Link href="/file-folder" className="text-cyan-200 underline">Return to File Folder</Link></p>}
+      {notEmployed&&<p className="rounded-xl border border-white/20 p-5 text-sm">This workspace is reserved for Clients with an Administrations-approved employee offer. <Link href="/file-folder" className="text-cyan-200 underline">Return to File Folder</Link></p>}
       {position&&<>
         <section className="space-y-3 rounded-2xl border border-cyan-200/20 bg-cyan-300/[.06] p-5">
           <h2 className="text-2xl font-bold">{clientRegional?'Pro Regional Manager · Dream Lovely':position.position_title}</h2>
@@ -70,8 +70,8 @@ export default function CompanyClientStaffWorkspace(){
           <p className="text-sm text-slate-200">Agreed monthly company staff salary: {Number(position.monthly_salary_usdt)>0
            ?Number(position.monthly_salary_usdt).toLocaleString()+' USDT under the approved employment agreement'
            :position.file_number==='WEAVE-2026-0907-0001'
-             ?'Salary record discrepancy — CJ has an agreed salary that Administration must reconcile.'
-             :'To be confirmed with Administration'} Payments are made through the company payroll, independently of the Pro activation fee.</p>
+             ?'Salary record discrepancy — CJ has an agreed salary that Administrations must reconcile.'
+             :'To be confirmed with Administrations'} Payments are made through the company payroll, independently of the Pro activation fee.</p>
           <p className="text-xs text-slate-400">Entry ticket: {Number(position.ticket_amount_usdt).toLocaleString()} USDT · Your verified contribution: {Number(position.applicant_contribution_usdt||position.ticket_amount_usdt).toLocaleString()} USDT · receipt {position.receipt_number}</p>
         </section>
         {siblingsEvent&&<section className="rounded-2xl border border-violet-300/25 bg-violet-300/[.06] p-5" data-cj-siblings-event="true">
@@ -95,10 +95,10 @@ export default function CompanyClientStaffWorkspace(){
           <div className="grid gap-3 sm:grid-cols-2">
            <div className="rounded-xl border border-white/10 bg-slate-950/35 p-4">
             <p className="text-xs text-sky-200">Company territory</p>
-            <p className="mt-2 font-semibold">{[clientRegional.city,clientRegional.region,clientRegional.country].filter(Boolean).join(', ')||'Pending Administration assignment'}</p>
+            <p className="mt-2 font-semibold">{[clientRegional.city,clientRegional.region,clientRegional.country].filter(Boolean).join(', ')||'Pending Administrations assignment'}</p>
             <p className="mt-2 text-xs text-slate-400">{clientRegional.locationStatus==='identity_verified_territory_pending_company_confirmation'
              ?'Location submitted and identity reviewed; company territory confirmation remains separate.'
-             :'Specific address and operating district are recorded during Pro activation and require Administration verification.'}</p>
+             :'Specific address and operating district are recorded during Pro activation and require Administrations verification.'}</p>
            </div>
            <div className="rounded-xl border border-white/10 bg-slate-950/35 p-4">
             <p className="text-xs text-sky-200">Operating department</p>
@@ -116,7 +116,7 @@ export default function CompanyClientStaffWorkspace(){
             ['Customer Door and Store','Organize a business entrance and serve customers using your own approved systems.','/client/system-store'],
             ['Business Legions','Recruit and coordinate authorized staff for your own business where eligible.','/client/enterprise/legions'],
             ['Operating and construction systems','Develop modules, workshops and Client business capacity in your Pro kingdom.','/client/system-switch'],
-            ['Administration and position records','Review official company instructions, monthly pay terms, and verified performance.','/communications'],
+            ['Administrations and position records','Review official company instructions, monthly pay terms, and verified performance.','/communications'],
            ].map(([title,detail,href])=><Link key={title} href={href} className="rounded-xl border border-sky-300/20 bg-slate-950/35 p-4">
             <h3 className="text-sm font-semibold text-sky-100">{title}</h3>
             <p className="mt-2 text-xs leading-5 text-slate-300">{detail}</p>

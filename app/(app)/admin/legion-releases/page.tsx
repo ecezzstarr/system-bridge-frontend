@@ -26,7 +26,7 @@ export default function LegionReleaseAudit(){
   }
   useEffect(()=>{void load()},[])
   return <main className="mx-auto max-w-4xl space-y-5 px-4 py-8 text-white">
-    <Link href="/admin/dashboard" className="text-xs text-amber-200">← Administration</Link>
+    <Link href="/admin/dashboard" className="text-xs text-amber-200">← Administrations</Link>
     <div className="flex items-center gap-3 text-sky-200"><Users className="h-6 w-6"/><ShieldCheck className="h-6 w-6"/></div>
     <h1 className="text-3xl font-black">Enterprise Legions · Position Changes</h1>
     <p className="text-sm leading-6 text-slate-300">Review completed voluntary worker departures and Client releases. The underlying Agent/Bridger position resumes under its usual account rules. Historical commissions, receipts and Client orders remain recorded. This view does not silently settle any outstanding compensation.</p>

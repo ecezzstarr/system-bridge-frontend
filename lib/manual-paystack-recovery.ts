@@ -22,14 +22,14 @@ const refuse = (message: string, httpStatus: 400 | 409 = 409): never => {
 }
 
 /**
- * Administration-only emergency recovery, not an assertion that Paystack's
+ * Administrations-only emergency recovery, not an assertion that Paystack's
  * API verified this transaction. The caller must authenticate role=admin.
  * Uses ONLY existing deposits, wallets and ledger_entries tables: no
  * database CREATE/ALTER privilege or runtime schema migration is required.
  */
 export async function manualCreditStuckPaystack(input: ManualPaystackInput) {
   if (!uuid.test(input.depositId) || !uuid.test(input.adminId)) {
-    refuse('Invalid Administration or deposit identity.', 400)
+    refuse('Invalid Administrations or deposit identity.', 400)
   }
   if (input.confirmedInPaystackDashboard !== true) {
     refuse('Confirm that you personally checked the successful payment in the original Paystack merchant dashboard.', 400)
@@ -82,7 +82,7 @@ export async function manualCreditStuckPaystack(input: ManualPaystackInput) {
     }
 
     // The deposit row lock serializes the human decision with the signed
-    // Paystack webhook and any concurrent Administration request.
+    // Paystack webhook and any concurrent Administrations request.
     const prior = await client.query(
       `SELECT COUNT(*) FILTER (WHERE entry_type='deposit' AND amount > 0) AS credits,
               COUNT(*) FILTER (WHERE metadata->>'event_type'='refund.processed') AS refunds
@@ -124,7 +124,7 @@ export async function manualCreditStuckPaystack(input: ManualPaystackInput) {
     }
     await client.query(
       `INSERT INTO ledger_entries(user_id,entry_type,amount,currency,description,metadata)
-       VALUES($1::uuid,'deposit',$2,'Flame Coin','Administration-confirmed Paystack deposit credit',$3::jsonb)`,
+       VALUES($1::uuid,'deposit',$2,'Flame Coin','Administrations-confirmed Paystack deposit credit',$3::jsonb)`,
       [deposit.user_id, flameCoin, JSON.stringify({
         deposit_id:String(deposit.id), reference, payment_method:'Paystack',
         event_type:'paystack.manual_admin_credit',
@@ -160,10 +160,10 @@ export async function manualCreditStuckPaystack(input: ManualPaystackInput) {
       await Promise.allSettled([
         notifyUser(n.userId,{
           type:'deposit_approved',
-          title:'Administration confirmed your Paystack payment',
+          title:'Administrations confirmed your Paystack payment',
           content:'Your ₦'+n.amountNgn.toLocaleString()+' payment was manually confirmed and '
             +n.flameCoin.toLocaleString()+' Flame Coin credited to your Weave wallet.',
-          link:'/wallet/deposit-withdraw',fromUserName:'WEAVE Administration',
+          link:'/wallet/deposit-withdraw',fromUserName:'WEAVE Administrations',
         }),
         notifyAdministrators({
           type:'paystack_manual_credit_audit',
@@ -171,7 +171,7 @@ export async function manualCreditStuckPaystack(input: ManualPaystackInput) {
           content:n.ownerName+' · ₦'+n.amountNgn.toLocaleString()
             +' · '+n.flameCoin.toLocaleString()+' Flame Coin. '
             +'Reference '+n.reference+'. Deposit '+n.depositId
-            +'. Approved by Administration '+input.adminId+'.',
+            +'. Approved by Administrations '+input.adminId+'.',
           link:'/admin/control-center#deposits',fromUserName:'WEAVE Finance',
         }),
       ])

@@ -36,10 +36,10 @@ const authoredPassages=[
   'Hope. Bridgers department: wordings.',
   'An so we arrived for where faith moves presence follows',
   'Stability Agent department: Where Presence moves family moves with that Stability came into being for who will feed the country if not Weave',
-  'Administration: with that saying a new frontier opened before us who are Hope in being.',
+  'Administrations: with that saying a new frontier opened before us who are Hope in being.',
   'A bridge is forming between us and those who have heard of our Burning River soil an outreach from Hope begins in time while Stability sustains',
   'Dream Lovely, Lord/Lady ownership department: Weave had promised us presence, the kind like the burning love of God for his creations, the kind that makes a man sings in love after a hard day at work. Our dreams are laid at the file folder where we can be conscious even while sleeping and dreaming lovely cause we have Weave of presence and our legions rotating around our success.',
-  'Administration department: Hope let\'s form a bridge with those who has dreams and can dream lovely as we welcome them into the Weave of Presence.',
+  'Administrations department: Hope let\'s form a bridge with those who has dreams and can dream lovely as we welcome them into the Weave of Presence.',
 ]
 let lastIndex=-1
 for(const passage of authoredPassages){

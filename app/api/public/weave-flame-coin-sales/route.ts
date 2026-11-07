@@ -44,7 +44,7 @@ export async function POST(request:NextRequest){
         adminPath:'/admin/weave-flame-coin-sales',actorName:'Bridge of Radiance'})
     }catch(e){console.error('[Flame Coin interest alert]',e)}
     return NextResponse.json({success:true,sale:order,
-      instruction:'Your preferred payment method is recorded. Do not send money or coins until Administration supplies approved instructions and a quote. Your Flame Coin is credited to a matching WEAVE account after independent payment verification, subject to availability and authorization.'},{status:201})
+      instruction:'Your preferred payment method is recorded. Do not send money or coins until Administrations supplies approved instructions and a quote. Your Flame Coin is credited to a matching WEAVE account after independent payment verification, subject to availability and authorization.'},{status:201})
   }
   if(action==='submit_proof'){
     const id=String(body.orderId||'')

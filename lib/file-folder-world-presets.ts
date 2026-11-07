@@ -21,7 +21,7 @@ export const PLUS_FILE_FOLDER_REFERENCE = {
   name: 'Official Plus File Folder',
   approved: '2026-10-23',
   referenceImage: '389215.png',
-  // One approved design reference across homepage, Client world, and Administration.
+  // One approved design reference across homepage, Client world, and Administrations.
   posterAssetPath: '/weave/plus-file-folder-white-official.webp',
   originalSha256: '544ba241448127f8550bb11a1b94058304467addef9156ba8486221fdc4385b3',
   originalDimensions: {width:1229,height:1536},

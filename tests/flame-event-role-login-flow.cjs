@@ -35,7 +35,7 @@ for (const removed of ['Your Loop 1 Position','River Bank · Functions','Movemen
   assert.ok(!eventWorld.includes(removed), 'The removed event information must not reappear: '+removed)
 }
 assert.match(gate,/const backHref = '\/event'/)
-assert.match(gate,/data-system-switch-gate="burning-river"/,'Agent, Bridger and Administration enter the Burning River gate')
+assert.match(gate,/data-system-switch-gate="burning-river"/,'Agent, Bridger and Administrations enter the Burning River gate')
 assert.match(gate,/<RiverSurface quiet=\{false\}\s*\/>/,'The gate renders real flowing fire and water')
 assert.match(gate,/<SystemSwitchThreshold active/,'The physical System Switch arch appears before the File Folder world')
 assert.match(gate,/href="\/system-switch\/world\?via=system-switch"/,'Staff explicitly cross from the gate into the File Folder open world')

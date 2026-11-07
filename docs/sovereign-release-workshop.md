@@ -2,7 +2,7 @@
 
 ## Authority and hosting independence
 
-The Release Workshop is the production control inside Administration, reachable via:
+The Release Workshop is the production control inside Administrations, reachable via:
 
 - `/admin/release-workshop` (request and track a release or rollback)
 - `/admin/deployment-records` (Sovereign Scroll + Flame release evidence)
@@ -23,9 +23,9 @@ storage and source/CI access. Provider-neutral does not mean infrastructure-free
 1. Developers commit code to canonical `main`.
 2. GitHub **Production Check** must succeed for the exact current `main` SHA.
    There is no automatic production promotion merely because CI succeeded.
-3. Administration chooses **Deploy verified update**, types `DEPLOY`, and confirms.
+3. Administrations chooses **Deploy verified update**, types `DEPLOY`, and confirms.
    The database records one queued request per server.
-   If the worker is not connected, Administration can cancel **only** the queued
+   If the worker is not connected, Administrations can cancel **only** the queued
    request; a running release must finish its health/recovery checks.
 4. The separate worker fetches canonical `main`, requires its GitHub Production
    Check to be successful, and calls `selfhost/deploy-production.sh` with the
@@ -37,11 +37,11 @@ storage and source/CI access. Provider-neutral does not mean infrastructure-free
 6. If deployment fails, the host script automatically restores the previous
    known-good image (or rebuilds if necessary) and records failure and rollback.
 7. The host worker records the final result in the release-request queue.
-   Administration can see queued, running, healthy, failed and rolled-back state.
+   Administrations can see queued, running, healthy, failed and rolled-back state.
 
 ### Roll back
 
-1. Administration chooses a **historically healthy release for this host**.
+1. Administrations chooses a **historically healthy release for this host**.
 2. Type `ROLL BACK`, and confirm. No arbitrary SHA or upload is accepted.
 3. The worker verifies the commit is in canonical main history. It uses the
    retained SHA-tagged Docker image if available, otherwise builds from the
@@ -59,7 +59,7 @@ records are reconciled.
 ## Initial one-time host setup
 
 This source upgrade requires one manual deployment and setup on the actual host.
-Further routine deploy/rollback operations then use Administration.
+Further routine deploy/rollback operations then use Administrations.
 
 1. Ensure the host has Python 3, Git, Docker Engine and Docker Compose v2.
    Ensure a dedicated `weave` service account can access Docker and the
@@ -93,7 +93,7 @@ Further routine deploy/rollback operations then use Administration.
    sudo journalctl -u weave-release-worker -n 50 --no-pager
    ```
 
-6. Verify that Administration can open the Release Workshop and the host
+6. Verify that Administrations can open the Release Workshop and the host
    worker reaches the queue (check its journal). Until the worker is installed,
    clicking Deploy only creates a **queued** record; it cannot apply updates.
 
@@ -116,12 +116,12 @@ docker compose -f docker-compose.selfhost.yml logs --tail=80 weave
 ```
 
 Compare the local and public health responses' releaseSha values with the requested and last verified healthy release.
-In Administration > Deployment Records (Sovereign + Flame), inspect failed, rollback_started, rolled_back and healthy events.
+In Administrations > Deployment Records (Sovereign + Flame), inspect failed, rollback_started, rolled_back and healthy events.
 Never infer a successful rollback from a statement that automatic recovery was attempted.
 
 The host journal spool is selfhost/deployment-history.log. Updated release workers additionally preserve
 a **redacted, mode 0600** private report at selfhost/release-executor-failures.log.
-The failed Administration request records stage=image_build, stage=compose_restart,
+The failed Administrations request records stage=image_build, stage=compose_restart,
 stage=local_health, stage=public_health or another exact stage, and reports
 recovery=verified_previous_release, recovery=manual_recovery_required, or recovery=not_confirmed.
 
@@ -179,7 +179,7 @@ host worker against the same server key.
 
 ## Invariants
 
-- Administration is the only interactive writer of release requests.
+- Administrations are the only interactive writer of release requests.
 - Browser input cannot supply executable commands or arbitrary hosts.
 - Independent worker secret is required to claim and complete requests.
 - A release request is not described as deployed until matching health checks.

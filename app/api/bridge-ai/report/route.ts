@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     if (!messages.length) return NextResponse.json({ success: true, message: 'No interaction record is available yet.', report: null })
 
     const response = await askEight(
-      `Act as Bridge AI inside a Weave Client File Folder. Review the following Client/prospect interaction record. Identify concrete needs, objectives, unresolved requests, likely system/business opportunities, risks requiring company attention, and useful next actions. Do not invent facts. Return JSON with message, data.summary, data.insights, data.recommended_actions. This is an internal operational report to Administration.\n\nClient: ${client.name}\nFile Number: ${client.file_number || 'none'}\nInteractions:\n${messages.map((m: any) => `[${m.created_at}] ${m.sender_type}/${m.position}: ${m.content}`).join('\n')}`,
+      `Act as Bridge AI inside a Weave Client File Folder. Review the following Client/prospect interaction record. Identify concrete needs, objectives, unresolved requests, likely system/business opportunities, risks requiring company attention, and useful next actions. Do not invent facts. Return JSON with message, data.summary, data.insights, data.recommended_actions. This is an internal operational report to Administrations.\n\nClient: ${client.name}\nFile Number: ${client.file_number || 'none'}\nInteractions:\n${messages.map((m: any) => `[${m.created_at}] ${m.sender_type}/${m.position}: ${m.content}`).join('\n')}`,
       { userRole: 'bridge_ai', systemState: { clientId, fileNumber: client.file_number, reportPurpose: 'admin_insight', messageCount: messages.length } }
     )
 

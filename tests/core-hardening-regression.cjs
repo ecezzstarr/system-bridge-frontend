@@ -27,7 +27,7 @@ assert.ok(!bridger.includes('UPDATE wallets')&&bridger.includes("reason:'retired
 assert.ok(agenticPurchase.includes("client.query('BEGIN')")&&agenticPurchase.includes('FOR UPDATE')&&agenticPurchase.includes('UPDATE wallets')&&agenticPurchase.includes('issueWeaveReceipt'),'One-time Agentic wallet movement is atomic with a receipt')
 assert.ok(bridgeAiPurchase.includes("client.query('BEGIN')")&&bridgeAiPurchase.includes('FOR UPDATE')&&bridgeAiPurchase.includes('UPDATE wallets')&&bridgeAiPurchase.includes('issueWeaveReceipt'),'Per-template Bridge AI purchase is atomic with a receipt')
 assert.ok(opay.includes("status IN ('pending','approved')")&&opay.includes('FOR UPDATE'),'OPay withdrawal reserves pending/approved movement under a wallet lock')
-assert.ok(sweeps.includes('status: 410')&&!sweeps.includes("from '@/lib/mock-db'"),'Legacy in-memory Administration sweeps are retired')
+assert.ok(sweeps.includes('status: 410')&&!sweeps.includes("from '@/lib/mock-db'"),'Legacy in-memory Administrations sweeps are retired')
 assert.ok(!eight.includes("from '@/lib/mock-db'"),'Live EIGHT has no mock database dependency')
 assert.ok(!fs.existsSync(path.join(root,'lib/mock-db.ts')),'Retired mock database is removed from production source')
 assert.ok((prospects.match(/authUser\.role !== 'bridger'/g)||[]).length>=2,'Bridger Prospect read/write APIs enforce Bridger role')

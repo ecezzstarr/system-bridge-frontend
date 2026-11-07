@@ -56,7 +56,7 @@ export async function PATCH(request:NextRequest){
  const sql=getSql();await ensureBridgerNumberEngineSchema(sql)
  if(user.role==='admin'){
   const status=String(body.status||'')
-  if(!['pending','code_ready','failed'].includes(status))return NextResponse.json({error:'Invalid Administration action'},{status:400})
+  if(!['pending','code_ready','failed'].includes(status))return NextResponse.json({error:'Invalid Administrations action'},{status:400})
   const message=String(body.message||'').trim().slice(0,1000)
   const code=String(body.code||'').trim().slice(0,120)
   if(status==='pending'&&!message)return NextResponse.json({error:'Explain why the code is pending'},{status:400})
@@ -68,7 +68,7 @@ export async function PATCH(request:NextRequest){
    WHERE id=${id}::uuid AND status IN ('requested','pending')
    RETURNING *
   `
-  if(!row)return NextResponse.json({error:'Request is no longer awaiting Administration'},{status:409})
+  if(!row)return NextResponse.json({error:'Request is no longer awaiting Administrations'},{status:409})
   return NextResponse.json({success:true,request:row})
  }
  if(user.role==='bridger'){

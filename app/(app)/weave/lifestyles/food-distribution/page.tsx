@@ -51,8 +51,8 @@ export default function FoodDistributionEmploymentPage(){
       <h2 className="mt-2 text-xl font-black">{appointment.position==='manager'?'Food Distribution Manager':'Assistant Food Distribution Manager'} · {appointment.status.replaceAll('_',' ')}</h2>
       {appointment.manager_name&&<p className="mt-2 text-sm text-slate-300">Lead Manager: {appointment.manager_name}</p>}
       <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-300">{appointment.application_note}</p>
-      {appointment.administration_note&&<p className="mt-3 text-xs text-amber-100">Administration review: {appointment.administration_note}</p>}
-      {appointment.status==='approved'&&<div className="mt-4"><p className="text-sm text-emerald-200">Administration has approved this appointment.</p><Link href="/weave/lifestyles/work" className="mt-3 inline-block text-sm font-black text-cyan-200">Open approved workspaces →</Link></div>}
+      {appointment.administration_note&&<p className="mt-3 text-xs text-amber-100">Administrations review: {appointment.administration_note}</p>}
+      {appointment.status==='approved'&&<div className="mt-4"><p className="text-sm text-emerald-200">Administrations have approved this appointment.</p><Link href="/weave/lifestyles/work" className="mt-3 inline-block text-sm font-black text-cyan-200">Open approved workspaces →</Link></div>}
     </section>}
     {(!appointment||['rejected','ended'].includes(appointment.status))&&<section className="mt-6 border border-white/10 p-5">
       <h2 className="text-lg font-black">{appointment?'Submit a new application':'Apply for food distribution employment'}</h2>
@@ -63,8 +63,8 @@ export default function FoodDistributionEmploymentPage(){
       {position==='assistant'&&<><label className="mt-4 block text-xs font-bold text-slate-300">Approved lead Manager</label><select value={managerUserId} onChange={e=>setManagerUserId(e.target.value)} className="mt-2 w-full rounded-xl border border-white/15 bg-slate-950 p-3 text-sm text-white"><option value="">Choose a Food Distribution Manager</option>{managers.map(m=><option key={m.user_id} value={m.user_id}>{m.name}</option>)}</select>{!managers.length&&<p className="mt-2 text-xs text-amber-200">No approved Food Distribution Manager is available for assistant applications yet.</p>}</>}
       <label className="mt-4 block text-xs font-bold text-slate-300">Experience and operating plan</label>
       <textarea value={note} onChange={e=>setNote(e.target.value)} maxLength={2000} rows={5} placeholder="Explain how you will track food stock, supply outlets, coordinate delivery handoffs and record completed distributions." className="mt-2 w-full rounded-xl border border-white/15 bg-slate-950 p-3 text-sm text-white"/>
-      <Button className="mt-4" disabled={!eligible||saving||note.trim().length<30||(position==='assistant'&&(!managerUserId||!managers.length))} onClick={()=>void apply()}>{saving?'Submitting…':'Submit for Administration review'}</Button>
-      <p className="mt-3 text-xs leading-5 text-slate-500">Application is not an appointment. Administration must approve it before the role becomes active. Do not count a distribution until its supporting order or delivery evidence is recorded.</p>
+      <Button className="mt-4" disabled={!eligible||saving||note.trim().length<30||(position==='assistant'&&(!managerUserId||!managers.length))} onClick={()=>void apply()}>{saving?'Submitting…':'Submit for Administrations review'}</Button>
+      <p className="mt-3 text-xs leading-5 text-slate-500">Application is not an appointment. Administrations must approve it before the role becomes active. Do not count a distribution until its supporting order or delivery evidence is recorded.</p>
     </section>}
   </main>
 }

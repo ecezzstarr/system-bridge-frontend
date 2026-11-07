@@ -299,15 +299,15 @@ export async function getFinancialRecordPage(
         } else {
           walletStatus=primary.length===1?'available':'legacy_wallet'
           if (walletStatus==='legacy_wallet') {
-            warnings.push('A legacy wallet balance is displayed. Administration should review its missing primary-wallet designation; no funds were moved.')
+            warnings.push('A legacy wallet balance is displayed. Administrations should review its missing primary-wallet designation; no funds were moved.')
           }
         }
       } else if (wallet.rows.length===0) {
         walletStatus='missing'
-        warnings.push('No wallet record exists for this account. Ledger history may still be available; Administration must investigate without creating a replacement zero balance.')
+        warnings.push('No wallet record exists for this account. Ledger history may still be available; Administrations must investigate without creating a replacement zero balance.')
       } else {
         walletStatus='ambiguous'
-        warnings.push('More than one wallet could be primary. Administration must reconcile wallet identity; balances were not combined.')
+        warnings.push('More than one wallet could be primary. Administrations must reconcile wallet identity; balances were not combined.')
       }
     }
 

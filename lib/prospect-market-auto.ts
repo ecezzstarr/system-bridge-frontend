@@ -84,7 +84,7 @@ export function validateCountrySeed(countryCode: string, rawSeed: string) {
   return { country, seed: '+' + digits }
 }
 
-// Sources must be explicitly supplied by Administration. No website or external contact
+// Sources must be explicitly supplied by Administrations. No website or external contact
 // provider is implied, and generated candidates must never be called verified.
 export async function saveProspectAutoSource(adminId: string, countryCode: string, seed: string, enabled: boolean) {
   await ensureProspectAutoSchema()
@@ -175,7 +175,7 @@ export async function runProspectMarketAuto() {
     const before=await publishedCount(client)
     const setting=(await client.query('SELECT enabled FROM prospect_auto_settings WHERE singleton=true')).rows[0]
     if (!setting?.enabled) {
-      const result=await recordRun(client,'paused','Administration has not enabled automatic publishing.',before,before,0,0)
+      const result=await recordRun(client,'paused','Administrations have not enabled automatic publishing.',before,before,0,0)
       await client.query('COMMIT')
       return result
     }
@@ -188,7 +188,7 @@ export async function runProspectMarketAuto() {
       "SELECT id FROM users WHERE role='admin' AND COALESCE(is_active,true)=true ORDER BY created_at ASC LIMIT 1",
     )).rows[0]
     if (!admin) {
-      const result=await recordRun(client,'blocked','No active Administration account owns new packages.',before,before,0,0)
+      const result=await recordRun(client,'blocked','No active Administrations account owns new packages.',before,before,0,0)
       await client.query('COMMIT')
       return result
     }
@@ -231,7 +231,7 @@ export async function runProspectMarketAuto() {
           const contact=(await client.query(
             'INSERT INTO market_prospect_contacts(package_id,phone,whatsapp_number,country,source_platform,status,notes) ' +
             "VALUES ($1::uuid,$2,$2,$3,'auto_country_number_series','packaged',$4) RETURNING id",
-            [pkg.id,number,country,'Unverified candidate generated from an Administration-supplied country series. Number ownership, WhatsApp availability and permission to contact are not established.'],
+            [pkg.id,number,country,'Unverified candidate generated from an Administrations-supplied country series. Number ownership, WhatsApp availability and permission to contact are not established.'],
           )).rows[0]
           await client.query(
             'INSERT INTO prospect_auto_publications(contact_id,package_id,country_code) VALUES ($1::uuid,$2::uuid,$3)',
