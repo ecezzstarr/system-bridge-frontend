@@ -17,6 +17,11 @@ export async function ensureProFileNumberVerificationSchema(){
    business_name varchar(180) NOT NULL,
    business_plan jsonb NOT NULL,
    signed_name varchar(255) NOT NULL,
+   operating_country varchar(100),
+   operating_region varchar(150),
+   operating_city varchar(150),
+   contact_address text,
+   postal_code varchar(30),
    signed_terms_version varchar(64) NOT NULL DEFAULT 'PRO-680-USDT-2026-11',
    terms_accepted_at timestamptz NOT NULL DEFAULT now(),
    access_token_hash char(64) NOT NULL UNIQUE,
@@ -36,6 +41,11 @@ export async function ensureProFileNumberVerificationSchema(){
    created_at timestamptz NOT NULL DEFAULT now(),
    updated_at timestamptz NOT NULL DEFAULT now()
  )`
+ await sql`ALTER TABLE pro_file_number_verifications ADD COLUMN IF NOT EXISTS operating_country varchar(100)`
+ await sql`ALTER TABLE pro_file_number_verifications ADD COLUMN IF NOT EXISTS operating_region varchar(150)`
+ await sql`ALTER TABLE pro_file_number_verifications ADD COLUMN IF NOT EXISTS operating_city varchar(150)`
+ await sql`ALTER TABLE pro_file_number_verifications ADD COLUMN IF NOT EXISTS contact_address text`
+ await sql`ALTER TABLE pro_file_number_verifications ADD COLUMN IF NOT EXISTS postal_code varchar(30)`
  await sql`CREATE INDEX IF NOT EXISTS pro_file_number_verifications_file_status
   ON pro_file_number_verifications(file_number,status,created_at DESC)`
 }
@@ -64,11 +74,24 @@ export async function eligibleProNumber(fileNumber:string){
 }
 export async function submitProFileNumberPlan(input:{
  fileNumber:unknown;businessName:unknown;plan:Record<string,unknown>;
- signedName:unknown;termsAccepted:unknown
+ signedName:unknown;termsAccepted:unknown;
+ operatingCountry:unknown;operatingRegion:unknown;operatingCity:unknown;contactAddress:unknown;postalCode:unknown
 }){
  const fileNumber=cleanNumber(input.fileNumber)
  const businessName=String(input.businessName||'').trim()
  const signedName=String(input.signedName||'').trim()
+ const operatingCountry=String(input.operatingCountry||'').trim()
+ const operatingRegion=String(input.operatingRegion||'').trim()
+ const operatingCity=String(input.operatingCity||'').trim()
+ const contactAddress=String(input.contactAddress||'').trim()
+ const postalCode=String(input.postalCode||'').trim()
+ if(!operatingCountry||operatingCountry.length>100||operatingRegion.length<2||operatingRegion.length>150||
+   operatingCity.length<2||operatingCity.length>150||contactAddress.length<6||contactAddress.length>500||
+   postalCode.length>30)
+  throw new Error('Provide the country, city, region and contact address for your actual company operating location.')
+ if(fileNumber===CJ_DORADO_FILE_NUMBER&&operatingCountry.toLowerCase()!=='spain')
+  throw new Error('CJ Dorado has been assigned to Spain; contact Administration if this territory is incorrect.')
+
  if(!proNumberPattern.test(fileNumber)||businessName.length<3||businessName.length>180
   ||signedName.length<4||signedName.length>255||input.termsAccepted!==true)
   throw new Error('Complete the File Number, business name, electronic signature and fee agreement.')
@@ -91,9 +114,11 @@ export async function submitProFileNumberPlan(input:{
  // Multiple submissions are reviewed independently; no approved record is overwritten.
  const ticket=randomBytes(32).toString('hex')
  const [row]=await sql`INSERT INTO pro_file_number_verifications
-  (file_number,business_name,business_plan,signed_name,access_token_hash)
+  (file_number,business_name,business_plan,signed_name,access_token_hash,
+   operating_country,operating_region,operating_city,contact_address,postal_code)
   VALUES(${fileNumber},${businessName},${JSON.stringify(plan)}::jsonb,
-   ${signedName},${hashTicket(ticket)})
+   ${signedName},${hashTicket(ticket)},
+   ${operatingCountry},${operatingRegion},${operatingCity},${contactAddress},${postalCode||null})
   RETURNING id,status`
  return {success:true,reference:String(row.id),ticket,status:'pending_identity'}
 }
@@ -101,6 +126,7 @@ export async function readProFileNumberVerification(ticket:string){
  if(!/^[a-f0-9]{64}$/i.test(ticket))return null
  await ensureProFileNumberVerificationSchema()
  const [row]=await sql`SELECT id,file_number,business_name,status,identity_verified_at,
+  operating_country,operating_region,operating_city,
   payment_submitted_at,payment_verified_at,rejection_reason FROM pro_file_number_verifications
   WHERE access_token_hash=${hashTicket(ticket.toLowerCase())} LIMIT 1`
  if(!row)return null
@@ -141,6 +167,9 @@ export async function readProFileNumberVerification(ticket:string){
  }
  return {
   reference:String(row.id),fileNumber:String(row.file_number),businessName:String(row.business_name),
+  operatingLocation:row.identity_verified_at?{
+   country:String(row.operating_country||''),region:String(row.operating_region||''),city:String(row.operating_city||'')
+  }:null,
   status:String(row.status),feeUSDT:PRO_ACTIVATION_FEE_USDT,network:'USDT TRON (TRC-20)',
   walletAddress:receivingWallet,
   paymentVerified:Boolean(row.payment_verified_at),siblingsEvent,companyPosition,
