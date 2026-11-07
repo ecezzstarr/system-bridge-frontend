@@ -113,7 +113,8 @@ export default async function PublicClientMarketStore({
     LIMIT 1
   `
   const orderForCheckout=(query.order&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(query.order))?await sql`
-    SELECT o.id,o.amount,o.currency FROM client_store_orders o
+    SELECT o.id,o.amount,o.currency,i.offer_type FROM client_store_orders o
+    LEFT JOIN client_store_items i ON i.id=o.item_id
     WHERE o.id=${query.order}::uuid AND o.store_id=${store.id}::uuid LIMIT 1
   `:[]
   const checkoutOrder=orderForCheckout[0]||null
@@ -153,7 +154,7 @@ export default async function PublicClientMarketStore({
         className="min-h-10 rounded-lg border border-amber-200/30 bg-[#122b31] px-3 py-2 text-xs font-bold text-amber-100">
         {String(seller.name).slice(0,75)} · {String(seller.function_title||'Sales representative').slice(0,60)} →</a>)}</div>
     </nav>}
-    {checkoutOrder&&<div className="mx-auto max-w-5xl px-5 py-4"><CustomerDoorCheckout orderId={String(checkoutOrder.id)} amount={Number(checkoutOrder.amount)} currency={String(checkoutOrder.currency)}/></div>}
+    {checkoutOrder&&<div className="mx-auto max-w-5xl px-5 py-4"><CustomerDoorCheckout orderId={String(checkoutOrder.id)} amount={Number(checkoutOrder.amount)} currency={String(checkoutOrder.currency)} offerType={String(checkoutOrder.offer_type||'product')}/></div>}
     <ClientMarketEnvironment
       slug={slug}
       store={store}

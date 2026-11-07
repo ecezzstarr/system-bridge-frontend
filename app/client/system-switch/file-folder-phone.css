@@ -132,7 +132,8 @@
  [data-customer-view="connections"] [data-customer-section]:not([data-customer-section="connections"]),
  [data-customer-view="appearance"] [data-customer-section]:not([data-customer-section="appearance"]),
  [data-customer-view="offer"] [data-customer-section]:not([data-customer-section="offer"]),
- [data-customer-view="activity"] [data-customer-section]:not([data-customer-section="activity"]) { display:none; }
+ [data-customer-view="activity"] [data-customer-section]:not([data-customer-section="activity"]),
+ [data-customer-view="earnings"] [data-customer-section]:not([data-customer-section="earnings"]) { display:none; }
 }
 
 .ff-business-disclosure > summary { padding:16px;cursor:pointer;color:#bcd8e8; }
