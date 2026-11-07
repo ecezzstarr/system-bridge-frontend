@@ -75,6 +75,13 @@ export default function CompanyClientStaffWorkspace(){
           <p className="mt-2 text-xs text-slate-400">Verified amount: {siblingsEvent.verifiedAmountUSDT.toLocaleString()} USDT · Other kinds of funds: Pending verification</p>
           <Link href="/client/pro-activation" className="mt-3 inline-block text-sm text-cyan-200 underline">View Pro activation and signing</Link>
         </section>}
+        {/regional\\s+manager/i.test(position.position_title)&&<section className="space-y-3 rounded-2xl border border-cyan-300/25 bg-cyan-300/[.04] p-5" data-regional-manager-position="true">
+          <p className="text-xs uppercase tracking-widest text-cyan-200">WEAVE Company · Regional Manager</p>
+          <h2 className="text-2xl font-bold">Regional Management Workspace</h2>
+          <p className="text-sm text-slate-200">Your position coordinates the Food Distribution Managers and their assistants, the student and worker daily-meal / school-fee / rent support program, verified gift-card escrow activation, and File Folder sales carried by your company staff.</p>
+          <p className="text-xs text-slate-300">Monthly salary follows your recorded approved employment terms and separate company payroll. Referral or File Folder commissions require their own verified business activity. The Pro activation fee is not a salary payment or deposit.</p>
+          <Link href="/weave/lifestyles/regional-manager" className="inline-block text-sm text-cyan-200 underline">Regional Manager systems and company position</Link>
+        </section>}
         <section className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
           {[
             ['Meet businesses','Introduce WEAVE and understand how the organization might use a File Folder.','/file-folder-preview'],
