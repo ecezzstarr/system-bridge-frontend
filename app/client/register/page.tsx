@@ -163,7 +163,7 @@ function ClientRegisterContent() {
 
               <div className="text-center">
                 <p className="text-[10px] text-slate-500 italic">
-                  A File Number is issued after Administration verifies a File Folder movement.
+                  A File Number is issued after Administrations verify a File Folder movement.
                 </p>
               </div>
             </form>

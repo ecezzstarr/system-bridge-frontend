@@ -60,7 +60,7 @@ export async function GET(request:NextRequest){
       public_url:'/market/'+store.public_slug},
     activity,notice:'Departmental work, company payroll, customer orders and File Folder purchases are separate records. Customer payments require actual settlement verification.'},{headers})
  }catch(e){console.error('[Pro Regional Manager workspace GET]',e)
-  return NextResponse.json({error:'Unable to open Pro Manager workspace; contact Administration if this Pro File Folder was activated but is not initializing.'},{status:503,headers})}
+  return NextResponse.json({error:'Unable to open Pro Manager workspace; contact Administrations if this Pro File Folder was activated but is not initializing.'},{status:503,headers})}
 }
 
 export async function POST(request:NextRequest){

@@ -13,7 +13,7 @@ export const runtime='nodejs'
 export async function GET(request:NextRequest){
   const admin=await getAuthUser(request)
   if(!admin||admin.role!=='admin'){
-    return NextResponse.json({error:'Administration authentication required'},{status:401})
+    return NextResponse.json({error:'Administrations authentication required'},{status:401})
   }
 
   try{
@@ -70,7 +70,7 @@ export async function GET(request:NextRequest){
 export async function POST(request:NextRequest){
   const admin=await getAuthUser(request)
   if(!admin||admin.role!=='admin'){
-    return NextResponse.json({error:'Administration authentication required'},{status:401})
+    return NextResponse.json({error:'Administrations authentication required'},{status:401})
   }
 
   try{

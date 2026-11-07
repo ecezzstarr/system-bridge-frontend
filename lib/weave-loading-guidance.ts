@@ -37,8 +37,8 @@ const PLATFORM_TRAINING: readonly WeaveLoadingBrief[] = [
   {
     eyebrow:'WEAVE · FOUR POSITIONS',
     title:'Know who operates each part.',
-    body:'Agents work in Stability by selling and distributing WEAVE products in Nigeria and supporting Bridger programs. Bridgers work in Hope, introducing digital File Folders to interested people worldwide. Clients own their businesses. Administration organizes the company.',
-    movement:'Agent · Bridger · Client · Administration',
+    body:'Agents work in Stability by selling and distributing WEAVE products in Nigeria and supporting Bridger programs. Bridgers work in Hope, introducing digital File Folders to interested people worldwide. Clients own their businesses. Administrations organize the company.',
+    movement:'Agent · Bridger · Client · Administrations',
   },
   {
     eyebrow:'WEAVE · HOW TO BEGIN',
@@ -115,19 +115,19 @@ const ADMIN_TRAINING: readonly WeaveLoadingBrief[] = [
   {
     eyebrow:'ADMINISTRATION · 1 OF 3',
     title:'WEAVE operates through verified roles.',
-    body:'Administration coordinates the operating institution without replacing the work of its departments. Agents carry Stability, Bridgers carry Hope and Clients own their enterprises. Use the authorized workshops to review positions, applications, permissions and pending work; keep decisions tied to actual company records.',
+    body:'Administrations coordinates the operating institution without replacing the work of its departments. Agents carry Stability, Bridgers carry Hope and Clients own their enterprises. Use the authorized workshops to review positions, applications, permissions and pending work; keep decisions tied to actual company records.',
     movement:'Identify → review → authorize',
   },
   {
     eyebrow:'ADMINISTRATION · 2 OF 3',
     title:'Separate a request from proof.',
-    body:'A request for approval is not approval. Forensics verifies the relevant order, receipt, payment or delivery evidence before a status changes. Administration can approve, reject or request correction through its designated systems. Preserve the resulting record so the worker, department and Client can see what actually happened.',
+    body:'A request for approval is not approval. Forensics verifies the relevant order, receipt, payment or delivery evidence before a status changes. Administrations can approve, reject or request correction through its designated systems. Preserve the resulting record so the worker, department and Client can see what actually happened.',
     movement:'Request → evidence → Forensics → confirmation',
   },
   {
     eyebrow:'ADMINISTRATION · 3 OF 3',
     title:'Keep work continuous.',
-    body:'Review real notifications, outstanding orders, employed teams and support cases. Keep each department responsible for its authorized activities while Administration observes outcomes and resolves exceptions. Changes to prices, permissions, employment terms or public content must be made from the correct workshop and reflected in the recorded state.',
+    body:'Review real notifications, outstanding orders, employed teams and support cases. Keep each department responsible for its authorized activities while Administrations observes outcomes and resolves exceptions. Changes to prices, permissions, employment terms or public content must be made from the correct workshop and reflected in the recorded state.',
     movement:'Recognize exception → resolve → record → continue',
   },
 ]
@@ -145,10 +145,10 @@ export function trainingBriefsForRole(role: WeaveLoadingRole): readonly WeaveLoa
 const EMPLOYMENT_GUIDES:ReadonlyArray<{match:(path:string)=>boolean;guide:WeaveOperatingGuide}>=[
   {match:path=>path.startsWith('/manager/dashboard'),guide:{
     title:'Distribution Manager · sign and begin',
-    explanation:'Three lead Distribution Manager positions are available through active Agent or Bridger identities. Your signature sends the application to Administration. One-month probation starts only after Administration verifies the appointment.',
+    explanation:'Three lead Distribution Manager positions are available through active Agent or Bridger identities. Your signature sends the application to Administrations. One-month probation starts only after Administrations verify the appointment.',
     steps:[
       'Read the employment conditions and confirm an active Agent position or permanent Agentic-Bridger purchase.',
-      'Accept the terms and type your registered full account name into the signature field. Submit for Administration verification and check its actual status before treating probation as started.',
+      'Accept the terms and type your registered full account name into the signature field. Submit for Administrations verification and check its actual status before treating probation as started.',
       'An appointed lead may review assistant applications. The lead and up to two assistants share 300 verified referrals in probation, then 500 per later month; salary is subject to verification.',
     ],
     nextHref:'/manager/dashboard',nextLabel:'View Distribution Manager employment',
@@ -166,10 +166,10 @@ const EMPLOYMENT_GUIDES:ReadonlyArray<{match:(path:string)=>boolean;guide:WeaveO
 ]
 const FOOD_PREPARATION_GUIDE:WeaveOperatingGuide={
   title:'Food Preparation · Agent employment',
-  explanation:'One lead Food Preparation Manager works with two Assistant Managers. Only Agents apply; Administration decides appointments, and work follows verified paid orders.',
+  explanation:'One lead Food Preparation Manager works with two Assistant Managers. Only Agents apply; Administrations decide appointments, and work follows verified paid orders.',
   steps:[
     'Select an available position and enter your actual food preparation, handling and delivery experience.',
-    'Submit the application and check Administration approval before treating the position as active.',
+    'Submit the application and check Administrations approval before treating the position as active.',
     'The approved lead assigns preparation work to approved assistants. Record actual packaging and dispatch handoffs.',
   ],
   nextHref:'/weave/lifestyles/food-preparation',nextLabel:'View food preparation',

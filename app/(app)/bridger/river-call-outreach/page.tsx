@@ -73,7 +73,7 @@ export default function RiverCallOutreachPage(){
         <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">A Bridger pays for one AI phone call with Flame Coin. River introduces itself as an AI, explains WEAVE and listens to the candidate. If the candidate wants more, River asks permission for WhatsApp, ends the call and opens a handoff to the Bridger.</p>
       </header>
       <div className="mt-6 grid gap-4 sm:grid-cols-3">
-        <div className="border border-white/10 bg-white/[.025] p-4"><p className="text-[10px] text-slate-400">Call price · set by Administration</p><p className="mt-2 text-xl font-bold">{state?.priceFlameCoin==null?'Not set':state.priceFlameCoin+' Flame Coin'}</p></div>
+        <div className="border border-white/10 bg-white/[.025] p-4"><p className="text-[10px] text-slate-400">Call price · set by Administrations</p><p className="mt-2 text-xl font-bold">{state?.priceFlameCoin==null?'Not set':state.priceFlameCoin+' Flame Coin'}</p></div>
         <div className="border border-white/10 bg-white/[.025] p-4"><p className="flex items-center gap-2 text-[10px] text-slate-400"><Wallet className="h-3.5 w-3.5"/>Available balance</p><p className="mt-2 text-xl font-bold">{state?.walletBalance?.toFixed(2)??'—'} Flame Coin</p></div>
         <div className="border border-white/10 bg-white/[.025] p-4"><p className="text-[10px] text-slate-400">River calling</p><p className="mt-2 text-sm font-bold">{state?.enabled&&state.providerReady?'Available':'Not yet activated'}</p></div>
       </div>

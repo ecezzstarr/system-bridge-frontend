@@ -14,12 +14,12 @@ async function admin(request:NextRequest){
 }
 async function notify(clientId:string,title:string,message:string){
  try{await sql`INSERT INTO notifications(user_id,type,title,content,from_user_name,link)
- VALUES(${clientId}::uuid,'file_folder_upgrade',${title},${message},'WEAVE Administration','/client/system-switch')`}
+ VALUES(${clientId}::uuid,'file_folder_upgrade',${title},${message},'WEAVE Administrations','/client/system-switch')`}
  catch(error){console.error('[file-folder upgrade notification]',error)}
 }
 export async function GET(request:NextRequest){
  const user=await admin(request)
- if(!user)return NextResponse.json({error:'Administration required'},{status:403})
+ if(!user)return NextResponse.json({error:'Administrations required'},{status:403})
  try{
   await ensureClientFolderUpgrades()
   const clients=await sql`SELECT id,name,email,file_number FROM users
@@ -46,7 +46,7 @@ export async function GET(request:NextRequest){
 }
 export async function POST(request:NextRequest){
  const user=await admin(request)
- if(!user)return NextResponse.json({error:'Administration required'},{status:403})
+ if(!user)return NextResponse.json({error:'Administrations required'},{status:403})
  const body=await request.json().catch(()=>({}))
  const action=String(body.action||'')
  if(!new Set(['prepare_employee_file_number']).has(action))
@@ -168,7 +168,7 @@ export async function POST(request:NextRequest){
      await connection.query(`UPDATE client_folder_upgrades
        SET repayment_verified_usdt=repayment_verified_usdt+$1,updated_at=now() WHERE id=$2`,[amount,row.id])
      notifyTitle='Pro File Folder · Loan repayment verified'
-     notifyMessage='Administration verified a '+amount.toFixed(2)+' USDT repayment. Your world will open only after the full balance is paid and construction is approved.'
+     notifyMessage='Administrations verified a '+amount.toFixed(2)+' USDT repayment. Your world will open only after the full balance is paid and construction is approved.'
    }else{
      if(row.status!=='repayment_required'||!row.loan_agreed_at||!row.loan_funded_at||
         Number(row.repayment_verified_usdt)<Number(row.loan_principal_usdt))
@@ -178,7 +178,7 @@ export async function POST(request:NextRequest){
      await connection.query(`UPDATE client_folder_upgrades
        SET status='ready',approved_by=$1::uuid,updated_at=now() WHERE id=$2`,[user.id,row.id])
      notifyTitle='Your Pro File Folder is ready'
-     notifyMessage='Administration has verified repayment and completed the Pro File Folder construction gate. You may now enter your world.'
+     notifyMessage='Administrations have verified repayment and completed the Pro File Folder construction gate. You may now enter your world.'
    }
    notifyClient=String(row.client_id)
    response={success:true,action,fileNumber:CJ_PRO_FOLDER_NUMBER}

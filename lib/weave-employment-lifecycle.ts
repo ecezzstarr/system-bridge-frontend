@@ -103,7 +103,7 @@ export async function replyToEmployment(position:WeaveEmploymentPosition,employe
       :'/admin/distribution-employment'
     if(isAdmin){
       await pool.query(`INSERT INTO notifications(user_id,type,title,content,from_user_name,link)
-        VALUES($1::uuid,'employment_reply','New employment message from Administration',$2,'WEAVE Administration',$3)`,
+        VALUES($1::uuid,'employment_reply','New employment message from Administrations',$2,'WEAVE Administrations',$3)`,
         [employeeId,content.slice(0,380),employeeRoute])
     }else{
       const {rows:authors}=await pool.query('SELECT name FROM users WHERE id=$1::uuid',[author.id])
@@ -183,7 +183,7 @@ export async function exitWeaveEmployment(
       await client.query(`UPDATE weave_food_preparation_managers SET status='revoked',exit_kind=$2,
         exit_reason=$3,exited_at=NOW(),exited_by=$4::uuid,updated_at=NOW()
         WHERE agent_id=$1::uuid`,[employeeId,exitKind,reason,actor.id])
-      // Do not delete customer jobs. Notify Administration about any uncompleted
+      // Do not delete customer jobs. Notify Administrations about any uncompleted
       // assigned food orders, which must be reassigned before further work.
       const {rows}=await client.query(`SELECT COUNT(*)::int AS count
         FROM weave_food_preparation_tasks t
@@ -202,8 +202,8 @@ export async function exitWeaveEmployment(
   const pool=getPool()
   try{
     await pool.query(`INSERT INTO notifications(user_id,type,title,content,from_user_name)
-      VALUES($1::uuid,'employment_exit',$2,$3,'WEAVE Administration')`,[
-        employeeId,action==='fire'?'Your WEAVE employment appointment was ended by Administration':exitKind==='withdrawn'?'Your WEAVE employment application was withdrawn':'Your WEAVE employment resignation was recorded',
+      VALUES($1::uuid,'employment_exit',$2,$3,'WEAVE Administrations')`,[
+        employeeId,action==='fire'?'Your WEAVE employment appointment was ended by Administrations':exitKind==='withdrawn'?'Your WEAVE employment application was withdrawn':'Your WEAVE employment resignation was recorded',
         reason.slice(0,550)])
     if(action==='resign'){
       await pool.query(`INSERT INTO notifications(user_id,type,title,content,from_user_name)

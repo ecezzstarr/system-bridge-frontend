@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     if (!updated) {
       return NextResponse.json({
         success: false,
-        error: 'Only a paid Ember order marked delivered by Administration can be received',
+        error: 'Only a paid Ember order marked delivered by Administrations can be received',
       }, { status: 409 })
     }
 

@@ -16,7 +16,7 @@ The precise WebP conversions above were produced from the approved uploaded PNG 
 
 ## Live-world model
 
-This is **The Company of Time** expressed as interacting Clients, Agents, Bridgers, Administration, visitors and customers in their appropriate access boundaries.
+This is **The Company of Time** expressed as interacting Clients, Agents, Bridgers, Administrations, visitors and customers in their appropriate access boundaries.
 
 - Every confirmed Client File Folder activation creates an owned, permanent `weave_open_world_domains` slot. Existing active folders migrate into stable slots without inventing a purchase.
 - The domain's WEAVE **world-map position is not a GPS or street address**. The position is resolved deterministically from its permanent slot and remains stable as the Client builds or upgrades.

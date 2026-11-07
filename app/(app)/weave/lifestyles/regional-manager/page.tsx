@@ -34,7 +34,7 @@ export default function RegionalManagerApplicationPage(){
       const response=await fetch('/api/regional-manager/applications',{method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({region,experience,motivation})})
       const data=await response.json()
       if(!response.ok)throw new Error(data.error||'Application could not be submitted')
-      setApplication(data.application);setMessage('Application submitted to Administration for review.')
+      setApplication(data.application);setMessage('Application submitted to Administrations for review.')
     }catch(e){setError(e instanceof Error?e.message:'Application could not be submitted')}
     finally{setSaving(false)}
   }
@@ -47,13 +47,13 @@ export default function RegionalManagerApplicationPage(){
     <div className="mt-5 grid gap-3 sm:grid-cols-3">{[['Eligible applicants','Bridger · Agent'],['File Folder','None · ordinary Regional Manager'],['Supporting team','Up to 20 assistants']].map(([label,value])=><div key={label} className="border border-white/10 p-4"><p className="text-[10px] uppercase tracking-wider text-slate-400">{label}</p><p className="mt-2 text-sm font-black">{value}</p></div>)}</div>
     {error&&<p role="alert" className="mt-4 border border-rose-400/30 p-3 text-sm text-rose-200">{error}</p>}
     {message&&<p role="status" className="mt-4 border border-emerald-300/20 p-3 text-sm text-emerald-200">{message}</p>}
-    {appointment?.status==='active'&&<section className="mt-6 border border-emerald-300/25 p-5"><h2 className="text-xl font-black">Regional Manager appointment active</h2><p className="mt-2 text-sm text-slate-300">Administration has recorded your appointment. Team assignments remain subject to the defined capacity.</p></section>}
+    {appointment?.status==='active'&&<section className="mt-6 border border-emerald-300/25 p-5"><h2 className="text-xl font-black">Regional Manager appointment active</h2><p className="mt-2 text-sm text-slate-300">Administrations have recorded your appointment. Team assignments remain subject to the defined capacity.</p></section>}
     {application&&<section className="mt-6 border border-cyan-300/20 bg-cyan-300/[.04] p-5">
       <p className="text-[10px] font-black uppercase tracking-wider text-cyan-200">Your application · {application.status.replaceAll('_',' ')}</p>
       <h2 className="mt-2 text-xl font-black">{application.region}</h2>
       <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-300">{application.experience}</p>
       <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-300">{application.motivation}</p>
-      {application.review_note&&<p className="mt-3 border-t border-white/10 pt-3 text-sm text-amber-100">Administration note: {application.review_note}</p>}
+      {application.review_note&&<p className="mt-3 border-t border-white/10 pt-3 text-sm text-amber-100">Administrations note: {application.review_note}</p>}
     </section>}
     {(!application||['rejected','withdrawn'].includes(application.status))&&!appointment?.status?.includes('active')&&<section className="mt-6 border border-white/10 p-5">
       <h2 className="text-lg font-black">{application?'Submit a new application':'Application details'}</h2>

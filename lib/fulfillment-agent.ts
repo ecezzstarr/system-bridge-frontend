@@ -107,7 +107,7 @@ export class FulfillmentAgent {
    * RECONCILE: Generate the next available package if needed
    */
   async reconcile() {
-    // Marketplace replenishment must obey the Administration enable switch,
+    // Marketplace replenishment must obey the Administrations enable switch,
     // the published 120-candidate threshold and the two-country spacing rule.
     // Legacy automatic packaging from unallocated stock bypassed all three.
     const { runProspectMarketAuto } = await import('@/lib/prospect-market-auto')

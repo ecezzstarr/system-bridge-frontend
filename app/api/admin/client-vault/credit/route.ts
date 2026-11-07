@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
   await ensureClientVaultLedgerSchema(sql)
   await ensureClientMoneyEnvironment(sql, clientId)
 
-  // Administration credits the Client Vault in Flame Coin only.
+  // Administrations credit the Client Vault in Flame Coin only.
   const currency = 'Flame Coin'
   const [vault] = await sql`
     UPDATE client_vaults
@@ -60,9 +60,9 @@ export async function POST(request: NextRequest) {
       ${amount},
       ${currency},
       ${vault.balance},
-      'Administration',
+      'Administrations',
       ${body.reference || null},
-      ${body.note || 'Administration Flame Coin credit'},
+      ${body.note || 'Administrations Flame Coin credit'},
       ${auth.session.user.id}::uuid
     )
     RETURNING *

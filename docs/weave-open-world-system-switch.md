@@ -8,12 +8,12 @@
 ## What the participant understands before crossing
 System Switch is **the gate**. The website is where a participant reads about WEAVE and signs in or finds an appropriate public entrance. At the threshold, WEAVE tells the participant that the next environment is an **interactive 3D File Folder Open World**: Client places, other people, paths and public Customer Doors occupy navigable space rather than ordinary website pages.
 
-The orientation must answer three questions in clear language: **Where am I? What is beyond the gate? Which places am I allowed to enter?** It applies to Administration, Agents, Bridgers, Clients and public visitors. Crossing the threshold does not change permissions. Public visitors and company staff may explore published Customer Doors; only a verified Client can operate their own private File Folder. Every open-world entrance explains the public/private boundary before or at first arrival, including the direct visitor route.
+The orientation must answer three questions in clear language: **Where am I? What is beyond the gate? Which places am I allowed to enter?** It applies to Administrations, Agents, Bridgers, Clients and public visitors. Crossing the threshold does not change permissions. Public visitors and company staff may explore published Customer Doors; only a verified Client can operate their own private File Folder. Every open-world entrance explains the public/private boundary before or at first arrival, including the direct visitor route.
 
 This is an entrance and orientation experience, not merely a login page, loading screen or image. The live 3D world remains interactive and its existing authorized systems are unchanged.
 
 ## Canonical entry
-`/system-switch` → **System Switch Gate** for signed-in Agent, Bridger and Administration → `/system-switch/world?via=system-switch` → Client File Folder land. Visitors enter `/system-switch/world` through the official event image or public Customer Market. Clients continue entering private systems through their own client gate and may inspect public land separately.
+`/system-switch` → **System Switch Gate** for signed-in Agent, Bridger and Administrations → `/system-switch/world?via=system-switch` → Client File Folder land. Visitors enter `/system-switch/world` through the official event image or public Customer Market. Clients continue entering private systems through their own client gate and may inspect public land separately.
 
 The official Burning River event image's **Customer Door hotspot** goes straight to the same System Switch WEAVE Open World; it no longer mounts a second little 3D Client preview inside the event page. The event and permanent land are separate environments.
 
@@ -34,7 +34,7 @@ The world heading is **Weave Open World**, with a secondary event label that onl
 Loop 1 is a shared company event, but each signed-in participant receives **only their own department-world entrance** on the event ground:
 - **Agent → Agent World** (`/agent/dashboard`) — Stability districts and active Agent functions.
 - **Bridger → Bridger World** (`/bridger/dashboard`) — Hope districts, prospect movement and Bridge AI.
-- **Administration → Administration World** (`/admin/dashboard`) — the company's supervisory, operational and organization districts.
+- **Administrations → Administrations World** (`/admin/dashboard`) — the company's supervisory, operational and organization districts.
 - **Client → Client World** (`/client/dashboard`) — Dream Lovely, File Folder and enterprise participation.
 
 The main event page `/event` receives the verified Agent/Bridger/Admin role from the session. Client Loop 1 arrival is `/client/event`, with a separate authenticated Client guard. The compact event environment renders one large **My Department World** entrance from that role, alongside *only* that role's existing work shortcuts, the official Burning River image and System Switch crossing. The latter is **not** renamed to a department world and still leads to the independent File Folder land.

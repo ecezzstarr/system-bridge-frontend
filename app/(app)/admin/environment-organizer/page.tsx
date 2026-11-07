@@ -117,7 +117,7 @@ export default function EnvironmentOrganizerWorkshop(){
     </section>
     <section className="rounded-3xl border border-violet-300/15 bg-violet-400/[.035] p-4">
       <p className="text-[9px] font-black uppercase tracking-wider text-violet-300">Safety rule</p>
-      <p className="mt-3 text-xs leading-5 text-slate-300">Protected control surfaces stay present so Administration cannot remove the Organizer, core Operating Rooms, or the Client’s Main File Folder entrance.</p>
+      <p className="mt-3 text-xs leading-5 text-slate-300">Protected control surfaces stay present so Administrations cannot remove the Organizer, core Operating Rooms, or the Client’s Main File Folder entrance.</p>
     </section>
   </>
 
@@ -182,7 +182,7 @@ export default function EnvironmentOrganizerWorkshop(){
 
   return <WeaveSystemRoom
     roomKey="administration-environment-organizer"
-    eyebrow="Administration · Environment Authority"
+    eyebrow="Administrations · Environment Authority"
     title="Environment Organizer"
     detail="Control environment formation, live presence ambience, registered districts and stations from one runtime authority. Correct loading, sound, visibility and operating order without rebuilding Cloud Run."
     tone="sky"

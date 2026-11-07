@@ -43,7 +43,7 @@ export const ONE_NIGERIAN_SCROLL_PASSAGES = [
   },
   {
     role: 'admin',
-    text: 'Administration: with that saying a new frontier opened before us who are Hope in being.\nA bridge is forming between us and those who have heard of our Burning River soil an outreach from Hope begins in time while Stability sustains',
+    text: 'Administrations: with that saying a new frontier opened before us who are Hope in being.\nA bridge is forming between us and those who have heard of our Burning River soil an outreach from Hope begins in time while Stability sustains',
   },
   {
     role: 'client',
@@ -51,7 +51,7 @@ export const ONE_NIGERIAN_SCROLL_PASSAGES = [
   },
   {
     role: 'admin',
-    text: "Administration department: Hope let's form a bridge with those who has dreams and can dream lovely as we welcome them into the Weave of Presence.",
+    text: "Administrations department: Hope let's form a bridge with those who has dreams and can dream lovely as we welcome them into the Weave of Presence.",
   },
 ] as const satisfies ReadonlyArray<{role:OneNigerianRole; text:string}>
 
@@ -59,7 +59,7 @@ export const ONE_NIGERIAN_SCROLL_TEXT = ONE_NIGERIAN_SCROLL_PASSAGES.map(passage
 
 /** Department identity for route-aware guidance, separate from authored scroll text. */
 export const ONE_NIGERIAN_DEPARTMENT_WORDS: Record<OneNigerianRole, {department:string; words:string}> = {
-  admin: {department:'Administration · A Time',words:ONE_NIGERIAN_SCROLL_PASSAGES.filter(item => item.role==='admin').map(item=>item.text).join('\n\n')},
+  admin: {department:'Administrations · A Time',words:ONE_NIGERIAN_SCROLL_PASSAGES.filter(item => item.role==='admin').map(item=>item.text).join('\n\n')},
   bridger: {department:'Hope · Bridgers Department',words:ONE_NIGERIAN_SCROLL_PASSAGES[1].text},
   agent: {department:'Stability · Agents Department',words:ONE_NIGERIAN_SCROLL_PASSAGES[2].text},
   client: {department:'Dream Lovely, Lord/Lady ownership department',words:ONE_NIGERIAN_SCROLL_PASSAGES[4].text},

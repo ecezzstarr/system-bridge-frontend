@@ -13,7 +13,7 @@ export const AGILITY_AGENT_TUTORIAL = {
     },
     {
       title: 'Receive the physical stock',
-      detail: 'Pay the WEAVE order through the existing OPay process. Administration verifies payment, prepares and dispatches the cartons. Confirm physical receipt before distributing them.',
+      detail: 'Pay the WEAVE order through the existing OPay process. Administrations verify payment, prepares and dispatches the cartons. Confirm physical receipt before distributing them.',
     },
     {
       title: 'Build a route of existing outlets',

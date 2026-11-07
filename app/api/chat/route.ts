@@ -9,13 +9,13 @@ function getSystemArea(pathname?: unknown): string {
 
   const path = pathname.split('?')[0].slice(0, 160)
   if (path === '/dashboard' || path === '/') return 'WEAVE world'
-  if (path.startsWith('/admin/dashboard')) return 'Administration world'
+  if (path.startsWith('/admin/dashboard')) return 'Administrations world'
   if (path.startsWith('/agent/dashboard')) return 'Agent world'
   if (path.startsWith('/bridger/dashboard')) return 'Bridger world'
   if (path.startsWith('/agility')) return 'Agility Agent Store'
   if (path.startsWith('/wallet')) return 'wallet'
   if (path.startsWith('/places')) return 'places'
-  if (path.startsWith('/admin')) return 'Administration operating system'
+  if (path.startsWith('/admin')) return 'Administrations operating system'
   if (path.startsWith('/agent')) return 'Agent operating system'
   if (path.startsWith('/bridger')) return 'Bridger operating system'
   if (path.startsWith('/authority')) return 'ecosystem authority'

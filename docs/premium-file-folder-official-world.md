@@ -1,6 +1,6 @@
 # WEAVE · Official Premium File Folder World
 
-Approved by Administration on **24 October 2026**. Applies **only** to a verified `premium` Client File Folder. Standard, Pro and Plus remain separate products, scenes, pricing and entitlements.
+Approved by Administrations on **24 October 2026**. Applies **only** to a verified `premium` Client File Folder. Standard, Pro and Plus remain separate products, scenes, pricing and entitlements.
 
 ## Authoritative visual reference
 

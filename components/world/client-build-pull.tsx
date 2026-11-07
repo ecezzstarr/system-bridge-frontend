@@ -9,7 +9,7 @@ export function ClientBuildPull({ role }: { role: 'agent' | 'bridger' | 'admin' 
       ? 'You open Client paths without entering a Client private File Folder. After login, Client Customer Doors meet your Bridger position inside Flame Event.'
       : role === 'agent'
         ? 'You support Client movement without entering a Client private File Folder. After login, Client Customer Doors meet your Agent position inside Flame Event.'
-        : 'Administration governs Client movement without entering a Client private File Folder. Client Customer Doors meet Administration inside Flame Event.'
+        : 'Administrations governs Client movement without entering a Client private File Folder. Client Customer Doors meet Administrations inside Flame Event.'
 
   return (
     <section className="rounded-3xl border border-violet-300/20 bg-[linear-gradient(135deg,rgba(139,92,246,.10),rgba(14,165,233,.055),rgba(16,185,129,.045))] p-4 shadow-[0_18px_55px_rgba(2,8,23,.32)]">

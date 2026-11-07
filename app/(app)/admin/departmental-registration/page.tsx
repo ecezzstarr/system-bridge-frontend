@@ -271,14 +271,14 @@ export default function DepartmentalRegistrationAdmin() {
         <div>
           <div className="flex items-center gap-2 text-slate-500 mb-2">
             <Link href="/admin/dashboard" className="hover:text-white transition-colors flex items-center gap-1">
-              <ArrowLeft className="h-3 w-3" /> Administration
+              <ArrowLeft className="h-3 w-3" /> Administrations
             </Link>
             <span>{'/'}</span>
             <span className="text-slate-300">Departmental Registration</span>
           </div>
           <h1 className="text-3xl font-bold text-white flex items-center gap-3">
             <Shield className="h-8 w-8 text-purple-500" />
-            Administration Authority
+            Administrations Authority
           </h1>
           <p className="text-slate-400 mt-1">Issue and manage departmental registration codes for Agents and Bridgers.</p>
         </div>

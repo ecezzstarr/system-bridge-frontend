@@ -26,7 +26,7 @@ export function EcosystemNav({ currentSystem = 'shop', showMobile = true }: Ecos
     {
       id: 'online',
       name: 'SSBNOW.ONLINE',
-      subtitle: 'Administration Workshop',
+      subtitle: 'Administrations Workshop',
       icon: Globe,
       href: 'https://ssbnow.online/',
       color: 'from-blue-500 to-cyan-500',

@@ -1,7 +1,7 @@
 # Flame Presence — Client world expansion contract
 
 ## Institutional truth
-The Client remains the owner and source of direction. The Lord or Lady is not required to personally operate every business task. Administration, Forensics, Mandate, Attorney, Bridgers and Legions carry their assigned responsibilities. AI Presence participates within those boundaries, not above them.
+The Client remains the owner and source of direction. The Lord or Lady is not required to personally operate every business task. Administrations, Forensics, Mandate, Attorney, Bridgers and Legions carry their assigned responsibilities. AI Presence participates within those boundaries, not above them.
 
 ## Current implementation versus intended capability
 - AI File Folder identities and product/build actions already exist in the repository.
@@ -10,7 +10,7 @@ The Client remains the owner and source of direction. The Lord or Lady is not re
 - The TypeScript contract in `lib/flame-presence-expansion.ts` models authority, connections, movements and readiness. It is not itself a scheduler, API integration, database migration or live agent.
 
 ## Required movement
-1. Administration approves a scoped, expiring mandate for an AI identity and a Client File Folder.
+1. Administrations approve a scoped, expiring mandate for an AI identity and a Client File Folder.
 2. Mandate validates countries, products, budget, connections and authorized actions.
 3. Each provider connection is verified; secrets stay server-side and are never exposed to the File Folder browser.
 4. A durable job queue and scheduled worker claim work, retry transient failures and record immutable provider references.

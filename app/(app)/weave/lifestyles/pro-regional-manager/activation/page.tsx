@@ -49,7 +49,7 @@ export default function ProRegionalManagerActivation(){
    if(!response.ok)throw new Error(result.error||'Pro activation action failed')
    setNotice(action==='sign_agreement'
     ?'Company and Pro File Folder agreement signed. Official activation instructions are now available.'
-    :'Transaction reference submitted for independent Administration Forensics. Do not transfer again.')
+    :'Transaction reference submitted for independent Administrations Forensics. Do not transfer again.')
    await load()
   }catch(e){setError(e instanceof Error?e.message:'Unable to continue activation')}
   finally{setBusy(false)}
@@ -83,14 +83,14 @@ export default function ProRegionalManagerActivation(){
    </header>
    {error&&<p role="alert" className="rounded-xl border border-rose-400/25 p-4 text-sm text-rose-100">{error}</p>}
    {notice&&<p role="status" className="rounded-xl border border-sky-400/25 p-4 text-sm text-sky-100">{notice}</p>}
-   {!approved&&<section className="rounded-xl border border-amber-400/20 p-5 text-sm text-slate-300">Administration must first review your Lifestyle application, identity, Pro business plan, and actual agreed employment terms. No payment is requested during application review.</section>}
+   {!approved&&<section className="rounded-xl border border-amber-400/20 p-5 text-sm text-slate-300">Administrations must first review your Lifestyle application, identity, Pro business plan, and actual agreed employment terms. No payment is requested during application review.</section>}
    {approved&&status==='not_prepared'&&<section className="rounded-xl border border-amber-300/30 p-5 text-sm text-slate-200">
-    Administration approved the position, but the original-role Pro File Number is not prepared. Ask Administration to reconcile the verified appointment. No fee is due yet.
+    Administrations approved the position, but the original-role Pro File Number is not prepared. Ask Administrations to reconcile the verified appointment. No fee is due yet.
    </section>}
    {approved&&status==='awaiting_signature'&&<section className="space-y-4 rounded-2xl border border-sky-200/25 p-5">
     <h2 className="text-xl font-semibold">1. Confirm signed employment and Pro File Folder terms</h2>
     <p className="text-sm leading-7 text-slate-200">{PRO_MANAGER_FILE_FOLDER_DISTINCTION}</p>
-    <p className="text-sm leading-7 text-slate-200">Before signing, review the terms below alongside your separately approved company employment agreement. The monthly salary is recorded by Administration and is not funded by, or automatically conditional on, a File Folder activation fee.</p>
+    <p className="text-sm leading-7 text-slate-200">Before signing, review the terms below alongside your separately approved company employment agreement. The monthly salary is recorded by Administrations and is not funded by, or automatically conditional on, a File Folder activation fee.</p>
     <div className="space-y-3" data-pro-manager-reciprocal-agreement="true">
      {PRO_MANAGER_AGREEMENT_SECTIONS.map(section=><article key={section.title} className="rounded-xl border border-sky-200/20 bg-[#0b2a42] p-4">
       <h3 className="text-sm font-semibold text-sky-100">{section.title}</h3>
@@ -114,8 +114,8 @@ export default function ProRegionalManagerActivation(){
       <p className="mt-2 break-all font-mono text-sm">{data.walletAddress}</p>
       <button onClick={()=>navigator.clipboard.writeText(String(data.walletAddress))}
        className="mt-2 rounded-lg border border-sky-300/25 px-3 py-2 text-xs">Copy wallet address</button>
-     </div>:<p role="alert" className="rounded-lg border border-amber-300/30 p-4 text-sm">Official receiving wallet unavailable. Do not transfer funds. Administration must configure it.</p>}
-    {status==='payment_rejected'&&<p className="text-xs text-rose-100">Previous proof was rejected: {data?.activation.rejectionReason||'Contact Administration to reconcile it'}. Submit the real corrected transaction reference; do not transfer a second time unless independently instructed.</p>}
+     </div>:<p role="alert" className="rounded-lg border border-amber-300/30 p-4 text-sm">Official receiving wallet unavailable. Do not transfer funds. Administrations must configure it.</p>}
+    {status==='payment_rejected'&&<p className="text-xs text-rose-100">Previous proof was rejected: {data?.activation.rejectionReason||'Contact Administrations to reconcile it'}. Submit the real corrected transaction reference; do not transfer a second time unless independently instructed.</p>}
     <label className="block text-sm">Actual TRON transaction hash<input value={hash} onChange={e=>setHash(e.target.value)} autoComplete="off"
       maxLength={64} placeholder="64-character transaction hash"
       className="mt-2 w-full rounded-lg border border-white/20 bg-slate-900 p-3 font-mono text-xs"/></label>
@@ -123,7 +123,7 @@ export default function ProRegionalManagerActivation(){
      onClick={()=>void act('submit_payment')} className="rounded-lg bg-sky-300 px-5 py-3 font-semibold text-slate-950 disabled:opacity-40">Submit proof for Forensics review</button>
    </section>}
    {status==='pending_forensics'&&<section className="rounded-xl border border-amber-300/25 p-5 text-sm text-slate-200">
-    Your transaction reference has been recorded. Administration Forensics must independently verify the blockchain receipt, full amount, network and receiving wallet. Your Pro File Folder does not open before confirmation. Do not pay again.
+    Your transaction reference has been recorded. Administrations Forensics must independently verify the blockchain receipt, full amount, network and receiving wallet. Your Pro File Folder does not open before confirmation. Do not pay again.
    </section>}
    {status==='active'&&<section className="space-y-4 rounded-xl border border-emerald-300/25 p-5">
     <h2 className="text-xl font-semibold">3. Pro File Folder verified and active</h2>

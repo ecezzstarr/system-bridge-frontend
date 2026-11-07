@@ -169,7 +169,7 @@ export async function activatePurchasedFileFolderForClient(params: {
   // Keep the File Number Engine ownership aligned with the Client environment.
   // Older verified existing-Client flows could bind users.file_number while the
   // FNE row remained pending/unclaimed, which later made the same File Folder
-  // look unfinished even though Administration had already issued it.
+  // look unfinished even though Administrations had already issued it.
   const [{ fne_table }] = await sql`
     SELECT to_regclass('public.file_folders')::text AS fne_table
   `
@@ -230,7 +230,7 @@ export async function activatePurchasedFileFolderForClient(params: {
 
   // The other tiers retain their timed construction. Plus has an exact TRX
   // price (and a separate USDT reference) and provisions ready systems
-  // after the purchase record has been confirmed by Administration.
+  // after the purchase record has been confirmed by Administrations.
   let plusDelivery = null
   if (purchase_table) {
     await sql`ALTER TABLE file_folder_purchases ADD COLUMN IF NOT EXISTS amount_usdt numeric(30,8)`

@@ -149,7 +149,7 @@ export async function POST(request: NextRequest) {
         accountNumber: EMBER_OPAY_ACCOUNT_NUMBER,
         amountNgn: totals.agentPayableNgn,
         reference: paymentReference,
-        instruction: `Send exactly ₦${totals.agentPayableNgn.toLocaleString()} to OPay ${EMBER_OPAY_ACCOUNT_NUMBER}, then submit the OPay transaction reference or receipt for Administration verification.`,
+        instruction: `Send exactly ₦${totals.agentPayableNgn.toLocaleString()} to OPay ${EMBER_OPAY_ACCOUNT_NUMBER}, then submit the OPay transaction reference or receipt for Administrations verification.`,
       },
       economics: {
         cartonQuantity: totals.boxCount,

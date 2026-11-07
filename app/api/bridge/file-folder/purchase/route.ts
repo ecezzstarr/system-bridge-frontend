@@ -136,7 +136,7 @@ export async function POST(request: NextRequest) {
       : null
     if (!clientId && (!buyerName || !buyerPhone)) {
       return NextResponse.json({
-        error: 'Prospect name and phone are required so Administration can issue the File Number after payment verification.',
+        error: 'Prospect name and phone are required so Administrations can issue the File Number after payment verification.',
       }, { status: 400 })
     }
     const bridgeCode = typeof body.bridgeCode === 'string' ? body.bridgeCode.trim().slice(0,32) : null
@@ -194,7 +194,7 @@ export async function POST(request: NextRequest) {
       try {
         const config = await getPaystackConfig()
         const origin = (config.publicOrigin || process.env.WEAVE_PUBLIC_ORIGIN || '').replace(/\/$/, '')
-        if (!origin.startsWith('https://')) throw new Error('Administration must configure the canonical HTTPS origin in the Paystack Integration Workshop.')
+        if (!origin.startsWith('https://')) throw new Error('Administrations must configure the canonical HTTPS origin in the Paystack Integration Workshop.')
         const checkout = await initializePaystackTransaction({
           email: String(buyerEmail).trim().toLowerCase(),
           amountKobo: Math.round(Number(amountNgn) * 100),
@@ -239,7 +239,7 @@ export async function POST(request: NextRequest) {
       receipt,
       fileFolderTier,
       crossing: { ready: false },
-      message: paymentMethod === 'paystack' ? `${tierLabel} File Folder Paystack checkout is ready. Complete payment; Administration will approve the verified purchase before issuing the File Number.` : `${tierLabel} File Folder payment recorded. Administration will verify the payment and issue the File Number. ${fileFolderTier === 'plus' ? 'Plus includes completed working systems and an immediately ready Customer Door upon Client activation.' : 'The included Customer Door construction will then start.'}`,
+      message: paymentMethod === 'paystack' ? `${tierLabel} File Folder Paystack checkout is ready. Complete payment; Administrations will approve the verified purchase before issuing the File Number.` : `${tierLabel} File Folder payment recorded. Administrations will verify the payment and issue the File Number. ${fileFolderTier === 'plus' ? 'Plus includes completed working systems and an immediately ready Customer Door upon Client activation.' : 'The included Customer Door construction will then start.'}`,
     }, { status: 201 })
   } catch (error: any) { return NextResponse.json({ error: error?.message || 'Unable to record File Folder purchase' }, { status: 500 }) }
 }

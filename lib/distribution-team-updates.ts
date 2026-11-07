@@ -6,7 +6,7 @@ import { getDistributionTeamMonthlyReferrals } from '@/lib/distribution-team-ref
 
 export type DistributionTeamUpdateKind='message'|'plan'|'progress'|'handoff'
 
-// The three-person operating unit owns communication and reports. Administration
+// The three-person operating unit owns communication and reports. Administrations
 // receives a read-only record and cannot impersonate a team participant.
 let teamSchemaPromise:Promise<void>|null=null
 export async function ensureDistributionTeamUpdateSchema(){

@@ -21,7 +21,7 @@ export async function PATCH(request: NextRequest) {
   try {
     const user = await requireApiUser(request)
     if (!user || user.role !== 'admin') {
-      return NextResponse.json({ success: false, error: 'Administration access required' }, { status: 403 })
+      return NextResponse.json({ success: false, error: 'Administrations access required' }, { status: 403 })
     }
 
     const current = await getFlameEvent()

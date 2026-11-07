@@ -112,7 +112,7 @@ export function EnvironmentRuntimeControls(){
         <div>
           <p className="text-[9px] font-black uppercase tracking-[.2em] text-amber-200">Environment Runtime</p>
           <h2 className="mt-1 text-xl font-black text-white">Loading + Presence Workshop</h2>
-          <p className="mt-2 max-w-3xl text-xs leading-5 text-stone-400">Tune runtime and ambience. For full automatic loader lesson text and timing controls, use Administration → Loader Workshop. Publishing changes Cloud SQL runtime state; no Cloud Run deployment is required.</p>
+          <p className="mt-2 max-w-3xl text-xs leading-5 text-stone-400">Tune runtime and ambience. For full automatic loader lesson text and timing controls, use Administrations → Loader Workshop. Publishing changes Cloud SQL runtime state; no Cloud Run deployment is required.</p>
         </div>
         <div className="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-right">
           <p className="text-[8px] font-black uppercase text-stone-500">Runtime version</p>

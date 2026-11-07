@@ -35,7 +35,7 @@ export default function MandateLifestylePage(){
       })
       const body=await res.json()
       if(!res.ok)throw new Error(body.error||'Application not accepted')
-      setMessage('Application recorded for Administration review. You cannot answer support chats until approved.')
+      setMessage('Application recorded for Administrations review. You cannot answer support chats until approved.')
       await load()
     }catch(cause){setError(cause instanceof Error?cause.message:'Application not accepted')}
     finally{setBusy('')}
@@ -48,7 +48,7 @@ export default function MandateLifestylePage(){
     <header className="mt-6 border-b border-white/10 pb-6">
       <p className="text-[10px] font-black uppercase tracking-[.2em] text-amber-200">WEAVE Mandate · Company Support Lifestyle</p>
       <h1 className="mt-2 text-3xl font-black md:text-4xl">Serve inside Company Guidance.</h1>
-      <p className="mt-3 max-w-3xl text-sm leading-6 text-stone-300">Your existing {user.role} position can apply to join Mandate, Forensics or Attorney support. Approved departmental personnel read and reply to the corresponding Company Guidance conversations. Administration owns authorization, review and revocation.</p>
+      <p className="mt-3 max-w-3xl text-sm leading-6 text-stone-300">Your existing {user.role} position can apply to join Mandate, Forensics or Attorney support. Approved departmental personnel read and reply to the corresponding Company Guidance conversations. Administrations own authorization, review and revocation.</p>
       <p className="mt-3 text-xs text-stone-500">This is a company department assignment, not a separate account, purchased ticket, automatic wage, or authority to practice regulated law.</p>
     </header>
     {error&&<p role="alert" className="mt-5 border border-rose-300/20 p-3 text-xs text-rose-200">{error}</p>}
@@ -71,7 +71,7 @@ export default function MandateLifestylePage(){
             {department.key==='lawyer'&&<p className="mt-2 text-xs leading-5 text-amber-100">Attorney support is internal guidance. Legal representation or legal advice requiring a license must go to a qualified professional.</p>}
             {existing&&<div className="mt-4 border-t border-white/10 pt-3">
               <p className="text-xs font-black uppercase tracking-wide text-amber-200">Application: {existing.status}</p>
-              {existing.review_note&&<p className="mt-2 text-xs leading-5 text-stone-400">Administration: {existing.review_note}</p>}
+              {existing.review_note&&<p className="mt-2 text-xs leading-5 text-stone-400">Administrations: {existing.review_note}</p>}
             </div>}
             {appointed?<Link href={`/weave/lifestyles/mandate/inbox?department=${department.key}`} className="mt-auto inline-flex items-center gap-2 border border-emerald-300/25 px-4 py-3 text-xs font-black text-emerald-200">Open Guidance Inbox <ArrowRight className="h-4 w-4"/></Link>:
               canApply?<div className="mt-auto pt-4">
@@ -85,7 +85,7 @@ export default function MandateLifestylePage(){
                   onClick={()=>void apply(department.key)}
                   className="mt-3 w-full bg-amber-300 px-4 py-3 text-xs font-black text-black disabled:opacity-35">Apply to {department.label}</button>
               </div>:<p className="mt-auto border-t border-white/10 pt-4 text-xs text-stone-500">
-                {existing?.status==='pending'?'Administration is reviewing this application.':'Department application currently unavailable.'}
+                {existing?.status==='pending'?'Administrations are reviewing this application.':'Department application currently unavailable.'}
               </p>}
           </article>
         })}
@@ -93,7 +93,7 @@ export default function MandateLifestylePage(){
     </>}
     <section className="mt-8 border-t border-white/10 pt-5">
       <p className="text-[10px] font-black uppercase tracking-wider text-amber-200">Company support chain</p>
-      <p className="mt-2 text-xs leading-6 text-stone-400">Mandate organizes authorized action. Forensics examines records and claims. Attorney clarifies obligations and escalates legal questions. Administration retains final control. No applicant can see private Company Guidance conversations before approval.</p>
+      <p className="mt-2 text-xs leading-6 text-stone-400">Mandate organizes authorized action. Forensics examines records and claims. Attorney clarifies obligations and escalates legal questions. Administrations retains final control. No applicant can see private Company Guidance conversations before approval.</p>
     </section>
   </main>
 }

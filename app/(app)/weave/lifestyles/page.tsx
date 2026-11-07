@@ -74,7 +74,7 @@ export default function WeaveLifestylesPage() {
         }
 
         if (data.reason === 'bridger_unavailable') {
-          setAgenticAttainmentError('This Bridger account is inactive. Contact Administration to check your position.')
+          setAgenticAttainmentError('This Bridger account is inactive. Contact Administrations to check your position.')
           return
         }
         throw new Error(data.error || 'Could not complete Agentic-Bridger attainment.')
@@ -92,7 +92,7 @@ export default function WeaveLifestylesPage() {
 
   const roleLabel = useMemo(() => {
     const role = access?.role || 'WEAVE'
-    return role === 'bridger' ? 'Bridger' : role === 'agent' ? 'Agent' : role === 'client' ? 'Client' : role === 'admin' ? 'Administration' : 'WEAVE'
+    return role === 'bridger' ? 'Bridger' : role === 'agent' ? 'Agent' : role === 'client' ? 'Client' : role === 'admin' ? 'Administrations' : 'WEAVE'
   }, [access?.role])
 
   const agentFree = access?.role === 'agent'
@@ -120,7 +120,7 @@ export default function WeaveLifestylesPage() {
         <div className="mt-2 flex items-start justify-between gap-4">
           <div>
             <h1 className="text-3xl font-black tracking-tight text-white">LIFESTYLE</h1>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">{access?.role === 'agent' ? 'Agents enter Lifestyle through their active Agent position and can apply for Food Distribution Manager or Assistant Food Distribution Manager appointments. Administration approval is required before either appointment becomes active.' : 'Bridgers can attain Agentic-Bridger with one payment of 11 Flame Coin. Agentic-Bridger then enables Lifestyle access and eligibility for Bridger-specific Distribution Manager and Legion opportunities. Regular Bridger work has no subscription; Clients follow their own access terms.'}</p>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">{access?.role === 'agent' ? 'Agents enter Lifestyle through their active Agent position and can apply for Food Distribution Manager or Assistant Food Distribution Manager appointments. Administrations approval is required before either appointment becomes active.' : 'Bridgers can attain Agentic-Bridger with one payment of 11 Flame Coin. Agentic-Bridger then enables Lifestyle access and eligibility for Bridger-specific Distribution Manager and Legion opportunities. Regular Bridger work has no subscription; Clients follow their own access terms.'}</p>
           </div>
           <Sparkles className="h-8 w-8 shrink-0 text-yellow-400" />
         </div>
@@ -242,7 +242,7 @@ export default function WeaveLifestylesPage() {
                   icon={<ShieldCheck className="h-8 w-8" />}
                   eyebrow="Company Support · Apply for an appointment"
                   title="WEAVE MANDATE"
-                  detail="Agents and Bridgers can apply for Company Guidance departments: Mandate, Forensics or Attorney. Administration reviews each application. Approved personnel can answer only the guidance conversations assigned to their department. No additional Lifestyle payment."
+                  detail="Agents and Bridgers can apply for Company Guidance departments: Mandate, Forensics or Attorney. Administrations review each application. Approved personnel can answer only the guidance conversations assigned to their department. No additional Lifestyle payment."
                   open={mandateOpen}
                   reason={access?.active ? 'Mandate is open for applications from your position.' : agentFree ? 'An active Agent account is required.' : 'Attain Agentic-Bridger for a one-time 11 Flame Coin payment.'}
                   href="/weave/lifestyles/mandate"
@@ -256,9 +256,9 @@ export default function WeaveLifestylesPage() {
                   icon={<ShoppingBasket className="h-8 w-8" />}
                   eyebrow="Agent employment · Stability · Food logistics"
                   title="FOOD DISTRIBUTION MANAGER"
-                  detail="A separate Agent employment path for Food Distribution Manager and Assistant Food Distribution Manager. Coordinate stock movement, outlet supply, carrier handoffs and delivery confirmation against real WEAVE food orders. Administration must approve the appointment; the operating target is 200 verifiable food distributions monthly."
+                  detail="A separate Agent employment path for Food Distribution Manager and Assistant Food Distribution Manager. Coordinate stock movement, outlet supply, carrier handoffs and delivery confirmation against real WEAVE food orders. Administrations must approve the appointment; the operating target is 200 verifiable food distributions monthly."
                   open={foodDistributionOpen}
-                  reason={access?.active ? 'Apply for Administration appointment or open your approved food distribution role.' : 'An active Agent position is required.'}
+                  reason={access?.active ? 'Apply for Administrations appointment or open your approved food distribution role.' : 'An active Agent position is required.'}
                   href="/weave/lifestyles/food-distribution"
                   action="Apply / Open Food Distribution"
                   tools={[{icon:<ShoppingBasket className="h-3.5 w-3.5"/>,label:'Stock & outlet supply'},{icon:<BriefcaseBusiness className="h-3.5 w-3.5"/>,label:'200 verified distributions'}]}
@@ -285,9 +285,9 @@ export default function WeaveLifestylesPage() {
                   icon={<ChefHat className="h-8 w-8" />}
                   eyebrow="Agent employment · Company food operations"
                   title="FOOD PREPARATION TEAM"
-                  detail="The Head of WEAVE Stability leads Agent food operations and allocates work to two Assistant Managers. One lead and two assistant application places are available. Eligible Agents can apply for a vacant position and, following Administration approval, prepare verified Agility, Electrolyte, Ember and Daisy Pastries orders."
+                  detail="The Head of WEAVE Stability leads Agent food operations and allocates work to two Assistant Managers. One lead and two assistant application places are available. Eligible Agents can apply for a vacant position and, following Administrations approval, prepare verified Agility, Electrolyte, Ember and Daisy Pastries orders."
                   open={foodPreparationOpen}
-                  reason={access?.active ? 'Apply for Administration appointment.' : 'An active Agent position is required to apply.'}
+                  reason={access?.active ? 'Apply for Administrations appointment.' : 'An active Agent position is required to apply.'}
                   href="/weave/lifestyles/food-preparation"
                   action="Apply / Open Kitchen Desk"
                   tools={[{icon:<ChefHat className="h-3.5 w-3.5"/>,label:'Preparation & packaging'},{icon:<BriefcaseBusiness className="h-3.5 w-3.5"/>,label:'1 Manager · 2 Assistants'}]}
@@ -314,7 +314,7 @@ export default function WeaveLifestylesPage() {
                   icon={<BriefcaseBusiness className="h-8 w-8" />}
                   eyebrow="WEAVE employment Lifestyle"
                   title="DISTRIBUTION MANAGER"
-                  detail="Distribution Manager is an actual WEAVE distribution position carried by an existing Agent or Bridger: public distribution, campaign movement, Agent/Bridger acquisition, coordination and reporting back to Administration."
+                  detail="Distribution Manager is an actual WEAVE distribution position carried by an existing Agent or Bridger: public distribution, campaign movement, Agent/Bridger acquisition, coordination and reporting back to Administrations."
                   open={distributionManagerOpen}
                   reason={access?.active ? 'Distribution Manager entry is available from your current position.' : agentFree ? 'An active Agent account is required.' : bridger ? 'Attain Agentic-Bridger for a one-time 11 Flame Coin payment.' : `Renew the ${roleLabel} monthly subscription to reopen this Lifestyle.`}
                   href="/manager/dashboard"
@@ -356,7 +356,7 @@ export default function WeaveLifestylesPage() {
               <div className="border-y border-white/10 px-4 py-5 sm:border" data-lifestyle-position-rule="true">
                 <p className="text-xs font-black uppercase tracking-[0.22em] text-slate-500">Position rule</p>
                 <h2 className="mt-1 text-xl font-black text-white">{agentFree ? 'AGENT POSITION · FREE LIFESTYLE ACCESS' : 'POSITION-SCOPED LIFESTYLE ACCESS'}</h2>
-                <p className="mt-2 text-xs leading-5 text-slate-500">{agentFree ? 'The Agent position itself opens Lifestyle and Ace. No Agent monthly subscription is required. Legion remains the exclusive-employment exception: normal Agent functions pause while the Agent serves a Client as Legion.' : 'Your core account role remains Administration, Agent, Bridger or Client. Legion is the exclusive-employment exception: the underlying Agent/Bridger identity is preserved, but its normal work functions are suspended while the person serves a Client as Legion.'}</p>
+                <p className="mt-2 text-xs leading-5 text-slate-500">{agentFree ? 'The Agent position itself opens Lifestyle and Ace. No Agent monthly subscription is required. Legion remains the exclusive-employment exception: normal Agent functions pause while the Agent serves a Client as Legion.' : 'Your core account role remains Administrations, Agent, Bridger or Client. Legion is the exclusive-employment exception: the underlying Agent/Bridger identity is preserved, but its normal work functions are suspended while the person serves a Client as Legion.'}</p>
               </div>
             </div>
           </section>

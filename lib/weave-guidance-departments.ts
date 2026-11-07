@@ -3,7 +3,7 @@ import { getLifestyleAccess } from '@/lib/weave-lifestyle'
 
 export const GUIDANCE_DEPARTMENTS = [
   { key: 'mandate', label: 'Mandate', function: 'Carry authorized company action, guidance, and escalation.' },
-  { key: 'forensic', label: 'Forensics', function: 'Help examine records, evidence and movement; send unresolved matters to Administration.' },
+  { key: 'forensic', label: 'Forensics', function: 'Help examine records, evidence and movement; send unresolved matters to Administrations.' },
   { key: 'lawyer', label: 'Attorney', function: 'Clarify internal procedures, agreements and questions; refer regulated legal matters to qualified professionals.' },
 ] as const
 export type GuidanceDepartment = typeof GUIDANCE_DEPARTMENTS[number]['key']

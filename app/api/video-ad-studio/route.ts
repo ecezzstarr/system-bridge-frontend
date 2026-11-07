@@ -221,7 +221,7 @@ export async function POST(request: NextRequest) {
         const balance = Number(wallet?.balance_trx || 0)
         if (!wallet || balance < studioFee) {
           await client.query('ROLLBACK')
-          return NextResponse.json({ success:false, error:'Insufficient Flame Coin to pay Administration for this Studio use', requiredFlameCoin:studioFee, availableFlameCoin:balance },{status:402})
+          return NextResponse.json({ success:false, error:'Insufficient Flame Coin to pay Administrations for this Studio use', requiredFlameCoin:studioFee, availableFlameCoin:balance },{status:402})
         }
         await client.query('UPDATE wallets SET balance_trx=balance_trx-$1,updated_at=NOW() WHERE id=$2::uuid',[studioFee,wallet.id])
         const studioResult = await client.query(

@@ -46,7 +46,7 @@ export default function DistributionEmploymentAdministration(){
   }
   const reviewAssistant=async(id:string,action:'verify'|'decline')=>{
     const note=(assistantNotes[id]||'').trim()
-    if(note.length<10){setError('Record at least 10 characters explaining Administration eligibility review.');return}
+    if(note.length<10){setError('Record at least 10 characters explaining Administrations eligibility review.');return}
     if(!token)return
     setWorking(id);setError('');setMessage('')
     try{
@@ -55,7 +55,7 @@ export default function DistributionEmploymentAdministration(){
         body:JSON.stringify({position:'distribution_assistant',applicantId:id,action,note})})
       const data=await res.json()
       if(!res.ok)throw new Error(data.error||'Unable to decide application')
-      setMessage(action==='verify'?'Eligibility verified. The application is now available for a lead Manager to consider.':'Application declined by Administration.')
+      setMessage(action==='verify'?'Eligibility verified. The application is now available for a lead Manager to consider.':'Application declined by Administrations.')
       await load()
     }catch(err){setError(err instanceof Error?err.message:'Application decision failed')}
     finally{setWorking(null)}
@@ -67,20 +67,20 @@ export default function DistributionEmploymentAdministration(){
     window.requestAnimationFrame(()=>document.getElementById('application-'+id)?.scrollIntoView({behavior:'smooth',block:'center'}))
   },[state])
   if(!isInitialized)return <main className="p-6 text-slate-300">Opening Distribution verification…</main>
-  if(user?.role!=='admin')return <main className="p-6 text-rose-200">Administration authorization required.</main>
+  if(user?.role!=='admin')return <main className="p-6 text-rose-200">Administrations authorization required.</main>
   const pending=state?.appointments.filter(a=>a.status==='pending_verification')||[]
   return <main className="mx-auto max-w-6xl space-y-6 px-4 py-8 text-white" data-distribution-employment-admin="read-only-oversight">
     <header className="border-b border-amber-300/15 pb-5">
       <Link href="/admin/distribution-studio" className="text-xs text-cyan-200">← Distribution Studio</Link>
-      <p className="mt-5 text-[10px] font-black uppercase tracking-widest text-amber-200">Administration · Verification and oversight</p>
+      <p className="mt-5 text-[10px] font-black uppercase tracking-widest text-amber-200">Administrations · Verification and oversight</p>
       <h1 className="mt-2 text-3xl font-black">Distribution Employment</h1>
-      <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">Administration verifies a signed lead Distribution Manager application before probation can begin. The verified Manager independently appoints up to two assistants and directs team operations. Administration reviews verified results and employment correspondence, but cannot post into or change the team's own work messages.</p>
+      <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">Administrations verify a signed lead Distribution Manager application before probation can begin. The verified Manager independently appoints up to two assistants and directs team operations. Administrations review verified results and employment correspondence, but cannot post into or change the team's own work messages.</p>
     </header>
     {error&&<p role="alert" className="border border-rose-300/25 p-3 text-xs text-rose-200">{error}</p>}
     {message&&<p role="status" className="border border-emerald-300/25 p-3 text-xs text-emerald-200">{message}</p>}
     <Button type="button" variant="outline" onClick={()=>load().catch(err=>setError(err.message))}>Refresh records</Button>
     <section className="space-y-3">
-      <h2 className="text-xl font-black">Awaiting Administration verification · {pending.length}</h2>
+      <h2 className="text-xl font-black">Awaiting Administrations verification · {pending.length}</h2>
       {!pending.length&&<p className="border border-white/10 p-4 text-sm text-slate-400">No pending signed applications.</p>}
       {pending.map(a=><article id={`application-${a.user_id}`} key={a.user_id} className={`scroll-mt-24 border p-5 ${selectedApplication===a.user_id?'border-amber-300 bg-amber-300/[.09]':'border-amber-300/20 bg-amber-300/[.035]'}`}>
         <h3 className="text-base font-black">{a.name} <span className="text-xs text-amber-200">· {a.source_role}</span></h3>
@@ -100,7 +100,7 @@ export default function DistributionEmploymentAdministration(){
     </section>
     <section className="border-t border-white/10 pt-6">
       <h2 className="text-xl font-black">Manager appointments and team standing</h2>
-      <p className="mt-2 text-xs text-slate-400">Up to ten lead Distribution Manager appointments are supported, with two assistants per lead (up to twenty assistants company-wide). Application signing is not employment approval. Administration verification starts the one-month probation; approved Managers direct daily distribution work.</p>
+      <p className="mt-2 text-xs text-slate-400">Up to ten lead Distribution Manager appointments are supported, with two assistants per lead (up to twenty assistants company-wide). Application signing is not employment approval. Administrations verification starts the one-month probation; approved Managers direct daily distribution work.</p>
       <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {(state?.overview.teams||[]).map(t=><article key={t.manager_id} className="border border-white/10 p-4 text-xs text-slate-300">
           <p className="text-base font-black text-white">{t.manager_name}</p>
@@ -116,16 +116,16 @@ export default function DistributionEmploymentAdministration(){
     </section>
     <section className="border-t border-white/10 pt-6" data-distribution-assistant-employment-admin="true">
       <h2 className="text-xl font-black">Assistant Distribution Manager appointments</h2>
-      <p className="mt-2 text-xs leading-6 text-slate-400">The verified lead Manager appoints assistants and coordinates team assignments. Administration can send employment replies, inspect appointment records and dismiss appointed staff for a recorded reason; this does not grant Administration control of the team's work conversation.</p>
+      <p className="mt-2 text-xs leading-6 text-slate-400">The verified lead Manager appoints assistants and coordinates team assignments. Administrations can send employment replies, inspect appointment records and dismiss appointed staff for a recorded reason; this does not grant Administrations control of the team's work conversation.</p>
       <div className="mt-4 grid gap-3 md:grid-cols-2">
         {(state?.overview.assistants||[]).map(a=><article id={`application-${a.user_id}`} key={a.user_id} className={`scroll-mt-24 border p-4 ${selectedApplication===a.user_id?'border-amber-300 bg-amber-300/[.08]':'border-white/10'}`}>
           <p className="text-sm font-black text-white">{a.name} <span className="text-xs text-slate-400">· {a.role}</span></p>
           <p className="mt-2 text-xs font-bold text-cyan-200">{a.status.toUpperCase()} · Lead: {a.manager_name||'Not appointed'}</p>
-          <p className="mt-2 text-xs text-slate-300">Administration eligibility: <strong>{a.administration_verification==='verified'?'Verified · awaiting lead Manager decision':a.administration_verification==='declined'?'Declined':a.status==='pending'?'Verification pending':'Not applicable'}</strong></p>
+          <p className="mt-2 text-xs text-slate-300">Administrations eligibility: <strong>{a.administration_verification==='verified'?'Verified · awaiting lead Manager decision':a.administration_verification==='declined'?'Declined':a.status==='pending'?'Verification pending':'Not applicable'}</strong></p>
           <p className="mt-3 whitespace-pre-wrap text-xs leading-6 text-slate-200" data-assistant-application-statement="true">{a.application_note}</p>
           {a.administration_verification_note&&<p className="mt-2 text-[11px] text-slate-400">Verification findings: {a.administration_verification_note}</p>}
           {a.status==='pending'&&a.administration_verification==='pending'&&<div className="mt-4 space-y-3 border-t border-amber-200/15 pt-3">
-            <label className="block text-xs text-amber-200" htmlFor={`assistant-reason-${a.user_id}`}>Administration eligibility findings</label>
+            <label className="block text-xs text-amber-200" htmlFor={`assistant-reason-${a.user_id}`}>Administrations eligibility findings</label>
             <textarea id={`assistant-reason-${a.user_id}`} maxLength={1200} rows={3}
               value={assistantNotes[a.user_id]||''}
               onChange={e=>setAssistantNotes(prev=>({...prev,[a.user_id]:e.target.value}))}
@@ -146,7 +146,7 @@ export default function DistributionEmploymentAdministration(){
     </section>
     <section className="border-t border-white/10 pt-6" data-distribution-tasks="administration-read-only">
       <h2 className="text-xl font-black">Actual distribution assignments</h2>
-      <p className="mt-2 text-xs leading-6 text-slate-400">The verified Manager assigns jobs and marks submitted work complete. Assistants operate the work in their own system. This Administration view observes task status and recorded instructions without editing those assignments.</p>
+      <p className="mt-2 text-xs leading-6 text-slate-400">The verified Manager assigns jobs and marks submitted work complete. Assistants operate the work in their own system. This Administrations view observes task status and recorded instructions without editing those assignments.</p>
       <div className="mt-4 grid gap-3 md:grid-cols-2">
         {(state?.teamTasks||[]).map(t=><article key={t.id} className="min-w-0 border border-white/10 p-4">
           <p className="text-xs font-black text-white">{t.title}</p>
@@ -158,8 +158,8 @@ export default function DistributionEmploymentAdministration(){
       </div>
     </section>
     <section className="border-t border-white/10 pt-6" data-team-reports="administration-observation-only">
-      <h2 className="text-xl font-black">Team reports · Administration observation</h2>
-      <p className="mt-2 text-xs text-slate-400">Read-only view of authentic team plans, field progress, discussions and handoffs. Employment replies are handled in each separate appointment correspondence panel; Administration cannot post to the team's internal work discussion. Referrals and salary still require independent verification.</p>
+      <h2 className="text-xl font-black">Team reports · Administrations observation</h2>
+      <p className="mt-2 text-xs text-slate-400">Read-only view of authentic team plans, field progress, discussions and handoffs. Employment replies are handled in each separate appointment correspondence panel; Administrations cannot post to the team's internal work discussion. Referrals and salary still require independent verification.</p>
       <div className="mt-4 max-h-[42rem] space-y-3 overflow-y-auto">
         {(state?.overview.updates||[]).map(u=><article key={u.id} className="border border-white/10 bg-white/[.025] p-4">
           <div className="flex flex-wrap justify-between gap-2 text-[10px] text-cyan-200">

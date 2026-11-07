@@ -21,7 +21,7 @@ import { ReferralCodePanel } from '@/components/referral-code-panel'
 
 const ROLE_SYSTEM: Record<string, { title: string; detail: string; operatingRoom: string; tone: string }> = {
   admin: {
-    title: 'Administration',
+    title: 'Administrations',
     detail: 'Institutional authority, verification, infrastructure and continuity.',
     operatingRoom: '/admin/dashboard',
     tone: 'border-violet-300/20 bg-violet-400/[0.05] text-violet-200',

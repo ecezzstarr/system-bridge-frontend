@@ -101,7 +101,7 @@ export default function ClientSystemSwitchPage() {
     }
   }, [router])
 
-  // Administration can publish new equipment/theme packs without an app deployment.
+  // Administrations can publish new equipment/theme packs without an app deployment.
   // Keep the Client's current 3D/working state; update only the release settings.
   useEffect(()=>{
     if(!data?.verified)return

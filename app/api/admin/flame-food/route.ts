@@ -14,7 +14,7 @@ async function adminOnly(request:NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     const admin = await adminOnly(request)
-    if (!admin) return NextResponse.json({error:'Administration access required'},{status:403})
+    if (!admin) return NextResponse.json({error:'Administrations access required'},{status:403})
     await ensureFoodBridgeSchema()
     const [farmers,latestOrders] = await Promise.all([
       getPool().query(`
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
 export async function PATCH(request:NextRequest) {
   try {
     const admin=await adminOnly(request)
-    if (!admin) return NextResponse.json({error:'Administration access required'},{status:403})
+    if (!admin) return NextResponse.json({error:'Administrations access required'},{status:403})
     const body=await request.json().catch(()=>({}))
     const id=typeof body.farmerId==='string' ? body.farmerId : ''
     const next=body.decision

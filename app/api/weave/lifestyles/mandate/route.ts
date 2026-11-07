@@ -62,7 +62,7 @@ export async function POST(request:NextRequest){
     if(!rows.length)return NextResponse.json({
       success:false,error:'You already have a pending or approved application for this department.'
     },{status:409})
-    // Only Administration may approve. Notification opens the exact application.
+    // Only Administrations may approve. Notification opens the exact application.
     try {
       await notifyAdministrationOfCompanyApplication({
         kind:'guidance_support',applicationId:String(rows[0].id),applicantId:user.id,
@@ -70,9 +70,9 @@ export async function POST(request:NextRequest){
         applicationNote:note,
       })
     } catch(notificationError) {
-      console.error('[guidance application] Administration notification failed',notificationError)
+      console.error('[guidance application] Administrations notification failed',notificationError)
     }
-        return NextResponse.json({success:true,application:rows[0],message:'Application submitted for Administration review. No departmental chat permissions have been granted.'},{status:201})
+        return NextResponse.json({success:true,application:rows[0],message:'Application submitted for Administrations review. No departmental chat permissions have been granted.'},{status:201})
   }catch(error){
     console.error('[Mandate Lifestyle applicant] POST',error)
     return NextResponse.json({success:false,error:'Unable to submit application'}, {status:500})

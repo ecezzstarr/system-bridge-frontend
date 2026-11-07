@@ -8,7 +8,7 @@ const steps = [
   ['Recognize', 'Reflect the prospect’s actual movement and identify where their present work could use more room or structure.'],
   ['Introduce', 'Explain only the parts of WEAVE and the File Folder that are relevant to what the prospect has shared.'],
   ['Request permission', 'Offer to open the Bridge only when the prospect understands why it is relevant and agrees to continue.'],
-  ['Continue the crossing', 'Guide a willing prospect through Bridge AI, File Folder options, the official payment process and Administration verification.'],
+  ['Continue the crossing', 'Guide a willing prospect through Bridge AI, File Folder options, the official payment process and Administrations verification.'],
 ]
 
 export default function BridgerWorkingManualPage() {

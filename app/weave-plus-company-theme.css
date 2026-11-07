@@ -84,7 +84,7 @@ html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-locati
   mix-blend-mode: multiply;
 }
 
-/* Glass company controls: Administration, Agent, Bridger, Client and public
+/* Glass company controls: Administrations, Agent, Bridger, Client and public
    access use the same material language, without duplicating navigation. */
 html[data-weave-theme="dark-blue"][data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control],[data-kingdom-active="true"])) :is(
   .weave-header,.weave-sidebar,.weave-client-nav,

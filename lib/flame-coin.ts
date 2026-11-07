@@ -6,7 +6,7 @@
  *
  * Users never need Flame Coin on-chain:
  * - Clients fund with real TRX and receive the same number of Flame Coins.
- * - Administration, Agents and Bridgers fund with NGN through OPay; NGN is
+ * - Administrations, Agents and Bridgers fund with NGN through OPay; NGN is
  *   converted at the current TRX/NGN price and the matching Flame Coin amount
  *   is credited after verification.
  */

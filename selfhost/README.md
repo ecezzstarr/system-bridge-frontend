@@ -1,6 +1,6 @@
 # Weave self-hosting
 
-This is the provider-neutral Docker host path for **Weave of Presence: System Switch — Bridge of Radiance**. Routine deployments and rollbacks are now requested through the Administration **Release Workshop**, not automatic server pulls. The full setup, verification and migration process is documented in [Sovereign Release Workshop](../docs/sovereign-release-workshop.md).
+This is the provider-neutral Docker host path for **Weave of Presence: System Switch — Bridge of Radiance**. Routine deployments and rollbacks are now requested through the Administrations **Release Workshop**, not automatic server pulls. The full setup, verification and migration process is documented in [Sovereign Release Workshop](../docs/sovereign-release-workshop.md).
 
 The same application image can run on:
 
@@ -154,11 +154,11 @@ https://weavingsystem.online/api/health
 ## Updating and rolling back WEAVE
 
 The canonical deployment source is the exact GitHub `main` commit verified by
-the Production Check. Administration operates the **Release Workshop** at
+the Production Check. Administrations operate the **Release Workshop** at
 `/admin/release-workshop`, linked from Sovereign + Flame Record.
 
 After one-time host setup of `WEAVE_RELEASE_CONTROL_TOKEN` and the separate
-`selfhost/release-worker.py` service, Administration may request a verified
+`selfhost/release-worker.py` service, Administrations may request a verified
 release or choose a historically healthy rollback release without using SSH.
 
 - Requests are recorded as queued; **queued does not mean deployed**.
@@ -173,7 +173,7 @@ release or choose a historically healthy rollback release without using SSH.
 See [full setup, rollback and server-move playbook](../docs/sovereign-release-workshop.md).
 Application rollback is not a PostgreSQL rollback; preserve database and media backups.
 
-## PowerShell host operations inside Administration
+## PowerShell host operations inside Administrations
 
 The optional PowerShell 7 sentinel runs **outside the public app** on the same Linux server and sends sanitized Docker/health/disk snapshots to the Infrastructure Workshop. The independent Release Workshop already performs verified self-host deployment and rollback; no arbitrary web terminal is exposed. Install and secure the host service following [PowerShell Host Security](../docs/powershell-host-security.md). The service is not active just because its source exists in GitHub.
 

@@ -66,11 +66,11 @@ export async function POST(request: NextRequest) {
       RETURNING *
     `
 
-    if(updated)await notifyAdminOrder({orderId:String(updated.id),event:'payment_submitted',department:'agent',subject:'Ember OPay payment proof',detail:`${user.name||'Agent'} submitted OPay proof for ₦${Number(updated.total_ngn).toLocaleString()} stock order. Administration verification required`,adminPath:'/admin/ember',actorId:user.id,actorName:user.name||'Agent'})
+    if(updated)await notifyAdminOrder({orderId:String(updated.id),event:'payment_submitted',department:'agent',subject:'Ember OPay payment proof',detail:`${user.name||'Agent'} submitted OPay proof for ₦${Number(updated.total_ngn).toLocaleString()} stock order. Administrations verification required`,adminPath:'/admin/ember',actorId:user.id,actorName:user.name||'Agent'})
     return NextResponse.json({
       success: true,
       order: updated,
-      message: 'Ember payment proof sent. Administration will verify it before fresh preparation begins.',
+      message: 'Ember payment proof sent. Administrations will verify it before fresh preparation begins.',
     })
   } catch (error: any) {
     console.error('[ember/opay/receipt] failed', error)

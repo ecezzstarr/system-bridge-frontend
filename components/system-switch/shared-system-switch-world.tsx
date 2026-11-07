@@ -26,7 +26,7 @@ function RemoteAvatar({person}:{person:SharedAvatar}){
   if(Math.hypot(p.x-t.x,p.z-t.z)>6){p.x=t.x;p.z=t.z}else{p.x+=(t.x-p.x)*k;p.z+=(t.z-p.z)*k}
   p.yaw=t.yaw;p.heading=t.heading;label.current?.position.set(p.x,1.5,p.z)
  })
- return <><FileFolderWorker presence={presence} role={person.role}/><group ref={label}><Billboard><Text fontSize={.14} color={ROLE_COLORS[person.role]} anchorX="center" maxWidth={2}>{person.name.slice(0,32)}{'\n'}{person.role==='admin'?'Administration':person.role}</Text></Billboard></group></>
+ return <><FileFolderWorker presence={presence} role={person.role}/><group ref={label}><Billboard><Text fontSize={.14} color={ROLE_COLORS[person.role]} anchorX="center" maxWidth={2}>{person.name.slice(0,32)}{'\n'}{person.role==='admin'?'Administrations':person.role}</Text></Billboard></group></>
 }
 function CustomerDoor({door,index,onEnter}:{door:PublicWorldDoor;index:number;onEnter:()=>void}){
  const pos=doorWorldPosition(index),angle=Math.atan2(-pos[0],-pos[2]),fire=useRef<THREE.Group>(null)
@@ -72,7 +72,7 @@ export default function SharedSystemSwitchWorld({getToken,role,onPrivateWorkshop
  const moveEnabled=status!=='denied'&&!selected&&!directoryOpen
  const visiblePeople=people.filter(p=>Math.hypot(p.position.x-presence.current.x,p.position.z-presence.current.z)<30).slice(0,16)
  return <section className="ss-shared-world" data-system-switch-shared="true" data-presence-status={status}>
-  <header><div><p>WEAVE · SYSTEM SWITCH</p><h1>File Folder crossing</h1><small>{self?`${self.name} · ${self.role==='admin'?'Administration':self.role}`:'Entering with your WEAVE identity'}</small></div><span role="status">{status==='connected'?`${people.length+1} present`:status==='connecting'?'Connecting presence…':status==='denied'?'Entry unavailable':'Moving locally · reconnecting participants…'}</span></header>
+  <header><div><p>WEAVE · SYSTEM SWITCH</p><h1>File Folder crossing</h1><small>{self?`${self.name} · ${self.role==='admin'?'Administrations':self.role}`:'Entering with your WEAVE identity'}</small></div><span role="status">{status==='connected'?`${people.length+1} present`:status==='connecting'?'Connecting presence…':status==='denied'?'Entry unavailable':'Moving locally · reconnecting participants…'}</span></header>
   <div className="ss-world-canvas" tabIndex={0} aria-label="Shared System Switch world. Joystick or WASD moves, drag looks, E crosses a nearby Customer Door."
    onKeyDown={e=>{const k=e.key.toLowerCase();if(moveEnabled&&['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','shift','e'].includes(k)){e.preventDefault();input.current.active=true;input.current.keys.add(k);if(k==='e'&&!e.repeat)input.current.enter=true}}}
    onKeyUp={e=>input.current.keys.delete(e.key.toLowerCase())} onBlur={()=>{input.current.keys.clear()}}
@@ -91,7 +91,7 @@ export default function SharedSystemSwitchWorld({getToken,role,onPrivateWorkshop
    </AdaptiveCanvas>
   </div>
   <aside className="ss-world-note">Bridge of Radiance · Living water and fire · Client Customer Doors{doors.length===0&&!directoryError&&<small>{directoryLoaded?'No public Customer Doors have opened yet.':'Loading Client Customer Doors…'}</small>}{directoryError&&<small role="alert">{directoryError}</small>}</aside>
-  {status==='connected'&&<details className="ss-people"><summary>People here · {people.length+1}</summary><p>{self?.name} · You</p>{people.map(person=><p key={person.id} data-presence-id={person.id} data-x={person.position.x} data-z={person.position.z}>{person.name} · {person.role==='admin'?'Administration':person.role}</p>)}</details>}
+  {status==='connected'&&<details className="ss-people"><summary>People here · {people.length+1}</summary><p>{self?.name} · You</p>{people.map(person=><p key={person.id} data-presence-id={person.id} data-x={person.position.x} data-z={person.position.z}>{person.name} · {person.role==='admin'?'Administrations':person.role}</p>)}</details>}
   <button className="ss-stick" type="button" disabled={!moveEnabled} aria-label="Move avatar using phone joystick"
    onPointerDown={e=>{e.preventDefault();e.currentTarget.setPointerCapture(e.pointerId);const r=e.currentTarget.getBoundingClientRect();stick.current={id:e.pointerId,x:r.left+r.width/2,y:r.top+r.height/2};input.current.active=true;input.current.analogStrafe=Math.max(-1,Math.min(1,(e.clientX-stick.current.x)/35));input.current.analogForward=Math.max(-1,Math.min(1,(stick.current.y-e.clientY)/35))}}
    onPointerMove={e=>{const p=stick.current;if(!p||p.id!==e.pointerId)return;input.current.analogStrafe=Math.max(-1,Math.min(1,(e.clientX-p.x)/35));input.current.analogForward=Math.max(-1,Math.min(1,(p.y-e.clientY)/35))}}

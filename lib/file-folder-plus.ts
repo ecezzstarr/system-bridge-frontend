@@ -1,5 +1,5 @@
 /**
- * Plus File Folder has three explicit, Administration-defined values.
+ * Plus File Folder has three explicit, Administrations-defined values.
  * 60,000 Flame Coin is the product entitlement, payable as either
  * 59,602 TRX or 20,000 USDT. These are a fixed product quotation, NOT
  * a live exchange rate. Never silently apply this price ratio elsewhere.
@@ -38,7 +38,7 @@ export function validPlusFileFolderPrice(amount: unknown, currency: unknown) {
 }
 
 /**
- * Called only for an Administration-verified Plus TRX or USDT purchase.
+ * Called only for an Administrations-verified Plus TRX or USDT purchase.
  * Replays reuse existing Plus-tagged builds and never debit a Client wallet.
  * The Customer Door opens to customers immediately; the Lord still publishes
  * their own offers and must configure any external payment integration.

@@ -24,7 +24,7 @@ import { ReachRequestTracker } from '@/components/reach-delivery/request-tracker
 const departments = [
   { name: 'Stability', people: 'Agents' },
   { name: 'Hope', people: 'Bridgers' },
-  { name: 'A Time', people: 'Administration' },
+  { name: 'A Time', people: 'Administrations' },
   { name: 'Dream', people: 'Clients' },
 ] as const
 
@@ -50,7 +50,7 @@ const staffEntrances = [
   { name: 'Agent', department: 'Stability', enter: '/login', registration: '/register?role=agent', registrationLabel: 'Join as an Agent' },
   { name: 'Bridger', department: 'Hope', enter: '/login', registration: '/register?role=bridger', registrationLabel: 'Join as a Bridger' },
   { name: 'Client', department: 'Dream', enter: '/client/login', registration: '/client/register', registrationLabel: 'Register with File Number' },
-  { name: 'Administration', department: 'A Time', enter: '/login?portal=admin', registration: null, registrationLabel: null },
+  { name: 'Administrations', department: 'A Time', enter: '/login?portal=admin', registration: null, registrationLabel: null },
 ] as const
 
 export default function Home() {
@@ -212,7 +212,7 @@ export default function Home() {
           <section className="weave-home-staff p-5 sm:p-7" data-home-staff-entry>
             <p className="text-sm font-bold text-sky-200">The Company of Time · Department Entrances</p>
             <h2 className="mt-2 text-2xl font-black sm:text-3xl">Enter WEAVE as staff</h2>
-            <p className="mt-3 text-base leading-7 text-slate-200">Agent, Bridger, Client and Administration. Enter through your existing position, or establish a position through the appropriate company route.</p>
+            <p className="mt-3 text-base leading-7 text-slate-200">Agent, Bridger, Client and Administrations. Enter through your existing position, or establish a position through the appropriate company route.</p>
             <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {staffEntrances.map(entrance => (
                 <div key={entrance.name} className="weave-home-staff-position flex flex-col p-4">

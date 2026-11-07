@@ -1,16 +1,16 @@
-/** Administration workplace catalog: real pre-existing routes, not replacement systems. */
+/** Administrations workplace catalog: real pre-existing routes, not replacement systems. */
 export type AdminSpaceId='desk'|'people'|'finance'|'operations'|'systems'
 export type AdminStation={title:string;href:string;description:string;officialImage?:string}
 export type AdminSpace={id:AdminSpaceId;title:string;purpose:string;stations:readonly AdminStation[]}
 export const ADMIN_SPACES:readonly AdminSpace[]=[
   {id:"desk",title:"Command Desk",purpose:"Review the institution, real alerts, decisions and verified activity.",stations:[
   {
-    "title": "Original Administration World",
+    "title": "Original Administrations World",
     "href": "/admin/dashboard",
-    "description": "Enter the unchanged Administration district world."
+    "description": "Enter the unchanged Administrations district world."
   },
   {
-    "title": "Administration Control Center",
+    "title": "Administrations Control Center",
     "href": "/admin/control-center",
     "description": "Open the current institutional controls and company authority."
   },
@@ -55,9 +55,9 @@ export const ADMIN_SPACES:readonly AdminSpace[]=[
     "description": "Open the existing Company Communication route through its preserved legacy entrance."
   },
   {
-    "title": "Legacy Administration Functions",
+    "title": "Legacy Administrations Functions",
     "href": "/admin/functions",
-    "description": "Open the preserved legacy functions entrance to the Administration World."
+    "description": "Open the preserved legacy functions entrance to the Administrations World."
   }
 ]},
   {id:"people",title:"People & Employment",purpose:"Manage people, applications, Client work and appointments.",stations:[
@@ -199,7 +199,7 @@ export const ADMIN_SPACES:readonly AdminSpace[]=[
     "description": "Historical Client File Folder records and File Number preparation; old loan collection is retired."
   },
   {
-    "title": "Company Active Wallet · Administration",
+    "title": "Company Active Wallet · Administrations",
     "href": "/admin/company-active-wallet",
     "description": "Configure and audit the active company USDT TRC-20 receiving address for Pro File Folder activation, separately from TRX funding."
   },
@@ -327,9 +327,9 @@ export const ADMIN_SPACES:readonly AdminSpace[]=[
     "description": "Operate the existing development workshop."
   },
   {
-    "title": "Administration Workshop",
+    "title": "Administrations Workshop",
     "href": "/admin/workshop",
-    "description": "Open the original Administration workshop."
+    "description": "Open the original Administrations workshop."
   },
   {
     "title": "Visual Systems",
@@ -404,7 +404,7 @@ export const ADMIN_SPACES:readonly AdminSpace[]=[
   {
     "title": "Settings",
     "href": "/settings",
-    "description": "Maintain authorized Administration account preferences."
+    "description": "Maintain authorized Administrations account preferences."
   }
 ]},
 ] as const

@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     `
 
     if (!updated) {
-      return NextResponse.json({ success: false, error: 'Only a paid Agility order marked delivered by Administration can be received' }, { status: 409 })
+      return NextResponse.json({ success: false, error: 'Only a paid Agility order marked delivered by Administrations can be received' }, { status: 409 })
     }
 
     try {

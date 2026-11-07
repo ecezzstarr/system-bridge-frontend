@@ -105,7 +105,7 @@ export async function applyForDistributionAssistant(userId: string, note: string
         positionTitle:'Assistant Distribution Manager',
         name:String(applicant.rows[0]?.name||'Agent or Bridger'),applicationNote:applicantNote,
       })
-    }catch(error){console.error('[distribution assistant] Administration notification failed',error)}
+    }catch(error){console.error('[distribution assistant] Administrations notification failed',error)}
     return {success:true as const,application:rows[0]}
   } catch(error) {
     try {await client.query('ROLLBACK')} catch {}

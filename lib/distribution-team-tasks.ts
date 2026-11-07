@@ -144,7 +144,7 @@ export async function moveDistributionTeamTask(
     return {success:false as const,reason:'error' as const}
   }finally{client.release()}
 }
-// Reassignment is a lead Manager action, never an Administration override.
+// Reassignment is a lead Manager action, never an Administrations override.
 export async function reassignDistributionTeamTask(
   userId:string,taskId:string,nextAssigneeId:string,rawReason:string
 ){

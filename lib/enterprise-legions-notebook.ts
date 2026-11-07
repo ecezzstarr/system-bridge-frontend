@@ -84,10 +84,10 @@ export const ENTERPRISE_LEGION_PAGES: EnterpriseLegionPage[] = [
     "audience": "client",
     "title": "Open the Enterprise Dream Workshop",
     "story": "A camp needs a working headquarters. The Enterprise Dream Workshop is the Client's operating command, not a mere card.",
-    "meaning": "After the required enterprise formation and Administration approval, the Client uses the Enterprise Dream Workshop to manage their own business growth, tools and personnel.",
+    "meaning": "After the required enterprise formation and Administrations approval, the Client uses the Enterprise Dream Workshop to manage their own business growth, tools and personnel.",
     "action": [
       "Complete the relevant File Folder development and enterprise application.",
-      "Wait for actual Administration approval and access.",
+      "Wait for actual Administrations approval and access.",
       "Open the enterprise's workshop before recruiting."
     ],
     "caution": [
@@ -360,7 +360,7 @@ export const ENTERPRISE_LEGION_PAGES: EnterpriseLegionPage[] = [
     ],
     "caution": [
       "Never retaliate against a worker who raises a concern.",
-      "Do not claim Administration approved a change without verification."
+      "Do not claim Administrations approved a change without verification."
     ],
     "moveWhen": "The issue is documented, assigned for review and the appropriate decision can be communicated."
   },

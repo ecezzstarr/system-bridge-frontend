@@ -95,10 +95,10 @@ export async function GET(request:NextRequest){
     for(const department of departments){
       const label=department==='forensic'?'Forensics':department==='lawyer'?'Attorney':'Mandate'
       positions.push({id:'guidance_'+department,title:label+' Department Personnel',
-        department:'Company Guidance',standing:'Administration approved',
-        description:'Respond only to assigned company guidance conversations. Administration retains verification, payment and final institutional decisions.',
+        department:'Company Guidance',standing:'Administrations approved',
+        description:'Respond only to assigned company guidance conversations. Administrations retains verification, payment and final institutional decisions.',
         tools:[{label:label+' Inbox',href:'/weave/lifestyles/mandate/inbox?department='+encodeURIComponent(department),purpose:'Open verified department conversations'},
-          ...(department==='forensic'?[{label:'Food Settlement Review',href:'/weave/lifestyles/mandate/forensic-food',purpose:'Record authorized food settlement examination without assuming Administration power'}]:[])]})
+          ...(department==='forensic'?[{label:'Food Settlement Review',href:'/weave/lifestyles/mandate/forensic-food',purpose:'Record authorized food settlement examination without assuming Administrations power'}]:[])]})
     }
     return NextResponse.json({success:true,positions,eligible:true,
       message:positions.length?'Employment systems available for the positions currently approved.':

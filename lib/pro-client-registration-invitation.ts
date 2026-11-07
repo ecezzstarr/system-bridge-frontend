@@ -39,17 +39,17 @@ function sourceOrigin(requestOrigin:string){
 }
 async function deliverProClientInvitation(email:string,name:string,link:string){
  const provider=await passwordRecoveryEmailProvider()
- if(provider==='none')throw new Error('Company email delivery is unavailable; contact Administration for secure onboarding.')
+ if(provider==='none')throw new Error('Company email delivery is unavailable; contact Administrations for secure onboarding.')
  const subject='WEAVE Pro File Folder · Verified Client registration'
  const message=`Hello ${name},
 
-Administration has independently verified the identity and payment attached to your Pro File Folder. Complete your private company account registration using the following link:
+Administrations have independently verified the identity and payment attached to your Pro File Folder. Complete your private company account registration using the following link:
 
 ${link}
 
 This invitation is private and meant only for your approved company email. You must create your own password. Do not share this link or any payment information.
 
-After registration, Administration finalizes your existing verified Pro File Folder. There is no second activation charge.
+After registration, Administrations finalizes your existing verified Pro File Folder. There is no second activation charge.
 
 WEAVE of Presence · Pro Staff Verification`
  if(provider==='gmail'){
@@ -70,7 +70,7 @@ WEAVE of Presence · Pro Staff Verification`
 export async function sendVerifiedProClientRegistrationInvite(ticket:string,requestOrigin:string){
  if(!/^[a-f0-9]{64}$/i.test(ticket))throw new Error('Private verification session required.')
  const provider=await passwordRecoveryEmailProvider()
- if(provider==='none')throw new Error('Company email delivery is unavailable; Administration must arrange secure account access.')
+ if(provider==='none')throw new Error('Company email delivery is unavailable; Administrations must arrange secure account access.')
  const origin=sourceOrigin(requestOrigin)
  await ensureProClientRegistrationInvitationSchema()
  const hash=createHash('sha256').update(ticket.toLowerCase()).digest('hex')
@@ -101,7 +101,7 @@ export async function sendVerifiedProClientRegistrationInvite(ticket:string,requ
   const previous=counter.rows[0]
   const inWindow=previous&&Date.now()-new Date(previous.window_started_at).getTime()<24*60*60*1000
   const sentCount=inWindow?Number(previous.sent_count):0
-  if(sentCount>=3)throw new Error('Daily registration invitation limit reached; contact Administration.')
+  if(sentCount>=3)throw new Error('Daily registration invitation limit reached; contact Administrations.')
   if(previous?.last_sent_at&&Date.now()-new Date(previous.last_sent_at).getTime()<2*60*1000)
    throw new Error('An invitation was recently requested. Check your approved email or try again after the resend interval.')
   const token=randomBytes(32).toString('hex')

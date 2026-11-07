@@ -133,9 +133,9 @@ export default function AdministrationCompanyGuidancePage(){
           <div className="flex items-start gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-amber-300/20 bg-amber-400/10"><Landmark className="h-5 w-5 text-amber-200"/></div>
             <div>
-              <p className="text-[9px] font-black uppercase tracking-[0.2em] text-amber-300">Administration · Company Guidance Inbox</p>
+              <p className="text-[9px] font-black uppercase tracking-[0.2em] text-amber-300">Administrations · Company Guidance Inbox</p>
               <h1 className="mt-1 text-2xl font-black text-white">Agent and Bridger guidance now has a reply endpoint.</h1>
-              <p className="mt-2 max-w-3xl text-xs leading-5 text-slate-300">Requests remain separated by person and company position: Mandate, Attorney, Forensics or Administration. Approved departmental Agent/Bridger staff can also reply within their assigned channels.</p>
+              <p className="mt-2 max-w-3xl text-xs leading-5 text-slate-300">Requests remain separated by person and company position: Mandate, Attorney, Forensics or Administrations. Approved departmental Agent/Bridger staff can also reply within their assigned channels.</p>
               <Link href="/admin/guidance-staff" className="mt-3 inline-flex border border-amber-300/25 px-4 py-2 text-xs font-black text-amber-200">Manage departmental applications and appointments</Link>
             </div>
           </div>
@@ -166,7 +166,7 @@ export default function AdministrationCompanyGuidancePage(){
               </div>
               {error&&<div className="mx-4 mb-2 rounded-xl border border-rose-300/15 bg-rose-400/[0.05] px-4 py-2 text-xs text-rose-100">{error}</div>}
               <div className="flex gap-2 border-t border-white/10 p-4">
-                <Input value={input} onChange={event=>setInput(event.target.value)} onKeyDown={event=>{if(event.key==='Enter')void send()}} placeholder="Reply from Administration…" disabled={sending} className="border-white/10 bg-black/25 text-white"/>
+                <Input value={input} onChange={event=>setInput(event.target.value)} onKeyDown={event=>{if(event.key==='Enter')void send()}} placeholder="Reply from Administrations…" disabled={sending} className="border-white/10 bg-black/25 text-white"/>
                 <Button onClick={()=>void send()} disabled={sending||!input.trim()} className="bg-amber-300 text-slate-950 hover:bg-amber-200"><Send className="h-4 w-4"/></Button>
               </div>
             </>}

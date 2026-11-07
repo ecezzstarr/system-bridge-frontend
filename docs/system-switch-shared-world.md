@@ -1,6 +1,6 @@
 # Shared System Switch
 
-System Switch crosses into one shared public File Folder world for signed-in Clients, Administration, Agents and Bridgers. Client stories mean Client branding: the published business name, logo, message, visual preset and formations. They are not fictional narratives. The Client's private workshop stays separate and opens only through the existing owner-authorized Client environment.
+System Switch crosses into one shared public File Folder world for signed-in Clients, Administrations, Agents and Bridgers. Client stories mean Client branding: the published business name, logo, message, visual preset and formations. They are not fictional narratives. The Client's private workshop stays separate and opens only through the existing owner-authorized Client environment.
 
 The public world reads selling, enabled Customer Doors. Geometry uses the published appearance and the active Door/storefront/market-hall level. Crossing a Door preserves the existing `/market/[slug]` offer, order and receipt flows. There is no new purchase authority, wallet projection or private File Folder viewer.
 

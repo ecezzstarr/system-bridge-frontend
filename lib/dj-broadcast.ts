@@ -161,7 +161,7 @@ export async function resolveDjBroadcastState() {
   ]
 
   // Unknown-duration tracks are allowed, but once playback reaches one,
-  // scheduling pauses there until Administration skips it. Positive-duration
+  // scheduling pauses there until Administrations skips it. Positive-duration
   // portions still advance correctly.
   const currentDuration = Number(rotated[0]?.duration_seconds || 0)
   if (currentDuration <= 0) return { state, elapsedSeconds }

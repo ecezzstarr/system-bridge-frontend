@@ -41,7 +41,7 @@ export default async function PublicEnterpriseTerritory(){
       <div className="mx-auto max-w-7xl">
         <p className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.25em] text-amber-300"><Crown className="h-4 w-4"/>WEAVE Enterprise Territory</p>
         <h1 data-weave-live-word="title" className="mt-4 max-w-4xl text-4xl font-black tracking-[-0.04em] sm:text-6xl">Public enterprises that earned and constructed their door.</h1>
-        <p className="mt-5 max-w-3xl text-base leading-7 text-slate-300">Only Administration-approved Lord/Lady enterprises with a completed Enterprise Door appear here. The territory grows as additional enterprise structures become real.</p>
+        <p className="mt-5 max-w-3xl text-base leading-7 text-slate-300">Only Administrations-approved Lord/Lady enterprises with a completed Enterprise Door appear here. The territory grows as additional enterprise structures become real.</p>
       </div>
     </header>
     <section className="mx-auto max-w-7xl px-5 py-10 md:px-8">

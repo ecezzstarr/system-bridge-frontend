@@ -14,7 +14,7 @@ const steps = [
   },
   {
     title: 'Sign in and work',
-    copy: 'Sign in with your WEAVE account. Agents, Bridgers, Clients and Administration continue into their existing role environment.',
+    copy: 'Sign in with your WEAVE account. Agents, Bridgers, Clients and Administrations continue into their existing role environment.',
   },
 ]
 

@@ -19,7 +19,7 @@ const POSITION_LABEL: Record<string, string> = {
   mandate: 'Mandate',
   lawyer: 'Attorney',
   forensic: 'Forensics',
-  admin: 'Administration',
+  admin: 'Administrations',
   bridger: 'Bridger',
 }
 
@@ -151,7 +151,7 @@ export default function ClientInteractionsPage() {
                 <p>Clarity → action.</p>
                 <p>Action → execution.</p>
                 <p>Execution → confirmation.</p>
-                <p>Confirmation → Administration when needed.</p>
+                <p>Confirmation → Administrations when needed.</p>
               </div>
             </section>
             {user.role === 'agent' && <ClientBuildPull role="agent" />}

@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
         else if (!outcome.value.settled) pending++
       } else {
         // An unavailable Paystack API or an old invalid checkout is not proof
-        // of payment. Preserve the record for Administration's audit queue.
+        // of payment. Preserve the record for Administrations' audit queue.
         console.error('[Paystack user reconciliation]', outcome.reason)
         pending++
       }

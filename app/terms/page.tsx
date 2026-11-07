@@ -35,7 +35,7 @@ export default function TermsPage() {
           </p>
           <p>
             The company distinguishes Agents (Stability), Bridgers (Hope), Clients (Dream Lovely)
-            and Administration (A Time). A role, File Number, application, or payment is not
+            and Administrations (A Time). A role, File Number, application, or payment is not
             an approved employment contract. Salary, employee assignments, commercial returns
             and customer fees are governed by the individually approved written terms.
           </p>

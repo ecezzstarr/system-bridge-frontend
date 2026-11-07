@@ -82,7 +82,7 @@ export function getLegacyFileFolderTier(
   if (amount < FILE_FOLDER_PRICING.standardMaximumFlameCoin) return 'standard'
 
   // Historical purchases above the new Standard maximum are retained as Pro so
-  // clients and pending Administration verifications do not become stranded.
+  // clients and pending Administrations verifications do not become stranded.
   return 'pro'
 }
 

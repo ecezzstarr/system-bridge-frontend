@@ -73,7 +73,7 @@ export async function notifyDepositSubmitted(input: {
     title: input.rail === 'PAYSTACK' ? `${input.role} Paystack checkout opened` : `${input.role} deposit awaiting verification`,
     content: input.rail === 'PAYSTACK'
       ? `${input.depositorName} opened Paystack checkout for ${input.amountLabel}${input.secondaryLabel ? ` (${input.secondaryLabel})` : ''}. This is not proof of payment. Deposit ${input.depositId} requires Paystack verification.`
-      : `${input.depositorName} submitted ${input.amountLabel}${input.secondaryLabel ? ` (${input.secondaryLabel})` : ''} through ${input.rail}. Deposit ${input.depositId} is awaiting Administration.`,
+      : `${input.depositorName} submitted ${input.amountLabel}${input.secondaryLabel ? ` (${input.secondaryLabel})` : ''} through ${input.rail}. Deposit ${input.depositId} is awaiting Administrations.`,
     link: input.adminLink || '/admin/control-center#deposits',
     fromUserId: input.depositorId || null,
     fromUserName: input.depositorName,
@@ -100,10 +100,10 @@ export async function notifyDepositDecision(input: {
     content: input.approved
       ? input.rail === 'PAYSTACK'
         ? `Paystack verified your ${input.amountLabel} payment and Weave credited it.${credited}`
-        : `Administration approved your ${input.amountLabel} ${input.rail} deposit.${credited}`
-      : `Administration rejected your ${input.amountLabel} ${input.rail} deposit. No Flame Coin was credited. Check the payment details before submitting again.`,
+        : `Administrations approved your ${input.amountLabel} ${input.rail} deposit.${credited}`
+      : `Administrations rejected your ${input.amountLabel} ${input.rail} deposit. No Flame Coin was credited. Check the payment details before submitting again.`,
     link: '/wallet/deposit-withdraw',
     fromUserId: input.adminId || null,
-    fromUserName: 'WEAVE Administration',
+    fromUserName: 'WEAVE Administrations',
   })
 }

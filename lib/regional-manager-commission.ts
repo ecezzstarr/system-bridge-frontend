@@ -76,7 +76,7 @@ export async function creditRegionalManagerFileFolderCommission(params: {
   if (!bridgerId || !purchaseId || !Number.isFinite(grossPurchaseValue) || grossPurchaseValue <= 0) return null
 
   await ensureRegionalManagerCommissionSchema()
-  // Direct Administration attribution takes precedence. If none exists, derive the
+  // Direct Administrations attribution takes precedence. If none exists, derive the
   // Regional Manager from the lead team's active appointment, including its assistants.
   let [assignment] = await sql`
     SELECT rm.user_id AS regional_manager_id

@@ -30,7 +30,7 @@ const guidance:Record<string,JobGuidance>={
     group:'Stability · Food Preparation',start:'/weave/lifestyles/food-preparation',talk:'#food-team-communication',
     steps:['Open verified food orders and your own assigned preparation work.',
       'Prepare, package, and record the actual stage and handoff for each authorized order.',
-      'Follow the approved Stability Lead’s allocation; Administration handles verification and financial authorization.']},
+      'Follow the approved Stability Lead’s allocation; Administrations handle verification and financial authorization.']},
 }
 const guidanceFor=(position:WorkPosition):JobGuidance=>{
   if(position.id==='food_distribution_manager'||position.id==='food_distribution_assistant_manager'){
@@ -61,7 +61,7 @@ const guidanceFor=(position:WorkPosition):JobGuidance=>{
     {group:'Company Guidance',start:position.tools[0]?.href||'/weave/lifestyles',talk:position.tools[0]?.href||'/communications',
       steps:['Read your authorized department inbox and identify the requests assigned to you.',
         'Reply with factual progress through the department’s approved work system.',
-        'Escalate decisions outside your delegated duties to Administration.']}
+        'Escalate decisions outside your delegated duties to Administrations.']}
 }
 export default function CompanyWorkspaces(){
   const {user,token,isInitialized}=useAuth()
@@ -154,6 +154,6 @@ export default function CompanyWorkspaces(){
       <p>No approved employment workspace is available for this account yet. Your normal Agent or Bridger work remains separate.</p>
       <Link href="/weave/lifestyles" className="mt-4 inline-flex min-h-11 items-center text-sm font-black text-amber-200">View company positions and applications →</Link>
     </section>}
-    <footer className="border-t border-white/10 pt-5 text-xs leading-6 text-slate-500">Job controls remain role-restricted. Administration retains hiring verification and financial authority; staff lead their assigned operations and record real outcomes.</footer>
+    <footer className="border-t border-white/10 pt-5 text-xs leading-6 text-slate-500">Job controls remain role-restricted. Administrations retains hiring verification and financial authority; staff lead their assigned operations and record real outcomes.</footer>
   </main>
 }

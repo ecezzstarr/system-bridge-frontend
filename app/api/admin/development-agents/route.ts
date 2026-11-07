@@ -22,7 +22,7 @@ function hasSchedulerAuthority(request: NextRequest) {
 async function requireAdmin(request: NextRequest) {
   const user = await getAuthUser(request)
   if (!user) return { error: NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 }) }
-  if (user.role !== 'admin') return { error: NextResponse.json({ success: false, error: 'Administration access required' }, { status: 403 }) }
+  if (user.role !== 'admin') return { error: NextResponse.json({ success: false, error: 'Administrations access required' }, { status: 403 }) }
   return { user }
 }
 
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!admin) {
-      return NextResponse.json({ success: false, error: 'Administration access required' }, { status: 403 })
+      return NextResponse.json({ success: false, error: 'Administrations access required' }, { status: 403 })
     }
 
     if (action === 'queue') {

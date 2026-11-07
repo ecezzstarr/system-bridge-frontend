@@ -1,5 +1,5 @@
 /**
- * Pro Regional Manager is an Administration-appointed position, distinct from
+ * Pro Regional Manager is an Administrations-appointed position, distinct from
  * the ordinary Bridger/Agent Regional Manager Lifestyle role.
  *
  * All Pro Regional Managers require approved employment terms, a verified

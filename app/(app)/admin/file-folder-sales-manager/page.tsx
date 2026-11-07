@@ -115,7 +115,7 @@ export default function FileFolderSalesManagerPage(){
   }
 
   if(!isInitialized)return <main className="p-8 text-slate-400">Loading sales manager…</main>
-  if(user?.role!=='admin')return <main className="p-8 text-slate-300">Administration access required. <Link href="/login" className="text-cyan-300">Sign in</Link></main>
+  if(user?.role!=='admin')return <main className="p-8 text-slate-300">Administrations access required. <Link href="/login" className="text-cyan-300">Sign in</Link></main>
 
   const m=snapshot?.metrics||{}
   const openActions=(snapshot?.actions||[]).filter(action=>action.status==='open')
@@ -127,7 +127,7 @@ export default function FileFolderSalesManagerPage(){
       <header className="border-b border-cyan-300/10 pb-6">
         <div className="flex flex-wrap items-start justify-between gap-5">
           <div>
-            <p className="text-[9px] font-black uppercase tracking-[.24em] text-cyan-300">Administration · File Folder Sales Manager</p>
+            <p className="text-[9px] font-black uppercase tracking-[.24em] text-cyan-300">Administrations · File Folder Sales Manager</p>
             <h1 className="mt-2 text-3xl font-black tracking-tight sm:text-5xl">Weekly sales movement.</h1>
             <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">Echo coordinates the active prospect and follow-up movement. EIGHT reads the whole funnel as commercial intelligence. The manager enforces cadence and escalation; it does not fabricate or promise buyer behavior.</p>
           </div>

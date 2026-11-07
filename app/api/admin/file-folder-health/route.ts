@@ -6,14 +6,14 @@ export const dynamic='force-dynamic'
 const headers={'Cache-Control':'private, no-store','Vary':'Authorization, Cookie'}
 
 /**
- * Administration-only, read-only File Folder health check.
+ * Administrations-only, read-only File Folder health check.
  * Lists factual owner/Folder/workshop mismatches without allocating purchases,
  * changing private access, charging wallets or manufacturing verification.
  */
 export async function GET(request:NextRequest){
   const user=await getAuthUser(request)
   if(!user||user.role!=='admin')
-    return NextResponse.json({error:'Administration access required'},{status:403,headers})
+    return NextResponse.json({error:'Administrations access required'},{status:403,headers})
   try{
     const [schema]=await sql`
       SELECT to_regclass('public.client_file_folders')::text AS folders,
@@ -25,7 +25,7 @@ export async function GET(request:NextRequest){
         success:true,health:'schema_review_required',checkedAt:new Date().toISOString(),
         missingTables:[!schema?.folders?'client_file_folders':null,!schema?.workshops?'client_system_workshops':null].filter(Boolean),
         counts:null,issues:[],
-        action:'Restore the original File Folder schema through authorized Administration database migration. Do not invent Client ownership.',
+        action:'Restore the original File Folder schema through authorized Administrations database migration. Do not invent Client ownership.',
       },{headers})
     }
     const [counts]=await sql`

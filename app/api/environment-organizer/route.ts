@@ -11,7 +11,7 @@ export async function GET(request:NextRequest){
     const state=await getEnvironmentOrganizerState()
     const user=await getAuthUser(request)
     const items=state.items.filter((item:any)=>canAccessEnvironmentRoute(item.route,user?.role))
-    // Runtime loader copy is position-specific. Never publish Administration's
+    // Runtime loader copy is position-specific. Never publish Administrations'
     // customized lessons or transition notes to a visitor or another role.
     const role=user?.role
     const allowed=new Set(['visitor','flame-event',role].filter(Boolean))

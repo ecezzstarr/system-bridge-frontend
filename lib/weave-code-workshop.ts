@@ -30,11 +30,11 @@ function credential(write=false){
  return String(value||'').trim()
 }
 export function isCodeWorkshopWritable(){return Boolean(credential(true))}
-function validOwner(id:string){if(!uuid.test(id))throw Error('Invalid Administration account');return id.toLowerCase()}
+function validOwner(id:string){if(!uuid.test(id))throw Error('Invalid Administrations account');return id.toLowerCase()}
 function draftFor(id:string,branch:string){
  const prefix='weave-admin/'+validOwner(id)+'/'
  if(!branch.startsWith(prefix)||!/^[a-f0-9]{16}$/.test(branch.slice(prefix.length)))
-  throw Error('Use a draft branch issued to your own Administration identity')
+  throw Error('Use a draft branch issued to your own Administrations identity')
  return branch
 }
 function refFor(id:string,branch:string){return branch==='main'?'main':draftFor(id,branch)}

@@ -2,7 +2,7 @@
 
 The canonical source is this repository's main branch.
 Official public app: https://weavingsystem.online/
-Administration Workshop: https://ssbnow.online/
+Administrations Workshop: https://ssbnow.online/
 Client Service Portal: https://ssbnow.shop/
 Internal Cloud Run service endpoint: https://system-bridge-frontend-823579957639.us-central1.run.app/
 
@@ -30,11 +30,11 @@ The previous automatic Cloud Build trigger is disabled to prevent unwanted revis
 
 ## Password recovery email
 
-Password recovery for Agent, Bridger, Client, and Administration accounts uses one-time email codes through the existing WEAVE mail transport.
+Password recovery for Agent, Bridger, Client, and Administrations accounts uses one-time email codes through the existing WEAVE mail transport.
 
 Production Cloud Run preserves:
 - `PASSWORD_RECOVERY_EMAIL_FROM`: `WEAVE Access <access@weavingsystem.online>`
-- `PASSWORD_RECOVERY_REPLY_TO`: the WEAVE Administration email
+- `PASSWORD_RECOVERY_REPLY_TO`: the WEAVE Administrations email
 - the existing `RESEND_API_KEY` runtime secret
 
 The Gmail SMTP/app-password path and `weave-gmail-app-password` Secret Manager dependency are removed. Recovery codes expire after 15 minutes, are rate-limited, and successful reset closes prior sessions.

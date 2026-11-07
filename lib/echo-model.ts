@@ -289,7 +289,7 @@ export async function runEchoSalesCoordination(input: {
   } catch (error) {
     console.error('Echo sales coordination error:', error)
     return {
-      summary: 'Echo sales coordination could not complete this pass. Existing funnel data remains available to Administration.',
+      summary: 'Echo sales coordination could not complete this pass. Existing funnel data remains available to Administrations.',
       actions: [],
     }
   }

@@ -2,7 +2,7 @@ import { getPool } from '@/lib/db'
 import { verifyPaystackTransaction, paystackMismatchReason } from '@/lib/paystack'
 import { getPaystackConfig } from '@/lib/paystack-config'
 
-/** Read-only evidence for a single Administration-selected Paystack deposit. */
+/** Read-only evidence for a single Administrations-selected Paystack deposit. */
 export async function inspectPaystackDeposit(depositId: string) {
   const found = await getPool().query(
     `SELECT d.id,d.user_id,d.status,d.receipt_data AS reference,d.amount_usd,d.amount_trx,d.verified_at,

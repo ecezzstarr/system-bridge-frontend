@@ -80,9 +80,9 @@ export default function AdminAgentChannelAuthorityPage() {
       <header className="border-b border-white/10 bg-[radial-gradient(circle_at_14%_0%,rgba(139,92,246,.13),transparent_34%),radial-gradient(circle_at_88%_0%,rgba(16,185,129,.07),transparent_28%)] p-5 md:p-7">
         <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
           <div>
-            <p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.22em] text-violet-300">Administration · Channel Authority Engine</p>
+            <p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.22em] text-violet-300">Administrations · Channel Authority Engine</p>
             <h1 className="mt-2 text-2xl font-black text-white md:text-3xl">Approval changes what an Agent is authorized to do.</h1>
-            <p className="mt-3 max-w-4xl text-sm leading-7 text-slate-300">An Agent applies for a company support function. Administration reviews the request. Approval becomes recorded authority for that channel; rejection leaves the function unavailable.</p>
+            <p className="mt-3 max-w-4xl text-sm leading-7 text-slate-300">An Agent applies for a company support function. Administrations review the request. Approval becomes recorded authority for that channel; rejection leaves the function unavailable.</p>
           </div>
           <button onClick={()=>void load()} disabled={loading} className="inline-flex items-center gap-2 rounded-xl border border-violet-300/15 bg-violet-400/[0.06] px-4 py-2.5 text-[10px] font-black uppercase tracking-[0.1em] text-violet-100 disabled:opacity-40"><RefreshCw className={`h-4 w-4 ${loading?'animate-spin':''}`}/>Refresh</button>
         </div>
@@ -98,7 +98,7 @@ export default function AdminAgentChannelAuthorityPage() {
 
           <div className="mt-5 border-b border-white/10 pb-4">
             <p className="text-[9px] font-black uppercase tracking-[0.18em] text-amber-300">Decision queue</p>
-            <p className="mt-1 text-xs text-slate-400">Every decision is persisted with reviewer and review time by the Administration API.</p>
+            <p className="mt-1 text-xs text-slate-400">Every decision is persisted with reviewer and review time by the Administrations API.</p>
           </div>
 
           {loading?<div className="py-16 text-center text-slate-400">Reading authority requests…</div>:applications.filter(a=>a.status==='pending').length===0?
@@ -133,7 +133,7 @@ export default function AdminAgentChannelAuthorityPage() {
         </section>
 
         <aside className="space-y-4">
-          <section className="rounded-3xl border border-emerald-300/15 bg-emerald-400/[0.04] p-4"><div className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-emerald-300"/><p className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-300">Authority causality</p></div><div className="mt-3 space-y-2 text-xs font-semibold text-slate-300"><p>Agent request → pending.</p><p>Administration review → decision.</p><p>Approval → channel authority.</p><p>Authority → Client support work.</p></div></section>
+          <section className="rounded-3xl border border-emerald-300/15 bg-emerald-400/[0.04] p-4"><div className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-emerald-300"/><p className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-300">Authority causality</p></div><div className="mt-3 space-y-2 text-xs font-semibold text-slate-300"><p>Agent request → pending.</p><p>Administrations review → decision.</p><p>Approval → channel authority.</p><p>Authority → Client support work.</p></div></section>
           <section className="rounded-3xl border border-sky-300/15 bg-sky-400/[0.04] p-4"><div className="flex items-center gap-2"><UserCog className="h-4 w-4 text-sky-300"/><p className="text-[9px] font-black uppercase tracking-[0.18em] text-sky-300">Boundary</p></div><p className="mt-3 text-xs leading-5 text-slate-300">This engine grants or rejects support-channel authority. It does not assign Client ownership, alter the Agent's account role, or fabricate completed work.</p></section>
         </aside>
       </div>

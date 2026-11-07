@@ -45,8 +45,8 @@ export default function GuidanceStaffAdminPage(){
     if(!id)return
     window.requestAnimationFrame(()=>document.getElementById('application-'+id)?.scrollIntoView({behavior:'smooth',block:'center'}))
   },[items])
-  if(!isInitialized)return <main className="p-6 text-white">Opening Administration department review…</main>
-  if(!user||user.role!=='admin')return <main className="p-6 text-white">Administration only.</main>
+  if(!isInitialized)return <main className="p-6 text-white">Opening Administrations department review…</main>
+  if(!user||user.role!=='admin')return <main className="p-6 text-white">Administrations only.</main>
   const pending=items.filter(item=>item.status==='pending')
   const active=items.filter(item=>item.status==='approved')
   const reviewed=items.filter(item=>item.status==='rejected'||item.status==='revoked')
@@ -83,7 +83,7 @@ export default function GuidanceStaffAdminPage(){
   return <main className="mx-auto max-w-6xl px-4 pb-16 pt-6 text-white" data-admin-guidance-assignments="verified">
     <Link href="/admin/company-guidance" className="inline-flex items-center gap-2 text-xs text-sky-200"><ArrowLeft className="h-4 w-4"/>Company Guidance Inbox</Link>
     <header className="mt-5 flex flex-wrap items-start justify-between gap-4 border-b border-white/10 pb-5">
-      <div><p className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[.2em] text-amber-200"><ShieldCheck className="h-4 w-4"/>Administration · Weave Mandate</p>
+      <div><p className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[.2em] text-amber-200"><ShieldCheck className="h-4 w-4"/>Administrations · Weave Mandate</p>
         <h1 className="mt-2 text-3xl font-black">Departmental support appointments</h1>
         <p className="mt-3 max-w-3xl text-xs leading-6 text-stone-400">Approve Agent or Bridger applicants to reply within Mandate, Forensics or Attorney Company Guidance threads. No pending applicant can see a private conversation. Revoke access here at any time.</p>
       </div>
@@ -94,7 +94,7 @@ export default function GuidanceStaffAdminPage(){
     <div className="mt-6 grid gap-4 sm:grid-cols-3">
       {[['Pending applications',pending.length],['Approved personnel',active.length],['Declined or revoked',reviewed.length]].map(([label,n])=><div key={label} className="border border-white/10 p-4"><p className="text-[10px] text-stone-500">{label}</p><p className="mt-2 text-2xl font-black">{n}</p></div>)}
     </div>
-    <section className="mt-8"><h2 className="text-xl font-black">Waiting for Administration · {pending.length}</h2>
+    <section className="mt-8"><h2 className="text-xl font-black">Waiting for Administrations · {pending.length}</h2>
       <div className="mt-4 grid gap-4 md:grid-cols-2">{pending.map(card)}{!pending.length&&<p className="text-xs text-stone-500">No pending applicants.</p>}</div>
     </section>
     <section className="mt-8 border-t border-white/10 pt-6"><h2 className="text-xl font-black">Active departmental support · {active.length}</h2>

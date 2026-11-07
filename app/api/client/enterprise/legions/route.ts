@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
     LIMIT 1
   `
   if (!application || application.status !== 'approved') {
-    return NextResponse.json({ error: 'Legion access opens only after Administration approves the enterprise.' }, { status: 403 })
+    return NextResponse.json({ error: 'Legion access opens only after Administrations approve the enterprise.' }, { status: 403 })
   }
 
   const [quarters] = await sql`

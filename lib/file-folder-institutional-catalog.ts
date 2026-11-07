@@ -22,7 +22,7 @@ export const INSTITUTIONAL_KITS: readonly InstitutionalKit[]=[
   ['health_coordination_kit','Public Health Coordination Kit','health','Program oversight, service demand summaries and controlled reporting plans.',680],
   ['medical_supply_kit','Medical Supply Planning Kit','health','Inventory and replenishment workspaces for non-dispensing supply coordination.',260],
   ['public_service_kit','Public Service Portal Kit','public_service','Resident request intake, workflow records and public-service structure.',360],
-  ['civic_administration_kit','Civic Administration Kit','public_service','Offices, review desks, authorizations and work tracking for public bodies.',620],
+  ['civic_administration_kit','Civic Administrations Kit','public_service','Offices, review desks, authorizations and work tracking for public bodies.',620],
   ['national_coordination_kit','National Systems Planning Kit','public_service','High-level agency integration and records architecture; not a sovereign operating authority.',2400],
   ['accountability_kit','Public Accountability Kit','public_service','Public reporting, review queues and audit preparation.',470],
   ['market_hall_kit','Market Operations Kit','commerce','Market management, stall assignment plans, inspection checklists and seller coordination.',330],

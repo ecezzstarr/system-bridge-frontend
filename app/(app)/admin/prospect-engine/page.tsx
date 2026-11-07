@@ -155,9 +155,9 @@ export default function ProspectEnginePage() {
   return (
     <WeaveSystemRoom
       roomKey="administration-prospect-engine"
-      eyebrow="Administration · Prospect Engine"
+      eyebrow="Administrations · Prospect Engine"
       title="Prospect discovery authority"
-      detail="Generate, qualify and package Prospect movement inside one Administration system. The number engine, inventory and qualified pool remain visible together."
+      detail="Generate, qualify and package Prospect movement inside one Administrations system. The number engine, inventory and qualified pool remain visible together."
       tone="amber"
       pulse={isGenerating?'Candidate series running':isPackaging?'Packaging selected prospects':'Prospect Engine ready'}
       left={

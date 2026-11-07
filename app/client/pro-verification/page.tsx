@@ -53,7 +53,7 @@ export default function ProFileNumberVerification(){
    if(!response.ok)throw new Error(json.error||'Unable to submit business plan')
    sessionStorage.setItem(SESSION_KEY,json.ticket)
    await refresh(json.ticket)
-   setMessage('Business plan and electronic agreement recorded. Administration must confirm your File Number and identity before payment instructions become available.')
+   setMessage('Business plan and electronic agreement recorded. Administrations must confirm your File Number and identity before payment instructions become available.')
   }catch(e){setError(e instanceof Error?e.message:'Verification unavailable')}
   finally{setBusy(false)}
  }
@@ -111,7 +111,7 @@ export default function ProFileNumberVerification(){
       <span>Your own business world</span>
       <span>Customer Door & systems</span>
       <span>Employees & regional growth</span>
-      <span>Administration + Forensics</span>
+      <span>Administrations + Forensics</span>
      </div>
      <a className="pv-hero-explore" href="#pro-client-file-folder-features">Explore what your File Folder can do</a>
     </div>
@@ -166,7 +166,7 @@ export default function ProFileNumberVerification(){
    {message&&<p role="status" className="rounded-xl border border-cyan-300/30 p-4 text-sm text-cyan-100">{message}</p>}
    {step==='file'&&<section className="pv-panel space-y-4" data-pro-stage="file-number">
     <h2 className="text-xl font-bold">01 · Identify your company File Folder</h2>
-    <p className="text-sm text-slate-600">Use only the File Number formally issued to you by Weave Administration. You do not need a password or a new account to begin. No payment is required at this stage.</p>
+    <p className="text-sm text-slate-600">Use only the File Number formally issued to you by Weave Administrations. You do not need a password or a new account to begin. No payment is required at this stage.</p>
     <label className="block text-sm text-slate-200">Client File Number
      <input autoComplete="off" value={fileNumber} onChange={e=>setFileNumber(e.target.value.toUpperCase().trim())}
       placeholder="WEAVE-..." className="mt-2 w-full rounded-lg border border-white/20 bg-slate-900 p-3 font-mono text-white"/>
@@ -199,7 +199,7 @@ export default function ProFileNumberVerification(){
     </label>
     <div className="space-y-3 rounded-xl border border-white/15 p-4" data-client-regional-location-intake="true">
       <h3 className="font-semibold">Your company operating address and location</h3>
-      <p className="text-xs text-slate-300">Provide your real country, city, region and contact address. Administration verifies the company territory before opening the Pro File Folder. A location does not create an appointment by itself.</p>
+      <p className="text-xs text-slate-300">Provide your real country, city, region and contact address. Administrations verify the company territory before opening the Pro File Folder. A location does not create an appointment by itself.</p>
       <div className="grid gap-3 sm:grid-cols-2">
        <label className="block text-sm">Country<input required maxLength={100} autoComplete="country-name"
         value={operatingCountry} onChange={e=>setOperatingCountry(e.target.value)}
@@ -220,7 +220,7 @@ export default function ProFileNumberVerification(){
        className="mt-2 w-full rounded-lg border border-white/20 bg-slate-900 p-3"/></label>
     </div>
     <h3 className="text-lg font-semibold">3. Business plan · From your work to a functioning enterprise</h3>
-    <p className="text-sm leading-7 text-slate-600">Explain the actual people, systems, responsibilities and verifiable value behind your business. Administration reviews the plan as a model for sustained operations, not as a claim that income already exists.</p>
+    <p className="text-sm leading-7 text-slate-600">Explain the actual people, systems, responsibilities and verifiable value behind your business. Administrations review the plan as a model for sustained operations, not as a claim that income already exists.</p>
     {PLAN_FIELDS.map(({key,title,guidance})=><label key={key} className="block text-sm text-slate-200">{title}
      <span className="mt-1 block text-xs leading-6 text-slate-600">{guidance}</span>
      <textarea rows={4} maxLength={3000} minLength={10} required value={plan[key]||''}
@@ -257,16 +257,16 @@ export default function ProFileNumberVerification(){
     <p className="font-mono text-xs text-cyan-200">{verification.fileNumber}</p>
     <p className="text-sm">File Folder business: <strong>{verification.businessName}</strong></p>
     {verification.operatingLocation&&<p className="text-sm text-slate-200" data-pro-verified-operating-location="true">
-      Submitted operating location: {verification.operatingLocation.city}, {verification.operatingLocation.region}, {verification.operatingLocation.country} · subject to Administration territory approval
+      Submitted operating location: {verification.operatingLocation.city}, {verification.operatingLocation.region}, {verification.operatingLocation.country} · subject to Administrations territory approval
     </p>}
     {verification.companyPosition?<div className="rounded-xl border border-cyan-300/20 bg-cyan-300/[.04] p-4">
-      <p className="text-xs uppercase tracking-widest text-cyan-200">Administration-approved WEAVE employment</p>
+      <p className="text-xs uppercase tracking-widest text-cyan-200">Administrations-approved WEAVE employment</p>
       <p className="mt-1 text-lg font-semibold">{verification.companyPosition.title}</p>
       <p className="mt-1 text-sm text-slate-200">Monthly salary: {verification.companyPosition.monthlySalaryUSDT!==null
        ?verification.companyPosition.monthlySalaryUSDT.toLocaleString()+' USDT according to the approved company offer'
        :'Pending confirmation in the company salary record'}</p>
       <p className="mt-1 text-xs text-slate-400">Position and payroll are verified independently from the Pro File Folder activation fee. Salary is not automatically credited by activating the Folder.</p>
-     </div>:<p className="text-sm text-amber-200">Company employment status and salary: awaiting Administration verification of an approved Pro staff appointment.</p>}
+     </div>:<p className="text-sm text-amber-200">Company employment status and salary: awaiting Administrations verification of an approved Pro staff appointment.</p>}
     <p className="text-sm capitalize text-amber-200">Status: {verification.status.replaceAll('_',' ')}</p>
     <p className="text-xs text-slate-400">Application reference: {verification.reference}</p>
     {verification.siblingsEvent&&<div className="rounded-xl border border-violet-300/25 bg-violet-300/[.05] p-4" data-verified-cj-siblings-event="true">
@@ -280,10 +280,10 @@ export default function ProFileNumberVerification(){
      <p className="mt-2 break-all font-mono">{ticket}</p>
      <p className="mt-2">Keep this code private. It is needed if you resume the verification on another device. Do not post it publicly.</p>
     </details>
-    {verification.status==='pending_identity'&&<p className="rounded-lg border border-amber-300/20 p-4 text-sm text-slate-200">Administration is reviewing your File Number, identity, electronic signature, business name and business plan. Payment instructions are not available until that review is complete.</p>}
+    {verification.status==='pending_identity'&&<p className="rounded-lg border border-amber-300/20 p-4 text-sm text-slate-200">Administrations are reviewing your File Number, identity, electronic signature, business name and business plan. Payment instructions are not available until that review is complete.</p>}
     {verification.status==='payment_rejected'&&<div className="space-y-3 rounded-lg border border-rose-300/30 p-4">
      <h3 className="font-semibold text-rose-200">Payment evidence needs a new review</h3>
-     <p className="text-sm text-slate-200">Forensics finding: {verification.rejectionReason||'Receipt not independently confirmed.'} The original evidence is retained for audit. Do not send another payment without reconciling with Administration.</p>
+     <p className="text-sm text-slate-200">Forensics finding: {verification.rejectionReason||'Receipt not independently confirmed.'} The original evidence is retained for audit. Do not send another payment without reconciling with Administrations.</p>
      <button type="button" onClick={()=>{
       sessionStorage.removeItem(SESSION_KEY);setTicket('');setVerification(null);
       setStep('file');setError('');setMessage('');setTxHash('')
@@ -311,13 +311,13 @@ export default function ProFileNumberVerification(){
     {verification.status==='pending_forensics'&&<p className="text-sm text-slate-200">Your transaction hash was received. Forensics is checking the actual blockchain receipt, amount and receiving address. Do not send a duplicate payment.</p>}
     {verification.status==='paid_pending_account'&&<section className="space-y-3 rounded-xl border border-cyan-300/25 p-5">
       <h3 className="text-lg font-semibold">6. Secure Client account registration</h3>
-      <p className="text-sm text-slate-200">Forensics has independently verified your Pro activation. Request a private account-registration link to the email address already recorded in your approved company employment offer. Your File Number is not a login or a password. Create your own secure Client account using the link; Administration then verifies account ownership and finalizes the existing Pro File Folder. Do not make another activation payment.</p>
+      <p className="text-sm text-slate-200">Forensics has independently verified your Pro activation. Request a private account-registration link to the email address already recorded in your approved company employment offer. Your File Number is not a login or a password. Create your own secure Client account using the link; Administrations then verifies account ownership and finalizes the existing Pro File Folder. Do not make another activation payment.</p>
       <button type="button" disabled={busy} onClick={()=>void requestRegistrationInvite()}
        className="rounded-lg bg-cyan-300 px-5 py-3 text-sm font-semibold text-slate-950 disabled:opacity-40">Email me my verified company registration link</button>
       <p className="text-xs text-slate-400">If you already received an approved private company invitation, you may use that invitation instead. No registration token is displayed in this public workspace.</p>
      </section>}
     {verification.status==='active'&&<p className="text-sm text-emerald-200">Pro File Folder activated. Sign in with the secure Client account you registered through the approved company email invitation, then open your private File Folder and company workspace. This verification code is not a login.</p>}
-    {verification.status==='rejected'&&<p className="text-sm text-rose-200">Verification requires Administration attention. Contact the company using your application reference.</p>}
+    {verification.status==='rejected'&&<p className="text-sm text-rose-200">Verification requires Administrations attention. Contact the company using your application reference.</p>}
     <button type="button" disabled={busy} onClick={()=>void refresh(ticket).catch(e=>setError(e.message))}
      className="pv-secondary rounded-lg border border-cyan-300/30 px-4 py-2 text-sm">Refresh verification status</button>
    </section>}
@@ -327,17 +327,17 @@ export default function ProFileNumberVerification(){
      <h2>One Pro standard. Your own business.</h2>
      <p>A Pro Regional Manager does not receive a predetermined business. Your approved life-work and business plan determine the workshop that grows inside your Pro File Folder.</p>
      <ol className="pv-side-flow">
-      <li><span className="pv-side-number">01</span><div><strong>Identity & appointment</strong><small>Administration independently confirms your issued File Number and company position.</small></div></li>
+      <li><span className="pv-side-number">01</span><div><strong>Identity & appointment</strong><small>Administrations independently confirms your issued File Number and company position.</small></div></li>
       <li><span className="pv-side-number">02</span><div><strong>Your Pro business world</strong><small>The business plan defines your workshop, systems, operating region and future Customer Door.</small></div></li>
       <li><span className="pv-side-number">03</span><div><strong>Participation & employees</strong><small>Authorized people work through Weave to expand your business and its purpose.</small></div></li>
       <li><span className="pv-side-number">04</span><div><strong>Verified company movement</strong><small>Forensics verifies payment evidence, while salary, customers and commercial records remain separate.</small></div></li>
      </ol>
      <details className="pv-activation-disclosure">
       <summary>Later stage: activation and Forensics</summary>
-      <p>Once Administration confirms the approved appointment, identity and business plan, the separate activation agreement explains the one-time Pro File Folder fee.</p>
+      <p>Once Administrations confirm the approved appointment, identity and business plan, the separate activation agreement explains the one-time Pro File Folder fee.</p>
       <p><strong>680 USDT on TRON (TRC-20)</strong>. The official company receiving address is shown only after the payment stage is authorized. Paying does not create a company appointment, salary or guaranteed return.</p>
      </details>
-     <p>Administration is <strong>A Time</strong>. Clients are <strong>Dream Lovely</strong>. Your business becomes part of the company through authorized systems and recorded participation.</p>
+     <p>Administrations are <strong>A Time</strong>. Clients are <strong>Dream Lovely</strong>. Your business becomes part of the company through authorized systems and recorded participation.</p>
     </aside>
    </div>
    <footer className="pv-footer">

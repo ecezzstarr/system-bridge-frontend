@@ -68,7 +68,7 @@ export default function EnterpriseDreamPanel({ initialState, growth }: { initial
       const res=await fetch('/api/client/enterprise',{method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify(plan)})
       const body=await res.json()
       if(!res.ok)throw new Error(body.error||'Unable to submit enterprise plan')
-      setMessage('Business plan submitted for Administration enterprise approval.')
+      setMessage('Business plan submitted for Administrations enterprise approval.')
       await load(true)
     }catch(e:any){setMessage(e.message||'Unable to submit enterprise plan')}
     finally{setBusy(false)}
@@ -105,7 +105,7 @@ export default function EnterpriseDreamPanel({ initialState, growth }: { initial
       <div>
         <p className="text-[10px] uppercase tracking-[0.3em] text-amber-300">File Folder · Enterprise Elevation</p>
         <h2 className="mt-2 text-2xl font-semibold">{approved?'Enterprise Dream Workshop':'Carry your File Folder as an Enterprise'}</h2>
-        <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">Your registration gender determines Lord or Lady. The 600 Flame Coin monthly Client subscription activates the title. Administration separately approves an enterprise business plan before Legion recruitment.</p>
+        <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">Your registration gender determines Lord or Lady. The 600 Flame Coin monthly Client subscription activates the title. Administrations separately approves an enterprise business plan before Legion recruitment.</p>
       </div>
       <div className="rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-right">
         <p className="text-[9px] uppercase tracking-[0.2em] text-slate-500">Position</p>
@@ -132,7 +132,7 @@ export default function EnterpriseDreamPanel({ initialState, growth }: { initial
     {!subscriptionActive ? <div className="mt-6 border border-amber-300/20 bg-black/20 p-5 text-sm text-amber-100">Activate the monthly Client subscription before requesting enterprise approval.</div> : approved ? <div className="mt-6 space-y-5">
       <div className="grid gap-4 md:grid-cols-3">
         <div className="rounded-2xl border border-amber-400/20 bg-amber-400/5 p-5 md:col-span-2"><div className="flex items-center gap-3"><Crown className="h-5 w-5 text-amber-300"/><div><p className="text-[9px] uppercase tracking-[0.2em] text-amber-300">{state?.position}</p><h3 className="mt-1 text-xl font-semibold">{state?.enterprise_name}</h3></div></div><p className="mt-3 text-sm text-slate-400">{state?.sector}</p><p className="mt-4 text-xs leading-6 text-slate-500">{application?.sustainability_plan}</p></div>
-        <div className="rounded-2xl border border-white/10 bg-black/25 p-5"><div className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-emerald-300"/><p className="text-[9px] uppercase tracking-[0.2em] text-slate-500">Administration</p></div><p className="mt-3 text-sm font-semibold">Approved</p><p className="mt-2 text-xs text-slate-500">Enterprise plan approved. Build Legion Quarters to recruit Legions. Lord/Lady standing follows paid monthly subscription and registration gender.</p></div>
+        <div className="rounded-2xl border border-white/10 bg-black/25 p-5"><div className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-emerald-300"/><p className="text-[9px] uppercase tracking-[0.2em] text-slate-500">Administrations</p></div><p className="mt-3 text-sm font-semibold">Approved</p><p className="mt-2 text-xs text-slate-500">Enterprise plan approved. Build Legion Quarters to recruit Legions. Lord/Lady standing follows paid monthly subscription and registration gender.</p></div>
       </div>
 
       <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
@@ -148,8 +148,8 @@ export default function EnterpriseDreamPanel({ initialState, growth }: { initial
         </div>)}</div>
         {!legionQuartersOpen ? <div className="mt-5 rounded-xl border border-amber-300/15 bg-amber-400/5 p-4 text-xs leading-5 text-amber-100">Construct Legion Quarters in the File Folder before recruiting Legions. Capacity begins at 3 and can be expanded by installing Legion Capacity Modules during compatible enterprise builds.</div> : legionCount>=legionCapacity ? <div className="mt-5 rounded-xl border border-violet-300/15 bg-violet-400/5 p-4 text-xs leading-5 text-violet-100">Legion capacity is full ({legionCount}/{legionCapacity}). Install Legion Capacity Modules during enterprise construction to create more operating positions.</div> : <div className="mt-5 rounded-2xl border border-violet-300/15 bg-violet-400/[.04] p-4"><p className="text-xs leading-5 text-slate-400">Your Legion Quarter is open. Search subscribed Agents and Bridgers, send invitations, or review people who applied through Lifestyle.</p><Link href="/client/enterprise/legions" className="mt-3 inline-flex items-center gap-2 rounded-full bg-violet-500 px-5 py-2.5 text-[10px] font-black uppercase tracking-wider text-white"><Users className="h-4 w-4"/>Add Legion through Recruitment</Link></div>}
       </div>
-    </div> : pending ? <div className="mt-6 rounded-2xl border border-sky-400/20 bg-sky-400/5 p-5"><div className="flex items-center gap-3"><BriefcaseBusiness className="h-5 w-5 text-sky-300"/><div><p className="text-sm font-semibold">{application.enterprise_name}</p><p className="text-xs text-slate-500">{application.sector}</p></div></div><p className="mt-4 text-xs leading-6 text-slate-400">Your business plan is with Administration. The File Folder remains a Client System Formation Workshop until approval.</p></div> : <div className="mt-6 space-y-4">
-      {application?.status==='rejected'&&<div className="rounded-xl border border-red-400/20 bg-red-400/5 p-4 text-xs text-red-200">Administration returned this plan. {application.admin_note||'Review the plan and submit again.'}</div>}
+    </div> : pending ? <div className="mt-6 rounded-2xl border border-sky-400/20 bg-sky-400/5 p-5"><div className="flex items-center gap-3"><BriefcaseBusiness className="h-5 w-5 text-sky-300"/><div><p className="text-sm font-semibold">{application.enterprise_name}</p><p className="text-xs text-slate-500">{application.sector}</p></div></div><p className="mt-4 text-xs leading-6 text-slate-400">Your business plan is with Administrations. The File Folder remains a Client System Formation Workshop until approval.</p></div> : <div className="mt-6 space-y-4">
+      {application?.status==='rejected'&&<div className="rounded-xl border border-red-400/20 bg-red-400/5 p-4 text-xs text-red-200">Administrations returned this plan. {application.admin_note||'Review the plan and submit again.'}</div>}
       <div className="grid gap-3 md:grid-cols-2">
         <div className="text-xs text-slate-300">Position: <strong className="capitalize">{state?.monthlyStanding?.title || 'Client'}</strong> · automatically assigned from registration gender after the 600 Flame Coin monthly subscription.</div>
         <label className="text-xs text-slate-400">Enterprise name<input value={plan.enterpriseName} onChange={e=>setPlan({...plan,enterpriseName:e.target.value})} className="mt-1 w-full rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white"/></label>
@@ -162,7 +162,7 @@ export default function EnterpriseDreamPanel({ initialState, growth }: { initial
         <label className="text-xs text-slate-400">Projected monthly costs<input type="number" min="0" value={plan.projectedMonthlyCosts} onChange={e=>setPlan({...plan,projectedMonthlyCosts:e.target.value})} className="mt-1 w-full rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white"/></label>
         {plan.projectedMonthlyRevenue!==''&&plan.projectedMonthlyCosts!==''&&<p className="text-xs text-amber-100">Projected monthly operating surplus: {(Number(plan.projectedMonthlyRevenue)-Number(plan.projectedMonthlyCosts)).toLocaleString()} (estimate only). Include product, delivery, Legion compensation, subscription and all operating costs.</p>}
       </div>
-      <button disabled={busy} onClick={submit} className="rounded-full bg-amber-500 px-6 py-3 text-xs font-semibold text-black disabled:opacity-40">{busy?'Submitting…':'Submit to Administration'}</button>
+      <button disabled={busy} onClick={submit} className="rounded-full bg-amber-500 px-6 py-3 text-xs font-semibold text-black disabled:opacity-40">{busy?'Submitting…':'Submit to Administrations'}</button>
     </div>}
     {message&&<p className="mt-4 text-xs text-slate-300">{message}</p>}
   </section>

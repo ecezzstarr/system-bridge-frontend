@@ -12,7 +12,7 @@ import { BurningRiverOfficialGateway } from '@/components/events/burning-river-o
  * A participant never receives a different department's entrance.
  */
 const ROLE_DEPARTMENT_WORLD: Record<EventRole,{label:string;department:string;detail:string;href:string}>={
-  admin:{label:'Administration World',department:'Administration · A Time',detail:'Enter your Administration districts, workrooms, oversight and company operations.',href:'/admin/dashboard'},
+  admin:{label:'Administrations World',department:'Administrations · A Time',detail:'Enter your Administrations districts, workrooms, oversight and company operations.',href:'/admin/dashboard'},
   agent:{label:'Agent World',department:'Stability',detail:'Enter your Agent districts, supply operations, company work and participation.',href:'/agent/dashboard'},
   bridger:{label:'Bridger World',department:'Hope',detail:'Enter your Bridger districts, prospects, Bridge AI and Client assistance.',href:'/bridger/dashboard'},
   client:{label:'Client World',department:'Dream Lovely',detail:'Enter your Client world, File Folder work and enterprise participation.',href:'/client/dashboard'},
@@ -24,7 +24,7 @@ const ROLE_DEPARTMENT_WORLD: Record<EventRole,{label:string;department:string;de
  */
 const ROLE_WORK_ENTRANCES: Record<EventRole, { label: string; detail: string; href: string }[]> = {
   admin: [
-    { label: 'Administration Work', detail: 'People, approvals and operating systems.', href: '/admin/control-center' },
+    { label: 'Administrations Work', detail: 'People, approvals and operating systems.', href: '/admin/control-center' },
     { label: 'Staff Applications', detail: 'Review company employment.', href: '/admin/employment-applications' },
     { label: 'Flame Event Control', detail: 'Operate the event.', href: '/admin/flame-event' },
     { label: 'Staff Communications', detail: 'Reach the four positions.', href: '/communications' },

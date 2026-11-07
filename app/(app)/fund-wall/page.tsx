@@ -66,7 +66,7 @@ export default function ReserveEnginePage() {
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-rose-300/20 bg-rose-400/10"><LockKeyhole className="h-5 w-5 text-rose-200"/></div>
             <div>
               <p className="text-[9px] font-black uppercase tracking-[0.18em] text-rose-300">Reserve Engine</p>
-              <h1 className="mt-1 text-2xl font-black text-white">Administration authority required.</h1>
+              <h1 className="mt-1 text-2xl font-black text-white">Administrations authority required.</h1>
               <p className="mt-3 text-sm leading-6 text-slate-300">The Reserve exposes company and platform wallet state, escrow totals and sweep history. It is intentionally not a general participant surface.</p>
             </div>
           </div>

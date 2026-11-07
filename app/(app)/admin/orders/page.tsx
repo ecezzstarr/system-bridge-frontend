@@ -44,7 +44,7 @@ export default function AdminOrderAlerts(){
     }catch{setError('Could not mark the order alert as read')}
     finally{setBusy(false)}
   }
-  if(user?.role!=='admin')return <p className="p-5 text-sm text-slate-400">Administration access required.</p>
+  if(user?.role!=='admin')return <p className="p-5 text-sm text-slate-400">Administrations access required.</p>
   const visible=feed.alerts.filter(alert=>{
     if(filter==='unread')return !alert.is_read
     if(filter==='all')return true
@@ -52,10 +52,10 @@ export default function AdminOrderAlerts(){
   })
   const allowedLink=(link:string)=>link.startsWith('/admin/')&&!link.startsWith('//')?link:'/admin/control-center'
   return <main className="mx-auto min-h-dvh max-w-5xl px-3 py-5 text-white sm:px-5" data-admin-order-inbox="live">
-    <Link href="/admin/control-center" className="inline-flex items-center gap-2 text-xs text-slate-300"><ArrowLeft className="h-4 w-4"/>Administration</Link>
+    <Link href="/admin/control-center" className="inline-flex items-center gap-2 text-xs text-slate-300"><ArrowLeft className="h-4 w-4"/>Administrations</Link>
     <header className="mt-5 flex flex-wrap items-start justify-between gap-4 border-b border-amber-200/20 pb-5">
       <div>
-        <p className="text-[10px] font-black uppercase tracking-[.16em] text-amber-200">WEAVE · Administration</p>
+        <p className="text-[10px] font-black uppercase tracking-[.16em] text-amber-200">WEAVE · Administrations</p>
         <h1 className="mt-2 text-2xl font-black sm:text-3xl">Orders & payment alerts</h1>
         <p className="mt-2 text-xs leading-5 text-slate-400">Committed requests from Agents, Bridgers, Clients and their public Customer Doors. Payment proof is not payment approval.</p>
       </div>
@@ -64,7 +64,7 @@ export default function AdminOrderAlerts(){
         <span className="rounded-xl border border-amber-200/30 bg-amber-200/10 px-3 py-2"><Bell className="mr-1 inline h-4 w-4"/> {feed.unread} unread</span>
       </div>
     </header>
-    <nav className="mt-5 flex gap-2 overflow-x-auto pb-2" aria-label="Filter Administration order alerts">
+    <nav className="mt-5 flex gap-2 overflow-x-auto pb-2" aria-label="Filter Administrations order alerts">
       {['all','unread','agent','bridger','client','visitor'].map(item=><button key={item} type="button" onClick={()=>setFilter(item)}
         className={'shrink-0 rounded-full border px-3 py-2 text-xs font-bold capitalize '+(filter===item?'border-amber-200 bg-amber-100 text-slate-950':'border-white/15 bg-white/5 text-slate-200')}
         aria-pressed={filter===item}>{item}</button>)}
@@ -78,7 +78,7 @@ export default function AdminOrderAlerts(){
         </div>
         <p className="mt-2 break-words text-xs leading-5 text-slate-300">{alert.content}</p>
         <div className="mt-3 flex flex-wrap items-center gap-3">
-          <Link href={allowedLink(alert.link)} onClick={()=>{void markRead(alert.id)}} className="inline-flex min-h-9 items-center gap-1 text-xs font-black text-amber-200">Open Administration workspace <ArrowRight className="h-4 w-4"/></Link>
+          <Link href={allowedLink(alert.link)} onClick={()=>{void markRead(alert.id)}} className="inline-flex min-h-9 items-center gap-1 text-xs font-black text-amber-200">Open Administrations workspace <ArrowRight className="h-4 w-4"/></Link>
           {!alert.is_read&&<button type="button" disabled={busy} onClick={()=>{void markRead(alert.id)}} className="inline-flex min-h-9 items-center gap-1 text-xs text-sky-200 disabled:opacity-40"><CheckCircle2 className="h-4 w-4"/>Mark read</button>}
         </div>
       </article>)}

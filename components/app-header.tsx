@@ -77,7 +77,7 @@ export function AppHeader({ user }: AppHeaderProps) {
       : effectiveUser.role === 'client'
         ? 'Client · File Folder'
         : effectiveUser.role === 'admin'
-          ? 'A Time · Administration'
+          ? 'A Time · Administrations'
           : effectiveUser.role
   const presenceLabel = effectiveUser.role === 'bridger'
     ? 'Hope'
@@ -89,7 +89,7 @@ export function AppHeader({ user }: AppHeaderProps) {
           ? 'A Time'
           : 'Presence'
   const roleLabel = effectiveUser.role === 'admin'
-    ? 'Administration'
+    ? 'Administrations'
     : effectiveUser.role.charAt(0).toUpperCase() + effectiveUser.role.slice(1)
   const lifestyleVisible=['agent','bridger','client'].includes(effectiveUser.role)
 

@@ -9,11 +9,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Company reserve authority belongs to Administration.
+    // Company reserve authority belongs to Administrations.
     const userResult = await sql`SELECT role FROM users WHERE id = ${identity.id}::uuid`
     const user = userResult[0]
     if (user?.role !== 'admin') {
-      return NextResponse.json({ error: 'Forbidden - Administration access required' }, { status: 403 })
+      return NextResponse.json({ error: 'Forbidden - Administrations access required' }, { status: 403 })
     }
 
     const companyWalletResult = await sql`

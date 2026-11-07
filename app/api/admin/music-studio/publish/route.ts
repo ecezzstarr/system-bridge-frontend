@@ -24,7 +24,7 @@ function parseWav(data:Buffer){
 }
 export async function POST(request:NextRequest){
  const admin=await requireMusicAdministrator(request)
- if(!admin)return fail('Only Administration can publish to the DJ Workshop.',403)
+ if(!admin)return fail('Only Administrations can publish to the DJ Workshop.',403)
  try{
   await ensureAdminMusicSchema()
   await ensureDjSchema()
@@ -40,7 +40,7 @@ export async function POST(request:NextRequest){
   const pool=getPool()
   const unique=[...new Set(sections.map(s=>s.projectId))]
   const rows=await pool.query('SELECT id,arrangement FROM weave_admin_music_projects WHERE id=ANY($1::uuid[])',[unique])
-  if(rows.rows.length!==unique.length)return fail('A song section refers to a missing Administration composition.',409)
+  if(rows.rows.length!==unique.length)return fail('A song section refers to a missing Administrations composition.',409)
   const map=new Map(rows.rows.map(r=>[String(r.id),cleanMusicArrangement(r.arrangement)]))
   const intendedSeconds=songLengthSeconds(sections,map)
   const bytes=Buffer.from(await file.arrayBuffer())

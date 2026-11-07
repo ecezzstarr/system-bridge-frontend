@@ -5,7 +5,7 @@ import { notifyDepositDecision, notifyAdministrators } from '@/lib/deposit-notif
 /**
  * Credit a confirmed Paystack wallet deposit in a locked, idempotent DB transaction.
  * A signed charge.success event can settle immediately without another network
- * round trip; browser callback, Administration retry and user reconciliation
+ * round trip; browser callback, Administrations retry and user reconciliation
  * still require Paystack's server-to-server verification API.
  * The webhook route must authenticate its HMAC BEFORE passing signedEvent.
  */
@@ -31,7 +31,7 @@ export async function settlePaystackDeposit(reference: string, signedEvent?: Pay
     if (!paystackTransactionMatches(matchInput)) {
       // A paid transaction with mismatched details is an exception, not
       // permission to credit or permanently reject the wallet record.
-      // Keep the checkout unchanged for independent Administration review.
+      // Keep the checkout unchanged for independent Administrations review.
       await client.query('COMMIT')
       return { settled: false, reason: paystackMismatchReason(matchInput) || 'Paystack could not match the original checkout.' }
     }
@@ -80,7 +80,7 @@ export async function settlePaystackDeposit(reference: string, signedEvent?: Pay
     }
     if (credits > 0 || refunds > 0) {
       await client.query('COMMIT')
-      return { settled: false, reason: 'A previous credit or refund event exists for this deposit. Administration must reconcile the ledger before further wallet changes.' }
+      return { settled: false, reason: 'A previous credit or refund event exists for this deposit. Administrations must reconcile the ledger before further wallet changes.' }
     }
     const wallet = await client.query(
       "UPDATE wallets SET balance_trx=balance_trx+$2,updated_at=NOW() WHERE user_id=$1::uuid AND is_primary=true RETURNING balance_trx",
@@ -115,7 +115,7 @@ export async function settlePaystackDeposit(reference: string, signedEvent?: Pay
           title:'Paystack confirmed · '+notification.role+' wallet credited',
           content:notification.name+' paid ₦'+notification.amountNgn.toLocaleString()
             +' via Paystack. '+notification.flameCoin.toLocaleString()
-            +' Flame Coin has been credited automatically (no Administration approval). '
+            +' Flame Coin has been credited automatically (no Administrations approval). '
             +'Reference: '+notification.reference+'. Deposit: '+notification.depositId+'.',
           link:'/admin/control-center#deposits',
           fromUserName:'WEAVE Paystack',

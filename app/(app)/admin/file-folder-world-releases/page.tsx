@@ -55,11 +55,11 @@ export default function FileFolderGlobalReleaseWorkshop(){
   finally{setBusy(false)}
  }
  if(!isInitialized)return <main className="p-6 text-slate-300">Opening File Folder update engine…</main>
- if(user?.role!=='admin')return <main className="p-6">Administration only.</main>
+ if(user?.role!=='admin')return <main className="p-6">Administrations only.</main>
  return <main className="mx-auto max-w-6xl space-y-6 px-4 py-7 text-white" data-weave-file-folder-global-release="true">
   <Link href="/admin/release-workshop" className="text-sm text-cyan-200">← WEAVE software deployment workshop</Link>
   <header className="space-y-2">
-   <p className="text-xs font-bold uppercase tracking-[.2em] text-cyan-200">Administration · File Folder worlds</p>
+   <p className="text-xs font-bold uppercase tracking-[.2em] text-cyan-200">Administrations · File Folder worlds</p>
    <h1 className="text-3xl font-black">File Folder Update Engine</h1>
    <p className="max-w-3xl text-sm leading-6 text-slate-300">Manage live world guidance and tier messages for every Client File Folder. Draft, publish and roll back one version across Standard, Pro, Premium and Plus without redeploying the app. For new executable systems or 3D engine code, use the independent WEAVE Release Workshop.</p>
    <div className="flex flex-wrap gap-4 text-sm text-slate-300">

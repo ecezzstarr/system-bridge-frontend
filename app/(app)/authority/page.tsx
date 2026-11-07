@@ -11,7 +11,7 @@ import { Card } from '@/components/ui/card'
 const authoritySystems = [
   {
     title: 'Developer Workshop',
-    description: 'System refinement layer for Administration. Build and refine origin systems.',
+    description: 'System refinement layer for Administrations. Build and refine origin systems.',
     tags: ['NEXT.JS 16', 'POSTGRES', 'GCLOUD'],
     href: '/admin/origin-systems',
     icon: Code,

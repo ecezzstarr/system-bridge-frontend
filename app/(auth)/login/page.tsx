@@ -40,7 +40,7 @@ export default function LoginPage() {
       const loggedInUser = await login(email, password)
       if (administrationPortal && loggedInUser?.role !== 'admin') {
         logout()
-        setError('Administration account required for this portal.')
+        setError('Administrations account required for this portal.')
         setIsSubmitting(false)
         return
       }

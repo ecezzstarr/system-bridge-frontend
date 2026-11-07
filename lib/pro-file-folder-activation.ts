@@ -72,7 +72,7 @@ export async function getReceivingWallet() {
   return isTronAddress(address) ? address : null
 }
 /**
- * Administration-only active receiving-wallet change for Pro File Folder fees.
+ * Administrations-only active receiving-wallet change for Pro File Folder fees.
  * This is the same configured destination used by Client and original-role
  * Agent/Bridger Pro activation. It does NOT alter the separate TRX funding
  * address, rewrite historical transaction evidence or verify wallet ownership.
@@ -148,7 +148,7 @@ export async function requireProActivationClient(user:{id:string;role:string;fil
 }
 /**
  * An authenticated Client signs their own fee terms from the activation link.
- * Administration must review the recorded signature before business planning/payment.
+ * Administrations must review the recorded signature before business planning/payment.
  */
 export async function signProActivationAgreement(clientId:string,fileNumber:string,typedName:string,acknowledgement:boolean){
   if(acknowledgement!==true)throw new Error('Read and explicitly accept the Pro File Folder agreement.')
@@ -166,7 +166,7 @@ export async function signProActivationAgreement(clientId:string,fileNumber:stri
     WHERE client_id=${clientId}::uuid AND file_number=${fileNumber}
       AND status='awaiting_signature' AND client_signature_at IS NULL
     RETURNING id,client_signature_at`
-  if(!row)throw new Error('This agreement was already signed or requires Administration preparation.')
+  if(!row)throw new Error('This agreement was already signed or requires Administrations preparation.')
   await writeProActivationAudit(String(row.id),'client_e_signature',clientId,{
     version:'PRO-680-USDT-2026-11',feeUSDT:PRO_ACTIVATION_FEE_USDT,
     network:'TRC-20 USDT',signedName:name,

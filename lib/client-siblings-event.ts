@@ -53,7 +53,7 @@ export async function getCjSiblingsEvent(clientId:string,fileNumber:string){
   reportedAmountUSDT:Number(claim?.reported_amount_usdt||0),
   verifiedAmountUSDT:Number(claim?.verified_amount_usdt||0),
   currency:'USDT',
-  source:'Mandate business earnings · Administration-reported, subject to independent reconciliation',
+  source:'Mandate business earnings · Administrations-reported, subject to independent reconciliation',
   status:String(claim?.status||'pending_mandate_verification'),
   proActivated:proActive,
   workspaceAccess:proActive,

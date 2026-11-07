@@ -1,12 +1,12 @@
-# PowerShell Host Sentinel — Administration Infrastructure Workshop
+# PowerShell Host Sentinel — Administrations Infrastructure Workshop
 
 ## Architecture
 
-The website cannot host a physical server inside a Next.js page. The Weave host remains a separate Linux machine running Docker Compose, Caddy and PostgreSQL. Administration controls *verified releases* through the existing Release Workshop; a separate PowerShell 7 service collects limited host-health information and sends it to Weave.
+The website cannot host a physical server inside a Next.js page. The Weave host remains a separate Linux machine running Docker Compose, Caddy and PostgreSQL. Administrations control *verified releases* through the existing Release Workshop; a separate PowerShell 7 service collects limited host-health information and sends it to Weave.
 
 The PowerShell worker uses `http://127.0.0.1:3000/api/system/host-powershell` only from the server itself. It reports allowlisted status fields: Docker availability, the status of `weave-app` and `weave-edge`, root disk used percentage and the local health endpoint. It never receives or executes commands from web clients.
 
-A dedicated host token (`WEAVE_HOST_CONTROL_TOKEN`) authenticates reports. It is different from both the deployment worker token and record token. The app stores only sanitized snapshots. The Administration Infrastructure Workshop reads them via its authenticated, single-active-Administrator API. Do not deploy PowerShell as part of the public Next.js process.
+A dedicated host token (`WEAVE_HOST_CONTROL_TOKEN`) authenticates reports. It is different from both the deployment worker token and record token. The app stores only sanitized snapshots. The Administrations Infrastructure Workshop reads them via its authenticated, single-active-Administrator API. Do not deploy PowerShell as part of the public Next.js process.
 
 ## One-time setup on the Weave self-host
 
@@ -26,21 +26,21 @@ A dedicated host token (`WEAVE_HOST_CONTROL_TOKEN`) authenticates reports. It is
    sudo systemctl enable --now weave-host-powershell.service
    sudo systemctl status weave-host-powershell.service
    ```
-6. Sign in to Weave as Administration. Open Infrastructure Workshop and verify the PowerShell host reports within 90 seconds. A report is not a complete vulnerability scan.
+6. Sign in to Weave as Administrations. Open Infrastructure Workshop and verify the PowerShell host reports within 90 seconds. A report is not a complete vulnerability scan.
 
 The example service assumes the user `weave`, repository `/opt/weave/system-bridge-frontend`, `pwsh` at `/usr/bin/pwsh`, and permission to read Docker container states. Adjust the unit to the *actual* self-host machine at setup. Membership in the Docker group effectively confers root-level host control: isolate the worker, protect the service identity, and use rootless Docker or a tightly scoped status proxy when feasible.
 
 ## Operational boundaries
 
 - No `Invoke-Expression`, remote shell API, command text field, environment dump, raw Docker inspect response, server logs, or secret-containing files are transported.
-- No browser can push telemetry: host token is required. Administration cannot fetch or disclose that token.
-- PowerShell does not deploy from unreviewed code. Deployment and rollback use the existing signed worker path with successful Production Check evidence, explicit Administration confirmation and saved records.
+- No browser can push telemetry: host token is required. Administrations cannot fetch or disclose that token.
+- PowerShell does not deploy from unreviewed code. Deployment and rollback use the existing signed worker path with successful Production Check evidence, explicit Administrations confirmation and saved records.
 - The app container remains bound to `127.0.0.1:3000`; only Caddy publishes 80/443.
-- If the host goes offline, Administration continues to show the previous snapshot *and* a disconnected indicator; it must not claim the host is healthy.
+- If the host goes offline, Administrations continues to show the previous snapshot *and* a disconnected indicator; it must not claim the host is healthy.
 
 ## Security review conducted in code
 
-**Before deployment:** confirm the real Administration account has a usable bcrypt password in the database and test normal Administration login in a non-public preview. The removed fallback must not be the only way the Administrator can access the system. Set long, distinct JWT_SECRET and NEXTAUTH_SECRET values before starting the updated runtime.
+**Before deployment:** confirm the real Administrations account has a usable bcrypt password in the database and test normal Administrations login in a non-public preview. The removed fallback must not be the only way the Administrator can access the system. Set long, distinct JWT_SECRET and NEXTAUTH_SECRET values before starting the updated runtime.
 
 Hardening in this branch:
 - Removed a legacy privileged login fallback and its fixed administrator identity.
@@ -52,7 +52,7 @@ Hardening in this branch:
 - Limited PowerShell and host-API reporting to fixed, non-sensitive status fields.
 - Used the existing independent verified release worker, rather than adding unrestricted OS command execution from the app.
 
-Existing protections confirmed from code: Divine Shield restricts non-Administration entry and revokes non-admin server sessions; release jobs require an active Administrator, explicit confirmation, successful CI, exact source SHA and authenticated host-worker lease; Docker Compose binds the Node application to loopback behind Caddy.
+Existing protections confirmed from code: Divine Shield restricts non-Administrations entry and revokes non-admin server sessions; release jobs require an active Administrator, explicit confirmation, successful CI, exact source SHA and authenticated host-worker lease; Docker Compose binds the Node application to loopback behind Caddy.
 
 Still requiring on-host checks:
 - Live network firewall exposure, SSH settings, TLS certificates, systemd ownership and Docker-root permissions.

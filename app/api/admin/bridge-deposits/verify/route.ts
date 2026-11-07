@@ -74,7 +74,7 @@ async function verifyBridgeRadiancePurchase({
   }
 
   if (purchase.payment_method === 'paystack' && !purchase.payment_verified_at) {
-    return NextResponse.json({ error: 'Paystack payment must be verified server-side before Administration can approve this File Folder purchase.' }, { status: 409 })
+    return NextResponse.json({ error: 'Paystack payment must be verified server-side before Administrations can approve this File Folder purchase.' }, { status: 409 })
   }
 
   const purchaseAmount = Number(purchase.amount_trx)
@@ -176,10 +176,10 @@ async function verifyBridgeRadiancePurchase({
       await notifyUser(String(purchase.bridger_id), {
         type: 'client_deposit_rejected',
         title: 'Public movement File Folder payment rejected',
-        content: `Administration rejected ${purchase.buyer_name || purchase.buyer_email || 'a Prospect'}'s ${Number(purchase.amount_trx).toLocaleString()} Flame Coin File Folder payment. No File Number was issued.`,
+        content: `Administrations rejected ${purchase.buyer_name || purchase.buyer_email || 'a Prospect'}'s ${Number(purchase.amount_trx).toLocaleString()} Flame Coin File Folder payment. No File Number was issued.`,
         link: '/bridger/presence',
         fromUserId: admin.id,
-        fromUserName: 'WEAVE Administration',
+        fromUserName: 'WEAVE Administrations',
       })
     }
 
@@ -292,10 +292,10 @@ async function verifyBridgeRadiancePurchase({
     await notifyUser(bridgerId, {
       type: 'client_deposit_approved',
       title: 'Public movement Client crossed',
-      content: `Administration approved ${prospectName}'s ${Number(confirmed.amount_trx).toLocaleString()} Flame Coin ${tierLabel} File Folder. File Number ${fileNumber} was issued.`,
+      content: `Administrations approved ${prospectName}'s ${Number(confirmed.amount_trx).toLocaleString()} Flame Coin ${tierLabel} File Folder. File Number ${fileNumber} was issued.`,
       link: '/bridger/presence',
       fromUserId: admin.id,
-      fromUserName: 'WEAVE Administration',
+      fromUserName: 'WEAVE Administrations',
     })
   }
 
@@ -485,10 +485,10 @@ export async function POST(request: NextRequest) {
         await notifyUser(deposit.bridger_id, {
           type: 'client_deposit_rejected',
           title: 'Client File Folder payment rejected',
-          content: `Administration rejected ${deposit.prospect_name}'s ${Number(deposit.tier_trx).toLocaleString()} TRX File Folder payment. No File Number was issued.`,
+          content: `Administrations rejected ${deposit.prospect_name}'s ${Number(deposit.tier_trx).toLocaleString()} TRX File Folder payment. No File Number was issued.`,
           link: '/bridger/presence',
           fromUserId: admin.id,
-          fromUserName: 'WEAVE Administration',
+          fromUserName: 'WEAVE Administrations',
         })
       }
 
@@ -568,10 +568,10 @@ export async function POST(request: NextRequest) {
       await notifyUser(deposit.bridger_id, {
         type: 'client_deposit_approved',
         title: 'Client File Folder payment approved',
-        content: `Administration approved ${deposit.prospect_name}'s ${Number(deposit.tier_trx).toLocaleString()} TRX ${tierLabel} File Folder payment. File Number ${fileNumber} was issued.`,
+        content: `Administrations approved ${deposit.prospect_name}'s ${Number(deposit.tier_trx).toLocaleString()} TRX ${tierLabel} File Folder payment. File Number ${fileNumber} was issued.`,
         link: '/bridger/presence',
         fromUserId: admin.id,
-        fromUserName: 'WEAVE Administration',
+        fromUserName: 'WEAVE Administrations',
       })
     }
 

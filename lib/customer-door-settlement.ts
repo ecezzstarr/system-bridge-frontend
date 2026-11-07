@@ -138,7 +138,7 @@ export async function settleCustomerDoorPayment(input:{
       const approver=await conn.query("SELECT id FROM users WHERE id=$1::uuid AND role='admin' AND is_active=true LIMIT 1",[input.adminId])
       if(!approver.rows[0]||input.confirmation!=='funds_received_by_weave'){
         await conn.query('ROLLBACK')
-        return {success:false,error:'Administration must verify funds received by WEAVE before settlement',status:403}
+        return {success:false,error:'Administrations must verify funds received by WEAVE before settlement',status:403}
       }
       const dup=await conn.query('SELECT id FROM client_customer_door_settlements WHERE payment_reference=$1 LIMIT 1',[input.verifiedReference!.trim()])
       if(dup.rows.length){

@@ -184,7 +184,7 @@ async function scanWithClient(client:any):Promise<IntegrityCheck[]>{
       label:'Overdue Number Bay orders',
       status:n(overdueNumberOrders)===0?'healthy':'warning',
       count:n(overdueNumberOrders),
-      detail:n(overdueNumberOrders)===0?'No open number order has crossed its delivery deadline.':'Administration still owes delivery on open orders. This is reported but never auto-cancelled.',
+      detail:n(overdueNumberOrders)===0?'No open number order has crossed its delivery deadline.':'Administrations still owes delivery on open orders. This is reported but never auto-cancelled.',
     },
   ]
 }

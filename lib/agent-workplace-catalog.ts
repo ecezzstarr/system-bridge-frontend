@@ -39,7 +39,7 @@ export const AGENT_SPACES: readonly AgentSpace[] = [
       {title:'Agility',href:'/agent/food-order',description:'Order real Agility morning-food cartons and follow verified payment and preparation.',officialImage:'/weave-food/agility.jpeg'},
       {title:'Electrolyte',href:'/electrolyte',description:'Order Small or Medium bowls, receive cartons and restock independently.',officialImage:'/weave-food/electrolyte.jpeg'},
       {title:'Ember',href:'/ember',description:'Order hot evening-food boxes and follow supply and verified payment.',officialImage:'/weave-food/ember.jpg'},
-      {title:'Daisy Pastries',href:'/agent/cakes',description:'Record actual cake requests, quotations, customer payments and Administration production.',officialImage:'/weave-food/daisy-pastries.jpg'},
+      {title:'Daisy Pastries',href:'/agent/cakes',description:'Record actual cake requests, quotations, customer payments and Administrations production.',officialImage:'/weave-food/daisy-pastries.jpg'},
       {title:'Distribution Route',href:'/agent/distribution',description:'Register outlets, allocate received cartons, record sales and collect pay-after-sale amounts.'},
       {title:'Food Carrier Door',href:'/weave/carrier/food',description:'Publish your Agent food customer entrance and manage verified orders.'},
       {title:'Customer Food Store',href:'/food-store',description:'See the existing public WEAVE food offer.'},

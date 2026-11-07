@@ -123,6 +123,7 @@ jobs:
           node tests/company-client-staff-ticket-regression.cjs
           node tests/file-folder-plus-contract-regression.cjs
           node tests/file-folder-global-upgrade-release-regression.cjs
+          node tests/administrations-department-wording-regression.cjs
           node tests/premium-private-file-folder-recovery-regression.cjs
           node tests/cj-dorado-employee-login-exchange-regression.cjs
           node tests/pro-file-number-passwordless-regression.cjs

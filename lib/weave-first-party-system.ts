@@ -6,7 +6,7 @@ export const WEAVE_FIRST_PARTY_SYSTEM = {
   summary: 'The official WEAVE operating environment: Presence, System Switch, Bridge Radiance, role worlds, File Folders, Customer Doors, participation, communication and company movement in one continuously updated system.',
   category: 'WEAVE',
   packageType: 'pwa',
-  publisherName: 'WEAVE Administration',
+  publisherName: 'WEAVE Administrations',
   iconUrl: '/icon.svg?v=3',
   price: 0,
   currency: 'NGN',

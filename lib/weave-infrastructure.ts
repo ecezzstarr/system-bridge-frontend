@@ -9,7 +9,7 @@ export type DivineShieldState = {
 
 const SYSTEM_SEED = [
   ['weave-public','WEAVINGSYSTEM.ONLINE · WEAVE Public App','application','https://weavingsystem.online','/api/health',{role:'public',server:'weave-selfhost'}],
-  ['weave-admin','SSBNOW.ONLINE · Administration Workshop','application','https://ssbnow.online','/api/health',{role:'administration',server:'weave-selfhost'}],
+  ['weave-admin','SSBNOW.ONLINE · Administrations Workshop','application','https://ssbnow.online','/api/health',{role:'administration',server:'weave-selfhost'}],
   ['weave-client','SSBNOW.SHOP · Client Service Portal','application','https://ssbnow.shop','/api/health',{role:'client-service',server:'weave-selfhost'}],
   ['system-bridge-frontend','System Bridge Frontend · WEAVE Self-Host Runtime','runtime','https://weavingsystem.online','/api/health',{serverKey:'weave-selfhost',runtime:'docker-compose',edge:'caddy',appPort:'127.0.0.1:3000'}],
   ['eight-runtime','EIGHT · Infrastructure Operator','intelligence',null,'/api/health',{scope:'administration',web:'read-only',deploy:'verified-main-to-selfhost'}],
@@ -70,7 +70,7 @@ export async function ensureWeaveInfrastructureSchema() {
       'divine_shield',
       FALSE,
       'WEAVE is under maintenance',
-      'The system is being refined. Participation will reopen when Administration releases the Divine Shield.'
+      'The system is being refined. Participation will reopen when Administrations releas the Divine Shield.'
     )
     ON CONFLICT(control_key) DO NOTHING
   `
@@ -114,7 +114,7 @@ export async function getDivineShieldState(): Promise<DivineShieldState> {
   const value={
     active:Boolean(row?.enabled),
     title:row?.title || 'WEAVE is under maintenance',
-    message:row?.message || 'The system is being refined. Participation will reopen when Administration releases the Divine Shield.',
+    message:row?.message || 'The system is being refined. Participation will reopen when Administrations releas the Divine Shield.',
     updatedAt:row?.updated_at ? new Date(row.updated_at).toISOString() : null,
   }
   shieldCache={value,expires:Date.now()+2000}
@@ -129,7 +129,7 @@ export async function setDivineShieldState(input:{active:boolean;title?:string;m
       'divine_shield',
       ${input.active},
       ${input.title || 'WEAVE is under maintenance'},
-      ${input.message || 'The system is being refined. Participation will reopen when Administration releases the Divine Shield.'},
+      ${input.message || 'The system is being refined. Participation will reopen when Administrations releas the Divine Shield.'},
       ${input.adminId}::uuid,
       NOW()
     )

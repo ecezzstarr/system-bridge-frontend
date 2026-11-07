@@ -1,6 +1,6 @@
 import { FLAME_EVENT, resolveEventStatus } from '@/lib/weave-event'
 
-/** Read the Administration-controlled event before choosing a login destination. */
+/** Read the Administrations-controlled event before choosing a login destination. */
 export async function isFlameEventActive(): Promise<boolean> {
   try {
     const response = await fetch('/api/events/flame', { cache: 'no-store' })

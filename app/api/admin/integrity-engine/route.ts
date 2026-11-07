@@ -24,7 +24,7 @@ async function runWithDeadline(mode:'scan'|'repair'){
 export async function GET(request:NextRequest){
   const user=await getAuthUser(request)
   if(!user)return NextResponse.json({success:false,error:'Unauthorized'},{status:401})
-  if(user.role!=='admin')return NextResponse.json({success:false,error:'Administration access required'},{status:403})
+  if(user.role!=='admin')return NextResponse.json({success:false,error:'Administrations access required'},{status:403})
 
   try{
     const report=await runWithDeadline('scan')
@@ -41,7 +41,7 @@ export async function GET(request:NextRequest){
 export async function POST(request:NextRequest){
   const user=await getAuthUser(request)
   if(!user)return NextResponse.json({success:false,error:'Unauthorized'},{status:401})
-  if(user.role!=='admin')return NextResponse.json({success:false,error:'Administration access required'},{status:403})
+  if(user.role!=='admin')return NextResponse.json({success:false,error:'Administrations access required'},{status:403})
 
   const body=await request.json().catch(()=>({}))
   const action=String(body.action||'repair_safe')

@@ -202,7 +202,7 @@ export async function POST(request:NextRequest){
       `,[
         user.id,
         price,
-        `Ordered WEAVE WhatsApp business number for ${offer.country}; Administration delivery due within ${Number(offer.delivery_minutes)||30} minutes`,
+        `Ordered WEAVE WhatsApp business number for ${offer.country}; Administrations delivery due within ${Number(offer.delivery_minutes)||30} minutes`,
         before,
         after,
       ])
@@ -302,7 +302,7 @@ export async function POST(request:NextRequest){
       if(!Number.isFinite(repairedPrice)||repairedPrice<=0){
         await client.query('ROLLBACK')
         return NextResponse.json({
-          error:'This stocked number is missing its Bridger price. Administration must publish a valid country price.',
+          error:'This stocked number is missing its Bridger price. Administrations must publish a valid country price.',
           gate:'invalid_stock_price',
         },{status:409})
       }

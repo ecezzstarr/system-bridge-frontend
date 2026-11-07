@@ -24,7 +24,7 @@ const stageMeta: Record<Exclude<GateStage, 'active'>, {
   administration: {
     eyebrow: 'System Switch Gate',
     icon: ShieldCheck,
-    status: 'Awaiting Administration',
+    status: 'Awaiting Administrations',
   },
   construction: {
     eyebrow: 'Pro File Folder · Construction',
@@ -88,7 +88,7 @@ export default function ClientFileFolderGate({ entry }: { entry: any }) {
                 ['Mandate', ShieldCheck],
                 ['Attorney', Scale],
                 ['Forensics', Search],
-                ['Administration', ShieldCheck],
+                ['Administrations', ShieldCheck],
               ].map(([label, ItemIcon]: any) => (
                 <div key={label} className="flex items-center gap-2 rounded-xl border border-white/5 bg-black/20 px-3 py-2.5 text-xs text-slate-300">
                   <ItemIcon className="h-3.5 w-3.5 text-sky-300" />
@@ -127,7 +127,7 @@ export default function ClientFileFolderGate({ entry }: { entry: any }) {
 
           {stage === 'administration' && (
             <div className="mt-6 rounded-2xl border border-amber-400/20 bg-amber-400/5 p-5 text-xs leading-6 text-slate-300">
-              You are at the System Switch Gate. The File Folder has been recognized; Administration is the authority that opens the crossing.
+              You are at the System Switch Gate. The File Folder has been recognized; Administrations are the authority that opens the crossing.
             </div>
           )}
 

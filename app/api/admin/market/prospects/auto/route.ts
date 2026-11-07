@@ -9,13 +9,13 @@ async function adminUser(request:NextRequest) {
 }
 export async function GET(request:NextRequest) {
   const user=await adminUser(request)
-  if(!user)return NextResponse.json({error:'Administration access required'},{status:403})
+  if(!user)return NextResponse.json({error:'Administrations access required'},{status:403})
   try{return NextResponse.json({success:true,...await getProspectAutoStatus()})}
   catch(error){console.error('[prospect-auto] status failed',error);return NextResponse.json({error:'Prospect automation unavailable'},{status:503})}
 }
 export async function POST(request:NextRequest) {
   const user=await adminUser(request)
-  if(!user)return NextResponse.json({error:'Administration access required'},{status:403})
+  if(!user)return NextResponse.json({error:'Administrations access required'},{status:403})
   try {
     const body=await request.json()
     const action=String(body?.action||'')

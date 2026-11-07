@@ -71,7 +71,7 @@ export function DistributionParticipantOversight() {
         <div>
           <div className="flex items-center gap-2"><Users className="h-4 w-4 text-fuchsia-300" /><p className="text-[9px] font-black uppercase tracking-[0.24em] text-fuchsia-300">PARTICIPANT SOCIAL PRESENCE</p></div>
           <h2 className="mt-2 text-2xl font-black text-white">AGENT · BRIDGER · CLIENT</h2>
-          <p className="mt-2 max-w-3xl text-xs leading-5 text-slate-500">Each participant owns a separate Social Presence workspace and separate social account connections. Administration sees movement and connection state without sharing their social credentials.</p>
+          <p className="mt-2 max-w-3xl text-xs leading-5 text-slate-500">Each participant owns a separate Social Presence workspace and separate social account connections. Administrations see movement and connection state without sharing their social credentials.</p>
         </div>
         <div className="flex gap-2"><Button asChild variant="outline" className="border-white/15 text-white"><Link href="/distribution-studio"><Share2 className="mr-2 h-4 w-4" />MY PRESENCE</Link></Button><Button variant="outline" onClick={() => void load()} disabled={loading} className="border-white/15 text-white"><RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />REFRESH</Button></div>
       </div>

@@ -8,7 +8,7 @@ The Music Studio is a **Client-built system in the Streaming district of the Fil
 
 - First activate the existing Client Customer Door and Creator Booth.
 - The new **Music Studio Kit** and **Music Studio blueprint** are in the existing Client build catalog, requiring one kit and 72 hours of base construction.
-- **Unpublished by default:** the Kit is seeded at numeric 0 as a placeholder for an Administrator-set price, never advertised for free use. Administration must set a positive authorized Flame Coin price and publish the Kit and blueprint before public construction begins.
+- **Unpublished by default:** the Kit is seeded at numeric 0 as a placeholder for an Administrator-set price, never advertised for free use. Administrations must set a positive authorized Flame Coin price and publish the Kit and blueprint before public construction begins.
 - When the built system `music_studio` becomes **active**, its live system opens the Music Studio route.
 - All File Folder tiers use the same ownership / build permissions. No automatic exemption is created for Standard, Pro, Premium, or Plus.
 - The Client owns the project and captured audio. Exclusive, active hired **Legions** can use their employing Client's workshop only while employed. Others require an owner-invited Agent, Bridger, or Administrator account; public visitors have no private recording access.
