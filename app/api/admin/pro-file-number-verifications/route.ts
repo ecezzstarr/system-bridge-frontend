@@ -61,8 +61,8 @@ export async function POST(request:NextRequest){
    const applicant=String(current.signed_name||'').trim().toLowerCase()
    if(String(offer.candidate_name||'').trim().toLowerCase()!==applicant)
     throw new Error('The signed applicant must match the approved company employee.')
-   if(!Number.isFinite(Number(offer.monthly_salary_usdt))||Number(offer.monthly_salary_usdt)<0)
-    throw new Error('The approved employee salary record is invalid.')
+   if(!Number.isFinite(Number(offer.monthly_salary_usdt))||Number(offer.monthly_salary_usdt)<=0)
+    throw new Error('The agreed Pro Client staff monthly salary must be recorded before activation approval; Agent/Bridger Lifestyle salary does not apply.')
    const [owner]=await sql`SELECT name FROM users WHERE file_number=${current.file_number}
     AND role='client' AND is_active=true LIMIT 1`
    // If account exists, its registered name must match the applicant signature.
@@ -131,19 +131,22 @@ export async function POST(request:NextRequest){
      AND role='client' AND is_active=true LIMIT 2`,[row.file_number])
     if(owner.rows.length!==1)throw new Error('Client must have an active verified account before Folder finalization.')
     const clientId=owner.rows[0].id
-    const staffOffer=await db.query(`SELECT id,candidate_name,position_title,client_id
+    const staffOffer=await db.query(`SELECT id,candidate_name,position_title,client_id,monthly_salary_usdt
        FROM company_client_staff_offers
        WHERE file_number=$1 AND status='approved' AND folder_tier='pro'
        LIMIT 1 FOR UPDATE`,[row.file_number])
     if(staffOffer.rows.length!==1)throw new Error('Only an approved Pro company employee may activate the staff Folder.')
     const approvedOffer=staffOffer.rows[0]
+    if(!Number.isFinite(Number(approvedOffer.monthly_salary_usdt))||
+      Number(approvedOffer.monthly_salary_usdt)<=0)
+      throw new Error('The agreed Client staff monthly salary is missing; reconcile the approved employment record first.')
     if(approvedOffer.client_id&&String(approvedOffer.client_id)!==String(clientId))
      throw new Error('This staff offer belongs to a different Client account.')
     if(String(approvedOffer.candidate_name||'').trim().toLowerCase()!==
        String(row.signed_name||'').trim().toLowerCase())
      throw new Error('Approved staff and signed applicant identity mismatch.')
     if(row.file_number==='WEAVE-2026-0907-0001'&&
-      !/^regional\s+manager$/i.test(String(approvedOffer.position_title||'').trim()))
+      !/^(?:client\s+)?regional\s+manager$/i.test(String(approvedOffer.position_title||'').trim()))
      throw new Error('CJ Dorado must be approved as Regional Manager.')
     if(String(owner.rows[0].name||'').trim().toLowerCase()!==
        String(row.signed_name||'').trim().toLowerCase())
