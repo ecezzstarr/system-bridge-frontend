@@ -65,7 +65,9 @@ for(const [source,role] of [[agentHome,'agent'],[adminHome,'admin']]){
  assert.ok(source.includes('onOpenDistricts'),'Workplace permits return to original '+role+' districts')
 }
 assert.ok(agentHome.includes('<Loop1AgentLoginAd')&&agentHome.includes('<AgilityAgentLoginAd'),
- 'Original Agent login event and food advertisements remain intact')
+ 'Original Agent commission and food briefings remain available')
+assert.ok(!agentHome.includes('fixed bottom-')&&agentHome.includes('aria-label="Agent shortcuts"'),
+ 'Agent Work shortcuts sit in the page flow without covering the phone Work Desk')
 for(const role of ['bridger','agent','admin']){
  assert.ok(atmosphere.includes("pathname === '/"+role+"/dashboard' && userRole === '"+role+"'"),
    role+' dashboard is not replaced by the atmosphere wrapper')
