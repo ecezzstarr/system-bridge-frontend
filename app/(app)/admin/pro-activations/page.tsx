@@ -10,7 +10,7 @@ export default function ProActivationsAdmin(){
  const {token,user,isInitialized}=useAuth()
  const [state,setState]=useState<State|null>(null)
  const [fileNumber,setFileNumber]=useState('WEAVE-2026-0907-0001')
- const [wallet,setWallet]=useState('')
+
  const [reference,setReference]=useState('')
  const [txHash,setTxHash]=useState('')
  const [amount,setAmount]=useState('680')
@@ -26,7 +26,7 @@ export default function ProActivationsAdmin(){
   const data=await res.json()
   if(!res.ok)throw new Error(data.error||'Register unavailable')
   setState(data)
-  setWallet(data.wallet||'')
+
  },[token])
  useEffect(()=>{if(user?.role==='admin'&&token)void load().catch(e=>setError(e.message))},[token,user?.role,load])
  async function act(action:string,extra:Record<string,unknown>={}){
@@ -59,13 +59,13 @@ export default function ProActivationsAdmin(){
   </header>
   {error&&<p role="alert" className="rounded-lg border border-rose-300/30 p-4 text-rose-200">{error}</p>}
   {message&&<p role="status" className="rounded-lg border border-cyan-300/30 p-4 text-cyan-200">{message}</p>}
-  <section className="space-y-3 rounded-2xl border border-white/15 p-5">
-   <h2 className="text-lg font-semibold">Official TRC-20 receiving wallet</h2>
-   <p className="text-xs text-slate-300">Only Administration may change this destination. Existing payment records keep the wallet shown to the Client.</p>
-   <input value={wallet} onChange={e=>setWallet(e.target.value)} className="w-full rounded-lg border border-white/20 bg-slate-950 p-3 font-mono" placeholder="Official TRON wallet address"/>
-   <input value={confirmation} onChange={e=>setConfirmation(e.target.value)} className="w-full rounded-lg border border-white/20 bg-slate-950 p-3" placeholder="Type SET PRO TRC20 WALLET"/>
-   <button disabled={busy||confirmation!=='SET PRO TRC20 WALLET'} onClick={()=>void act('configure_wallet',{walletAddress:wallet,confirmation})}
-     className="rounded-lg border border-cyan-300/40 px-4 py-3 disabled:opacity-40">Save verified receiving wallet</button>
+  <section className="space-y-3 rounded-2xl border border-sky-300/25 bg-sky-300/[.06] p-5" data-admin-pro-active-wallet-link="true">
+   <h2 className="text-lg font-semibold">Company Active Wallet · Pro USDT (TRC-20)</h2>
+   <p className="text-sm leading-6 text-slate-200">The official Pro activation receiving address is managed in one separate Administration wallet control. Every actual change is recorded with its reason. This same Pro wallet is used by Client, Agent and Bridger Pro activation, but historical payment evidence is never rewritten.</p>
+   <p className="break-all font-mono text-xs text-sky-100">Current receiving address: {state?.wallet||'Not configured'}</p>
+   <Link href="/admin/company-active-wallet" className="inline-flex min-h-11 items-center rounded-xl border border-sky-300/35 bg-sky-300/10 px-5 py-3 text-sm font-semibold text-sky-100">
+    Configure company active wallet
+   </Link>
   </section>
   <section className="space-y-3 rounded-2xl border border-white/15 p-5">
    <h2 className="text-lg font-semibold">Select existing Client</h2>
