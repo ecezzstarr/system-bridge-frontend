@@ -1,5 +1,5 @@
 import { NextRequest,NextResponse } from 'next/server'
-import { getFileFolderDb } from '@/lib/client-file-folder'
+import { getFileFolderDb,ensureClientFileFolderSchema } from '@/lib/client-file-folder'
 import { resolveClientToken } from '@/lib/client-vault'
 import { getActiveProRegionalManager } from '@/lib/pro-regional-manager-activation'
 import { ensureClientBusinessStoreSchema } from '@/lib/client-business-store'
@@ -30,6 +30,10 @@ async function owner(request:NextRequest){
       WHERE id=${id}::uuid AND role='client' AND COALESCE(is_active,true)=true LIMIT 1
     `
     if(!user?.file_number)return {error:NextResponse.json({error:'Active Client File Folder required'},{status:403,headers:privateHeaders})}
+    await ensureClientFileFolderSchema(sql)
+    const [folder]=await sql`SELECT id FROM client_file_folders
+      WHERE client_id=${user.id}::uuid AND file_number=${user.file_number} AND status='active' LIMIT 1`
+    if(!folder)return {error:NextResponse.json({error:'Verified active File Folder required'},{status:403,headers:privateHeaders})}
     clientId=String(user.id)
     fileNumber=String(user.file_number)
   }
