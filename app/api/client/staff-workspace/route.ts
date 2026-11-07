@@ -3,6 +3,7 @@ import { getAuthUser } from '@/lib/auth-api'
 import { sql } from '@/lib/db'
 import { ensureCompanyClientStaffSchema } from '@/lib/company-client-staff'
 import {getCjSiblingsEvent} from '@/lib/client-siblings-event'
+import {isProRegionalManagerPosition,proRegionalManagerDepartment} from '@/lib/pro-regional-manager-policy'
 export const dynamic='force-dynamic'
 
 async function access(request:NextRequest) {
@@ -34,8 +35,8 @@ export async function GET(request:NextRequest) {
     // Agent/Stability or Bridger/Hope Regional Manager hierarchy to it.
     const clientRegionalEligible=grant.user.role==='client'&&
       String(grant.offer.folder_tier)==='pro'&&
-      /^regional\s+manager$/i.test(String(grant.offer.position_title||'').trim())
-    let clientRegional:null|{department:'Dream Lovely';scope:'client_business_expansion';
+      isProRegionalManagerPosition(grant.offer.position_title,grant.offer.file_number)
+    let clientRegional:null|{positionType:'pro_regional_manager';department:'Dream Lovely';scope:'client_business_expansion';
       country:string|null;region:string|null;city:string|null;locationStatus:string}=null
     if(clientRegionalEligible){
       let country:string|null=String(grant.offer.file_number)==='WEAVE-2026-0907-0001'?'Spain':null
@@ -55,7 +56,9 @@ export async function GET(request:NextRequest) {
           locationStatus='identity_verified_territory_pending_company_confirmation'
         }
       }
-      clientRegional={department:'Dream Lovely',scope:'client_business_expansion',
+      clientRegional={positionType:'pro_regional_manager',
+        department:proRegionalManagerDepartment('client')!.department,
+        scope:'client_business_expansion',
         country,region,city,locationStatus}
     }
     const siblingsEvent=await getCjSiblingsEvent(String(grant.user.id),String(grant.offer.file_number||''))
