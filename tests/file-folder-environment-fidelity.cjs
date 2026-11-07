@@ -43,8 +43,14 @@ assert.ok(streets.includes('tileY={Math.max(1,Math.round(b.height/2))}'),'Window
 const operating=read('components/system-switch/client-file-folder-operating-environment.tsx')
 assert.ok(operating.includes('fileFolderTier={data.file_folder_tier}'),'Purchaser tier is passed from authenticated session into scene')
 const server=read('app/api/client/system-switch/route.ts')
-assert.ok(server.includes("purchaseTier.file_folder_tier === 'plus'"),'Explicit Plus purchases can render the Plus world')
-assert.ok(server.includes("['confirmed','approved'].includes(String(purchaseTier.status))"),'Unverified Plus claims never become a Plus environment')
-assert.ok(server.includes('getFileFolderTier(Number(purchaseTier.amount_trx), purchaseTier.file_folder_tier)'),'Existing Standard/Pro/Premium purchase verification preserved')
+const entitlement=read('lib/client-file-folder-tier.ts')
+assert.ok(server.includes('resolveVerifiedClientFileFolderTier')&&entitlement.includes("selected==='plus'"),
+  'Verified Plus purchases resolve from the shared authenticated entitlement engine')
+assert.ok(entitlement.includes("['confirmed','approved'].includes(status)")&&
+  entitlement.includes('FILE_FOLDER_PRICING.plusUsdt'),
+  'Plus demands exact independently confirmed payment, not a pending tier label')
+assert.ok(entitlement.includes('getFileFolderTier(Number(purchase.amount_trx),selected)')&&
+  entitlement.includes("'folder_issued'"),
+  'Standard/Pro/Premium purchase verification includes previously issued folders')
 assert.ok(server.includes('premium_dj_enabled:fileFolderTier===\'premium\'||fileFolderTier===\'plus\''),'Plus retains a Premium-grade sound experience')
 console.log('File Folder 4-tier texture, real atlas, routes and asset regressions passed.')
