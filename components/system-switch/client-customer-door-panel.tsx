@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { getClientToken } from '@/lib/client-auth'
+import ClientOwnerEarningsPanel from '@/components/system-switch/client-owner-earnings-panel'
 
 type Props={
   initialStore?:any|null
@@ -335,7 +336,7 @@ export default function ClientCustomerDoorPanel({
   ]
 
   return <div className="ff-door-operations mt-6 space-y-5" data-customer-view={phoneArea}>
-    <div className="ff-customer-areas"><label htmlFor="ff-customer-area">Customer Door area</label><select id="ff-customer-area" aria-label="Choose Customer Door area" value={phoneArea} onChange={e=>setPhoneArea(e.target.value)}><option value="overview">Door status &amp; construction</option><option value="connections">Connected systems</option><option value="appearance">Store identity &amp; design</option><option value="offer">Create an offer</option><option value="activity">Offers &amp; customer orders</option></select>{publicUrl&&<a href={publicUrl} target="_blank" rel="noreferrer">{hasDoor?'Open Customer Door':'Preview Customer Door'}<ExternalLink className="h-4 w-4"/></a>}</div>
+    <div className="ff-customer-areas"><label htmlFor="ff-customer-area">Customer Door area</label><select id="ff-customer-area" aria-label="Choose Customer Door area" value={phoneArea} onChange={e=>setPhoneArea(e.target.value)}><option value="overview">Door status &amp; construction</option><option value="connections">Connected systems</option><option value="appearance">Store identity &amp; design</option><option value="offer">Create an offer</option><option value="activity">Offers &amp; customer orders</option><option value="earnings">Owner earnings &amp; costs</option></select>{publicUrl&&<a href={publicUrl} target="_blank" rel="noreferrer">{hasDoor?'Open Customer Door':'Preview Customer Door'}<ExternalLink className="h-4 w-4"/></a>}</div>
     <section data-customer-section="overview" className="overflow-hidden rounded-[2rem] border border-sky-300/15 bg-[#030914]/70">
       <div className="grid gap-0 xl:grid-cols-[1.2fr_.8fr]">
         <div className="p-5 md:p-6">
@@ -511,5 +512,6 @@ export default function ClientCustomerDoorPanel({
         </div>)}</div>
       </div>
     </section>
+    <div data-customer-section="earnings"><ClientOwnerEarningsPanel storeApiPath={storeApiPath} systems={systems} /></div>
   </div>
 }
