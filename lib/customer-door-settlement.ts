@@ -76,9 +76,10 @@ export async function settleCustomerDoorPayment(input:{
     await conn.query('BEGIN')
     const found=await conn.query(`
       SELECT o.id,o.store_id,o.amount,o.currency,o.payment_status,o.payment_reference,o.status,
-             o.customer_name,s.client_id,s.name AS store_name
+             o.customer_name,s.client_id,s.name AS store_name,i.offer_type
       FROM client_store_orders o
       JOIN client_business_stores s ON s.id=o.store_id
+      LEFT JOIN client_store_items i ON i.id=o.item_id
       WHERE o.id=$1::uuid FOR UPDATE OF o
     `,[input.orderId])
     const order=found.rows[0]
@@ -99,6 +100,13 @@ export async function settleCustomerDoorPayment(input:{
     if(['cancelled','refunded'].includes(String(order.status))||['refunded','rejected'].includes(String(order.payment_status))){
       await conn.query('ROLLBACK')
       return {success:false,error:'Cancelled or refunded orders cannot be settled',status:409}
+    }
+    // CJ and other crypto workshops may collect exchange enquiries, but this
+    // general storefront is not a licensed exchange execution/custody rail.
+    // Do not turn a crypto transfer request into a paid or fulfilled trade.
+    if(String(order.offer_type||'')==='crypto'){
+      await conn.query('ROLLBACK')
+      return {success:false,error:'Crypto exchange requests require separately verified provider execution and asset settlement; Customer Door payment is not a crypto trade.',status:409}
     }
     const currency=String(order.currency||'').toUpperCase()
     const amount=Number(order.amount)
