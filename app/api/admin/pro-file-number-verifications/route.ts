@@ -1,7 +1,7 @@
 import {NextRequest,NextResponse} from 'next/server'
 import {getAuthUser} from '@/lib/auth-api'
 import {sql,getPool} from '@/lib/db'
-import {ensureProFileNumberVerificationSchema,eligibleProNumber,proVerificationPublicHeaders} from '@/lib/pro-file-number-verification'
+import {ensureProFileNumberVerificationSchema,getApprovedProStaffOffer,proVerificationPublicHeaders} from '@/lib/pro-file-number-verification'
 import {ensureProActivationSchema,isTronAddress,PRO_ACTIVATION_FEE_USDT} from '@/lib/pro-file-folder-activation'
 export const dynamic='force-dynamic'
 async function reviewer(request:NextRequest){
@@ -43,8 +43,13 @@ export async function POST(request:NextRequest){
    if(body.independentlyVerified!==true)throw new Error('Independent File Number identity review required.')
    const ref=String(body.identityReference||'').trim()
    if(ref.length<8||ref.length>255)throw new Error('Provide an identifiable Administration verification reference.')
-   if(!await eligibleProNumber(current.file_number))
-    throw new Error('The File Number has no current verified Pro entitlement.')
+   const offer=await getApprovedProStaffOffer(String(current.file_number))
+   if(!offer)throw new Error('An approved Pro company staff appointment is required. CJ Dorado must have an approved Regional Manager offer.')
+   const applicant=String(current.signed_name||'').trim().toLowerCase()
+   if(String(offer.candidate_name||'').trim().toLowerCase()!==applicant)
+    throw new Error('The signed applicant must match the approved company employee.')
+   if(!Number.isFinite(Number(offer.monthly_salary_usdt))||Number(offer.monthly_salary_usdt)<0)
+    throw new Error('The approved employee salary record is invalid.')
    const [owner]=await sql`SELECT name FROM users WHERE file_number=${current.file_number}
     AND role='client' AND is_active=true LIMIT 1`
    // If account exists, its registered name must match the applicant signature.
@@ -113,6 +118,20 @@ export async function POST(request:NextRequest){
      AND role='client' AND is_active=true LIMIT 2`,[row.file_number])
     if(owner.rows.length!==1)throw new Error('Client must have an active verified account before Folder finalization.')
     const clientId=owner.rows[0].id
+    const staffOffer=await db.query(`SELECT id,candidate_name,position_title,client_id
+       FROM company_client_staff_offers
+       WHERE file_number=$1 AND status='approved' AND folder_tier='pro'
+       LIMIT 1 FOR UPDATE`,[row.file_number])
+    if(staffOffer.rows.length!==1)throw new Error('Only an approved Pro company employee may activate the staff Folder.')
+    const approvedOffer=staffOffer.rows[0]
+    if(approvedOffer.client_id&&String(approvedOffer.client_id)!==String(clientId))
+     throw new Error('This staff offer belongs to a different Client account.')
+    if(String(approvedOffer.candidate_name||'').trim().toLowerCase()!==
+       String(row.signed_name||'').trim().toLowerCase())
+     throw new Error('Approved staff and signed applicant identity mismatch.')
+    if(row.file_number==='WEAVE-2026-0907-0001'&&
+      !/^regional\s+manager$/i.test(String(approvedOffer.position_title||'').trim()))
+     throw new Error('CJ Dorado must be approved as Regional Manager.')
     if(String(owner.rows[0].name||'').trim().toLowerCase()!==
        String(row.signed_name||'').trim().toLowerCase())
      throw new Error('Client identity and signed name do not match.')
