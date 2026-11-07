@@ -48,7 +48,6 @@ export default function PrivacyPage() {
             notice does not promise a fixed deletion period that has not been established.
           </p>
           <p>
-            Weave does not require a person to provide more information          <p>
             Weave does not require a person to provide more information than is needed for the function they choose to use.
             Users should not place passwords, private keys, or other account secrets into ordinary messages or referral context.
           </p>
