@@ -36,16 +36,9 @@ export async function POST(request:NextRequest){
  const action=String(body.action||'')
  try{
   await ensureProActivationSchema()
-  if(action==='configure_wallet'){
-   const address=String(body.walletAddress||'').trim()
-   if(body.confirmation!=='SET PRO TRC20 WALLET'||!isTronAddress(address))
-    throw new Error('Confirm a valid official TRON TRC-20 receiving address.')
-   await sql`INSERT INTO pro_activation_wallet_config(id,wallet_address,updated_by)
-     VALUES(1,${address},${user.id}::uuid)
-     ON CONFLICT(id) DO UPDATE SET wallet_address=EXCLUDED.wallet_address,
-       updated_by=EXCLUDED.updated_by,updated_at=now()`
-   return NextResponse.json({success:true,wallet:address},{headers:publicHeaders})
-  }
+  if(action==='configure_wallet')
+   return NextResponse.json({error:'Company wallet configuration has moved to the audited Administration Company Active Wallet workspace. Open /admin/company-active-wallet.'},
+     {status:409,headers:publicHeaders})
   const fileNumber=String(body.fileNumber||'').trim().toUpperCase()
   if(!fileNumber||fileNumber.length>120)throw new Error('Provide the exact issued File Number.')
   const clients=await sql`SELECT id,name,file_number FROM users
