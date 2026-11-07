@@ -40,7 +40,7 @@ async function resolveClientWorld(request: NextRequest) {
     return {sql,
       client:{id:pro.user.id,name:pro.row.account_name,file_number:pro.row.file_number},
       folder:{file_number:pro.row.file_number,workshop_type:'pro_regional_manager',status:'active'},
-      proRole:pro.row.source_role,error:null}
+      proRole:pro.row.source_role,proBusinessName:pro.row.business_name,error:null}
   }
   const token = request.headers.get('authorization')?.replace(/^Bearer\s+/i, '').trim() || null
   const clientId = await resolveClientToken(token, sql)
@@ -82,7 +82,7 @@ async function resolveClientWorld(request: NextRequest) {
     return { sql, error: NextResponse.json({ error: 'Main File Folder is not open yet' }, { status: 409 }) }
   }
 
-  return { sql, client, folder, error: null }
+  return { sql, client, folder, proBusinessName:null, error: null }
 }
 
 export async function GET(request: NextRequest) {
@@ -94,6 +94,7 @@ export async function GET(request: NextRequest) {
       ctx.sql,
       String(ctx.client.id),
       String(ctx.client.file_number),
+      ctx.proBusinessName,
     )
     const moduleConnections=await ctx.sql`
       SELECT c.id,c.source_system_id,c.target_system_id,c.contract_key,c.status,c.created_at,
