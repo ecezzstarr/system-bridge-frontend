@@ -39,7 +39,7 @@ async function resolveClientWorld(request: NextRequest) {
     await ensureFileFolderModuleRuntimeSchema(sql)
     return {sql,
       client:{id:pro.user.id,name:pro.row.account_name,file_number:pro.row.file_number},
-      folder:{file_number:pro.row.file_number,workshop_type:'pro_regional_manager',status:'active'},
+      folder:{file_number:pro.row.file_number,workshop_type:'formation',status:'active'},
       proRole:pro.row.source_role,proBusinessName:pro.row.business_name,error:null}
   }
   const token = request.headers.get('authorization')?.replace(/^Bearer\s+/i, '').trim() || null
@@ -800,6 +800,7 @@ export async function POST(request: NextRequest) {
       ctx.sql,
       String(ctx.client.id),
       String(ctx.client.file_number),
+      ctx.proBusinessName,
     )
 
     return NextResponse.json({
