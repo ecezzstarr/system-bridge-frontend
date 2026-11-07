@@ -64,9 +64,10 @@ assert.match(eventGate, /WEAVE_WRITING\.systemSwitch\.privacy/)
 assert.match(staff, /min-h-\[max\(88svh,560px\)\]/, 'Small screens must not clip orientation text')
 
 const visitorWorld = read('app/system-switch/world/page.tsx')
-assert.match(visitorWorld, /data-system-switch-arrival-orientation="true"/)
-assert.match(visitorWorld, /crossing\.visitor/)
-assert.match(visitorWorld, /crossing\.privacy/)
+const worldGuide = read('components/events/burning-river-live-world.tsx')
+assert.match(worldGuide, /data-system-switch-arrival-orientation="true"/)
+assert.match(worldGuide, /crossing\.visitor/)
+assert.match(worldGuide, /crossing\.privacy/)
 assert.match(visitorWorld, /<BurningRiverLiveWorld role=\{role\}/)
 assert.ok(!visitorWorld.includes('href="/client/system-switch"'))
 

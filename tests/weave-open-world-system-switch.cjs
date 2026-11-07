@@ -12,6 +12,8 @@ const staffGate=read('app/system-switch/page.tsx')
 const eventGate=read('components/events/burning-river-official-gateway.tsx')
 const land=read('components/world/weave-open-world-landscape.tsx')
 const visual=read('components/events/burning-river-live-world.tsx')
+const atlas=read('components/events/weave-world-atlas.tsx')
+const scene=read('components/events/weave-world-scene.tsx')
 const food=read('components/events/burning-river-food-store-3d.tsx')
 const market=read('app/market/page.tsx')
 const directMarket=read('app/market/[slug]/page.tsx')
@@ -23,21 +25,21 @@ const publicDomains=read('lib/weave-open-world-domains.ts')
 assert.ok(world.includes('data-weave-open-world="system-switch"'),'Weave Open World belongs to System Switch')
 assert.ok(world.includes('data-system-switch-container="file-folder-world"'),'System Switch contains Client File Folder worlds')
 assert.ok(world.includes('data-company-loop-event="burning-river"'),'Burning River is company event, not the permanent world name')
-assert.ok(visual.includes('Weave Open World')&&!visual.includes('Burning River Open World</h2>'),'Correct public world name is shown')
+assert.ok(atlas.includes('<h1>Weave Open World</h1>'),'Correct public world name is shown')
 assert.ok(visual.includes('Company Loop 1 · Burning River')&&visual.includes("feed.event?.status==='active'"),'Burning River is a dated event within the world, not the world')
 assert.ok(visual.includes('data-weave-open-world="system-switch-file-folder-world"'),'Shared real-world rendering belongs to System Switch')
-assert.ok(land.includes('data-weave-world-landscape="physical-ground-forest-and-paths"'),'3D geography is real geometry')
+assert.ok(land.includes('name="physical-ground-forest-and-paths"'),'3D geography is real geometry')
 assert.ok(land.includes('CanvasTexture')&&land.includes('LandMaterial')&&land.includes('WorldFootpath'),'The shared landscape has actual terrain material and verified building approaches')
 assert.ok(land.includes('function WorldRidge')&&land.includes('snow-peaks')&&land.includes('ember-highlands'),'Burning River reference informs real snowy and ember terrain geometry')
-assert.ok(land.includes('function RiverCrossing')&&land.includes('data-world-reference-crossing="bridge-of-radiance"'),'Bridge of Radiance crossings are physical geometry in the shared world')
+assert.ok(land.includes('function RiverCrossing')&&land.includes('name="bridge-of-radiance"'),'Bridge of Radiance crossings are physical geometry in the shared world')
 assert.ok(land.includes('Approved Burning River art guides the real scene')&&!land.includes('backgroundImage'),'Approved world-map art guides live geography without replacing it with wallpaper')
 assert.ok(exists('public/weave/flame-event/burning-river-open-world-official.webp'),'Approved File Folder world-map artwork is installed in the repository')
-assert.ok(visual.includes('<WeaveOpenWorldLandscape domains={domains} placing={placing} onPlace={onPlace}/>'),'Physical landscape is mounted under Client domains')
+assert.ok(scene.includes('<WeaveOpenWorldLandscape domains={domains} placing={placing} onPlace={onPlace}/>'),'Physical landscape is mounted under Client domains')
 assert.ok(!visual.includes("backgroundImage:\"url('/weave/flame-event/burning-river-open-world-official.webp')"),'The reference image is not rendered as an image wallpaper behind fake world geometry')
-assert.ok(visual.includes('new THREE.ShaderMaterial')&&visual.includes('water.uniforms.time.value'),'Event water and fire move on actual 3D surfaces')
-assert.ok(visual.includes('<DomainCastle')&&visual.includes('publicHref(selectedDomain)')&&visual.includes('tapCastle'),'Real Client-built world and commissioned Customer Door gates remain clickable')
+assert.ok(scene.includes('new THREE.ShaderMaterial')&&scene.includes('water.uniforms.time.value'),'Event water and fire move on actual 3D surfaces')
+assert.ok(scene.includes('<DomainCastle')&&visual.includes('publicHref(selectedDomain)')&&visual.includes('tapCastle'),'Real Client-built world and commissioned Customer Door gates remain clickable')
 assert.ok(visual.includes('requestedDoor')&&visual.includes('setSelected(match.domainId)'),'A direct Client link focuses the actual public building')
-assert.ok(visual.includes('<BurningRiverFoodStore3D carrierCode={carrierCode}/>')&&food.includes('data-weave-real-food-photo-panels'),'Existing real product photos stay inside the 3D store')
+assert.ok(scene.includes('<BurningRiverFoodStore3D carrierCode={carrierCode}/>')&&food.includes('name="weave-real-food-photo-panels"'),'Existing real product photos stay inside the 3D store')
 assert.ok(visual.includes('data-weave-food-direct-carrier-order="true"'),'A compact Carrier purchase link is kept in the open world')
 assert.ok(visual.includes("'/api/system-switch/open-world?page='"),'World data reads from canonical System Switch endpoint')
 assert.ok(api.includes('readVerifiedClientDomains')&&source.includes('getPublicBurningRiverWorld'),'Canonical API preserves source-of-truth purchases, builds and open doors')
@@ -64,12 +66,25 @@ assert.ok(!worldFood3D.includes('<Text '),'World storefront cannot suspend on ex
 assert.ok(worldFood3D.includes('<Html center position='),'Storefront signage must remain visible without external font fetching')
 assert.ok(visual.includes("setStatus('unavailable')")&&visual.includes('if(mounted&&!document.hidden)'),
   'World feed timeout must leave the loading state, including watchdog-aborted requests')
-assert.ok(visual.includes('Retry land connection')&&visual.includes('fallback={<div'),
+assert.ok(visual.includes('Retry land connection')&&scene.includes('fallback={<div'),
   'Keep an in-world retry and WebGL failure path')
-assert.ok(visual.includes('<Suspense fallback={<meshStandardMaterial')&&land.includes('<Suspense fallback={<meshStandardMaterial'),
+assert.ok(scene.includes('<Suspense fallback={<meshStandardMaterial')&&land.includes('<Suspense fallback={<meshStandardMaterial'),
   '3D terrain and Client castles must remain visible while the atlas loads')
 assert.ok(world.includes('data-weave-open-world-loader="loading-3d-world"'),
   'Entry must paint a world loader before heavy 3D modules download')
+assert.ok(visual.includes("useState<'map'|'world'|'food'>('map')")&&visual.includes("import('./weave-world-scene')"),
+  'Open with the atlas and download the 3D scene only when entered')
+assert.ok(atlas.includes('/weave/flame-event/burning-river-open-world-official.webp')&&atlas.includes('data-weave-live-region={region}'),
+  'The approved art frames live geographic markers')
+for(const label of ['Staff Entrance','Visitor Entrance','Customer Door','World Map','Domains','Explore','Community','Guide']){
+  assert.ok(atlas.includes(label),'Atlas preserves '+label)
+}
+assert.ok(atlas.includes('element.showModal()')&&visual.includes("doorList?Boolean(publicHref(d))"),
+  'Use one dialog and list only commissioned public entrances under Customer Doors')
+for(const source of [scene,land,food]){
+  assert.doesNotMatch(source,/<(?:group|mesh)\b[^<]*?\sdata-[\w-]+(?:=|\s|>)/,
+    'Three.js scene nodes must use native properties rather than DOM data attributes')
+}
 const worldFeed=read('app/api/events/flame/open-world/route.ts')
 assert.ok(worldFeed.includes('void reconciliation.catch')&&worldFeed.includes("getFlameEvent().catch"),
   'Database maintenance and event metadata cannot block already verified public Client land')

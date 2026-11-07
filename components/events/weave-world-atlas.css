@@ -1,0 +1,149 @@
+.weave-atlas {
+  min-height: 100svh;
+  padding-bottom: env(safe-area-inset-bottom);
+  background: radial-gradient(ellipse at 50% 8%, #202f45 0%, #0a1628 47%, #060d1a 85%);
+  color: #ffe6aa;
+}
+.weave-atlas-frame {
+  width: min(100%, 34rem);
+  margin-inline: auto;
+  border-inline: 1px solid #b98a4d70;
+  background: #060d19;
+}
+.weave-atlas-terrain {
+  position: relative;
+  isolation: isolate;
+  aspect-ratio: 941 / 1370;
+  overflow: hidden;
+}
+.weave-atlas-terrain > img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.weave-atlas-title {
+  position: absolute;
+  inset: 0 0 auto;
+  display: grid;
+  grid-template-columns: 2.75rem minmax(0, 1fr) 2.75rem;
+  align-items: center;
+  gap: .2rem;
+  min-height: 11.8%;
+  padding: .35rem .6rem .5rem;
+  border-bottom: 1px solid #e8b96b85;
+  background: radial-gradient(ellipse at 50% 0%, #1b2d48, #081425 75%);
+  text-align: center;
+  text-shadow: 0 1px 4px #000;
+}
+.weave-atlas-title h1 {
+  margin: .14rem 0;
+  font: 700 clamp(1.24rem, 6.4vw, 2.1rem)/1.05 Georgia, serif;
+  color: #ffe0a0;
+}
+.weave-atlas-title p {
+  font-size: clamp(.55rem, 2vw, .73rem);
+  font-weight: 700;
+  letter-spacing: .13em;
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: #f3d8a4;
+}
+.weave-atlas-title button, .weave-atlas-compass {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+}
+.weave-atlas-compass svg { width: 2rem; height: 2rem; }
+.weave-atlas-title button { border: 1px solid #c998555c; border-radius: 50%; }
+.weave-atlas-pin {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .2rem;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  transform: translate(-50%, -50%);
+  border: 1px solid #f4cb7b;
+  border-radius: 50%;
+  background: #0b1b32f2;
+  color: #ffe3a3;
+  font-size: .76rem;
+  font-weight: 800;
+  box-shadow: 0 0 16px #f7b340a0;
+}
+.weave-atlas-entrances, .weave-atlas-tools {
+  display: grid;
+  gap: .34rem;
+  padding: .55rem;
+}
+.weave-atlas-entrances {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-top: 1px solid #edb97085;
+  background: #0a1424;
+}
+.weave-atlas-tools {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  border-block: 1px solid #e4b96c80;
+}
+.weave-atlas-entrances > *, .weave-atlas-tools > button {
+  display: flex;
+  min-width: 0;
+  min-height: 3.15rem;
+  align-items: center;
+  justify-content: center;
+  gap: .33rem;
+  font: 700 clamp(.59rem, 2.05vw, .83rem)/1.15 Georgia, serif;
+  color: #ffe4ad;
+  text-align: center;
+  text-transform: uppercase;
+}
+.weave-atlas-entrances > * {
+  padding: .28rem;
+  border: 1px solid #f0bc6d;
+  border-radius: .45rem;
+  box-shadow: inset 0 0 12px #edaf4b30;
+}
+.weave-atlas-entrances svg, .weave-atlas-tools svg { width: 1.12rem; height: 1.12rem; flex: none; }
+.weave-atlas-staff { background: linear-gradient(140deg, #50240d, #15121b); }
+.weave-atlas-visitor { background: linear-gradient(140deg, #193759, #0b1628); }
+.weave-atlas-customer { background: linear-gradient(140deg, #1b3d2c, #0b191d); }
+.weave-atlas-tools > button { flex-direction: column; gap: .32rem; padding: .25rem .08rem; }
+.weave-atlas-tools > [aria-current] { background: #2a211a; box-shadow: inset 0 -2px #eab65f; }
+.weave-atlas :is(button, a):focus-visible,
+.weave-world-sheet :is(button, a):focus-visible {
+  outline: 2px solid #fff0c4;
+  outline-offset: 2px;
+}
+.weave-atlas-caption { padding: .6rem .7rem; text-align: center; font-size: .7rem; color: #c6d9eb; }
+.weave-world-sheet {
+  position: fixed;
+  inset: auto 0 0;
+  width: min(100%, 38rem);
+  max-height: 84dvh;
+  margin: 0 auto;
+  padding: 1rem 1rem max(1rem, env(safe-area-inset-bottom));
+  overflow: auto;
+  overscroll-behavior: contain;
+  border: 1px solid #cfa966;
+  border-radius: 1rem 1rem 0 0;
+  background: #101e32;
+  color: #f3e3bb;
+  box-shadow: 0 0 40px #000a;
+}
+.weave-world-sheet::backdrop { background: #040a15ab; }
+.weave-world-sheet > header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: .8rem;
+}
+.weave-world-sheet > header h2 { font: 700 1.35rem/1.15 Georgia, serif; }
+.weave-world-sheet > header button { display: grid; flex: none; place-items: center; width: 2.75rem; height: 2.75rem; border: 1px solid #cfa96680; border-radius: .5rem; }
+@media (min-width: 48rem) {
+  .weave-atlas { padding-block: 1rem; }
+  .weave-atlas-frame { border: 1px solid #b98a4d90; box-shadow: 0 20px 95px #0008; }
+  .weave-world-sheet { inset: 0; margin: auto; border-radius: 1rem; }
+}

@@ -13,6 +13,7 @@ export function isFlameEventVisualRoute(pathname: string): boolean {
   return FLAME_EVENT_VISUAL_ROUTES.some(route => path === route || path.startsWith(route + '/'))
 }
 
-export function weaveVisualThemeForPath(pathname: string): 'plus-white-gold' | 'flame-event-original' {
+export function weaveVisualThemeForPath(pathname: string): 'plus-white-gold' | 'flame-event-original' | 'open-world-atlas' {
+  if ((pathname || '/').split('?')[0].replace(/\/+$/, '') === '/system-switch/world') return 'open-world-atlas'
   return isFlameEventVisualRoute(pathname) ? 'flame-event-original' : 'plus-white-gold'
 }
