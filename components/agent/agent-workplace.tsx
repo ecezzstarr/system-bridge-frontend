@@ -103,7 +103,9 @@ export function AgentWorkplace({userName,onOpenDistricts}:{userName?:string|null
           </label>
         </div>
 
-        <Link href="/search" data-role-company-search="agent" className="mt-4 inline-flex min-h-11 items-center rounded-lg border border-[#b38b51] bg-white/80 px-4 py-2 text-sm font-semibold text-[#5e4823]">Not sure what a workstation is called? Search by what you want to do.</Link>\n\n        {active==='desk'&&!query&&<div className="mt-6 rounded-xl border border-[#e0d2b8] bg-[#f5f0e5] p-4 sm:p-5">
+        <Link href="/search" data-role-company-search="agent" className="mt-4 inline-flex min-h-11 items-center rounded-lg border border-[#b38b51] bg-white/80 px-4 py-2 text-sm font-semibold text-[#5e4823]">Not sure what a workstation is called? Search by what you want to do.</Link>
+
+        {active==='desk'&&!query&&<div className="mt-6 rounded-xl border border-[#e0d2b8] bg-[#f5f0e5] p-4 sm:p-5">
           <div className="flex items-center gap-2"><ClipboardList className="h-5 w-5 text-[#957329]"/><h3 className="text-base font-semibold">How Stability work moves</h3></div>
           <p className="mt-1 text-sm leading-6 text-[#57656a]">These are operating steps, not invented targets or confirmed transactions.</p>
           <div className="mt-4 grid gap-2 md:grid-cols-4">
