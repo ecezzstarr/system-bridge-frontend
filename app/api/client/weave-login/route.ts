@@ -6,6 +6,7 @@ import { randomBytes } from 'node:crypto'
 import { getDivineShieldState } from '@/lib/weave-infrastructure'
 import { ensureUserReferralCode } from '@/lib/user-referral'
 import { getProActivationState } from '@/lib/pro-file-folder-activation'
+import { resolveVerifiedClientFileFolderTier } from '@/lib/client-file-folder-tier'
 
 
 export async function POST(request: NextRequest) {
@@ -68,9 +69,18 @@ export async function POST(request: NextRequest) {
     `
 
     const proActivation=await getProActivationState(String(user.id),String(user.file_number||''))
+    let activationRequired=Boolean(proActivation&&proActivation.status!=='active')
+    if(activationRequired&&user.file_number){
+      const entitledTier=await resolveVerifiedClientFileFolderTier(sql,{
+        clientId:String(user.id),fileNumber:String(user.file_number),proActivation,
+      })
+      // Pending Pro enrollment is NOT permission to redirect a genuine
+      // Premium/Plus owner away from their already purchased private world.
+      if(entitledTier==='premium'||entitledTier==='plus')activationRequired=false
+    }
     return NextResponse.json({
       success: true,
-      activationRequired:Boolean(proActivation&&proActivation.status!=='active'),
+      activationRequired,
       token,
       user: {
         id: user.id,
