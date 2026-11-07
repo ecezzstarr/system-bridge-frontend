@@ -3,7 +3,7 @@ import { getAuthUser } from '@/lib/auth-api'
 import { sql } from '@/lib/db'
 import { ensureCompanyClientStaffSchema } from '@/lib/company-client-staff'
 import {getCjSiblingsEvent} from '@/lib/client-siblings-event'
-import {isProRegionalManagerPosition,proRegionalManagerDepartment} from '@/lib/pro-regional-manager-policy'
+import {isProRegionalManagerPosition} from '@/lib/pro-regional-manager-policy'
 export const dynamic='force-dynamic'
 
 async function access(request:NextRequest) {
@@ -57,7 +57,7 @@ export async function GET(request:NextRequest) {
         }
       }
       clientRegional={positionType:'pro_regional_manager',
-        department:proRegionalManagerDepartment('client')!.department,
+        department:'Dream Lovely',
         scope:'client_business_expansion',
         country,region,city,locationStatus}
     }
