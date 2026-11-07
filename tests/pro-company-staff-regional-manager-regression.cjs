@@ -23,7 +23,7 @@ assert.ok(!eligibility.includes("file_folder_purchases")&&!eligibility.includes(
  'Retail File Folder purchases or upgrades cannot grant passwordless company staff activation')
 assert.ok(eligibility.includes('CJ_DORADO_FILE_NUMBER')&&eligibility.includes('candidate_name')&&
  eligibility.includes('regional')&&eligibility.includes('position_title'),
- 'CJ's named Pro entitlement must be Regional Manager, not a generic Client role')
+ "CJ's named Pro entitlement must be Regional Manager, not a generic Client role")
 assert.ok(eligibility.includes('monthly_salary_usdt')&&eligibility.includes('companyPosition'),
  'Verified recipients see real company position and monthly salary from the offer')
 assert.ok(!eligibility.includes('UPDATE company_client_staff_offers'),
