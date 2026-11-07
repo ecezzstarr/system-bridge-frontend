@@ -13,6 +13,14 @@ An approved Pro appointment is not a purchase: neither a payment nor a File Numb
 | Regional Manager | Bridger / Agent only | None | Departmental Lifestyle and operating assignments |
 | Pro Regional Manager | Bridger / Agent / Client | Own verified Pro Folder | Pro company appointment, business plan, activation, departmental operations |
 
+## Two official Pro Regional Manager entrances
+
+**Agent and Bridger — Lifestyle position application.** An existing authenticated Agent/Stability or Bridger/Hope opens `/weave/lifestyles/pro-regional-manager` from the Pro Regional Manager position in Lifestyle. The application records operating country/region/city/address, Pro business name, a four-part business plan and departmental daily work plan. Administration reviews the private application at `/admin/pro-regional-manager-applications`, independently verifies signed agreed salary and employment records, and records approval as **approved pending Pro verification**. This is not a File Folder activation or payment instruction. The Agent/Bridger original-role Pro Folder entitlement/activation path must be implemented and independently tested before that appointment can operate.
+
+**External Client — issued File Number verification.** An invited Client outside the existing WEAVE Agent/Bridger Lifestyle enters `/client/pro-verification`, presents an issued File Number, submits their business plan, signature and actual location/address, and receives private session-bound verification status. Administration reviews identity, company-approved Pro staff offer and terms at `/admin/pro-file-number-verifications` before the approved activation payment; account ownership and the File Folder are verified before starting operations. CJ Dorado is the first Dream Lovely/Client Pro Regional Manager test.
+
+Both entrances belong to the same **Pro Regional Manager** position, with role-specific daily work and a Pro File Folder; they are not the ordinary Regional Manager application path. Never expose private Client identity or salary to an applicant through File Number lookup alone.
+
 ## Pro onboarding and verification
 
 1. Administration creates or verifies a **Pro Regional Manager** appointment under the person's original source department, recording their name, agreed monthly salary, File Number, and intended territory.
@@ -53,7 +61,7 @@ Use the actual source department to select the daily functions. No title grants 
 
 - Ordinary Regional Manager has its own application and appointment tables; **only Bridger and Agent** should enter those routes.
 - CJ has a reserved File Number `WEAVE-2026-0907-0001`, Client-owned crypto workshop and Pro activation. PR #319 introduces her Client Pro verification and Dream Lovely staff workspace.
-- The **current** Pro verification/finalization implementation is based on `company_client_staff_offers`, `users.role='client'` and Client Folder ownership. This is a **Client-only first test**. Do not market Bridger/Agent Pro activation as live until independent Pro appointment storage, original-role ownership, Pro Folder access and the complete secured workflow are implemented for those departments.
+- The **current** Pro File Number verification/finalization implementation is based on `company_client_staff_offers`, `users.role='client'` and Client Folder ownership. This is the Client external-entrant first test. Agent/Bridger Pro **applications and Administration review** are now separate, persisted tracks in draft PR #319, but they do not grant File Folder ownership or accept activation payments. Do not market Agent/Bridger Pro File Folder activation as live until original-role ownership, Pro staff entitlements, verified activation and daily departmental workspaces are implemented for those departments.
 - `lib/pro-regional-manager-policy.ts` defines the distinct Pro role and three departmental operating policies without authorizing access on its own.
 - CJ's approved monthly salary must be loaded from her actual company agreement. The number must never be guessed or generated.
 - The separate positions must not share the ordinary manager appointment table, automatically transfer commissions, or create a File Folder through a regular manager application.
