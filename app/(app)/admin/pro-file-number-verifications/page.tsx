@@ -90,7 +90,7 @@ export default function ProFileNumberAdministration(){
         ?Number(selected.staff_monthly_salary_usdt).toLocaleString()+' USDT in recorded offer'
         :'To be confirmed by Administration payroll'}</p>
       </div>:<p className="mt-2 text-sm text-amber-200">No approved company staff offer for this File Number. Do not approve payment until employment records are reconciled.</p>}
-      {selected.file_number==='WEAVE-2026-0907-0001'&&<p className="mt-2 text-xs text-cyan-200">CJ Dorado: Client Regional Manager · Dream Lovely · Spain. Verify that the approved company staff offer matches; do not attach Agent/Stability or Bridger/Hope regional duties.</p>}
+      {selected.file_number==='WEAVE-2026-0907-0001'&&<p className="mt-2 text-xs text-cyan-200">CJ Dorado: Pro Regional Manager · Dream Lovely · Spain. This Pro File Folder appointment is distinct from the ordinary Bridger/Agent Regional Manager. Verify the approved employment and salary without adding Agent/Stability or Bridger/Hope duties.</p>}
      </div>
      <div className="space-y-2 rounded-lg border border-white/15 bg-slate-950/40 p-4"
        data-admin-client-regional-location="true">
