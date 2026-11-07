@@ -45,8 +45,11 @@ assert.ok(publicPurchase.includes('file_folder_tier'),'Public crossing returns p
 assert.ok(adminPending.includes('purchase.file_folder_tier'),'Administration queue preserves explicit Pro classification')
 assert.ok(adminVerify.includes('purchase.file_folder_tier'),'Administration verification preserves explicit Pro classification')
 assert.ok(adminVerify.includes('fileFolderTierLabel'),'Administration commission and notification labels understand Pro')
-assert.ok(systemSwitch.includes('persistedTier'),'Client runtime restores persisted File Folder tier after crossing')
-assert.ok(systemSwitch.includes("getFileFolderTier(amount, 'pro')"),'Legacy Bridge sales retain Pro context inside System Switch')
+const tierEntitlement=read('lib/client-file-folder-tier.ts')
+assert.ok(systemSwitch.includes('resolveVerifiedClientFileFolderTier')&&
+  tierEntitlement.includes("status IN ('confirmed','approved','folder_issued','paid_pending_folder')"),
+  'Client runtime restores recorded File Folder purchase tiers, including issued Premium worlds')
+assert.ok(tierEntitlement.includes("getFileFolderTier(amount,'pro')"),'Legacy verified Bridge sales retain Pro context through the shared Client tier resolver')
 
 assert.ok(metadata.includes('proStartingFlameCoin'),'File Folder metadata exposes Pro starting value')
 assert.ok(metadata.includes('standardMaximumFlameCoin'),'File Folder metadata exposes Standard maximum')
