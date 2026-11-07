@@ -55,6 +55,7 @@ export default function ProFileNumberAdministration(){
  return <main className="mx-auto max-w-5xl space-y-6 px-4 py-8 text-white" data-admin-pro-number-verification="true">
   <header className="space-y-2">
    <Link href="/admin/pro-activations" className="text-xs text-cyan-200 underline">Pro activation control center</Link>
+   <Link href="/admin/company-active-wallet" className="ml-4 text-xs text-cyan-200 underline">Company Active Wallet settings</Link>
    <h1 className="text-3xl font-bold">Pro File Number Verification</h1>
    <p className="text-sm text-slate-300">Only approved WEAVE company staff are eligible for this Pro File Folder workspace. Recipients begin with an issued File Number, not a password. Administration independently verifies their position, signed business plans and identity before displaying payment instructions. Forensics approves real TRON receipts. No funds are credited automatically.</p>
    <p className="text-xs text-cyan-200">Public Client starting page: <Link href="/client/pro-verification" className="underline">/client/pro-verification</Link></p>
