@@ -2,7 +2,7 @@
 import Link from 'next/link'
 import {useCallback,useEffect,useState} from 'react'
 import {useAuth} from '@/lib/auth-provider'
-import {PRO_REGIONAL_MANAGER_DEPARTMENTS} from '@/lib/pro-regional-manager-policy'
+import {proRegionalManagerDepartment} from '@/lib/pro-regional-manager-policy'
 
 type Application={
  source_role:'agent'|'bridger';business_name:string;operating_country:string;
@@ -59,7 +59,7 @@ export default function ProRegionalManagerLifestyleApplication(){
   }catch(e){setError(e instanceof Error?e.message:'Application not submitted')}
   finally{setBusy(false)}
  }
- const department=eligible?PRO_REGIONAL_MANAGER_DEPARTMENTS[role]:null
+ const department=proRegionalManagerDepartment(role)
  const canReapply=!application||['rejected','withdrawn'].includes(application.status)
  if(!isInitialized||isLoading||loading)return <main className="mx-auto max-w-4xl p-6 text-slate-200">Opening Pro Regional Manager position…</main>
  return <main className="weave-operating-environment mx-auto min-h-screen max-w-4xl space-y-6 px-4 py-8 text-white"
