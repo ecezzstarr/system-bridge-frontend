@@ -62,6 +62,7 @@ export default function AdminProRegionalManagerForensics(){
    <Link href="/admin/control-center">Administration Control Center</Link>
    <Link href="/admin/pro-regional-manager-applications">Pro Manager applications</Link>
    <Link href="/admin/pro-file-number-verifications">External Client Pro verifications</Link>
+   <Link href="/admin/company-active-wallet">Company Active Wallet settings</Link>
   </nav>
   <header className="space-y-2">
    <p className="text-xs uppercase tracking-widest text-sky-200">Administration · A Time · Forensics</p>
