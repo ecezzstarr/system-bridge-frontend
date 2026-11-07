@@ -6,6 +6,8 @@ type Application={
  id:string;file_number:string;business_name:string;business_plan:Record<string,string>;
  staff_position_title?:string|null;staff_monthly_salary_usdt?:number|null;staff_candidate_name?:string|null;
  signed_name:string;terms_accepted_at:string;identity_reference?:string|null;
+ operating_country?:string|null;operating_region?:string|null;operating_city?:string|null;
+ contact_address?:string|null;postal_code?:string|null;
  payment_wallet?:string|null;payment_tx_hash?:string|null;payment_submitted_at?:string|null;
  payment_verified_at?:string|null;payment_verified_amount_usdt?:number|null;
  status:string;rejection_reason?:string|null;created_at:string
@@ -88,7 +90,17 @@ export default function ProFileNumberAdministration(){
         ?Number(selected.staff_monthly_salary_usdt).toLocaleString()+' USDT in recorded offer'
         :'To be confirmed by Administration payroll'}</p>
       </div>:<p className="mt-2 text-sm text-amber-200">No approved company staff offer for this File Number. Do not approve payment until employment records are reconciled.</p>}
-      {selected.file_number==='WEAVE-2026-0907-0001'&&<p className="mt-2 text-xs text-cyan-200">CJ Dorado: required company position — Regional Manager. Verify the approved staff offer matches before proceeding.</p>}
+      {selected.file_number==='WEAVE-2026-0907-0001'&&<p className="mt-2 text-xs text-cyan-200">CJ Dorado: Client Regional Manager · Dream Lovely · Spain. Verify that the approved company staff offer matches; do not attach Agent/Stability or Bridger/Hope regional duties.</p>}
+     </div>
+     <div className="space-y-2 rounded-lg border border-white/15 bg-slate-950/40 p-4"
+       data-admin-client-regional-location="true">
+       <h3 className="text-sm font-semibold text-sky-200">Applicant-submitted operating address · verify independently</h3>
+       <p className="text-sm">Country: {selected.operating_country||'Not provided'}</p>
+       <p className="text-sm">Region: {selected.operating_region||'Not provided'}</p>
+       <p className="text-sm">City: {selected.operating_city||'Not provided'}</p>
+       <p className="text-sm">Contact address: {selected.contact_address||'Not provided'}</p>
+       {selected.postal_code&&<p className="text-sm">Postal code: {selected.postal_code}</p>}
+       <p className="text-xs text-amber-200">CJ is assigned to Spain for Client business expansion. The applicant's street address and city are not assumed. Confirm the location before advancing identity and company territory.</p>
      </div>
      <p className="text-xs text-slate-400">Terms accepted: {new Date(selected.terms_accepted_at).toLocaleString()}</p>
      <details open className="rounded-lg border border-white/10 p-3"><summary className="text-sm font-semibold text-cyan-200">Submitted business plan</summary>
@@ -105,7 +117,7 @@ export default function ProFileNumberAdministration(){
         className="mt-2 w-full rounded-lg border border-white/20 bg-slate-900 p-3"/>
       </label>
       <label className="flex gap-2 text-sm"><input type="checkbox" checked={checked}
-       onChange={e=>setChecked(e.target.checked)}/> I personally verified the File Number owner's identity, signature, business plan and entitlement against independent records.</label>
+       onChange={e=>setChecked(e.target.checked)}/> I independently verified the Client staff employee identity, approved Pro appointment, business plan, and submitted operating location. For CJ, this is Dream Lovely business expansion in Spain, not Agent or Bridger regional management.</label>
       <button disabled={busy||!checked||identityReference.trim().length<8}
        onClick={()=>void act('verify_identity',{identityReference,independentlyVerified:checked})}
        className="rounded-lg bg-cyan-300 px-4 py-3 font-semibold text-slate-950 disabled:opacity-40">Approve verified application for payment</button>
