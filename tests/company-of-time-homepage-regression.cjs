@@ -13,7 +13,8 @@ const required=[
   'Dream',
   'The company through the people of its departments',
   'Company Loop 1 — Flame Event: Burning River',
-  'Company Loop 2 — Country Event: One Nigeria',
+  'Company Loop 2 — Country Event: Country Formation',
+  'Company Loop 3 — Individual Event: Self Upliftment',
   'data-home-plus-file-folder="official-picture"',
   'plus-file-folder-white-official.webp',
   'What WEAVE Builds',
@@ -34,14 +35,13 @@ for(const phrase of required)assert.ok(source.includes(phrase),'Homepage missing
 assert.ok(source.includes('data-home-company-worldwide="true"'),'Homepage must explain WEAVE across borders')
 assert.ok(source.includes('wherever people live and work'),'Homepage must present WEAVE as globally oriented')
 
-// Only the named Company Loop 2 national event may use Nigeria/Nigerian wording
-// on the public homepage. Preserve its exact heading and remove it before
-// checking the rest of the source and any directly embedded homepage content.
+// The Country Formation heading belongs exclusively to Loop 2. Keep its
+// identity separate from Loop 3 and preserve country-neutral homepage copy.
 const loopTwoStart=source.indexOf('weave-home-loop-country')
 const loopThreeStart=source.indexOf('weave-home-loop-time')
 assert.ok(loopTwoStart>=0 && loopThreeStart>loopTwoStart,'Keep distinct Loop 2 and Loop 3 sections')
 const loopTwoCopy=source.slice(loopTwoStart,loopThreeStart)
-assert.match(loopTwoCopy,/\bNigeria(?:n)?\b/i,'Loop 2 keeps its country identity')
+assert.match(loopTwoCopy,/Country Formation/,'Loop 2 keeps its official country event identity')
 const outsideLoopTwo=source.slice(0,loopTwoStart)+source.slice(loopThreeStart)
 assert.doesNotMatch(outsideLoopTwo,/\bNigeria(?:n)?\b/i,
   'Homepage must not use Nigeria/Nigerian outside Company Loop 2')

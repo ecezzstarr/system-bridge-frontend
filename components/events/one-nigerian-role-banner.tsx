@@ -64,7 +64,7 @@ export function OneNigerianRoleBanner({
   const message = MESSAGES[role]
   return (
     <section
-      aria-label={`${message.position} · One Nigerian daily words`}
+      aria-label={`${message.position} · Country Formation daily words`}
       data-one-nigerian-daily-banner={role}
       className="relative z-20 mx-3 mt-3 overflow-hidden rounded-2xl border border-[#008751]/55 bg-[#043d28]/95 text-white shadow-[0_14px_40px_rgba(0,0,0,.24)] sm:mx-6"
     >
@@ -76,7 +76,7 @@ export function OneNigerianRoleBanner({
       <div className="flex items-start gap-3 px-4 py-4 sm:px-6 sm:py-5">
         <div className="min-w-0 flex-1">
           <p className="text-[10px] font-black uppercase tracking-[.16em] text-[#b5f1ce]">
-            Company Loop 2 · Flame Event: One Nigerian
+            Company Loop 2 · Country Event: Country Formation
           </p>
           <p className="mt-1 text-xs font-bold text-white/75">{message.position} · Daily words</p>
           <p className="mt-3 max-w-4xl text-base font-bold leading-7 text-white sm:text-lg">

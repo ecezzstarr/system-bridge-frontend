@@ -75,7 +75,7 @@ export function CompanyLoopTwoScroll(){
         <span className="bg-[#008751]"/><span className="bg-white"/><span className="bg-[#008751]"/>
       </div>
       <div className="flex items-center gap-3">
-        <span className="hidden shrink-0 text-[10px] font-black tracking-wide text-white/90 sm:block">ONE NIGERIAN · LOOP 2</span>
+        <span className="hidden shrink-0 text-[10px] font-black tracking-wide text-white/90 sm:block">COUNTRY FORMATION · LOOP 2</span>
         <button type="button" onClick={()=>setOpen(value=>!value)}
           className="weave-loop2-scroll-ticker group flex min-h-10 min-w-0 flex-1 items-center overflow-hidden rounded-lg border border-white/20 bg-white/10 px-3 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
           aria-expanded={open} aria-controls="weave-loop2-scroll-content"
@@ -97,7 +97,7 @@ export function CompanyLoopTwoScroll(){
         className="mt-3 grid gap-3 rounded-xl border border-white/20 bg-[#063620]/95 p-4 text-white sm:grid-cols-2"
         data-loop2-answer="current-place">
         <div>
-          <p className="text-[10px] font-black uppercase tracking-wider text-emerald-200">One Nigerian · Daily scroll</p>
+          <p className="text-[10px] font-black uppercase tracking-wider text-emerald-200">Country Formation · Daily scroll</p>
           <p className="mt-2 max-w-2xl whitespace-pre-line text-sm font-semibold leading-7" data-one-nigerian-verbatim-scroll="true">{ONE_NIGERIAN_SCROLL_TEXT}</p>
           <p className="mt-3 text-[10px] font-semibold text-white/70">{ONE_NIGERIAN_LOOP.title} · {day}</p>
         </div>

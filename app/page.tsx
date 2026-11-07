@@ -111,11 +111,11 @@ export default function Home() {
                   </Link>
                 </div>
                 <div className="weave-home-loop weave-home-loop-country p-5">
-                  <p className="text-base font-black text-white sm:text-lg">Company Loop 2 — Country Event: One Nigeria</p>
+                  <p className="text-base font-black text-white sm:text-lg">Company Loop 2 — Country Event: Country Formation</p>
                   <p className="mt-3 text-sm leading-6 text-slate-300">The next company movement, carried by the same departments and their people.</p>
                 </div>
                 <div className="weave-home-loop weave-home-loop-time p-5">
-                  <p className="text-base font-black text-white sm:text-lg">Company Loop 3 — Individual Event: From my God will lead me to my God is</p>
+                  <p className="text-base font-black text-white sm:text-lg">Company Loop 3 — Individual Event: Self Upliftment</p>
                   <p className="mt-3 text-sm leading-6 text-slate-300">A new individual event carried by the Company of Time.</p>
                 </div>
               </div>

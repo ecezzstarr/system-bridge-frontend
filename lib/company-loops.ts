@@ -46,8 +46,8 @@ export async function ensureCompanyLoopsSchema(sql = getDb()) {
     )
     SELECT
       2,
-      'One Nigerian',
-      'Company Loop 2 — Flame Event: One Nigerian operates January 1–11, 2027, with WEAVE taking on a green–white–green national environment.',
+      'Country Formation',
+      'Company Loop 2 — Country Event: Country Formation operates January 1–11, 2027, with WEAVE taking on a green–white–green national environment.',
       'Scheduled',
       'all',
       'Agents operate Stability; Bridgers carry Hope; Clients build and operate their File Folder worlds; Administration organizes and verifies movement.',
@@ -60,14 +60,23 @@ export async function ensureCompanyLoopsSchema(sql = getDb()) {
   `
 
   // Reconcile only the original generated description, never an edited Administration record.
+  // Renaming the event preserves its scheduled dates, existing records and authored department scrolls.
   await sql`
     UPDATE company_loops
-    SET purpose = ${"Company Loop 2 — Flame Event: One Nigerian operates January 1–11, 2027, with WEAVE taking on a green–white–green national environment."}, updated_at = NOW()
-    WHERE loop_number = 2 AND title = 'One Nigerian'
-      AND purpose = ${"Company Loop 2 — Flame Event: One Nigerian operates from January 1 through May 1, 2027, with WEAVE taking on a green–white–green national environment."}
+    SET title = 'Country Formation',
+        purpose = CASE
+          WHEN purpose IN (
+            'Company Loop 2 — Flame Event: One Nigerian operates January 1–11, 2027, with WEAVE taking on a green–white–green national environment.',
+            'Company Loop 2 — Flame Event: One Nigerian operates from January 1 through May 1, 2027, with WEAVE taking on a green–white–green national environment.',
+            'Company Loop 2 — Country Event: One Nigeria operates January 1–11, 2027, with WEAVE taking on a green–white–green national environment.'
+          ) THEN 'Company Loop 2 — Country Event: Country Formation operates January 1–11, 2027, with WEAVE taking on a green–white–green national environment.'
+          ELSE purpose
+        END,
+        updated_at = NOW()
+    WHERE loop_number = 2 AND title IN ('One Nigerian','One Nigeria')
   `
 
-  // Company Loop 3 carries the Sovereign-authored individual event identity.
+  // Company Loop 3 — Self Upliftment — retains its own individual event identity.
   await sql`
     INSERT INTO company_loops (
       loop_number, title, purpose, stage, position, boundaries,
@@ -75,23 +84,37 @@ export async function ensureCompanyLoopsSchema(sql = getDb()) {
     )
     SELECT
       3,
-      'From my God will lead me to my God is',
-      'Company Loop 3 — Individual Event: From my God will lead me to my God is. Begins January 12, 2027 (West Africa Time); the event ending and scroll remain to be authored.',
+      'Self Upliftment',
+      'Company Loop 3 — Individual Event: Self Upliftment. Begins January 12, 2027 (West Africa Time); the event ending and scroll remain to be authored.',
       'Scheduled',
       'all',
-      'This individual event has its own meaning and must not inherit the One Nigerian scroll or green–white–green theme.',
+      'This individual event has its own meaning and must not inherit the Country Formation scroll or green–white–green theme.',
       ARRAY['client','agent','bridger','admin']::text[],
       'published',
       NOW()
     WHERE NOT EXISTS (SELECT 1 FROM company_loops WHERE loop_number = 3)
   `
+  // Rename only known generated titles; do not replace Administration-authored
+  // individual-event purposes or agreements with boilerplate.
   await sql`
     UPDATE company_loops
-    SET title = 'From my God will lead me to my God is',
-      purpose = 'Company Loop 3 — Individual Event: From my God will lead me to my God is. Begins January 12, 2027 (West Africa Time); the event ending and scroll remain to be authored.',
-      boundaries = 'This individual event has its own meaning and must not inherit the One Nigerian scroll or green–white–green theme.',
-      updated_at = NOW()
-    WHERE loop_number = 3 AND title = 'Company Loop 3' AND status = 'published'
+    SET title = 'Self Upliftment',
+        purpose = CASE
+          WHEN purpose IN (
+            'Company Loop 3 — Individual Event: From my God will lead me to my God is. Begins January 12, 2027 (West Africa Time); the event ending and scroll remain to be authored.',
+            'Company Loop 3 — Individual Event: Company Loop 3. Begins January 12, 2027 (West Africa Time); the event ending and scroll remain to be authored.',
+            ''
+          ) THEN 'Company Loop 3 — Individual Event: Self Upliftment. Begins January 12, 2027 (West Africa Time); the event ending and scroll remain to be authored.'
+          ELSE purpose
+        END,
+        boundaries = CASE
+          WHEN boundaries = 'This individual event has its own meaning and must not inherit the One Nigerian scroll or green–white–green theme.'
+          THEN 'This individual event has its own meaning and must not inherit the Country Formation scroll or green–white–green theme.'
+          ELSE boundaries
+        END,
+        updated_at = NOW()
+    WHERE loop_number = 3 AND title IN ('Company Loop 3','From my God will lead me to my God is')
+      AND status = 'published'
   `
 
   await sql`
@@ -99,7 +122,7 @@ export async function ensureCompanyLoopsSchema(sql = getDb()) {
     SET stage = CASE WHEN NOW() >= ${COMPANY_LOOP_THREE_STARTS_AT}::timestamptz
       THEN 'Movement' ELSE 'Scheduled' END,
       updated_at = NOW()
-    WHERE loop_number = 3 AND title IN ('Company Loop 3','From my God will lead me to my God is') AND status = 'published'
+    WHERE loop_number = 3 AND title = 'Self Upliftment' AND status = 'published'
       AND stage IS DISTINCT FROM CASE WHEN NOW() >= ${COMPANY_LOOP_THREE_STARTS_AT}::timestamptz
         THEN 'Movement' ELSE 'Scheduled' END
   `
@@ -112,7 +135,7 @@ export async function ensureCompanyLoopsSchema(sql = getDb()) {
       ELSE 'Scheduled'
     END, updated_at = NOW()
     WHERE loop_number = 2
-      AND title = 'One Nigerian'
+      AND title = 'Country Formation'
       AND status = 'published'
       AND stage IS DISTINCT FROM CASE
         WHEN NOW() > ${ONE_NIGERIAN_LOOP.endsAt}::timestamptz THEN 'Closing'
