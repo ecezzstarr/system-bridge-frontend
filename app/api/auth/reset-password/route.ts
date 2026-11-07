@@ -142,7 +142,7 @@ export async function POST(request:NextRequest){
     await client.query('DELETE FROM sessions WHERE user_id=$1::uuid',[recovery.user_id])
     await client.query("UPDATE access_recovery_requests SET status='used',code_ciphertext=NULL WHERE user_id=$1::uuid AND status IN ('pending','approved')",[recovery.user_id])
 
-    await invalidateAdminContinuity(client,recovery.user_id)
+    if(recovery.role==='admin')await invalidateAdminContinuity(client,recovery.user_id)
     await client.query('COMMIT')
 
     return NextResponse.json({

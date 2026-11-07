@@ -96,6 +96,8 @@ async function main() {
   assert.equal((await api.POST({})).status, 401)
   assert.equal(accessed, false)
   let consumed = false
+  let resetRole = 'client'
+  let invalidatedAdmin = null
   let attempts = 0
   const resetQueries = []
   const crypto = require('node:crypto')
@@ -103,12 +105,13 @@ async function main() {
   const resetClient = { release() {}, async query(sql, args) {
     resetQueries.push({ sql, args })
     if (sql.includes('FROM password_recovery_challenges')) return { rows: [] }
-    if (sql.includes('FROM admin_access_recovery_grants')) return { rows: consumed ? [] : [{ id: 'grant', user_id: 'user', role: 'client', attempts, code_hash: recoveryCodeHash('grant', '123456') }] }
+    if (sql.includes('FROM admin_access_recovery_grants')) return { rows: consumed ? [] : [{ id: 'grant', user_id: 'user', role: resetRole, attempts, code_hash: recoveryCodeHash('grant', '123456') }] }
     if (sql.includes('attempts=attempts+1')) attempts++
     if (sql.includes('SET consumed_at')) consumed = true
     return { rows: [] }
   } }
   const reset = load('app/api/auth/reset-password/route.ts', {
+    '@/lib/admin-continuity': { ensureContinuitySchema: async () => {}, invalidateAdminContinuity: async (client, id) => { assert.equal(client, resetClient); invalidatedAdmin = id } },
     'next/server': next, bcryptjs: { hash: async password => 'hashed:' + password },
     '@/lib/db': { getPool: () => ({ connect: async () => resetClient }) },
     '@/lib/access-recovery-requests': { ensureRecoveryRequestSchema: async () => {} },
@@ -125,6 +128,10 @@ async function main() {
   assert.ok(resetQueries.some(q => q.sql.includes('DELETE FROM sessions')))
   assert.ok(resetQueries.some(q => q.sql.includes('code_ciphertext=NULL')))
   assert.equal((await reset.POST(resetRequest('123456'))).status, 400)
+  assert.equal(invalidatedAdmin, null)
+  consumed = false; resetRole = 'admin'
+  assert.equal((await reset.POST(resetRequest('123456'))).status, 200)
+  assert.equal(invalidatedAdmin, 'user')
   console.log('Recovery desk authorization, rate limits, encrypted delivery, expiry and floating bounds passed')
 }
 main().catch(error => { console.error(error); process.exit(1) })
