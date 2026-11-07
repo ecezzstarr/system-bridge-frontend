@@ -18,6 +18,16 @@ assert.match(event,/timeZone:'Africa\/Lagos'/)
 assert.match(event,/COMPANY_LOOP_THREE_STARTS_AT/)
 assert.match(event,/2027-01-12T00:00:00/)
 assert.match(event,/hasCompanyLoopThreeStarted/)
+assert.match(event,/name: 'Country Formation'/)
+assert.match(event,/Company Loop 2 — Country Event: Country Formation/)
+assert.match(event,/COMPANY_LOOP_THREE_TITLE = 'Self Upliftment'/)
+assert.match(registry,/title = 'Country Formation'/)
+assert.match(registry,/title = 'Self Upliftment'/)
+assert.match(registry,/IN \('One Nigerian','One Nigeria'\)/)
+assert.match(registry,/IN \('Company Loop 3','From my God will lead me to my God is'\)/)
+assert.match(registry,/ELSE purpose/)
+assert.match(registry,/ELSE boundaries/)
+
 assert.equal(Date.parse('2027-01-12T00:00:00+01:00') -
   Date.parse('2027-01-11T23:59:59.999+01:00'), 1)
 const authoredPassages=[
