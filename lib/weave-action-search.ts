@@ -125,6 +125,11 @@ const TASKS:Record<string,{keywords:string;requirements:string;nextStep:string}>
     requirements:'An authorized, active and independently verified system release.',
     nextStep:'Review existing built systems and the publication requirements.',
   },
+  '/weave/lifestyles/pro-regional-manager/workspace':{
+    keywords:'my pro file folder work manager role approved job business income operations appointment',
+    requirements:'Independent verified Pro Regional Manager activation. This is distinct from the ordinary regional position.',
+    nextStep:'Open your authorized Pro File Folder, daily operating work and Customer Door records.',
+  },
   '/client/staff-workspace':{
     keywords:'cj dorado client pro regional manager my company salary appointment business expansion',
     requirements:'Administration-approved Client staff appointment; salary is separate from File Folder earnings.',
@@ -260,6 +265,7 @@ function entriesFor(role:WeaveSearchRole):SearchEntry[]{
   )
   if(role==='agent'||role==='bridger')entries.push(
     {title:'Pro Regional Manager',href:'/weave/lifestyles/pro-regional-manager',description:'Review the separate Pro position and File Folder application requirements.',department:roleLabels[role]+' · Employment',access:'approval'},
+    {title:'My Approved Pro Manager Workspace',href:'/weave/lifestyles/pro-regional-manager/workspace',description:'Use a separately activated Pro File Folder and your approved company position while keeping your original Agent or Bridger role.',department:roleLabels[role]+' · Approved Pro Work',access:'approval'},
   )
   const unique=new Map<string,SearchEntry>()
   for(const e of entries){
