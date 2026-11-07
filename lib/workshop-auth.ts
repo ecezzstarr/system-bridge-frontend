@@ -23,6 +23,23 @@ export async function requireWorkshopAuthorization(req?: NextRequest): Promise<W
     `
     if (!rows.length || rows[0].role !== 'admin') return null
 
+    // Multiple Administration identities can be active simultaneously.
+    // Source control, GitHub promotion, and production release remain restricted
+    // to explicitly appointed operators. A missing/invalid allowlist never
+    // authorizes additional administrators.
+    const configured = String(process.env.WEAVE_WORKSHOP_ADMIN_IDS || '').trim()
+    if (configured) {
+      const ids = configured.split(',').map(value => value.trim().toLowerCase())
+      if (!ids.length || ids.some(value => !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(value))) {
+        console.error('[workshop-auth] Invalid privileged administrator configuration')
+        return null
+      }
+      if (!ids.includes(String(rows[0].id).toLowerCase())) return null
+      return rows[0]
+    }
+
+    // Backward-compatible singleton behavior until the Sovereign operator
+    // explicitly configures authorized IDs in private server settings.
     const admins = await sql`
       SELECT COUNT(*)::int AS count
       FROM users

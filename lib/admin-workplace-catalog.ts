@@ -297,6 +297,16 @@ export const ADMIN_SPACES:readonly AdminSpace[]=[
     "description": "Inspect infrastructure, Divine Shield and server authority."
   },
   {
+    "title": "Company Code Workshop · Source Terminal",
+    "href": "/admin/code-workshop",
+    "description": "Write reviewed Weave source in isolated GitHub draft branches; commit with an audit record and open CI-gated pull requests."
+  },
+  {
+    "title": "Company Policies & Governance",
+    "href": "/policies",
+    "description": "Read the company rules covering roles, verified money, customer service, code review, information and operating responsibility."
+  },
+  {
     "title": "Release Workshop",
     "href": "/admin/release-workshop",
     "description": "Review release candidates, deployments, rollback and records."

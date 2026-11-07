@@ -18,6 +18,14 @@ export default function AdministrationControlCenter(){
         className="ml-2 inline-flex min-h-10 items-center border border-sky-300/25 bg-sky-300/[.05] px-4 py-2 text-xs font-black text-sky-100">
         Pro Regional Manager · Agent and Bridger applications
       </Link>
+      <Link href="/admin/code-workshop" data-admin-code-workshop-entry="true"
+        className="ml-2 inline-flex min-h-10 items-center border border-sky-300/25 bg-sky-300/[.05] px-4 py-2 text-xs font-black text-sky-100">
+        Company Code Workshop · Source Terminal
+      </Link>
+      <Link href="/policies" data-admin-governance-policy-entry="true"
+        className="ml-2 inline-flex min-h-10 items-center border border-sky-300/25 bg-sky-300/[.05] px-4 py-2 text-xs font-black text-sky-100">
+        Company Policies · Operating Guardrails
+      </Link>
       <Link href="/admin/company-active-wallet" data-admin-company-active-wallet-settings="true"
         className="ml-2 inline-flex min-h-10 items-center border border-sky-300/25 bg-sky-300/[.05] px-4 py-2 text-xs font-black text-sky-100">
         Company Active Wallet · Admin configuration
