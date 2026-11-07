@@ -3,13 +3,15 @@ import { getAuthUser } from '@/lib/auth-api'
 import { sql } from '@/lib/db'
 import { ensureRegionalManagerCommissionSchema } from '@/lib/regional-manager-commission'
 
-const ELIGIBLE_ROLES = ['client', 'bridger', 'agent']
+// Ordinary Regional Manager is a Bridger/Agent appointment without a File Folder.
+// Pro Regional Manager is a separate company position with Pro Folder activation.
+const ELIGIBLE_ROLES = ['bridger', 'agent']
 
 export async function GET(request: NextRequest) {
   const user = await getAuthUser(request)
   if (!user) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
   if (!ELIGIBLE_ROLES.includes(user.role)) {
-    return NextResponse.json({ success: false, error: 'Only active Clients, Bridgers, and Agents can apply.' }, { status: 403 })
+    return NextResponse.json({ success: false, error: 'Only active Bridgers and Agents may apply for the ordinary Regional Manager position. Clients may seek the separate Pro Regional Manager position.' }, { status: 403 })
   }
   await ensureRegionalManagerCommissionSchema()
   const [application] = await sql`
@@ -23,7 +25,7 @@ export async function GET(request: NextRequest) {
     SELECT status, appointed_at FROM weave_regional_manager_appointments
     WHERE user_id=${user.id}::uuid LIMIT 1
   `
-  return NextResponse.json({ success: true, application: application || null, appointment: appointment || null },
+  return NextResponse.json({ success: true, positionType:'regional_manager', fileFolderProvided:false, application: application || null, appointment: appointment || null },
     { headers: { 'Cache-Control': 'private, no-store' } })
 }
 
@@ -31,7 +33,7 @@ export async function POST(request: NextRequest) {
   const user = await getAuthUser(request)
   if (!user) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
   if (!ELIGIBLE_ROLES.includes(user.role)) {
-    return NextResponse.json({ success: false, error: 'Only active Clients, Bridgers, and Agents can apply.' }, { status: 403 })
+    return NextResponse.json({ success: false, error: 'Only active Bridgers and Agents may apply for the ordinary Regional Manager position. Clients may seek the separate Pro Regional Manager position.' }, { status: 403 })
   }
   const body = await request.json().catch(() => null)
   const region = typeof body?.region === 'string' ? body.region.trim() : ''

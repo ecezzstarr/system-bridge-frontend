@@ -1,5 +1,6 @@
 import { isFileFolderPlatformKind } from '@/lib/file-folder-platform-projects'
 import {getProActivationState} from '@/lib/pro-file-folder-activation'
+import {getActiveProRegionalManager} from '@/lib/pro-regional-manager-activation'
 import { allowedBuildPartSystems } from '@/lib/file-folder-build-compatibility'
 import { NextRequest, NextResponse } from 'next/server'
 import { issueWeaveReceipt } from '@/lib/weave-receipts'
@@ -27,6 +28,20 @@ function isUuid(value: string) {
 
 async function resolveClientWorld(request: NextRequest) {
   const sql = getFileFolderDb()
+  // Activated Pro Regional Managers keep their Agent/Bridger account and
+  // privately own a File Folder. Never grant the Client route to those roles.
+  if(request.nextUrl.pathname==='/api/pro-regional-manager/file-folder-world'){
+    const pro=await getActiveProRegionalManager(request)
+    if(!pro)return {sql,error:NextResponse.json({
+      error:'An independently verified, active Pro Regional Manager File Folder is required.',
+    },{status:403,headers:{'Cache-Control':'private, no-store'}})}
+    await ensureFileFolderWorldSchema(sql)
+    await ensureFileFolderModuleRuntimeSchema(sql)
+    return {sql,
+      client:{id:pro.user.id,name:pro.row.account_name,file_number:pro.row.file_number},
+      folder:{file_number:pro.row.file_number,workshop_type:'formation',status:'active'},
+      proRole:pro.row.source_role,proBusinessName:pro.row.business_name,error:null}
+  }
   const token = request.headers.get('authorization')?.replace(/^Bearer\s+/i, '').trim() || null
   const clientId = await resolveClientToken(token, sql)
   if (!clientId) return { sql, error: NextResponse.json({ error: 'Client login required' }, { status: 401 }) }
@@ -67,7 +82,7 @@ async function resolveClientWorld(request: NextRequest) {
     return { sql, error: NextResponse.json({ error: 'Main File Folder is not open yet' }, { status: 409 }) }
   }
 
-  return { sql, client, folder, error: null }
+  return { sql, client, folder, proBusinessName:null, error: null }
 }
 
 export async function GET(request: NextRequest) {
@@ -79,6 +94,7 @@ export async function GET(request: NextRequest) {
       ctx.sql,
       String(ctx.client.id),
       String(ctx.client.file_number),
+      ctx.proBusinessName,
     )
     const moduleConnections=await ctx.sql`
       SELECT c.id,c.source_system_id,c.target_system_id,c.contract_key,c.status,c.created_at,
@@ -252,7 +268,7 @@ export async function POST(request: NextRequest) {
       await recordSystemEvent({
         eventType: 'client_business_formation_defined',
         actorId: String(ctx.client.id),
-        actorRole: 'client',
+        actorRole: ctx.proRole || 'client',
         subjectType: 'client_file_folder',
         subjectId: String(ctx.client.file_number),
         source: 'file-folder-business-formation',
@@ -784,6 +800,7 @@ export async function POST(request: NextRequest) {
       ctx.sql,
       String(ctx.client.id),
       String(ctx.client.file_number),
+      ctx.proBusinessName,
     )
 
     return NextResponse.json({

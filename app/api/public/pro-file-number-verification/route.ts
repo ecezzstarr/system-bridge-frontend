@@ -1,4 +1,5 @@
 import {NextRequest,NextResponse} from 'next/server'
+import {sendVerifiedProClientRegistrationInvite} from '@/lib/pro-client-registration-invitation'
 import {
  submitProFileNumberPlan,readProFileNumberVerification,submitProFileNumberPayment,
  proVerificationPublicHeaders
@@ -27,8 +28,16 @@ export async function POST(request:NextRequest){
    const result=await submitProFileNumberPlan({
     fileNumber:body.fileNumber,businessName:body.businessName,
     plan:body.plan||{},signedName:body.signedName,termsAccepted:body.termsAccepted,
+    operatingCountry:body.operatingCountry,operatingRegion:body.operatingRegion,
+    operatingCity:body.operatingCity,contactAddress:body.contactAddress,
+    postalCode:body.postalCode,
    })
    return NextResponse.json(result,{status:201,headers:proVerificationPublicHeaders})
+  }
+  if(body.action==='send_registration_invite'){
+   const result=await sendVerifiedProClientRegistrationInvite(
+    String(body.ticket||''),request.nextUrl.origin)
+   return NextResponse.json(result,{headers:proVerificationPublicHeaders})
   }
   if(body.action==='submit_payment'){
    const result=await submitProFileNumberPayment(

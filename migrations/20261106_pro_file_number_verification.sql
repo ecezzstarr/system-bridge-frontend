@@ -8,6 +8,11 @@ CREATE TABLE IF NOT EXISTS pro_file_number_verifications (
   business_name varchar(180) NOT NULL,
   business_plan jsonb NOT NULL,
   signed_name varchar(255) NOT NULL,
+  operating_country varchar(100),
+  operating_region varchar(150),
+  operating_city varchar(150),
+  contact_address text,
+  postal_code varchar(30),
   signed_terms_version varchar(64) NOT NULL DEFAULT 'PRO-680-USDT-2026-11',
   terms_accepted_at timestamptz NOT NULL DEFAULT now(),
   access_token_hash char(64) NOT NULL UNIQUE,
@@ -29,6 +34,11 @@ CREATE TABLE IF NOT EXISTS pro_file_number_verifications (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
+ALTER TABLE pro_file_number_verifications ADD COLUMN IF NOT EXISTS operating_country varchar(100);
+ALTER TABLE pro_file_number_verifications ADD COLUMN IF NOT EXISTS operating_region varchar(150);
+ALTER TABLE pro_file_number_verifications ADD COLUMN IF NOT EXISTS operating_city varchar(150);
+ALTER TABLE pro_file_number_verifications ADD COLUMN IF NOT EXISTS contact_address text;
+ALTER TABLE pro_file_number_verifications ADD COLUMN IF NOT EXISTS postal_code varchar(30);
 CREATE INDEX IF NOT EXISTS pro_file_number_verifications_file_status
   ON pro_file_number_verifications(file_number,status,created_at DESC);
 COMMENT ON TABLE pro_file_number_verifications IS

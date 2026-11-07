@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
       await client.query('ROLLBACK')
       return NextResponse.json({ success: false, error: 'Pending Regional Manager application not found.' }, { status: 404 })
     }
-    if (!application.is_active || !['client', 'bridger', 'agent'].includes(application.role) ||
+    if (!application.is_active || !['bridger', 'agent'].includes(application.role) ||
         application.role !== application.source_role) {
       await client.query('ROLLBACK')
       return NextResponse.json({ success: false, error: 'Applicant is no longer eligible under their current account role.' }, { status: 409 })

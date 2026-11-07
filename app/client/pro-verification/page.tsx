@@ -4,6 +4,8 @@ import Link from 'next/link'
 type Verification={reference:string;fileNumber:string;businessName:string;
  status:string;feeUSDT:number;network:string;walletAddress:string|null;
  paymentVerified:boolean;rejectionReason?:string|null;
+ companyPosition?:{title:string;monthlySalaryUSDT:number|null;salaryStatus:string}|null;
+ operatingLocation?:{country:string;region:string;city:string}|null;
  siblingsEvent?:{reportedAmountUSDT:number;verifiedAmountUSDT:number;status:string;availableForWithdrawal:boolean}|null}
 const PLAN_FIELDS=[
  ['businessActivity','Business activity and purpose'],
@@ -17,6 +19,11 @@ export default function ProFileNumberVerification(){
  const [fileNumber,setFileNumber]=useState('')
  const [businessName,setBusinessName]=useState('')
  const [signedName,setSignedName]=useState('')
+ const [operatingCountry,setOperatingCountry]=useState('')
+ const [operatingRegion,setOperatingRegion]=useState('')
+ const [operatingCity,setOperatingCity]=useState('')
+ const [contactAddress,setContactAddress]=useState('')
+ const [postalCode,setPostalCode]=useState('')
  const [accepted,setAccepted]=useState(false)
  const [plan,setPlan]=useState<Record<string,string>>({})
  const [ticket,setTicket]=useState('')
@@ -40,7 +47,8 @@ export default function ProFileNumberVerification(){
   try{
    const response=await fetch('/api/public/pro-file-number-verification',{
     method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({action:'submit_plan',fileNumber,businessName,plan,signedName,termsAccepted:accepted}),
+    body:JSON.stringify({action:'submit_plan',fileNumber,businessName,plan,signedName,termsAccepted:accepted,
+     operatingCountry,operatingRegion,operatingCity,contactAddress,postalCode}),
    })
    const json=await response.json()
    if(!response.ok)throw new Error(json.error||'Unable to submit business plan')
@@ -65,14 +73,28 @@ export default function ProFileNumberVerification(){
   }catch(e){setError(e instanceof Error?e.message:'Payment review unavailable')}
   finally{setBusy(false)}
  }
+ async function requestRegistrationInvite(){
+  if(!ticket)return
+  setBusy(true);setError('');setMessage('')
+  try{
+   const response=await fetch('/api/public/pro-file-number-verification',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({action:'send_registration_invite',ticket}),
+   })
+   const body=await response.json()
+   if(!response.ok)throw new Error(body.error||'Secure invitation could not be sent')
+   setMessage(body.message||'Check the approved company email for your private registration link.')
+  }catch(e){setError(e instanceof Error?e.message:'Secure registration unavailable')}
+  finally{setBusy(false)}
+ }
  return <main className="min-h-dvh bg-[#050c18] px-4 py-9 text-white" data-pro-file-number-verification="true">
   <div className="mx-auto max-w-3xl space-y-6">
    <header className="rounded-2xl border border-cyan-300/20 bg-slate-900 p-6">
     <p className="text-xs uppercase tracking-widest text-cyan-200">Weave of Presence · Dream Lovely</p>
-    <h1 className="mt-2 text-3xl font-bold">Pro File Folder Verification</h1>
-    <p className="mt-3 text-sm leading-6 text-slate-200">Start with your issued File Number. You do not need a password or a new account to submit your File Folder business name and business plan.</p>
+    <h1 className="mt-2 text-3xl font-bold">Pro File Folder · Company Staff Verification</h1>
+    <p className="mt-3 text-sm leading-6 text-slate-200">External Clients who receive a Pro Regional Manager or other approved Client Pro staff appointment verify here, outside the Agent/Bridger Lifestyle application route. Start with your issued File Number. You do not need a password or a new account to submit the File Folder business name, plan and staff activation agreement. Administration independently confirms the Client company position before activation; the File Number alone never opens private operations.</p>
     <p className="mt-4 text-3xl font-bold">680 USDT</p>
-    <p className="mt-1 text-sm text-slate-300">One-time Pro File Folder activation · USDT on TRON (TRC-20) · Forensics verification.</p>
+    <p className="mt-1 text-sm text-slate-300">One-time company-staff Pro File Folder activation · USDT on TRON (TRC-20) · Forensics verification. Monthly salary is a separate company payroll obligation, not an activation refund.</p>
     <p className="mt-2 text-xs text-slate-400">A File Number alone is not identity verification and does not provide access to any Client's funds, wallet, employment or private Folder.</p>
    </header>
    {error&&<p role="alert" className="rounded-xl border border-rose-300/30 p-4 text-sm text-rose-200">{error}</p>}
@@ -104,6 +126,28 @@ export default function ProFileNumberVerification(){
       placeholder="The name your customers will recognize" maxLength={180}
       className="mt-2 w-full rounded-lg border border-white/20 bg-slate-900 p-3"/>
     </label>
+    <div className="space-y-3 rounded-xl border border-white/15 p-4" data-client-regional-location-intake="true">
+      <h3 className="font-semibold">Your company operating address and location</h3>
+      <p className="text-xs text-slate-300">Provide your real country, city, region and contact address. Administration verifies the company territory before opening the Pro File Folder. A location does not create an appointment by itself.</p>
+      <div className="grid gap-3 sm:grid-cols-2">
+       <label className="block text-sm">Country<input required maxLength={100} autoComplete="country-name"
+        value={operatingCountry} onChange={e=>setOperatingCountry(e.target.value)}
+        placeholder="Spain" className="mt-2 w-full rounded-lg border border-white/20 bg-slate-900 p-3"/></label>
+       <label className="block text-sm">Region or province<input required maxLength={150}
+        value={operatingRegion} onChange={e=>setOperatingRegion(e.target.value)}
+        placeholder="Region / province" className="mt-2 w-full rounded-lg border border-white/20 bg-slate-900 p-3"/></label>
+       <label className="block text-sm">City or town<input required maxLength={150}
+        value={operatingCity} onChange={e=>setOperatingCity(e.target.value)}
+        placeholder="City / town" className="mt-2 w-full rounded-lg border border-white/20 bg-slate-900 p-3"/></label>
+       <label className="block text-sm">Postal code, if applicable<input maxLength={30}
+        value={postalCode} onChange={e=>setPostalCode(e.target.value)}
+        className="mt-2 w-full rounded-lg border border-white/20 bg-slate-900 p-3"/></label>
+      </div>
+      <label className="block text-sm">Street / contact address<textarea required rows={2} maxLength={500}
+       value={contactAddress} onChange={e=>setContactAddress(e.target.value)}
+       placeholder="Your actual contact address in the company operating location"
+       className="mt-2 w-full rounded-lg border border-white/20 bg-slate-900 p-3"/></label>
+    </div>
     <h3 className="text-lg font-semibold">3. Submit your business plan</h3>
     {PLAN_FIELDS.map(([key,label])=><label key={key} className="block text-sm text-slate-200">{label}
      <textarea rows={3} maxLength={3000} value={plan[key]||''}
@@ -113,6 +157,7 @@ export default function ProFileNumberVerification(){
     <div className="space-y-3 rounded-xl border border-white/15 p-4">
      <h3 className="font-semibold">4. Pro File Folder agreement and signature</h3>
      <p className="text-sm leading-6 text-slate-200">I request a Pro File Folder under my issued File Number. I acknowledge the one-time <strong>680 USDT activation fee</strong>, paid exclusively through the official TRON USDT (TRC-20) wallet shown after independent identity and plan review. Payment evidence must be verified by Weave Forensics before activation. This fee is not a personal loan, wallet deposit or recurring subscription.</p>
+     <p className="text-sm leading-6 text-slate-200">This Pro File Folder is for a WEAVE employee with a separately approved company position. The monthly salary, employment responsibilities and actual payments are controlled by the employee's recorded company appointment, not by this 680 USDT activation charge. The Folder fee does not buy a job or guarantee salary.</p>
      <p className="text-sm leading-6 text-slate-200">My business plan and name form the operating direction of my Folder. My existing verified business earnings, including any Siblings Event claims, require separate accounting; paying this fee does not establish or guarantee withdrawal of funds. Private Folder access requires identity and payment verification and correct account ownership.</p>
      <label className="block text-sm">Your full registered name · electronic signature
       <input value={signedName} onChange={e=>setSignedName(e.target.value)} autoComplete="name"
@@ -124,6 +169,8 @@ export default function ProFileNumberVerification(){
      </label>
     </div>
     <button disabled={busy||!accepted||businessName.trim().length<3||signedName.trim().length<4||
+      operatingCountry.trim().length<2||operatingRegion.trim().length<2||
+      operatingCity.trim().length<2||contactAddress.trim().length<6||
       PLAN_FIELDS.some(([key])=>(plan[key]||'').trim().length<10)}
       onClick={()=>void submitPlan()} className="rounded-lg bg-cyan-300 px-5 py-3 font-semibold text-slate-950 disabled:opacity-40">
       {busy?'Submitting…':'Submit business plan and signed agreement'}
@@ -133,6 +180,17 @@ export default function ProFileNumberVerification(){
     <h2 className="text-xl font-bold">Your verification workspace</h2>
     <p className="font-mono text-xs text-cyan-200">{verification.fileNumber}</p>
     <p className="text-sm">File Folder business: <strong>{verification.businessName}</strong></p>
+    {verification.operatingLocation&&<p className="text-sm text-slate-200" data-pro-verified-operating-location="true">
+      Submitted operating location: {verification.operatingLocation.city}, {verification.operatingLocation.region}, {verification.operatingLocation.country} · subject to Administration territory approval
+    </p>}
+    {verification.companyPosition?<div className="rounded-xl border border-cyan-300/20 bg-cyan-300/[.04] p-4">
+      <p className="text-xs uppercase tracking-widest text-cyan-200">Administration-approved WEAVE employment</p>
+      <p className="mt-1 text-lg font-semibold">{verification.companyPosition.title}</p>
+      <p className="mt-1 text-sm text-slate-200">Monthly salary: {verification.companyPosition.monthlySalaryUSDT!==null
+       ?verification.companyPosition.monthlySalaryUSDT.toLocaleString()+' USDT according to the approved company offer'
+       :'Pending confirmation in the company salary record'}</p>
+      <p className="mt-1 text-xs text-slate-400">Position and payroll are verified independently from the Pro File Folder activation fee. Salary is not automatically credited by activating the Folder.</p>
+     </div>:<p className="text-sm text-amber-200">Company employment status and salary: awaiting Administration verification of an approved Pro staff appointment.</p>}
     <p className="text-sm capitalize text-amber-200">Status: {verification.status.replaceAll('_',' ')}</p>
     <p className="text-xs text-slate-400">Application reference: {verification.reference}</p>
     {verification.siblingsEvent&&<div className="rounded-xl border border-violet-300/25 bg-violet-300/[.05] p-4" data-verified-cj-siblings-event="true">
@@ -175,8 +233,14 @@ export default function ProFileNumberVerification(){
       className="rounded-lg bg-cyan-300 px-5 py-3 font-semibold text-slate-950 disabled:opacity-40">Send payment evidence to Forensics</button>
     </div>}
     {verification.status==='pending_forensics'&&<p className="text-sm text-slate-200">Your transaction hash was received. Forensics is checking the actual blockchain receipt, amount and receiving address. Do not send a duplicate payment.</p>}
-    {verification.status==='paid_pending_account'&&<p className="text-sm text-slate-200">Forensics verified the 680 USDT transaction. Administration must confirm your original File Folder ownership and Client account before enabling private Folder access.</p>}
-    {verification.status==='active'&&<p className="text-sm text-emerald-200">Pro File Folder activated. Use your authorized Client account or ask Administration for the secure account-access process; this verification code is not a general Client login.</p>}
+    {verification.status==='paid_pending_account'&&<section className="space-y-3 rounded-xl border border-cyan-300/25 p-5">
+      <h3 className="text-lg font-semibold">6. Secure Client account registration</h3>
+      <p className="text-sm text-slate-200">Forensics has independently verified your Pro activation. Request a private account-registration link to the email address already recorded in your approved company employment offer. Your File Number is not a login or a password. Create your own secure Client account using the link; Administration then verifies account ownership and finalizes the existing Pro File Folder. Do not make another activation payment.</p>
+      <button type="button" disabled={busy} onClick={()=>void requestRegistrationInvite()}
+       className="rounded-lg bg-cyan-300 px-5 py-3 text-sm font-semibold text-slate-950 disabled:opacity-40">Email me my verified company registration link</button>
+      <p className="text-xs text-slate-400">If you already received an approved private company invitation, you may use that invitation instead. No registration token is displayed in this public workspace.</p>
+     </section>}
+    {verification.status==='active'&&<p className="text-sm text-emerald-200">Pro File Folder activated. Sign in with the secure Client account you registered through the approved company email invitation, then open your private File Folder and company workspace. This verification code is not a login.</p>}
     {verification.status==='rejected'&&<p className="text-sm text-rose-200">Verification requires Administration attention. Contact the company using your application reference.</p>}
     <button type="button" disabled={busy} onClick={()=>void refresh(ticket).catch(e=>setError(e.message))}
      className="rounded-lg border border-cyan-300/30 px-4 py-2 text-sm">Refresh verification status</button>

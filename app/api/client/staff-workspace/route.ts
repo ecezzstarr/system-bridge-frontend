@@ -3,6 +3,7 @@ import { getAuthUser } from '@/lib/auth-api'
 import { sql } from '@/lib/db'
 import { ensureCompanyClientStaffSchema } from '@/lib/company-client-staff'
 import {getCjSiblingsEvent} from '@/lib/client-siblings-event'
+import {isProRegionalManagerPosition} from '@/lib/pro-regional-manager-policy'
 export const dynamic='force-dynamic'
 
 async function access(request:NextRequest) {
@@ -30,8 +31,38 @@ export async function GET(request:NextRequest) {
       WHERE client_id=${grant.user.id}::uuid AND offer_id=${grant.offer.id}::uuid
       ORDER BY created_at DESC LIMIT 100
     `
+    // This is a Client/Dream Lovely employment scope. Do not attach the
+    // Agent/Stability or Bridger/Hope Regional Manager hierarchy to it.
+    const clientRegionalEligible=grant.user.role==='client'&&
+      String(grant.offer.folder_tier)==='pro'&&
+      isProRegionalManagerPosition(grant.offer.position_title,grant.offer.file_number)
+    let clientRegional:null|{positionType:'pro_regional_manager';department:'Dream Lovely';scope:'client_business_expansion';
+      country:string|null;region:string|null;city:string|null;locationStatus:string}=null
+    if(clientRegionalEligible){
+      let country:string|null=String(grant.offer.file_number)==='WEAVE-2026-0907-0001'?'Spain':null
+      let region:string|null=null,city:string|null=null,locationStatus='awaiting_location_verification'
+      const [locationsTable]=await sql`SELECT to_regclass('public.pro_file_number_verifications') AS name`
+      if(locationsTable?.name){
+        const [location]=await sql`SELECT operating_country,operating_region,operating_city
+           FROM pro_file_number_verifications
+           WHERE file_number=${grant.offer.file_number}
+             AND identity_verified_at IS NOT NULL
+             AND status IN ('payment_required','pending_forensics','paid_pending_account','active')
+           ORDER BY identity_verified_at DESC LIMIT 1`
+        if(location){
+          country=String(location.operating_country||country||'')||null
+          region=String(location.operating_region||'')||null
+          city=String(location.operating_city||'')||null
+          locationStatus='identity_verified_territory_pending_company_confirmation'
+        }
+      }
+      clientRegional={positionType:'pro_regional_manager',
+        department:'Dream Lovely',
+        scope:'client_business_expansion',
+        country,region,city,locationStatus}
+    }
     const siblingsEvent=await getCjSiblingsEvent(String(grant.user.id),String(grant.offer.file_number||''))
-    return NextResponse.json({success:true,employed:true,position:grant.offer,activity,siblingsEvent},{
+    return NextResponse.json({success:true,employed:true,position:grant.offer,activity,siblingsEvent,clientRegional},{
       headers:{'Cache-Control':'private, no-store'},
     })
   } catch(error) {

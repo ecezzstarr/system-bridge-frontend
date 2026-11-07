@@ -24,6 +24,7 @@ type Props={
   buildFunding?:any|null
   world?:any|null
   onOpenConstruction?:(district:string)=>void
+  storeApiPath?:string
 }
 
 const PRESETS=[
@@ -110,6 +111,7 @@ export default function ClientCustomerDoorPanel({
   buildFunding,
   world,
   onOpenConstruction,
+  storeApiPath='/api/client/business-store',
 }:Props){
   const [data,setData]=useState<any>({
     store:initialStore||null,
@@ -168,7 +170,7 @@ export default function ClientCustomerDoorPanel({
 
   const refreshStore=async()=>{
     const token=getClientToken()
-    const response=await fetch('/api/client/business-store',{headers:{Authorization:`Bearer ${token}`},cache:'no-store'})
+    const response=await fetch(storeApiPath,{headers:{Authorization:`Bearer ${token}`},cache:'no-store'})
     const body=await response.json()
     if(!response.ok)throw new Error(body.error||'Unable to reload store')
     setData({
@@ -191,11 +193,26 @@ export default function ClientCustomerDoorPanel({
     }
   }
 
+  const updateOrder=async(orderId:string,action:'payment_received'|'fulfilled'|'cancelled')=>{
+    setBusy('order:'+orderId);setMessage('')
+    try{
+      const token=getClientToken()
+      const response=await fetch(storeApiPath+'/orders/'+encodeURIComponent(orderId)+'/status',{
+        method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},
+        body:JSON.stringify({action}),
+      })
+      const result=await response.json()
+      if(!response.ok)throw new Error(result.error||'Order movement could not be recorded')
+      await refreshStore()
+      setMessage(result.message||'Customer order updated. Actual settlement remains subject to independent verification.')
+    }catch(e:any){setMessage(e?.message||'Customer order unavailable')}
+    finally{setBusy('')}
+  }
   const publish=async()=>{
     setBusy('offer');setMessage('')
     try{
       const token=getClientToken()
-      const response=await fetch('/api/client/business-store',{
+      const response=await fetch(storeApiPath,{
         method:'POST',
         headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},
         body:JSON.stringify({...form,price:Number(form.price)}),
@@ -217,7 +234,7 @@ export default function ClientCustomerDoorPanel({
     setBusy('world-hosting');setMessage('')
     try{
       const token=getClientToken()
-      const response=await fetch('/api/client/business-store',{
+      const response=await fetch(storeApiPath,{
         method:'PATCH',
         headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},
         body:JSON.stringify({
@@ -238,7 +255,7 @@ export default function ClientCustomerDoorPanel({
     setBusy('design');setMessage('')
     try{
       const token=getClientToken()
-      const response=await fetch('/api/client/business-store',{
+      const response=await fetch(storeApiPath,{
         method:'PATCH',
         headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},
         body:JSON.stringify({
@@ -265,7 +282,7 @@ export default function ClientCustomerDoorPanel({
         label:String(system.public_label||system.title||''),
         summary:String(system.public_summary||''),
       }
-      const response=await fetch('/api/client/business-store',{
+      const response=await fetch(storeApiPath,{
         method:'PATCH',
         headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},
         body:JSON.stringify({
@@ -479,7 +496,19 @@ export default function ClientCustomerDoorPanel({
       </div>
       <div className="rounded-[2rem] border border-white/10 bg-black/20 p-5">
         <div className="flex items-center justify-between gap-3"><div><p className="text-[9px] uppercase tracking-[0.2em] text-slate-500">Public customer movement</p><p className="mt-2 text-2xl font-black">{data.orders?.length||0}</p></div><Building2 className="h-5 w-5 text-emerald-300"/></div>
-        <div className="mt-4 space-y-2">{data.orders?.slice(0,7).map((order:any)=><div key={order.id} className="rounded-xl border border-white/5 bg-white/[0.025] p-3 text-[10px] text-slate-400"><p className="font-semibold text-slate-200">{order.customer_name} · {order.amount} {order.currency}</p><p className="mt-1">Payment: {order.payment_status||'awaiting_payment'} · Order: {order.status}</p></div>)}</div>
+        <div className="mt-4 space-y-2">{data.orders?.slice(0,7).map((order:any)=><div key={order.id} className="rounded-xl border border-white/5 bg-white/[0.025] p-3 text-[10px] text-slate-400"><p className="font-semibold text-slate-200">{order.customer_name} · {order.amount} {order.currency}</p><p className="mt-1">Payment: {order.payment_status||'awaiting_payment'} · Order: {order.status}</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {order.payment_reference&&['awaiting_payment','payment_reported'].includes(order.payment_status)&&
+              <button disabled={Boolean(busy)} onClick={()=>void updateOrder(order.id,'payment_received')}
+                className="rounded-md border border-sky-300/25 px-3 py-2 text-sky-100 disabled:opacity-40">Report payment reference</button>}
+            {order.payment_status==='received'&&order.status!=='fulfilled'&&
+              <button disabled={Boolean(busy)} onClick={()=>void updateOrder(order.id,'fulfilled')}
+                className="rounded-md border border-emerald-300/25 px-3 py-2 text-emerald-200 disabled:opacity-40">Mark fulfilled after delivery</button>}
+            {order.status!=='fulfilled'&&order.status!=='cancelled'&&
+              <button disabled={Boolean(busy)} onClick={()=>void updateOrder(order.id,'cancelled')}
+                className="rounded-md border border-rose-300/25 px-3 py-2 text-rose-200 disabled:opacity-40">Cancel unfulfilled order</button>}
+          </div>
+        </div>)}</div>
       </div>
     </section>
   </div>

@@ -1,3 +1,5 @@
+// The ordinary Regional Manager belongs only to Hope/Bridger or Stability/Agent.
+// It has no File Folder; Pro Regional Manager is an independent job and activation flow.
 import { getPool, sql } from '@/lib/db'
 
 // The Regional Manager receives 2% of WEAVE's company share, not 2% of the
@@ -10,7 +12,7 @@ export async function ensureRegionalManagerCommissionSchema() {
   await sql`
     CREATE TABLE IF NOT EXISTS weave_regional_manager_applications (
       user_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
-      source_role VARCHAR(20) NOT NULL CHECK (source_role IN ('client','bridger','agent')),
+      source_role VARCHAR(20) NOT NULL CHECK (source_role IN ('bridger','agent')),
       region VARCHAR(120) NOT NULL,
       experience TEXT NOT NULL,
       motivation TEXT NOT NULL,
@@ -29,7 +31,7 @@ export async function ensureRegionalManagerCommissionSchema() {
   await sql`
     CREATE TABLE IF NOT EXISTS weave_regional_manager_appointments (
       user_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
-      source_role VARCHAR(20) NOT NULL CHECK (source_role IN ('client','bridger','agent')),
+      source_role VARCHAR(20) NOT NULL CHECK (source_role IN ('bridger','agent')),
       status VARCHAR(20) NOT NULL DEFAULT 'active' CHECK (status IN ('pending','active','ended')),
       appointed_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -80,7 +82,7 @@ export async function creditRegionalManagerFileFolderCommission(params: {
     SELECT rm.user_id AS regional_manager_id
     FROM weave_regional_manager_bridgers member
     JOIN weave_regional_manager_appointments rm
-      ON rm.user_id=member.regional_manager_user_id AND rm.status='active'
+      ON rm.user_id=member.regional_manager_user_id AND rm.status='active' AND rm.source_role IN ('bridger','agent')
     JOIN users bridger ON bridger.id=member.bridger_user_id
     WHERE member.bridger_user_id=${bridgerId}::uuid
       AND member.status='active'

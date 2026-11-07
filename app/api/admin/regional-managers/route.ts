@@ -62,8 +62,8 @@ export async function POST(request: NextRequest) {
     const [candidate] = await sql`
       SELECT id, role, is_active FROM users WHERE id=${userId}::uuid LIMIT 1
     `
-    if (!candidate || !candidate.is_active || !['client', 'bridger', 'agent'].includes(String(candidate.role))) {
-      return NextResponse.json({ error: 'Regional Managers must be active Clients, Bridgers, or Agents.' }, { status: 422 })
+    if (!candidate || !candidate.is_active || !['bridger', 'agent'].includes(String(candidate.role))) {
+      return NextResponse.json({ error: 'Ordinary Regional Managers must be active Bridgers or Agents; the Pro Regional Manager position is separate.' }, { status: 422 })
     }
     const [appointment] = await sql`
       INSERT INTO weave_regional_manager_appointments (user_id, source_role, status, updated_at)
@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
       `, [userId])
       const appointment = await client.query(`
         SELECT user_id FROM weave_regional_manager_appointments
-        WHERE user_id=$1::uuid AND status='active' LIMIT 1
+        WHERE user_id=$1::uuid AND status='active' AND source_role IN ('bridger','agent') LIMIT 1
       `, [regionalManagerId])
       if (!lead.rows.length || !appointment.rows.length) {
         await client.query('ROLLBACK')

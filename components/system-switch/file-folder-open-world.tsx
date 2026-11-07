@@ -49,6 +49,7 @@ type Props = {
   fileFolderTier?: string
   worldAppearance?: FileFolderWorldAppearance
   embedded?: boolean
+  worldApiPath?: string
 }
 
 const districts = [
@@ -132,6 +133,7 @@ export default function FileFolderOpenWorld({
   fileFolderTier = 'standard',
   worldAppearance,
   embedded = false,
+  worldApiPath = '/api/client/file-folder-world',
 }: Props) {
   const { orderFor } = useEnvironmentOrganizer()
   const [world, setWorld] = useState(initialWorld)
@@ -217,7 +219,7 @@ export default function FileFolderOpenWorld({
     const refresh = async (signal:AbortSignal) => {
       try {
         const token = getClientToken()
-        const response = await fetch('/api/client/file-folder-world', {
+        const response = await fetch(worldApiPath, {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
           cache: 'no-store',signal,
         })
@@ -233,7 +235,7 @@ export default function FileFolderOpenWorld({
 
     const id = visiblePoll(refresh, 20000, false)
     return () => id()
-  }, [onWorldChange, pollWorld])
+  }, [onWorldChange, pollWorld, worldApiPath])
 
   const inventory = useMemo(
     () => new Map((world?.inventory || []).map((item: any) => [item.item_key, Number(item.quantity || 0)])),
@@ -255,7 +257,7 @@ export default function FileFolderOpenWorld({
     setMessage('')
     try {
       const token = getClientToken()
-      const response = await fetch('/api/client/file-folder-world', {
+      const response = await fetch(worldApiPath, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,

@@ -1,7 +1,9 @@
 import {NextRequest,NextResponse} from 'next/server'
 import {getAuthUser} from '@/lib/auth-api'
 import {sql,getPool} from '@/lib/db'
-import {ensureProFileNumberVerificationSchema,eligibleProNumber,proVerificationPublicHeaders} from '@/lib/pro-file-number-verification'
+import {isProRegionalManagerPosition} from '@/lib/pro-regional-manager-policy'
+import {ensureCompanyClientStaffSchema} from '@/lib/company-client-staff'
+import {ensureProFileNumberVerificationSchema,getApprovedProStaffOffer,proVerificationPublicHeaders} from '@/lib/pro-file-number-verification'
 import {ensureProActivationSchema,isTronAddress,PRO_ACTIVATION_FEE_USDT} from '@/lib/pro-file-folder-activation'
 export const dynamic='force-dynamic'
 async function reviewer(request:NextRequest){
@@ -13,13 +15,19 @@ export async function GET(request:NextRequest){
  if(!user)return NextResponse.json({error:'Administration required'},{status:403,headers:proVerificationPublicHeaders})
  try{
   await ensureProFileNumberVerificationSchema()
-  const rows=await sql`SELECT id,file_number,business_name,business_plan,signed_name,
-   terms_accepted_at,identity_reference,identity_verified_at,
-   payment_wallet,payment_tx_hash,payment_submitted_at,payment_verified_at,
-   payment_verified_amount_usdt,rejection_reason,status,created_at
-   FROM pro_file_number_verifications ORDER BY
-    CASE status WHEN 'pending_forensics' THEN 0 WHEN 'pending_identity' THEN 1
-      WHEN 'paid_pending_account' THEN 2 ELSE 3 END,created_at DESC LIMIT 100`
+  await ensureCompanyClientStaffSchema()
+  const rows=await sql`SELECT v.id,v.file_number,v.business_name,v.business_plan,v.signed_name,
+   v.terms_accepted_at,v.identity_reference,v.identity_verified_at,
+   v.operating_country,v.operating_region,v.operating_city,v.contact_address,v.postal_code,
+   v.payment_wallet,v.payment_tx_hash,v.payment_submitted_at,v.payment_verified_at,
+   v.payment_verified_amount_usdt,v.rejection_reason,v.status,v.created_at,
+   offer.position_title AS staff_position_title,offer.monthly_salary_usdt AS staff_monthly_salary_usdt,
+   offer.candidate_name AS staff_candidate_name
+   FROM pro_file_number_verifications v
+   LEFT JOIN company_client_staff_offers offer
+    ON offer.file_number=v.file_number AND offer.status='approved' AND offer.folder_tier='pro'
+   ORDER BY CASE v.status WHEN 'pending_forensics' THEN 0 WHEN 'pending_identity' THEN 1
+      WHEN 'paid_pending_account' THEN 2 ELSE 3 END,v.created_at DESC LIMIT 100`
   return NextResponse.json({success:true,applications:rows},{headers:proVerificationPublicHeaders})
  }catch(e){console.error('[Pro number Forensics] register',e)
   return NextResponse.json({error:'Unable to read verification register'},{status:500,headers:proVerificationPublicHeaders})
@@ -35,7 +43,8 @@ export async function POST(request:NextRequest){
   return NextResponse.json({error:'Select a valid Pro verification record.'},{status:400,headers:proVerificationPublicHeaders})
  try{
   await ensureProFileNumberVerificationSchema()
-  const [current]=await sql`SELECT id,file_number,business_name,signed_name,status
+  const [current]=await sql`SELECT id,file_number,business_name,signed_name,status,operating_country,operating_region,
+   operating_city,contact_address,postal_code
    FROM pro_file_number_verifications WHERE id=${id}::uuid LIMIT 1`
   if(!current)throw new Error('Pro verification request not found.')
   if(action==='verify_identity'){
@@ -43,8 +52,18 @@ export async function POST(request:NextRequest){
    if(body.independentlyVerified!==true)throw new Error('Independent File Number identity review required.')
    const ref=String(body.identityReference||'').trim()
    if(ref.length<8||ref.length>255)throw new Error('Provide an identifiable Administration verification reference.')
-   if(!await eligibleProNumber(current.file_number))
-    throw new Error('The File Number has no current verified Pro entitlement.')
+   if(!current.operating_country||!current.operating_region||!current.operating_city||
+     !current.contact_address)throw new Error('The applicant must provide real operating location and contact address.')
+   if(String(current.file_number)==='WEAVE-2026-0907-0001'&&
+      String(current.operating_country).trim().toLowerCase()!=='spain')
+      throw new Error('CJ is assigned to Spain. Verify the country and territory before approval.')
+   const offer=await getApprovedProStaffOffer(String(current.file_number))
+   if(!offer)throw new Error('An approved Pro company staff appointment is required. CJ Dorado must have an approved Pro Regional Manager offer.')
+   const applicant=String(current.signed_name||'').trim().toLowerCase()
+   if(String(offer.candidate_name||'').trim().toLowerCase()!==applicant)
+    throw new Error('The signed applicant must match the approved company employee.')
+   if(!Number.isFinite(Number(offer.monthly_salary_usdt))||Number(offer.monthly_salary_usdt)<=0)
+    throw new Error('The agreed Pro Client staff monthly salary must be recorded before activation approval; Agent/Bridger Lifestyle salary does not apply.')
    const [owner]=await sql`SELECT name FROM users WHERE file_number=${current.file_number}
     AND role='client' AND is_active=true LIMIT 1`
    // If account exists, its registered name must match the applicant signature.
@@ -78,6 +97,15 @@ export async function POST(request:NextRequest){
        ||!isTronAddress(wallet)||amount!==PRO_ACTIVATION_FEE_USDT)
       throw new Error('Forensics must independently confirm exactly 680 USDT TRC-20 to the recorded destination.')
      await ensureProActivationSchema()
+     // The same independently verified blockchain payment must never activate
+     // both an external Client Pro File Folder and an Agent/Bridger Pro Folder.
+     await db.query("SELECT pg_advisory_xact_lock(hashtext('weave_pro_manager_tx:'||$1))",[hash])
+     const [proManagerTable]=(await db.query("SELECT to_regclass('public.weave_pro_regional_manager_activations') AS name")).rows
+     if(proManagerTable?.name){
+      const managerDuplicate=await db.query(
+       'SELECT user_id FROM weave_pro_regional_manager_activations WHERE payment_tx_hash=$1 LIMIT 1',[hash])
+      if(managerDuplicate.rows.length)throw new Error('This blockchain transaction is already claimed by a Pro Regional Manager activation.')
+     }
      const duplicate=await db.query('SELECT id FROM pro_file_folder_activations WHERE payment_tx_hash=$1 LIMIT 1',[hash])
      if(duplicate.rows.length)throw new Error('This blockchain receipt was already assigned to another Pro activation.')
      await db.query(`UPDATE pro_file_number_verifications
@@ -113,6 +141,23 @@ export async function POST(request:NextRequest){
      AND role='client' AND is_active=true LIMIT 2`,[row.file_number])
     if(owner.rows.length!==1)throw new Error('Client must have an active verified account before Folder finalization.')
     const clientId=owner.rows[0].id
+    const staffOffer=await db.query(`SELECT id,candidate_name,position_title,client_id,monthly_salary_usdt
+       FROM company_client_staff_offers
+       WHERE file_number=$1 AND status='approved' AND folder_tier='pro'
+       LIMIT 1 FOR UPDATE`,[row.file_number])
+    if(staffOffer.rows.length!==1)throw new Error('Only an approved Pro company employee may activate the staff Folder.')
+    const approvedOffer=staffOffer.rows[0]
+    if(!Number.isFinite(Number(approvedOffer.monthly_salary_usdt))||
+      Number(approvedOffer.monthly_salary_usdt)<=0)
+      throw new Error('The agreed Client staff monthly salary is missing; reconcile the approved employment record first.')
+    if(approvedOffer.client_id&&String(approvedOffer.client_id)!==String(clientId))
+     throw new Error('This staff offer belongs to a different Client account.')
+    if(String(approvedOffer.candidate_name||'').trim().toLowerCase()!==
+       String(row.signed_name||'').trim().toLowerCase())
+     throw new Error('Approved staff and signed applicant identity mismatch.')
+    if(row.file_number==='WEAVE-2026-0907-0001'&&
+      !isProRegionalManagerPosition(approvedOffer.position_title,row.file_number))
+     throw new Error('CJ Dorado must have an approved Pro Regional Manager appointment.')
     if(String(owner.rows[0].name||'').trim().toLowerCase()!==
        String(row.signed_name||'').trim().toLowerCase())
      throw new Error('Client identity and signed name do not match.')
