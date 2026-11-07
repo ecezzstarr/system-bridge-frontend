@@ -491,7 +491,7 @@ const loadStabilityDevelopmentFoundry=read('app/(app)/admin/development-agents/p
 const loadStabilityPositionEvent=read('components/events/position-event-world.tsx')
 
 assert.ok(cleanRevealTransit2026.includes('absoluteMaximum')&&cleanRevealTransit2026.includes('elapsed<absoluteMaximum'),'Global environment cover has an absolute ceiling even when a destination leaves a pending marker mounted')
-assert.ok(loadStabilityClientFolder.includes('new AbortController()')&&loadStabilityClientFolder.includes('12000')&&loadStabilityClientFolder.includes('signal:controller.signal'),'Client File Folder boot has a bounded network wait')
+assert.ok(loadStabilityClientFolder.includes('new AbortController()')&&loadStabilityClientFolder.includes('20000')&&loadStabilityClientFolder.includes('signal:controller.signal')&&loadStabilityClientFolder.includes('Retry private File Folder'),'Client File Folder boot has a bounded network wait and a visible recovery action')
 assert.ok(loadStabilitySupportFolder.includes("redirect('/event')"),'Retired staff File Folder route has no private world network load and returns to Flame Event')
 assert.ok(loadStabilityFetch.includes('Request timed out. Check the connection and try again.'),'Blocking user actions have one reusable timeout failure mode')
 assert.ok(loadStabilityAuth.includes("fetchWithTimeout('/api/auth/register'")&&loadStabilityAuth.includes("fetchWithTimeout('/api/auth/login'"),'Staff/Bridger/Agent authentication cannot spin forever on a stalled request')
