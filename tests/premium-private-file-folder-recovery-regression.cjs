@@ -119,6 +119,7 @@ const healthApi=read('app/api/admin/file-folder-health/route.ts')
 const worldApi=read('app/api/client/file-folder-world/route.ts')
 const loginApi=read('app/api/client/weave-login/route.ts')
 const healthPage=read('app/(app)/admin/file-folder-health/page.tsx')
+const domainStore=read('lib/weave-open-world-store.ts')
 
 assert(client.includes("setPrivateWorkshop(new URLSearchParams(window.location.search).get('view')!=='shared')"),
   'Owned Client opens the private File Folder by default')
@@ -152,6 +153,11 @@ assert(healthApi.includes("user.role!=='admin'")&&
   healthApi.includes('missing_folders')&&healthApi.includes('missing_workshops')&&
   healthApi.includes('mismatched_folders')&&!healthApi.includes('UPDATE client_file_folders'),
   'Administration-only audit detects ownership drift without silently granting or overwriting records')
+assert(domainStore.includes("ARRAY['unclassified','standard','pro','premium','plus']::text[]")&&
+  domainStore.includes('THEN EXCLUDED.tier ELSE weave_open_world_domains.tier END')&&
+  domainStore.includes('confirmed.file_folder_tier::text)')&&
+  domainStore.includes('o.folder_tier::text)'),
+  'Shared Open World prevents downgrade from later lower-tier purchases and employee grants')
 assert(healthPage.includes('/api/admin/file-folder-health')&&
   read('lib/admin-workplace-catalog.ts').includes('/admin/file-folder-health'),
   'Administration has an accessible owner integrity check')
