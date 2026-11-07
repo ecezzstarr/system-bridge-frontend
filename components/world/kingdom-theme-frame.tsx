@@ -4,7 +4,7 @@ import {createContext,useContext,useEffect,useMemo,useState,type CSSProperties,t
 import {usePathname} from 'next/navigation'
 import {useAuth} from '@/lib/auth-provider'
 import type {FileFolderTier} from '@/lib/file-folder-pricing'
-import type {FileFolderThemeId} from '@/lib/file-folder-world-presets'
+import {FILE_FOLDER_PALETTES,type FileFolderThemeId} from '@/lib/file-folder-world-presets'
 import './kingdom-theme.css'
 
 export type KingdomIdentity={
@@ -52,20 +52,28 @@ export function KingdomThemeFrame({children,subject,enabled=true}:{
     return ()=>controller.abort()
   },[authorized,user?.id,token,subject])
   const active=authorized&&!shared(pathname)?identity:null
+  // The public Pro employee entrance carries the official radiant-blue
+  // Pro appearance without granting private kingdom identity or access.
+  const proStaffEntrance=subject==='client'&&
+    (pathname==='/client/pro-verification'||pathname==='/client/pro-activation')
+  const palette=proStaffEntrance?FILE_FOLDER_PALETTES['radiant-blue']:active?.palette
+  const visualTier=proStaffEntrance?'pro':active?.tier
+  const visualTheme=proStaffEntrance?'radiant-blue':active?.theme
   const style=useMemo<CSSProperties|undefined>(()=>{
-    if(!active)return undefined
-    const p=active.palette
+    if(!palette)return undefined
+    const p=palette
     return {
       '--kingdom-ground':p.ground,'--kingdom-structure':p.structure,
       '--kingdom-accent':p.accent,'--kingdom-glow':p.glow,
       '--kingdom-glass':p.glass,'--kingdom-sky':p.sky,
     } as CSSProperties
-  },[active])
+  },[palette])
   return <Context.Provider value={{identity:active,loading}}>
     <div className="kingdom-theme-frame relative min-h-dvh" style={style}
-      data-kingdom-active={active?'true':'false'}
-      data-kingdom-tier={active?.tier}
-      data-kingdom-theme={active?.theme}
+      data-kingdom-active={active||proStaffEntrance?'true':'false'}
+      data-pro-staff-public-theme={proStaffEntrance?'pro-radiant-blue':undefined}
+      data-kingdom-tier={visualTier}
+      data-kingdom-theme={visualTheme}
       data-kingdom-context={subject}>
       {children}
     </div>
