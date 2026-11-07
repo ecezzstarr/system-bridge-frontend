@@ -191,6 +191,8 @@ export default function WeaveLifestylesPage() {
               <p className="mt-2 max-w-3xl text-xs leading-6 text-slate-200">Apply from your Bridger/Hope or Agent/Stability identity. The Pro position has a separate company review, File Folder business plan, agreed employment terms, secure Pro verification and activation fee. The Pro File Folder is not granted by a Lifestyle application alone. Daily operations follow your department.</p>
               <div className="mt-4 flex flex-wrap gap-3">
                 <Link href="/weave/lifestyles/pro-regional-manager" className="inline-flex min-h-11 items-center rounded-xl bg-sky-200 px-4 py-3 text-xs font-black uppercase tracking-wider text-slate-950 hover:bg-sky-100">Apply · Pro Regional Manager</Link>
+                <Link href="/weave/lifestyles/pro-regional-manager/activation" className="inline-flex min-h-11 items-center rounded-xl border border-sky-300/30 px-4 py-3 text-xs font-bold text-sky-100">Pro activation</Link>
+                <Link href="/weave/lifestyles/pro-regional-manager/workspace" className="inline-flex min-h-11 items-center rounded-xl border border-sky-300/30 px-4 py-3 text-xs font-bold text-sky-100">My Pro workspace</Link>
                 <Link href="/client/pro-verification" className="inline-flex min-h-11 items-center rounded-xl border border-sky-300/30 px-4 py-3 text-xs font-bold text-sky-100">External Client Pro verification</Link>
               </div>
             </section>
