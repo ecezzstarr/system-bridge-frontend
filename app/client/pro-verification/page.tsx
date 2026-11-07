@@ -1,6 +1,7 @@
 'use client'
 import {useCallback,useEffect,useState} from 'react'
 import Link from 'next/link'
+import {Building2,ChartNoAxesCombined,ClipboardList,Layers3,Store,UsersRound} from 'lucide-react'
 import './pro-verification.css'
 import {PRO_MANAGER_COMPANY_PURPOSE,PRO_MANAGER_FILE_FOLDER_DISTINCTION,
  PRO_MANAGER_PLAN_QUESTIONS,PRO_MANAGER_AGREEMENT_SECTIONS} from '@/lib/pro-regional-manager-language'
@@ -98,20 +99,21 @@ export default function ProFileNumberVerification(){
    </nav>
    <header className="pv-hero">
     <div className="pv-hero-copy">
-     <p className="pv-eyebrow">Official Weave company entrance · Client verification</p>
-     <h1>Company Staff Verification <span>Pro File Folder</span></h1>
+     <p className="pv-eyebrow">WEAVE of Presence · The Company of Time · Company Staff Verification</p>
+     <h1>Pro Regional Manager <span>Your business. Your Pro world.</span></h1>
      <p className="pv-hero-description">
-      This is the official entry for Clients with an independently approved Pro Regional Manager
-      or other Client Pro staff appointment. Your issued File Number begins identity and
-      business-plan verification; it does not itself open a position or a private world.
-      You do not need a password or a new account to begin. Administration approves the
-      appointment, and Forensics verifies any required activation before private access.
+      Your Pro File Folder turns your work in life into an organized business environment inside Weave:
+      your systems, your customers, authorized employees and the records that show your progress.
+      As your business serves people and creates verified value, your participation strengthens the company.
+      This is a distinct company position, not an ordinary Regional Manager appointment.
      </p>
-     <div className="pv-hero-signals" aria-label="Verification boundaries">
-      <span>Pro tier · Radiant Blue</span>
+     <div className="pv-hero-signals" aria-label="Pro business features">
       <span>Your own business world</span>
+      <span>Customer Door & systems</span>
+      <span>Employees & regional growth</span>
       <span>Administration + Forensics</span>
      </div>
+     <a className="pv-hero-explore" href="#pro-client-file-folder-features">Explore what your File Folder can do</a>
     </div>
     <div className="pv-hero-visual" aria-hidden="true">
      <span className="pv-visual-tag pv-visual-tag-left">YOUR BUSINESS · YOUR SYSTEMS</span>
@@ -122,6 +124,30 @@ export default function ProFileNumberVerification(){
      <span className="pv-visual-tag pv-visual-tag-right">CUSTOMER DOOR · OPERATIONS</span>
     </div>
    </header>
+   <section id="pro-client-file-folder-features" className="pv-feature-section" aria-labelledby="pro-client-file-folder-features-title">
+    <div className="pv-feature-heading">
+     <div><p className="pv-process-label">THE PRO FILE FOLDER</p>
+      <h2 id="pro-client-file-folder-features-title">Build the business you know. Operate it through Weave.</h2></div>
+     <p>Pro defines your File Folder's operating tier; your approved business plan defines what you will do with it.</p>
+    </div>
+    <div className="pv-benefit-grid">
+     {([
+      [Building2,'Private business world','An independent Pro environment formed around your own work, not a uniform profession.'],
+      [Store,'Customer Door','A customer-facing entrance for products, services and genuine business requests.'],
+      [Layers3,'Systems & workshops','Business tools, modules and workspaces organized around practical daily work.'],
+      [UsersRound,'Employees & participation','Coordinate authorized people, tasks and responsibilities to support your enterprise.'],
+      [ClipboardList,'Operating records','Keep orders, commitments, fulfillment and verified activity connected.'],
+      [ChartNoAxesCombined,'Regional expansion','Develop customers, partnerships and participation in your approved territory.'],
+     ] as const).map(([Icon,title,description])=><article className="pv-benefit" key={title}>
+      <span className="pv-benefit-icon"><Icon size={22} strokeWidth={1.8} aria-hidden="true"/></span>
+      <h3>{title}</h3><p>{description}</p>
+     </article>)}
+    </div>
+    <div className="pv-growth-band">
+     <strong>Your success is how Weave grows.</strong>
+     <span>Build real systems, serve real customers and organize reliable work. Your enterprise develops through its results, and Weave grows through the value created by participation.</span>
+    </div>
+   </section>
    <div className="pv-process" aria-label="Verification progress">
     <span className="pv-process-label">Your company entry path</span>
     <ol className="pv-steps">
@@ -140,7 +166,7 @@ export default function ProFileNumberVerification(){
    {message&&<p role="status" className="rounded-xl border border-cyan-300/30 p-4 text-sm text-cyan-100">{message}</p>}
    {step==='file'&&<section className="pv-panel space-y-4" data-pro-stage="file-number">
     <h2 className="text-xl font-bold">01 · Identify your company File Folder</h2>
-    <p className="text-sm text-slate-600">Use only the File Number formally issued to you by Weave Administration. No payment or password is required at this stage.</p>
+    <p className="text-sm text-slate-600">Use only the File Number formally issued to you by Weave Administration. You do not need a password or a new account to begin. No payment is required at this stage.</p>
     <label className="block text-sm text-slate-200">Client File Number
      <input autoComplete="off" value={fileNumber} onChange={e=>setFileNumber(e.target.value.toUpperCase().trim())}
       placeholder="WEAVE-..." className="mt-2 w-full rounded-lg border border-white/20 bg-slate-900 p-3 font-mono text-white"/>
@@ -177,7 +203,7 @@ export default function ProFileNumberVerification(){
       <div className="grid gap-3 sm:grid-cols-2">
        <label className="block text-sm">Country<input required maxLength={100} autoComplete="country-name"
         value={operatingCountry} onChange={e=>setOperatingCountry(e.target.value)}
-        placeholder="Spain" className="mt-2 w-full rounded-lg border border-white/20 bg-slate-900 p-3"/></label>
+        placeholder="Operating country" className="mt-2 w-full rounded-lg border border-white/20 bg-slate-900 p-3"/></label>
        <label className="block text-sm">Region or province<input required maxLength={150}
         value={operatingRegion} onChange={e=>setOperatingRegion(e.target.value)}
         placeholder="Region / province" className="mt-2 w-full rounded-lg border border-white/20 bg-slate-900 p-3"/></label>
@@ -244,7 +270,7 @@ export default function ProFileNumberVerification(){
     <p className="text-sm capitalize text-amber-200">Status: {verification.status.replaceAll('_',' ')}</p>
     <p className="text-xs text-slate-400">Application reference: {verification.reference}</p>
     {verification.siblingsEvent&&<div className="rounded-xl border border-violet-300/25 bg-violet-300/[.05] p-4" data-verified-cj-siblings-event="true">
-     <p className="text-xs uppercase tracking-widest text-violet-200">CJ Dorado · Siblings Event · Mandate business earnings</p>
+     <p className="text-xs uppercase tracking-widest text-violet-200">Siblings Event · Mandate business earnings</p>
      <p className="mt-2 text-3xl font-bold">{verification.siblingsEvent.reportedAmountUSDT.toLocaleString()} USDT</p>
      <p className="mt-1 text-sm text-amber-200">Reported amount · Source verification pending / restricted</p>
      <p className="mt-2 text-xs text-slate-300">Reconciled earnings recorded: {verification.siblingsEvent.verifiedAmountUSDT.toLocaleString()} USDT · No withdrawable amount established. Other types of funds: Pending verification.</p>
@@ -306,10 +332,11 @@ export default function ProFileNumberVerification(){
       <li><span className="pv-side-number">03</span><div><strong>Participation & employees</strong><small>Authorized people work through Weave to expand your business and its purpose.</small></div></li>
       <li><span className="pv-side-number">04</span><div><strong>Verified company movement</strong><small>Forensics verifies payment evidence, while salary, customers and commercial records remain separate.</small></div></li>
      </ol>
-     <div className="pv-fee">
-      <span>One-time Pro Folder activation</span><strong>680 USDT</strong>
-      <small>TRON (TRC-20). Only follow payment instructions shown here after independent identity and employment review. No payment is due merely for entering a File Number.</small>
-     </div>
+     <details className="pv-activation-disclosure">
+      <summary>Later stage: activation and Forensics</summary>
+      <p>Once Administration confirms the approved appointment, identity and business plan, the separate activation agreement explains the one-time Pro File Folder fee.</p>
+      <p><strong>680 USDT on TRON (TRC-20)</strong>. The official company receiving address is shown only after the payment stage is authorized. Paying does not create a company appointment, salary or guaranteed return.</p>
+     </details>
      <p>Administration is <strong>A Time</strong>. Clients are <strong>Dream Lovely</strong>. Your business becomes part of the company through authorized systems and recorded participation.</p>
     </aside>
    </div>

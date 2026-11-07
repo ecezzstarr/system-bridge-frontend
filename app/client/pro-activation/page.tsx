@@ -1,6 +1,7 @@
 'use client'
 import {useCallback,useEffect,useState} from 'react'
 import Link from 'next/link'
+import ProManagerRoleShowcase from '@/components/client/pro-manager-role-showcase'
 import {useAuth} from '@/lib/auth-provider'
 import {PRO_MANAGER_COMPANY_PURPOSE,PRO_MANAGER_FILE_FOLDER_DISTINCTION,
  PRO_MANAGER_PLAN_QUESTIONS,PRO_MANAGER_AGREEMENT_SECTIONS} from '@/lib/pro-regional-manager-language'
@@ -58,35 +59,38 @@ export default function ProActivationPage(){
   finally{setBusy(false)}
  }
  if(!isInitialized)return <main className="min-h-screen p-8 text-white">Loading Client workspace…</main>
- if(!token||user?.role!=='client')return <main className="min-h-screen bg-[#050c18] px-5 py-12 text-white">
-  <div className="mx-auto max-w-xl space-y-5 rounded-2xl border border-cyan-300/25 p-7">
-   <p className="text-xs uppercase tracking-widest text-cyan-200">WEAVE of Presence · Pro Client</p>
-   <h1 className="text-3xl font-bold">File Folder agreement and activation</h1>
-   <p className="text-sm leading-6 text-slate-200">If you have been issued a Pro File Number but no password, use the File Number Verification Workspace to name your business, submit your plan, sign the agreement and proceed to Forensics-verified activation.</p>
-   <p className="text-xl font-bold">One-time activation: 680 USDT</p>
-   <p className="text-xs text-slate-300">USDT on TRON (TRC-20). Payment is requested only after you review and sign the terms; Forensics verifies it manually.</p>
-   <Link href="/client/pro-verification" className="inline-block rounded-lg bg-cyan-300 px-5 py-3 font-bold text-slate-950">Start using File Number</Link>
-   <p className="text-xs text-slate-400">No password is needed to start Pro verification. The private Client account and File Folder will remain protected until identity and payment verification are completed.</p>
+ if(!token||user?.role!=='client')return <main className="min-h-screen px-3 py-6 sm:px-5 sm:py-9" data-pro-regional-manager-entrance="true">
+  <div className="mx-auto max-w-6xl space-y-6">
+   <nav className="flex flex-wrap items-center justify-between gap-3 px-2 text-sm">
+    <Link href="/" className="font-bold text-sky-900 underline">WEAVE of Presence</Link>
+    <span className="text-xs font-semibold text-sky-800">System Switch · Bridge of Radiance</span>
+   </nav>
+   <ProManagerRoleShowcase actionHref="/client/pro-verification" actionText="Begin Client verification"/>
+   <section className="rounded-2xl border border-sky-200/80 bg-white/95 p-6 shadow-sm" data-pro-verification-next-step="true">
+    <p className="text-xs font-bold uppercase tracking-widest text-sky-800">Official Weave company entry</p>
+    <h2 className="mt-2 text-2xl font-bold text-slate-900">Ready to verify your position?</h2>
+    <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-700">If Administration has issued you a Pro File Number, use it to present your business plan and signed agreement. Your identity and company appointment are reviewed separately. You do not need a password or new account to begin; no payment is requested at this entrance.</p>
+    <Link href="/client/pro-verification" className="mt-4 inline-flex rounded-xl bg-[#1d628e] px-5 py-3 text-sm font-bold text-white">Continue with issued File Number</Link>
+   </section>
   </div>
  </main>
  if(notRequired)return <main className="min-h-screen p-8 text-white">No new Pro activation fee is due on this account. <Link href="/client/dashboard" className="underline">Return to dashboard</Link></main>
  const status=activation?.status||'loading'
- return <main className="min-h-screen bg-[#050c18] px-4 py-8 text-white" data-pro-file-folder-activation="true">
-  <div className="mx-auto max-w-3xl space-y-5">
-   <nav className="flex flex-wrap items-center justify-between gap-3 text-sm">
-    <Link href="/client/dashboard" className="text-cyan-200 underline">Client dashboard</Link>
-    <Link href="/client/staff-workspace" className="text-cyan-200 underline">Company employment workspace</Link>
+ return <main className="min-h-screen px-3 py-6 sm:px-5 sm:py-9" data-pro-file-folder-activation="true" data-pro-manager-role-first="true">
+  <div className="mx-auto max-w-6xl space-y-5">
+   <nav className="flex flex-wrap items-center justify-between gap-3 px-2 text-sm">
+    <Link href="/client/dashboard" className="font-semibold text-sky-900 underline">Client dashboard</Link>
+    <Link href="/client/staff-workspace" className="font-semibold text-sky-900 underline">Company employment workspace</Link>
    </nav>
-   <header className="rounded-2xl border border-sky-300/20 bg-slate-900 p-6">
-    <p className="text-xs uppercase tracking-widest text-cyan-200">Weave of Presence · Client · Dream Lovely</p>
-    <h1 className="mt-3 text-3xl font-bold">Pro File Folder Activation</h1>
-    <p className="mt-2 text-sm text-slate-300">Your File Number: <span className="font-mono">{user?.file_number||activation?.file_number||activation?.fileNumber||'Assigned Client File Number'}</span></p>
-    <p className="mt-4 text-4xl font-bold">680 USDT</p>
-    <p className="mt-1 text-sm text-slate-300">One-time Pro File Folder activation fee · USDT on TRON (TRC-20) · Forensics manual verification.</p>
-    <p className="mt-3 text-sm leading-7 text-slate-200">{PRO_MANAGER_FILE_FOLDER_DISTINCTION}</p>
-    <p className="mt-3 text-sm leading-7 text-slate-200">{PRO_MANAGER_COMPANY_PURPOSE}</p>
-    <p className="mt-3 text-xs text-slate-400">This is not a personal loan, a deposit to your wallet, or an automatically recurring fee. Your separately approved employment workspace and company salary records stay attached to your account.</p>
-   </header>
+   <ProManagerRoleShowcase actionHref="#pro-activation-current-stage" actionText="Continue my Pro verification"/>
+   <section id="pro-activation-current-stage" className="scroll-mt-6 space-y-3 rounded-2xl border border-sky-200 bg-white/95 p-6 shadow-sm" data-pro-client-current-stage="true">
+    <p className="text-xs font-bold uppercase tracking-widest text-sky-800">Dream Lovely · Your verified company pathway</p>
+    <h2 className="text-xl font-bold text-slate-900">Your position and File Folder verification</h2>
+    <p className="text-sm leading-7 text-slate-700">{PRO_MANAGER_FILE_FOLDER_DISTINCTION}</p>
+    <p className="text-sm leading-7 text-slate-700">{PRO_MANAGER_COMPANY_PURPOSE}</p>
+    <p className="break-all text-sm text-slate-700">Issued File Number: <span className="font-mono font-semibold">{user?.file_number||activation?.file_number||activation?.fileNumber||'Pending company File Number'}</span></p>
+    <p className="text-xs leading-6 text-slate-600">Your company salary and approved employment are separate from your File Folder business and any later activation requirement.</p>
+   </section>
    {error&&<p role="alert" className="rounded-xl border border-rose-300/30 p-4 text-sm text-rose-100">{error}</p>}
    {message&&<p role="status" className="rounded-xl border border-cyan-300/30 p-4 text-sm text-cyan-100">{message}</p>}
    {siblingsEvent&&<section className="rounded-2xl border border-violet-300/25 bg-violet-300/[.05] p-6" data-siblings-event-status="true">
@@ -97,8 +101,8 @@ export default function ProActivationPage(){
      <p className="mt-2 text-xs text-slate-400">Verified earnings: {siblingsEvent.verifiedAmountUSDT.toLocaleString()} USDT · Available for withdrawal: not established.</p>
      <p className="mt-2 text-xs text-slate-400">Other funds: Pending verification. No funds are credited or automatically released by activating a File Folder.</p>
    </section>}
-   <section className="rounded-2xl border border-white/10 p-6">
-    <h2 className="text-lg font-bold">Activation progress</h2>
+   <section className="rounded-2xl border border-sky-200 bg-white/95 p-6 shadow-sm" data-pro-current-progress="true">
+    <h2 className="text-lg font-bold text-slate-900">Verification progress</h2>
     <p className="mt-2 text-sm capitalize text-slate-300">{status.replaceAll('_',' ')}</p>
     {status==='awaiting_preparation'&&<p className="mt-3 text-sm text-amber-200">Administration must reconcile your existing File Number and prepare this Pro activation. No payment is requested yet.</p>}
     {status==='awaiting_signature'&&<p className="mt-3 text-sm text-amber-200">{activation?.client_signature_at
