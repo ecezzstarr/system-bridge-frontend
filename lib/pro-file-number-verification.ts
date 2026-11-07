@@ -63,9 +63,13 @@ export async function getApprovedProStaffOffer(fileNumber:string) {
   FROM company_client_staff_offers WHERE file_number=${fileNumber}
    AND status='approved' AND folder_tier='pro' LIMIT 1`
  if(!offer||!offer.position_title||!offer.candidate_name)return null
+ // Approved Pro company staff terms include an agreed monthly salary.
+ // Do not present a blank/zero salary as a Lifestyle-based entitlement.
+ const agreedSalary=Number(offer.monthly_salary_usdt)
+ if(!Number.isFinite(agreedSalary)||agreedSalary<=0)return null
  if(fileNumber===CJ_DORADO_FILE_NUMBER){
   if(!/\bcj\s+dorado\b/i.test(String(offer.candidate_name))||
-     !/^regional\s+manager$/i.test(String(offer.position_title).trim()))return null
+     !/^(?:client\s+)?regional\s+manager$/i.test(String(offer.position_title).trim()))return null
  }
  return offer
 }
@@ -155,7 +159,7 @@ export async function readProFileNumberVerification(ticket:string){
    companyPosition={
     title:String(offer.position_title),
     monthlySalaryUSDT:Number.isFinite(salary)&&salary>0?salary:null,
-    salaryStatus:Number.isFinite(salary)&&salary>0?'approved_offer':'pending_company_confirmation'
+    salaryStatus:Number.isFinite(salary)&&salary>0?'agreed_staff_employment_terms':'needs_administration_reconciliation'
    }
   }
  }
