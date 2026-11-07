@@ -2,6 +2,7 @@
 import Link from 'next/link'
 import {useCallback,useEffect,useState} from 'react'
 import {useAuth} from '@/lib/auth-provider'
+import {PRO_MANAGER_PLAN_QUESTIONS} from '@/lib/pro-regional-manager-language'
 type Application={
  user_id:string;source_role:'agent'|'bridger';name:string;email:string;is_active:boolean;
  current_role:string;operating_country:string;operating_region:string;operating_city:string;
@@ -97,7 +98,8 @@ export default function AdminProRegionalManagerApplications(){
     <p className="text-xs text-slate-300">Operating address: {a.contact_address}</p>
     <details className="rounded-lg border border-white/10 p-3">
      <summary className="cursor-pointer text-sm font-semibold">Review submitted business plan and daily work</summary>
-     {Object.entries(a.business_plan||{}).map(([key,value])=><p key={key} className="mt-3 whitespace-pre-wrap break-words text-sm"><strong>{key.replaceAll(/([A-Z])/g,' $1')}:</strong> {value}</p>)}
+     <p className="mt-3 text-xs leading-6 text-slate-300">Assess real work, the customer's problem, verified revenue and costs, assigned employee responsibilities, and the systems used to deliver value. The applicant's success strengthens Weave through sustained, documented participation; projections are not earnings.</p>
+     {PRO_MANAGER_PLAN_QUESTIONS.map(({key,title})=><p key={key} className="mt-3 whitespace-pre-wrap break-words text-sm"><strong>{title}:</strong> {a.business_plan?.[key]||'Not provided'}</p>)}
      <p className="mt-3 whitespace-pre-wrap text-sm"><strong>Daily regional operations:</strong> {a.daily_work_plan}</p>
     </details>
     {a.review_note&&<p className="text-xs text-slate-300">Review notes: {a.review_note}</p>}
