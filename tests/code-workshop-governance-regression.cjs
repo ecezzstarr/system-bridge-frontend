@@ -36,7 +36,7 @@ const shell=read('selfhost/deploy-production.sh')
 assert.ok(auth.includes('WEAVE_WORKSHOP_ADMIN_IDS')&&
  auth.includes('ids.includes(String(rows[0].id).toLowerCase())')&&
  auth.includes('Number(admins[0]?.count || 0) !== 1')&&
- auth.includes('u.id = s.user_id')===false,
+ auth.includes('WHERE s.token = ${token}'),
  'Privileged Administration must be explicit with multi-admin and legacy singleton fallback')
 assert.ok(api.includes('requireWorkshopAuthorization(request)')&&
  api.includes("body.action==='create_branch'")&&
