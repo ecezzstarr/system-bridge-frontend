@@ -1,4 +1,5 @@
 import {createHash,randomBytes} from 'node:crypto'
+import {isProRegionalManagerPosition} from '@/lib/pro-regional-manager-policy'
 import {sql} from '@/lib/db'
 import {ensureClientFileFolderSchema,ensureCjDoradoFolder,CJ_DORADO_FILE_NUMBER} from '@/lib/client-file-folder'
 import {ensureProActivationSchema,getReceivingWallet,PRO_ACTIVATION_FEE_USDT} from '@/lib/pro-file-folder-activation'
@@ -69,7 +70,7 @@ export async function getApprovedProStaffOffer(fileNumber:string) {
  if(!Number.isFinite(agreedSalary)||agreedSalary<=0)return null
  if(fileNumber===CJ_DORADO_FILE_NUMBER){
   if(!/\bcj\s+dorado\b/i.test(String(offer.candidate_name))||
-     !/^(?:client\s+)?regional\s+manager$/i.test(String(offer.position_title).trim()))return null
+     !isProRegionalManagerPosition(offer.position_title,fileNumber))return null
  }
  return offer
 }
@@ -157,7 +158,8 @@ export async function readProFileNumberVerification(ticket:string){
   if(offer){
    const salary=Number(offer.monthly_salary_usdt)
    companyPosition={
-    title:String(offer.position_title),
+    title:isProRegionalManagerPosition(offer.position_title,row.file_number)
+      ?'Pro Regional Manager':String(offer.position_title),
     monthlySalaryUSDT:Number.isFinite(salary)&&salary>0?salary:null,
     salaryStatus:Number.isFinite(salary)&&salary>0?'agreed_staff_employment_terms':'needs_administration_reconciliation'
    }
