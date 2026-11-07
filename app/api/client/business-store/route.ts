@@ -1,12 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getFileFolderDb } from '@/lib/client-file-folder'
 import { resolveClientToken } from '@/lib/client-vault'
+import {getActiveProRegionalManager} from '@/lib/pro-regional-manager-activation'
 import { ensureClientBusinessStore, normalizeStoreEnvironmentConfig } from '@/lib/client-business-store'
 
 const OFFER_TYPES = new Set(['product','service','digital','crypto'])
 
 async function resolveClient(request: NextRequest) {
   const sql = getFileFolderDb()
+  if(request.nextUrl.pathname==='/api/pro-regional-manager/business-store'){
+    const pro=await getActiveProRegionalManager(request)
+    if(!pro)return {sql,error:NextResponse.json({
+      error:'An active, independently verified Pro Regional Manager File Folder is required.'
+    },{status:403})}
+    const client={id:pro.user.id,name:pro.row.account_name,
+      business_name:pro.row.business_name,file_number:pro.row.file_number}
+    const store=await ensureClientBusinessStore(sql,
+      String(client.id),String(client.file_number),String(client.business_name),false)
+    return {sql,client,store,error:null}
+  }
   const token = request.headers.get('authorization')?.replace(/^Bearer\s+/i, '').trim() || null
   const clientId = await resolveClientToken(token, sql)
   if (!clientId) return { sql, error: NextResponse.json({ error: 'Client login required' }, { status: 401 }) }
