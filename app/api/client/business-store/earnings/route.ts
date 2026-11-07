@@ -5,6 +5,7 @@ import { getActiveProRegionalManager } from '@/lib/pro-regional-manager-activati
 import { ensureClientBusinessStoreSchema } from '@/lib/client-business-store'
 import { ensureEnterpriseDreamSchema } from '@/lib/enterprise-dream'
 import { ensureLegionCommerceSchema } from '@/lib/legion-commerce'
+import { ensureFileFolderWorldSchema } from '@/lib/client-file-folder-world'
 import { ensureCustomerDoorSettlementSchema } from '@/lib/customer-door-settlement'
 import { getOwnerEarnings,recordOwnerCost,validOwnerCost } from '@/lib/client-owner-earnings'
 
@@ -33,6 +34,7 @@ async function owner(request:NextRequest){
     fileNumber=String(user.file_number)
   }
   await ensureClientBusinessStoreSchema(sql)
+  await ensureFileFolderWorldSchema(sql)
   await ensureEnterpriseDreamSchema(sql)
   await ensureLegionCommerceSchema(sql)
   await ensureCustomerDoorSettlementSchema()
