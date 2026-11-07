@@ -136,6 +136,7 @@ jobs:
           node tests/plus-file-folder-formation-behavior.cjs
           node tests/admin-music-studio-dj.cjs
           node tests/work-github-oracle-release-regression.cjs
+          node tests/code-workshop-governance-regression.cjs
           node tests/company-of-time-homepage-regression.cjs
           node tests/file-folder-standard-official-world-regression.cjs
           node tests/weave-narration-studio.cjs
