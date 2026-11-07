@@ -1,6 +1,7 @@
 'use client'
 import {useCallback,useEffect,useState} from 'react'
 import Link from 'next/link'
+import './pro-verification.css'
 type Verification={reference:string;fileNumber:string;businessName:string;
  status:string;feeUSDT:number;network:string;walletAddress:string|null;
  paymentVerified:boolean;rejectionReason?:string|null;
@@ -87,20 +88,62 @@ export default function ProFileNumberVerification(){
   }catch(e){setError(e instanceof Error?e.message:'Secure registration unavailable')}
   finally{setBusy(false)}
  }
- return <main className="min-h-dvh bg-[#050c18] px-4 py-9 text-white" data-pro-file-number-verification="true">
-  <div className="mx-auto max-w-3xl space-y-6">
-   <header className="rounded-2xl border border-cyan-300/20 bg-slate-900 p-6">
-    <p className="text-xs uppercase tracking-widest text-cyan-200">Weave of Presence · Dream Lovely</p>
-    <h1 className="mt-2 text-3xl font-bold">Pro File Folder · Company Staff Verification</h1>
-    <p className="mt-3 text-sm leading-6 text-slate-200">External Clients who receive a Pro Regional Manager or other approved Client Pro staff appointment verify here, outside the Agent/Bridger Lifestyle application route. Start with your issued File Number. You do not need a password or a new account to submit the File Folder business name, plan and staff activation agreement. Administration independently confirms the Client company position before activation; the File Number alone never opens private operations.</p>
-    <p className="mt-4 text-3xl font-bold">680 USDT</p>
-    <p className="mt-1 text-sm text-slate-300">One-time company-staff Pro File Folder activation · USDT on TRON (TRC-20) · Forensics verification. Monthly salary is a separate company payroll obligation, not an activation refund.</p>
-    <p className="mt-2 text-xs text-slate-400">A File Number alone is not identity verification and does not provide access to any Client's funds, wallet, employment or private Folder.</p>
+ return <main id="weave-pro-verification" className="pv-shell" data-pro-file-number-verification="true" data-pro-file-folder-theme="radiant-blue">
+  <div aria-hidden="true" className="pv-atmosphere"/>
+  <div className="pv-container">
+   <nav className="pv-masthead" aria-label="Weave company identity">
+    <Link className="pv-brand" href="/" aria-label="Weave of Presence homepage">
+     <span className="pv-brand-mark" aria-hidden="true">W</span>
+     <span><strong className="pv-brand-name">WEAVE</strong><small className="pv-brand-sub">of Presence</small></span>
+    </Link>
+    <span className="pv-company-caption">System Switch · Bridge of Radiance</span>
+    <span className="pv-role-pill">Dream Lovely · Pro Staff</span>
+   </nav>
+   <header className="pv-hero">
+    <div className="pv-hero-copy">
+     <p className="pv-eyebrow">Official Weave company entrance · Client verification</p>
+     <h1>Company Staff Verification <span>Pro File Folder</span></h1>
+     <p className="pv-hero-description">
+      This is the official entry for Clients with an independently approved Pro Regional Manager
+      or other Client Pro staff appointment. Your issued File Number begins identity and
+      business-plan verification; it does not itself open a position or a private world.
+      You do not need a password or a new account to begin. Administration approves the
+      appointment, and Forensics verifies any required activation before private access.
+     </p>
+     <div className="pv-hero-signals" aria-label="Verification boundaries">
+      <span>Pro tier · Radiant Blue</span>
+      <span>Your own business world</span>
+      <span>Administration + Forensics</span>
+     </div>
+    </div>
+    <div className="pv-hero-visual" aria-hidden="true">
+     <span className="pv-visual-tag pv-visual-tag-left">YOUR BUSINESS · YOUR SYSTEMS</span>
+     <div className="pv-folder">
+      <span className="pv-folder-tab">PRO</span>
+      <div className="pv-folder-inner"><strong>W</strong><span>Private business world</span></div>
+     </div>
+     <span className="pv-visual-tag pv-visual-tag-right">CUSTOMER DOOR · OPERATIONS</span>
+    </div>
    </header>
+   <div className="pv-process" aria-label="Verification progress">
+    <span className="pv-process-label">Your company entry path</span>
+    <ol className="pv-steps">
+     {['File Number','Business & agreement','Verification status'].map((label,index)=>{
+      const current=step==='file'?0:step==='plan'?1:2
+      return <li key={label} className="pv-step" data-current={current===index} data-done={current>index}
+       aria-current={current===index?'step':undefined}>
+       <span className="pv-step-count">{index+1}</span>{label}
+      </li>
+     })}
+    </ol>
+   </div>
+   <div className="pv-workgrid">
+    <div className="pv-main-column">
    {error&&<p role="alert" className="rounded-xl border border-rose-300/30 p-4 text-sm text-rose-200">{error}</p>}
    {message&&<p role="status" className="rounded-xl border border-cyan-300/30 p-4 text-sm text-cyan-100">{message}</p>}
-   {step==='file'&&<section className="space-y-4 rounded-2xl border border-white/15 p-6">
-    <h2 className="text-xl font-bold">1. Enter your issued File Number</h2>
+   {step==='file'&&<section className="pv-panel space-y-4" data-pro-stage="file-number">
+    <h2 className="text-xl font-bold">01 · Identify your company File Folder</h2>
+    <p className="text-sm text-slate-600">Use only the File Number formally issued to you by Weave Administration. No payment or password is required at this stage.</p>
     <label className="block text-sm text-slate-200">Client File Number
      <input autoComplete="off" value={fileNumber} onChange={e=>setFileNumber(e.target.value.toUpperCase().trim())}
       placeholder="WEAVE-..." className="mt-2 w-full rounded-lg border border-white/20 bg-slate-900 p-3 font-mono text-white"/>
@@ -115,11 +158,12 @@ export default function ProFileNumberVerification(){
        className="mt-2 w-full rounded-lg border border-white/20 bg-slate-900 p-3 text-white"/>
      </label>
      <button disabled={busy||!/^[a-f0-9]{64}$/i.test(ticket)} onClick={()=>void refresh(ticket).catch(e=>setError(e.message))}
-      className="mt-3 rounded-lg border border-white/30 px-3 py-2">Resume</button>
+      className="pv-secondary mt-3 rounded-lg border border-white/30 px-3 py-2">Resume</button>
     </details>
    </section>}
-   {step==='plan'&&<section className="space-y-4 rounded-2xl border border-cyan-300/20 p-6">
-    <h2 className="text-xl font-bold">2. Name your Pro File Folder business</h2>
+   {step==='plan'&&<section className="pv-panel space-y-4" data-pro-stage="business-plan">
+    <h2 className="text-xl font-bold">02 · Your Pro File Folder business</h2>
+    <p className="text-sm text-slate-600">Pro defines the Folder tier, not your profession. Describe the business you actually carry in life and the systems you intend to build through Weave.</p>
     <p className="font-mono text-xs text-cyan-200">Issued File Number: {fileNumber}</p>
     <label className="block text-sm">File Folder business name
      <input value={businessName} onChange={e=>setBusinessName(e.target.value)}
@@ -176,8 +220,8 @@ export default function ProFileNumberVerification(){
       {busy?'Submitting…':'Submit business plan and signed agreement'}
     </button>
    </section>}
-   {step==='status'&&verification&&<section className="space-y-4 rounded-2xl border border-white/15 p-6">
-    <h2 className="text-xl font-bold">Your verification workspace</h2>
+   {step==='status'&&verification&&<section className="pv-panel space-y-4" data-pro-stage="verification-status">
+    <h2 className="text-xl font-bold">03 · Your private verification workspace</h2>
     <p className="font-mono text-xs text-cyan-200">{verification.fileNumber}</p>
     <p className="text-sm">File Folder business: <strong>{verification.businessName}</strong></p>
     {verification.operatingLocation&&<p className="text-sm text-slate-200" data-pro-verified-operating-location="true">
@@ -220,7 +264,7 @@ export default function ProFileNumberVerification(){
       <p className="text-xs text-slate-300">Official receiving wallet · USDT TRC-20</p>
       <p className="break-all font-mono text-sm">{verification.walletAddress}</p>
       <button onClick={()=>void navigator.clipboard.writeText(verification.walletAddress||'')}
-       className="rounded-lg border border-white/25 px-3 py-2 text-xs">Copy wallet address</button>
+       className="pv-secondary rounded-lg border border-white/25 px-3 py-2 text-xs">Copy wallet address</button>
      </div>:<p className="text-amber-200">Receiving wallet not yet configured. Do not transfer funds.</p>}
      <p className="text-xs text-slate-300">Send exactly 680 USDT using TRON (TRC-20). Other networks and native TRX are not accepted; network fees are separate.</p>
      <label className="block text-sm">TRON blockchain transaction ID
@@ -243,10 +287,30 @@ export default function ProFileNumberVerification(){
     {verification.status==='active'&&<p className="text-sm text-emerald-200">Pro File Folder activated. Sign in with the secure Client account you registered through the approved company email invitation, then open your private File Folder and company workspace. This verification code is not a login.</p>}
     {verification.status==='rejected'&&<p className="text-sm text-rose-200">Verification requires Administration attention. Contact the company using your application reference.</p>}
     <button type="button" disabled={busy} onClick={()=>void refresh(ticket).catch(e=>setError(e.message))}
-     className="rounded-lg border border-cyan-300/30 px-4 py-2 text-sm">Refresh verification status</button>
+     className="pv-secondary rounded-lg border border-cyan-300/30 px-4 py-2 text-sm">Refresh verification status</button>
    </section>}
-   <p className="text-xs text-slate-400">Weave will not ask you to transfer funds to a wallet sent in a personal message. Verify the official receiving address in this workspace before any payment.</p>
-   <Link href="/" className="inline-block text-xs text-cyan-200 underline">Weave homepage</Link>
+    </div>
+    <aside className="pv-side-panel" aria-label="What a Pro File Folder means">
+     <p className="pv-side-kicker">The Company of Time · Dream Lovely</p>
+     <h2>One Pro standard. Your own business.</h2>
+     <p>A Pro Regional Manager does not receive a predetermined business. Your approved life-work and business plan determine the workshop that grows inside your Pro File Folder.</p>
+     <ol className="pv-side-flow">
+      <li><span className="pv-side-number">01</span><div><strong>Identity & appointment</strong><small>Administration independently confirms your issued File Number and company position.</small></div></li>
+      <li><span className="pv-side-number">02</span><div><strong>Your Pro business world</strong><small>The business plan defines your workshop, systems, operating region and future Customer Door.</small></div></li>
+      <li><span className="pv-side-number">03</span><div><strong>Participation & employees</strong><small>Authorized people work through Weave to expand your business and its purpose.</small></div></li>
+      <li><span className="pv-side-number">04</span><div><strong>Verified company movement</strong><small>Forensics verifies payment evidence, while salary, customers and commercial records remain separate.</small></div></li>
+     </ol>
+     <div className="pv-fee">
+      <span>One-time Pro Folder activation</span><strong>680 USDT</strong>
+      <small>TRON (TRC-20). Only follow payment instructions shown here after independent identity and employment review. No payment is due merely for entering a File Number.</small>
+     </div>
+     <p>Administration is <strong>A Time</strong>. Clients are <strong>Dream Lovely</strong>. Your business becomes part of the company through authorized systems and recorded participation.</p>
+    </aside>
+   </div>
+   <footer className="pv-footer">
+    <p>Weave will not ask you to transfer funds to a wallet sent in a personal message. Confirm the official receiving address inside your verified workspace before any payment.</p>
+    <Link href="/">Return to Weave homepage</Link>
+   </footer>
   </div>
  </main>
 }
