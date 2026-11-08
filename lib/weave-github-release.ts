@@ -107,12 +107,54 @@ type ReleaseBoard=Awaited<ReturnType<typeof buildReleaseBoard>>
 let releaseBoardCache:{data:ReleaseBoard;expiresAt:number}|null=null
 let releaseBoardRefresh:Promise<ReleaseBoard>|null=null
 let releaseBoardVersion=0
-export async function workGithubReleaseBoard(){
+type MainStatus=Awaited<ReturnType<typeof readMainStatus>>
+let mainCache:{data:MainStatus;expiresAt:number}|null=null
+let mainRefresh:Promise<MainStatus>|null=null
+let lastManualMainCheck=0
+
+export async function workGithubReleaseBoard(refreshMain=false){
+  const [board,main]=await Promise.all([readReleaseBoard(),readCachedMain(refreshMain)])
+  return {...board,main:main.candidate,
+    issues:main.issue?[main.issue,...board.issues]:board.issues,
+    mainCheckedAt:main.checkedAt}
+}
+
+function usesAuthenticatedReads(){
+  return Boolean(token(false)&&Date.now()>=publicReadsUntil)
+}
+
+function readCachedMain(manual:boolean){
+  if(mainRefresh)return mainRefresh
+  const now=Date.now()
+  const manualDue=manual&&now-lastManualMainCheck>=(usesAuthenticatedReads()?5000:15000)
+  if(mainCache&&mainCache.expiresAt>now&&!manualDue)return mainCache.data
+  if(manual)lastManualMainCheck=now
+  const version=releaseBoardVersion
+  const refresh=readMainStatus().then(data=>{
+    const ttl=usesAuthenticatedReads()?20000:3*60*1000
+    if(version===releaseBoardVersion)mainCache={data,expiresAt:Date.now()+ttl}
+    return data
+  }).finally(()=>{if(mainRefresh===refresh)mainRefresh=null})
+  mainRefresh=refresh
+  return refresh
+}
+
+async function readMainStatus(){
+  const checkedAt=new Date().toISOString()
+  let sha:string
+  try{sha=await githubMainSha()}
+  catch(error){return {candidate:null,issue:githubIssue('GitHub main',error),checkedAt}}
+  try{return {candidate:{sha,check:await releaseProductionCheck(sha,'main')},issue:null,checkedAt}}
+  catch(error){return {candidate:{sha,check:{state:'unavailable',sha,runUrl:null} as GithubCheck},
+    issue:githubIssue('Main Production Check',error),checkedAt}}
+}
+
+async function readReleaseBoard(){
   if(releaseBoardCache&&releaseBoardCache.expiresAt>Date.now())return releaseBoardCache.data
   if(releaseBoardRefresh)return releaseBoardRefresh
   const version=releaseBoardVersion
   const refresh=buildReleaseBoard().then(data=>{
-    const ttl=data.issues.length?60000:token(false)&&Date.now()>=publicReadsUntil?60000:publicReadTtl
+    const ttl=data.issues.length||usesAuthenticatedReads()?60000:publicReadTtl
     if(version===releaseBoardVersion)releaseBoardCache={data,expiresAt:Date.now()+ttl}
     return data
   }).finally(()=>{if(releaseBoardRefresh===refresh)releaseBoardRefresh=null})
@@ -120,20 +162,12 @@ export async function workGithubReleaseBoard(){
   return refresh
 }
 async function buildReleaseBoard(){
-  const mainCheck=async()=>{
-    const sha=await githubMainSha()
-    try{return {sha,check:await releaseProductionCheck(sha,'main'),issue:null}}
-    catch(error){return {sha,check:{state:'unavailable',sha,runUrl:null} as GithubCheck,issue:githubIssue('Main Production Check',error)}}
-  }
-  const [main,pulls,checks,promotions]=await Promise.allSettled([
-    mainCheck(),
+  const [pulls,checks,promotions]=await Promise.allSettled([
     github('/pulls?state=open&base=main&per_page=12&sort=updated&direction=desc'),
     readWorkflowRuns('event=pull_request&per_page=100'),
     recentWorkPromotions(),
   ])
   const issues:string[]=[]
-  if(main.status==='rejected')issues.push(githubIssue('GitHub main',main.reason))
-  else if(main.value.issue)issues.push(main.value.issue)
   if(pulls.status==='rejected')issues.push(githubIssue('Open pull requests',pulls.reason))
   else if(!Array.isArray(pulls.value))issues.push('Open pull requests · GitHub did not return a pull request list.')
   if(checks.status==='rejected')issues.push(githubIssue('Pull request Production Checks',checks.reason))
@@ -153,7 +187,6 @@ async function buildReleaseBoard(){
   })
   return {
     repository:REPO,repositoryUrl:'https://github.com/'+REPO,
-    main:main.status==='fulfilled'?{sha:main.value.sha,check:main.value.check}:null,
     pulls:pending,pullsAvailable:pulls.status==='fulfilled'&&Array.isArray(pulls.value),issues,
     promotions:promotions.status==='fulfilled'?promotions.value:[],promotionConfigured:Boolean(token(true)),
     fetchedAt:new Date().toISOString(),
@@ -227,6 +260,9 @@ export async function mergeApprovedWorkPull(input:{number:number;headSha:string;
   }
   releaseBoardCache=null // The GitHub write succeeded; re-read main and PR status.
   releaseBoardRefresh=null
+  mainCache=null
+  mainRefresh=null
+  lastManualMainCheck=0
   releaseBoardVersion++
   const mergedSha=String(result.sha).toLowerCase()
   let auditRecorded=true

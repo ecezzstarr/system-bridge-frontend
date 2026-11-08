@@ -15,7 +15,7 @@ type Board={
   repository:string;repositoryUrl:string;main:WorkMainCandidate|null;pulls:WorkPull[]
   issues:string[];pullsAvailable:boolean
   promotions:Array<{id:string;pr_number:number;head_sha:string;result_sha:string|null;status:string;created_at:string}>
-  promotionConfigured:boolean;fetchedAt:string
+  promotionConfigured:boolean;fetchedAt:string;mainCheckedAt:string
 }
 const short=(sha:string)=>sha.slice(0,12)
 const stateLabel=(value:WorkMainCandidate['check']['state'])=>({
@@ -39,12 +39,13 @@ export default function WorkGithubOracleFlow({
   const [notice,setNotice]=useState('')
   const refreshVersion=useRef(0)
 
-  const refresh=async(silent=false)=>{
+  const refresh=async(silent=false,refreshMain=false)=>{
     if(!token)return
     const version=++refreshVersion.current
     if(!silent)setLoading(true)
+    if(refreshMain)onMainChange(null)
     try{
-      const response=await fetch('/api/admin/work-github-release',{
+      const response=await fetch('/api/admin/work-github-release'+(refreshMain?'?refresh=main':''),{
         headers:{Authorization:'Bearer '+token},cache:'no-store',
       })
       const body=await response.json()
@@ -87,7 +88,7 @@ export default function WorkGithubOracleFlow({
       onMainChange(null)
       setNotice('GitHub accepted PR #'+pull.number+' into main. Await a new successful Production Check before authorizing Oracle.'+(body.result?.auditRecorded===false?' The WEAVE merge audit update needs reconciliation.':''))
       setMergePhrase('');setSelectedPr(null)
-      await refresh(true)
+      await refresh(true,true)
     }catch(reason){setError(reason instanceof Error?reason.message:'GitHub merge refused')}
     finally{setBusy(false)}
   }
@@ -112,7 +113,7 @@ export default function WorkGithubOracleFlow({
           Successful production health, not the GitHub merge, closes the movement.
         </p>
       </div>
-      <button type="button" disabled={!token||loading||busy} onClick={()=>void refresh()}
+      <button type="button" disabled={!token||loading||busy} onClick={()=>void refresh(false,true)}
         className="inline-flex items-center gap-2 rounded-lg border border-white/20 px-3 py-2 text-xs font-black text-sky-100 disabled:opacity-50">
         <RefreshCw className={loading?'h-4 w-4 animate-spin':'h-4 w-4'}/> Refresh GitHub
       </button>
@@ -136,6 +137,7 @@ export default function WorkGithubOracleFlow({
           <div className="flex items-center gap-2 text-xs font-black text-sky-200"><GitPullRequest className="h-4 w-4"/> Canonical GitHub main</div>
           <p className="mt-3 break-all font-mono text-xs text-white">{main?.sha||'GitHub main unavailable'}</p>
           <p className="mt-2 text-xs text-slate-300">Production Check: <strong>{main?stateLabel(main.check.state):'Unavailable'}</strong></p>
+          <p className="mt-1 text-[10px] text-slate-400">Main checked {new Date(board.mainCheckedAt).toLocaleString()}.</p>
           <div className="mt-2 flex flex-wrap gap-3">
             <a href={board.repositoryUrl+'/commits/main'} target="_blank" rel="noreferrer noopener" className="text-xs text-sky-200 underline">View commits</a>
             {main?.check.runUrl&&<a href={main.check.runUrl} target="_blank" rel="noreferrer noopener" className="text-xs text-sky-200 underline">View CI</a>}
@@ -198,7 +200,7 @@ export default function WorkGithubOracleFlow({
         </div>
       </details>}
       <p className="mt-4 text-[10px] leading-5 text-slate-500">
-        GitHub may still reject a merge for branch protection, missing human reviews, conflicts or token permissions. No GitHub code is deployed just by clicking Merge. Last checked {new Date(board.fetchedAt).toLocaleString()}.
+        GitHub may still reject a merge for branch protection, missing human reviews, conflicts or token permissions. Production deployment has its own authorization. Pull requests checked {new Date(board.fetchedAt).toLocaleString()}.
       </p>
     </>}
   </section>

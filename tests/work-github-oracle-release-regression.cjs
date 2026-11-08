@@ -65,10 +65,10 @@ const run=(sha,branch,event,conclusion='success')=>({
   head_sha:sha,head_branch:branch,event,status:'completed',conclusion,created_at:'2026-11-08T00:00:00Z',
 })
 
-function loadGithub(fetch,env={}){
+function loadGithub(fetch,env={},clock=Date){
   const exports={}
   vm.runInNewContext(compiled,{
-    exports,fetch,process:{env},URLSearchParams,AbortSignal,
+    exports,fetch,process:{env},URLSearchParams,AbortSignal,Date:clock,
     require:()=>({sql:async()=>[]}),
   })
   return exports
@@ -76,25 +76,49 @@ function loadGithub(fetch,env={}){
 
 async function exerciseHandoff(){
   const requests=[]
+  let time=Date.parse('2026-11-08T11:00:00Z')
+  class Clock extends Date {
+    constructor(){super(time)}
+    static now(){return time}
+  }
+  let visibleMain=mainSha
+  let mainRunStatus='completed'
   const gh=loadGithub(async(url,options)=>{
     const route=new URL(url)
     const authenticated=Boolean(options.headers.Authorization)
     requests.push({route,authenticated})
     if(authenticated)return new Response(null,{status:401})
-    if(route.pathname.endsWith('/branches/main'))return Response.json({commit:{sha:mainSha}})
+    if(route.pathname.endsWith('/branches/main'))return Response.json({commit:{sha:visibleMain}})
     if(route.pathname.endsWith('/pulls'))return Response.json([{number:325,head:{sha:prSha}}])
     if(route.searchParams.get('event')==='pull_request'){
       return Response.json({workflow_runs:[run(prSha,'feat/weave-world-map','pull_request')]})
     }
-    return Response.json({workflow_runs:[run(mainSha,'main','push')]})
-  },{WEAVE_GITHUB_READ_TOKEN:'invalid-test-token'})
+    return Response.json({workflow_runs:[{...run(visibleMain,'main','push'),status:mainRunStatus}]})
+  },{WEAVE_GITHUB_READ_TOKEN:'invalid-test-token'},Clock)
   const [first,second]=await Promise.all([gh.workGithubReleaseBoard(),gh.workGithubReleaseBoard()])
-  assert.equal(first,second,'Concurrent refreshes share a GitHub board request')
+  assert.equal(first.main,second.main,'Concurrent refreshes share the same main verification')
   assert.equal(first.main.check.state,'passed')
   assert.equal(first.pulls[0].check.state,'passed')
   assert.equal(first.issues.length,0)
   assert.equal(requests.filter(request=>!request.authenticated).length,4,'Board uses four public reads even with multiple rows')
-  assert.equal(await gh.workGithubReleaseBoard(),first,'Public reads use a shared cache')
+  assert.equal((await gh.workGithubReleaseBoard()).main,first.main,'Public reads use a shared cache')
+
+  visibleMain='c'.repeat(40)
+  mainRunStatus='queued'
+  time+=1000
+  const afterMerge=await gh.workGithubReleaseBoard(true)
+  assert.equal(afterMerge.main.sha,visibleMain,'Manual refresh detects a merge made directly in GitHub')
+  assert.equal(afterMerge.main.check.state,'pending','The old passed check cannot unlock the new SHA')
+  assert.notEqual(afterMerge.mainCheckedAt,first.mainCheckedAt)
+  assert.equal(afterMerge.fetchedAt,first.fetchedAt,'Refreshing main does not repeat pull request discovery')
+  assert.equal(requests.filter(request=>!request.authenticated).length,6)
+  await assert.rejects(gh.assertDeployableMain(mainSha),/main changed/)
+  await assert.rejects(gh.assertDeployableMain(visibleMain),/has not passed/)
+  mainRunStatus='completed'
+  time+=3*60*1000
+  const passed=await gh.workGithubReleaseBoard()
+  assert.equal(passed.main.check.state,'passed','Automatic main refresh picks up the newly passed check')
+  assert.equal(passed.fetchedAt,first.fetchedAt)
 
   const unavailable=loadGithub(async url=>{
     if(url.includes('/branches/main'))return Response.json({commit:{sha:mainSha}})
