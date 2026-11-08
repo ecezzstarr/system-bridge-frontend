@@ -1,6 +1,6 @@
 import {randomUUID} from 'node:crypto'
 import {sql} from '@/lib/db'
-import {listWeaveDeploymentRecords} from '@/lib/weave-deployment-records'
+import {listHealthyWeaveReleases,listWeaveDeploymentRecords} from '@/lib/weave-deployment-records'
 
 export type ReleaseAction='deploy_latest'|'rollback'
 export type ReleaseJobStatus='queued'|'running'|'healthy'|'rolled_back'|'failed'|'cancelled'
@@ -45,23 +45,23 @@ export function ensureReleaseWorkshopSchema(){
 
 export async function getReleaseWorkshopState(){
   await ensureReleaseWorkshopSchema()
-  const [jobs,history,workers]=await Promise.all([
+  const [jobs,history,workers,healthyReleases]=await Promise.all([
     sql`SELECT id,server_key,action,target_sha,resolved_sha,previous_sha,
         status,requested_by,requested_at,started_at,finished_at,verification,details
         FROM weave_release_jobs WHERE server_key=${serverKey()}
         ORDER BY requested_at DESC LIMIT 30`,
-    listWeaveDeploymentRecords(200),
+    listWeaveDeploymentRecords(30),
     sql`SELECT worker_key,last_seen_at FROM weave_release_workers WHERE server_key=${serverKey()} LIMIT 1`,
+    listHealthyWeaveReleases(serverKey()),
   ])
-  const healthyReleases=[...new Set(history.filter(row=>
-    row.server_key===serverKey()&&(row.status==='healthy'||row.status==='rolled_back')
-  ).map(row=>String(row.release_sha)).filter(fullReleaseSha))]
+  const activeRelease=process.env.WEAVE_RELEASE_SHA||null
   const lastSeen=workers[0]?.last_seen_at?new Date(workers[0].last_seen_at):null
   const workerOnline=Boolean(lastSeen&&Date.now()-lastSeen.getTime()<60000)
-  return {jobs,healthyReleases,history:history.slice(0,30),serverKey:serverKey(),
+  return {jobs,healthyReleases,history,serverKey:serverKey(),
+    healthyReleaseCount:healthyReleases.length,
     hostProvider:process.env.WEAVE_HOST_PROVIDER==='oracle'?'Oracle Cloud':'Self-hosted Linux',
     workerOnline,workerLastSeen:lastSeen?.toISOString()||null,
-    activeRelease:process.env.WEAVE_RELEASE_SHA||null}
+    activeRelease}
 }
 
 export async function requestReleaseJob(input:{action:ReleaseAction;targetSha?:string;userId:string;confirmation:string}){
@@ -71,10 +71,10 @@ export async function requestReleaseJob(input:{action:ReleaseAction;targetSha?:s
   if(input.action==='rollback'){
     if(!fullReleaseSha(input.targetSha))throw new Error('Select a full verified historical release SHA.')
     const [known]=await sql`SELECT id FROM weave_deployment_records
-      WHERE release_sha=${input.targetSha} AND status IN ('healthy','rolled_back')
+      WHERE lower(release_sha)=${input.targetSha} AND status IN ('healthy','rolled_back')
       AND server_key=${serverKey()} LIMIT 1`
     if(!known)throw new Error('Rollback is restricted to a previously healthy release on this WEAVE server.')
-    if(input.targetSha===process.env.WEAVE_RELEASE_SHA)throw new Error('Selected release is already active.')
+    if(input.targetSha===process.env.WEAVE_RELEASE_SHA?.toLowerCase())throw new Error('Selected release is already active.')
   }else if(input.action==='deploy_latest'){
     if(!fullReleaseSha(input.targetSha))throw new Error('Select the exact CI-verified main commit before deployment.')
   }else{
@@ -123,18 +123,30 @@ export async function completeReleaseJob(input:{
     throw new Error('Invalid release job identity')
   if(input.resolvedSha&&!fullReleaseSha(input.resolvedSha))throw new Error('Invalid resulting SHA')
   if(input.previousSha&&!fullReleaseSha(input.previousSha))throw new Error('Invalid previous SHA')
+  const resolvedSha=input.resolvedSha?.toLowerCase()||null
+  const previousSha=input.previousSha?.toLowerCase()||null
+  const verification=String(input.verification||'').slice(0,1500)
   const [job]=await sql`UPDATE weave_release_jobs SET
-    status=${input.status},resolved_sha=${input.resolvedSha||null},
-    previous_sha=${input.previousSha||null},
-    verification=${String(input.verification||'').slice(0,1500)},
-    finished_at=now(),lease_token=null
+    status=${input.status},resolved_sha=${resolvedSha},
+    previous_sha=${previousSha},verification=${verification},finished_at=now()
     WHERE id=${input.id}::uuid AND lease_token=${input.leaseToken}::uuid
       AND server_key=${serverKey()} AND status='running'
+      AND (${input.status}='failed' OR lower(target_sha)=${resolvedSha})
       AND ((action='deploy_latest' AND ${input.status} IN ('healthy','failed'))
         OR (action='rollback' AND ${input.status} IN ('rolled_back','failed')))
     RETURNING id,status,resolved_sha,previous_sha,finished_at`
-  if(!job)throw new Error('This release is no longer held by the requesting host worker.')
-  return job
+  if(job)return job
+  // A host can lose the response as the container recovers. An identical
+  // completion on the same private lease may read back its committed result.
+  const [completed]=await sql`SELECT id,status,resolved_sha,previous_sha,finished_at
+    FROM weave_release_jobs
+    WHERE id=${input.id}::uuid AND lease_token=${input.leaseToken}::uuid
+      AND server_key=${serverKey()} AND status=${input.status}
+      AND resolved_sha IS NOT DISTINCT FROM ${resolvedSha}
+      AND previous_sha IS NOT DISTINCT FROM ${previousSha}
+      AND verification=${verification}`
+  if(!completed)throw new Error('This result does not match the authorized release and host lease.')
+  return completed
 }
 
 /** Only not-yet-claimed operations may be cancelled. A running Docker

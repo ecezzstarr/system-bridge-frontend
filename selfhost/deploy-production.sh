@@ -4,8 +4,8 @@ set -Eeuo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-COMPOSE=(docker compose -f docker-compose.selfhost.yml)
 ENV_FILE="$ROOT/selfhost/.env"
+COMPOSE=(docker compose --env-file "$ENV_FILE" -f docker-compose.selfhost.yml)
 JOURNAL_FILE="$ROOT/selfhost/deployment-history.log"
 DEFAULT_DOMAIN="weavingsystem.online"
 DEPLOY_SOURCE="selfhost-deploy"
@@ -77,6 +77,13 @@ if [[ ! -f "$ENV_FILE" ]]; then
   exit 2
 fi
 
+# The Workshop worker and GitHub recovery runner share this production checkout.
+exec 9>"$(git rev-parse --git-path weave-production.lock)"
+if ! flock -n 9; then
+  echo "Another WEAVE production release holds the host checkout lock." >&2
+  exit 7
+fi
+
 if [[ -n "$(git status --porcelain)" ]]; then
   echo "Server checkout has uncommitted source changes. Deployment stopped to preserve them." >&2
   exit 3
@@ -88,8 +95,25 @@ if [[ "$CURRENT_BRANCH" != "main" ]]; then
 fi
 
 git fetch origin main
-PREVIOUS_SHA="$(git rev-parse HEAD)"
 ORIGIN_MAIN_SHA="$(git rev-parse origin/main)"
+PREVIOUS_SHA="$(curl -fsS --max-time 8 http://127.0.0.1:3000/api/health | python3 -c '
+import json, re, sys
+body = json.load(sys.stdin)
+sha = body.get("releaseSha")
+if body.get("status") == "healthy" and isinstance(sha, str) and re.fullmatch("[a-f0-9]{40}", sha, re.I):
+    print(sha.lower())
+' 2>/dev/null)" || PREVIOUS_SHA=""
+if [[ -z "$PREVIOUS_SHA" ]]; then
+  PREVIOUS_SHA="$(read_env_value WEAVE_RELEASE_SHA)"
+  if [[ ! "$PREVIOUS_SHA" =~ ^[0-9a-fA-F]{40}$ ]]; then
+    PREVIOUS_SHA="$(git rev-parse HEAD)"
+  fi
+fi
+if ! git cat-file -e "${PREVIOUS_SHA}^{commit}" 2>/dev/null ||
+   ! git merge-base --is-ancestor "$PREVIOUS_SHA" "$ORIGIN_MAIN_SHA"; then
+  echo "The previous runtime release is absent from canonical main history; safe rollback could not be established." >&2
+  exit 5
+fi
 REQUESTED_SHA="${WEAVE_DEPLOY_TARGET_SHA:-}"
 ROLLBACK_TARGET="${WEAVE_DEPLOY_ROLLBACK_SHA:-}"
 if [[ -n "$ROLLBACK_TARGET" && -n "$REQUESTED_SHA" ]]; then
@@ -122,8 +146,8 @@ elif [[ -n "$REQUESTED_SHA" ]]; then
     exit 5
   fi
   if [[ "$REQUESTED_SHA" != "$ORIGIN_MAIN_SHA" ]]; then
-    log "Verified release $REQUESTED_SHA was superseded by canonical main $ORIGIN_MAIN_SHA. No deployment performed."
-    exit 0
+    echo "Verified release $REQUESTED_SHA was superseded by canonical main $ORIGIN_MAIN_SHA." >&2
+    exit 6
   fi
   TARGET_SHA="$REQUESTED_SHA"
 else
@@ -133,6 +157,7 @@ fi
 DOMAIN="$(read_env_value WEAVE_DOMAIN)"
 DOMAIN="${DOMAIN:-$DEFAULT_DOMAIN}"
 SERVER_KEY="$(ensure_env_value WEAVE_DEPLOYMENT_SERVER weave-selfhost)"
+export WEAVE_DEPLOYMENT_SERVER="$SERVER_KEY"
 DEPLOY_TOKEN="$(read_env_value WEAVE_DEPLOY_RECORD_TOKEN)"
 if [[ -z "$DEPLOY_TOKEN" ]]; then
   DEPLOY_TOKEN="$(python3 - <<'PY'
@@ -146,12 +171,12 @@ fi
 ROLLBACK_PATH="git reset --hard ${PREVIOUS_SHA} && WEAVE_RELEASE_SHA=${PREVIOUS_SHA} docker compose -f docker-compose.selfhost.yml build weave && WEAVE_RELEASE_SHA=${PREVIOUS_SHA} docker compose -f docker-compose.selfhost.yml up -d --remove-orphans"
 
 build_record_payload() {
-  local status="$1" release_sha="$2" previous_sha="$3" verification="${4:-}" details="${5:-{}}"
+  local status="$1" release_sha="$2" previous_sha="$3" verification="${4:-}" details="${5:-}"
   python3 - "$status" "$release_sha" "$previous_sha" "$SERVER_KEY" "$DEPLOY_SOURCE" "$verification" "$ROLLBACK_PATH" "$details" "${WEAVE_DEPLOY_REQUESTED_BY:-}" <<'PY'
 import json,sys,datetime,uuid
 status,release,previous,server,source,verification,rollback,details,requester=sys.argv[1:]
 if requester: uuid.UUID(requester)
-try: detail_obj=json.loads(details)
+try: detail_obj=json.loads(details or '{}')
 except Exception: detail_obj={'note':details}
 detail_obj=dict(detail_obj)
 detail_obj.setdefault('hostJournalEventId',str(uuid.uuid4()))
@@ -179,7 +204,7 @@ send_record_payload() {
 }
 
 post_record() {
-  local status="$1" release_sha="$2" previous_sha="$3" verification="${4:-}" details="${5:-{}}"
+  local status="$1" release_sha="$2" previous_sha="$3" verification="${4:-}" details="${5:-}"
   local payload
   payload="$(build_record_payload "$status" "$release_sha" "$previous_sha" "$verification" "$details")"
   if send_record_payload "$payload"; then
@@ -191,7 +216,7 @@ post_record() {
 
 replay_journal() {
   [[ -s "$JOURNAL_FILE" ]] || return 0
-  local pending="${JOURNAL_FILE}.pending.$$"
+  local pending="${JOURNAL_FILE}.pending.$$.log"
   : > "$pending"
   local payload
   while IFS= read -r payload || [[ -n "$payload" ]]; do
@@ -268,10 +293,21 @@ rollback() {
 
   exit "$exit_code"
 }
-trap 'rollback $? $LINENO' ERR
-
 log "Previous release: $PREVIOUS_SHA"
 log "Verified target release: $TARGET_SHA"
+
+# A release installed outside the Workshop can be verified and recorded
+# without rebuilding or restarting the active container.
+if [[ -z "$ROLLBACK_TARGET" && "$TARGET_SHA" == "$PREVIOUS_SHA" ]] &&
+   health_matches http://127.0.0.1:3000/api/health "$TARGET_SHA" &&
+   health_matches "https://${DOMAIN}/api/health" "$TARGET_SHA"; then
+  post_record healthy "$TARGET_SHA" "" "Already live and verified against local and public /api/health" || true
+  replay_journal || true
+  log "LIVE VERIFIED: $TARGET_SHA at https://${DOMAIN}"
+  exit 0
+fi
+
+trap 'rollback $? $LINENO' ERR
 
 # Every movement is attempted against the current WEAVE runtime. On the first
 # rollout, or during an outage, a failed record write is appended to the host
@@ -314,6 +350,7 @@ post_record restarted "$TARGET_SHA" "$PREVIOUS_SHA" "Docker Compose restarted WE
 DEPLOY_STAGE="public_health"
 log "STAGE=$DEPLOY_STAGE"
 wait_for_health "https://${DOMAIN}/api/health" "$TARGET_SHA" "Public WEAVE"
+trap - ERR
 
 VERIFIED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 if [[ -n "$ROLLBACK_TARGET" ]]; then
@@ -325,10 +362,9 @@ replay_journal || true
 
 DEPLOY_STAGE="postdeploy_diagnostics"
 log "STAGE=$DEPLOY_STAGE"
-"${COMPOSE[@]}" ps
+"${COMPOSE[@]}" ps || true
 "${COMPOSE[@]}" logs --tail=80 weave || true
 "${COMPOSE[@]}" logs --tail=80 caddy || true
 docker image prune -f >/dev/null || true
 
-trap - ERR
 log "LIVE VERIFIED: $TARGET_SHA at https://${DOMAIN}"

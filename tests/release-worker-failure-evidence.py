@@ -91,6 +91,33 @@ class ReleaseFailureEvidence(unittest.TestCase):
                       "local_health", "public_health", "postdeploy_diagnostics"):
             self.assertIn(f'DEPLOY_STAGE="{stage}"', shell)
 
+    def test_worker_checks_the_latest_canonical_main_run(self):
+        sha = "a" * 40
+        run = {"head_sha": sha, "head_branch": "main", "status": "completed", "conclusion": "success"}
+        pr = dict(run, event="pull_request", created_at="2026-11-08T01:00:00Z")
+        main = dict(run, event="push", created_at="2026-11-08T00:00:00Z")
+        failed = dict(run, event="workflow_dispatch", conclusion="failure", created_at="2026-11-08T02:00:00Z")
+        with patch.object(worker, "github_get", return_value={"workflow_runs": [pr]}):
+            self.assertFalse(worker.is_good_ci(sha, ""))
+        with patch.object(worker, "github_get", return_value={"workflow_runs": [pr, main]}):
+            self.assertTrue(worker.is_good_ci(sha, ""))
+        with patch.object(worker, "github_get", return_value={"workflow_runs": [main, pr, failed]}):
+            self.assertFalse(worker.is_good_ci(sha, ""))
+
+    def test_an_already_live_local_sha_cannot_skip_public_verification(self):
+        sha = "a" * 40
+        job = {"action": "deploy_latest", "target_sha": sha}
+        with patch.object(worker, "validate_origin"), \
+                patch.object(worker, "cmd", return_value=sha), \
+                patch.object(worker, "is_good_ci", return_value=True), \
+                patch.object(worker, "get_local_release", return_value=sha), \
+                patch.object(worker, "get_healthy_release", return_value="b" * 40) as public, \
+                patch.object(worker.subprocess, "run", return_value=worker.subprocess.CompletedProcess([], 0)) as executor:
+            with self.assertRaisesRegex(RuntimeError, "Local and public health"):
+                worker.execute(job, {})
+            executor.assert_called_once()
+            public.assert_called_once_with("https://weavingsystem.online/api/health")
+
 
 if __name__ == "__main__":
     unittest.main()

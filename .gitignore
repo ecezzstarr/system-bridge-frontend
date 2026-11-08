@@ -4,6 +4,7 @@ node_modules/
 .env.*
 !.env.example
 *.log
+selfhost/deployment-history.log.pending.*
 __pycache__/
 *.pyc
 *.tsbuildinfo

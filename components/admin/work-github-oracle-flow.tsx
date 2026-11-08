@@ -1,24 +1,25 @@
 'use client'
 
-import {useEffect,useState} from 'react'
+import {useEffect,useRef,useState} from 'react'
 import {ArrowUpRight,CheckCircle2,GitMerge,GitPullRequest,RefreshCw,ShieldCheck,Server} from 'lucide-react'
 
 export type WorkMainCandidate={
   sha:string
-  check:{state:'passed'|'pending'|'failed'|'missing';runUrl:string|null;sha:string}
+  check:{state:'passed'|'pending'|'failed'|'missing'|'unavailable';runUrl:string|null;sha:string}
 }
 type WorkPull={
   number:number;title:string;url:string;headSha:string;branch:string;draft:boolean;author:string
   check:WorkMainCandidate['check'];mergeReady:boolean
 }
 type Board={
-  repository:string;repositoryUrl:string;main:WorkMainCandidate;pulls:WorkPull[]
+  repository:string;repositoryUrl:string;main:WorkMainCandidate|null;pulls:WorkPull[]
+  issues:string[];pullsAvailable:boolean
   promotions:Array<{id:string;pr_number:number;head_sha:string;result_sha:string|null;status:string;created_at:string}>
   promotionConfigured:boolean;fetchedAt:string
 }
 const short=(sha:string)=>sha.slice(0,12)
 const stateLabel=(value:WorkMainCandidate['check']['state'])=>({
-  passed:'Passed',pending:'Running',failed:'Failed',missing:'Not found',
+  passed:'Passed',pending:'Running',failed:'Failed',missing:'No recent run',unavailable:'Unavailable',
 })[value]
 
 export default function WorkGithubOracleFlow({
@@ -36,9 +37,11 @@ export default function WorkGithubOracleFlow({
   const [selectedPr,setSelectedPr]=useState<number|null>(null)
   const [mergePhrase,setMergePhrase]=useState('')
   const [notice,setNotice]=useState('')
+  const refreshVersion=useRef(0)
 
   const refresh=async(silent=false)=>{
     if(!token)return
+    const version=++refreshVersion.current
     if(!silent)setLoading(true)
     try{
       const response=await fetch('/api/admin/work-github-release',{
@@ -46,25 +49,28 @@ export default function WorkGithubOracleFlow({
       })
       const body=await response.json()
       if(!response.ok||!body.success)throw new Error(body.error||'GitHub status unavailable')
+      if(version!==refreshVersion.current)return
       const next:Board=body
       setBoard(next)
       setError('')
       onMainChange(next.main)
     }catch(reason){
+      if(version!==refreshVersion.current)return
+      setBoard(null)
       setError(reason instanceof Error?reason.message:'GitHub status unavailable')
       onMainChange(null) // fail closed: cannot authorize a release with stale CI evidence
-    }finally{if(!silent)setLoading(false)}
+    }finally{if(version===refreshVersion.current)setLoading(false)}
   }
   useEffect(()=>{
     void refresh()
     const timer=window.setInterval(()=>{
       if(document.visibilityState==='visible')void refresh(true)
     },20000)
-    return()=>window.clearInterval(timer)
+    return()=>{window.clearInterval(timer);refreshVersion.current++}
   },[token])
 
   const merge=async(pull:WorkPull)=>{
-    if(busy||!board?.promotionConfigured||!pull.mergeReady)return
+    if(busy||!board?.promotionConfigured||!canRequestMerge(pull))return
     if(mergePhrase!=='MERGE #'+pull.number){setError('Type MERGE #'+pull.number+' exactly');return}
     if(!window.confirm('Merge PR #'+pull.number+' into GitHub main? Production will not deploy until new main checks pass and you separately authorize Oracle.'))return
     setBusy(true);setError('')
@@ -78,6 +84,7 @@ export default function WorkGithubOracleFlow({
       })
       const body=await response.json()
       if(!response.ok||!body.success)throw new Error(body.error||'Merge refused')
+      onMainChange(null)
       setNotice('GitHub accepted PR #'+pull.number+' into main. Await a new successful Production Check before authorizing Oracle.'+(body.result?.auditRecorded===false?' The WEAVE merge audit update needs reconciliation.':''))
       setMergePhrase('');setSelectedPr(null)
       await refresh(true)
@@ -89,7 +96,7 @@ export default function WorkGithubOracleFlow({
   const current=Boolean(mainPassed&&activeRelease?.toLowerCase()===main?.sha.toLowerCase())
   const process=[
     ['1','ChatGPT Work','Commit code and create a GitHub pull request',true],
-    ['2','GitHub review','Review, approve and merge the requested PR',Boolean(board?.pulls.length===0)],
+    ['2','GitHub review','Review, approve and merge the requested PR',Boolean(board?.pullsAvailable&&board.pulls.length===0)],
     ['3','Production Check','Full test and build pass for exact main SHA',Boolean(mainPassed)],
     ['4','Oracle release worker','Available to execute an Administration-approved SHA',workerOnline],
     ['5','Production health','Deployed SHA matches verified main',current],
@@ -119,12 +126,15 @@ export default function WorkGithubOracleFlow({
       </div>)}
     </div>
     {error&&<p role="alert" className="mt-4 rounded-lg border border-rose-300/20 bg-rose-400/5 p-3 text-xs text-rose-200">{error}</p>}
+    {Boolean(board?.issues.length)&&<ul role="status" className="mt-4 space-y-1 rounded-lg border border-amber-300/25 p-3 text-xs text-amber-100">
+      {board?.issues.map(issue=><li key={issue}>{issue}</li>)}
+    </ul>}
     {notice&&<p role="status" className="mt-4 rounded-lg border border-emerald-300/20 p-3 text-xs text-emerald-200">{notice}</p>}
     {loading&&!board?<p className="mt-4 text-sm text-slate-300">Reading GitHub release state…</p>:board&&<>
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
         <div className="rounded-xl border border-white/10 bg-black/20 p-4">
           <div className="flex items-center gap-2 text-xs font-black text-sky-200"><GitPullRequest className="h-4 w-4"/> Canonical GitHub main</div>
-          <p className="mt-3 break-all font-mono text-xs text-white">{main?.sha}</p>
+          <p className="mt-3 break-all font-mono text-xs text-white">{main?.sha||'GitHub main unavailable'}</p>
           <p className="mt-2 text-xs text-slate-300">Production Check: <strong>{main?stateLabel(main.check.state):'Unavailable'}</strong></p>
           <div className="mt-2 flex flex-wrap gap-3">
             <a href={board.repositoryUrl+'/commits/main'} target="_blank" rel="noreferrer noopener" className="text-xs text-sky-200 underline">View commits</a>
@@ -144,7 +154,8 @@ export default function WorkGithubOracleFlow({
           <h3 className="text-sm font-black text-white">GitHub changes awaiting review · {board.pulls.length}</h3>
           <p className="text-[10px] text-slate-400">Only open pull requests against main are shown</p>
         </div>
-        {board.pulls.length===0?<p className="mt-3 text-xs text-slate-400">No open pull requests. If Work committed directly to main, wait for the main Production Check above.</p>:
+        {!board.pullsAvailable?<a href={board.repositoryUrl+'/pulls'} target="_blank" rel="noreferrer noopener" className="mt-3 inline-block text-xs text-sky-200 underline">View open changes on GitHub</a>:
+        board.pulls.length===0?<p className="mt-3 text-xs text-slate-400">No open pull requests. If Work committed directly to main, wait for the main Production Check above.</p>:
           <div className="mt-3 space-y-3">
             {board.pulls.map(pr=><article key={pr.number} className="rounded-xl border border-white/10 bg-black/15 p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
@@ -158,10 +169,10 @@ export default function WorkGithubOracleFlow({
                   {pr.check.runUrl&&<a target="_blank" rel="noreferrer noopener" href={pr.check.runUrl} className="rounded-lg border border-white/20 px-3 py-2 text-xs text-slate-200">Checks</a>}
                 </div>
               </div>
-              {pr.mergeReady&&board.promotionConfigured?
+              {canRequestMerge(pr)&&board.promotionConfigured?
                 <div className="mt-3 border-t border-white/10 pt-3">
                   {selectedPr===pr.number?<>
-                    <p className="text-xs text-amber-100">After reviewing the exact code and required GitHub approvals, type <strong>MERGE #{pr.number}</strong>. This does not deploy to Oracle.</p>
+                    <p className="text-xs text-amber-100">After reviewing the exact code and required GitHub approvals, type <strong>MERGE #{pr.number}</strong>. The server checks this exact commit before requesting the merge.</p>
                     <input value={mergePhrase} onChange={e=>setMergePhrase(e.target.value)} autoComplete="off"
                       aria-label={'Confirm merge of PR '+pr.number}
                       className="mt-2 w-full max-w-sm rounded-lg border border-white/20 bg-[#0a1a25] px-3 py-3 text-xs text-white"
@@ -191,4 +202,9 @@ export default function WorkGithubOracleFlow({
       </p>
     </>}
   </section>
+}
+
+function canRequestMerge(pull:WorkPull){
+  // An older PR can have a passing check outside the board's recent-run feed.
+  return pull.mergeReady||(!pull.draft&&pull.check.state==='missing')
 }
