@@ -8,7 +8,8 @@ export async function GET(request:NextRequest){
   const auth=await requireWorkshopAuthorization(request)
   if(!auth.authorized)return auth.response
   try{
-    return NextResponse.json({success:true,...await workGithubReleaseBoard()},{
+    const refreshMain=request.nextUrl.searchParams.get('refresh')==='main'
+    return NextResponse.json({success:true,...await workGithubReleaseBoard(refreshMain)},{
       headers:{'Cache-Control':'private, no-store'},
     })
   }catch(error){console.error('[Work GitHub handoff]',error)

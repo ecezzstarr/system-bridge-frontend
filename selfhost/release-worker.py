@@ -52,12 +52,19 @@ def api(data, token):
 
 
 def github_get(path, github_token):
-    headers = {"Accept": "application/vnd.github+json", "User-Agent": "weave-release-worker"}
+    headers = {"Accept": "application/vnd.github+json", "User-Agent": "weave-release-worker",
+               "X-GitHub-Api-Version": "2022-11-28"}
     if github_token:
         headers["Authorization"] = "Bearer " + github_token
     request = urllib.request.Request(GITHUB_API + path, headers=headers)
-    with urllib.request.urlopen(request, timeout=20) as response:
-        return json.load(response)
+    try:
+        with urllib.request.urlopen(request, timeout=20) as response:
+            return json.load(response)
+    except urllib.error.HTTPError as error:
+        if github_token and error.code in (401, 403, 404):
+            error.close()
+            return github_get(path, "")
+        raise RuntimeError(f"GitHub Production Check could not be read (HTTP {error.code})") from error
 
 
 def cmd(*args, env=None, timeout=3600):
@@ -98,7 +105,8 @@ def summarize_executor_failure(output, returncode, values):
     for line in reversed(excerpt.splitlines()):
         if re.search(r"(?i)\b(no space left on device|out of memory|cannot connect to the docker daemon|"
                      r"permission denied|failed to solve|did not become healthy|build failed|"
-                     r"uncommitted source changes|missing selfhost/.env)\b", line):
+                     r"uncommitted source changes|missing selfhost/.env|holds the host checkout lock|"
+                     r"safe rollback could not be established|superseded by canonical main)\b", line):
             diagnostic = re.sub(r"\s+", " ", line.strip())[-200:]
             break
     return (f"Executor exit={returncode}; stage={phase}; recovery={recovery}; "
@@ -136,22 +144,26 @@ def is_good_ci(sha, github_token):
         + urllib.parse.urlencode({"head_sha": sha, "branch": "main", "per_page": 30}),
         github_token,
     )
-    return any(item.get("head_sha") == sha
-               and item.get("head_branch") == "main"
-               and item.get("status") == "completed"
-               and item.get("conclusion") == "success"
-               for item in data.get("workflow_runs", []))
+    runs = [item for item in data.get("workflow_runs", [])
+            if item.get("head_sha") == sha and item.get("head_branch") == "main"
+            and item.get("event") in ("push", "workflow_dispatch")]
+    latest = max(runs, key=lambda item: item.get("created_at") or "", default={})
+    return latest.get("status") == "completed" and latest.get("conclusion") == "success"
 
 
-def get_local_release():
+def get_healthy_release(url):
     try:
-        with urllib.request.urlopen("http://127.0.0.1:3000/api/health", timeout=8) as response:
+        with urllib.request.urlopen(url, timeout=8) as response:
             data = json.load(response)
         if data.get("status") == "healthy" and SHA.fullmatch(data.get("releaseSha") or ""):
             return data["releaseSha"]
     except Exception:
         pass
     return None
+
+
+def get_local_release():
+    return get_healthy_release("http://127.0.0.1:3000/api/health")
 
 
 def validate_origin():
@@ -173,7 +185,8 @@ def execute(job, values):
             raise RuntimeError("Administration did not pin an exact GitHub release SHA")
         if target.lower() != main.lower():
             raise RuntimeError("GitHub main moved after Administration approval; refresh and submit a new request")
-        if not is_good_ci(target, values.get("WEAVE_GITHUB_TOKEN", "")):
+        github_token = values.get("WEAVE_GITHUB_TOKEN") or values.get("WEAVE_GITHUB_READ_TOKEN", "")
+        if not is_good_ci(target, github_token):
             raise RuntimeError("Selected main commit has no successful Production Check; deployment is blocked")
     elif action == "rollback":
         if not target or not SHA.fullmatch(target):
@@ -185,9 +198,7 @@ def execute(job, values):
     else:
         raise RuntimeError("Release action not allowed")
 
-    previous = get_local_release() or cmd("git", "rev-parse", "HEAD").strip()
-    if action == "deploy_latest" and previous == target:
-        return "healthy", target, previous, "Already live, health confirmed at requested SHA"
+    previous = get_local_release()
 
     process_env = os.environ.copy()
     process_env.update({
@@ -207,7 +218,8 @@ def execute(job, values):
         raise RuntimeError("Configured host release executor is unavailable")
     result = subprocess.run(
         ["bash", str(executor)],
-        cwd=ROOT, env=process_env, text=True, capture_output=True, timeout=3600,
+        cwd=ROOT, env=process_env, text=True, stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT, timeout=3600,
     )
     if result.returncode:
         summary = summarize_executor_failure(result.stdout, result.returncode, values)
@@ -217,11 +229,12 @@ def execute(job, values):
             print(f"[WEAVE Release] Could not write private failure log: {type(error).__name__}",
                   file=sys.stderr, flush=True)
         raise RuntimeError(summary)
-    final = get_local_release()
-    if final != target:
-        raise RuntimeError("Host did not report the requested healthy release after operation")
+    domain = values.get("WEAVE_DOMAIN") or "weavingsystem.online"
+    if get_local_release() != target or get_healthy_release(f"https://{domain}/api/health") != target:
+        raise RuntimeError("Local and public health did not both report the requested release after execution")
     return ("rolled_back" if action == "rollback" else "healthy",
-            target, previous, "Verified release SHA against local and public /api/health")
+            target, previous if previous != target else None,
+            "Verified release SHA against local and public /api/health")
 
 
 def main():

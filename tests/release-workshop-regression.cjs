@@ -61,6 +61,14 @@ assert.match(flow,/workflow_dispatch/,'Deployment no longer runs automatically o
 assert.doesNotMatch(flow,/workflow_run:/,'CI does not trigger an unapproved production deployment')
 assert.match(audit,/flame_system_records/,'Flame retains real deployment state')
 assert.match(audit,/eight_scroll/,'Sovereign retains authority and rollback history')
+const healthyQuery=audit.slice(audit.indexOf('export async function listHealthyWeaveReleases'))
+assert.match(healthyQuery,/WHERE server_key.*\n\s+AND status IN \('healthy', 'rolled_back'\)/)
+assert.match(healthyQuery,/GROUP BY lower\(release_sha\)/,'Repeated verification and rollback count the same SHA once')
+assert.doesNotMatch(healthyQuery,/LIMIT\b/,'Failed attempts cannot displace older healthy releases from the count')
+assert.match(source,/healthyReleaseCount:healthyReleases.length/)
+assert.match(webPage,/state.healthyReleaseCount/)
+assert.match(source,/lower\(target_sha\)=\$\{resolvedSha\}/,'A successful worker result must match its pinned SHA')
+assert.match(source,/resolved_sha IS NOT DISTINCT FROM/,'A repeated completion can acknowledge the committed result')
 
 execFileSync('bash',['-n',path.join(root,'selfhost/deploy-production.sh')])
 execFileSync('python3',['-c',

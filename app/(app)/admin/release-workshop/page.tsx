@@ -13,7 +13,7 @@ type Job={
   resolved_sha:string|null;previous_sha:string|null;status:string
   requested_at:string;started_at:string|null;finished_at:string|null;verification:string|null
 }
-type Snapshot={success:boolean;serverKey:string;hostProvider:string;activeRelease:string|null;workerOnline:boolean;workerLastSeen:string|null;healthyReleases:string[];jobs:Job[];error?:string}
+type Snapshot={success:boolean;serverKey:string;hostProvider:string;activeRelease:string|null;workerOnline:boolean;workerLastSeen:string|null;healthyReleases:string[];healthyReleaseCount:number; jobs:Job[];error?:string}
 const abbreviated=(sha:string|null|undefined)=>sha?sha.slice(0,12):'unreported'
 const date=(time:string|null)=>time?new Date(time).toLocaleString():'—'
 export default function SovereignReleaseWorkshop(){
@@ -36,7 +36,8 @@ export default function SovereignReleaseWorkshop(){
       const data:Snapshot=await response.json()
       if(!response.ok||!data.success)throw Error(data.error||'Release state unavailable')
       setState(data)
-      setSelected(previous=>previous&&data.healthyReleases.includes(previous)?previous:data.healthyReleases[0]||'')
+      const rollbackReleases=data.healthyReleases.filter(sha=>sha!==data.activeRelease?.toLowerCase())
+      setSelected(previous=>rollbackReleases.includes(previous)?previous:rollbackReleases[0]||'')
       setError('')
     }catch(err:any){if(!silent)setError(err.message||'Release state unavailable')}
     finally{if(!silent)setLoading(false)}
@@ -100,6 +101,7 @@ export default function SovereignReleaseWorkshop(){
   }
   if(!isInitialized||user?.role!=='admin')return null
   const inProgress=state?.jobs.find(job=>job.status==='queued'||job.status==='running')
+  const rollbackReleases=state?.healthyReleases.filter(sha=>sha!==state.activeRelease?.toLowerCase())||[]
   return <main className="mx-auto max-w-6xl px-4 py-8 text-white" data-sovereign-release-workshop="protected">
     <Link href="/admin/deployment-records" className="inline-flex items-center gap-2 text-xs text-sky-200"><ArrowLeft className="h-4 w-4"/>Sovereign + Flame Record</Link>
     <header className="mt-5 border-b border-white/10 pb-6">
@@ -113,7 +115,7 @@ export default function SovereignReleaseWorkshop(){
     {loading&&!state?<p className="py-12 text-sm text-slate-300">Reading the current release authority…</p>:state&&<>
       <div className="mt-5 grid gap-3 sm:grid-cols-3">
         <div className="rounded-xl border border-white/10 bg-white/[.025] p-4"><Server className="h-5 w-5 text-sky-300"/><p className="mt-3 text-xs text-slate-400">Active reported release</p><p className="mt-1 break-all font-mono text-sm font-black">{abbreviated(state.activeRelease)}</p></div>
-        <div className="rounded-xl border border-white/10 bg-white/[.025] p-4"><ShieldCheck className="h-5 w-5 text-emerald-300"/><p className="mt-3 text-xs text-slate-400">Previously healthy releases</p><p className="mt-1 text-xl font-black">{state.healthyReleases.length}</p></div>
+        <div className="rounded-xl border border-white/10 bg-white/[.025] p-4"><ShieldCheck className="h-5 w-5 text-emerald-300"/><p className="mt-3 text-xs text-slate-400">Verified releases recorded</p><p className="mt-1 text-xl font-black">{state.healthyReleaseCount}</p></div>
         <div className="rounded-xl border border-white/10 bg-white/[.025] p-4"><Activity className="h-5 w-5 text-orange-300"/><p className="mt-3 text-xs text-slate-400">Independent release worker</p><p className="mt-1 text-sm font-black">{inProgress?.status==='running'?'Executing release':state.workerOnline?'Connected':'Not recently connected'}</p><p className="mt-1 text-xs text-slate-400">{state.workerLastSeen?'Last check '+date(state.workerLastSeen):'Host setup not verified'} · {inProgress?.status||'No active request'}</p></div>
       </div>
       <WorkGithubOracleFlow token={token} workerOnline={state.workerOnline} activeRelease={state.activeRelease} onMainChange={setGithubMain}/>
@@ -130,7 +132,7 @@ export default function SovereignReleaseWorkshop(){
         </div>}
         {mode==='rollback'&&<label className="mt-5 block text-xs text-slate-200">Healthy release to restore
           <select value={selected} onChange={e=>setSelected(e.target.value)} className="mt-2 block w-full rounded-lg border border-white/20 bg-[#09131e] p-3 font-mono text-xs text-white">
-            {state.healthyReleases.length===0?<option value="">No verified releases recorded</option>:state.healthyReleases.map(sha=><option key={sha} value={sha}>{sha}</option>)}
+            {rollbackReleases.length===0?<option value="">No previous releases available</option>:rollbackReleases.map(sha=><option key={sha} value={sha}>{sha}</option>)}
           </select>
         </label>}
         <label className="mt-5 block text-xs font-semibold text-slate-200">Type {mode==='rollback'?'ROLL BACK':'DEPLOY'} to authorize this request
