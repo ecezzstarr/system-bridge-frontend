@@ -96,7 +96,7 @@ assert.ok(gate.includes("burning-river-crossing-official.webp")&&
 assert.ok(gate.includes('href={worldHref}')&&route.includes('<BurningRiverLiveWorld role={role} carrierCode={carrierCode} requestedDoor={door} legionCode={legionCode} returnHref='),
  'Clickable crossing opens real shared world route')
 assert.ok(gate.includes('encodeURIComponent(carrierCode)')&&
- route.includes('carrierCode={carrierCode}')&&scene.includes('<BurningRiverFoodStore3D carrierCode={carrierCode}/>'),
+ route.includes('carrierCode={carrierCode}')&&map.includes("'/flame-event?carrier='+encodeURIComponent(carrierCode)"),
  'Agent Carrier attribution remains connected while visitors cross into the shared world')
 assert.ok(staff.includes('<BurningRiverOfficialGateway staff staffHref=')&&
  visitor.includes('<BurningRiverOfficialGateway carrierCode={carrierCode}/>'),

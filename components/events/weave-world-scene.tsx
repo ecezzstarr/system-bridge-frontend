@@ -2,8 +2,7 @@
 
 import {Suspense,useEffect,useMemo} from 'react'
 import {Html,OrbitControls,Line} from '@react-three/drei'
-import {useFrame,useThree} from '@react-three/fiber'
-import {BurningRiverFoodStore3D} from './burning-river-food-store-3d'
+import {useFrame} from '@react-three/fiber'
 import {WeaveOpenWorldLandscape} from '@/components/world/weave-open-world-landscape'
 import {CityMaterial} from '@/components/system-switch/file-folder-city-material'
 import * as THREE from 'three'
@@ -13,7 +12,6 @@ import type {PublicWorldDomain} from '@/lib/weave-open-world-domains'
 
 type WorldSceneProps={
   placing:boolean;onPlace:(point:{x:number;z:number})=>void;preview:{x:number;z:number}|null
-  carrierCode?:string|null;focus:'world'|'food'
   domains:PublicWorldDomain[];links:{from:string;to:string}[];selected:string|null
   onSelect:(id:string)=>void
 }
@@ -172,9 +170,7 @@ function DomainCastle({domain,selected,onSelect}:{
   </group>
 }
 
-function WorldScene({domains,links,selected,onSelect,carrierCode,focus,placing,onPlace,preview}:WorldSceneProps){
-  const {camera}=useThree()
-  useEffect(()=>{camera.position.set(...(focus==='food'?[17,11,17]:[0,66,95]) as [number,number,number])},[camera,focus])
+function WorldScene({domains,links,selected,onSelect,placing,onPlace,preview}:WorldSceneProps){
   const byId=useMemo(()=>new Map(domains.map(d=>[d.domainId,d])),[domains])
   return <>
     <fog attach="fog" args={['#1a233c',112,260]}/>
@@ -187,7 +183,6 @@ function WorldScene({domains,links,selected,onSelect,carrierCode,focus,placing,o
       <meshBasicMaterial color="#a7ffe2" side={THREE.DoubleSide} transparent opacity={.85}/>
     </mesh>}
     <MovingBurningRiver/>
-    <BurningRiverFoodStore3D carrierCode={carrierCode}/>
     {domains.map(d=><DomainCastle key={d.domainId} domain={d}
       selected={selected===d.domainId} onSelect={onSelect}/>)}
     {links.map((link,i)=>{
@@ -201,8 +196,7 @@ function WorldScene({domains,links,selected,onSelect,carrierCode,focus,placing,o
     })}
     <OrbitControls makeDefault enableDamping enablePan
       minDistance={16} maxDistance={155}
-      minPolarAngle={.2} maxPolarAngle={1.4}
-      target={focus==='food'?[9.1,3,-5.1]:[0,0,0]}/>
+      minPolarAngle={.2} maxPolarAngle={1.4}/>
   </>
 }
 

@@ -26,7 +26,7 @@ type AtlasProps = {
   status: 'loading' | 'ready' | 'unavailable'
   eventLabel: string
   staffHref: string
-  returnHref: '/system-switch' | '/flame-event'
+  returnHref: string
   onExplore: () => void
   onDomains: (region?: DomainRegion) => void
   onDomain: (id: string) => void

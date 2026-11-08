@@ -5,8 +5,6 @@ import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import {WeaveWorldAtlas,WeaveWorldSheet,worldRegionName} from './weave-world-atlas'
 import {WEAVE_WRITING} from '@/lib/weave-writing'
-import {burningRiverFoodHref} from '@/lib/burning-river-food-catalog'
-import {FlameEventFoodStore} from './flame-event-food-store'
 import {visiblePoll} from '@/lib/visible-poll'
 import {verifyCastlePlacement,type DomainRegion,type PublicWorldDomain} from '@/lib/weave-open-world-domains'
 import {ArrowRight,Castle,Handshake,Layers3,MapPinned,RefreshCcw,Store} from 'lucide-react'
@@ -35,10 +33,9 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
   requestedDoor?:string|null
   role?:'visitor'|'client'|'agent'|'bridger'|'admin'
 }){
- const [view,setView]=useState<'map'|'world'|'food'>('map')
+ const [view,setView]=useState<'map'|'world'>('map')
  const [panel,setPanel]=useState<'domains'|'customers'|'community'|'guide'|'domain'|null>(null)
  const [region,setRegion]=useState<DomainRegion|null>(null)
- const focus=view==='food'?'food':'world'
  const [feed,setFeed]=useState<WorldFeed>(emptyFeed)
  const [status,setStatus]=useState<'loading'|'ready'|'unavailable'>('loading')
  const [selected,setSelected]=useState<string|null>(null)
@@ -175,6 +172,7 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
  const visibleDomains=feed.domains.filter(d=>doorList?Boolean(publicHref(d)):!region||d.location.region===region)
  const crossing=WEAVE_WRITING.systemSwitch
  const staffHref=role==='visitor'?'/login':role==='client'?'/client/system-switch':'/system-switch'
+ const eventHref=carrierCode?'/flame-event?carrier='+encodeURIComponent(carrierCode):'/flame-event'
  const eventLabel=feed.event?.status==='active'?(feed.event.label||'Company Loop 1 · Burning River'):'Shared File Folder Domains'
  const reload=()=>{
    setStatus('loading')
@@ -209,23 +207,21 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
    data-burning-river-live-multiplayer="systems-and-business"
    data-weave-open-world="system-switch-file-folder-world"
    data-weave-official-open-world-reference="burning-river-open-world-official.webp">
-   {view==='map'?<WeaveWorldAtlas domains={feed.domains} status={status} eventLabel={eventLabel} staffHref={staffHref} returnHref={returnHref}
+   {view==='map'?<WeaveWorldAtlas domains={feed.domains} status={status} eventLabel={eventLabel} staffHref={staffHref}
+     returnHref={returnHref==='/system-switch'?returnHref:eventHref}
      onExplore={()=>changeView('world')}
      onDomains={nextRegion=>{setRegion(nextRegion||null);setPanel('domains')}} onDomain={selectDomain}
      onCustomers={()=>setPanel('customers')} onCommunity={()=>setPanel('community')} onGuide={()=>setPanel('guide')}/>
    :<div className="relative h-[100svh] min-h-[430px] overflow-hidden" data-open-world-map="interactive">
      <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_40%,#385c62,#0b2334_68%,#071324)]"/>
      {webgl===true&&<WeaveWorldScene domains={displayDomains} links={feed.links} selected={selected}
-       onSelect={tapCastle} carrierCode={carrierCode} focus={focus} placing={placing}
+       onSelect={tapCastle} placing={placing}
        onPlace={placeOnLand} preview={candidate}/>}
      <nav aria-label="Explore the WEAVE land" className="absolute inset-x-3 top-3 z-20 flex flex-wrap gap-2">
        <button type="button" onClick={showMap} className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-amber-200/40 bg-[#081b34] px-3 text-xs font-bold text-amber-100">
          <MapPinned className="h-4 w-4"/> World Map
        </button>
        <button type="button" onClick={()=>{setRegion(null);setPanel('domains')}} className="min-h-11 rounded-lg border border-amber-200/40 bg-[#081b34] px-3 text-xs font-bold text-amber-100">Domains</button>
-       <button type="button" onClick={()=>{setView(view==='food'?'world':'food');setPlacing(false);setCandidate(null)}} className="min-h-11 rounded-lg border border-amber-200/40 bg-[#081b34] px-3 text-xs font-bold text-amber-100">
-         {view==='food'?'File Folder Land':'WEAVE Food Store'}
-       </button>
      </nav>
      {role==='client'&&owner&&<div className="absolute right-3 top-16 z-20 flex max-w-[57%] flex-col gap-2" data-client-world-castle-relocation="owner-only">
        {!placing&&<button type="button" className="min-h-10 rounded-xl border border-amber-200/40 bg-[#112b36]/95 px-3 text-xs font-bold text-amber-100"
@@ -246,13 +242,8 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
      </div>}
      {operation&&panel===null&&<p role="status" className="absolute bottom-16 left-3 z-20 max-w-[75%] rounded-lg border border-amber-200/40 bg-[#081b34] px-3 py-2 text-xs text-amber-100">{operation}</p>}
      <div className="pointer-events-none absolute bottom-3 left-3 max-w-[calc(100%-1.5rem)] rounded-lg border border-white/20 bg-[#061225]/85 px-3 py-2 text-[11px] text-sky-100">
-       {placing?'Tap free land · Preview · Confirm move':focus==='food'?'Real WEAVE products · Choose an Agent to order':'Drag to look · Pinch to zoom · Tap a Client castle to enter'}
+       {placing?'Tap free land · Preview · Confirm move':'Drag to look · Pinch to zoom · Tap a Client castle to enter'}
      </div>
-     {focus==='food'&&<Link href={burningRiverFoodHref(carrierCode,'agent-electrolyte')}
-       data-weave-food-direct-carrier-order="true"
-       className="absolute bottom-14 right-3 inline-flex min-h-11 items-center rounded-lg border border-amber-200/50 bg-[#07231c]/95 px-3 text-xs font-black text-amber-100 shadow-xl">
-       {carrierCode?'Order through my Agent':'Choose a Food Agent'} <ArrowRight className="ml-2 h-4 w-4"/>
-     </Link>}
      {status==='unavailable'&&<div role="alert" className="absolute bottom-16 left-3 z-20 max-w-[75%] rounded-xl border border-amber-200/50 bg-[#071b2c]/95 p-3 text-xs leading-5 text-amber-100">
        The live land feed did not respond. The landscape remains available while the connection recovers.
        <button type="button" onClick={()=>{setStatus('loading');void refresh().catch(()=>setStatus('unavailable'))}}
@@ -262,7 +253,6 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
        3D is not available on this device. The World Map still opens live domains and Customer Doors.
      </div>}
    </div>}
-   {view==='food'&&webgl===false&&<FlameEventFoodStore carrierCode={carrierCode}/>}
    <WeaveWorldSheet open={panel!==null} title={sheetTitle} onClose={()=>setPanel(null)}>
     {panel==='guide'&&<div className="space-y-3 text-sm leading-6 text-sky-100" data-system-switch-arrival-orientation="true">
       <p>{crossing.arrival}</p>
@@ -270,7 +260,7 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
       <p>The painted settlements mark the terrain. Numbered map markers show verified File Folders. Explore opens the live 3D land, where you can drag, zoom and tap buildings.</p>
       <p>{crossing.privacy}</p>
       <div className="flex flex-wrap gap-2">
-        <Link href="/flame-event" className="rounded-lg border border-amber-200/45 px-3 py-2 text-amber-100">Company Loop 1 · Burning River</Link>
+        <Link href={eventHref} className="rounded-lg border border-amber-200/45 px-3 py-2 text-amber-100">Company Loop 1 · Burning River</Link>
         <Link href={staffHref} className="rounded-lg border border-amber-200/45 px-3 py-2 text-amber-100">Staff Entrance</Link>
         <Link href="/" className="rounded-lg border border-amber-200/45 px-3 py-2 text-amber-100">The Company of Time</Link>
         {owner&&<>
@@ -336,7 +326,7 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
     </div>}
     {panel==='community'&&<div className="space-y-3">
       <p className="text-sm text-sky-100/85">Meet through the Company Loop. Client owners can opt into connections and form work together from their own File Folders.</p>
-      <Link href="/flame-event" className="inline-flex min-h-11 items-center text-sm font-bold text-amber-200">Enter Burning River <ArrowRight className="ml-2 h-4 w-4"/></Link>
+      <Link href={eventHref} className="inline-flex min-h-11 items-center text-sm font-bold text-amber-200">Enter Burning River <ArrowRight className="ml-2 h-4 w-4"/></Link>
       {role==='client'&&owner&&<div className="space-y-3 border-t border-white/10 pt-3" data-client-world-collaboration="opt-in">
         <h4 className="flex items-center gap-2 text-sm font-bold text-amber-100"><Handshake className="h-4 w-4"/> My Company Loop Connections</h4>
         <label className="flex items-start gap-3 text-xs leading-5 text-sky-100/90">

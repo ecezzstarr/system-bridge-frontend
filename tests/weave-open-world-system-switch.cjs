@@ -39,8 +39,8 @@ assert.ok(!visual.includes("backgroundImage:\"url('/weave/flame-event/burning-ri
 assert.ok(scene.includes('new THREE.ShaderMaterial')&&scene.includes('water.uniforms.time.value'),'Event water and fire move on actual 3D surfaces')
 assert.ok(scene.includes('<DomainCastle')&&visual.includes('publicHref(selectedDomain)')&&visual.includes('tapCastle'),'Real Client-built world and commissioned Customer Door gates remain clickable')
 assert.ok(visual.includes('requestedDoor')&&visual.includes('setSelected(match.domainId)'),'A direct Client link focuses the actual public building')
-assert.ok(scene.includes('<BurningRiverFoodStore3D carrierCode={carrierCode}/>')&&food.includes('name="weave-real-food-photo-panels"'),'Existing real product photos stay inside the 3D store')
-assert.ok(visual.includes('data-weave-food-direct-carrier-order="true"'),'A compact Carrier purchase link is kept in the open world')
+assert.doesNotMatch(scene,/BurningRiverFoodStore3D/,'The shared 3D land is reserved for Client File Folders')
+assert.doesNotMatch(visual,/FlameEventFoodStore|burningRiverFoodHref|WEAVE Food Store/,'Open World navigation and fallback exclude food ordering')
 assert.ok(visual.includes("'/api/system-switch/open-world?page='"),'World data reads from canonical System Switch endpoint')
 assert.ok(api.includes('readVerifiedClientDomains')&&source.includes('getPublicBurningRiverWorld'),'Canonical API preserves source-of-truth purchases, builds and open doors')
 assert.ok(publicDomains.includes('customerDoor:{open:doorOpen,href:doorOpen'),'No Customer Door link is published without verified commissioning')
@@ -56,7 +56,7 @@ assert.ok(directMarket.includes("query.via!=='system-switch'"),'A public Custome
 assert.ok(owner.includes('Preview my Customer Door in Weave Open World'),'Owner can preview from its real public world')
 assert.ok(exists('app/system-switch/customer-doors/page.tsx')&&exists('app/system-switch/customer-doors/[slug]/page.tsx'),'Historical URLs remain redirected, not deleted or broken')
 assert.ok(visual.includes("action==='request_connection'")&&visual.includes("action==='respond_connection'"),'Client-owned consented company-event collaboration is preserved')
-console.log('PASS: Permanent WEAVE Open World, Company Loop event distinction, physical Client land, no duplicate plaza, real doors and Carrier food')
+console.log('PASS: Permanent WEAVE Open World, separate Company Loop event, physical Client land and commissioned Customer Doors')
 
 
 // Production load regression: texture/font networking and a ten-second API timeout
@@ -72,7 +72,7 @@ assert.ok(scene.includes('<Suspense fallback={<meshStandardMaterial')&&land.incl
   '3D terrain and Client castles must remain visible while the atlas loads')
 assert.ok(world.includes('data-weave-open-world-loader="loading-3d-world"'),
   'Entry must paint a world loader before heavy 3D modules download')
-assert.ok(visual.includes("useState<'map'|'world'|'food'>('map')")&&visual.includes("import('./weave-world-scene')"),
+assert.ok(visual.includes("useState<'map'|'world'>('map')")&&visual.includes("import('./weave-world-scene')"),
   'Open with the atlas and download the 3D scene only when entered')
 assert.ok(atlas.includes('/weave/flame-event/burning-river-open-world-official.webp')&&atlas.includes('data-weave-live-region={region}'),
   'The approved art frames live geographic markers')
