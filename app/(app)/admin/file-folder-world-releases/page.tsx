@@ -62,6 +62,7 @@ export default function FileFolderGlobalReleaseWorkshop(){
    <p className="text-xs font-bold uppercase tracking-[.2em] text-cyan-200">Administration · File Folder worlds</p>
    <h1 className="text-3xl font-black">File Folder Update Engine</h1>
    <p className="max-w-3xl text-sm leading-6 text-slate-300">Manage live world guidance and tier messages for every Client File Folder. Draft, publish and roll back one version across Standard, Pro, Premium and Plus without redeploying the app. For new executable systems or 3D engine code, use the independent WEAVE Release Workshop.</p>
+   <p className="max-w-3xl text-sm leading-6 text-slate-300">Review what each tier lets a Client do. Trace how the guidance takes an owner from a business idea to the right tools, a working system and, when ready, a Customer Door. Publish guidance for capabilities Clients can actually use.</p>
    <div className="flex flex-wrap gap-4 text-sm text-slate-300">
     <span>Current published version: <strong>{active?.version??'Unavailable'}</strong></span>
     <Link href="/admin/client-folder-upgrades" className="text-cyan-200 underline">CJ Dorado Pro construction & loan verification →</Link>

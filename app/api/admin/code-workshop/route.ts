@@ -60,6 +60,7 @@ export async function POST(request:NextRequest){
    result=await createWorkshopReview({
     actorId,branch:String(body.branch||''),title:String(body.title||''),
     summary:String(body.summary||''),confirmation:String(body.confirmation||''),
+    workArea:body.workArea,
     attestations:Array.isArray(body.attestations)?body.attestations:[],
    })
   }else return NextResponse.json({error:'Unsupported Code Workshop action'},{status:400,headers:noStore})

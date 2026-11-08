@@ -1,4 +1,5 @@
 import {sql} from '@/lib/db'
+import {weaveWorkAreaFromReview} from '@/lib/weave-workshop-purpose'
 
 const REPO='ecezzstarr/system-bridge-frontend'
 const REPO_API='https://api.github.com/repos/'+REPO
@@ -72,6 +73,7 @@ export async function assertDeployableMain(expected:string){
 export type GithubWorkPull={
   number:number;title:string;url:string;headSha:string;branch:string;draft:boolean;
   author:string;check:GithubCheck;mergeReady:boolean;
+  workArea:ReturnType<typeof weaveWorkAreaFromReview>;
 }
 
 let releaseBoardCache:{data:Awaited<ReturnType<typeof buildReleaseBoard>>;expiresAt:number}|null=null
@@ -100,6 +102,7 @@ async function buildReleaseBoard(){
       number:Number(pull.number),title:String(pull.title||'GitHub change').slice(0,180),
       url:String(pull.html_url||''),headSha,branch:String(pull.head?.ref||'').slice(0,160),
       author:String(pull.user?.login||'GitHub').slice(0,100),draft,check,
+      workArea:pull.body?weaveWorkAreaFromReview(pull.body):null,
       mergeReady:!draft&&check.state==='passed',
     } satisfies GithubWorkPull
   }))

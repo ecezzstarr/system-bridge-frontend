@@ -945,6 +945,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
                   workshopPurpose={data.workshop.purpose}
                   initialWorld={world}
                   onWorldChange={setWorld}
+                  onOpenCustomerDoor={data.workshop.type==='crypto_exchange'?undefined:()=>setSurface('business')}
                   initialDistrict={formationDistrict || 'workshop_core'}
                   initialBuildId={selectedBuildId}
                   initialAiFileFolders={aiFileFolders}

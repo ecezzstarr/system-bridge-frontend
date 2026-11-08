@@ -6,6 +6,7 @@ import {
  GitMerge,GitPullRequest,RefreshCw,Save,ShieldCheck,TerminalSquare
 } from 'lucide-react'
 import {useAuth} from '@/lib/auth-provider'
+import {isWeaveWorkArea,WEAVE_INDUSTRY_PURPOSE,WEAVE_WORK_AREAS} from '@/lib/weave-workshop-purpose'
 
 type Entry={name:string;path:string;type:'file'|'dir';size:number}
 type Activity={event:string;branch:string;file_path:string|null;commit_sha:string|null;
@@ -44,6 +45,7 @@ export default function CodeWorkshopPage(){
  const [confirmation,setConfirmation]=useState('')
  const [reviewTitle,setReviewTitle]=useState('')
  const [reviewSummary,setReviewSummary]=useState('')
+ const [workArea,setWorkArea]=useState('')
  const [reviewChecksState,setReviewChecksState]=useState<boolean[]>([false,false,false,false])
  const [prUrl,setPrUrl]=useState('')
  const [prNumber,setPrNumber]=useState<number|null>(null)
@@ -117,6 +119,7 @@ export default function CodeWorkshopPage(){
   try{
    const data=await post('create_branch',{confirmation})
    setBranch(data.branch);setPrNumber(null);setPrUrl('');setReviewChecksState([false,false,false,false])
+   setWorkArea('')
    setConfirmation('');setCommitMessage('')
    print('DRAFT '+data.branch+' from '+data.baseSha.slice(0,12)+' · main unchanged')
    await openFile(file,data.branch)
@@ -143,7 +146,7 @@ export default function CodeWorkshopPage(){
   setBusy(true);setError('')
   try{
    const data=await post('open_review',{
-    branch,title:reviewTitle,summary:reviewSummary,
+    branch,title:reviewTitle,summary:reviewSummary,workArea,
     confirmation,attestations:reviewChecksState,
    })
    setPrNumber(data.number);setPrUrl(data.url);setConfirmation('')
@@ -282,11 +285,20 @@ export default function CodeWorkshopPage(){
       </div>
       <div className="border-t border-white/10 pt-4">
        <h3 className="flex items-center gap-2 font-bold"><GitPullRequest size={17}/>Open independent code review</h3>
+       <p className="mt-2 text-xs leading-6 text-slate-300">{WEAVE_INDUSTRY_PURPOSE}</p>
        <label className="mt-4 block text-xs">Review title
         <input value={reviewTitle} onChange={e=>setReviewTitle(e.target.value)}
          className="mt-2 w-full rounded-lg border border-white/20 bg-[#071625] p-3 text-sm"/>
        </label>
-       <label className="mt-3 block text-xs">Scope, expected behavior and testing evidence
+       <label className="mt-3 block text-xs">Weave work affected
+        <select value={workArea} onChange={e=>setWorkArea(e.target.value)}
+         className="mt-2 w-full rounded-lg border border-white/20 bg-[#071625] p-3 text-sm">
+         <option value="">Choose the main area, if applicable</option>
+         {Object.entries(WEAVE_WORK_AREAS).map(([key,area])=><option key={key} value={key}>{area.label}</option>)}
+        </select>
+       </label>
+       {isWeaveWorkArea(workArea)&&<p className="mt-2 text-xs leading-6 text-sky-100">{WEAVE_WORK_AREAS[workArea].review}</p>}
+       <label className="mt-3 block text-xs">Who participates, what changes, and how you tested it
         <textarea value={reviewSummary} onChange={e=>setReviewSummary(e.target.value)} rows={4}
          className="mt-2 w-full rounded-lg border border-white/20 bg-[#071625] p-3 text-sm"/>
        </label>
