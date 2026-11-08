@@ -28,6 +28,7 @@ import {
   Zap,
 } from 'lucide-react'
 import Link from 'next/link'
+import {fileFolderWorkshopNextStep,WEAVE_INDUSTRY_PURPOSE} from '@/lib/weave-workshop-purpose'
 import { getClientToken } from '@/lib/client-auth'
 import { usePresenceCamera } from '@/components/world/presence-camera'
 import { useEnvironmentOrganizer } from '@/components/world/environment-organizer-provider'
@@ -41,6 +42,7 @@ type Props = {
   workshopPurpose?: string | null
   initialWorld: any
   onWorldChange?: (world: any) => void
+  onOpenCustomerDoor?: () => void
   initialDistrict?: string
   initialBuildId?: string
   initialAiFileFolders?: AiFileFolderIdentity[]
@@ -125,6 +127,7 @@ export default function FileFolderOpenWorld({
   workshopPurpose,
   initialWorld,
   onWorldChange,
+  onOpenCustomerDoor,
   initialDistrict = 'workshop_core',
   initialBuildId = '',
   initialAiFileFolders,
@@ -304,6 +307,29 @@ export default function FileFolderOpenWorld({
   const buildFunding = world?.buildFunding || null
   const fundingGateLocked = Boolean(buildFunding && !buildFunding.publicDoorUnlocked && world?.customerDoor?.formation_status === 'funding_gate')
   const completedBuilds = (world?.builds || []).filter((build: any) => build.status === 'complete')
+  const hasOperatingSystem = (world?.systems || []).some((system: any) => system.status === 'active' && system.system_type !== 'customer_door')
+  const hasCustomerDoor = (world?.systems || []).some((system: any) => system.status === 'active' && system.system_type === 'customer_door')
+  const hasPurpose = Boolean(String(world?.businessFormation?.purpose || '').trim())
+  const nextStep = fileFolderWorkshopNextStep({
+    hasPurpose,
+    building: activeBuilds.some((build: any) => build.system_type !== 'customer_door' || hasPurpose || hasOperatingSystem),
+    hasOperatingSystem,
+    hasCustomerDoor,
+    customerDoorOpen: hasCustomerDoor && world?.customerDoor?.formation_status === 'selling',
+    customerDoorNeedsAttention: fundingGateLocked,
+    canOpenCustomerDoor: Boolean(onOpenCustomerDoor),
+  })
+  const continueBusiness = () => {
+    if (nextStep.destination === 'customer_door') {
+      onOpenCustomerDoor?.()
+      return
+    }
+    if (nextStep.destination === 'business_formation') {
+      document.getElementById('file-folder-business-name')?.focus()
+      return
+    }
+    enterDistrict(nextStep.destination)
+  }
   const availableBuildItems = (world?.inventory || []).filter((item: any) => Number(item.quantity || 0) > 0)
   const isCapabilityPart=(item:any)=>{
     const category=String(item?.category||'')
@@ -478,9 +504,19 @@ export default function FileFolderOpenWorld({
                 <h3 className="mt-2 text-2xl font-black text-white">{world?.businessFormation?.business_name || workshopTitle}</h3>
                 <p className="mt-3 max-w-3xl text-sm leading-7 text-stone-400">This business belongs to you. WEAVE supplies the hosting, technology infrastructure, organization and public integration; you decide what the business becomes and which systems it needs.</p>
               </div>
+              {world&&<div className="rounded-xl border border-cyan-200/25 bg-cyan-300/[.05] p-4">
+                <p className="text-xs font-bold uppercase tracking-wider text-cyan-100">Your next business step</p>
+                <p className="mt-2 text-xs leading-5 text-slate-200">{nextStep.detail}</p>
+                <button type="button" onClick={continueBusiness} className="mt-3 min-h-11 rounded-lg border border-cyan-200/40 px-3 text-xs font-bold text-cyan-100">{nextStep.label}</button>
+                <details className="mt-3 text-xs leading-5 text-slate-300">
+                  <summary className="cursor-pointer font-semibold">How this work belongs in Weave</summary>
+                  <p className="mt-2">{WEAVE_INDUSTRY_PURPOSE}</p>
+                  <p className="mt-2">Bridgers help people find the work, Agents support approved operations and delivery, and Administrations keep the systems and records in order.</p>
+                </details>
+              </div>}
               <div className="border-y border-amber-100/10 py-4" data-client-business-formation="owner-controlled">
                 <div className="grid gap-3 md:grid-cols-2">
-                  <label className="text-[9px] font-black uppercase tracking-[.12em] text-stone-500">Business name<input value={formationDraft.business_name} onChange={event=>setFormationDraft({...formationDraft,business_name:event.target.value})} className="mt-2 w-full rounded-xl border border-white/10 bg-black/25 px-3 py-3 text-sm normal-case tracking-normal text-white outline-none" placeholder="Name your business"/></label>
+                  <label className="text-[9px] font-black uppercase tracking-[.12em] text-stone-500">Business name<input id="file-folder-business-name" value={formationDraft.business_name} onChange={event=>setFormationDraft({...formationDraft,business_name:event.target.value})} className="mt-2 w-full rounded-xl border border-white/10 bg-black/25 px-3 py-3 text-sm normal-case tracking-normal text-white outline-none" placeholder="Name your business"/></label>
                   <label className="text-[9px] font-black uppercase tracking-[.12em] text-stone-500">Sector<input value={formationDraft.sector} onChange={event=>setFormationDraft({...formationDraft,sector:event.target.value})} className="mt-2 w-full rounded-xl border border-white/10 bg-black/25 px-3 py-3 text-sm normal-case tracking-normal text-white outline-none" placeholder="Commerce, media, services, technology…"/></label>
                   <label className="text-[9px] font-black uppercase tracking-[.12em] text-stone-500 md:col-span-2">What the business does<textarea value={formationDraft.purpose} onChange={event=>setFormationDraft({...formationDraft,purpose:event.target.value})} rows={3} className="mt-2 w-full resize-none rounded-xl border border-white/10 bg-black/25 px-3 py-3 text-sm normal-case tracking-normal text-white outline-none" placeholder="Describe the value this business creates."/></label>
                   <label className="text-[9px] font-black uppercase tracking-[.12em] text-stone-500">Who it serves<input value={formationDraft.customer_description} onChange={event=>setFormationDraft({...formationDraft,customer_description:event.target.value})} className="mt-2 w-full rounded-xl border border-white/10 bg-black/25 px-3 py-3 text-sm normal-case tracking-normal text-white outline-none" placeholder="Customers, companies, communities…"/></label>

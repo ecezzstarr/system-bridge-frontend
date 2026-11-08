@@ -2,6 +2,7 @@ const assert=require('node:assert/strict')
 const fs=require('node:fs')
 const path=require('node:path')
 const ts=require('typescript')
+const vm=require('node:vm')
 const root=path.join(__dirname,'..')
 const read=p=>fs.readFileSync(path.join(root,p),'utf8')
 const paths=[
@@ -103,4 +104,28 @@ assert.ok(release.includes("merge_method:'squash'")&&
  host.includes('is_good_ci')&&
  shell.includes('wait_for_health'),
  'Reviewed CI, pinned main and the independent host health-check pipeline must remain unchanged')
+
+const context={}
+vm.runInNewContext(ts.transpileModule(read('lib/weave-workshop-purpose.ts'),{
+ compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022},
+}).outputText,{exports:context})
+assert.equal(context.isWeaveWorkArea('__proto__'),false)
+assert.equal(context.weaveWorkAreaFromReview('An older pull request'),null)
+assert.equal(context.weaveWorkAreaFromReview('<!-- weave-work-area: other -->'),null)
+assert.equal(context.weaveWorkAreaFromReview('<!-- weave-work-area: customer_door -->\r\n\r\nChange summary'),
+ context.WEAVE_WORK_AREAS.customer_door)
+assert.ok(engine.includes('isWeaveWorkArea(workArea)')&&engine.includes('weave-work-area: ')&&
+ release.includes('weaveWorkAreaFromReview(pull.body)'),
+ 'A selected work area travels through the GitHub review')
+const state={hasPurpose:false,building:false,hasOperatingSystem:false,hasCustomerDoor:false,
+ customerDoorOpen:false,customerDoorNeedsAttention:false,canOpenCustomerDoor:true}
+const next=overrides=>context.fileFolderWorkshopNextStep({...state,...overrides}).destination
+assert.equal(next({}),'business_formation')
+assert.equal(next({hasPurpose:true}),'blueprint_foundry')
+assert.equal(next({building:true}),'formation_yard')
+assert.equal(next({hasPurpose:true,customerDoorNeedsAttention:true}),'customer_door')
+assert.equal(next({hasOperatingSystem:true}),'customer_door')
+assert.equal(next({hasOperatingSystem:true,canOpenCustomerDoor:false}),'active_systems')
+assert.equal(context.fileFolderWorkshopNextStep({...state,hasCustomerDoor:true,customerDoorOpen:true}).label,
+ 'Manage offers and orders')
 console.log('WEAVE Company Code Workshop and institutional governance controls passed')

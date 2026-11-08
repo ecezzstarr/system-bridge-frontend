@@ -1,5 +1,6 @@
 import {randomUUID} from 'node:crypto'
 import {getPool} from '@/lib/db'
+import {isWeaveWorkArea,WEAVE_WORK_AREAS} from '@/lib/weave-workshop-purpose'
 
 /**
  * WEAVE Code Workshop. Source editing only on personally owned GitHub draft
@@ -12,7 +13,7 @@ const MAX_BYTES=96*1024
 const EDIT_ROOTS=['app/','components/','lib/','tests/','docs/','public/'] as const
 const PROTECTED=[
  /^app\/api\//, /^app\/\(auth\)\//,
- /^lib\/(?:auth|workshop-auth|weave-github-release|weave-code-workshop|weave-release|db(?:\.|\/)|pg-neon|payment|paystack|wallet|pro-file-folder-activation)/i,
+ /^lib\/(?:auth|workshop-auth|weave-github-release|weave-code-workshop|weave-workshop-purpose|weave-release|db(?:\.|\/)|pg-neon|payment|paystack|wallet|pro-file-folder-activation)/i,
  /^components\/admin\/(?:code-workshop|work-github-oracle-flow)/,
  /^app\/\(app\)\/admin\/(?:code-workshop|release-workshop)/,
  /^tests\/(?:code-workshop|work-github-oracle-release|release-workshop)/,
@@ -195,11 +196,13 @@ export async function commitWorkshopFile(input:{
   notice:'Source committed to the draft branch; main and production remain unchanged.'}
 }
 export async function createWorkshopReview(input:{
- actorId:string;branch:string;title:string;summary:string;confirmation:string;attestations:boolean[]
+ actorId:string;branch:string;title:string;summary:string;confirmation:string;attestations:boolean[];workArea?:unknown
 }){
  const branch=draftFor(input.actorId,input.branch)
  const title=message(input.title,12,130)
  const summary=message(input.summary,60,3000)
+ const workArea=input.workArea
+ if(workArea!=null&&workArea!==''&&!isWeaveWorkArea(workArea))throw Error('Choose a valid Weave work area')
  if(input.confirmation!=='OPEN REVIEW')throw Error('Type OPEN REVIEW to create the GitHub PR')
  if(!Array.isArray(input.attestations)||input.attestations.length!==4||input.attestations.some(v=>v!==true))
   throw Error('Complete all four source governance attestations')
@@ -209,7 +212,11 @@ export async function createWorkshopReview(input:{
  if(files.length>25)throw Error('Split this change into smaller reviewable pull requests')
  files.forEach((file:any)=>safeCodePath(file.filename))
  await ensureAudit()
- const body=summary+'\n\n### WEAVE Code Workshop attestations\n'+
+ const workContext=isWeaveWorkArea(workArea)
+  ?'<!-- weave-work-area: '+workArea+' -->\n\n### Weave work affected\n'+
+   WEAVE_WORK_AREAS[workArea].label+'\n\n'+WEAVE_WORK_AREAS[workArea].review+'\n\n'
+  :''
+ const body=workContext+summary+'\n\n### WEAVE Code Workshop attestations\n'+
   '- This branch was authored without executing host commands.\n'+
   '- Role, customer, financial, privacy and employee boundaries were reviewed.\n'+
   '- Production changes require separate GitHub CI and human release authorization.\n'+

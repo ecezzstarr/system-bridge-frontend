@@ -2,6 +2,7 @@
 
 import {useEffect,useRef,useState} from 'react'
 import {ArrowUpRight,CheckCircle2,GitMerge,GitPullRequest,RefreshCw,ShieldCheck,Server} from 'lucide-react'
+import type {weaveWorkAreaFromReview} from '@/lib/weave-workshop-purpose'
 
 export type WorkMainCandidate={
   sha:string
@@ -10,6 +11,7 @@ export type WorkMainCandidate={
 type WorkPull={
   number:number;title:string;url:string;headSha:string;branch:string;draft:boolean;author:string
   check:WorkMainCandidate['check'];mergeReady:boolean
+  workArea?:ReturnType<typeof weaveWorkAreaFromReview>
 }
 type Board={
   repository:string;repositoryUrl:string;main:WorkMainCandidate|null;pulls:WorkPull[]
@@ -165,6 +167,10 @@ export default function WorkGithubOracleFlow({
                   <p className="text-xs font-black text-white">#{pr.number} · {pr.title}</p>
                   <p className="mt-2 break-all text-[10px] text-slate-400">{pr.author} · {pr.branch} · {short(pr.headSha)} · {pr.draft?'Draft':'Reviewable'}</p>
                   <p className="mt-2 text-xs text-slate-300">Pull request check: {stateLabel(pr.check.state)}</p>
+                  {pr.workArea&&<div className="mt-3 border-l border-sky-200/30 pl-3 text-xs leading-5 text-slate-300">
+                    <p className="font-semibold text-sky-100">{pr.workArea.label}</p>
+                    <p>{pr.workArea.review}</p>
+                  </div>}
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                   <a target="_blank" rel="noreferrer noopener" href={pr.url} className="inline-flex items-center gap-1 rounded-lg border border-white/20 px-3 py-2 text-xs text-sky-200">Review code <ArrowUpRight className="h-3.5 w-3.5"/></a>
