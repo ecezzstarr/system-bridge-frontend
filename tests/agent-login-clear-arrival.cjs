@@ -9,32 +9,37 @@ const authLayout = read('app/(auth)/layout.tsx')
 const dashboard = read('app/(app)/agent/dashboard/page.tsx')
 const ads = read('components/live-ad-surface.tsx')
 const event = read('components/events/position-event-world.tsx')
+const clientLogin = read('app/client/login/page.tsx')
 
-// A live Flame Event must not force an Agent through an obscured arrival route.
-assert.match(login, /loggedInUser\?\.role === 'agent'[\s\S]*?router\.replace\('\/agent\/dashboard'\)/)
-assert.ok(authLayout.includes("user?.role === 'agent' ? '/agent/dashboard'"),
-  'Auth layout agrees with the Agent login handler')
-assert.ok(event.includes("href:'/agent/dashboard'"),
-  'Burning River still links to the Agent department world')
+// The Company of Time opens at its current event for every position.
+// The dashboard is reached only through its real department entrance or after the event closes.
+assert.match(login, /loggedInUser\?\.role === 'admin'[\s\S]*?router\.replace\(eventLive \? '\/event' : '\/admin\/dashboard'\)/)
+assert.match(login, /loggedInUser\?\.role === 'agent'[\s\S]*?router\.replace\(eventLive \? '\/event' : '\/agent\/dashboard'\)/)
+assert.match(login, /loggedInUser\?\.role === 'bridger'[\s\S]*?router\.replace\(eventLive \? '\/event' : '\/bridger\/dashboard'\)/)
+assert.match(login, /loggedInUser\?\.role === 'client'[\s\S]*?router\.replace\(eventLive \? '\/client\/event' : '\/client\/dashboard'\)/)
+assert.ok(clientLogin.includes("isFlameEventActive() ? '/client/event' : '/client/dashboard'"),
+  'File Number Client login also opens at the current company event')
+assert.ok(authLayout.includes("pathname === '/login' || pathname === '/register'"),
+  'Auth layout leaves the sign-in and registration redirect to their owning forms')
+assert.ok(authLayout.includes("eventLive ? '/event'"),
+  'Authenticated recovery from other auth routes respects the company event')
+for (const role of ['admin','agent','bridger','client']) {
+  assert.ok(event.includes("href:'/"+role+"/dashboard'"),
+    role+' still has a real department world entrance on Burning River')
+}
 
-// The two informative login dialogs are available by choice, never auto-open.
-assert.ok(dashboard.includes('data-agent-login-notice="non-blocking"'))
-assert.ok(dashboard.includes("if(loop){setLoginNotice('loop1');setAgilityQueued(agility)}"))
-assert.ok(dashboard.includes("else if(agility)setLoginNotice('agility')"))
-assert.ok(!dashboard.includes('if(loop){setShowLoop1Ad(true)'),
-  'Do not auto-open the Loop 1 dialog on Agent arrival')
-assert.ok(!dashboard.includes('else if(agility)setShowAgilityAd(true)'),
-  'Do not auto-open the Agility dialog on Agent arrival')
-assert.ok(dashboard.includes('Read update'), 'Agent can explicitly open company notices')
-
-// Event advertisements can be seen and dismissed without blurring the whole event.
-assert.ok(ads.includes("user?.role === 'agent' &&"))
+// Announcements are informative, never a fullscreen dimming or blur at the event.
 assert.ok(ads.includes("pathname === '/event' || pathname === '/agent/dashboard'"))
 assert.ok(ads.includes("data-agent-event-ad={agentWorkingNotice?'non-blocking':undefined}"))
 assert.ok(ads.includes('pointer-events-none fixed bottom-3'),
-  'The Agent event notice has no backdrop and does not intercept the full page')
-assert.ok(ads.includes('setAdsPlacement(null)'))
+  'Agent event advertisement is a small pointer-transparent surface')
 assert.ok(ads.includes('adsPlacement === placement'),
-  'Previous-route advertisements cannot linger on the next route')
+  'Stale ad content cannot remain over another route')
+assert.ok(dashboard.includes('data-agent-login-notice="non-blocking"'),
+  'Agent dashboard notices are optional and nonblocking')
+assert.ok(!dashboard.includes('if(loop){setShowLoop1Ad(true)'),
+  'No automatically opened Agent commission modal')
+assert.ok(!dashboard.includes('else if(agility)setShowAgilityAd(true)'),
+  'No automatically opened Agent stock modal')
 
-console.log('PASS: Agent enters an unobstructed dashboard; event and announcements remain reachable')
+console.log('PASS: all roles enter Burning River; Agent event remains readable without dashboard bypass')
