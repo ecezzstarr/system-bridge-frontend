@@ -1,12 +1,12 @@
 'use client'
 
-import {useEffect,useState,useCallback} from 'react'
+import {Component,useEffect,useState,useCallback,type ReactNode} from 'react'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
-import {WeaveWorldAtlas,WeaveWorldSheet,worldRegionName} from './weave-world-atlas'
+import {WeaveWorldAtlas,WeaveWorldSheet,worldRegionName,type WorldDomainFilter} from './weave-world-atlas'
 import {WEAVE_WRITING} from '@/lib/weave-writing'
 import {visiblePoll} from '@/lib/visible-poll'
-import {verifyCastlePlacement,type DomainRegion,type PublicWorldDomain} from '@/lib/weave-open-world-domains'
+import {verifyCastlePlacement,type PublicWorldDomain} from '@/lib/weave-open-world-domains'
 import {ArrowRight,Castle,Handshake,Layers3,MapPinned,RefreshCcw,Store} from 'lucide-react'
 
 const WeaveWorldScene=dynamic(()=>import('./weave-world-scene').then(m=>m.WeaveWorldScene),{
@@ -14,12 +14,25 @@ const WeaveWorldScene=dynamic(()=>import('./weave-world-scene').then(m=>m.WeaveW
   loading:()=> <div role="status" className="flex h-full items-center justify-center text-sm text-sky-100">Opening the 3D land…</div>,
 })
 
+function RestoreWorldMap({onUnavailable}:{onUnavailable:()=>void}){
+ useEffect(onUnavailable,[onUnavailable])
+ return null
+}
+
+class WorldGraphicsBoundary extends Component<{children:ReactNode;onUnavailable:()=>void},{failed:boolean}>{
+ state={failed:false}
+ static getDerivedStateFromError(){return {failed:true}}
+ render(){
+   return this.state.failed?<RestoreWorldMap onUnavailable={this.props.onUnavailable}/>:this.props.children
+ }
+}
+
 type Connection={id:string;status:'pending'|'accepted'|'declined';otherDomainId:string;direction:'incoming'|'outgoing';requestNote:string}
 type JointProject={id:string;connectionId:string;kind:string;title:string;status:'proposed'|'active';createdBySelf:boolean;otherDomainId:string;ownContribution:boolean;partnerContribution:boolean}
 type OwnOperatingSystem={id:string;name:string;systemType:string}
 type OwnWorld={domainId:string;worldSlot:number;collaborationOpen:boolean;connections:Connection[];projects:JointProject[];ownSystems:OwnOperatingSystem[]}
-type WorldFeed={domains:PublicWorldDomain[];links:{from:string;to:string}[];hasMore:boolean;event?:{label:string;status:string}}
-const emptyFeed:WorldFeed={domains:[],links:[],hasMore:false}
+type WorldFeed={page:number;domains:PublicWorldDomain[];links:{from:string;to:string}[];hasMore:boolean;event?:{label:string;status:string}}
+const emptyFeed:WorldFeed={page:-1,domains:[],links:[],hasMore:false}
 
 const stageLabel:{[key:string]:string}={
  foundation:'World foundation',forming:'Structures forming',
@@ -35,7 +48,7 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
 }){
  const [view,setView]=useState<'map'|'world'>('map')
  const [panel,setPanel]=useState<'domains'|'customers'|'community'|'guide'|'domain'|null>(null)
- const [region,setRegion]=useState<DomainRegion|null>(null)
+ const [domainFilter,setDomainFilter]=useState<WorldDomainFilter>({})
  const [feed,setFeed]=useState<WorldFeed>(emptyFeed)
  const [status,setStatus]=useState<'loading'|'ready'|'unavailable'>('loading')
  const [selected,setSelected]=useState<string|null>(null)
@@ -49,7 +62,8 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
  const [selectedSystemIds,setSelectedSystemIds]=useState<Record<string,string>>({})
  const [operation,setOperation]=useState('')
  const [busy,setBusy]=useState(false)
- const [webgl,setWebgl]=useState<boolean|null>(null)
+ const [mapNotice,setMapNotice]=useState('')
+ const [sceneReady,setSceneReady]=useState(false)
  const selectedDomain=feed.domains.find(d=>d.domainId===selected)||null
  const publicHref=(domain:PublicWorldDomain)=>{
    if(!domain.customerDoor.open||!domain.customerDoor.href?.startsWith('/market/'))return null
@@ -60,11 +74,11 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
   ?feed.domains.map(d=>d.domainId===owner.domainId?{...d,location:{...d.location,...candidate}}:d)
   :feed.domains
  useEffect(()=>{
-   if(!requestedDoor||selected)return
+   if(!requestedDoor||selected||feed.page!==page)return
    const match=feed.domains.find(d=>d.customerDoor.href?.startsWith('/market/'+encodeURIComponent(requestedDoor)+'?'))
    if(match){setSelected(match.domainId);setPanel('domain')}
    else if(status==='ready'&&feed.hasMore&&page<10)setPage(p=>p+1)
- },[feed.domains,requestedDoor,selected,status,feed.hasMore,page])
+ },[feed.domains,feed.page,requestedDoor,selected,status,feed.hasMore,page])
 
  const refresh=useCallback(async(signal?:AbortSignal)=>{
    const response=await fetch('/api/system-switch/open-world?page='+page,
@@ -72,7 +86,7 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
    const json=await response.json()
    if(!response.ok||!json.success||!Array.isArray(json.domains))throw new Error('World service unavailable')
    if(signal?.aborted)return
-   setFeed({domains:json.domains,links:json.links||[],hasMore:json.hasMore===true,event:json.event})
+   setFeed({page,domains:json.domains,links:json.links||[],hasMore:json.hasMore===true,event:json.event})
    setStatus('ready')
  },[page])
  const refreshOwner=useCallback(async(signal?:AbortSignal)=>{
@@ -86,11 +100,6 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
      collaborationOpen:json.collaborationOpen,connections:json.connections||[],
      projects:json.projects||[],ownSystems:json.ownSystems||[]})
  },[role])
- useEffect(()=>{
-   if(view==='map'||webgl!==null)return
-   try{const canvas=document.createElement('canvas');setWebgl(Boolean(canvas.getContext('webgl2')||canvas.getContext('webgl')))}
-   catch{setWebgl(false)}
- },[view,webgl])
  useEffect(()=>{
    const openCustomerDoors=()=>{
      if(window.location.hash==='#domains')setPanel('customers')
@@ -169,9 +178,10 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
  const accepted=owner?.connections.filter(c=>c.status==='accepted')||[]
  const labels=new Map(feed.domains.map(d=>[d.domainId,d.publicName]))
  const doorList=panel==='customers'
- const visibleDomains=feed.domains.filter(d=>doorList?Boolean(publicHref(d)):!region||d.location.region===region)
+ const visibleDomains=feed.domains.filter(d=>doorList?Boolean(publicHref(d)):
+   (!domainFilter.region||d.location.region===domainFilter.region)&&(!domainFilter.tier||d.tier===domainFilter.tier))
  const crossing=WEAVE_WRITING.systemSwitch
- const staffHref=role==='visitor'?'/login':role==='client'?'/client/system-switch':'/system-switch'
+ const staffHref=role==='visitor'?'/login':role==='client'?'/client/system-switch':'/'+role+'/dashboard'
  const eventHref=carrierCode?'/flame-event?carrier='+encodeURIComponent(carrierCode):'/flame-event'
  const eventLabel=feed.event?.status==='active'?(feed.event.label||'Company Loop 1 · Burning River'):'Shared File Folder Domains'
  const reload=()=>{
@@ -184,6 +194,36 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
    window.scrollTo(0,0)
  }
  const showMap=()=>{changeView('map');setPlacing(false);setCandidate(null);setOperation('')}
+ const graphicsUnavailable=useCallback(()=>{
+   setView('map')
+   setPlacing(false)
+   setCandidate(null)
+   setMapNotice('3D graphics could not open. You can still explore File Folders and Customer Doors on this map.')
+   window.scrollTo(0,0)
+ },[])
+ useEffect(()=>{
+   if(view!=='world'||sceneReady)return
+   const timeout=window.setTimeout(graphicsUnavailable,12000)
+   return ()=>window.clearTimeout(timeout)
+ },[view,sceneReady,graphicsUnavailable])
+ const explore=()=>{
+   try{
+     const context=document.createElement('canvas').getContext('webgl2')
+     if(!context){graphicsUnavailable();return false}
+     context.getExtension('WEBGL_lose_context')?.loseContext()
+   }catch{
+     graphicsUnavailable()
+     return false
+   }
+   setSceneReady(false)
+   setMapNotice('')
+   changeView('world')
+   return true
+ }
+ const browseDomains=(filter:WorldDomainFilter={})=>{
+   setDomainFilter(filter)
+   setPanel('domains')
+ }
  const selectDomain=(id:string)=>{setSelected(id);setPanel('domain')}
  const findMyCastle=()=>{
    if(!owner)return
@@ -192,36 +232,39 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
  }
  const startPlacement=()=>{
    if(!owner)return
+   setPanel(null)
+   if(view!=='world'&&!explore())return
    setPage(Math.max(0,Math.floor((owner.worldSlot-1)/48)))
    setSelected(owner.domainId)
-   changeView('world')
    setPlacing(true)
    setCandidate(null)
-   setPanel(null)
    setOperation('Tap an empty area of land to preview your castle position.')
  }
  const sheetTitle=panel==='customers'?'Customer Doors':panel==='community'?'Community'
   :panel==='guide'?'Open World guide':panel==='domain'?(selectedDomain?.publicName||'File Folder domain')
-  :region?worldRegionName(region):'File Folder domains'
+  :domainFilter.region?worldRegionName(domainFilter.region)
+  :domainFilter.tier?domainFilter.tier[0].toUpperCase()+domainFilter.tier.slice(1)+' File Folders':'File Folder domains'
  return <section className="relative isolate overflow-hidden bg-[#070e1e] text-white"
    data-burning-river-live-multiplayer="systems-and-business"
    data-weave-open-world="system-switch-file-folder-world"
    data-weave-official-open-world-reference="burning-river-open-world-official.webp">
-   {view==='map'?<WeaveWorldAtlas domains={feed.domains} status={status} eventLabel={eventLabel} staffHref={staffHref}
+   {view==='map'?<WeaveWorldAtlas domains={feed.domains} status={status} eventLabel={eventLabel} staffHref={staffHref} notice={mapNotice}
      returnHref={returnHref==='/system-switch'?returnHref:eventHref}
-     onExplore={()=>changeView('world')}
-     onDomains={nextRegion=>{setRegion(nextRegion||null);setPanel('domains')}} onDomain={selectDomain}
+     onExplore={explore}
+     onDomains={browseDomains} onDomain={selectDomain}
      onCustomers={()=>setPanel('customers')} onCommunity={()=>setPanel('community')} onGuide={()=>setPanel('guide')}/>
    :<div className="relative h-[100svh] min-h-[430px] overflow-hidden" data-open-world-map="interactive">
      <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_40%,#385c62,#0b2334_68%,#071324)]"/>
-     {webgl===true&&<WeaveWorldScene domains={displayDomains} links={feed.links} selected={selected}
-       onSelect={tapCastle} placing={placing}
-       onPlace={placeOnLand} preview={candidate}/>}
+     <WorldGraphicsBoundary onUnavailable={graphicsUnavailable}>
+       <WeaveWorldScene domains={displayDomains} links={feed.links} selected={selected}
+         onSelect={tapCastle} placing={placing} onPlace={placeOnLand} preview={candidate}
+         onReady={()=>setSceneReady(true)}/>
+     </WorldGraphicsBoundary>
      <nav aria-label="Explore the WEAVE land" className="absolute inset-x-3 top-3 z-20 flex flex-wrap gap-2">
        <button type="button" onClick={showMap} className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-amber-200/40 bg-[#081b34] px-3 text-xs font-bold text-amber-100">
          <MapPinned className="h-4 w-4"/> World Map
        </button>
-       <button type="button" onClick={()=>{setRegion(null);setPanel('domains')}} className="min-h-11 rounded-lg border border-amber-200/40 bg-[#081b34] px-3 text-xs font-bold text-amber-100">Domains</button>
+       <button type="button" onClick={()=>browseDomains()} className="min-h-11 rounded-lg border border-amber-200/40 bg-[#081b34] px-3 text-xs font-bold text-amber-100">Domains</button>
      </nav>
      {role==='client'&&owner&&<div className="absolute right-3 top-16 z-20 flex max-w-[57%] flex-col gap-2" data-client-world-castle-relocation="owner-only">
        {!placing&&<button type="button" className="min-h-10 rounded-xl border border-amber-200/40 bg-[#112b36]/95 px-3 text-xs font-bold text-amber-100"
@@ -249,15 +292,12 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
        <button type="button" onClick={()=>{setStatus('loading');void refresh().catch(()=>setStatus('unavailable'))}}
          className="mt-2 block min-h-9 rounded-lg border border-amber-200/50 px-3 font-bold">Retry land connection</button>
      </div>}
-     {webgl===false&&<div className="absolute inset-0 flex items-center justify-center bg-[#08172a]/85 px-6 text-center text-sm">
-       3D is not available on this device. The World Map still opens live domains and Customer Doors.
-     </div>}
    </div>}
    <WeaveWorldSheet open={panel!==null} title={sheetTitle} onClose={()=>setPanel(null)}>
     {panel==='guide'&&<div className="space-y-3 text-sm leading-6 text-sky-100" data-system-switch-arrival-orientation="true">
       <p>{crossing.arrival}</p>
       {role==='visitor'&&<p>{crossing.visitor}</p>}
-      <p>The painted settlements mark the terrain. Numbered map markers show verified File Folders. Explore opens the live 3D land, where you can drag, zoom and tap buildings.</p>
+      <p>The named places in the illustration are landmarks. Tap them to browse an area or a File Folder tier. Live badges identify verified Client domains. Explore opens the 3D land, where you can drag, pinch and tap buildings.</p>
       <p>{crossing.privacy}</p>
       <div className="flex flex-wrap gap-2">
         <Link href={eventHref} className="rounded-lg border border-amber-200/45 px-3 py-2 text-amber-100">Company Loop 1 · Burning River</Link>
@@ -271,8 +311,8 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
     </div>}
     {(panel==='domains'||doorList)&&<div id="domains" className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-sky-100/80">
-        <p>{doorList?'Commissioned public entrances to Client businesses.':'Verified File Folders in this area of the map.'}</p>
-        {panel==='domains'&&region&&<button type="button" onClick={()=>setRegion(null)} className="min-h-11 px-2 font-bold text-amber-100">All regions</button>}
+        <p>{doorList?'Commissioned public entrances to Client businesses.':'Verified File Folders in this part of the map.'}</p>
+        {panel==='domains'&&(domainFilter.region||domainFilter.tier)&&<button type="button" onClick={()=>setDomainFilter({})} className="min-h-11 px-2 font-bold text-amber-100">All domains</button>}
         <button type="button" onClick={reload} className="inline-flex min-h-11 items-center gap-2 px-2 font-bold text-amber-100">
           <RefreshCcw className="h-4 w-4"/> {status==='unavailable'?'Retry land connection':'Refresh'}
         </button>

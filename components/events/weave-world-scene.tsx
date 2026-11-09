@@ -200,10 +200,11 @@ function WorldScene({domains,links,selected,onSelect,placing,onPlace,preview}:Wo
   </>
 }
 
-export function WeaveWorldScene(props:WorldSceneProps){
+export function WeaveWorldScene({onReady,...props}:WorldSceneProps&{onReady:()=>void}){
   return <AdaptiveCanvas camera={{position:[0,66,95],fov:46,near:.1,far:350}}
     gl={{antialias:false,alpha:true,powerPreference:'low-power'}}
-    fallback={<div className="flex h-full items-center justify-center px-6 text-center text-sm text-sky-100">3D graphics could not start. Return to World Map to open verified Client domains.</div>}
+    fallback={<div className="flex h-full items-center justify-center px-6 text-center text-sm text-sky-100">3D graphics could not start.</div>}
+    onWorldReady={onReady}
     mobileGame>
     <WorldScene {...props}/>
   </AdaptiveCanvas>

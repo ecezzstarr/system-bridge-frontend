@@ -192,6 +192,7 @@ export default function ProRegionalManagerWorkspace(){
       fileNumber={String(position?.fileNumber||'')} workshopTitle={String(position?.businessName||'Pro Business')}
       workshopPurpose={String(position?.dailyWork||'')} initialWorld={world}
       fileFolderTier="pro" worldApiPath="/api/pro-regional-manager/file-folder-world"
+      onOpenCustomerDoor={()=>document.getElementById('pro-customer-door')?.scrollIntoView({block:'start'})}
       onWorldChange={next=>setData(current=>current?{...current,world:next}:current)}/>
     </section>
     <section id="pro-customer-door" className="scroll-mt-24 space-y-3">

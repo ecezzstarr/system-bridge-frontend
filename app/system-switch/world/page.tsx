@@ -1,18 +1,8 @@
 'use client'
 
 import {useEffect,useState} from 'react'
-import dynamic from 'next/dynamic'
 import {useAuth} from '@/lib/auth-provider'
-import {WORLD_ATLAS_ART} from '@/components/events/weave-world-atlas'
-// Paint the world artwork while the interactive atlas loads.
-const BurningRiverLiveWorld=dynamic(
-  ()=>import('@/components/events/burning-river-live-world').then(m=>m.BurningRiverLiveWorld),
-  {ssr:false,loading:()=> <div role="status" data-weave-open-world-loader="loading-3d-world"
-    className="mx-auto w-full max-w-[34rem] bg-[#0a1628] text-center text-sm text-amber-100">
-    <img src={WORLD_ATLAS_ART} width={941} height={1672} alt="" fetchPriority="high" className="max-h-[90svh] w-full object-cover object-top"/>
-    <p className="p-3">Opening Weave Open World…</p>
-  </div>},
-)
+import {BurningRiverLiveWorld} from '@/components/events/burning-river-live-world'
 
 /**
  * SYSTEM SWITCH is the container and gate of the permanent WEAVE Open World.

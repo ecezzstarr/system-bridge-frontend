@@ -70,12 +70,19 @@ assert.ok(visual.includes('Retry land connection')&&scene.includes('fallback={<d
   'Keep an in-world retry and WebGL failure path')
 assert.ok(scene.includes('<Suspense fallback={<meshStandardMaterial')&&land.includes('<Suspense fallback={<meshStandardMaterial'),
   '3D terrain and Client castles must remain visible while the atlas loads')
-assert.ok(world.includes('data-weave-open-world-loader="loading-3d-world"'),
-  'Entry must paint a world loader before heavy 3D modules download')
+assert.ok(world.includes("import {BurningRiverLiveWorld} from '@/components/events/burning-river-live-world'")&&!world.includes('ssr:false'),
+  'The interactive atlas must be part of the first route render')
 assert.ok(visual.includes("useState<'map'|'world'>('map')")&&visual.includes("import('./weave-world-scene')"),
   'Open with the atlas and download the 3D scene only when entered')
 assert.ok(atlas.includes('/weave/flame-event/burning-river-open-world-official.webp')&&atlas.includes('data-weave-live-region={region}'),
   'The approved art frames live geographic markers')
+assert.ok(atlas.includes('data-map-hotspot')&&atlas.includes('Bridge of Radiance · System Switch Gate')&&
+  atlas.includes("onDomains({tier:'plus'})")&&atlas.includes("onDomains({tier:'pro'})"),
+  'Artwork labels open real region and tier filters or the original gate')
+assert.ok(atlas.includes('onError={() => setArtFailed(true)}')&&visual.includes('WorldGraphicsBoundary')&&
+  visual.includes('onReady={()=>setSceneReady(true)}')&&visual.includes("getContext('webgl2')"),
+  'Unavailable artwork retains working controls and unavailable 3D returns to the map')
+assert.ok(visual.includes('feed.page!==page'),'A deep link checks each page before advancing')
 for(const label of ['Staff Entrance','Visitor Entrance','Customer Door','World Map','Domains','Explore','Community','Guide']){
   assert.ok(atlas.includes(label),'Atlas preserves '+label)
 }

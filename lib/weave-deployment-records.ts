@@ -25,7 +25,17 @@ export type WeaveDeploymentRecordInput = {
   sovereignId?: string | null
 }
 
-export async function ensureWeaveDeploymentRecordSchema() {
+let deploymentSchemaReady: Promise<void> | null = null
+
+export function ensureWeaveDeploymentRecordSchema() {
+  deploymentSchemaReady ??= initializeDeploymentRecordSchema().catch(error => {
+    deploymentSchemaReady = null
+    throw error
+  })
+  return deploymentSchemaReady
+}
+
+async function initializeDeploymentRecordSchema() {
   await sql`
     CREATE TABLE IF NOT EXISTS weave_deployment_records (
       id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -184,4 +194,18 @@ export async function listWeaveDeploymentRecords(limit = 50) {
     ORDER BY created_at DESC
     LIMIT ${bounded}
   `
+}
+
+export async function listHealthyWeaveReleases(serverKey: string): Promise<string[]> {
+  await ensureWeaveDeploymentRecordSchema()
+  const rows = await sql`
+    SELECT lower(release_sha) AS release_sha
+    FROM weave_deployment_records
+    WHERE server_key = ${serverKey}
+      AND status IN ('healthy', 'rolled_back')
+      AND release_sha ~* '^[0-9a-f]{40}$'
+    GROUP BY lower(release_sha)
+    ORDER BY max(created_at) DESC, lower(release_sha)
+  `
+  return rows.map(row => String(row.release_sha))
 }

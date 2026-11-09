@@ -21,7 +21,7 @@ Retired `/system-switch/customer-doors` and `/system-switch/customer-doors/[slug
 
 ## Physical scene and public access
 - The world uses actual Three.js terrain texture, physically modeled trees, footpaths to *verified Client positions*, existing construction-scaled 3D Client structures, tier-sensitive building texture facades, windows and public Customer Door entrances.
-- The Open World opens on the approved castle map, with tappable markers for verified Client domains. Explore opens the separate 3D scene built from the same landscape reference.
+- The Open World opens on the approved castle map. Its landmarks and illustrated entrances are accessible controls for browsing real regions, tiers, and commissioned Customer Doors. Live badges identify verified Client domains. Explore opens the 3D scene and returns to the map if graphics are unavailable.
 - Only real commissioned public Client Customer Doors have opening links. Buildings forming in public do not grant or imply another Client's private File Folder access.
 - Company Loop 1's live river uses time-animated water/fire shader material inside the world.
 - The shared land is reserved for Client File Folders and their builds. WEAVE Food orders remain on the Flame Event and Food Store pages. Returning to the Flame Event carries the referring Agent code through to Carrier checkout.

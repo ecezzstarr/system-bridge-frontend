@@ -3,7 +3,9 @@
 import importlib.util
 from pathlib import Path
 import re
+import tempfile
 import unittest
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parent.parent
 MODULE = ROOT / "selfhost" / "release-worker.py"
@@ -55,6 +57,30 @@ class ReleaseFailureEvidence(unittest.TestCase):
         self.assertIn("recovery=not_confirmed", message)
         self.assertIn("exit=3", message)
 
+    def test_executor_preflight_stderr_reaches_the_redacted_diagnostic(self):
+        sha = "a" * 40
+        token = "private_worker_token_123456789"
+        with tempfile.TemporaryDirectory() as directory:
+            executor = Path(directory) / "executor.sh"
+            executor.write_text(
+                "printf '%s\\n' 'Server checkout has uncommitted source changes.' >&2\n"
+                f"printf '%s\\n' 'Authorization: Bearer {token}' >&2\n"
+                "exit 3\n"
+            )
+            values = {"WEAVE_RELEASE_EXECUTOR": str(executor), "WEAVE_RELEASE_CONTROL_TOKEN": token}
+            job = {"action": "deploy_latest", "target_sha": sha}
+            with patch.object(worker, "validate_origin"), \
+                    patch.object(worker, "cmd", return_value=sha), \
+                    patch.object(worker, "is_good_ci", return_value=True), \
+                    patch.object(worker, "get_local_release", return_value="b" * 40), \
+                    patch.object(worker, "journal_executor_failure") as journal:
+                with self.assertRaisesRegex(RuntimeError, "uncommitted source changes") as raised:
+                    worker.execute(job, values)
+                self.assertNotIn(token, str(raised.exception))
+                output, settings, _ = journal.call_args.args
+                self.assertIn("uncommitted source changes", output)
+                self.assertNotIn(token, worker.safe_executor_excerpt(output, settings))
+
     def test_script_emits_structured_failure_stages_and_preserves_rollback(self):
         shell = (ROOT / "selfhost" / "deploy-production.sh").read_text()
         self.assertIn('trap \'rollback $? $LINENO\' ERR', shell)
@@ -64,6 +90,33 @@ class ReleaseFailureEvidence(unittest.TestCase):
         for stage in ("checkout", "release_environment", "image_build", "compose_restart",
                       "local_health", "public_health", "postdeploy_diagnostics"):
             self.assertIn(f'DEPLOY_STAGE="{stage}"', shell)
+
+    def test_worker_checks_the_latest_canonical_main_run(self):
+        sha = "a" * 40
+        run = {"head_sha": sha, "head_branch": "main", "status": "completed", "conclusion": "success"}
+        pr = dict(run, event="pull_request", created_at="2026-11-08T01:00:00Z")
+        main = dict(run, event="push", created_at="2026-11-08T00:00:00Z")
+        failed = dict(run, event="workflow_dispatch", conclusion="failure", created_at="2026-11-08T02:00:00Z")
+        with patch.object(worker, "github_get", return_value={"workflow_runs": [pr]}):
+            self.assertFalse(worker.is_good_ci(sha, ""))
+        with patch.object(worker, "github_get", return_value={"workflow_runs": [pr, main]}):
+            self.assertTrue(worker.is_good_ci(sha, ""))
+        with patch.object(worker, "github_get", return_value={"workflow_runs": [main, pr, failed]}):
+            self.assertFalse(worker.is_good_ci(sha, ""))
+
+    def test_an_already_live_local_sha_cannot_skip_public_verification(self):
+        sha = "a" * 40
+        job = {"action": "deploy_latest", "target_sha": sha}
+        with patch.object(worker, "validate_origin"), \
+                patch.object(worker, "cmd", return_value=sha), \
+                patch.object(worker, "is_good_ci", return_value=True), \
+                patch.object(worker, "get_local_release", return_value=sha), \
+                patch.object(worker, "get_healthy_release", return_value="b" * 40) as public, \
+                patch.object(worker.subprocess, "run", return_value=worker.subprocess.CompletedProcess([], 0)) as executor:
+            with self.assertRaisesRegex(RuntimeError, "Local and public health"):
+                worker.execute(job, {})
+            executor.assert_called_once()
+            public.assert_called_once_with("https://weavingsystem.online/api/health")
 
 
 if __name__ == "__main__":

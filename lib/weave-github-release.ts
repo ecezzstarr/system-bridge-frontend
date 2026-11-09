@@ -1,63 +1,93 @@
 import {sql} from '@/lib/db'
+import {weaveWorkAreaFromReview} from '@/lib/weave-workshop-purpose'
 
 const REPO='ecezzstarr/system-bridge-frontend'
 const REPO_API='https://api.github.com/repos/'+REPO
 export const githubReleaseSha=(value:unknown):value is string=>typeof value==='string'&&/^[0-9a-f]{40}$/i.test(value)
 
 function token(write=false){
-  const specific=write?process.env.WEAVE_GITHUB_PROMOTION_TOKEN:process.env.WEAVE_GITHUB_READ_TOKEN||process.env.WEAVE_GITHUB_PROMOTION_TOKEN
-  return (specific||'').trim()
+  if(write)return process.env.WEAVE_GITHUB_PROMOTION_TOKEN?.trim()||''
+  return process.env.WEAVE_GITHUB_READ_TOKEN?.trim()
+    ||process.env.WEAVE_GITHUB_CODE_TOKEN?.trim()
+    ||process.env.WEAVE_GITHUB_PROMOTION_TOKEN?.trim()
+    ||''
 }
+
+let publicReadsUntil=0
+const publicReadTtl=10*60*1000
 
 async function github(path:string,opts:{method?:'GET'|'PUT';body?:unknown;write?:boolean}={}){
   if(!path.startsWith('/')||path.startsWith('//')||path.includes('..')||!/^\/[a-zA-Z0-9_?&=.%\/-]+$/.test(path))
     throw new Error('Invalid fixed GitHub resource')
-  const credential=token(opts.write)
+  const credential=opts.write||Date.now()>=publicReadsUntil?token(opts.write):''
   if(opts.write&&!credential)throw new Error('GitHub promotion has not been configured in the Oracle server environment')
-  const response=await fetch(REPO_API+path,{
+  const request=(auth:string)=>fetch(REPO_API+path,{
     method:opts.method||'GET',
     headers:{
       Accept:'application/vnd.github+json',
       'X-GitHub-Api-Version':'2022-11-28',
-      ...(credential?{Authorization:'Bearer '+credential}:{}),
+      ...(auth?{Authorization:'Bearer '+auth}:{}),
       ...(opts.body?{'Content-Type':'application/json'}:{}),
     },
     ...(opts.body?{body:JSON.stringify(opts.body)}:{}),
     cache:'no-store',
     signal:AbortSignal.timeout(16000),
-  })
-  const result=await response.json().catch(()=>({}))
+  }).catch(()=>{throw new Error('The release server could not reach GitHub. Check Oracle network access.')})
+  let response=await request(credential)
+  if(!opts.write&&credential&&[401,403,404].includes(response.status)){
+    await response.body?.cancel().catch(()=>{})
+    response=await request('')
+    if(response.ok)publicReadsUntil=Date.now()+publicReadTtl
+  }
   if(!response.ok){
-    if(response.status===403||response.status===429)throw new Error('GitHub access, rate limits or branch protection blocked this operation')
-    if(response.status===404)throw new Error('GitHub repository or pull request unavailable')
+    if(response.status===429||response.headers.get('x-ratelimit-remaining')==='0')
+      throw new Error('GitHub rate limit reached. Configure a scoped GitHub read token or retry after the limit resets.')
+    if(response.status===401||response.status===403)throw new Error('GitHub denied access. Check the release server credential and repository permissions.')
+    if(response.status===404)throw new Error('The GitHub repository, workflow or pull request is unavailable to the release server.')
     if(response.status===405||response.status===409||response.status===422)throw new Error('GitHub refused this merge. Review checks, approvals and branch protection in GitHub.')
     throw new Error('GitHub returned HTTP '+response.status)
   }
-  return result
+  return response.json().catch(()=>{throw new Error('GitHub returned an unreadable response.')})
 }
 
 type Run={id:number;head_sha?:string;head_branch?:string;event?:string;status?:string;conclusion?:string;created_at?:string;html_url?:string}
-export type GithubCheck={state:'passed'|'pending'|'failed'|'missing';runUrl:string|null;sha:string}
+export type GithubCheck={state:'passed'|'pending'|'failed'|'missing'|'unavailable';runUrl:string|null;sha:string}
+const productionRuns='/actions/workflows/production-check.yml/runs?'
+
+async function readWorkflowRuns(search:string|URLSearchParams):Promise<Run[]>{
+  const data=await github(productionRuns+search)
+  if(!Array.isArray(data?.workflow_runs))throw new Error('GitHub did not return workflow runs.')
+  return data.workflow_runs
+}
+
+function checkFromRuns(runs:Run[],sha:string,branch:'main'|'pull_request'):GithubCheck{
+  const found=runs
+    .filter(run=>run.head_sha?.toLowerCase()===sha.toLowerCase()
+      &&(branch==='main'?run.head_branch==='main'&&(run.event==='push'||run.event==='workflow_dispatch'):run.event==='pull_request'))
+    .sort((a,b)=>Date.parse(b.created_at||'')-Date.parse(a.created_at||''))[0]
+  return {
+    state:!found?'missing':found.status!=='completed'?'pending':found.conclusion==='success'?'passed':'failed',
+    runUrl:typeof found?.html_url==='string'?found.html_url:null,sha,
+  }
+}
+
 export async function releaseProductionCheck(sha:string,branch:'main'|'pull_request'){
   if(!githubReleaseSha(sha))throw new Error('A full Git commit SHA is required')
   const search=new URLSearchParams({
     head_sha:sha,per_page:'30',...(branch==='main'?{branch:'main'}:{event:'pull_request'}),
   })
-  const runs=(await github('/actions/workflows/production-check.yml/runs?'+search))?.workflow_runs as Run[]|undefined
-  const found=(Array.isArray(runs)?runs:[])
-    .filter(run=>run.head_sha?.toLowerCase()===sha.toLowerCase()
-      &&(branch==='main'?run.head_branch==='main':run.event==='pull_request'))
-    .sort((a,b)=>Date.parse(b.created_at||'')-Date.parse(a.created_at||''))[0]
-  return {
-    state:!found?'missing':found.status!=='completed'?'pending':found.conclusion==='success'?'passed':'failed',
-    runUrl:typeof found?.html_url==='string'?found.html_url:null,sha,
-  } as GithubCheck
+  return checkFromRuns(await readWorkflowRuns(search),sha,branch)
 }
 
-export async function githubMainCandidate(){
+async function githubMainSha(){
   const branch=await github('/branches/main')
   const sha=String(branch?.commit?.sha||'').toLowerCase()
   if(!githubReleaseSha(sha))throw new Error('GitHub did not provide a verified main commit')
+  return sha
+}
+
+export async function githubMainCandidate(){
+  const sha=await githubMainSha()
   return {sha,check:await releaseProductionCheck(sha,'main')}
 }
 
@@ -72,46 +102,102 @@ export async function assertDeployableMain(expected:string){
 export type GithubWorkPull={
   number:number;title:string;url:string;headSha:string;branch:string;draft:boolean;
   author:string;check:GithubCheck;mergeReady:boolean;
+  workArea:ReturnType<typeof weaveWorkAreaFromReview>;
 }
 
-let releaseBoardCache:{data:Awaited<ReturnType<typeof buildReleaseBoard>>;expiresAt:number}|null=null
-export async function workGithubReleaseBoard(){
+type ReleaseBoard=Awaited<ReturnType<typeof buildReleaseBoard>>
+let releaseBoardCache:{data:ReleaseBoard;expiresAt:number}|null=null
+let releaseBoardRefresh:Promise<ReleaseBoard>|null=null
+let releaseBoardVersion=0
+type MainStatus=Awaited<ReturnType<typeof readMainStatus>>
+let mainCache:{data:MainStatus;expiresAt:number}|null=null
+let mainRefresh:Promise<MainStatus>|null=null
+let lastManualMainCheck=0
+
+export async function workGithubReleaseBoard(refreshMain=false){
+  const [board,main]=await Promise.all([readReleaseBoard(),readCachedMain(refreshMain)])
+  return {...board,main:main.candidate,
+    issues:main.issue?[main.issue,...board.issues]:board.issues,
+    mainCheckedAt:main.checkedAt}
+}
+
+function usesAuthenticatedReads(){
+  return Boolean(token(false)&&Date.now()>=publicReadsUntil)
+}
+
+function readCachedMain(manual:boolean){
+  if(mainRefresh)return mainRefresh
+  const now=Date.now()
+  const manualDue=manual&&now-lastManualMainCheck>=(usesAuthenticatedReads()?5000:15000)
+  if(mainCache&&mainCache.expiresAt>now&&!manualDue)return mainCache.data
+  if(manual)lastManualMainCheck=now
+  const version=releaseBoardVersion
+  const refresh=readMainStatus().then(data=>{
+    const ttl=usesAuthenticatedReads()?20000:3*60*1000
+    if(version===releaseBoardVersion)mainCache={data,expiresAt:Date.now()+ttl}
+    return data
+  }).finally(()=>{if(mainRefresh===refresh)mainRefresh=null})
+  mainRefresh=refresh
+  return refresh
+}
+
+async function readMainStatus(){
+  const checkedAt=new Date().toISOString()
+  let sha:string
+  try{sha=await githubMainSha()}
+  catch(error){return {candidate:null,issue:githubIssue('GitHub main',error),checkedAt}}
+  try{return {candidate:{sha,check:await releaseProductionCheck(sha,'main')},issue:null,checkedAt}}
+  catch(error){return {candidate:{sha,check:{state:'unavailable',sha,runUrl:null} as GithubCheck},
+    issue:githubIssue('Main Production Check',error),checkedAt}}
+}
+
+async function readReleaseBoard(){
   if(releaseBoardCache&&releaseBoardCache.expiresAt>Date.now())return releaseBoardCache.data
-  const data=await buildReleaseBoard()
-  // Authenticated GitHub requests have a larger rate limit. Anonymous requests
-  // must be throttled to avoid exhausting the public repository quota.
-  const ttl=token(false)?60000:15*60*1000
-  releaseBoardCache={data,expiresAt:Date.now()+ttl}
-  return data
+  if(releaseBoardRefresh)return releaseBoardRefresh
+  const version=releaseBoardVersion
+  const refresh=buildReleaseBoard().then(data=>{
+    const ttl=data.issues.length||usesAuthenticatedReads()?60000:publicReadTtl
+    if(version===releaseBoardVersion)releaseBoardCache={data,expiresAt:Date.now()+ttl}
+    return data
+  }).finally(()=>{if(releaseBoardRefresh===refresh)releaseBoardRefresh=null})
+  releaseBoardRefresh=refresh
+  return refresh
 }
 async function buildReleaseBoard(){
-  const [main,pulls]=await Promise.all([
-    githubMainCandidate(),
+  const [pulls,checks,promotions]=await Promise.allSettled([
     github('/pulls?state=open&base=main&per_page=12&sort=updated&direction=desc'),
+    readWorkflowRuns('event=pull_request&per_page=100'),
+    recentWorkPromotions(),
   ])
-  const list=Array.isArray(pulls)?pulls:[]
-  const pending=await Promise.all(list.slice(0,12).map(async(pull:any)=>{
+  const issues:string[]=[]
+  if(pulls.status==='rejected')issues.push(githubIssue('Open pull requests',pulls.reason))
+  else if(!Array.isArray(pulls.value))issues.push('Open pull requests · GitHub did not return a pull request list.')
+  if(checks.status==='rejected')issues.push(githubIssue('Pull request Production Checks',checks.reason))
+  const list=pulls.status==='fulfilled'&&Array.isArray(pulls.value)?pulls.value:[]
+  const pending=list.slice(0,12).map((pull:any)=>{
     const headSha=String(pull.head?.sha||'').toLowerCase()
-    const check=githubReleaseSha(headSha)
-      ?await releaseProductionCheck(headSha,'pull_request').catch(()=>({state:'missing',sha:headSha,runUrl:null} as GithubCheck))
-      :{state:'missing',sha:headSha,runUrl:null} as GithubCheck
+    const check:GithubCheck=githubReleaseSha(headSha)&&checks.status==='fulfilled'
+      ?checkFromRuns(checks.value,headSha,'pull_request')
+      :{state:'unavailable',sha:headSha,runUrl:null}
     const draft=Boolean(pull.draft)
     return {
       number:Number(pull.number),title:String(pull.title||'GitHub change').slice(0,180),
       url:String(pull.html_url||''),headSha,branch:String(pull.head?.ref||'').slice(0,160),
       author:String(pull.user?.login||'GitHub').slice(0,100),draft,check,
+      workArea:pull.body?weaveWorkAreaFromReview(pull.body):null,
       mergeReady:!draft&&check.state==='passed',
     } satisfies GithubWorkPull
-  }))
-  const promotions=await recentWorkPromotions().catch(()=>{
-    // GitHub discovery remains usable during a PostgreSQL audit migration issue.
-    return [] as Array<{id:string;pr_number:number;head_sha:string;result_sha:string|null;status:string;created_at:string}>
   })
   return {
-    repository:REPO,repositoryUrl:'https://github.com/'+REPO,main,
-    pulls:pending,promotions,promotionConfigured:Boolean(token(true)),
+    repository:REPO,repositoryUrl:'https://github.com/'+REPO,
+    pulls:pending,pullsAvailable:pulls.status==='fulfilled'&&Array.isArray(pulls.value),issues,
+    promotions:promotions.status==='fulfilled'?promotions.value:[],promotionConfigured:Boolean(token(true)),
     fetchedAt:new Date().toISOString(),
   }
+}
+
+function githubIssue(section:string,error:unknown){
+  return section+' · '+(error instanceof Error?error.message:'GitHub read unavailable.')
 }
 
 let auditReady:Promise<void>|null=null
@@ -176,6 +262,11 @@ export async function mergeApprovedWorkPull(input:{number:number;headSha:string;
     throw error
   }
   releaseBoardCache=null // The GitHub write succeeded; re-read main and PR status.
+  releaseBoardRefresh=null
+  mainCache=null
+  mainRefresh=null
+  lastManualMainCheck=0
+  releaseBoardVersion++
   const mergedSha=String(result.sha).toLowerCase()
   let auditRecorded=true
   try{
