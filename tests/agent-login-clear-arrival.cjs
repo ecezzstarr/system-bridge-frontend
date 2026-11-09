@@ -29,8 +29,9 @@ for (const role of ['admin','agent','bridger','client']) {
 }
 
 // Announcements are informative, never a fullscreen dimming or blur at the event.
-assert.ok(ads.includes("pathname === '/event' || pathname === '/agent/dashboard'"))
-assert.ok(ads.includes("data-agent-event-ad={agentWorkingNotice?'non-blocking':undefined}"))
+assert.ok(ads.includes("pathname === '/event' || pathname === '/client/event'"))
+assert.ok(ads.includes("user?.role === 'agent' && pathname === '/agent/dashboard'"))
+assert.ok(ads.includes("data-company-arrival-ad={companyArrivalNotice?'non-blocking':undefined}"))
 assert.ok(ads.includes('pointer-events-none fixed bottom-3'),
   'Agent event advertisement is a small pointer-transparent surface')
 assert.ok(ads.includes('adsPlacement === placement'),
