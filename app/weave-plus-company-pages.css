@@ -386,3 +386,16 @@ html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-locati
     .weave-live-flame-current,.weave-live-flame-core
   ) { animation: none !important; }
 }
+
+/* Arrival text sits on paper. Glass belongs to the surrounding atmosphere. */
+html[data-weave-theme="dark-blue"][data-weave-shell-theme="plus-white-gold"] body [data-weave-arrival-surface][data-slot] {
+  background: #fffefa !important;
+  border-color: #d8c5a0 !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* A briefing opened from the Work Desk uses a dark scrim, even in daylight. */
+html[data-weave-shell-theme="plus-white-gold"] body:has([data-weave-arrival-surface][data-slot="dialog-content"]) [data-slot="dialog-overlay"] {
+  background-color: rgba(8, 19, 33, .64) !important;
+}

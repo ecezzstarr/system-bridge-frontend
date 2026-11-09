@@ -4,13 +4,11 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth, type WeaveAuthError } from '@/lib/auth-provider'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Eye, EyeOff, Lock, Mail, KeyRound, Loader2 } from 'lucide-react'
 import { WeaveLogo } from '@/components/weave-logo'
-import { AGILITY_AGENT_LOGIN_AD_KEY } from '@/components/agility-agent-login-ad'
-import { LOOP1_AGENT_LOGIN_AD_KEY } from '@/components/agent/loop1-agent-login-ad'
 import { WEAVE_WRITING } from '@/lib/weave-writing'
 import { isFlameEventActive } from '@/lib/flame-event-landing'
 
@@ -53,8 +51,6 @@ export default function LoginPage() {
       const eventLive = await isFlameEventActive()
 
       if (loggedInUser?.role === 'agent') {
-        sessionStorage.setItem(AGILITY_AGENT_LOGIN_AD_KEY, '1')
-        if (!eventLive) sessionStorage.setItem(LOOP1_AGENT_LOGIN_AD_KEY, '1')
         router.replace(eventLive ? '/event' : '/agent/dashboard')
       } else if (loggedInUser?.role === 'bridger') {
         router.replace(eventLive ? '/event' : '/bridger/dashboard')
@@ -77,10 +73,10 @@ export default function LoginPage() {
   }
 
   return (
-    <Card className="border-slate-700 bg-slate-800/50 backdrop-blur max-w-md w-full">
+    <Card data-weave-arrival-surface="sign-in" className="w-full max-w-md">
       <CardHeader className="text-center flex flex-col items-center">
-        <WeaveLogo size="md" className="mb-2" />
-        <CardDescription className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">
+        <WeaveLogo size="md" className="mb-2 max-w-full rounded-xl bg-[#0d263b] px-3 py-2" />
+        <CardDescription className="mt-1 text-xs font-bold uppercase tracking-widest text-[#486274]">
           {administrationPortal ? WEAVE_WRITING.positionAccess.administrationAccess : WEAVE_WRITING.positionAccess.access}
         </CardDescription>
       </CardHeader>
@@ -96,10 +92,12 @@ export default function LoginPage() {
             <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 pointer-events-none" />
             <Input
               type="email"
+              aria-label="Email"
+              autoComplete="username"
               placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="pl-10 bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400"
+              className="border-[#bbac92] bg-[#fffefa] pl-10 text-[#243d50] placeholder:text-[#586b77]"
               required
               disabled={isSubmitting || isLoading}
             />
@@ -109,15 +107,18 @@ export default function LoginPage() {
             <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 pointer-events-none" />
             <Input
               type={showPassword ? 'text' : 'password'}
+              aria-label="Password"
+              autoComplete="current-password"
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="pl-10 pr-10 bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400"
+              className="border-[#bbac92] bg-[#fffefa] pl-10 pr-10 text-[#243d50] placeholder:text-[#586b77]"
               required
               disabled={isSubmitting || isLoading}
             />
             <button
               type="button"
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
             >
@@ -152,7 +153,7 @@ export default function LoginPage() {
                 <span className="w-full border-t border-slate-700" />
               </div>
               <div className="relative flex justify-center text-[10px] uppercase">
-                <span className="bg-slate-900 px-2 text-slate-500 font-black tracking-[0.2em]">{WEAVE_WRITING.positionAccess.divider}</span>
+                <span className="bg-[#fffefa] px-2 font-bold tracking-[0.14em] text-[#486274]">{WEAVE_WRITING.positionAccess.divider}</span>
               </div>
             </div>
 
