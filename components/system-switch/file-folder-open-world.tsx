@@ -54,7 +54,7 @@ type Props = {
   worldApiPath?: string
 }
 
-export const FILE_FOLDER_WORKSHOP_DISTRICTS = [
+const districts = [
   { key: 'workshop_core', label: 'Command Core', icon: Workflow, detail: 'Hold the purpose, authority, resources and next movement of this territory in one command position.' },
   { key: 'blueprint_foundry', label: 'Blueprint Foundry', icon: Boxes, detail: 'Turn an intended capability into a buildable system with defined functions, dependencies and consequence.' },
   { key: 'build_market', label: 'Materials Depot', icon: Store, detail: 'Acquire the primary kits that supply a blueprint before construction begins.' },
@@ -64,6 +64,8 @@ export const FILE_FOLDER_WORKSHOP_DISTRICTS = [
   { key: 'active_systems', label: 'Systems in Motion', icon: PackageOpen, detail: 'Operate completed technologies, connect their outputs and preserve the movement they produce.' },
   { key: 'library_district', label: 'Formation Intelligence', icon: Library, detail: 'Understand why each system works, what it can connect to and what larger capability can emerge.' },
 ]
+
+export { districts as FILE_FOLDER_WORKSHOP_DISTRICTS }
 
 function duration(seconds: number) {
   if (seconds <= 0) return 'Completing…'
@@ -287,7 +289,7 @@ export default function FileFolderOpenWorld({
 
   // A hidden organizer preference must not erase a Client's working district.
   // Preserve Administration's ordering while keeping every built-in station reachable.
-  const visibleDistricts = [...FILE_FOLDER_WORKSHOP_DISTRICTS].sort((a,b)=>{
+  const visibleDistricts = [...districts].sort((a,b)=>{
     if(a.key==='workshop_core')return -1
     if(b.key==='workshop_core')return 1
     return orderFor(`/client/system-switch#studio:${a.key}`)-orderFor(`/client/system-switch#studio:${b.key}`)
@@ -297,7 +299,7 @@ export default function FileFolderOpenWorld({
     window.requestAnimationFrame(()=>document.getElementById('file-folder-workspace')?.scrollIntoView({behavior:'smooth',block:'start'}))
   }
   useEffect(()=>{
-    if(!FILE_FOLDER_WORKSHOP_DISTRICTS.some(item=>item.key===district))setDistrict('workshop_core')
+    if(!districts.some(item=>item.key===district))setDistrict('workshop_core')
   },[district])
 
   const activeBuilds = (world?.builds || []).filter((build: any) => build.status === 'building')
