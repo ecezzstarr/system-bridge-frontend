@@ -15,19 +15,20 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
   useEffect(() => {
     // The login handler and registration flow own their authenticated arrival.
     // Never race them with a dashboard redirect, which bypasses Burning River.
-    if (!isInitialized || !isAuthenticated || isLoading || pathname === '/login' || pathname === '/register') return
-    let cancelled = false
-    void isFlameEventActive().then(eventLive => {
-      if (cancelled) return
-      const destination = user?.role === 'client'
-        ? (eventLive ? '/client/event' : '/client/dashboard')
-        : eventLive ? '/event'
-        : user?.role === 'agent' ? '/agent/dashboard'
-        : user?.role === 'bridger' ? '/bridger/dashboard'
-        : user?.role === 'admin' ? '/admin/dashboard' : '/weave'
-      router.replace(destination)
-    })
-    return () => { cancelled = true }
+    if (isInitialized && isAuthenticated && !isLoading && pathname !== '/register' && pathname !== '/login') {
+      let cancelled = false
+      void isFlameEventActive().then(eventLive => {
+        if (cancelled) return
+        const destination = user?.role === 'client'
+          ? (eventLive ? '/client/event' : '/client/dashboard')
+          : eventLive ? '/event'
+          : user?.role === 'agent' ? '/agent/dashboard'
+          : user?.role === 'bridger' ? '/bridger/dashboard'
+          : user?.role === 'admin' ? '/admin/dashboard' : '/weave'
+        router.replace(destination)
+      })
+      return () => { cancelled = true }
+    }
   }, [isInitialized, isAuthenticated, isLoading, pathname, user?.role, router])
 
   // Do not unmount children during the registration request. Unmounting resets
