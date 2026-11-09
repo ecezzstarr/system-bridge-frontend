@@ -55,7 +55,9 @@ export default function LoginPage() {
       if (loggedInUser?.role === 'agent') {
         sessionStorage.setItem(AGILITY_AGENT_LOGIN_AD_KEY, '1')
         if (!eventLive) sessionStorage.setItem(LOOP1_AGENT_LOGIN_AD_KEY, '1')
-        router.replace(eventLive ? '/event' : '/agent/dashboard')
+        // The Agent's first screen is the readable Stability work desk.
+        // Burning River remains available from the dashboard without a competing arrival redirect.
+        router.replace('/agent/dashboard')
       } else if (loggedInUser?.role === 'bridger') {
         router.replace(eventLive ? '/event' : '/bridger/dashboard')
       } else if (loggedInUser?.role === 'client') {
