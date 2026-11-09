@@ -372,7 +372,7 @@ export default function FileFolderPremiumWorld({
  return <section aria-label="Premium File Folder world" data-premium-file-folder-world="official-black-gold"
   data-premium-official-image="weave-premium-file-folder-official.png"
   data-premium-reference-sha256={PREMIUM_FILE_FOLDER_REFERENCE.sha256}
-  data-file-folder-theme={appearance.theme} className="overflow-hidden rounded-2xl border border-[#b99355]/50 bg-[#17151c] text-[#f5ecdd]">
+  data-file-folder-theme={appearance.theme} data-premium-visual-identity="charcoal-black-gold" className="overflow-hidden rounded-2xl border border-[#b99355]/50 bg-[#17151c] text-[#f5ecdd]">
   <header className="border-b border-[#b99355]/30 bg-[#242027] px-4 py-5 sm:px-6">
    <p className="text-[11px] font-bold uppercase tracking-[.15em] text-[#ecc789]">WEAVE · Premium File Folder · Your private world</p>
    <h2 className="mt-2 text-2xl font-black sm:text-3xl">Your private black-and-gold business citadel</h2>
