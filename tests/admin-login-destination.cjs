@@ -32,10 +32,12 @@ async function run({ role = 'admin', portal = true, event = false, error } = {})
   const wrongRole = await run({ role: 'agent' })
   assert.equal(wrongRole.logout, true)
   assert.deepEqual(wrongRole.routes, [])
-  for (const role of ['agent', 'bridger']) {
-    assert.deepEqual((await run({ role, portal: false })).routes, [`/${role}/dashboard`])
-    assert.deepEqual((await run({ role, portal: false, event: true })).routes, ['/event'])
+  for (const event of [false, true]) {
+    assert.deepEqual((await run({ role: 'agent', portal: false, event })).routes, ['/agent/dashboard'],
+      'Agents must arrive at their clear work desk regardless of Flame Event status')
   }
+  assert.deepEqual((await run({ role: 'bridger', portal: false })).routes, ['/bridger/dashboard'])
+  assert.deepEqual((await run({ role: 'bridger', portal: false, event: true })).routes, ['/event'])
   const setup = await run({ error: Object.assign(new Error('Password setup required'), { code: 'PASSWORD_SETUP_REQUIRED' }) })
   assert.deepEqual(setup.routes, ['/forgot-password?email=admin%40example.com&portal=admin'])
   assert.deepEqual((await run({ error: new Error('Invalid email or password') })).routes, [])
