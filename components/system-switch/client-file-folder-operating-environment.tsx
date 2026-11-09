@@ -581,6 +581,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
     <section
       className="ff-environment weave-system-depth relative h-[calc(100svh-4.5rem)] min-h-[560px] overflow-x-clip overflow-y-auto border-y border-cyan-200/10 bg-[#070b10] shadow-[0_34px_110px_rgba(0,0,0,.42)] sm:h-[calc(100dvh-5.5rem)] sm:min-h-[720px] sm:overflow-clip"
       data-file-folder-world="persistent-territory-interface"
+      data-file-folder-tier={data.file_folder_tier}
       data-file-folder-panel={panelOpen ? 'interior-open' : 'territory'}
     >
       <header className="ff-environment-header pointer-events-none absolute inset-x-0 top-0 z-30 border-b border-cyan-100/10 bg-[linear-gradient(180deg,rgba(4,10,16,.96),rgba(4,10,16,.78),transparent)] px-4 py-4 md:px-6 md:py-5">
@@ -604,7 +605,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
 
       <div className="ff-scene absolute inset-0">
         {data.file_folder_tier==='premium'
-          ? <div className="h-full overflow-y-auto overscroll-contain px-2 pb-24 pt-36 sm:px-4 sm:pt-44 md:px-6" data-premium-file-folder-entrance="official-live-world">
+          ? <div className="h-full overflow-y-auto overscroll-contain px-2 pb-24 pt-24 sm:px-4 md:px-6 md:pt-44" data-premium-file-folder-entrance="official-live-world">
               <div className="mx-auto max-w-7xl">
                 <FileFolderPremiumWorld
                   appearance={resolveFileFolderAppearance('premium',data.file_folder_world_release?.config)}
