@@ -19,7 +19,7 @@ assert.match(login, /loggedInUser\?\.role === 'bridger'[\s\S]*?router\.replace\(
 assert.match(login, /loggedInUser\?\.role === 'client'[\s\S]*?router\.replace\(eventLive \? '\/client\/event' : '\/client\/dashboard'\)/)
 assert.ok(clientLogin.includes("isFlameEventActive() ? '/client/event' : '/client/dashboard'"),
   'File Number Client login also opens at the current company event')
-assert.ok(authLayout.includes("pathname === '/login' || pathname === '/register'"),
+assert.ok(authLayout.includes("pathname !== '/register' && pathname !== '/login'"),
   'Auth layout leaves the sign-in and registration redirect to their owning forms')
 assert.ok(authLayout.includes("eventLive ? '/event'"),
   'Authenticated recovery from other auth routes respects the company event')
