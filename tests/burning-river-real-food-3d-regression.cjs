@@ -38,12 +38,12 @@ assert.ok(preview.includes('<FlameEventFoodStore carrierCode={carrierCode}/>'),'
 assert.ok(arrival.includes('<BurningRiverOfficialGateway carrierCode={carrierCode}/>'),'Agent identity reaches the real in-world food storefront')
 assert.ok(arrival.includes('<BurningRiverOfficialGateway carrierCode={carrierCode}/>'),'Preserve the newer official Burning River gateway')
 const live=read('components/events/burning-river-live-world.tsx')
-assert.ok(live.includes('<BurningRiverFoodStore3D carrierCode={carrierCode}/>'),'Food photos must also be mounted in the current live world')
-assert.ok(live.includes('Explore the WEAVE land'),'Phone users can focus the food shop')
-assert.ok(read('app/system-switch/world/page.tsx').includes('<BurningRiverLiveWorld role={role} carrierCode={carrierCode} requestedDoor={door} legionCode={legionCode}/>'),'Current live world must preserve Agent attribution')
+const explore=read('components/events/weave-world-scene.tsx')
+assert.doesNotMatch(explore,/BurningRiverFoodStore3D/,'The shared Client land excludes the event storefront')
+assert.ok(live.includes("'/flame-event?carrier='+encodeURIComponent(carrierCode)")&&live.includes('href={eventHref}'),'Agent attribution follows the return to the separate Flame Event storefront')
 assert.ok(publicApi.includes("p.enabled=true AND b.status='active'"),'Client File Folder structures require published active systems')
 assert.ok(clientRoute.includes("query.checkout!=='1'")&&carrier.includes("query.checkout!=='1'"),'Public Client and food checkout boundaries remain in place')
-console.log('3D WEAVE food uses original repository images, one open world, valid Agent links, and real Client publication tiers')
+console.log('3D WEAVE food uses original images in the Flame Event and preserves Agent attribution')
 
 // The frame's front face must sit behind the photo plane at local z=0.
 const frame=scene.match(/<mesh position=\{\[0,0,(-?[\d.]+)\]\}>\s*<boxGeometry args=\{\[[\d.]+,[\d.]+,([\d.]+)\]\}\/>/)

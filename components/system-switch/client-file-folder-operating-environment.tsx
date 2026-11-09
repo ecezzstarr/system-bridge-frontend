@@ -383,7 +383,11 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
   const [surface, setSurface] = useState<Surface>('command')
   const [panelOpen, setPanelOpen] = useState(false)
   const [walkPlusTerritory,setWalkPlusTerritory]=useState(false)
-  const showPlusMap=data.file_folder_tier==='plus'&&!walkPlusTerritory
+  const isPlus=data.file_folder_tier==='plus'
+  const [phoneViewport,setPhoneViewport]=useState<boolean|null>(null)
+  const plusPhone=isPlus&&phoneViewport===true
+  const showPlusMap=plusPhone&&!walkPlusTerritory
+  const resolvingPlusViewport=isPlus&&phoneViewport===null
   const [travelingTo, setTravelingTo] = useState<Surface | null>(null)
   const travelTimer = useRef<number | null>(null)
   const [world, setWorld] = useState(data.file_folder_world)
@@ -400,6 +404,16 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
   const [connectionTargetId,setConnectionTargetId]=useState('')
   const [connectionBusy,setConnectionBusy]=useState(false)
   const [connectionMessage,setConnectionMessage]=useState('')
+
+  useEffect(()=>{
+    if(!isPlus)return
+    // Keep this in sync with the phone rules in file-folder-phone.css.
+    const media=window.matchMedia('(max-width:767px), (max-height:500px) and (max-width:1000px)')
+    const update=()=>setPhoneViewport(media.matches)
+    update()
+    media.addEventListener('change',update)
+    return ()=>media.removeEventListener('change',update)
+  },[isPlus])
 
   useEffect(() => {
     const tick = visiblePoll(() => setNow(Date.now()), 5000)
@@ -596,6 +610,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
     <section
       className="ff-environment weave-system-depth relative h-[calc(100svh-4.5rem)] min-h-[560px] overflow-x-clip overflow-y-auto border-y border-cyan-200/10 bg-[#070b10] shadow-[0_34px_110px_rgba(0,0,0,.42)] sm:h-[calc(100dvh-5.5rem)] sm:min-h-[720px] sm:overflow-clip"
       data-file-folder-world="persistent-territory-interface"
+      data-plus-phone-map={showPlusMap?'true':undefined}
       data-file-folder-panel={panelOpen ? 'interior-open' : 'territory'}
     >
       <header className="ff-environment-header pointer-events-none absolute inset-x-0 top-0 z-30 border-b border-cyan-100/10 bg-[linear-gradient(180deg,rgba(4,10,16,.96),rgba(4,10,16,.78),transparent)] px-4 py-4 md:px-6 md:py-5">
@@ -618,11 +633,12 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
       </header>
 
       <div className="ff-scene absolute inset-0">
-        {showPlusMap
-          ? <div className="ff-plus-entrance h-full overflow-y-auto overscroll-contain px-2 pb-10 pt-2 md:px-6 md:pt-44"
+        {resolvingPlusViewport ? null : showPlusMap
+          ? <div className="ff-plus-entrance h-full overflow-y-auto overscroll-contain px-2 pt-2"
               data-plus-file-folder-entrance="official-live-world" inert={panelOpen}>
               <div className="mx-auto max-w-6xl">
                 <FileFolderPlusRadiantWorld
+                  phoneLayout
                   appearance={resolveFileFolderAppearance('plus',data.file_folder_world_release?.config)}
                   districts={FILE_FOLDER_WORKSHOP_DISTRICTS}
                   onEnter={enterWorkshopDistrict}
@@ -718,9 +734,9 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
           presenceKey={String(data.client.file_number||'')}
           territoryMode
         />}
-        {data.file_folder_tier==='plus'&&walkPlusTerritory&&!panelOpen&&<button type="button"
+        {plusPhone&&walkPlusTerritory&&!panelOpen&&<button type="button"
           onClick={()=>setWalkPlusTerritory(false)}
-          className="absolute left-3 top-3 z-[26] min-h-11 rounded-lg border border-sky-300/40 bg-slate-900 px-3 text-sm font-semibold text-sky-100 md:top-44">
+          className="absolute left-3 top-3 z-[26] min-h-11 rounded-lg border border-sky-300/40 bg-slate-900 px-3 text-sm font-semibold text-sky-100">
           Back to Plus File Folder
         </button>}
       </div>
@@ -963,9 +979,9 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
                     <span><b className="block text-base text-emerald-100">{systems.length}</b>live</span>
                   </div>
                 </div>
-                {data.file_folder_tier!=='plus'&&<GenerativeFormationWorkshop />}
+                {!plusPhone&&<GenerativeFormationWorkshop />}
                 <FileFolderOpenWorld
-                  embedded={data.file_folder_tier==='premium'||data.file_folder_tier==='plus'}
+                  embedded={data.file_folder_tier==='premium'||plusPhone}
                   clientName={data.client.name}
                   fileNumber={data.client.file_number}
                   fileFolderTier={data.file_folder_tier}
@@ -984,7 +1000,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
                   pollWorld={false}
                   pollAi={false}
                 />
-                {data.file_folder_tier==='plus'&&<GenerativeFormationWorkshop />}
+                {plusPhone&&<GenerativeFormationWorkshop />}
               </>
             )}
           </div>
@@ -1026,7 +1042,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
         </div>
       </div>
 
-      {!panelOpen && !showPlusMap && (
+      {!panelOpen && !showPlusMap && !resolvingPlusViewport && (
         <div className="ff-world-hint pointer-events-none absolute inset-x-0 bottom-[4.7rem] z-30 flex justify-center px-4">
           <div className="rounded-full border border-cyan-100/10 bg-[#070b10]/72 px-4 py-2 text-center text-[8px] font-black uppercase tracking-[.14em] text-stone-300 backdrop-blur-xl">
             {travelingTo

@@ -53,7 +53,7 @@ postcss.parse(css,{from:'app/weave-plus-company-theme.css'})
 postcss.parse(finishing,{from:'app/weave-plus-company-pages.css'})
 
 // Every real Next.js page is classified by the same route-aware source.
-// The seven dedicated Flame Event pages are the *only* exceptions.
+// The atlas and seven Flame Event pages have their own visual identity.
 function visit(dir) {
   return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item=>{
     const file=path.join(dir,item.name)
@@ -76,7 +76,7 @@ const expectedFlame=new Set([
 const actualFlame=new Set()
 for(const route of allRoutes) {
   const theme=weaveVisualThemeForPath(route)
-  assert.equal(theme,expectedFlame.has(route)?'flame-event-original':'plus-white-gold',route)
+  assert.equal(theme,route==='/system-switch/world'?'open-world-atlas':expectedFlame.has(route)?'flame-event-original':'plus-white-gold',route)
   if(theme==='flame-event-original')actualFlame.add(route)
 }
 assert.deepEqual([...actualFlame].sort(),[...expectedFlame].sort(),
