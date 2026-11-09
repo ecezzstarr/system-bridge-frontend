@@ -3,6 +3,7 @@ import { visiblePoll } from '@/lib/visible-poll'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { usePathname } from 'next/navigation'
+import { useAuth } from '@/lib/auth-provider'
 import { ArrowRight, Megaphone, X } from 'lucide-react'
 
 type LiveAd = {
@@ -72,8 +73,10 @@ function safeActionUrl(value: string | null) {
 
 export function LiveAdSurface() {
   const pathname = usePathname()
+  const { user } = useAuth()
   const placement = useMemo(() => placementFromPath(pathname || '/'), [pathname])
   const [ads, setAds] = useState<LiveAd[]>([])
+  const [adsPlacement, setAdsPlacement] = useState<string | null>(null)
   const [dismissed, setDismissed] = useState<string[]>([])
 
   const loadAds = useCallback(async (signal:AbortSignal) => {
@@ -85,24 +88,35 @@ export function LiveAdSurface() {
       })
       if (!response.ok) return
       const data = await response.json()
-      if (!signal.aborted && data?.success && Array.isArray(data.ads)) setAds(current=>JSON.stringify(current)===JSON.stringify(data.ads)?current:data.ads)
+      if (!signal.aborted && data?.success && Array.isArray(data.ads)) {
+        setAds(current=>JSON.stringify(current)===JSON.stringify(data.ads)?current:data.ads)
+        setAdsPlacement(placement)
+      }
     } catch {
       // Ads should never block the participant's movement.
     }
   }, [placement])
 
   useEffect(() => {
+    // Never leave an event advertisement covering the next route while its ads load.
     setDismissed([])
+    setAdsPlacement(null)
+    setAds([])
     const refresh = visiblePoll(loadAds, 20000)
     return () => {
       refresh()
     }
   }, [loadAds])
 
-  const activeAd = ads.find(ad => !dismissed.includes(ad.id) && !hasBeenSeen(ad))
+  const activeAd = adsPlacement === placement
+    ? ads.find(ad => !dismissed.includes(ad.id) && !hasBeenSeen(ad))
+    : undefined
   if (!activeAd) return null
 
   const actionUrl = safeActionUrl(activeAd.action_url)
+  // The shared Flame Event is a working place: a company notice must never blur
+  // or lock the Agent out of their own department entrance.
+  const agentEventNotice = pathname === '/event' && user?.role === 'agent'
 
   const dismiss = () => {
     markSeen(activeAd)
@@ -110,8 +124,13 @@ export function LiveAdSurface() {
   }
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/75 p-3 backdrop-blur-sm">
-      <div className="relative max-h-[48vh] w-full overflow-y-auto rounded-2xl border border-cyan-400/20 bg-slate-950/88 shadow-2xl shadow-cyan-950/50 backdrop-blur-xl">
+    <div data-agent-event-ad={agentEventNotice?'non-blocking':undefined}
+      className={agentEventNotice
+        ? 'pointer-events-none fixed bottom-3 left-3 right-3 z-[100] flex justify-end sm:bottom-5 sm:left-auto sm:right-5 sm:w-[min(23rem,calc(100vw-2.5rem))]'
+        : 'fixed inset-0 z-[100] flex items-center justify-center bg-black/75 p-3 backdrop-blur-sm'}>
+      <div className={agentEventNotice
+        ? 'pointer-events-auto relative max-h-[42svh] w-full overflow-y-auto rounded-2xl border border-cyan-400/30 bg-[#071c2a] shadow-xl'
+        : 'relative max-h-[48vh] w-full overflow-y-auto rounded-2xl border border-cyan-400/20 bg-slate-950/88 shadow-2xl shadow-cyan-950/50 backdrop-blur-xl'}>
         <button
           type="button"
           onClick={dismiss}
