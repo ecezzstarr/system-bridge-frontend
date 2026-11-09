@@ -13,6 +13,7 @@ import { AGILITY_AGENT_LOGIN_AD_KEY } from '@/components/agility-agent-login-ad'
 import { LOOP1_AGENT_LOGIN_AD_KEY } from '@/components/agent/loop1-agent-login-ad'
 import { WEAVE_WRITING } from '@/lib/weave-writing'
 import { isFlameEventActive } from '@/lib/flame-event-landing'
+import { FLAME_EVENT, resolveEventStatus } from '@/lib/weave-event'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -50,15 +51,19 @@ export default function LoginPage() {
         return
       }
 
-      const eventLive = await isFlameEventActive()
-
+      // Agent login has one immediate destination; the auth layout uses the same route.
+      // Do not await the event API while another layout effect begins navigation.
       if (loggedInUser?.role === 'agent') {
         sessionStorage.setItem(AGILITY_AGENT_LOGIN_AD_KEY, '1')
-        if (!eventLive) sessionStorage.setItem(LOOP1_AGENT_LOGIN_AD_KEY, '1')
-        // The Agent's first screen is the readable Stability work desk.
-        // Burning River remains available from the dashboard without a competing arrival redirect.
+        if (resolveEventStatus(FLAME_EVENT, new Date()) === 'active') {
+          sessionStorage.setItem(LOOP1_AGENT_LOGIN_AD_KEY, '1')
+        }
         router.replace('/agent/dashboard')
-      } else if (loggedInUser?.role === 'bridger') {
+        return
+      }
+
+      const eventLive = await isFlameEventActive()
+      if (loggedInUser?.role === 'bridger') {
         router.replace(eventLive ? '/event' : '/bridger/dashboard')
       } else if (loggedInUser?.role === 'client') {
         router.replace(eventLive ? '/client/event' : '/client/dashboard')
