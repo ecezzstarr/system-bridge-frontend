@@ -114,9 +114,10 @@ export function LiveAdSurface() {
   if (!activeAd) return null
 
   const actionUrl = safeActionUrl(activeAd.action_url)
-  // The shared Flame Event is a working place: a company notice must never blur
-  // or lock the Agent out of their own department entrance.
-  const agentEventNotice = pathname === '/event' && user?.role === 'agent'
+  // Agents must be able to read and operate their first work desk or event
+  // entrance even when a published company announcement is available.
+  const agentWorkingNotice = user?.role === 'agent' &&
+    (pathname === '/event' || pathname === '/agent/dashboard')
 
   const dismiss = () => {
     markSeen(activeAd)
@@ -124,11 +125,11 @@ export function LiveAdSurface() {
   }
 
   return (
-    <div data-agent-event-ad={agentEventNotice?'non-blocking':undefined}
-      className={agentEventNotice
+    <div data-agent-event-ad={agentWorkingNotice?'non-blocking':undefined}
+      className={agentWorkingNotice
         ? 'pointer-events-none fixed bottom-3 left-3 right-3 z-[100] flex justify-end sm:bottom-5 sm:left-auto sm:right-5 sm:w-[min(23rem,calc(100vw-2.5rem))]'
         : 'fixed inset-0 z-[100] flex items-center justify-center bg-black/75 p-3 backdrop-blur-sm'}>
-      <div className={agentEventNotice
+      <div className={agentWorkingNotice
         ? 'pointer-events-auto relative max-h-[42svh] w-full overflow-y-auto rounded-2xl border border-cyan-400/30 bg-[#071c2a] shadow-xl'
         : 'relative max-h-[48vh] w-full overflow-y-auto rounded-2xl border border-cyan-400/20 bg-slate-950/88 shadow-2xl shadow-cyan-950/50 backdrop-blur-xl'}>
         <button
