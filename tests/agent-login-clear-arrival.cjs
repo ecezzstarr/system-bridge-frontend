@@ -28,8 +28,9 @@ assert.ok(!dashboard.includes('else if(agility)setShowAgilityAd(true)'),
 assert.ok(dashboard.includes('Read update'), 'Agent can explicitly open company notices')
 
 // Event advertisements can be seen and dismissed without blurring the whole event.
-assert.ok(ads.includes("pathname === '/event' && user?.role === 'agent'"))
-assert.ok(ads.includes("data-agent-event-ad={agentEventNotice?'non-blocking':undefined}"))
+assert.ok(ads.includes("user?.role === 'agent' &&"))
+assert.ok(ads.includes("pathname === '/event' || pathname === '/agent/dashboard'"))
+assert.ok(ads.includes("data-agent-event-ad={agentWorkingNotice?'non-blocking':undefined}"))
 assert.ok(ads.includes('pointer-events-none fixed bottom-3'),
   'The Agent event notice has no backdrop and does not intercept the full page')
 assert.ok(ads.includes('setAdsPlacement(null)'))
