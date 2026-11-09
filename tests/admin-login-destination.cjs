@@ -9,7 +9,7 @@ const body = source.split('const handleSubmit = async (e: React.FormEvent) => {'
 const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor
 const submit = new AsyncFunction('e', 'login', 'logout', 'administrationPortal', 'router',
   'isFlameEventActive', 'sessionStorage', 'setError', 'setIsSubmitting', 'email', 'password',
-  'AGILITY_AGENT_LOGIN_AD_KEY', 'LOOP1_AGENT_LOGIN_AD_KEY', body)
+  'AGILITY_AGENT_LOGIN_AD_KEY', 'LOOP1_AGENT_LOGIN_AD_KEY', 'resolveEventStatus', 'FLAME_EVENT', body)
 
 async function run({ role = 'admin', portal = true, event = false, error } = {}) {
   const result = { routes: [], errors: [], eventChecks: 0, logout: false }
@@ -19,7 +19,8 @@ async function run({ role = 'admin', portal = true, event = false, error } = {})
   }, () => { result.logout = true }, portal, {
     replace(route) { result.routes.push(route) }, push(route) { result.routes.push(route) },
   }, async () => { result.eventChecks++; return event }, { setItem() {} },
-  value => result.errors.push(value), () => {}, 'ADMIN@example.com', 'test-only', 'ad1', 'ad2')
+  value => result.errors.push(value), () => {}, 'ADMIN@example.com', 'test-only', 'ad1', 'ad2',
+  () => event ? 'active' : 'planned', {})
   return result
 }
 
@@ -33,8 +34,10 @@ async function run({ role = 'admin', portal = true, event = false, error } = {})
   assert.equal(wrongRole.logout, true)
   assert.deepEqual(wrongRole.routes, [])
   for (const event of [false, true]) {
-    assert.deepEqual((await run({ role: 'agent', portal: false, event })).routes, ['/agent/dashboard'],
+    const result = await run({ role: 'agent', portal: false, event })
+    assert.deepEqual(result.routes, ['/agent/dashboard'],
       'Agents must arrive at their clear work desk regardless of Flame Event status')
+    assert.equal(result.eventChecks, 0, 'Agent arrival must not await the event API')
   }
   assert.deepEqual((await run({ role: 'bridger', portal: false })).routes, ['/bridger/dashboard'])
   assert.deepEqual((await run({ role: 'bridger', portal: false, event: true })).routes, ['/event'])
