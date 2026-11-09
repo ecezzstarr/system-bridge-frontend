@@ -54,7 +54,7 @@ type Props = {
   worldApiPath?: string
 }
 
-const districts = [
+export const FILE_FOLDER_WORKSHOP_DISTRICTS = [
   { key: 'workshop_core', label: 'Command Core', icon: Workflow, detail: 'Hold the purpose, authority, resources and next movement of this territory in one command position.' },
   { key: 'blueprint_foundry', label: 'Blueprint Foundry', icon: Boxes, detail: 'Turn an intended capability into a buildable system with defined functions, dependencies and consequence.' },
   { key: 'build_market', label: 'Materials Depot', icon: Store, detail: 'Acquire the primary kits that supply a blueprint before construction begins.' },
@@ -287,7 +287,7 @@ export default function FileFolderOpenWorld({
 
   // A hidden organizer preference must not erase a Client's working district.
   // Preserve Administration's ordering while keeping every built-in station reachable.
-  const visibleDistricts = [...districts].sort((a,b)=>{
+  const visibleDistricts = [...FILE_FOLDER_WORKSHOP_DISTRICTS].sort((a,b)=>{
     if(a.key==='workshop_core')return -1
     if(b.key==='workshop_core')return 1
     return orderFor(`/client/system-switch#studio:${a.key}`)-orderFor(`/client/system-switch#studio:${b.key}`)
@@ -297,7 +297,7 @@ export default function FileFolderOpenWorld({
     window.requestAnimationFrame(()=>document.getElementById('file-folder-workspace')?.scrollIntoView({behavior:'smooth',block:'start'}))
   }
   useEffect(()=>{
-    if(!districts.some(item=>item.key===district))setDistrict('workshop_core')
+    if(!FILE_FOLDER_WORKSHOP_DISTRICTS.some(item=>item.key===district))setDistrict('workshop_core')
   },[district])
 
   const activeBuilds = (world?.builds || []).filter((build: any) => build.status === 'building')
@@ -420,13 +420,14 @@ export default function FileFolderOpenWorld({
               districts={visibleDistricts} active={district} onEnter={enterDistrict}
               systems={world?.systems?.length||0} building={activeBuilds.length} builds={activeBuilds}
               operatingSystems={world?.systems||[]} customerDoor={world?.customerDoor} now={now}/>
-          : fileFolderTier==='plus'
+          : fileFolderTier==='plus'&&!embedded
           ? <FileFolderPlusRadiantWorld appearance={worldAppearance||resolveFileFolderAppearance('plus')}
-              districts={visibleDistricts} active={district} onEnter={enterDistrict}
-              systems={world?.systems?.length||0} building={activeBuilds.length}
+              districts={visibleDistricts} onEnter={enterDistrict}
               builds={Array.isArray(world?.builds)?world.builds:[]}
               systemRecords={Array.isArray(world?.systems)?world.systems:[]}
               now={now}/>
+          : fileFolderTier==='plus'&&embedded
+          ? null
           : fileFolderTier==='premium'&&embedded
           ? <div className="border-b border-[#c59b5c]/30 bg-[#251e21] px-4 py-4 text-[#f5dfc2]" data-premium-workshop-interior="true">
               <p className="text-xs font-bold uppercase tracking-widest text-[#f2c67d]">Premium File Folder · Operating Workshop</p>
@@ -716,7 +717,7 @@ export default function FileFolderOpenWorld({
           {district === 'active_systems' && (
             <div>
               <p className="text-[9px] font-black uppercase tracking-[0.22em] text-sky-300">Systems in Motion</p>
-              <h3 className="mt-2 text-2xl font-black">A finished structure becomes valuable when it moves, connects and produces an output.</h3>
+              <h3 className="mt-2 text-2xl font-black">Use your finished systems and record the work they carry.</h3>
               <div className="mt-5 space-y-4">
                 {(world?.systems || []).length === 0 && <p className="rounded-xl border border-dashed border-white/10 p-5 text-sm text-slate-500">No system has finished construction yet.</p>}
                 {(world?.systems || []).map((system:any) => <div key={system.id} className="rounded-2xl border border-sky-300/15 bg-sky-400/[0.035] p-5">
