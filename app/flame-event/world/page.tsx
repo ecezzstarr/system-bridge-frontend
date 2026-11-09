@@ -14,5 +14,5 @@ export default async function BurningRiverWorldLegacyRoute({searchParams}:{
    key==='legion'?/^[a-zA-Z0-9_-]{1,80}$/.test(value):/^[a-zA-Z0-9-]{1,40}$/.test(value)
   if(valid)query.set(key,value)
  }
- redirect('/system-switch/world'+(query.size?'?'+query.toString():'')+'#domains')
+ redirect('/system-switch/world'+(query.size?'?'+query.toString():''))
 }

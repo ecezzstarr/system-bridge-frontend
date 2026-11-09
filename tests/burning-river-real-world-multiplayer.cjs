@@ -84,7 +84,8 @@ assert.ok(db.includes('idx_weave_open_world_projects_connection')&&
  db.includes("active_system.status='active'")&&
  migration.includes('weave_open_world_project_contributions'),
  'Public domain maturity uses independently active contributions from both worlds')
-assert.ok(map.includes('MovingBurningRiver')&&map.includes('DomainCastle')&&map.includes('<AdaptiveCanvas')&&
+const scene=read('components/events/weave-world-scene.tsx')
+assert.ok(scene.includes('MovingBurningRiver')&&scene.includes('DomainCastle')&&scene.includes('<AdaptiveCanvas')&&
  map.includes('request_connection')&&map.includes('respond_connection'),
  'Real 3D castle and multiplayer interaction operate from actual records')
 assert.ok(!map.includes('WeaveEmbodiedAvatar')&&!map.includes('joystick')&&!map.includes('soldiers'),
@@ -92,10 +93,10 @@ assert.ok(!map.includes('WeaveEmbodiedAvatar')&&!map.includes('joystick')&&!map.
 assert.ok(gate.includes("burning-river-crossing-official.webp")&&
  map.includes("burning-river-open-world-official.webp"),
  'Both official approved images are referenced; no alternate concept image')
-assert.ok(gate.includes('href={worldHref}')&&route.includes('<BurningRiverLiveWorld role={role} carrierCode={carrierCode} requestedDoor={door} legionCode={legionCode}/>'),
+assert.ok(gate.includes('href={worldHref}')&&route.includes('<BurningRiverLiveWorld role={role} carrierCode={carrierCode} requestedDoor={door} legionCode={legionCode} returnHref='),
  'Clickable crossing opens real shared world route')
 assert.ok(gate.includes('encodeURIComponent(carrierCode)')&&
- route.includes('carrierCode={carrierCode}')&&map.includes('<BurningRiverFoodStore3D carrierCode={carrierCode}/>'),
+ route.includes('carrierCode={carrierCode}')&&map.includes("'/flame-event?carrier='+encodeURIComponent(carrierCode)"),
  'Agent Carrier attribution remains connected while visitors cross into the shared world')
 assert.ok(staff.includes('<BurningRiverOfficialGateway staff staffHref=')&&
  visitor.includes('<BurningRiverOfficialGateway carrierCode={carrierCode}/>'),

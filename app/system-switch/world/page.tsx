@@ -1,19 +1,8 @@
 'use client'
 
 import {useEffect,useState} from 'react'
-import dynamic from 'next/dynamic'
-import Link from 'next/link'
-import {ArrowLeft} from 'lucide-react'
-import {WEAVE_WRITING} from '@/lib/weave-writing'
-// Load the GPU-heavy scene after the System Switch page can paint its entry.
-// Visitors always see a recognizable world-loading surface during the split.
-const BurningRiverLiveWorld=dynamic(
-  ()=>import('@/components/events/burning-river-live-world').then(m=>m.BurningRiverLiveWorld),
-  {ssr:false,loading:()=> <div role="status" data-weave-open-world-loader="loading-3d-world"
-    className="flex min-h-[60svh] items-center justify-center bg-[radial-gradient(ellipse_at_center,#183c51,#071324)] p-6 text-center text-sm font-semibold text-sky-100">
-    Opening the 3D File Folder Open World · preparing Client places, paths and public Customer Doors…
-  </div>},
-)
+import {useAuth} from '@/lib/auth-provider'
+import {BurningRiverLiveWorld} from '@/components/events/burning-river-live-world'
 
 /**
  * SYSTEM SWITCH is the container and gate of the permanent WEAVE Open World.
@@ -21,7 +10,8 @@ const BurningRiverLiveWorld=dynamic(
  * its identity does not replace or rename the Weave Open World itself.
  */
 export default function WeaveOpenWorldPage(){
- const [role,setRole]=useState<'client'|'admin'|'agent'|'bridger'|'visitor'>('visitor')
+ const {user}=useAuth()
+ const role=user?.role||'visitor'
  const [carrierCode,setCarrierCode]=useState<string|null>(null)
  const [door,setDoor]=useState<string|null>(null)
  const [legionCode,setLegionCode]=useState<string|null>(null)
@@ -35,33 +25,13 @@ export default function WeaveOpenWorldPage(){
    if(doorSlug&&/^[a-z0-9-]{1,160}$/i.test(doorSlug))setDoor(doorSlug)
    if(legion&&/^[a-zA-Z0-9_-]{1,80}$/.test(legion))setLegionCode(legion)
    setFromSwitch(query.get('via')==='system-switch')
-   try{
-     const parsed=JSON.parse(localStorage.getItem('ssb_auth_user')||'null')
-     const next=parsed?.role
-     if(['client','admin','agent','bridger'].includes(next))setRole(next)
-   }catch{}
  },[])
- const crossing=WEAVE_WRITING.systemSwitch
  return <main className="min-h-dvh bg-[#071324] text-white"
     data-weave-open-world="system-switch"
     data-system-switch-container="file-folder-world"
     data-company-loop-event="burning-river"
     data-file-folder-open-world-entry={fromSwitch?'system-switch':'public'}
     data-system-switch-crossed={fromSwitch?'true':'false'}>
-   <nav className="flex items-center justify-between gap-3 border-b border-amber-200/15 px-4 py-2">
-     <Link href={fromSwitch?'/system-switch':'/flame-event'} className="inline-flex min-h-10 items-center gap-2 text-xs font-semibold text-amber-200">
-       <ArrowLeft className="h-4 w-4"/>{fromSwitch?'System Switch Gate':'Company Loop 1 · Burning River'}
-     </Link>
-     <Link href="/" className="text-xs text-sky-100/80">The Company of Time</Link>
-   </nav>
-   <section className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 border-b border-amber-200/15 px-4 py-3" aria-label="3D File Folder Open World arrival" data-system-switch-arrival-orientation="true">
-     <div>
-       <p className="text-[11px] font-bold uppercase tracking-[.12em] text-amber-200">{crossing.destination} · 3D environment</p>
-       <p className="mt-1 max-w-4xl text-sm leading-6 text-sky-50">{crossing.arrival}</p>
-       {role==='visitor'&&<p className="mt-1 text-xs leading-5 text-sky-100">{crossing.visitor}</p>}
-     </div>
-     <p className="text-xs font-semibold text-amber-100">{crossing.privacy}</p>
-   </section>
-   <BurningRiverLiveWorld role={role} carrierCode={carrierCode} requestedDoor={door} legionCode={legionCode}/>
+   <BurningRiverLiveWorld role={role} carrierCode={carrierCode} requestedDoor={door} legionCode={legionCode} returnHref={fromSwitch?'/system-switch':'/flame-event'}/>
  </main>
 }
