@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import { WeaveEnvironmentSurface } from '@/components/world/weave-environment-surface'
 import { RegistrationReferralCapture } from '@/components/registration-referral-capture'
+import { isFlameEventActive } from '@/lib/flame-event-landing'
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
@@ -12,10 +13,21 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
   const { isAuthenticated, isLoading, isInitialized, user } = useAuth()
 
   useEffect(() => {
-    // Registration controls its own position-specific success destination.
-    // Never race its redirect by pushing a newly registered Bridger into /weave.
-    if (isInitialized && isAuthenticated && !isLoading && pathname !== '/register') {
-      router.replace(user?.role === 'bridger' ? '/bridger/dashboard' : user?.role === 'agent' ? '/agent/dashboard' : user?.role === 'admin' ? '/admin/dashboard' : '/weave')
+    // The login handler and registration flow own their authenticated arrival.
+    // Never race them with a dashboard redirect, which bypasses Burning River.
+    if (isInitialized && isAuthenticated && !isLoading && pathname !== '/register' && pathname !== '/login') {
+      let cancelled = false
+      void isFlameEventActive().then(eventLive => {
+        if (cancelled) return
+        const destination = user?.role === 'client'
+          ? (eventLive ? '/client/event' : '/client/dashboard')
+          : eventLive ? '/event'
+          : user?.role === 'agent' ? '/agent/dashboard'
+          : user?.role === 'bridger' ? '/bridger/dashboard'
+          : user?.role === 'admin' ? '/admin/dashboard' : '/weave'
+        router.replace(destination)
+      })
+      return () => { cancelled = true }
     }
   }, [isInitialized, isAuthenticated, isLoading, pathname, user?.role, router])
 

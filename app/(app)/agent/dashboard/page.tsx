@@ -19,6 +19,7 @@ export default function AgentWorld() {
   const [showLoop1Ad,setShowLoop1Ad]=useState(false)
   const [showAgilityAd,setShowAgilityAd]=useState(false)
   const [agilityQueued,setAgilityQueued]=useState(false)
+  const [loginNotice,setLoginNotice]=useState<'loop1'|'agility'|null>(null)
 
   useEffect(()=>{
     if(!user)return
@@ -27,8 +28,10 @@ export default function AgentWorld() {
     const agility=sessionStorage.getItem(AGILITY_AGENT_LOGIN_AD_KEY)==='1'
     if(loop)sessionStorage.removeItem(LOOP1_AGENT_LOGIN_AD_KEY)
     if(agility)sessionStorage.removeItem(AGILITY_AGENT_LOGIN_AD_KEY)
-    if(loop){setShowLoop1Ad(true);setAgilityQueued(agility)}
-    else if(agility)setShowAgilityAd(true)
+    // A login announcement must never cover the Agent's first working screen.
+    // Keep the existing detailed notices available only when the Agent chooses to read them.
+    if(loop){setLoginNotice('loop1');setAgilityQueued(agility)}
+    else if(agility)setLoginNotice('agility')
   },[user,router])
 
   if(!user||user.role!=='agent')return null
@@ -40,6 +43,20 @@ export default function AgentWorld() {
       onOpenContinuance={()=>{setShowLoop1Ad(false);router.push('/agent/commissions')}}
     />
     <AgilityAgentLoginAd open={showAgilityAd} onOpenChange={setShowAgilityAd} onBuy={()=>{setShowAgilityAd(false);router.push('/agility')}} />
+    {loginNotice&&<aside data-agent-login-notice="non-blocking" aria-label="Stability company update"
+      className="relative z-10 mx-auto mt-3 flex w-[calc(100%-1.5rem)] max-w-5xl flex-wrap items-center justify-between gap-3 rounded-xl border border-sky-300/30 bg-[#102a3d] px-4 py-3 text-white shadow-md">
+      <div className="min-w-0 flex-1">
+        <p className="text-xs font-bold text-sky-200">Administrations · A Time · Stability update</p>
+        <p className="mt-1 text-sm text-slate-100">{loginNotice==='loop1'
+          ? 'Your Burning River commission briefing is available. Continue your work now or read the update.'
+          : 'Your Agility distribution briefing is available. Continue your work now or read the update.'}</p>
+      </div>
+      <div className="flex shrink-0 gap-2">
+        <button type="button" className="rounded-lg border border-white/25 px-3 py-2 text-xs font-semibold" onClick={()=>setLoginNotice(null)}>Later</button>
+        <button type="button" className="rounded-lg bg-sky-200 px-3 py-2 text-xs font-bold text-[#102a3d]"
+          onClick={()=>{const kind=loginNotice;setLoginNotice(null);if(kind==='loop1')setShowLoop1Ad(true);else setShowAgilityAd(true)}}>Read update</button>
+      </div>
+    </aside>}
     {originalWorld ? (
       <div data-agent-original-district-world="preserved">
         <button type="button" onClick={()=>setOriginalWorld(false)}

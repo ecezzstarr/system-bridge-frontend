@@ -179,6 +179,7 @@ jobs:
           node tests/agent-admin-workplace-preservation.cjs
           node tests/password-hash-login-regression.cjs
           node tests/admin-login-destination.cjs
+          node tests/agent-login-clear-arrival.cjs
           node tests/core-hardening-regression.cjs
           node tests/commerce-ledger-regression.cjs
           node tests/email-mailbox-regression.cjs

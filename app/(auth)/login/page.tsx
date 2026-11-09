@@ -45,16 +45,16 @@ export default function LoginPage() {
         return
       }
 
+      // The current company event is the shared arrival place for every role.
+      // Workspaces are entered from that event, not substituted for it at login.
+      const eventLive = await isFlameEventActive()
       if (loggedInUser?.role === 'admin') {
-        router.replace('/admin/dashboard')
+        router.replace(eventLive ? '/event' : '/admin/dashboard')
         return
       }
-
-      const eventLive = await isFlameEventActive()
-
       if (loggedInUser?.role === 'agent') {
         sessionStorage.setItem(AGILITY_AGENT_LOGIN_AD_KEY, '1')
-        if (!eventLive) sessionStorage.setItem(LOOP1_AGENT_LOGIN_AD_KEY, '1')
+        if (eventLive) sessionStorage.setItem(LOOP1_AGENT_LOGIN_AD_KEY, '1')
         router.replace(eventLive ? '/event' : '/agent/dashboard')
       } else if (loggedInUser?.role === 'bridger') {
         router.replace(eventLive ? '/event' : '/bridger/dashboard')
