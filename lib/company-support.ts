@@ -152,7 +152,11 @@ export async function listSupportCases(user:AuthUser){
   if(isAdmin)return cases.rows
   if(user.role==='legion')return []
   const isManager=(await managerKinds(user.id)).length>0
-  return cases.rows.filter(x=>x.worker_id===user.id || isManager)
+  const visible=[]
+  for(const item of cases.rows){
+    if(item.worker_id===user.id || (isManager&&item.manager_id===user.id&&await managerAssignedTo(String(item.worker_id),user.id)))visible.push(item)
+  }
+  return visible
 }
 export async function readSupportMessages(user:AuthUser,caseId:string){
   await ensureCompanySupportSchema()
@@ -160,7 +164,7 @@ export async function readSupportMessages(user:AuthUser,caseId:string){
   const db=getPool()
   const row=await db.query('SELECT * FROM weave_company_support_cases WHERE id=$1::uuid',[caseId])
   const item=row.rows[0]
-  if(!item || (user.role!=='admin' && user.id!==item.worker_id && (user.id!==item.manager_id || !(await managerKinds(user.id)).length)))throw new Error('Support case unavailable')
+  if(!item || (user.role!=='admin' && user.id!==item.worker_id && (user.id!==item.manager_id || !(await managerKinds(user.id)).length || !(await managerAssignedTo(String(item.worker_id),user.id)))))throw new Error('Support case unavailable')
   const messages=await db.query(`SELECT m.id,m.message,m.created_at,m.author_id,u.name AS author_name
     FROM weave_company_support_messages m JOIN users u ON u.id=m.author_id
     WHERE m.case_id=$1::uuid ORDER BY m.created_at ASC LIMIT 250`,[caseId])
