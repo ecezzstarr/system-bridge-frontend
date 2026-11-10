@@ -1,3 +1,4 @@
+import { displayCurrencyName } from '@/lib/flame-coin'
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -146,7 +147,7 @@ export default function LedgerPage() {
             {data.warnings.map((warning,i)=><p key={i}>{warning}</p>)}
           </div>
         )}
-        <BalanceSummary available={data.balance.available} locked={data.balance.locked} currency="Flame Coin"/>
+        <BalanceSummary available={data.balance.available} locked={data.balance.locked} currency="System Switch"/>
         {data.sections?.escrow==='available'
           ? <EscrowList escrows={data.escrow.map(item=>({...item,locked_at:new Date(item.locked_at)}))}/>
           : <p className="text-sm text-amber-200">Escrow history unavailable. No locked-balance value has been assumed.</p>}
@@ -162,7 +163,7 @@ export default function LedgerPage() {
               ? <p className="py-6 text-center text-amber-200">Transaction history could not be retrieved. This does not mean the account has no transactions.</p>
               : data.ledger.length ? data.ledger.map(entry=>(
               <TransactionItem key={entry.id} type={entry.entry_type}
-                amount={Number(entry.amount)} currency={entry.currency}
+                amount={Number(entry.amount)} currency={displayCurrencyName(entry.currency)}
                 description={entry.description||'Recorded transaction'}
                 date={new Date(entry.created_at)}
                 balanceAfter={entry.balance_after == null?undefined:Number(entry.balance_after)}/>
