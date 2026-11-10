@@ -61,6 +61,7 @@ jobs:
 
       - name: Administrations company movement reporting contract
         run: node tests/admin-company-movement-regression.cjs
+          node tests/regional-manager-daily-workflow-regression.cjs
 
       - name: Agent Creative Studio fee and image regressions
         run: |
