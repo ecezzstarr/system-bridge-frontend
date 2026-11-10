@@ -15,6 +15,7 @@ export function notificationDestination(notification:{type?:string;link?:string|
   if(link.startsWith('/')&&!link.startsWith('//')&&!/[\\\r\n]/.test(link))
     return {href:link,label:'Open related page',exact:true}
   const type=String(notification.type||'').toLowerCase()
+  if(type==='company_support')return {href:'/weave/lifestyles/support',label:'Open manager work support',exact:false}
   if(type==='employment_reply'||type.startsWith('employment_'))
     return role==='admin'
       ?{href:'/admin/distribution-employment',label:'Open employment review',exact:false}
