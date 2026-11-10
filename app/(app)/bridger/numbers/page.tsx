@@ -200,7 +200,7 @@ export default function BridgerNumbersPage(){
    <div>
     <p className="text-[9px] font-black uppercase tracking-[.2em] text-cyan-300">Country selection</p>
     <h2 className="mt-1 text-xl font-black text-white">Choose country → buy or order</h2>
-    <p className="mt-2 text-xs text-slate-400">You always see the country and Flame Coin price before spending. The exact phone number is revealed only after assignment or Administration delivery.</p>
+    <p className="mt-2 text-xs text-slate-400">You always see the country and System Switch price before spending. The exact phone number is revealed only after assignment or Administration delivery.</p>
    </div>
    <button onClick={()=>void load()} aria-label="Refresh Number Bay" className="rounded-xl border border-white/10 p-2"><RefreshCw className={`h-4 w-4 text-slate-400 ${loading?'animate-spin':''}`}/></button>
   </div>
@@ -225,7 +225,7 @@ export default function BridgerNumbersPage(){
        :<p className="mt-2 text-[10px] leading-5 text-slate-400">Out of stock · Administration can acquire and deliver this country through WEAVE within the {Number(offer.delivery_minutes)||30}-minute target.</p>}
       {stock>0?
        <button
-        data-presence-output={`Buy ${offer.country} WEAVE number for ${price.toLocaleString()} Flame Coin`}
+        data-presence-output={`Buy ${offer.country} WEAVE number for ${price.toLocaleString()} System Switch`}
         onClick={()=>void buyCountry(offer.country)}
         disabled={buying===offer.country}
         className="mt-4 w-full rounded-xl bg-cyan-300 p-2.5 text-xs font-black text-slate-950 disabled:opacity-40"
@@ -255,7 +255,7 @@ export default function BridgerNumbersPage(){
       </div>
       {o.admin_message&&<p className="mt-3 text-xs leading-5 text-slate-300">{o.admin_message}</p>}
       {o.status==='delivered'&&o.phone_e164&&<p className="mt-3 font-mono text-lg font-black text-emerald-200">{o.phone_e164}</p>}
-      {o.status==='cancelled'&&<p className="mt-3 text-xs text-slate-500">Order cancelled. The charged Flame Coin was returned by Administration.</p>}
+      {o.status==='cancelled'&&<p className="mt-3 text-xs text-slate-500">Order cancelled. The charged System Switch was returned by Administration.</p>}
      </article>
     })
    }
@@ -285,8 +285,8 @@ export default function BridgerNumbersPage(){
  </>
 
  const right=<>
-  <section className="rounded-3xl border border-amber-300/15 bg-amber-400/[.035] p-4"><ShieldCheck className="h-5 w-5 text-amber-300"/><p className="mt-3 text-sm font-black text-white">WEAVE wrapper</p><p className="mt-2 text-xs leading-5 text-slate-400">Provider acquisition details remain Administration-only. You see the country, Flame Coin price, stock state, delivery deadline, assigned number and verification movement.</p></section>
-  <section className="rounded-3xl border border-white/10 bg-black/20 p-4"><Phone className="h-5 w-5 text-emerald-300"/><p className="mt-3 text-sm font-black text-white">30-minute order path</p><p className="mt-2 text-xs leading-5 text-slate-400">When a published country is out of stock: order → Flame Coin reserved as purchase → Administration acquires number → delivery enters My Numbers → request SMS/call verification.</p></section>
+  <section className="rounded-3xl border border-amber-300/15 bg-amber-400/[.035] p-4"><ShieldCheck className="h-5 w-5 text-amber-300"/><p className="mt-3 text-sm font-black text-white">WEAVE wrapper</p><p className="mt-2 text-xs leading-5 text-slate-400">Provider acquisition details remain Administration-only. You see the country, System Switch price, stock state, delivery deadline, assigned number and verification movement.</p></section>
+  <section className="rounded-3xl border border-white/10 bg-black/20 p-4"><Phone className="h-5 w-5 text-emerald-300"/><p className="mt-3 text-sm font-black text-white">30-minute order path</p><p className="mt-2 text-xs leading-5 text-slate-400">When a published country is out of stock: order → System Switch reserved as purchase → Administration acquires number → delivery enters My Numbers → request SMS/call verification.</p></section>
   <Link href="/bridger/dashboard" className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[.025] px-4 py-3 text-xs font-black text-white">Bridger Operating Room <span className="text-cyan-300">→</span></Link>
  </>
 

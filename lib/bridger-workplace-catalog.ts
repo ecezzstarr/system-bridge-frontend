@@ -65,7 +65,7 @@ export const BRIDGER_WORKPLACE_SPACES: readonly BridgerWorkplaceSpace[] = [
     description: 'A company appointment is separate from your basic Bridger position and begins only after the required approval.',
     places: [
       { label: 'Lifestyle Access', href: '/weave/lifestyles', detail: 'See available Lifestyle systems and the one-time Agentic-Bridger access rules.' },
-      { label: 'Agentic-Bridger', href: '/weave/lifestyles/agentic-bridger', detail: 'Permanent specialization after a one-time 11 Flame Coin attainment.', access: 'lifestyle' },
+      { label: 'Agentic-Bridger', href: '/weave/lifestyles/agentic-bridger', detail: 'Permanent specialization after a one-time 11 System Switch attainment.', access: 'lifestyle' },
       { label: 'Approved Staff Workspace', href: '/weave/lifestyles/work', detail: 'Assignments, instructions and reports for your verified jobs.', access: 'approval' },
       { label: 'Distribution Manager', href: '/manager/dashboard', detail: 'Review the actual team, employment document, targets and approval status.', access: 'approval' },
       { label: 'Assistant Distribution Manager', href: '/weave/lifestyles/distribution-assistant', detail: 'Apply to support a verified Distribution Manager and team.', access: 'approval' },
@@ -87,7 +87,7 @@ export const BRIDGER_WORKPLACE_SPACES: readonly BridgerWorkplaceSpace[] = [
     description: 'See what you actually earned or spent. Application status and projected income are not completed payments.',
     places: [
       { label: 'Referral Movement', href: '/referrals', detail: 'Share your referral entrance and review verified ₦500 registration bonuses.' },
-      { label: 'Flame Coin Wallet', href: '/wallet', detail: 'See your recorded balance and transactions.' },
+      { label: 'System Switch Wallet', href: '/wallet', detail: 'See your recorded balance and transactions.' },
       { label: 'Deposit & Withdrawal', href: '/wallet/deposit-withdraw', detail: 'Open existing funding and withdrawal instructions.' },
       { label: 'Receipts', href: '/receipts', detail: 'Review transaction receipts rather than estimates.' },
       { label: 'Ledger', href: '/ledger', detail: 'Review the history of recorded wallet movement.' },
