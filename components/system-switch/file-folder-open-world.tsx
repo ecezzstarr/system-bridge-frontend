@@ -60,7 +60,7 @@ const districts = [
   { key: 'build_market', label: 'Materials Depot', icon: Store, detail: 'Acquire the primary kits that supply a blueprint before construction begins.' },
   { key: 'parts_workshop', label: 'Parts Workshop', icon: Boxes, detail: 'Acquire capability modules and attach compatible parts to structures while they form.' },
   { key: 'formation_yard', label: 'Formation Yard', icon: Hammer, detail: 'Form the technology through time, install capability parts and watch the territory change with the build.' },
-  { key: 'boost_bay', label: 'Acceleration Bay', icon: Zap, detail: 'Use recorded acceleration instruments on active construction.' },
+  { key: 'boost_bay', label: 'Boost Bay · Acceleration Bay', icon: Zap, detail: 'Optionally buy and install speed boosters on an active build.' },
   { key: 'active_systems', label: 'Systems in Motion', icon: PackageOpen, detail: 'Operate completed technologies, connect their outputs and preserve the movement they produce.' },
   { key: 'library_district', label: 'Formation Intelligence', icon: Library, detail: 'Understand why each system works, what it can connect to and what larger capability can emerge.' },
 ]
@@ -160,6 +160,7 @@ export default function FileFolderOpenWorld({
   const [premiumFocusBlueprint,setPremiumFocusBlueprint]=useState('')
   const [premiumFocusMaterial,setPremiumFocusMaterial]=useState('')
   const [premiumShowAllMaterials,setPremiumShowAllMaterials]=useState(false)
+  const [boostTargetId,setBoostTargetId]=useState('')
   const [buildDrafts,setBuildDrafts]=useState<Record<string,{title:string;purpose:string}>>({})
   const { recordOutput } = usePresenceCamera()
   const buildStateRef=useRef<Map<string,string>>(new Map())
@@ -303,6 +304,7 @@ export default function FileFolderOpenWorld({
   },[district])
 
   const activeBuilds = (world?.builds || []).filter((build: any) => build.status === 'building')
+  const boostTarget=activeBuilds.find((build:any)=>build.id===boostTargetId)||activeBuilds[0]||null
   const orderedBuilds = initialBuildId
     ? [...activeBuilds].sort((a:any,b:any)=>Number(b.id===initialBuildId)-Number(a.id===initialBuildId))
     : activeBuilds
@@ -415,6 +417,27 @@ export default function FileFolderOpenWorld({
         )}
       </header>
       </details>
+
+      <section data-file-folder-career-journey="choose-acquire-build-boost-operate-earn" className="border-b border-amber-300/25 bg-[radial-gradient(ellipse_at_top_left,rgba(183,134,65,.16),transparent_72%)] p-4 text-white sm:p-6">
+        <p className="text-xs font-bold uppercase tracking-wider text-amber-200">Build your online career · Company of Time</p>
+        <h2 className="mt-2 text-2xl font-black leading-tight sm:text-3xl">Choose a job. Build its system. Start serving customers.</h2>
+        <p className="mt-3 max-w-3xl text-sm leading-7 text-stone-200">Every blueprint is a working capability you can turn into a paid service. See the exact material price and build time before buying. The system builds over real time; Boost Bay is optional. Customers pay for work only after you offer and deliver a real service.</p>
+        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+          {[
+            {step:'01',name:'Choose a career',desc:String((world?.blueprints||[]).length)+' available systems',goto:'blueprint_foundry'},
+            {step:'02',name:'Get materials',desc:'See actual parts and prices',goto:'build_market'},
+            {step:'03',name:'Build over time',desc:activeBuilds.length+' real builds in progress',goto:'formation_yard'},
+            {step:'04',name:'Boost Bay',desc:'Optional paid acceleration',goto:'boost_bay'},
+            {step:'05',name:'Operate your system',desc:String((world?.systems||[]).length)+' systems on record',goto:'active_systems'},
+            {step:'06',name:'Earn from customers',desc:'Work, quote, deliver and record',goto:'workshop_core'},
+          ].map(item=><button type="button" key={item.step} onClick={()=>{if(item.step==='06'&&onOpenCustomerDoor)onOpenCustomerDoor();else enterDistrict(item.goto)}} className="min-h-28 rounded-2xl border border-[#c49b5f]/30 bg-[#12141b]/85 p-4 text-left hover:border-[#efd2a0] focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-200">
+            <span className="text-xs font-bold text-amber-300">{item.step}</span>
+            <strong className="mt-2 block text-base leading-5 text-white">{item.name}</strong>
+            <span className="mt-2 block text-sm leading-5 text-stone-300">{item.desc}</span>
+          </button>)}
+        </div>
+        <p className="mt-4 text-xs leading-6 text-stone-300">The company supplies buildable systems and charges only displayed fees. Actual earnings depend on verified customer jobs, agreed prices and genuine operating costs, not on purchasing a blueprint.</p>
+      </section>
 
       <div className="min-h-[520px] sm:min-h-[650px]">
         {fileFolderTier==='standard'
@@ -576,7 +599,12 @@ export default function FileFolderOpenWorld({
                       <span className="rounded-full border border-amber-300/15 bg-amber-400/5 px-2.5 py-1 font-black uppercase tracking-wider text-amber-200">Live speed ×{Number(build.speed_multiplier || 1).toFixed(2)}</span>
                       <span className="rounded-full border border-white/10 bg-white/[0.03] px-2.5 py-1 text-slate-400">{(build.applied_parts || []).length} attached parts</span>
                     </div>
-                    <p className="mt-3 text-[10px] text-slate-500">{build.purpose}</p>
+                    <div className="mt-3 rounded-xl border border-amber-200/20 bg-black/25 p-3 text-sm leading-6 text-slate-200">
+                      <p>Build progress: <strong className="text-amber-100">{Math.round(progress)}%</strong> · Time remaining: <strong className="text-amber-100">{duration(remaining)}</strong></p>
+                      <p>Scheduled completion: <strong>{new Date(build.completes_at).toLocaleString()}</strong></p>
+                      <p className="mt-1 text-xs text-stone-400">This countdown uses the recorded completion time. Purchased boosts only take effect after installation and a confirmed server update.</p>
+                    </div>
+                    <p className="mt-3 text-sm leading-6 text-slate-300">{build.purpose}</p>
                     {(build.applied_parts || []).length > 0 && <div className="mt-4 rounded-xl border border-white/10 bg-black/20 p-3">
                       <p className="text-[8px] font-black uppercase tracking-[0.18em] text-slate-600">Installed during this build</p>
                       <div className="mt-2 flex flex-wrap gap-2">{(build.applied_parts || []).map((part:any)=><span key={part.id} className="rounded-full border border-white/10 bg-white/[0.03] px-2.5 py-1 text-[9px] text-slate-300">{part.name}{part.effect_type==='speed_boost' ? ` · ×${Number(part.effect_value || 1).toFixed(2)}` : ''}</span>)}</div>
@@ -593,7 +621,7 @@ export default function FileFolderOpenWorld({
                       </div>
                       <div className="mt-3 flex flex-wrap gap-2">
                         <button type="button" onClick={()=>setDistrict('parts_workshop')} className="rounded-full border border-sky-300/20 px-3 py-2 text-[10px] font-black text-sky-200">Purchase parts</button>
-                        <button type="button" onClick={()=>setDistrict('boost_bay')} className="rounded-full border border-amber-300/20 px-3 py-2 text-[10px] font-black text-amber-200">Purchase boost</button>
+                        <button type="button" onClick={()=>{setBoostTargetId(build.id);enterDistrict('boost_bay')}} className="min-h-11 rounded-xl border border-amber-300/35 bg-amber-300/[.09] px-4 py-2 text-sm font-bold text-amber-100">Boost this build (optional)</button>
                       </div>
                     </div>
                   </div>
@@ -605,8 +633,8 @@ export default function FileFolderOpenWorld({
           {district === 'blueprint_foundry' && (
             <div>
               <p className="text-[9px] font-black uppercase tracking-[0.22em] text-violet-300">Blueprint Foundry</p>
-              <h3 className="mt-2 text-2xl font-black">Choose the technology your business needs.</h3>
-              <p className="mt-2 max-w-3xl text-xs leading-6 text-slate-400">WEAVE provides buildable technology. You choose the system, name it for your business, define what it should do, and start formation. Your choices determine what this File Folder becomes.</p>
+              <h3 className="mt-2 text-2xl font-black">Choose a career system your business can operate.</h3>
+              <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-300">Choose the service you want to provide. Each system shows the material cost, the parts it needs and its real construction duration. After commissioning, use it to serve customers. You set a genuine customer quote for the work you can deliver.</p>
               <div className="mt-5">
                 <FileFolderPlatformProjectStudio
                   projects={world?.platformProjects||[]}
@@ -630,9 +658,13 @@ export default function FileFolderOpenWorld({
                     : effectiveMinutes >= 60
                       ? `${(effectiveMinutes / 60).toFixed(effectiveMinutes % 60 === 0 ? 0 : 1)}h`
                       : `${effectiveMinutes}m`
-                  return <div key={blueprint.blueprint_key} className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
-                    <div className="flex items-start justify-between gap-3"><div><p className="text-[8px] font-black uppercase tracking-[0.14em] text-violet-300">{branchLabel(blueprint.district)}</p><h4 className="mt-1 font-bold text-white">{blueprint.name}</h4></div><span className="shrink-0 rounded-full bg-white/5 px-2 py-1 text-[9px] text-slate-400">Base {blueprint.build_hours}h · Yours {effectiveLabel}</span></div>
-                    <p className="mt-2 text-xs leading-5 text-slate-400">{blueprint.description}</p>
+                  return <div key={blueprint.blueprint_key} className="rounded-2xl border border-white/15 bg-white/[0.035] p-5">
+                    <div className="flex items-start justify-between gap-3"><div><p className="text-[8px] font-black uppercase tracking-[0.14em] text-violet-300">{branchLabel(blueprint.district)}</p><h4 className="mt-1 text-lg font-bold text-white">{blueprint.name}</h4></div><span className="shrink-0 rounded-lg border border-amber-200/25 bg-amber-300/[.07] px-3 py-2 text-xs font-semibold text-amber-100">Real build: {effectiveLabel} · base {blueprint.build_hours}h</span></div>
+                    <div className="mt-3 rounded-xl border border-cyan-300/15 bg-cyan-400/[.035] p-3" data-file-folder-career-service={blueprint.blueprint_key}>
+                      <p className="text-xs font-bold uppercase tracking-wide text-cyan-200">The job this system supports</p>
+                      <p className="mt-2 text-sm leading-6 text-slate-200">{blueprint.description||'A digital service defined by this blueprint and its actual functions.'}</p>
+                      <p className="mt-2 text-sm leading-6 text-stone-300">Customer price: agree a real service quote when the system is ready. Your earnings are customer payments received minus genuine delivery costs; buying a blueprint does not guarantee income.</p>
+                    </div>
                     <div data-file-folder-build-quote={blueprint.blueprint_key} className="mt-3 rounded-xl border border-violet-300/20 bg-violet-400/[.04] p-3 text-[11px] leading-6 text-slate-200">
                       <p className="font-black text-amber-100">Acquire &amp; Build Price</p>
                       <p>Materials: {quote.materialRequired} × {quote.materialName} · {quote.materialOwned} owned</p>
@@ -641,7 +673,7 @@ export default function FileFolderOpenWorld({
                         <p className="font-black text-emerald-200">Still to acquire: {quote.materialMissing} kit(s) · {quote.acquireCost.toLocaleString()} System Switch</p>
                       </> : <p role="alert" className="font-bold text-amber-200">Kit pricing is unavailable. Administration must publish this item before acquisition.</p>}
                       {quote.materialMissing>0&&!quote.purchaseAvailable&&<p role="alert" className="text-amber-200">Required kit is not currently published for purchase.</p>}
-                      <p>Start construction: <strong>No separate System Switch charge</strong> after required kits are owned. Formation time: {effectiveLabel}.</p>
+                      <p className="mt-2 text-sm">Start construction: <strong>No separate System Switch charge</strong> once required kits are owned. Formation time: <strong>{effectiveLabel}</strong>. Optional Boost Bay purchases can shorten an active build after installation.</p>
                     </div>
                     <div className="mt-4 grid gap-2">
                       <input value={buildDrafts[blueprint.blueprint_key]?.title||''} onChange={event=>setBuildDrafts(current=>({...current,[blueprint.blueprint_key]:{title:event.target.value,purpose:current[blueprint.blueprint_key]?.purpose||''}}))} className="rounded-xl border border-white/10 bg-black/25 px-3 py-2.5 text-xs text-white outline-none" placeholder={`Business name for this system · ${blueprint.name}`}/>
@@ -672,9 +704,9 @@ export default function FileFolderOpenWorld({
                     <span className="font-black uppercase tracking-wider text-emerald-300">Operating result · </span>
                     {(materialPurpose.get(item.item_key)||[]).length ? `Required to begin ${materialPurpose.get(item.item_key)!.join(', ')}. ${operatingEffect(item)}` : operatingEffect(item)}
                   </div>
-                  <p className="mt-3 text-[10px] text-slate-500">Inventory: {Number(inventory.get(item.item_key) || 0)}</p>
+                  <p className="mt-3 text-sm text-slate-200">You already own: {Number(inventory.get(item.item_key) || 0)}</p>
                   {fileFolderTier==='premium'&&premiumFocusMaterial===item.item_key&&premiumFocusRecord&&<p className="mt-2 text-xs font-bold text-[#f0d5a0]">For your chosen blueprint: {Math.max(0,Number(premiumFocusRecord.required_item_quantity||1)-Number(inventory.get(item.item_key)||0))} more kit(s) required · estimated acquisition {Math.max(0,Number(premiumFocusRecord.required_item_quantity||1)-Number(inventory.get(item.item_key)||0))*Number(item.price_flame_coin||0)} System Switch</p>}
-                  <button disabled={busy===item.item_key||(fileFolderTier==='premium'&&premiumFocusMaterial===item.item_key&&premiumFocusRecord&&Number(inventory.get(item.item_key)||0)>=Number(premiumFocusRecord.required_item_quantity||1))} onClick={()=>act({action:'purchase_item',item_key:item.item_key,quantity:fileFolderTier==='premium'&&premiumFocusMaterial===item.item_key&&premiumFocusRecord?Math.min(25,Math.max(1,Number(premiumFocusRecord.required_item_quantity||1)-Number(inventory.get(item.item_key)||0))):1},item.item_key)} className="mt-4 rounded-full border border-emerald-300/20 bg-emerald-400/10 px-4 py-2 text-[10px] font-black uppercase tracking-wider text-emerald-200 disabled:opacity-50">{busy===item.item_key?'Acquiring…':fileFolderTier==='premium'&&premiumFocusMaterial===item.item_key&&premiumFocusRecord?(Number(inventory.get(item.item_key)||0)>=Number(premiumFocusRecord.required_item_quantity||1)?'Required kits owned':'Acquire required kits'):'Acquire material'}</button>
+                  <button disabled={busy===item.item_key||(fileFolderTier==='premium'&&premiumFocusMaterial===item.item_key&&premiumFocusRecord&&Number(inventory.get(item.item_key)||0)>=Number(premiumFocusRecord.required_item_quantity||1))} onClick={()=>act({action:'purchase_item',item_key:item.item_key,quantity:fileFolderTier==='premium'&&premiumFocusMaterial===item.item_key&&premiumFocusRecord?Math.min(25,Math.max(1,Number(premiumFocusRecord.required_item_quantity||1)-Number(inventory.get(item.item_key)||0))):1},item.item_key)} className="mt-4 min-h-12 rounded-xl border border-emerald-300/20 bg-emerald-400/10 px-4 py-2 text-sm font-bold text-emerald-200 disabled:opacity-50">{busy===item.item_key?'Acquiring…':fileFolderTier==='premium'&&premiumFocusMaterial===item.item_key&&premiumFocusRecord?(Number(inventory.get(item.item_key)||0)>=Number(premiumFocusRecord.required_item_quantity||1)?'Required kits owned':'Acquire required kits'):'Acquire material'}</button>
                 </div>)}
               </div>
             </div>
@@ -702,15 +734,29 @@ export default function FileFolderOpenWorld({
           {district === 'boost_bay' && (
             <div>
               <p className="text-[9px] font-black uppercase tracking-[0.22em] text-amber-300">Acceleration Bay</p>
-              <h3 className="mt-2 text-2xl font-black">Acceleration changes formation time; it does not replace formation.</h3>
-              <p className="mt-2 max-w-3xl text-xs leading-6 text-slate-400">Acquire acceleration here, then attach it to an active build in Construction Yard. The remaining countdown is recalculated immediately from recorded File Folder state.</p>
+              <h3 className="mt-2 text-2xl font-black">Boost Bay · Finish your build sooner if you choose.</h3>
+              <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-200">Every boost has a displayed System Switch price and speed effect. Buy it only if it suits your budget, then install it on a compatible active build. The server updates the real remaining time; buying without installing does not accelerate anything.</p>
+              <div data-file-folder-boost-target="active-construction" className="mt-4 rounded-2xl border border-amber-200/30 bg-[#291d14]/70 p-4">
+                <label className="block text-sm font-bold text-amber-100">Choose which real build to accelerate
+                  <select value={boostTarget?.id||''} onChange={event=>setBoostTargetId(event.target.value)} disabled={!activeBuilds.length} className="mt-3 min-h-12 w-full rounded-xl border border-amber-200/40 bg-[#141017] px-3 text-base text-white">
+                    {!activeBuilds.length&&<option value="">No active construction</option>}
+                    {activeBuilds.map((build:any)=><option key={build.id} value={build.id}>{build.title} · {duration(Math.max(0,Math.floor((new Date(build.completes_at).getTime()-now)/1000)))} remaining</option>)}
+                  </select>
+                </label>
+                {boostTarget?<p className="mt-3 text-sm leading-6 text-stone-200">Current finish: {new Date(boostTarget.completes_at).toLocaleString()} · Live build speed ×{Number(boostTarget.speed_multiplier||1).toFixed(2)}. Purchased boosts must be installed on this build to change its schedule.</p>:<p className="mt-3 text-sm leading-6 text-amber-200">First begin construction in Blueprint Foundry. You can buy boosts later, after a real build starts.</p>}
+                <button type="button" onClick={()=>enterDistrict('formation_yard')} className="mt-3 min-h-11 rounded-xl border border-amber-200/35 px-4 py-2 text-sm font-semibold text-amber-100">View construction time and parts</button>
+              </div>
+              {boostItems.length===0&&<p className="mt-4 rounded-xl border border-amber-200/20 p-4 text-sm text-amber-100">No acceleration boosters are currently published for purchase. Your real-time construction continues normally.</p>}
               <div className="mt-5 grid gap-3 md:grid-cols-2">
                 {boostItems.map((item:any) => <div key={item.item_key} className="rounded-2xl border border-amber-300/12 bg-amber-400/[0.035] p-5">
                   <div className="flex items-start justify-between gap-3"><div><h4 className="font-bold text-white">{item.name}</h4><p className="mt-1 text-[9px] uppercase tracking-wider text-amber-300">Live acceleration</p></div><div className="text-right"><p className="flex items-center gap-1 text-sm font-black text-white"><Coins className="h-3.5 w-3.5 text-amber-300"/>{Number(item.price_flame_coin).toLocaleString()}</p><p className="text-[8px] text-slate-500">System Switch</p></div></div>
                   <p className="mt-3 text-xs leading-5 text-slate-400">{item.description}</p>
-                  <p className="mt-3 text-[10px] text-slate-500">Inventory: {Number(inventory.get(item.item_key) || 0)}</p>
-                  <p className="mt-2 inline-flex rounded-full border border-amber-300/15 bg-amber-400/5 px-2.5 py-1 text-[9px] font-black text-amber-200">Applies live · ×{Number(item.effect_value || 1).toFixed(2)} build speed</p>
-                  <button disabled={busy===item.item_key} onClick={()=>act({action:'purchase_item',item_key:item.item_key,quantity:1},item.item_key)} className="mt-4 rounded-full border border-amber-300/20 bg-amber-400/10 px-4 py-2 text-[10px] font-black uppercase tracking-wider text-amber-100 disabled:opacity-50">{busy===item.item_key?'Acquiring…':'Acquire boost'}</button>
+                  <p className="mt-3 text-sm text-slate-200">You already own: {Number(inventory.get(item.item_key) || 0)}</p>
+                  <p className="mt-2 inline-flex rounded-xl border border-amber-300/25 bg-amber-400/10 px-3 py-2 text-sm font-bold text-amber-100">After installation · ×{Number(item.effect_value || 1).toFixed(2)} build speed effect</p>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <button disabled={busy===item.item_key} onClick={()=>act({action:'purchase_item',item_key:item.item_key,quantity:1},item.item_key)} className="min-h-12 rounded-xl border border-amber-300/30 bg-amber-400/10 px-4 py-2 text-sm font-bold text-amber-100 disabled:opacity-50">{busy===item.item_key?'Purchasing…':'Buy for '+Number(item.price_flame_coin).toLocaleString()+' System Switch'}</button>
+                    <button disabled={!boostTarget||Number(inventory.get(item.item_key)||0)<1||!isBuildPartCompatible(String(item.build_effect||'speed_boost'),String(boostTarget?.system_type||''))||Boolean(busy)} onClick={async()=>{if(!boostTarget)return;const done=await act({action:'apply_build_item',build_id:boostTarget.id,item_key:item.item_key},'boost:'+item.item_key);if(done)enterDistrict('formation_yard')}} className="min-h-12 rounded-xl border border-emerald-300/30 bg-emerald-300/10 px-4 py-2 text-sm font-bold text-emerald-100 disabled:opacity-40">Install on selected build</button>
+                  </div>
                 </div>)}
               </div>
             </div>
