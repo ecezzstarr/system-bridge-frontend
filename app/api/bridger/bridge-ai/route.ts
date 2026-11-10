@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
     if (paid) {
       await client.query(
         `INSERT INTO ledger_entries (id,user_id,entry_type,amount,currency,description,balance_before,balance_after,metadata,created_at)
-         VALUES (gen_random_uuid(),$1::uuid,'fee',$2,'System Switch','Bridge AI template opening',$3,$4,$5::jsonb,NOW())`,
+         VALUES (gen_random_uuid(),$1::uuid,'fee',$2,'Flame Coin','Bridge AI template opening',$3,$4,$5::jsonb,NOW())`,
         [user.id,WORLD_RULES.BRIDGE_AI_TEMPLATE_OPEN_FLAME_COIN,
          balanceAfter+WORLD_RULES.BRIDGE_AI_TEMPLATE_OPEN_FLAME_COIN,balanceAfter,
          JSON.stringify({commerce_type:'purchase',source:'bridge_ai_template_open',template_id:templateId,bridge_id:result.id})]

@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
         ${clientId}::uuid,
         'deposit',
         ${Number(amountTrx)},
-        'System Switch',
+        'Flame Coin',
         'Vault funded by Admin',
         ${JSON.stringify({ funded_by: admin.id, source: 'admin_vault_fund' })}
       )

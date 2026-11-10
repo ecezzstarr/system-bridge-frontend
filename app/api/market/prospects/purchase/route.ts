@@ -177,7 +177,7 @@ export async function POST(request: NextRequest) {
     await client.query(
       `INSERT INTO ledger_entries
        (id,user_id,entry_type,amount,currency,description,balance_before,balance_after,created_at)
-       VALUES (gen_random_uuid(),$1::uuid,'prospect_package_purchase',$2,'System Switch',$3,$4,$5,NOW())`,
+       VALUES (gen_random_uuid(),$1::uuid,'prospect_package_purchase',$2,'Flame Coin',$3,$4,$5,NOW())`,
       [userId,priceTrx,`Purchased prospect package ${packageId}`,currentBalance,newBalance],
     )
 

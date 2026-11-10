@@ -143,7 +143,7 @@ export async function subscribeClientMonthly(clientId: string) {
     await conn.query(`
       INSERT INTO ledger_entries
         (id,user_id,entry_type,amount,currency,description,balance_before,balance_after,metadata,created_at)
-      VALUES (gen_random_uuid(),$1::uuid,'fee',$2,'System Switch',
+      VALUES (gen_random_uuid(),$1::uuid,'fee',$2,'Flame Coin',
        'Client monthly subscription · Lord/Lady enterprise standing',$3,$4,$5::jsonb,NOW())
     `,[clientId,CLIENT_MONTHLY_SUBSCRIPTION_FLAME_COIN,available,balanceAfter,
       JSON.stringify({source:'client_monthly_subscription',paymentId,title})])

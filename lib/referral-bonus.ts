@@ -135,7 +135,7 @@ export async function settleReferralSignupBonus(referredUserId: string) {
       `INSERT INTO ledger_entries
         (id,user_id,entry_type,amount,currency,description,balance_before,balance_after,metadata,created_at)
        VALUES (
-        gen_random_uuid(),$1::uuid,'earning',$2,'System Switch','Referral bonus · ₦500',$3,$4,
+        gen_random_uuid(),$1::uuid,'earning',$2,'Flame Coin','Referral bonus · ₦500',$3,$4,
         ($5::jsonb) || jsonb_build_object('commerce_type','referral_signup_bonus'),NOW()
        )`,
       [
