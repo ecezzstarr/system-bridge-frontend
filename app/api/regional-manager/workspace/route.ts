@@ -2,7 +2,6 @@ import {NextRequest,NextResponse} from 'next/server'
 import {getAuthUser} from '@/lib/auth-api'
 import {sql,getPool} from '@/lib/db'
 import {getActiveLegionEmployment} from '@/lib/legion-employment'
-import {getLifestyleAccess} from '@/lib/weave-lifestyle'
 import {ensureRegionalOperationsSchema,regionalTeam,type RegionalTeamMember} from '@/lib/regional-manager-operations'
 
 export const dynamic='force-dynamic'
@@ -12,12 +11,14 @@ const today=`((NOW() AT TIME ZONE 'Africa/Lagos')::date)`
 
 async function context(user:{id:string;role:string}){
   if(!['bridger','agent'].includes(user.role))return null
-  const [access,legion,record]=await Promise.all([
-    getLifestyleAccess(user.id),getActiveLegionEmployment(sql,user.id),
+  // An Administration-verified regional appointment or assignment is sufficient.
+  // Ordinary Bridgers are workers here; Agentic-Bridger is not a prerequisite.
+  const [legion,record]=await Promise.all([
+    getActiveLegionEmployment(sql,user.id),
     getPool().query(`SELECT user_id FROM weave_regional_manager_appointments
       WHERE user_id=$1::uuid AND status='active'`,[user.id])
   ])
-  if(!access.active||legion.active)return null
+  if(legion.active)return null
   if(record.rows.length){
     return {managerId:user.id,kind:'manager' as const,
       team:await regionalTeam(user.id,null),member:null as RegionalTeamMember|null}
