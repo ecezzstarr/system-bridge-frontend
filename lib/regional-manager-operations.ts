@@ -16,6 +16,16 @@ export async function ensureRegionalOperationsSchema(){
     assigned_at timestamptz NOT NULL DEFAULT NOW(),
     updated_at timestamptz NOT NULL DEFAULT NOW()
   )`)
+  await pool.query(`CREATE TABLE IF NOT EXISTS weave_regional_manager_agents(
+    agent_user_id uuid PRIMARY KEY REFERENCES users(id),
+    regional_manager_user_id uuid NOT NULL REFERENCES weave_regional_manager_appointments(user_id),
+    assigned_by uuid REFERENCES users(id),
+    status varchar(16) NOT NULL DEFAULT 'active' CHECK(status IN ('active','ended')),
+    assigned_at timestamptz NOT NULL DEFAULT NOW(),
+    updated_at timestamptz NOT NULL DEFAULT NOW()
+  )`)
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_regional_agents_manager
+    ON weave_regional_manager_agents(regional_manager_user_id,status)`)
   await pool.query(`CREATE INDEX IF NOT EXISTS idx_regional_food_leads_manager
     ON weave_regional_manager_food_distribution_leads(regional_manager_user_id,status)`)
   await pool.query(`CREATE TABLE IF NOT EXISTS weave_regional_daily_tasks(
@@ -83,6 +93,12 @@ export async function regionalTeam(managerId:string|null,memberId:string|null):P
       JOIN users u ON u.id=b.bridger_user_id AND u.is_active=true AND u.role='bridger'
       WHERE b.status='active'
       UNION ALL
+      SELECT a.regional_manager_user_id,a.agent_user_id,
+        u.name,u.role,'Agent','direct',NULL::uuid
+      FROM weave_regional_manager_agents a
+      JOIN users u ON u.id=a.agent_user_id AND u.is_active=true AND u.role='agent'
+      WHERE a.status='active'
+      UNION ALL
       SELECT a.regional_manager_user_id,a.distribution_manager_user_id,
         u.name,u.role,'Distribution Manager','direct',NULL::uuid
       FROM weave_regional_manager_distribution_managers a
@@ -120,11 +136,20 @@ export async function regionalTeam(managerId:string|null,memberId:string|null):P
       JOIN users u ON u.id=a.user_id AND u.is_active=true AND u.role='agent'
       WHERE f.status='active'
     )
-    SELECT t.* FROM team t
+    SELECT t.manager_id,t.user_id,t.name,t.role,t.position,t.level,t.lead_user_id
+    FROM (
+      SELECT team.*,ROW_NUMBER() OVER(PARTITION BY manager_id,user_id ORDER BY
+        CASE position WHEN 'Food Distribution Manager' THEN 0
+          WHEN 'Distribution Manager' THEN 1
+          WHEN 'Assistant Food Distribution Manager' THEN 2
+          WHEN 'Assistant Distribution Manager' THEN 3
+          WHEN 'Bridger' THEN 4 ELSE 5 END) AS rn
+      FROM team
+    ) t
     JOIN weave_regional_manager_appointments rm ON rm.user_id=t.manager_id AND rm.status='active'
     JOIN users regional ON regional.id=rm.user_id AND regional.is_active=true
       AND regional.role IN ('agent','bridger')
-    WHERE ($1::uuid IS NULL OR t.manager_id=$1::uuid)
+    WHERE t.rn=1 AND ($1::uuid IS NULL OR t.manager_id=$1::uuid)
       AND ($2::uuid IS NULL OR t.user_id=$2::uuid)
     ORDER BY t.manager_id,t.level,t.position,t.name
   `,[managerId,memberId])
