@@ -155,7 +155,8 @@ export default function CompanyMovementPage(){
     <div className="grid gap-4 lg:grid-cols-2">
       {[
         {key:'bridgerLeaders',title:'Bridger Purchase Activity',metric:'packages',unit:'packages'},
-        {key:'agentLeaders',title:'Agent Agility Activity',metric:'units',unit:'recorded units'},
+        {key:'agentLeaders',title:'Agent-recorded Stock Resale',metric:'units',unit:'recorded units'},
+        {key:'agentFoodLeaders',title:'Paid and Fulfilled Food by Agent',metric:'units',unit:'fulfilled units'},
       ].map(table=><section key={table.key} className="overflow-x-auto rounded-xl border border-white/15 bg-slate-950/65 p-5">
         <h2 className="text-xl font-black">{table.title}</h2>
         <p className="mt-2 text-xs text-slate-400">Activity by person for the selected period, not a salary or commission statement.</p>
@@ -171,6 +172,24 @@ export default function CompanyMovementPage(){
       </section>)}
     </div>
 
+    <div className="grid gap-4 lg:grid-cols-2">
+      {[
+        {key:'paidFoodProducts',title:'Paid, fulfilled food products',detail:'Completed Carrier food orders only'},
+        {key:'recordedStockProducts',title:'Agent-recorded product resale',detail:'Stock sale records; not independently verified customer payments'},
+      ].map(table=><section key={table.key} className="overflow-x-auto rounded-xl border border-white/15 bg-slate-950/65 p-5">
+        <h2 className="text-xl font-black">{table.title}</h2>
+        <p className="mt-2 text-xs text-slate-400">{table.detail}</p>
+        {!sec(table.key)?.available?<p className="mt-4 text-sm text-amber-200">Source unavailable</p>:
+        !sec(table.key)?.rows.length?<p className="mt-4 text-sm text-slate-400">No matching activity in the selected period.</p>:
+        <table className="mt-3 w-full min-w-72 text-left text-sm">
+          <thead><tr className="border-b border-white/15 text-xs text-slate-400"><th className="py-2">Product variant</th><th className="py-2 text-right">Units</th></tr></thead>
+          <tbody>{sec(table.key)?.rows.map((row,i)=><tr key={String(row.product||i)} className="border-b border-white/10">
+            <td className="py-2 pr-4">{String(row.product||'Unknown')}</td>
+            <td className="py-2 text-right tabular-nums">{formatNumber(row.units)}</td>
+          </tr>)}</tbody>
+        </table>}
+      </section>)}
+    </div>
     <section className="rounded-xl border border-white/15 bg-slate-950/65 p-5">
       <h2 className="text-xl font-black">Other recorded payment movements</h2>
       <p className="mt-2 text-xs text-slate-400">Transaction ledger event counts by category and currency. These are not additional revenue and must not be summed with sales or deposits.</p>
