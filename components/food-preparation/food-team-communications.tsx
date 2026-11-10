@@ -49,6 +49,7 @@ export function FoodTeamCommunications(){
       <p className="mt-2 max-w-2xl text-xs leading-6 text-slate-300">The verified Food Preparation Manager and two approved Assistants share real work plans, shortages, progress and order handoffs here. Preparation stages still belong in the actual order desk.</p></div>
       <button type="button" onClick={()=>void load()} className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-white/15 px-3 text-xs font-bold"><RefreshCw className="h-4 w-4"/> Refresh</button>
     </header>
+    <Link href="/weave/lifestyles/support" className="mt-4 inline-flex min-h-11 items-center rounded-lg border border-cyan-300/40 px-4 text-xs font-bold text-cyan-100">Open one-to-one employee support →</Link>
     <div className="mt-4 flex flex-wrap gap-2">{staff.map(member=><span key={member.id} className="rounded-full border border-cyan-200/20 bg-cyan-200/[.065] px-3 py-2 text-[11px] text-cyan-100">{member.name} · {member.position==='manager'?'Lead Manager':'Assistant'}</span>)}</div>
     {error&&<p role="alert" className="mt-4 rounded-lg border border-rose-300/20 p-3 text-xs text-rose-200">{error}</p>}
     <div className="mt-5 max-h-80 space-y-3 overflow-y-auto rounded-xl border border-white/10 bg-slate-950/60 p-3" aria-label="Food team messages">
