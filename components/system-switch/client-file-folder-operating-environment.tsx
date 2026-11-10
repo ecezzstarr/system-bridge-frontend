@@ -1,4 +1,5 @@
 'use client'
+import { displayCurrencyName } from '@/lib/flame-coin'
 import { buildFormationProgress } from '@/lib/file-folder-world-runtime'
 import { quoteFileFolderBlueprint } from '@/lib/file-folder-build-quote'
 import { institutionalArchetype } from '@/lib/file-folder-institutional-visual'
@@ -25,7 +26,8 @@ import {
   X,
 } from 'lucide-react'
 import Link from 'next/link'
-import FileFolderOpenWorld from '@/components/system-switch/file-folder-open-world'
+import FileFolderOpenWorld, { FILE_FOLDER_WORKSHOP_DISTRICTS } from '@/components/system-switch/file-folder-open-world'
+import FileFolderPlusRadiantWorld from '@/components/system-switch/file-folder-plus-radiant-world'
 import FileFolderPremiumWorld from '@/components/system-switch/file-folder-premium-world'
 import {resolveFileFolderAppearance} from '@/lib/file-folder-world-presets'
 import GenerativeFormationWorkshop from '@/components/system-switch/generative-formation-workshop'
@@ -159,9 +161,9 @@ function PreviewFrame({ blueprint, label = 'Design preview', onBuild }: { bluepr
       {priceQuote&&<div data-client-blueprint-preview-price className="border-b border-amber-200/20 bg-amber-300/[.04] px-5 py-4 text-xs leading-6 text-amber-100">
         <p className="font-black">Acquire &amp; Build Price</p>
         {priceQuote.priceAvailable
-          ? <p>Required materials: {priceQuote.materialRequired} × {priceQuote.materialName} · Total kit cost {priceQuote.requiredMaterialCost.toLocaleString()} Flame Coin</p>
+          ? <p>Required materials: {priceQuote.materialRequired} × {priceQuote.materialName} · Total kit cost {priceQuote.requiredMaterialCost.toLocaleString()} System Switch</p>
           : <p role="alert">Required kit price unavailable. Administration must publish the missing material.</p>}
-        <p>Starting the build has no separate Flame Coin fee after the required kit is acquired. Check your owned kit balance in Blueprint Foundry.</p>
+        <p>Starting the build has no separate System Switch fee after the required kit is acquired. Check your owned kit balance in Blueprint Foundry.</p>
       </div>}
       <div className="grid gap-3 p-5 sm:grid-cols-2 lg:grid-cols-4">
         {modules.map((module, index) => (
@@ -381,6 +383,12 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
   const { isVisible, orderFor } = useEnvironmentOrganizer()
   const [surface, setSurface] = useState<Surface>('command')
   const [panelOpen, setPanelOpen] = useState(false)
+  const [walkPlusTerritory,setWalkPlusTerritory]=useState(false)
+  const isPlus=data.file_folder_tier==='plus'
+  const [phoneViewport,setPhoneViewport]=useState<boolean|null>(null)
+  const plusPhone=isPlus&&phoneViewport===true
+  const showPlusMap=plusPhone&&!walkPlusTerritory
+  const resolvingPlusViewport=isPlus&&phoneViewport===null
   const [travelingTo, setTravelingTo] = useState<Surface | null>(null)
   const travelTimer = useRef<number | null>(null)
   const [world, setWorld] = useState(data.file_folder_world)
@@ -397,6 +405,16 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
   const [connectionTargetId,setConnectionTargetId]=useState('')
   const [connectionBusy,setConnectionBusy]=useState(false)
   const [connectionMessage,setConnectionMessage]=useState('')
+
+  useEffect(()=>{
+    if(!isPlus)return
+    // Keep this in sync with the phone rules in file-folder-phone.css.
+    const media=window.matchMedia('(max-width:767px), (max-height:500px) and (max-width:1000px)')
+    const update=()=>setPhoneViewport(media.matches)
+    update()
+    media.addEventListener('change',update)
+    return ()=>media.removeEventListener('change',update)
+  },[isPlus])
 
   useEffect(() => {
     const tick = visiblePoll(() => setNow(Date.now()), 5000)
@@ -435,9 +453,9 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
   }
 
   const [insideWorkshop,setInsideWorkshop]=useState(false)
-  const enterPremiumDistrict=(district:string)=>{
+  const enterWorkshopDistrict=(district:string,buildId='')=>{
     setInsideWorkshop(false)
-    setSelectedBuildId('')
+    setSelectedBuildId(buildId)
     setSelectedSystemId('')
     setFormationDistrict(district)
     setFormationOpen(true)
@@ -498,6 +516,18 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
   const builds = Array.isArray(world?.builds) ? world.builds : []
   const systems = Array.isArray(world?.systems) ? world.systems : []
   const activeBuilds = builds.filter((build: any) => build.status === 'building')
+  const openHostedSystem=(id:string)=>{
+    if(!systems.some((system:any)=>system.id===id&&system.status==='active'))return
+    setInsideWorkshop(false)
+    setSelectedSystemId(id)
+    setSelectedBuildId('')
+    setSurface('builds')
+    setFormationOpen(false)
+    setPanelOpen(true)
+  }
+  const openBuild=(id:string)=>{
+    if(activeBuilds.some((build:any)=>build.id===id))enterWorkshopDistrict('formation_yard',id)
+  }
   const liveSystemTypes=new Set(systems.filter((system:any)=>system.status==='active').map((system:any)=>system.system_type))
   const marketLevel=liveSystemTypes.has('marketplace_network')
     ? 3
@@ -582,6 +612,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
       className="ff-environment weave-system-depth relative h-[calc(100svh-4.5rem)] min-h-[560px] overflow-x-clip overflow-y-auto border-y border-cyan-200/10 bg-[#070b10] shadow-[0_34px_110px_rgba(0,0,0,.42)] sm:h-[calc(100dvh-5.5rem)] sm:min-h-[720px] sm:overflow-clip"
       data-file-folder-world="persistent-territory-interface"
       data-file-folder-tier={data.file_folder_tier}
+      data-plus-phone-map={showPlusMap?'true':undefined}
       data-file-folder-panel={panelOpen ? 'interior-open' : 'territory'}
     >
       <header className="ff-environment-header pointer-events-none absolute inset-x-0 top-0 z-30 border-b border-cyan-100/10 bg-[linear-gradient(180deg,rgba(4,10,16,.96),rgba(4,10,16,.78),transparent)] px-4 py-4 md:px-6 md:py-5">
@@ -604,7 +635,28 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
       </header>
 
       <div className="ff-scene absolute inset-0">
-        {data.file_folder_tier==='premium'
+        {resolvingPlusViewport ? null : showPlusMap
+          ? <div className="ff-plus-entrance h-full overflow-y-auto overscroll-contain px-2 pt-2"
+              data-plus-file-folder-entrance="official-live-world" inert={panelOpen}>
+              <div className="mx-auto max-w-6xl">
+                <FileFolderPlusRadiantWorld
+                  phoneLayout
+                  appearance={resolveFileFolderAppearance('plus',data.file_folder_world_release?.config)}
+                  districts={FILE_FOLDER_WORKSHOP_DISTRICTS}
+                  onEnter={enterWorkshopDistrict}
+                  onOpenSystem={openHostedSystem}
+                  onOpenBuild={openBuild}
+                  builds={builds}
+                  systemRecords={systems}
+                  now={now}
+                />
+                <button type="button" onClick={()=>setWalkPlusTerritory(true)}
+                  className="mt-3 min-h-11 rounded-lg border border-sky-300/40 bg-slate-900 px-4 text-sm font-semibold text-sky-100">
+                  Walk through my territory
+                </button>
+              </div>
+            </div>
+          : data.file_folder_tier==='premium'
           ? <div className="h-full overflow-y-auto overscroll-contain px-2 pb-24 pt-24 sm:px-4 md:px-6 md:pt-44" data-premium-file-folder-entrance="official-live-world">
               <div className="mx-auto max-w-7xl">
                 <FileFolderPremiumWorld
@@ -620,7 +672,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
                     {key:'library_district',label:'Formation Intelligence'},
                   ]}
                   active={formationDistrict}
-                  onEnter={enterPremiumDistrict}
+                  onEnter={enterWorkshopDistrict}
                   onOpenCustomerDoor={()=>{setInsideWorkshop(false);setSelectedSystemId('');setSurface('business');setPanelOpen(true)}}
                   builds={builds}
                   systemRecords={systems}
@@ -636,17 +688,9 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
           activeSurface={current.key}
           onSurfaceChange={(next) => enterSurface(next)}
           navigationEnabled={!panelOpen}
-          onSystemEnter={id=>{if(!systems.some((s:any)=>s.id===id&&s.status==='active'))return;setSelectedSystemId(id);setSelectedBuildId('');setSurface('builds');setFormationOpen(false);setPanelOpen(true)}}
+          onSystemEnter={openHostedSystem}
           onStudioEnter={district=>travelToStudio(district)}
-          onBuildEnter={id=>{
-            if(!activeBuilds.some((build:any)=>build.id===id))return
-            setSelectedBuildId(id)
-            setSelectedSystemId('')
-            setFormationDistrict('formation_yard')
-            setSurface('builds')
-            setFormationOpen(true)
-            setPanelOpen(true)
-          }}
+          onBuildEnter={openBuild}
           activeBuilds={activeBuilds.map((build:any)=>({
             id:build.id,
             title:build.title,
@@ -692,6 +736,11 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
           presenceKey={String(data.client.file_number||'')}
           territoryMode
         />}
+        {plusPhone&&walkPlusTerritory&&!panelOpen&&<button type="button"
+          onClick={()=>setWalkPlusTerritory(false)}
+          className="absolute left-3 top-3 z-[26] min-h-11 rounded-lg border border-sky-300/40 bg-slate-900 px-3 text-sm font-semibold text-sky-100">
+          Back to Plus File Folder
+        </button>}
       </div>
 
       <div
@@ -764,15 +813,15 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
                 <p className="mt-4 text-2xl font-black text-white">
                   {Number(data.vault?.balance || 0).toLocaleString(undefined, { maximumFractionDigits: 8 })}
                 </p>
-                <p className="text-[10px] text-slate-500">{data.vault?.currency || 'Flame Coin'} · Client Vault</p>
+                <p className="text-[10px] text-slate-500">{displayCurrencyName(data.vault?.currency || 'System Switch')} · Client Vault</p>
                 <div className="mt-4 space-y-2 text-[10px] text-slate-400">
                   <div className="flex justify-between rounded-lg bg-white/[0.03] px-3 py-2">
                     <span>Main wallet</span>
-                    <span>{Number(data.vault?.main_wallet?.flameCoin || 0).toLocaleString()} Flame Coin</span>
+                    <span>{Number(data.vault?.main_wallet?.flameCoin || 0).toLocaleString()} System Switch</span>
                   </div>
                   <div className="flex justify-between rounded-lg bg-white/[0.03] px-3 py-2">
                     <span>Siblings funds</span>
-                    <span>{Number(data.vault?.siblings_funds?.flameCoin || 0).toLocaleString()} Flame Coin</span>
+                    <span>{Number(data.vault?.siblings_funds?.flameCoin || 0).toLocaleString()} System Switch</span>
                   </div>
                 </div>
               </div>
@@ -932,9 +981,9 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
                     <span><b className="block text-base text-emerald-100">{systems.length}</b>live</span>
                   </div>
                 </div>
-                <GenerativeFormationWorkshop />
+                {!plusPhone&&<GenerativeFormationWorkshop />}
                 <FileFolderOpenWorld
-                  embedded={data.file_folder_tier==='premium'}
+                  embedded={data.file_folder_tier==='premium'||plusPhone}
                   clientName={data.client.name}
                   fileNumber={data.client.file_number}
                   fileFolderTier={data.file_folder_tier}
@@ -953,6 +1002,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
                   pollWorld={false}
                   pollAi={false}
                 />
+                {plusPhone&&<GenerativeFormationWorkshop />}
               </>
             )}
           </div>
@@ -994,7 +1044,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
         </div>
       </div>
 
-      {!panelOpen && (
+      {!panelOpen && !showPlusMap && !resolvingPlusViewport && (
         <div className="ff-world-hint pointer-events-none absolute inset-x-0 bottom-[4.7rem] z-30 flex justify-center px-4">
           <div className="rounded-full border border-cyan-100/10 bg-[#070b10]/72 px-4 py-2 text-center text-[8px] font-black uppercase tracking-[.14em] text-stone-300 backdrop-blur-xl">
             {travelingTo

@@ -16,7 +16,7 @@ async function authorize(request:NextRequest){
  * Company Wallet Settings are internal Administration controls.
  * The Pro USDT (TRC-20) receiving address is shared by both Pro onboarding
  * entrances. We deliberately do not rewrite the independent company TRX
- * Flame Coin funding rail or prior payment evidence.
+ * System Switch funding rail or prior payment evidence.
  */
 export async function GET(request:NextRequest){
  const user=await authorize(request)

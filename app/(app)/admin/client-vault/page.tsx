@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '@/lib/auth-provider'
+import { displayCurrencyName } from '@/lib/flame-coin'
 import {
   ArrowRight,
   CheckCircle2,
@@ -47,14 +48,14 @@ export default function ClientVaultAuthorityEnginePage() {
   const credit=async()=>{
     if(!selected||!token) return
     const numeric=Number(amount)
-    if(!Number.isFinite(numeric)||numeric<=0){setMessage('Enter a positive Flame Coin credit amount.');return}
+    if(!Number.isFinite(numeric)||numeric<=0){setMessage('Enter a positive System Switch credit amount.');return}
     const response=await fetch('/api/admin/client-vault/credit',{
       method:'POST',
       headers:{...headers,'Content-Type':'application/json'},
-      body:JSON.stringify({client_id:selected.id,amount:numeric,reference:'Admin Client Vault',note:reason||'Administration Flame Coin credit'}),
+      body:JSON.stringify({client_id:selected.id,amount:numeric,reference:'Admin Client Vault',note:reason||'Administration System Switch credit'}),
     })
     const data=await response.json()
-    setMessage(response.ok?`Vault credit recorded. New balance: ${data.balance} ${data.currency}`:data.error||data.message||'Credit failed')
+    setMessage(response.ok?`Vault credit recorded. New balance: ${data.balance} ${displayCurrencyName(data.currency)}`:data.error||data.message||'Credit failed')
     if(response.ok){setAmount('');setReason('');await load(q)}
   }
 
@@ -62,7 +63,7 @@ export default function ClientVaultAuthorityEnginePage() {
     if(!token) return
     const response=await fetch(`/api/admin/client-vault/withdrawals/${id}/approve`,{method:'POST',headers})
     const data=await response.json()
-    setMessage(response.ok?`Withdrawal approved. ${data.withdrawal.amount} ${data.withdrawal.currency} is now ready for manual settlement.`:data.error||data.message||'Approval failed')
+    setMessage(response.ok?`Withdrawal approved. ${data.withdrawal.amount} ${displayCurrencyName(data.withdrawal.currency)} is now ready for manual settlement.`:data.error||data.message||'Approval failed')
     if(response.ok) await load(q)
   }
 
@@ -103,7 +104,7 @@ export default function ClientVaultAuthorityEnginePage() {
           <aside className="space-y-4">
             <section className="rounded-3xl border border-emerald-300/15 bg-emerald-400/[0.04] p-4">
               <div className="flex items-center gap-2"><WalletCards className="h-4 w-4 text-emerald-300"/><p className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-300">Vault credit operation</p></div>
-              {selected?<div className="mt-3 space-y-3"><div><p className="text-sm font-black text-white">{selected.name}</p><p className="mt-1 text-2xl font-black text-emerald-200">{Number(selected.vault_balance||0).toLocaleString()} Flame Coin</p></div><input value={amount} onChange={e=>setAmount(e.target.value)} type="number" min="0" step="any" placeholder="Credit amount" className="h-11 w-full rounded-xl border border-white/10 bg-black/25 px-3 text-sm text-white"/><input value={reason} onChange={e=>setReason(e.target.value)} placeholder="Reason / reference" className="h-11 w-full rounded-xl border border-white/10 bg-black/25 px-3 text-xs text-white"/><button onClick={()=>void credit()} disabled={!amount} className="w-full rounded-xl bg-emerald-300 px-4 py-3 text-[10px] font-black uppercase tracking-[0.1em] text-slate-950 disabled:opacity-40">Record Vault credit</button><p className="text-[10px] leading-5 text-slate-400">This operation credits only the Administration Client Vault.</p></div>:<p className="mt-3 text-xs text-slate-400">Select a Client before creating a Vault credit.</p>}
+              {selected?<div className="mt-3 space-y-3"><div><p className="text-sm font-black text-white">{selected.name}</p><p className="mt-1 text-2xl font-black text-emerald-200">{Number(selected.vault_balance||0).toLocaleString()} System Switch</p></div><input value={amount} onChange={e=>setAmount(e.target.value)} type="number" min="0" step="any" placeholder="Credit amount" className="h-11 w-full rounded-xl border border-white/10 bg-black/25 px-3 text-sm text-white"/><input value={reason} onChange={e=>setReason(e.target.value)} placeholder="Reason / reference" className="h-11 w-full rounded-xl border border-white/10 bg-black/25 px-3 text-xs text-white"/><button onClick={()=>void credit()} disabled={!amount} className="w-full rounded-xl bg-emerald-300 px-4 py-3 text-[10px] font-black uppercase tracking-[0.1em] text-slate-950 disabled:opacity-40">Record Vault credit</button><p className="text-[10px] leading-5 text-slate-400">This operation credits only the Administration Client Vault.</p></div>:<p className="mt-3 text-xs text-slate-400">Select a Client before creating a Vault credit.</p>}
             </section>
             <section className="rounded-3xl border border-violet-300/15 bg-violet-400/[0.04] p-4"><div className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-violet-300"/><p className="text-[9px] font-black uppercase tracking-[0.18em] text-violet-300">Balance separation</p></div><p className="mt-3 text-xs leading-5 text-slate-300">Vault, Siblings Funds and Main Client Wallet are separate ledgers. A Vault credit does not silently rewrite the other balances.</p></section>
           </aside>
@@ -111,7 +112,7 @@ export default function ClientVaultAuthorityEnginePage() {
 
         <section className="mt-4 weave-reading-surface rounded-3xl p-4 md:p-5">
           <div className="flex items-center justify-between border-b border-white/10 pb-4"><div><p className="text-[9px] font-black uppercase tracking-[0.18em] text-amber-300">Withdrawal approval queue</p><p className="mt-1 text-xs text-slate-400">Approval moves a request to ready-for-manual-settlement state.</p></div><CheckCircle2 className="h-5 w-5 text-amber-300"/></div>
-          <div className="mt-4 space-y-2">{withdrawals.map(w=><div key={w.id} className="flex flex-col gap-3 rounded-2xl border border-white/8 bg-black/20 p-4 md:flex-row md:items-center md:justify-between"><div><p className="text-sm font-black text-white">{w.client_name}</p><p className="mt-1 text-[10px] text-slate-500">{w.file_number||'No File Number'} · {w.destination||'No destination supplied'}</p><p className="mt-2 text-xs text-slate-300">{w.amount} {w.currency} · <span className="font-black text-amber-300">{w.status}</span></p></div>{w.status==='pending_approval'&&<button onClick={()=>void approve(w.id)} className="rounded-xl bg-emerald-300 px-4 py-2.5 text-[9px] font-black uppercase text-slate-950">Approve for settlement</button>}</div>)}{withdrawals.length===0&&<p className="py-8 text-center text-xs text-slate-400">No withdrawal request is recorded.</p>}</div>
+          <div className="mt-4 space-y-2">{withdrawals.map(w=><div key={w.id} className="flex flex-col gap-3 rounded-2xl border border-white/8 bg-black/20 p-4 md:flex-row md:items-center md:justify-between"><div><p className="text-sm font-black text-white">{w.client_name}</p><p className="mt-1 text-[10px] text-slate-500">{w.file_number||'No File Number'} · {w.destination||'No destination supplied'}</p><p className="mt-2 text-xs text-slate-300">{w.amount} {displayCurrencyName(w.currency)} · <span className="font-black text-amber-300">{w.status}</span></p></div>{w.status==='pending_approval'&&<button onClick={()=>void approve(w.id)} className="rounded-xl bg-emerald-300 px-4 py-2.5 text-[9px] font-black uppercase text-slate-950">Approve for settlement</button>}</div>)}{withdrawals.length===0&&<p className="py-8 text-center text-xs text-slate-400">No withdrawal request is recorded.</p>}</div>
         </section>
 
         <Link href="/ledger" className="mt-4 inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.1em] text-sky-300">Open institutional Record <ArrowRight className="h-3.5 w-3.5"/></Link>

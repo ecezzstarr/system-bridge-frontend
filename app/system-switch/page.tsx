@@ -66,7 +66,7 @@ export default function SystemSwitchEntryPage() {
           <Link href={backHref} className="inline-flex min-h-11 items-center gap-2 rounded-full border border-sky-200/25 bg-[#071d30]/80 px-4 text-xs font-bold text-sky-100">
             <ArrowLeft className="h-4 w-4" /> Return to Burning River Event
           </Link>
-          <Link href="/system-switch/bridge-radiance/flame-coin" className="ml-2 inline-flex min-h-11 items-center rounded-full border border-amber-200/25 bg-[#071d30]/80 px-4 text-xs font-bold text-amber-100">Flame Coin</Link>
+          <Link href="/system-switch/bridge-radiance/flame-coin" className="ml-2 inline-flex min-h-11 items-center rounded-full border border-amber-200/25 bg-[#071d30]/80 px-4 text-xs font-bold text-amber-100">System Switch</Link>
           <Link href="/file-folder" className="ml-2 inline-flex min-h-11 items-center rounded-full border border-emerald-200/30 bg-emerald-200/10 px-4 text-xs font-bold text-emerald-50">Purchase File Folder · Paystack / TRX</Link>
         </div>
         <div className="relative z-10 mx-auto mt-24 flex w-full max-w-2xl flex-col items-center px-4 pb-[max(2rem,env(safe-area-inset-bottom))] text-center sm:pb-12">

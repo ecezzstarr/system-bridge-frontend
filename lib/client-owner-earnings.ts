@@ -125,7 +125,7 @@ export async function getOwnerEarnings(clientId:string,fileNumber:string,storeId
     revenue:revenue.rows,
     costs:costs.rows,
     costTotals:costTotals.rows,
-    accountingNote:'Verified receipts are funded Customer Door settlements, not gross order requests. Costs are owner-reported and do not debit any wallet. The provisional remainder subtracts only reported Flame Coin costs; other currencies have separate totals and are never silently converted. Refunds, taxes, provider fees, actual payroll and external trading require independent reconciliation. No profitability or withdrawal guarantee.',
+    accountingNote:'Verified receipts are funded Customer Door settlements, not gross order requests. Costs are owner-reported and do not debit any wallet. The provisional remainder subtracts only reported System Switch costs; other currencies have separate totals and are never silently converted. Refunds, taxes, provider fees, actual payroll and external trading require independent reconciliation. No profitability or withdrawal guarantee.',
   }
 }
 

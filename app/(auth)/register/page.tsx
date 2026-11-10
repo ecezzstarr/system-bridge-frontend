@@ -230,7 +230,7 @@ function RegisterContent() {
             <p className="text-xs font-bold text-slate-200">{FLAME_EVENT_INTRO.period} · Same event for both departments</p>
             <p className="text-xs leading-5 text-slate-300">{FLAME_EVENT_INTRO.summary}</p>
             <p className="text-xs leading-5 text-slate-400">{FLAME_EVENT_INTRO.next}</p>
-            <p className="text-[11px] font-semibold text-amber-100">Agent or Bridger: same 3 Flame Coin entry ticket, different daily work. Entry alone does not create earnings.</p>
+            <p className="text-[11px] font-semibold text-amber-100">Agent or Bridger: same 3 System Switch entry ticket, different daily work. Entry alone does not create earnings.</p>
           </section>
           <div className="text-center text-sm pt-2">
             <span className="text-slate-500">{WEAVE_WRITING.positionAccess.existing} </span>
@@ -249,7 +249,7 @@ function RegisterContent() {
           <ShieldAlert className="h-10 w-10 text-amber-500 mb-2" />
           <CardTitle className="text-xl sm:text-2xl uppercase tracking-tighter">Department Entry Ticket</CardTitle>
           <CardDescription>
-            {formData.role === 'agent' ? 'Agent' : 'Bridger'} entry is released through a verified 3 Flame Coin ticket.
+            {formData.role === 'agent' ? 'Agent' : 'Bridger'} entry is released through a verified 3 System Switch ticket.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -289,7 +289,7 @@ function RegisterContent() {
           </div>
           <ul className="text-sm text-slate-400 space-y-2">
             <li className="flex gap-2"><CheckCircle2 className="h-4 w-4 text-green-400 flex-shrink-0 mt-0.5" /> Your account activity, earnings, and client dealings happen under WEAVE's terms.</li>
-            <li className="flex gap-2"><CheckCircle2 className="h-4 w-4 text-green-400 flex-shrink-0 mt-0.5" /> Bridgers have no recurring subscription. Agentic-Bridger is an optional permanent 11 Flame Coin Lifestyle purchase.</li>
+            <li className="flex gap-2"><CheckCircle2 className="h-4 w-4 text-green-400 flex-shrink-0 mt-0.5" /> Bridgers have no recurring subscription. Agentic-Bridger is an optional permanent 11 System Switch Lifestyle purchase.</li>
             <li className="flex gap-2"><CheckCircle2 className="h-4 w-4 text-green-400 flex-shrink-0 mt-0.5" /> You will be asked to review and accept our Terms of Service next.</li>
           </ul>
           <Button onClick={() => setStep('terms')} className="w-full bg-amber-600 hover:bg-amber-700 font-bold uppercase tracking-widest h-11">
@@ -318,7 +318,7 @@ function RegisterContent() {
             className="h-64 overflow-y-auto bg-slate-900/60 border border-slate-700 rounded-lg p-4 text-xs text-slate-400 space-y-3"
           >
             <p><strong className="text-slate-300">1. Platform Nature.</strong> WEAVE is a paid operational platform. Access to Arena, Casino, the Enterprise Systems Exchange, and related paid functions may require an active balance, subscription, contract, or company approval.</p>
-            <p><strong className="text-slate-300">2. Role Responsibilities.</strong> {formData.role === 'agent' ? 'Agents work in Stability through WEAVE product and service sales, stock distribution and customer orders. Qualifying commission earnings and any separately approved salaried appointments are recorded under their own terms.' : 'Bridgers work in Hope through digital Prospect outreach and introduce File Folders to interested people worldwide. Earnings depend on verified Client crossings, and Bridge AI templates cost 8 Flame Coin per opening; Echo is free; Agentic-Bridger is a one-time 11 Flame Coin Lifestyle purchase.'}</p>
+            <p><strong className="text-slate-300">2. Role Responsibilities.</strong> {formData.role === 'agent' ? 'Agents work in Stability through WEAVE product and service sales, stock distribution and customer orders. Qualifying commission earnings and any separately approved salaried appointments are recorded under their own terms.' : 'Bridgers work in Hope through digital Prospect outreach and introduce File Folders to interested people worldwide. Earnings depend on verified Client crossings, and Bridge AI templates cost 8 System Switch per opening; Echo is free; Agentic-Bridger is a one-time 11 System Switch Lifestyle purchase.'}</p>
             <p><strong className="text-slate-300">3. Financial Conduct.</strong> All deposits, withdrawals, and client fund handling must go through WEAVE's official channels. Off-platform arrangements with clients are not covered or protected by WEAVE.</p>
             <p><strong className="text-slate-300">4. Continuance & Access.</strong> Bridger positions do not expire due to monthly fees. Lifestyle job access for Bridgers follows permanent Agentic-Bridger ownership.</p>
             <p><strong className="text-slate-300">5. Conduct.</strong> Misrepresentation of WEAVE, fraudulent client dealings, or circumventing platform fees may result in immediate suspension.</p>

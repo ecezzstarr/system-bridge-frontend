@@ -35,7 +35,7 @@ type Props={
 }
 const STATIONS=[
  {key:'build',name:'Build Zone',detail:'Choose a blueprint, see its acquisition price and prepare construction.',district:'blueprint_foundry',location:[-10.6,0,-1.9] as const},
- {key:'materials',name:'Materials Depot',detail:'Acquire the exact required kits at their displayed Flame Coin prices.',district:'build_market',location:[-10.6,0,7.5] as const},
+ {key:'materials',name:'Materials Depot',detail:'Acquire the exact required kits at their displayed System Switch prices.',district:'build_market',location:[-10.6,0,7.5] as const},
  {key:'systems',name:'Systems',detail:'See the technology and capabilities you have already commissioned.',district:'active_systems',location:[-7.2,0,-11.4] as const},
  {key:'operations',name:'Live Operations',detail:'Operate live systems, record output and follow completed work.',district:'active_systems',location:[10.6,0,-1.9] as const},
  {key:'participation',name:'Participation',detail:'Organize the Client business, team and the value it serves.',district:'workshop_core',location:[10.6,0,7.5] as const},

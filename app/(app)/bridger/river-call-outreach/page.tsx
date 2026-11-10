@@ -70,11 +70,11 @@ export default function RiverCallOutreachPage(){
       <header className="mt-6 border-b border-white/10 pb-7">
         <p className="text-[10px] font-black uppercase tracking-[.2em] text-sky-300">Hope · Bridger · River Outreach</p>
         <h1 className="mt-2 text-3xl font-black">AI River · Live Prospect Calls</h1>
-        <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">A Bridger pays for one AI phone call with Flame Coin. River introduces itself as an AI, explains WEAVE and listens to the candidate. If the candidate wants more, River asks permission for WhatsApp, ends the call and opens a handoff to the Bridger.</p>
+        <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">A Bridger pays for one AI phone call with System Switch. River introduces itself as an AI, explains WEAVE and listens to the candidate. If the candidate wants more, River asks permission for WhatsApp, ends the call and opens a handoff to the Bridger.</p>
       </header>
       <div className="mt-6 grid gap-4 sm:grid-cols-3">
-        <div className="border border-white/10 bg-white/[.025] p-4"><p className="text-[10px] text-slate-400">Call price · set by Administration</p><p className="mt-2 text-xl font-bold">{state?.priceFlameCoin==null?'Not set':state.priceFlameCoin+' Flame Coin'}</p></div>
-        <div className="border border-white/10 bg-white/[.025] p-4"><p className="flex items-center gap-2 text-[10px] text-slate-400"><Wallet className="h-3.5 w-3.5"/>Available balance</p><p className="mt-2 text-xl font-bold">{state?.walletBalance?.toFixed(2)??'—'} Flame Coin</p></div>
+        <div className="border border-white/10 bg-white/[.025] p-4"><p className="text-[10px] text-slate-400">Call price · set by Administration</p><p className="mt-2 text-xl font-bold">{state?.priceFlameCoin==null?'Not set':state.priceFlameCoin+' System Switch'}</p></div>
+        <div className="border border-white/10 bg-white/[.025] p-4"><p className="flex items-center gap-2 text-[10px] text-slate-400"><Wallet className="h-3.5 w-3.5"/>Available balance</p><p className="mt-2 text-xl font-bold">{state?.walletBalance?.toFixed(2)??'—'} System Switch</p></div>
         <div className="border border-white/10 bg-white/[.025] p-4"><p className="text-[10px] text-slate-400">River calling</p><p className="mt-2 text-sm font-bold">{state?.enabled&&state.providerReady?'Available':'Not yet activated'}</p></div>
       </div>
       {(error||notice)&&<p role="status" className={'mt-5 border-l-2 px-3 py-3 text-sm '+(error?'border-rose-400 text-rose-200':'border-emerald-400 text-emerald-200')}>{error||notice}</p>}
@@ -98,7 +98,7 @@ export default function RiverCallOutreachPage(){
         </label>
         <button onClick={dial} disabled={!state?.enabled||!state.providerReady||busy||!confirmed||consentSource.trim().length<8||!name.trim()||!/^\+[1-9]\d{7,14}$/.test(phone)}
           className="mt-6 flex w-full items-center justify-center gap-2 border border-sky-300/40 bg-sky-600/20 px-4 py-3 text-sm font-bold text-sky-100 disabled:cursor-not-allowed disabled:opacity-35">
-          <PhoneCall className="h-4 w-4"/>{busy?'Contacting provider…':'Call with River · '+(state?.priceFlameCoin??'—')+' Flame Coin'}
+          <PhoneCall className="h-4 w-4"/>{busy?'Contacting provider…':'Call with River · '+(state?.priceFlameCoin??'—')+' System Switch'}
         </button>
         <p className="mt-3 text-[11px] text-slate-500">A failed or unanswered call is refunded. A connected call is charged even if the candidate declines. Calls are not recorded; River retains a limited text exchange for the handoff.</p>
       </section>
@@ -113,7 +113,7 @@ export default function RiverCallOutreachPage(){
             const wa='https://wa.me/'+call.phone_e164.replace(/\D/g,'')+'?text='+encodeURIComponent(text)
             return <div key={call.id} className="flex flex-wrap items-center justify-between gap-3 py-5">
               <div><p className="text-sm font-semibold">{call.candidate_name||'Candidate'} · {call.phone_e164}</p>
-                <p className="mt-1 text-xs text-slate-400">{call.status}{call.refund_at?' · refunded':''} · {new Date(call.created_at).toLocaleString()} · {call.price_flame_coin} Flame Coin</p>
+                <p className="mt-1 text-xs text-slate-400">{call.status}{call.refund_at?' · refunded':''} · {new Date(call.created_at).toLocaleString()} · {call.price_flame_coin} System Switch</p>
                 {call.whatsapp_consent&&<p className="mt-1 text-xs text-emerald-300">WhatsApp permission received · {call.whatsapp_status==='provider_accepted'?'WEAVE Business template submitted':'Bridger handoff ready'}</p>}
               </div>
               {call.whatsapp_consent&&<a href={wa} className="inline-flex items-center gap-2 border border-emerald-400/30 px-3 py-2 text-xs text-emerald-200"><MessageCircle className="h-4 w-4"/>Follow up on WhatsApp</a>}

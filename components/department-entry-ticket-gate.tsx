@@ -289,7 +289,7 @@ export function DepartmentEntryTicketGate({
         <div className="mt-5 grid grid-cols-2 gap-3">
           <div className="rounded-xl border border-white/10 bg-black/25 p-3">
             <p className="text-[9px] uppercase tracking-widest text-slate-500">Ticket Price</p>
-            <p className="mt-1 text-xl font-black text-white">{ticket.priceFlameCoin} Flame Coin</p>
+            <p className="mt-1 text-xl font-black text-white">{ticket.priceFlameCoin} System Switch</p>
             <p className="mt-1 text-[10px] text-slate-500">{ticket.priceFlameCoin} TRX value</p>
           </div>
           <div className="rounded-xl border border-white/10 bg-black/25 p-3">
@@ -305,7 +305,7 @@ export function DepartmentEntryTicketGate({
             <p className="text-xs font-black uppercase tracking-widest text-white">WEAVE Payment Center · Paystack</p>
           </div>
           <p className="mt-3 text-xs leading-5 text-slate-400">
-            Pay securely through Paystack checkout. The amount is for this 3 Flame Coin Department Entry Ticket, not a wallet top-up.
+            Pay securely through Paystack checkout. The amount is for this 3 System Switch Department Entry Ticket, not a wallet top-up.
           </p>
         </div>
       </div>

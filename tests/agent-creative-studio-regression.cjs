@@ -52,7 +52,7 @@ assert.ok(customerApi.includes('price_flame_coin,') && customerApi.includes('bal
 assert.ok(page.includes('pack.priceFlameCoin'), 'Studio UI displays returned role-specific fee')
 assert.ok(imagePage.includes('canvasRef.current.toBlob'), 'Image maker exports actual PNG')
 assert.equal((imagePage.match(/\['agent','bridger','client'\]\.includes\(user\.role \|\| ''\)/g)||[]).length, 2, 'Image maker admits only Agent, Bridger and Client roles')
-assert.ok(imagePage.includes('0 Flame Coin') && imagePage.includes('role-based pricing shown in Video Studio'), 'Image and video cost is plain to Agent')
+assert.ok(imagePage.includes('0 System Switch') && imagePage.includes('role-based pricing shown in Video Studio'), 'Image and video cost is plain to Agent')
 assert.ok(agentWork.includes("href:'/agent/creative'"), 'Agent Work links image tool')
 assert.ok(roleWorld.includes('data-agent-creative-first-step'), 'Phone dashboard surfaces creative tool immediately')
 assert.ok(render.includes("'-crf', '20'"), 'Video quality improved')

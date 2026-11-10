@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
         continuanceActive:owned,continuanceDue:all.length-owned,continuanceSuspended:0,
         bridgeAiActive:all.filter((b:any)=>b.bridge_ai_status==='templates_opened').length
       },
-      membershipRule:'No Bridger subscription. Agentic-Bridger is a permanent 20 Flame Coin purchase.'
+      membershipRule:'No Bridger subscription. Agentic-Bridger is a permanent 20 System Switch purchase.'
     },{headers:{'Cache-Control':'private, no-store'}})
   } catch (error) {
     console.error('[admin bridger list] error',error)

@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Lock } from 'lucide-react'
+import { SYSTEM_SWITCH_NAME, displayCurrencyName } from '@/lib/flame-coin'
 
 export interface BalanceSummaryProps {
   available: number | string | null
@@ -9,7 +10,7 @@ export interface BalanceSummaryProps {
   currency?: string
 }
 
-export function BalanceSummary({ available, locked, currency = 'Flame Coin' }: BalanceSummaryProps) {
+export function BalanceSummary({ available, locked, currency = SYSTEM_SWITCH_NAME }: BalanceSummaryProps) {
   const safeAvailable = available == null || !Number.isFinite(Number(available)) ? null : Number(available)
   const safeLocked = locked == null || !Number.isFinite(Number(locked)) ? null : Number(locked)
   const total = safeAvailable == null || safeLocked == null ? null : safeAvailable + safeLocked
@@ -24,7 +25,7 @@ export function BalanceSummary({ available, locked, currency = 'Flame Coin' }: B
           <CardTitle className="text-sm font-medium text-muted-foreground">Available Balance</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{amount(safeAvailable)} {currency}</div>
+          <div className="text-2xl font-bold">{amount(safeAvailable)} {displayCurrencyName(currency)}</div>
           <p className="text-xs text-muted-foreground mt-1">Ready to use</p>
         </CardContent>
       </Card>
@@ -37,7 +38,7 @@ export function BalanceSummary({ available, locked, currency = 'Flame Coin' }: B
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-yellow-600">{amount(safeLocked)} {currency}</div>
+          <div className="text-2xl font-bold text-yellow-600">{amount(safeLocked)} {displayCurrencyName(currency)}</div>
           <p className="text-xs text-muted-foreground mt-1">In active transactions</p>
         </CardContent>
       </Card>
@@ -47,7 +48,7 @@ export function BalanceSummary({ available, locked, currency = 'Flame Coin' }: B
           <CardTitle className="text-sm font-medium text-muted-foreground">Total Balance</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-primary">{amount(total)} {currency}</div>
+          <div className="text-2xl font-bold text-primary">{amount(total)} {displayCurrencyName(currency)}</div>
           <p className="text-xs text-muted-foreground mt-1">Available + Locked</p>
         </CardContent>
       </Card>
