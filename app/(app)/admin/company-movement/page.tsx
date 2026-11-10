@@ -141,10 +141,10 @@ export default function CompanyMovementPage(){
             ['Approved wallet credits · Flame Coin',money('wallet','credited_flame_coin')],
             ['Pending deposit records',value('wallet','pending_deposits')],
             ['Rejected deposit records',value('wallet','rejected_deposits')],
-            ['Paid food orders not fulfilled',value('food','paid_unfulfilled')],
-            ['Food payment proofs pending',value('food','payment_proofs_pending')],
-            ['Paid cake orders not completed',value('cakes','paid_unfulfilled')],
-            ['Cake payment proofs pending',value('cakes','payment_proofs_pending')],
+            ['Paid food orders not fulfilled',value('foodQueue','paid_unfulfilled')],
+            ['Food payment proofs pending',value('foodQueue','payment_proofs_pending')],
+            ['Paid cake orders not completed',value('cakeQueue','paid_unfulfilled')],
+            ['Cake payment proofs pending',value('cakeQueue','payment_proofs_pending')],
           ].map(([k,v])=><div key={k} className="border-t border-white/10 pt-3"><dt className="text-xs text-slate-400">{k}</dt><dd className="mt-1 break-all text-lg font-bold tabular-nums">{report?v:'—'}</dd></div>)}
         </dl>
         <p className="mt-4 text-xs leading-5 text-slate-400">Open queue counts are current outstanding records, not restricted to the selected reporting period. Values in different currencies are never combined.</p>
