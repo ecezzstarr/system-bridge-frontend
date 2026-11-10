@@ -2,6 +2,7 @@
 import Link from 'next/link'
 import {useAuth} from '@/lib/auth-provider'
 import {useCallback,useEffect,useState} from 'react'
+import {RegionalSystemSwitchGate} from '@/components/weave/regional-system-switch-gate'
 
 type Member={user_id:string;name:string;role:string;position:string;level:'direct'|'assistant';lead_user_id:string|null}
 type Task={id:string;assigned_user_id:string;assigned_name:string;title:string;instructions:string;status:string;
@@ -94,6 +95,7 @@ export default function RegionalDailyWorkspace(){
       {error&&<p role="alert" className="border border-rose-400/30 p-3 text-sm text-rose-200">{error}</p>}
       {message&&<p role="status" className="border border-cyan-300/25 p-3 text-sm text-cyan-200">{message}</p>}
     </header>
+    <RegionalSystemSwitchGate />
     {isManager&&<>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         {cards.map(c=><section key={c.name} className="rounded-xl border border-white/15 bg-slate-950/75 p-3">
