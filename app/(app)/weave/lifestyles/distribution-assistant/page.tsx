@@ -2,7 +2,6 @@
 
 import Link from 'next/link'
 import {useEffect,useState} from 'react'
-import Link from 'next/link'
 import {useAuth} from '@/lib/auth-provider'
 import {Button} from '@/components/ui/button'
 import {DistributionTeamWorkspace} from '@/components/distribution/team-workspace'
@@ -45,7 +44,8 @@ export default function DistributionAssistantLifestylePage(){
   const target=Number(state?.teamTarget||500)
   if(!isInitialized||isLoading||loading)return <main className="p-7 text-sm text-slate-200">Opening Distribution Assistant employment…</main>
   return <main className="weave-operating-environment mx-auto min-h-screen max-w-4xl px-4 py-8 text-white" data-distribution-assistant-lifestyle="true">
-    <div className="flex flex-wrap gap-4 text-xs text-cyan-300"><Link href="/weave/lifestyles">← Return to Lifestyle</Link><Link href="/weave/lifestyles/work">My approved workspaces →</Link></div>
+    <div className="flex flex-wrap gap-4 text-xs text-cyan-300"><Link href="/weave/lifestyles">← Return to Lifestyle</Link><Link href="/weave/lifestyles/support" className="mr-2 inline-flex min-h-11 items-center rounded-lg border border-cyan-300/40 px-4 text-xs font-bold text-cyan-100">Private employee support →</Link>
+        <Link href="/weave/lifestyles/work">My approved workspaces →</Link></div>
     <p className="mt-7 text-xs font-black uppercase tracking-widest text-amber-300">WEAVE Distribution · Employment</p>
     <h1 className="mt-2 text-3xl font-black">Assistant Distribution Manager</h1>
     <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">Up to twenty assistant positions, two for each of up to ten lead Distribution Managers, support the company with outreach, campaign circulation, follow-ups and verified Agent/Bridger acquisition. The assistant remains an Agent or Bridger in WEAVE. A lead Manager must first be verified by Administration before appointing assistants or beginning their probation. Each three-person team (one main Manager and two assistants) shares a 300-referral target in its first probation month and a 500-referral target in each later team employment month.</p>
