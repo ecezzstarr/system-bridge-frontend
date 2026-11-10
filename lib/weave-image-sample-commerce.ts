@@ -30,8 +30,9 @@ export async function ensureSampleCommerceSchema(){
   }
   await schemaPromise
 }
-export function sampleFingerprint(sampleId:string,edits:SampleEdits){
-  return createHash('sha256').update(JSON.stringify({sampleId,edits})).digest('hex')
+export function sampleFingerprint(sampleId:string,edits:SampleEdits,serviceOrderId:string|null=null){
+  // The same graphic licensed for a different customer commission is a separate commercial delivery.
+  return createHash('sha256').update(JSON.stringify({sampleId,edits,serviceOrderId})).digest('hex')
 }
 export async function getSampleFee(){
   await ensureSampleCommerceSchema()
@@ -78,7 +79,7 @@ export async function purchaseSampleLicense(userId:string,role:string,sampleId:s
   await ensureSampleCommerceSchema()
   const edits=normalizeSampleEdits(sample,rawEdits)
   if(!edits.brand||!edits.headline||!edits.action)throw new SampleBusinessError('INVALID','Provide a business name, headline and customer action.')
-  const hash=sampleFingerprint(sampleId,edits)
+  const hash=sampleFingerprint(sampleId,edits,serviceOrderId)
   const svg=renderWeaveSampleSvg(sample,edits,false)
   const pool=getPool()
   const client=await pool.connect()
