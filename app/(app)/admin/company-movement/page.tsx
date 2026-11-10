@@ -57,7 +57,7 @@ export default function CompanyMovementPage(){
   }
   const cards=[
     {title:'Prospect packages purchased',value:value('prospects','packages'),foot:'Completed Bridger package purchases'},
-    {title:'Fulfilled food & cake orders',value:sum('food','fulfilled_orders','cakes','fulfilled_orders'),foot:'Paid and completed customer orders'},
+    {title:'Fulfilled food & cake orders',value:sum('food','fulfilled_orders','cakes','fulfilled_orders'),foot:'Agent-confirmed paid status and completed orders'},
     {title:'Confirmed File Folder purchases',value:value('folders','confirmed_folders'),foot:'Distinct confirmed sale keys across both rails'},
     {title:'Approved wallet deposits',value:value('wallet','approved_deposits'),foot:'Approved with verification date in this period'},
   ]
@@ -104,15 +104,15 @@ export default function CompanyMovementPage(){
       </section>
       <section className="space-y-3 rounded-xl border border-amber-300/20 bg-slate-950/65 p-5">
         <h2 className="text-xl font-black">Stability · Food and Product Movement</h2>
-        <p className="text-sm text-slate-300">Agent-recorded stock sales are separate from verified customer payments and fulfilled orders.</p>
+        <p className="text-sm text-slate-300">Agent-recorded stock sales are separate from customer orders marked paid by Agents and fulfilled. Payment status here is not independent bank reconciliation.</p>
         <dl className="grid grid-cols-2 gap-3">
           {[
-            ['Agent-recorded Agility units',value('agility','recorded_units')],
+            ['Agent-recorded stock units',value('agility','recorded_units')],
             ['Agent-recorded sales ₦',money('agility','recorded_revenue_ngn')],
             ['Paid, fulfilled food units',value('food','fulfilled_units')],
-            ['Paid, fulfilled food value ₦',money('food','fulfilled_value_ngn')],
+            ['Fulfilled food products (excl. delivery) ₦',money('food','fulfilled_value_ngn')],
             ['Paid, completed cake orders',value('cakes','fulfilled_orders')],
-            ['Paid, completed cake value ₦',money('cakes','fulfilled_value_ngn')],
+            ['Completed cake products (excl. delivery) ₦',money('cakes','fulfilled_value_ngn')],
             ['Paid Agent stock orders',value('stock','verified_stock_orders')],
             ['Paid Agent stock value ₦',money('stock','verified_stock_value_ngn')],
           ].map(([k,v])=><div key={k} className="border-t border-white/10 pt-3"><dt className="text-xs text-slate-400">{k}</dt><dd className="mt-1 break-all text-lg font-bold tabular-nums">{report?v:'—'}</dd></div>)}
