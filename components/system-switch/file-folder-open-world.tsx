@@ -418,7 +418,7 @@ export default function FileFolderOpenWorld({
       </header>
       </details>
 
-      <section data-file-folder-career-journey="choose-acquire-build-boost-operate-earn" className="border-b border-amber-300/25 bg-[radial-gradient(ellipse_at_top_left,rgba(183,134,65,.16),transparent_72%)] p-4 text-white sm:p-6">
+      <section data-file-folder-career-journey="choose-acquire-build-parts-boost-operate-earn" className="border-b border-amber-300/25 bg-[radial-gradient(ellipse_at_top_left,rgba(183,134,65,.16),transparent_72%)] p-4 text-white sm:p-6">
         <p className="text-xs font-bold uppercase tracking-wider text-amber-200">Build your online career · Company of Time</p>
         <h2 className="mt-2 text-2xl font-black leading-tight sm:text-3xl">Choose a job. Build its system. Start serving customers.</h2>
         <p className="mt-3 max-w-3xl text-sm leading-7 text-stone-200">Every blueprint is a working capability you can turn into a paid service. See the exact material price and build time before buying. The system builds over real time; Boost Bay is optional. Customers pay for work only after you offer and deliver a real service.</p>
@@ -427,10 +427,11 @@ export default function FileFolderOpenWorld({
             {step:'01',name:'Choose a career',desc:String((world?.blueprints||[]).length)+' available systems',goto:'blueprint_foundry'},
             {step:'02',name:'Get materials',desc:'See actual parts and prices',goto:'build_market'},
             {step:'03',name:'Build over time',desc:activeBuilds.length+' real builds in progress',goto:'formation_yard'},
-            {step:'04',name:'Boost Bay',desc:'Optional paid acceleration',goto:'boost_bay'},
-            {step:'05',name:'Operate your system',desc:String((world?.systems||[]).length)+' systems on record',goto:'active_systems'},
-            {step:'06',name:'Earn from customers',desc:'Work, quote, deliver and record',goto:'workshop_core'},
-          ].map(item=><button type="button" key={item.step} onClick={()=>{if(item.step==='06'&&onOpenCustomerDoor)onOpenCustomerDoor();else enterDistrict(item.goto)}} className="min-h-28 rounded-2xl border border-[#c49b5f]/30 bg-[#12141b]/85 p-4 text-left hover:border-[#efd2a0] focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-200">
+            {step:'04',name:'Add capability parts',desc:'Extend what your system can do',goto:'parts_workshop'},
+            {step:'05',name:'Boost Bay',desc:'Optional paid acceleration',goto:'boost_bay'},
+            {step:'06',name:'Operate your system',desc:String((world?.systems||[]).length)+' systems on record',goto:'active_systems'},
+            {step:'07',name:'Earn from customers',desc:'Work, quote, deliver and record',goto:'workshop_core'},
+          ].map(item=><button type="button" key={item.step} onClick={()=>{if(item.step==='07'&&onOpenCustomerDoor)onOpenCustomerDoor();else enterDistrict(item.goto)}} className="min-h-28 rounded-2xl border border-[#c49b5f]/30 bg-[#12141b]/85 p-4 text-left hover:border-[#efd2a0] focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-200">
             <span className="text-xs font-bold text-amber-300">{item.step}</span>
             <strong className="mt-2 block text-base leading-5 text-white">{item.name}</strong>
             <span className="mt-2 block text-sm leading-5 text-stone-300">{item.desc}</span>

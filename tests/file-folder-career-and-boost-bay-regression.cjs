@@ -13,8 +13,8 @@ for(const file of ['components/system-switch/file-folder-open-world.tsx','compon
  const s=ts.createSourceFile(file,read(file),ts.ScriptTarget.Latest,true,ts.ScriptKind.TSX)
  assert.equal(s.parseDiagnostics.length,0,'Valid JSX for '+file)
 }
-assert(workspace.includes('data-file-folder-career-journey="choose-acquire-build-boost-operate-earn"'),'File Folder has a clear career-to-income path')
-for(const title of ['Choose a career','Get materials','Build over time','Boost Bay','Operate your system','Earn from customers']){
+assert(workspace.includes('data-file-folder-career-journey="choose-acquire-build-parts-boost-operate-earn"'),'File Folder has a clear career-to-income path')
+for(const title of ['Choose a career','Get materials','Build over time','Add capability parts','Boost Bay','Operate your system','Earn from customers']){
  assert(workspace.includes(title),'Career step is named: '+title)
 }
 assert(workspace.includes('data-file-folder-career-service={blueprint.blueprint_key}'),'Actual blueprints have a customer-facing job explanation')
