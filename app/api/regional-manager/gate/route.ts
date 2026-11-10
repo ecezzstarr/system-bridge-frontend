@@ -76,6 +76,7 @@ export async function GET(request:NextRequest){
       pool.query(`SELECT id,direction,next_action,created_at
         FROM weave_regional_gate_directions
         WHERE regional_manager_user_id=$1::uuid
+          AND created_at>=NOW()-INTERVAL '72 hours'
         ORDER BY created_at DESC LIMIT 3`,[gate.managerId]),
       readSignal(pool,'weave_regional_daily_tasks',
         `SELECT COUNT(*)::int AS count,MAX(completed_at) AS last_at
