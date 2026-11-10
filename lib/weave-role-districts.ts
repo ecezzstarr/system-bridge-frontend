@@ -44,6 +44,7 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
         {label:'Electrolyte',href:'/electrolyte',detail:'Order and receive Electrolyte bowls, then distribute and restock.',daily:true},
         {label:'Ember',href:'/ember',detail:'Order Ember Small and Large food boxes, verify payment, and distribute received cartons.',daily:true},
         {label:'Daisy Pastries',href:'/agent/cakes',detail:'Place cake orders, quote customer requests and verify payments for Administration production.',daily:true},
+        {label:'Advanced Image Workshop',href:'/image-workshop',detail:'Produce and refine images for customer sales, product outreach and Agent work.'},
         {label:'Commissions',href:'/agent/commissions',detail:'See Prospect purchase shares and verified Client File Folder shares generated through attached Bridgers.',daily:true},
       ],
     },
@@ -83,6 +84,7 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
         {label:'Enterprise Legions Notebook',href:'/enterprise/legions-notebook',detail:'Read how a Bridger with permanent Agentic-Bridger access can join a Client enterprise as an exclusive Legion.'},
         {label:'Bridger Working Manual',href:'/bridger/working-manual',detail:'Follow the hourly prospect-contact requirement and the complete human-first outreach movement.',daily:true},
         {label:'Crossing Notebook',href:'/bridger/crossing-notebook',detail:'Read how Hope moves from Prospect possibility → real response → relationship → File Folder → Client ownership and use.',daily:true},
+        {label:'Advanced Image Workshop',href:'/image-workshop',detail:'Produce and edit campaign images for Prospect outreach and Client work.'},
         {label:'Prospect Market',href:'/weave/market/prospects',detail:'Claim or purchase unverified Prospect farming tools and work them for real human interaction.',daily:true},
         {label:'Email Outreach',href:'/bridger/email-outreach',detail:'Acquire lower-cost unverified email Prospect candidates, attempt contact and inspect the response movement.',daily:true},
         {label:'Number Bay',href:'/bridger/numbers',detail:'Purchase outreach numbers and follow their delivery and verification movement.',daily:true},
@@ -125,6 +127,7 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
       places:[
         {label:'Enterprise Legions Notebook',href:'/enterprise/legions-notebook',detail:'Lead your own enterprise as Lord or Lady, build Legion Quarters and employ Legions.'},
         {label:'File Folder',href:'/client/system-switch',detail:'Build and operate systems, your store and Customer Door.',daily:true},
+        {label:'Advanced Image Workshop',href:'/image-workshop',detail:'Create imagery for File Folder systems, Customer Doors and enterprise advertising.'},
         {label:'System Publisher',href:'/client/system-store',detail:'Package active File Folder systems, submit versions for Administration verification and manage public releases.',daily:true},
         {label:'WEAVE System Store',href:'/system-store',detail:'See verified Client-built systems distributed publicly through WEAVE.'},
         {label:'Enterprise Systems',href:'/marketplace',detail:'Explore WEAVE enterprise-scale systems for your work.'},
