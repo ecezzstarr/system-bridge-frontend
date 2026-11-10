@@ -62,6 +62,18 @@ export async function POST(request:NextRequest){
    if(active)await notifySupport(workerId,'Your company support manager is available','Open your Lifestyle support workspace to ask for help with a real task.')
    return ok({assignment:{workerId,managerId,active}})
   }
+  if(action==='start_case'){
+   if(user.role==='admin'||!(await managerKinds(user.id)).length)return fail('Verified manager appointment required',403)
+   const workerId=limitText(body.workerId,50),description=limitText(body.description,1800),taskReference=limitText(body.taskReference,200)
+   if(!uuid(workerId)||description.length<15||!(await managerAssignedTo(workerId,user.id)))
+    return fail('Choose an assigned employee and describe the obstacle',403)
+   const created=await db.query(`INSERT INTO weave_company_support_cases(worker_id,manager_id,purpose,description,task_reference)
+     VALUES($1::uuid,$2::uuid,'guidance',$3,$4) RETURNING *`,[workerId,user.id,description,taskReference||null])
+   const item=created.rows[0]
+   await db.query('INSERT INTO weave_company_support_messages(case_id,author_id,message) VALUES($1::uuid,$2::uuid,$3)',[item.id,user.id,description])
+   await notifySupport(workerId,'Your manager opened a private work conversation','Open Company Support to discuss your task, obstacles or work progress.')
+   return ok({case:item},201)
+  }
   if(action==='create'){
    if(!['agent','bridger'].includes(user.role))return fail('Active Agent or Bridger required',403)
    const managerId=limitText(body.managerId,50),purpose=limitText(body.purpose,24)
@@ -155,6 +167,9 @@ export async function POST(request:NextRequest){
    if(!admin)return fail('Independent Administrations verification required for real-money stock assistance',403)
    if(item.status!=='accepted'||item.purpose!=='food_stock')return fail('Only accepted stock support can be recorded as funded',409)
    const reference=limitText(body.reference,180)
+   const funderId=limitText(body.funderId,50)||String(item.manager_id)
+   if(!uuid(funderId)||!([String(item.manager_id),user.id].includes(funderId)))
+    return fail('The funder must be the assigned manager or Administrations',422)
    if(reference.length<12)return fail('Provide an independently verified unique supplier payment or stock allocation reference')
    const conn=await db.connect()
    try{
@@ -163,7 +178,7 @@ export async function POST(request:NextRequest){
     if(!locked.rows.length)throw new Error('Case was already funded or changed')
     await conn.query(`INSERT INTO weave_company_support_advances(case_id,worker_id,funder_id,currency,principal,spent,funding_reference,verified_by)
      VALUES($1::uuid,$2::uuid,$3::uuid,'NGN',$4,$4,$5,$3::uuid)`,
-     [caseId,item.worker_id,user.id,item.offered_amount,reference])
+     [caseId,item.worker_id,funderId,item.offered_amount,reference])
     await conn.query("UPDATE weave_company_support_cases SET status='funded',funding_reference=$2,funded_at=now(),updated_at=now() WHERE id=$1::uuid",[caseId,reference])
     await conn.query('COMMIT')
     await notifySupport(item.worker_id,'Stock support verified','Administrations recorded verified stock funding. Repayments require actual verified naira settlements.')
