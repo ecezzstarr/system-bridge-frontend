@@ -169,13 +169,13 @@ export async function creditVerifiedFlameCoinPurchase(input:{
       INSERT INTO ledger_entries
       (id,user_id,entry_type,amount,currency,description,balance_before,balance_after,metadata,created_at)
       VALUES
-      (gen_random_uuid(),$1::uuid,'transfer',$3,'System Switch','Funded customer System Switch purchase',$4,$5,$6::jsonb,NOW()),
-      (gen_random_uuid(),$2::uuid,'deposit',$3,'System Switch','Forensics-verified multi-rail System Switch purchase',$7,$8,$6::jsonb,NOW())
+      (gen_random_uuid(),$1::uuid,'transfer',$3,'Flame Coin','Funded customer System Switch purchase',$4,$5,$6::jsonb,NOW()),
+      (gen_random_uuid(),$2::uuid,'deposit',$3,'Flame Coin','Forensics-verified multi-rail System Switch purchase',$7,$8,$6::jsonb,NOW())
     `,[input.adminId,input.recipientId,amount,Number(funder.balance_trx),Number(debit.balance_trx),
        metadata,Number(receiver.balance_trx),Number(credit.balance_trx)])
     await db.query(`
       INSERT INTO weave_receipts(receipt_number,user_id,kind,source,source_id,amount,currency,status,description,metadata)
-      VALUES($1,$2::uuid,'purchase','flame_coin_purchase',$3,$4,'System Switch','paid',
+      VALUES($1,$2::uuid,'purchase','flame_coin_purchase',$3,$4,'Flame Coin','paid',
         'System Switch purchase credited after Forensics verification',$5::jsonb)
     `,[receiptNumber,input.recipientId,order.id,amount,metadata])
     await db.query(`
