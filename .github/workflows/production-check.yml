@@ -62,6 +62,7 @@ jobs:
       - name: Agent Creative Studio fee and image regressions
         run: |
           node tests/agent-creative-studio-regression.cjs
+          node tests/advanced-image-workshop.cjs
           node tests/echo-immediate-regression.cjs
           node tests/one-nigerian-scroll-regression.cjs
           node tests/bridge-ai-shared-file-folder-assistance.cjs
