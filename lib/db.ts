@@ -239,7 +239,7 @@ export async function createTransaction(data: {
       ${data.userId}::uuid, 
       ${data.type}, 
       ${data.amount}, 
-      ${data.currency || 'Flame Coin'}, 
+      ${data.currency || 'System Switch'}, 
       ${data.txHash || null}, 
       ${data.fromAddress || null}, 
       ${data.toAddress || null}, 

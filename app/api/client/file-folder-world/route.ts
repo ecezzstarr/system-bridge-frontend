@@ -405,7 +405,7 @@ export async function POST(request: NextRequest) {
       `
       if (!economy.publicDoorUnlocked && doorGate && (doorGate.status === 'funding_gate' || new Date(doorGate.completes_at).getTime() <= Date.now())) {
         return NextResponse.json({
-          error: `Build funding gate: deposit ${economy.requiredToOpenPublicDoorFlameCoin.toLocaleString()} more Flame Coin to open the first Customer Door and continue new construction.`,
+          error: `Build funding gate: deposit ${economy.requiredToOpenPublicDoorFlameCoin.toLocaleString()} more System Switch to open the first Customer Door and continue new construction.`,
           gate: 'build_funding',
           buildFunding: economy,
         }, { status: 409 })
