@@ -377,6 +377,11 @@ export const ADMIN_SPACES:readonly AdminSpace[]=[
     "description": "Manage company advertising creatives and distribution."
   },
   {
+    "title": "Advanced Image Workshop",
+    "href": "/image-workshop",
+    "description": "Generate, edit and refine professional images, vector artwork and animated image assets for WEAVE company work."
+  },
+  {
     "title": "Video Ad Workshop",
     "href": "/admin/video-ad-workshop",
     "description": "Prepare official company video advertisements."
