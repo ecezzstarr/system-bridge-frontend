@@ -3,8 +3,8 @@ import { sql } from './db'
 import { getTrxPaymentNgnRate } from './trx-payment'
 import { WEAVE_OPAY_ACCOUNT_NUMBER } from './opay-config'
 import { issueDepartmentalCode, type Department } from './departmental-codes'
+import { departmentEntryTicketPrice } from './department-entry-pricing'
 
-export const DEPARTMENT_ENTRY_TICKET_PRICE_FLAME_COIN = 3
 export const DEPARTMENT_ENTRY_TICKET_VALID_HOURS = 24
 
 export type DepartmentEntryTicketStatus =
@@ -23,7 +23,7 @@ export async function ensureDepartmentEntryTicketSchema() {
       access_token_hash VARCHAR(128) UNIQUE NOT NULL,
       department VARCHAR(20) NOT NULL,
       status VARCHAR(24) NOT NULL DEFAULT 'PRESENTED',
-      price_flame_coin NUMERIC(30,8) NOT NULL DEFAULT 3,
+      price_flame_coin NUMERIC(30,8) NOT NULL,
       trx_ngn_rate NUMERIC(30,8) NOT NULL,
       amount_ngn NUMERIC(30,2) NOT NULL,
       opay_account_number VARCHAR(32) NOT NULL,
@@ -40,6 +40,9 @@ export async function ensureDepartmentEntryTicketSchema() {
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `
+  // Legacy tickets keep their original 3-unit price. New tickets always store
+  // their department-specific amount explicitly; prevent future default=3 inserts.
+  await sql`ALTER TABLE departmental_entry_tickets ALTER COLUMN price_flame_coin DROP DEFAULT`
   await sql`ALTER TABLE departmental_codes ADD COLUMN IF NOT EXISTS registration_request_id UUID`
   await sql`
     CREATE UNIQUE INDEX IF NOT EXISTS idx_departmental_codes_registration_request
@@ -85,9 +88,10 @@ export async function createDepartmentEntryTicket(department: Department) {
 
   const accessToken = randomBytes(32).toString('hex')
   const accessTokenHash = hashAccessToken(accessToken)
+  const priceSystemSwitch = departmentEntryTicketPrice(department)
   const { rateNgnPerTrx, source } = await getTrxPaymentNgnRate()
   const amountNgn = Math.round(
-    DEPARTMENT_ENTRY_TICKET_PRICE_FLAME_COIN * rateNgnPerTrx * 100
+    priceSystemSwitch * rateNgnPerTrx * 100
   ) / 100
 
   for (let attempt = 0; attempt < 8; attempt += 1) {
@@ -110,7 +114,7 @@ export async function createDepartmentEntryTicket(department: Department) {
           ${accessTokenHash},
           ${department},
           'PRESENTED',
-          ${DEPARTMENT_ENTRY_TICKET_PRICE_FLAME_COIN},
+          ${priceSystemSwitch},
           ${rateNgnPerTrx},
           ${amountNgn},
           ${WEAVE_OPAY_ACCOUNT_NUMBER},
@@ -122,7 +126,7 @@ export async function createDepartmentEntryTicket(department: Department) {
       const ticket = rows[0]
       await notifyAdmins(
         `New ${department} entry visitor`,
-        `A visitor entered the ${department} ticket gate. Ticket ${ticketNumber} has been presented at 3 Flame Coin (₦${amountNgn.toLocaleString()}).`
+        `A visitor entered the ${department} ticket gate. Ticket ${ticketNumber} has been presented at ${priceSystemSwitch} System Switch (₦${amountNgn.toLocaleString()}).`
       )
 
       return {
@@ -205,7 +209,7 @@ export async function submitDepartmentEntryPayment(
   const ticket = rows[0]
   await notifyAdmins(
     `${ticket.department} ticket payment awaiting verification`,
-    `${input.payerName} submitted OPay payment evidence for ${ticket.ticket_number}: ₦${Number(ticket.amount_ngn).toLocaleString()} for 3 Flame Coin.`
+    `${input.payerName} submitted payment evidence for ${ticket.ticket_number}: ₦${Number(ticket.amount_ngn).toLocaleString()} for ${Number(ticket.price_flame_coin)} System Switch.`
   )
 
   return ticket
