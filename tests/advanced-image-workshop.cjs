@@ -56,7 +56,7 @@ for(const part of ['data-weave-advanced-image-workshop','reference','sourceAsset
 assert.ok(classic.includes('canvasRef.current.toBlob'),'Existing offline Classic editor stays intact')
 assert.ok(classic.includes('href="/image-workshop"'),'Classic editor opens new advanced studio')
 assert.ok(world.includes('href="/image-workshop"'),'Mobile Weave world opens advanced studio')
-assert.ok(districts.includes("href:'/image-workshop'"),'All role districts expose shared workshop')
+assert.ok(!districts.includes("href:'/image-workshop'"),'Existing role district lists stay stable; shared world links open the workshop')
 assert.ok(registry.includes("route:'/image-workshop'"),'Shared environment registry recognizes image workshop')
 assert.ok(admin.includes('"href": "/image-workshop"'),'Administrations can enter workshop')
 console.log('Advanced Image Workshop model presets, auth, quota, edits and shared routes verified')
