@@ -163,7 +163,7 @@ export async function readSupportMessages(user:AuthUser,caseId:string){
 }
 export async function notifySupport(userId:string,title:string,content:string){
   await getPool().query(`INSERT INTO notifications(user_id,type,title,content,from_user_name,link)
-    VALUES($1::uuid,'employment_reply',$2,$3,'WEAVE Administrations','/weave/lifestyles/support')`,[userId,title,content.slice(0,300)]).catch(e=>console.error('[company-support] notification',e))
+    VALUES($1::uuid,'company_support',$2,$3,'WEAVE Administrations','/weave/lifestyles/support')`,[userId,title,content.slice(0,300)]).catch(e=>console.error('[company-support] notification',e))
 }
 export async function recoverSupportAdvanceFromEarning(db:PoolClient,workerId:string,earning:number,sourceKey:string){
   if(!uuid(workerId)||!sourceKey||!Number.isFinite(earning)||earning<=0)return 0
