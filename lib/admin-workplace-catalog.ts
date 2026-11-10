@@ -87,6 +87,11 @@ export const ADMIN_SPACES:readonly AdminSpace[]=[
     "description": "Approve staff for Mandate, Forensics and Attorney guidance."
   },
   {
+    "title": "Company Work Support & Advances",
+    "href": "/weave/lifestyles/support",
+    "description": "Assign employees to verified managers, oversee private support cases, funded credit, stock assistance and repayments."
+  },
+  {
     "title": "Regional Manager Applications",
     "href": "/admin/regional-manager-applications",
     "description": "Review ordinary Bridger/Agent regional supervision applications without File Folders."
