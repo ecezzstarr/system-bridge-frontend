@@ -14,13 +14,15 @@ export async function GET(request:NextRequest){
   try{
     await ensureRegionalOperationsSchema()
     const pool=getPool()
-    const [manager,team,bridger,distribution,food,foodLinks,daily,staffCheckins]=await Promise.all([
+    const [manager,team,bridger,agent,distribution,food,foodLinks,daily,staffCheckins]=await Promise.all([
       pool.query(`SELECT rm.user_id AS manager_id,u.name,rm.source_role,rm.appointed_at
         FROM weave_regional_manager_appointments rm JOIN users u ON u.id=rm.user_id
         WHERE rm.status='active' AND u.is_active=true ORDER BY rm.appointed_at DESC LIMIT 150`),
       regionalTeam(null,null),
       pool.query(`SELECT id AS user_id,name FROM users
         WHERE role='bridger' AND is_active=true ORDER BY name LIMIT 250`),
+      pool.query(`SELECT id AS user_id,name FROM users
+        WHERE role='agent' AND is_active=true ORDER BY name LIMIT 250`),
       pool.query(`SELECT e.user_id,u.name FROM manager_employment e
         JOIN users u ON u.id=e.user_id
         WHERE e.status IN ('probation','active') AND u.is_active=true
@@ -55,7 +57,7 @@ export async function GET(request:NextRequest){
         checkins:checkin?.checkins||0,needs_help:checkin?.needs_help||0}
     })
     return NextResponse.json({success:true,managers:report,team,
-      candidates:{bridgers:bridger.rows,distributionManagers:distribution.rows,
+      candidates:{bridgers:bridger.rows,agents:agent.rows,distributionManagers:distribution.rows,
         foodDistributionManagers:food.rows},
       foodAssignments:foodLinks.rows,generatedAt:new Date().toISOString()
     },{headers})
@@ -77,12 +79,12 @@ export async function POST(request:NextRequest){
     const body=await request.json().catch(()=>({}))
     const action=String(body.action||'')
     const foodId=String(body.foodManagerId||'')
-    if(!uuid.test(foodId)||!['assign_food_lead','unassign_food_lead'].includes(action))
+    if(!uuid.test(foodId)||!['assign_food_lead','unassign_food_lead','assign_agent','unassign_agent'].includes(action))
       return NextResponse.json({error:'Choose a verified Food Distribution Manager'},{status:422,headers})
     const pool=getPool(), db=await pool.connect()
     try{
       await db.query('BEGIN')
-      if(action==='assign_food_lead'){
+      if(action==='assign_food_lead'||action==='assign_agent'){
         const regionId=String(body.regionalManagerId||'')
         if(!uuid.test(regionId)){
           await db.query('ROLLBACK')
@@ -94,28 +96,44 @@ export async function POST(request:NextRequest){
             JOIN users u ON u.id=a.user_id AND u.is_active=true
             WHERE a.user_id=$1::uuid AND a.status='active'
               AND u.role IN ('agent','bridger')`,[regionId]),
-          db.query(`SELECT e.user_id FROM weave_food_distribution_employment e
-            JOIN users u ON u.id=e.user_id AND u.is_active=true AND u.role='agent'
-            WHERE e.user_id=$1::uuid AND e.status='approved' AND e.position='manager'`,[foodId])
+          action==='assign_agent'
+            ?db.query(`SELECT id AS user_id FROM users
+              WHERE id=$1::uuid AND is_active=true AND role='agent'`,[foodId])
+            :db.query(`SELECT e.user_id FROM weave_food_distribution_employment e
+              JOIN users u ON u.id=e.user_id AND u.is_active=true AND u.role='agent'
+              WHERE e.user_id=$1::uuid AND e.status='approved' AND e.position='manager'`,[foodId])
         ])
         if(!rm.rowCount||!food.rowCount){
           await db.query('ROLLBACK')
           return NextResponse.json({error:'Both appointments must be active and verified'},{status:422,headers})
         }
-        const result=await db.query(`INSERT INTO weave_regional_manager_food_distribution_leads
-          (food_manager_user_id,regional_manager_user_id,assigned_by,status)
-          VALUES($1::uuid,$2::uuid,$3::uuid,'active')
-          ON CONFLICT(food_manager_user_id) DO UPDATE SET
-            regional_manager_user_id=EXCLUDED.regional_manager_user_id,
-            assigned_by=EXCLUDED.assigned_by,status='active',
-            assigned_at=NOW(),updated_at=NOW()
-          RETURNING *`,[foodId,regionId,admin.id])
+        const result=action==='assign_agent'
+          ?await db.query(`INSERT INTO weave_regional_manager_agents
+              (agent_user_id,regional_manager_user_id,assigned_by,status)
+              VALUES($1::uuid,$2::uuid,$3::uuid,'active')
+              ON CONFLICT(agent_user_id) DO UPDATE SET
+                regional_manager_user_id=EXCLUDED.regional_manager_user_id,
+                assigned_by=EXCLUDED.assigned_by,status='active',
+                assigned_at=NOW(),updated_at=NOW()
+              RETURNING *`,[foodId,regionId,admin.id])
+          :await db.query(`INSERT INTO weave_regional_manager_food_distribution_leads
+              (food_manager_user_id,regional_manager_user_id,assigned_by,status)
+              VALUES($1::uuid,$2::uuid,$3::uuid,'active')
+              ON CONFLICT(food_manager_user_id) DO UPDATE SET
+                regional_manager_user_id=EXCLUDED.regional_manager_user_id,
+                assigned_by=EXCLUDED.assigned_by,status='active',
+                assigned_at=NOW(),updated_at=NOW()
+              RETURNING *`,[foodId,regionId,admin.id])
         await db.query('COMMIT')
         return NextResponse.json({success:true,assignment:result.rows[0]},{headers})
       }
-      const result=await db.query(`UPDATE weave_regional_manager_food_distribution_leads
-        SET status='ended',updated_at=NOW()
-        WHERE food_manager_user_id=$1::uuid AND status='active' RETURNING *`,[foodId])
+      const result=action==='unassign_agent'
+        ?await db.query(`UPDATE weave_regional_manager_agents
+          SET status='ended',updated_at=NOW()
+          WHERE agent_user_id=$1::uuid AND status='active' RETURNING *`,[foodId])
+        :await db.query(`UPDATE weave_regional_manager_food_distribution_leads
+          SET status='ended',updated_at=NOW()
+          WHERE food_manager_user_id=$1::uuid AND status='active' RETURNING *`,[foodId])
       if(!result.rowCount){
         await db.query('ROLLBACK')
         return NextResponse.json({error:'Active Food Distribution assignment not found'},{status:404,headers})
