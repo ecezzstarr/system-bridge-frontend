@@ -40,10 +40,14 @@ const schema = [
     worker_id uuid NOT NULL REFERENCES users(id), funder_id uuid NOT NULL REFERENCES users(id),
     currency text NOT NULL CHECK(currency IN ('SYSTEM_SWITCH','NGN')),
     principal numeric(18,6) NOT NULL CHECK(principal>0),
+    spent numeric(18,6) NOT NULL DEFAULT 0 CHECK(spent>=0 AND spent<=principal),
+    refunded numeric(18,6) NOT NULL DEFAULT 0 CHECK(refunded>=0 AND refunded<=principal),
     repaid numeric(18,6) NOT NULL DEFAULT 0 CHECK(repaid>=0 AND repaid<=principal),
     status text NOT NULL DEFAULT 'active' CHECK(status IN ('active','repaid','disputed')),
     funding_reference text NOT NULL UNIQUE, verified_by uuid REFERENCES users(id),
     created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now())`,
+  `ALTER TABLE weave_company_support_advances ADD COLUMN IF NOT EXISTS spent numeric(18,6) NOT NULL DEFAULT 0`,
+  `ALTER TABLE weave_company_support_advances ADD COLUMN IF NOT EXISTS refunded numeric(18,6) NOT NULL DEFAULT 0`,
   `CREATE INDEX IF NOT EXISTS weave_company_support_advances_worker_idx ON weave_company_support_advances(worker_id,status,created_at)`,
   `CREATE TABLE IF NOT EXISTS weave_company_support_recoveries(
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(), advance_id uuid NOT NULL REFERENCES weave_company_support_advances(id),
@@ -134,7 +138,7 @@ export async function listSupportCases(user:AuthUser){
   const db=getPool()
   const isAdmin=user.role==='admin'
   const cases=await db.query(`SELECT c.*,w.name AS worker_name,m.name AS manager_name,
-    a.id AS advance_id,a.principal,a.repaid,a.currency,a.status AS advance_status
+    a.id AS advance_id,a.principal,a.spent,a.refunded,a.repaid,a.currency,a.status AS advance_status
     FROM weave_company_support_cases c
     JOIN users w ON w.id=c.worker_id JOIN users m ON m.id=c.manager_id
     LEFT JOIN weave_company_support_advances a ON a.case_id=c.id
@@ -167,13 +171,13 @@ export async function recoverSupportAdvanceFromEarning(db:PoolClient,workerId:st
   // and before COMMIT. A duplicate earning source therefore cannot repay twice.
   const existing=await db.query("SELECT to_regclass('weave_company_support_advances') AS advances")
   if(!existing.rows[0]?.advances)return 0
-  const outstanding=await db.query(`SELECT id,funder_id,principal,repaid FROM weave_company_support_advances
-    WHERE worker_id=$1::uuid AND currency='SYSTEM_SWITCH' AND status='active' AND repaid<principal
+  const outstanding=await db.query(`SELECT id,funder_id,principal,spent,repaid FROM weave_company_support_advances
+    WHERE worker_id=$1::uuid AND currency='SYSTEM_SWITCH' AND status='active' AND repaid<spent
     ORDER BY created_at ASC,id ASC FOR UPDATE`,[workerId])
   let remaining=Math.round(earning*1e6)/1e6,recovered=0
   for(const a of outstanding.rows){
     if(remaining<=0)break
-    const due=Math.max(0,Number(a.principal)-Number(a.repaid))
+    const due=Math.max(0,Number(a.spent)-Number(a.repaid))
     const take=Math.round(Math.min(due,remaining)*1e6)/1e6
     if(take<=0)continue
     const previous=await db.query('SELECT 1 FROM weave_company_support_recoveries WHERE advance_id=$1::uuid AND earning_source=$2',[a.id,sourceKey])
@@ -182,7 +186,7 @@ export async function recoverSupportAdvanceFromEarning(db:PoolClient,workerId:st
       WHERE user_id=ANY($1::uuid[]) AND is_primary=true ORDER BY user_id FOR UPDATE`,[[workerId,a.funder_id]])
     const buyer=wallets.rows.find(w=>String(w.user_id)===workerId)
     const funder=wallets.rows.find(w=>String(w.user_id)===String(a.funder_id))
-    if(!buyer||!funder||Number(buyer.balance_trx)<take)throw new Error('Advance recovery wallets are not funded')
+    if(!buyer||!funder||Number(buyer.balance_trx)<take)continue // Keep earning credited; retry after account repair.
     await db.query('UPDATE wallets SET balance_trx=balance_trx-$1,updated_at=now() WHERE id=$2::uuid',[take,buyer.id])
     await db.query('UPDATE wallets SET balance_trx=balance_trx+$1,updated_at=now() WHERE id=$2::uuid',[take,funder.id])
     await db.query(`INSERT INTO ledger_entries(user_id,entry_type,amount,currency,description,balance_before,balance_after,metadata,created_at)
@@ -192,9 +196,29 @@ export async function recoverSupportAdvanceFromEarning(db:PoolClient,workerId:st
       VALUES($1::uuid,'earning',$2,'System Switch',$3,$4,$5,$6::jsonb,now())`,
       [a.funder_id,take,'Company work support advance recovered',Number(funder.balance_trx),Number(funder.balance_trx)+take,JSON.stringify({commerce_type:'company_support_recovery',advance_id:a.id,source_key:sourceKey})])
     await db.query('INSERT INTO weave_company_support_recoveries(advance_id,earning_source,amount) VALUES($1::uuid,$2,$3)',[a.id,sourceKey,take])
-    await db.query("UPDATE weave_company_support_advances SET repaid=repaid+$2,status=CASE WHEN repaid+$2>=principal THEN 'repaid' ELSE 'active' END,updated_at=now() WHERE id=$1::uuid",[a.id,take])
+    await db.query("UPDATE weave_company_support_advances SET repaid=repaid+$2,status=CASE WHEN repaid+$2>=spent AND spent+refunded>=principal THEN 'repaid' ELSE 'active' END,updated_at=now() WHERE id=$1::uuid",[a.id,take])
     remaining-=take;recovered+=take
   }
   return recovered
+}
+/** Apply only an approved, fully funded System Switch reserve to an eligible
+ * Prospect Market purchase. Caller owns a SQL transaction and locks the
+ * market package before this call. No general wallet spending is authorized.
+ */
+export async function consumeProspectSupport(db:PoolClient,workerId:string,price:number,sourceId:string){
+ if(!uuid(workerId)||!uuid(sourceId)||!Number.isFinite(price)||price<=0)return null
+ const relation=await db.query("SELECT to_regclass('weave_company_support_advances') AS relation")
+ if(!relation.rows[0]?.relation)return null
+ const r=await db.query(`SELECT a.id,a.case_id,a.principal,a.spent,a.refunded
+  FROM weave_company_support_advances a JOIN weave_company_support_cases c ON c.id=a.case_id
+  WHERE a.worker_id=$1::uuid AND a.currency='SYSTEM_SWITCH' AND a.status='active'
+    AND c.purpose='system_switch' AND c.status='funded' AND a.principal-a.spent-a.refunded>=$2
+  ORDER BY a.created_at ASC,a.id ASC FOR UPDATE OF a`,[workerId,price])
+ const advance=r.rows[0]
+ if(!advance)return null
+ await db.query('UPDATE weave_company_support_advances SET spent=spent+$2,updated_at=now() WHERE id=$1::uuid',[advance.id,price])
+ await db.query(`INSERT INTO weave_company_support_messages(case_id,author_id,message)
+   VALUES($1::uuid,$2::uuid,$3)`,[advance.case_id,workerId,'Used '+price+' System Switch from funded work support on prospect package '+sourceId])
+ return {advanceId:String(advance.id),caseId:String(advance.case_id),price}
 }
 export {uuid}
