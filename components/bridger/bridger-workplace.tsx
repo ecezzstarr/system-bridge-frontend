@@ -55,7 +55,7 @@ function PlaceLink({place}:{place:BridgerWorkplacePlace}){
   const label = place.access && place.access !== 'core' ? ACCESS[place.access] : null
   return (
     <Link
-      href={place.href}
+      href={place.label==='My Prospects'?place.href+'?tab=mine':place.href}
       className="group flex h-full min-h-[142px] flex-col justify-between rounded-[1.2rem] border border-[#dccba8]/70 bg-white/85 p-4 text-[#1c2c39] shadow-[0_8px_25px_rgba(90,68,20,.07)] transition duration-200 hover:-translate-y-0.5 hover:border-[#ba9551] hover:shadow-[0_15px_32px_rgba(90,68,20,.13)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9d7124]"
       data-bridger-place={place.href}
     >
@@ -137,6 +137,25 @@ export function BridgerWorkplace({
           </div>
         </header>
 
+        <section data-bridger-daily-job-guide="find-contact-confirm-serve-earn" className="mt-5 rounded-2xl border border-[#d6bf8e] bg-white/90 p-5 shadow-sm sm:p-6">
+          <h2 className="text-xl font-bold text-[#293b42]">Your outreach job, one step at a time</h2>
+          <p className="mt-2 text-sm leading-6 text-[#52636b]">Hope brings real people into useful conversations. The company expects two genuine outreach contacts each working hour. Prospects are candidates, not promised customers.</p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              {name:'1. Find a prospect',info:'Claim a free daily candidate or purchase a package with a displayed System Switch price.',href:'/weave/market/prospects'},
+              {name:'2. Contact and listen',info:'Use WhatsApp, connected email, authorized social publications or consent-based River calls. Confirm a send only after it happened.',href:'/weave/market/prospects?tab=mine'},
+              {name:'3. Explain a service',info:'Offer the Bridge or a real business system only after a person responds and asks to continue.',href:'/bridger/bridge-ai'},
+              {name:'4. Verify your earnings',info:'Check actual paid referrals, approved commission records and receipts. A sent message alone earns nothing.',href:'/referrals'},
+            ].map(step=><Link key={step.name} href={step.href} className="flex min-h-36 flex-col rounded-xl border border-[#ded0b3] bg-[#fffdfa] p-4 text-[#293c47] hover:border-[#ac8842]">
+              <strong className="text-base">{step.name}</strong><span className="mt-2 flex-1 text-sm leading-6 text-[#56656b]">{step.info}</span><span className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-[#926d27]">Open work <ArrowRight size={16}/></span>
+            </Link>)}
+          </div>
+          <div className="mt-4 flex flex-wrap items-center gap-3 text-sm">
+            <Link href="/bridger/working-manual" className="min-h-11 rounded-lg border border-[#d5c399] px-4 py-3 font-semibold text-[#735620]">Read complete working manual</Link>
+            <Link href="/weave/lifestyles/support" className="min-h-11 rounded-lg border border-[#d5c399] px-4 py-3 font-semibold text-[#735620]">Get approved manager support</Link>
+          </div>
+          <p className="mt-3 text-xs leading-5 text-[#617078]">The company prices each optional instrument on its actual purchase page. External social connections, AI telephone calls and future video sessions have their own availability and consent rules; this desk does not imply they are all live.</p>
+        </section>
         <nav className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-5" aria-label="Bridger workplace destinations">
           {BRIDGER_WORKPLACE_SPACES.map(item => {
             const Icon = ICONS[item.id]

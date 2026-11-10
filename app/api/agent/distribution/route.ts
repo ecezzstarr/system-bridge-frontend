@@ -315,35 +315,40 @@ export async function POST(request: NextRequest) {
   }
 
   if (action === 'report_sales') {
-    const placementId = String(body.placementId || '').trim()
-    const soldPackages = Number(body.soldPackages)
-    if (!placementId || !Number.isInteger(soldPackages) || soldPackages < 1) {
-      return NextResponse.json({ success: false, error: 'Enter the number of packs the outlet has sold' }, { status: 400 })
+    const placementId=String(body.placementId||'').trim()
+    const soldPackages=Number(body.soldPackages)
+    if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(placementId)
+      ||!Number.isInteger(soldPackages)||soldPackages<1){
+      return NextResponse.json({success:false,error:'Choose a valid outlet and enter the whole number of packs actually sold.'},{status:400})
     }
 
-    const [placement] = await sql`
-      SELECT * FROM agility_outlet_placements
-      WHERE id=${placementId}::uuid AND agent_id=${user.id}::uuid
-      LIMIT 1
-    `
-    if (!placement || placement.supply_mode !== 'pay_after_sale') {
-      return NextResponse.json({ success: false, error: 'Pay-after-sale placement required' }, { status: 404 })
-    }
-    const nextSold = Number(placement.packages_reported_sold) + soldPackages
-    if (nextSold > Number(placement.package_count)) {
-      return NextResponse.json({ success: false, error: 'Reported sales cannot exceed the stock placed at this outlet' }, { status: 409 })
-    }
-    const nextStatus = nextSold === Number(placement.package_count)
-      ? (Number(placement.amount_collected_ngn) >= Number(placement.agreed_amount_ngn) ? 'settled' : 'sold_out_awaiting_settlement')
-      : 'with_outlet'
-    const [updated] = await sql`
+    // Read, increment, validate capacity and set settlement state together.
+    // The previous SELECT then UPDATE lost reports under parallel requests.
+    const [updated]=await sql`
       UPDATE agility_outlet_placements
-      SET packages_reported_sold=${nextSold},status=${nextStatus},updated_at=NOW(),
-          settled_at=CASE WHEN ${nextStatus}='settled' THEN COALESCE(settled_at,NOW()) ELSE settled_at END
-      WHERE id=${placementId}::uuid AND agent_id=${user.id}::uuid
+      SET
+        packages_reported_sold=packages_reported_sold+${soldPackages},
+        status=CASE
+          WHEN packages_reported_sold+${soldPackages}>=package_count AND amount_collected_ngn>=agreed_amount_ngn THEN 'settled'
+          WHEN packages_reported_sold+${soldPackages}>=package_count THEN 'sold_out_awaiting_settlement'
+          ELSE 'with_outlet'
+        END,
+        settled_at=CASE
+          WHEN packages_reported_sold+${soldPackages}>=package_count AND amount_collected_ngn>=agreed_amount_ngn THEN COALESCE(settled_at,NOW())
+          ELSE settled_at
+        END,
+        updated_at=NOW()
+      WHERE id=${placementId}::uuid
+        AND agent_id=${user.id}::uuid
+        AND supply_mode='pay_after_sale'
+        AND packages_reported_sold+${soldPackages}<=package_count
       RETURNING *
     `
-    return NextResponse.json({ success: true, placement: updated })
+    if(!updated){
+      const [existing]=await sql`SELECT id FROM agility_outlet_placements WHERE id=${placementId}::uuid AND agent_id=${user.id}::uuid AND supply_mode='pay_after_sale' LIMIT 1`
+      return NextResponse.json({success:false,error:existing?'These packs would exceed the recorded quantity left at the outlet. Refresh the ledger before reporting again.':'Pay-after-sale placement not found.'},{status:existing?409:404})
+    }
+    return NextResponse.json({success:true,placement:updated,note:'Sold packs are reported by the Agent; settlement requires the actual collection record.'})
   }
 
   if (action === 'record_collection') {

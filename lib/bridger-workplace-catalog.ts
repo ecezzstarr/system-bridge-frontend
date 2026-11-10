@@ -52,6 +52,8 @@ export const BRIDGER_WORKPLACE_SPACES: readonly BridgerWorkplaceSpace[] = [
       { label: 'River AI Voice Calls', href: '/bridger/river-call-outreach', detail: 'Consented AI telephone outreach, with its own call records and pricing.' },
       { label: 'AI Video Call', href: '/bridger/ai-video-call', detail: 'Dedicated video-call page. Live meetings are not yet enabled.', access: 'preview' },
       { label: 'Number Bay', href: '/bridger/numbers', detail: 'Purchase numbers by country and follow delivery or verification.' },
+      { label: 'Branding Business', href: '/image-workshop/business', detail: 'Start a real clothing, merchandise, advertising or artist-design service. Build examples, agree customer prices, open a Service Door and record actual paid work.' },
+      { label: 'Material Branding Editor', href: '/image-workshop/branding', detail: 'Personalize original product templates and genuine customer photos. Commercial exports require the displayed System Switch license.' },
       { label: 'Image Creative Studio', href: '/agent/creative', detail: 'Prepare graphics for your existing outreach channels.' },
       { label: 'Video Ad Studio', href: '/video-ad-studio', detail: 'Prepare promotional video work; this is not a live video call.' },
       { label: 'Direct Communication', href: '/communications', detail: 'Continue authorized conversations with Prospects, Clients, Agents and Administration.' },

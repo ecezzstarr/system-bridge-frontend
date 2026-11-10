@@ -30,11 +30,13 @@ export async function GET(request: NextRequest) {
 
   try {
     await ensureAgilitySchema()
-    // The old Distribution Route still reads the combined stock ledger. Only that
-    // surface receives Electrolyte through this compatibility read. The Agility
-    // home sees Agility only; Electrolyte owns /electrolyte and its own APIs.
+    // The authenticated Agent Distribution Route requires the full food order
+    // ledger. Referrer headers are often stripped on Android or by privacy
+    // settings, so a deliberate same-role query flag is authoritative.
+    // The standalone Agility home continues to show Agility orders only.
     const referer = request.headers.get('referer') || ''
-    const legacyDistributionRead = referer.includes('/agent/distribution')
+    const distributionScope = new URL(request.url).searchParams.get('scope')==='distribution'
+    const legacyDistributionRead = distributionScope || referer.includes('/agent/distribution')
     const orders = await sql`
       SELECT
         o.*,

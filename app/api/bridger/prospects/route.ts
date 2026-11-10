@@ -85,12 +85,13 @@ export async function PATCH(request: NextRequest) {
   }
 
   try {
-    const body = await request.json()
-    const whatsappNumber = (body.whatsappNumber || '').trim()
-
-    if (!whatsappNumber) {
-      return NextResponse.json({ success: false, error: 'whatsappNumber required' }, { status: 400 })
+    const body = await request.json().catch(()=>({}))
+    const raw=String(body.whatsappNumber||'').trim()
+    const digits=raw.replace(/\D/g,'')
+    if(!/^[1-9]\d{6,14}$/.test(digits)) {
+      return NextResponse.json({success:false,error:'Enter a real international WhatsApp number with country code (7 to 15 digits).'}, {status:400})
     }
+    const whatsappNumber='+'+digits
 
     await sql`
       UPDATE users

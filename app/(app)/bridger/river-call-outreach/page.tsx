@@ -11,6 +11,8 @@ type State={enabled:boolean;providerReady:boolean;priceFlameCoin:number|null;wal
 export default function RiverCallOutreachPage(){
   const [state,setState]=useState<State|null>(null)
   const [prospects,setProspects]=useState<Prospect[]>([])
+  const [ownWhatsAppReady,setOwnWhatsAppReady]=useState(false)
+  const [ownWhatsAppChecked,setOwnWhatsAppChecked]=useState(false)
   const [selected,setSelected]=useState('')
   const [phone,setPhone]=useState('')
   const [name,setName]=useState('')
@@ -30,7 +32,14 @@ export default function RiverCallOutreachPage(){
       const own=await people.json()
       if(!calls.ok)throw new Error(report.error||'River calls unavailable')
       setState(report)
-      if(people.ok && own.success)setProspects(own.prospects||[])
+      if(people.ok&&own.success){
+        setProspects(own.prospects||[])
+        setOwnWhatsAppReady(/^[1-9]\d{6,14}$/.test(String(own.whatsappNumber||'').replace(/\D/g,'')))
+      }else{
+        setProspects([])
+        setOwnWhatsAppReady(false)
+      }
+      setOwnWhatsAppChecked(people.ok&&own.success)
     }catch(e:any){setError(e.message||'Could not open River Outreach')}
   },[])
   useEffect(()=>{load()},[load])
@@ -78,7 +87,11 @@ export default function RiverCallOutreachPage(){
         <div className="border border-white/10 bg-white/[.025] p-4"><p className="text-[10px] text-slate-400">River calling</p><p className="mt-2 text-sm font-bold">{state?.enabled&&state.providerReady?'Available':'Not yet activated'}</p></div>
       </div>
       {(error||notice)&&<p role="status" className={'mt-5 border-l-2 px-3 py-3 text-sm '+(error?'border-rose-400 text-rose-200':'border-emerald-400 text-emerald-200')}>{error||notice}</p>}
-      <section className="mt-7 border-y border-white/10 py-6">
+      {ownWhatsAppChecked&&!ownWhatsAppReady&&<div role="status" className="mt-5 rounded-xl border border-amber-300/30 bg-amber-300/[.07] p-5 text-sm leading-6 text-amber-100">
+        <strong>One setup step is missing.</strong> River's server requires a valid Bridger WhatsApp number for its approved follow-up handoff, even though ordinary prospect WhatsApp messages do not require this profile field.
+        <Link href="/weave/market/prospects?tab=mine" className="mt-3 block min-h-11 rounded-xl border border-amber-300/40 px-4 py-3 font-bold">Save my WhatsApp number in My Prospects</Link>
+      </div>}
+            <section className="mt-7 border-y border-white/10 py-6">
         <p className="text-sm font-bold">01 · Candidate for River to call</p>
         <p className="mt-2 text-xs leading-5 text-slate-400">Choose one of your assigned candidates or enter another person who has specifically requested or agreed to a WEAVE AI call. Buying a Prospect number alone does not establish permission to place an automated call.</p>
         <label className="mt-5 block text-xs text-slate-300">My Prospects</label>
@@ -96,10 +109,11 @@ export default function RiverCallOutreachPage(){
           <input type="checkbox" checked={confirmed} onChange={e=>setConfirmed(e.target.checked)} className="mt-1"/>
           I confirm that this candidate agreed to receive an AI phone call, and I have not received an opt-out or request to stop.
         </label>
-        <button onClick={dial} disabled={!state?.enabled||!state.providerReady||busy||!confirmed||consentSource.trim().length<8||!name.trim()||!/^\+[1-9]\d{7,14}$/.test(phone)}
+        <button onClick={dial} disabled={!ownWhatsAppReady||!state?.enabled||!state.providerReady||busy||!confirmed||consentSource.trim().length<8||!name.trim()||!/^\+[1-9]\d{7,14}$/.test(phone)}
           className="mt-6 flex w-full items-center justify-center gap-2 border border-sky-300/40 bg-sky-600/20 px-4 py-3 text-sm font-bold text-sky-100 disabled:cursor-not-allowed disabled:opacity-35">
           <PhoneCall className="h-4 w-4"/>{busy?'Contacting provider…':'Call with River · '+(state?.priceFlameCoin??'—')+' System Switch'}
         </button>
+        <p className="mt-3 text-sm leading-6 text-slate-300">River calling requires an active provider, verified consent and enough System Switch. If a provider is not configured, the call button remains unavailable and no call payment is made.</p>
         <p className="mt-3 text-[11px] text-slate-500">A failed or unanswered call is refunded. A connected call is charged even if the candidate declines. Calls are not recorded; River retains a limited text exchange for the handoff.</p>
       </section>
       <section className="mt-8">
