@@ -1,6 +1,7 @@
 import {NextRequest, NextResponse} from 'next/server'
 import {getAuthUser} from '@/lib/auth-api'
 import {getPool} from '@/lib/db'
+import {BURNING_RIVER_MANIFESTO,companyTimeNextMovements,manifestoEvidenceState} from '@/lib/burning-river-company-time'
 
 export const dynamic = 'force-dynamic'
 const headers = {'Cache-Control':'private, no-store', 'Vary':'Authorization'}
@@ -24,7 +25,8 @@ export async function GET(request:NextRequest) {
     const pool=getPool()
     const names=['market_prospect_packages','market_prospect_contacts','market_prospect_outreach',
       'agility_agent_sales','agility_stock_orders','carrier_food_orders','carrier_cake_orders',
-      'file_folder_purchases','bridge_deposits','deposits','ledger_entries']
+      'file_folder_purchases','bridge_deposits','deposits','ledger_entries',
+      'weave_regional_daily_checkins','client_file_folders']
     const available=await pool.query(
       "SELECT "+names.map((_,i)=>"to_regclass('public."+names[i]+"') IS NOT NULL AS t"+i).join(", ")
     )
@@ -142,6 +144,13 @@ export async function GET(request:NextRequest) {
       "SELECT COUNT(*) FILTER (WHERE status='pending_admin_confirmation')::int AS awaiting_administration, "+
       "COUNT(*) FILTER (WHERE status='pending_payment')::int AS awaiting_payment "+
       "FROM file_folder_purchases")
+    const folderActivation=await read('folderActivation',['file_folder_purchases','client_file_folders'],
+      "SELECT COUNT(*)::int AS confirmed_without_client "+
+      "FROM file_folder_purchases p LEFT JOIN client_file_folders f ON f.file_number=p.file_number "+
+      "WHERE p.status='confirmed' AND p.client_id IS NULL AND f.client_id IS NULL")
+    const regionalSupport=await read('regionalSupport',['weave_regional_daily_checkins'],
+      "SELECT COUNT(*) FILTER (WHERE support_status IN ('open','acknowledged'))::int AS needs_help "+
+      "FROM weave_regional_daily_checkins")
     const wallet=await read('wallet',['deposits'],
       "SELECT COUNT(*) FILTER (WHERE status='approved' AND verified_at >= "+since+")::int AS approved_deposits, "+
       "COALESCE(SUM(amount_trx) FILTER (WHERE status='approved' AND verified_at >= "+since+"),0)::numeric AS credited_flame_coin, "+
@@ -156,10 +165,17 @@ export async function GET(request:NextRequest) {
       "SELECT entry_type, currency, amount, created_at "+
       "FROM ledger_entries WHERE created_at >= "+since+
       " ORDER BY created_at DESC LIMIT 15")
+    const sections={prospects,bridgerLeaders,prospectContacts,outreach,agility,agentLeaders,
+      food,cakes,foodQueue,cakeQueue,stock,agentFoodLeaders,paidFoodProducts,recordedStockProducts,
+      folders,folderQueue,folderActivation,regionalSupport,wallet,ledger,recent}
     return NextResponse.json({
       success:true,days,generatedAt:new Date().toISOString(),sources,missing,
-      sections:{prospects,bridgerLeaders,prospectContacts,outreach,agility,agentLeaders,
-        food,cakes,foodQueue,cakeQueue,stock,agentFoodLeaders,paidFoodProducts,recordedStockProducts,folders,folderQueue,wallet,ledger,recent},
+      companyTime:{
+        manifesto:BURNING_RIVER_MANIFESTO,
+        earnings:manifestoEvidenceState(),
+        nextMovements:companyTimeNextMovements(sections),
+      },
+      sections,
       definitions:{
         prospect:'Completed package purchases, not verified human responses',
         agility:'Agent-recorded stock resale; payment is not independently verified by this record',
