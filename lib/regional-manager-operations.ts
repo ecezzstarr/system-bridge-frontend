@@ -71,6 +71,19 @@ export async function ensureRegionalOperationsSchema(){
     responded_at timestamptz,
     PRIMARY KEY (regional_manager_user_id,member_user_id,work_date)
   )`)
+  // One regional System Switch gate is a shared operational place, not a
+  // separate Client world or a claim that devices share physical location.
+  // The appointed Regional Manager may issue limited daily direction here.
+  await pool.query(`CREATE TABLE IF NOT EXISTS weave_regional_gate_directions(
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    regional_manager_user_id uuid NOT NULL REFERENCES weave_regional_manager_appointments(user_id),
+    author_user_id uuid NOT NULL REFERENCES users(id),
+    direction varchar(160) NOT NULL CHECK(char_length(direction) BETWEEN 8 AND 160),
+    next_action text NOT NULL CHECK(char_length(next_action) BETWEEN 20 AND 1000),
+    created_at timestamptz NOT NULL DEFAULT NOW()
+  )`)
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_regional_gate_direction_history
+    ON weave_regional_gate_directions(regional_manager_user_id,created_at DESC)`)
   await pool.query(`CREATE INDEX IF NOT EXISTS idx_regional_checkins_needs_help
     ON weave_regional_daily_checkins(regional_manager_user_id,support_status,work_date DESC)`)
 }
