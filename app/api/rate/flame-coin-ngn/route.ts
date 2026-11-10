@@ -8,7 +8,7 @@ export async function GET() {
     rate: rateNgnPerTrx,
     source,
     currency: 'Flame Coin',
-    peg: '1 Flame Coin = 1 TRX',
+    peg: '1 System Switch = 1 TRX',
     platformFeePercent: WORLD_RULES.PLATFORM_FEE_PERCENT,
   })
 }

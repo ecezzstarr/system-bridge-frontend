@@ -1,16 +1,16 @@
 /**
- * WEAVE Flame Coin
+ * WEAVE System Switch
  *
- * Flame Coin is Weave's internal wrapper for TRX value.
- * 1 Flame Coin always represents 1 TRX unit of value inside Weave.
+ * System Switch is Weave's internal wrapper for TRX value.
+ * 1 System Switch always represents 1 TRX unit of value inside Weave.
  *
- * Users never need Flame Coin on-chain:
- * - Clients fund with real TRX and receive the same number of Flame Coins.
+ * Users never need System Switch on-chain:
+ * - Clients fund with real TRX and receive the same number of System Switchs.
  * - Administration, Agents and Bridgers fund with NGN through OPay; NGN is
- *   converted at the current TRX/NGN price and the matching Flame Coin amount
+ *   converted at the current TRX/NGN price and the matching System Switch amount
  *   is credited after verification.
  */
-export const FLAME_COIN_NAME = 'Flame Coin'
+export const FLAME_COIN_NAME = 'System Switch'
 export const FLAME_COIN_CODE = 'FLAME_COIN'
 
 export function trxToFlameCoin(trxAmount: number): number {
