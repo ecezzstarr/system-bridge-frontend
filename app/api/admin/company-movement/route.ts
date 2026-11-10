@@ -84,6 +84,22 @@ export async function GET(request:NextRequest) {
       "COUNT(*) FILTER (WHERE payment_status='proof_submitted')::int AS payment_proofs_pending "+
       "FROM carrier_food_orders WHERE (fulfilled_at >= "+since+
       " OR created_at >= "+since+")")
+    const agentFoodLeaders=await read('agentFoodLeaders',['carrier_food_orders'],
+      "SELECT o.agent_id AS user_id,COALESCE(u.name,'Agent') AS name, "+
+      "COUNT(*)::int AS fulfilled_orders, COALESCE(SUM(o.quantity_packages),0)::int AS units "+
+      "FROM carrier_food_orders o JOIN users u ON u.id=o.agent_id "+
+      "WHERE o.payment_status='paid' AND o.status='fulfilled' AND o.fulfilled_at >= "+since+
+      " GROUP BY o.agent_id,u.name ORDER BY units DESC LIMIT 20")
+    const paidFoodProducts=await read('paidFoodProducts',['carrier_food_orders'],
+      "SELECT variant_id AS product, COUNT(*)::int AS orders, "+
+      "COALESCE(SUM(quantity_packages),0)::int AS units "+
+      "FROM carrier_food_orders WHERE payment_status='paid' AND status='fulfilled' "+
+      "AND fulfilled_at >= "+since+" GROUP BY variant_id ORDER BY units DESC LIMIT 20")
+    const recordedStockProducts=await read('recordedStockProducts',['agility_agent_sales','agility_stock_orders'],
+      "SELECT o.variant_id AS product, COUNT(*)::int AS sales, "+
+      "COALESCE(SUM(s.quantity_packages),0)::int AS units "+
+      "FROM agility_agent_sales s JOIN agility_stock_orders o ON o.id=s.order_id "+
+      "WHERE s.sold_at >= "+since+" GROUP BY o.variant_id ORDER BY units DESC LIMIT 20")
     const cakes=await read('cakes',['carrier_cake_orders'],
       "SELECT COUNT(*) FILTER (WHERE status='completed' AND payment_status='paid')::int AS fulfilled_orders, "+
       "COALESCE(SUM(total_ngn) FILTER (WHERE status='completed' AND payment_status='paid'),0)::numeric AS fulfilled_value_ngn, "+
@@ -135,7 +151,7 @@ export async function GET(request:NextRequest) {
     return NextResponse.json({
       success:true,days,generatedAt:new Date().toISOString(),sources,missing,
       sections:{prospects,bridgerLeaders,prospectContacts,outreach,agility,agentLeaders,
-        food,cakes,stock,folders,folderQueue,wallet,ledger,recent},
+        food,cakes,stock,agentFoodLeaders,paidFoodProducts,recordedStockProducts,folders,folderQueue,wallet,ledger,recent},
       definitions:{
         prospect:'Completed package purchases, not verified human responses',
         agility:'Agent-recorded stock resale; payment is not independently verified by this record',
