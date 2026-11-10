@@ -47,11 +47,11 @@ async function resolveGate(user:{id:string;role:string}):Promise<GateIdentity|nu
   }
 }
 
-async function readSignal(pool:ReturnType<typeof getPool>,source:string,query:string,ids:string[]){
+async function readSignal(pool:ReturnType<typeof getPool>,source:string,query:string,ids:string[],managerId?:string){
   const exists=await pool.query('SELECT to_regclass($1) AS relation',['public.'+source])
   if(!exists.rows[0]?.relation)return {available:false,count:null,lastAt:null}
   try{
-    const result=await pool.query(query,[ids])
+    const result=await pool.query(query,managerId?[ids,managerId]:[ids])
     const item=result.rows[0]||{}
     return {available:true,count:Number(item.count||0),lastAt:item.last_at||null}
   }catch(error){
@@ -82,12 +82,12 @@ export async function GET(request:NextRequest){
         `SELECT COUNT(*)::int AS count,MAX(completed_at) AS last_at
           FROM weave_regional_daily_tasks WHERE regional_manager_user_id=$2::uuid
           AND assigned_user_id=ANY($1::uuid[]) AND status='completed'
-          AND completed_at>=(NOW()-INTERVAL '24 hours')`,[...ids]),
+          AND completed_at>=(NOW()-INTERVAL '24 hours')`,ids,gate.managerId),
       readSignal(pool,'weave_regional_daily_checkins',
         `SELECT COUNT(*)::int AS count,MAX(updated_at) AS last_at
           FROM weave_regional_daily_checkins WHERE member_user_id=ANY($1::uuid[])
           AND regional_manager_user_id=$2::uuid AND work_status='working'
-          AND work_date=`+localDay,[...ids]),
+          AND work_date=`+localDay,ids,gate.managerId),
       readSignal(pool,'market_prospect_packages',
         `SELECT COUNT(*)::int AS count,MAX(purchased_at) AS last_at
           FROM market_prospect_packages WHERE purchased_by=ANY($1::uuid[])
