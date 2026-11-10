@@ -1,6 +1,6 @@
 import {NextRequest,NextResponse} from 'next/server'
 import {getAuthUser} from '@/lib/auth-api'
-import {getPool} from '@/lib/db'
+import {getPool,logAudit} from '@/lib/db'
 import {getWeavePublicOrigin} from '@/lib/weave-origin'
 import {IMAGE_SAMPLE_PRODUCER_ROLES,SampleBusinessError,
   ensureSampleCommerceSchema,purchaseSampleLicense,readSampleStudio} from '@/lib/weave-image-sample-commerce'
@@ -82,7 +82,9 @@ export async function POST(req:NextRequest){
       const fee=Number(body.fee)
       if(!Number.isFinite(fee)||fee<0||fee>1000||Math.round(fee*1000)!==fee*1000)
         return response({success:false,error:'Use a System Switch fee between 0 and 1,000, up to three decimal places.'},400)
+      const before=(await pool.query("SELECT export_fee FROM weave_image_sample_settings WHERE key='company' LIMIT 1")).rows[0]
       await pool.query("UPDATE weave_image_sample_settings SET export_fee=$1,updated_at=now() WHERE key='company'",[fee])
+      await logAudit(user.id,'image_house.fee_published',{previousFee:Number(before?.export_fee||0),newFee:fee,currency:'SYSTEM_SWITCH'})
       return response({success:true,fee})
     }
     return response({success:false,error:'Unknown Image Workshop action.'},400)
