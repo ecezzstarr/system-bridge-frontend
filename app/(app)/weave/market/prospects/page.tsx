@@ -59,11 +59,28 @@ export default function ProspectMarketPage() {
   const [mineLoading, setMineLoading] = useState(true)
   const [savingNumber, setSavingNumber] = useState(false)
   const [sendingId, setSendingId] = useState<string | null>(null)
+  const [pendingWhatsAppIds, setPendingWhatsAppIds] = useState<string[]>([])
+  const [bridgePermissionIds,setBridgePermissionIds]=useState<string[]>([])
+  const [packagesError,setPackagesError]=useState('')
+  const [prospectsError,setProspectsError]=useState('')
   const [reportingId, setReportingId] = useState<string | null>(null)
 
   useEffect(() => {
     fetchPackages()
   }, [])
+  useEffect(()=>{if(new URLSearchParams(window.location.search).get('tab')==='mine')setTab('mine')},[])
+  useEffect(()=>{
+    if(!user?.id)return
+    try{
+      const saved=JSON.parse(localStorage.getItem('weave:outreach-pending-whatsapp:'+user.id)||'[]')
+      if(Array.isArray(saved))setPendingWhatsAppIds(saved.filter((id):id is string=>typeof id==='string'&&/^[a-f0-9-]{36}$/i.test(id)).slice(0,80))
+    }catch{setPendingWhatsAppIds([])}
+  },[user?.id])
+  const rememberPendingWhatsApp=(ids:string[])=>{
+    const unique=[...new Set(ids)].slice(0,80)
+    setPendingWhatsAppIds(unique)
+    if(user?.id)try{localStorage.setItem('weave:outreach-pending-whatsapp:'+user.id,JSON.stringify(unique))}catch{}
+  }
 
   useEffect(() => {
     if (tab === 'mine') fetchMine()
@@ -71,11 +88,14 @@ export default function ProspectMarketPage() {
 
   const fetchPackages = async () => {
     setIsLoading(true)
+    setPackagesError('')
     try {
       const res = await fetch('/api/market/prospects', { headers: getAuthHeaders() })
-      const data = await res.json()
-      if (data.success) setPackages(data.packages)
+      const data = await res.json().catch(()=>({}))
+      if (!res.ok || !data.success) throw new Error(data.error||'Prospect packages could not load')
+      setPackages(Array.isArray(data.packages)?data.packages:[])
     } catch (error) {
+      setPackagesError(error instanceof Error?error.message:'Prospect packages could not load')
       toast.error('Failed to load marketplace')
     } finally {
       setIsLoading(false)
@@ -84,9 +104,11 @@ export default function ProspectMarketPage() {
 
   const fetchMine = async () => {
     setMineLoading(true)
+    setProspectsError('')
     try {
       const res = await fetch('/api/bridger/prospects', { headers: getAuthHeaders() })
-      const data = await res.json()
+      const data = await res.json().catch(()=>({}))
+      if(!res.ok||!data.success)throw new Error(data.error||'Your prospect records could not load')
       if (data.success) {
         setMyProspects(data.prospects)
         if (data.replacementQuota) setReplacementQuota(data.replacementQuota)
@@ -94,6 +116,7 @@ export default function ProspectMarketPage() {
         setNumberInput(data.whatsappNumber || '')
       }
     } catch (error) {
+      setProspectsError(error instanceof Error?error.message:'Your prospects could not load')
       toast.error('Failed to load your prospects')
     } finally {
       setMineLoading(false)
@@ -112,11 +135,16 @@ export default function ProspectMarketPage() {
       if (data.success) {
         toast.success('Package purchased! Check "My Prospects" to send your first message.'); if (typeof data.newBalance === 'number') updateBalance(data.newBalance)
         fetchPackages()
+      } else if(data.purchaseCompleted){
+        toast.warning('Package purchase was recorded, but Agent commission or receipt reconciliation needs attention. You have not been charged twice. Your candidates remain in My Prospects.')
+        setTab('mine')
+        await fetchMine()
+        await fetchPackages()
       } else {
-        toast.error(data.error || 'Purchase failed')
+        toast.error(data.error || 'Purchase not completed')
       }
     } catch (error) {
-      toast.error('Network error during purchase')
+      toast.error('Could not confirm the purchase result. Check My Prospects and receipts before buying again.')
     } finally {
       setPurchasingId(null)
     }
@@ -131,13 +159,13 @@ export default function ProspectMarketPage() {
         headers: getAuthHeaders(),
         body: JSON.stringify({ whatsappNumber: numberInput.trim() }),
       })
-      const data = await res.json()
-      if (data.success) {
-        setWhatsappNumber(data.whatsappNumber)
-        toast.success('WhatsApp number saved')
-      }
+      const data = await res.json().catch(()=>({}))
+      if(!res.ok||!data.success)throw new Error(data.error||'WhatsApp number could not be saved')
+      setWhatsappNumber(data.whatsappNumber)
+      setNumberInput(data.whatsappNumber)
+      toast.success('WhatsApp number saved')
     } catch (error) {
-      toast.error('Failed to save number')
+      toast.error(error instanceof Error?error.message:'Failed to save number')
     } finally {
       setSavingNumber(false)
     }
@@ -175,36 +203,39 @@ export default function ProspectMarketPage() {
     window.location.assign(waUrl)
   }
 
-  const handleSend = async (p: MyProspect) => {
+  // Opening wa.me does NOT confirm sending a message. WhatsApp may be
+  // unavailable, closed, or abandoned before the user presses Send.
+  const handleSend = (p: MyProspect) => {
     const target = normalizeWhatsAppTarget(p)
     if (!/^[1-9]\d{6,14}$/.test(target)) {
       toast.error('This Prospect needs a valid international WhatsApp number')
       return
     }
-
-    setSendingId(p.outreachId)
-    try {
-      // The Bridger's button click is the WEAVE confirmation. Record it first,
-      // then perform a direct mobile-safe WhatsApp handoff. The Bridger's own
-      // saved WhatsApp number is not required to open the prospect conversation.
-      const res = await fetch(`/api/bridger/prospects/${p.outreachId}/send`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({ confirmedSent: true }),
-        keepalive: true,
-      })
-      const data = await res.json()
-      if (!res.ok || !data.success) {
-        toast.error(data.error || 'WEAVE could not record the send')
-        return
-      }
-
-      openWhatsApp(target, p.messageSent)
-    } catch (error) {
-      toast.error('WEAVE could not open this Prospect movement')
-    } finally {
-      setSendingId(null)
+    if(!p.messageSent?.trim()){
+      toast.error('No prepared first message is available for this Prospect')
+      return
     }
+    rememberPendingWhatsApp([...pendingWhatsAppIds,p.outreachId])
+    openWhatsApp(target, p.messageSent)
+  }
+
+  const handleConfirmSent = async (p:MyProspect)=>{
+    if(!pendingWhatsAppIds.includes(p.outreachId))return
+    setSendingId(p.outreachId)
+    try{
+      const res=await fetch(`/api/bridger/prospects/${p.outreachId}/send`,{
+        method:'POST',headers:getAuthHeaders(),
+        body:JSON.stringify({confirmedSent:true}),
+        keepalive:true,
+      })
+      const data=await res.json().catch(()=>({}))
+      if(!res.ok||!data.success)throw new Error(data.error||'Could not confirm your message')
+      rememberPendingWhatsApp(pendingWhatsAppIds.filter(id=>id!==p.outreachId))
+      toast.success('Your WhatsApp send confirmation has been recorded. This is not proof of a reply.')
+      await fetchMine()
+    }catch(error){
+      toast.error(error instanceof Error?error.message:'Could not record your confirmation')
+    }finally{setSendingId(null)}
   }
 
   const handleSendBridge = (p: MyProspect) => {
@@ -215,6 +246,10 @@ export default function ProspectMarketPage() {
     const target = normalizeWhatsAppTarget(p)
     if (!/^[1-9]\d{6,14}$/.test(target)) {
       toast.error('This Prospect needs a valid international WhatsApp number')
+      return
+    }
+    if(!bridgePermissionIds.includes(p.outreachId)){
+      toast.error('Confirm that this person asked to receive their Bridge first')
       return
     }
     const message = `I've opened your WEAVE Bridge. Enter with the movement we were discussing; you do not need to understand every part of WEAVE at once. ${p.bridgeUrl}`
@@ -247,6 +282,15 @@ export default function ProspectMarketPage() {
         </Card>
       </div>
 
+      <section className="rounded-2xl border border-emerald-300/25 bg-emerald-300/[.045] p-5" data-bridger-outreach-quick-start="true">
+        <h2 className="text-xl font-bold text-white">Start real outreach · Three actions</h2>
+        <div className="mt-3 grid gap-3 sm:grid-cols-3 text-sm leading-6 text-slate-200">
+          <p><strong className="text-emerald-200">1. Find a candidate.</strong> Claim today's free contact or buy a published package at its displayed System Switch price. Numbers and interest are unverified.</p>
+          <p><strong className="text-emerald-200">2. Contact personally.</strong> Open WhatsApp and actually send the prepared message. Return here to confirm only after sending. Two genuine contacts per working hour is the company standard.</p>
+          <p><strong className="text-emerald-200">3. Respond and earn.</strong> Listen, then share Bridge AI only with permission. Earnings and referral rewards require actual verified transactions, not clicks or unsent drafts.</p>
+        </div>
+        <div className="mt-4 flex flex-wrap gap-3 text-sm"><Link href="/bridger/email-outreach" className="min-h-11 rounded-xl border border-white/20 px-4 py-3 font-semibold text-emerald-100">Email Outreach</Link><Link href="/distribution-studio" className="min-h-11 rounded-xl border border-white/20 px-4 py-3 font-semibold text-emerald-100">Social publication drafts</Link><Link href="/bridger/river-call-outreach" className="min-h-11 rounded-xl border border-white/20 px-4 py-3 font-semibold text-emerald-100">Consent-based River calls</Link></div>
+      </section>
       <Link href="/bridger/working-manual" className="flex flex-col gap-1 rounded-xl border border-sky-400/25 bg-sky-400/5 px-5 py-4 transition-colors hover:bg-sky-400/10 sm:flex-row sm:items-center sm:justify-between">
         <span><span className="block text-[10px] font-black uppercase tracking-[.16em] text-sky-300">Bridger Working Manual</span><span className="mt-1 block text-sm font-semibold text-white">Contact at least two prospects every working hour.</span></span>
         <span className="text-xs font-bold text-sky-200">Read the working standard →</span>
@@ -269,6 +313,7 @@ export default function ProspectMarketPage() {
 
       {tab === 'browse' ? (
         <>
+          {packagesError&&<div role="alert" className="mb-4 rounded-xl border border-rose-300/30 bg-rose-300/5 p-4 text-sm text-rose-100">{packagesError} <button type="button" onClick={()=>void fetchPackages()} className="ml-2 underline">Retry package load</button></div>}
           {isLoading ? (
             <div className="flex justify-center py-40">
               <Loader2 className="h-12 w-12 animate-spin text-blue-500 opacity-20" />
@@ -374,6 +419,7 @@ export default function ProspectMarketPage() {
             <p className="font-bold">Not on WhatsApp replacements: {replacementQuota.used} / {replacementQuota.limit} today</p>
             <p className="mt-1 text-xs text-slate-400">Each reported, unverified number can receive one unused replacement candidate. At most 10 replacements are issued per day (Nigeria time). {replacementQuota.remaining} remaining. Reports after the limit will not create extra candidates.</p>
           </div>
+          {prospectsError&&<div role="alert" className="rounded-xl border border-rose-300/30 bg-rose-300/5 p-4 text-sm text-rose-100">{prospectsError} <button type="button" onClick={()=>void fetchMine()} className="ml-2 underline">Retry my records</button></div>}
           {mineLoading ? (
             <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-slate-700" /></div>
           ) : myProspects.length === 0 ? (
@@ -393,34 +439,34 @@ export default function ProspectMarketPage() {
                         <Badge variant="outline" className={`mt-1 text-[10px] ${st.color}`}>{st.label}</Badge>
                       </div>
                       {p.status === 'pending' ? (
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            disabled={sendingId === p.outreachId}
-                            onClick={() => handleSend(p)}
-                            className="bg-blue-600 hover:bg-blue-700"
-                          >
-                            {sendingId === p.outreachId ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Send className="h-3 w-3 mr-1" />}
-                            Send First Message
+                        <div className="flex max-w-[20rem] flex-wrap gap-2" data-whatsapp-send-requires-confirmation={p.outreachId}>
+                          {pendingWhatsAppIds.includes(p.outreachId)&&<p className="w-full text-xs leading-5 text-amber-200">WhatsApp was opened. Return after actually sending; this candidate is still unverified and not marked sent.</p>}
+                          <Button size="sm" onClick={()=>handleSend(p)}
+                            className="min-h-11 bg-blue-600 hover:bg-blue-700">
+                            <Send className="mr-1 h-3.5 w-3.5"/>{pendingWhatsAppIds.includes(p.outreachId)?'Reopen WhatsApp':'Open WhatsApp · Send'}
                           </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            disabled={reportingId === p.outreachId}
-                            onClick={() => handleReportInvalid(p)}
-                            className="border-red-500/30 text-red-400 hover:bg-red-500/10"
-                          >
-                            {reportingId === p.outreachId ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Not on WhatsApp?'}
+                          {pendingWhatsAppIds.includes(p.outreachId)&&<>
+                            <Button size="sm" variant="outline" disabled={sendingId===p.outreachId}
+                              onClick={()=>void handleConfirmSent(p)} className="min-h-11 border-emerald-400/40 text-emerald-200">
+                              {sendingId===p.outreachId?'Confirming…':'I actually sent it'}
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={()=>rememberPendingWhatsApp(pendingWhatsAppIds.filter(id=>id!==p.outreachId))}
+                              className="min-h-11 border-slate-500 text-slate-300">Did not send</Button>
+                          </>}
+                          <Button size="sm" variant="outline" disabled={reportingId===p.outreachId}
+                            onClick={()=>handleReportInvalid(p)} className="min-h-11 border-red-500/30 text-red-400">
+                            {reportingId===p.outreachId?<Loader2 className="mr-1 h-3 w-3 animate-spin"/>:'Not on WhatsApp?'}
                           </Button>
                         </div>
                       ) : p.status === 'converted' ? (
                         <CheckCircle2 className="h-5 w-5 text-emerald-400" />
                       ) : p.status === 'sent' ? (
                         <div className="flex flex-wrap gap-2">
+                          <label className="flex items-start gap-2 text-xs leading-5 text-amber-100"><input type="checkbox" className="mt-1" checked={bridgePermissionIds.includes(p.outreachId)} onChange={event=>setBridgePermissionIds(ids=>event.target.checked?[...new Set([...ids,p.outreachId])]:ids.filter(id=>id!==p.outreachId))}/>This person requested their WEAVE Bridge</label>
                           <Button
                             size="sm"
                             variant="outline"
-                            disabled={!p.bridgeUrl}
+                            disabled={!p.bridgeUrl||!bridgePermissionIds.includes(p.outreachId)}
                             onClick={() => handleSendBridge(p)}
                             className="border-amber-300/30 text-amber-200 hover:bg-amber-300/10"
                           >

@@ -142,6 +142,17 @@ export default function DistributionStudioPage(){
       <div className="mt-7 grid grid-cols-2 border-y border-white/10 sm:grid-cols-5"><Metric label="Ready Channels" value={readyChannels.length}/><Metric label="Scheduled" value={state?.summary.scheduled||0} bordered/><Metric label="Published" value={state?.summary.publishedDeliveries||0} bordered/><Metric label="Reach" value={state?.summary.reach||0} bordered/><Metric label="Follows" value={state?.summary.follows||0}/></div>
     </section>
 
+    <section data-social-outreach-actual-delivery="draft-authorization-provider" className="rounded-2xl border border-amber-200/20 bg-amber-200/[.035] p-5 text-white">
+      <h2 className="text-xl font-bold">How social outreach becomes real customer work</h2>
+      <div className="mt-3 grid gap-3 sm:grid-cols-3">
+        {[
+          ['1 · Prepare content','Create an accurate photo, branded artwork or video and write what your business really offers.'],
+          ['2 · Authorize a channel','A saved handle or connection request is not permission to post. External accounts need supported provider authorization.'],
+          ['3 · Publish and verify','Only an accepted delivery is published. Check the channel status and real provider metrics before counting reach, replies or sales.'],
+        ].map(([title,detail])=><article key={title} className="rounded-xl border border-white/10 bg-[#0b1b29] p-4 text-sm leading-6 text-slate-200"><strong className="text-base text-amber-100">{title}</strong><p className="mt-2">{detail}</p></article>)}
+      </div>
+      <p className="mt-3 text-sm leading-6 text-slate-300">Saving content to the movement queue does not automatically post to TikTok, Facebook, Instagram, X or WhatsApp. The company does not treat draft posts, prepared connections or unverified reach as customer payments.</p>
+    </section>
     {message&&<div className="border border-cyan-300/20 bg-cyan-300/[0.04] px-4 py-3 text-sm text-cyan-100">{message}</div>}
     {loading&&!state?<div className="flex min-h-64 items-center justify-center"><Loader2 className="h-7 w-7 animate-spin text-cyan-300"/></div>:<>
       <section className="grid gap-6 xl:grid-cols-[.85fr_1.15fr]">

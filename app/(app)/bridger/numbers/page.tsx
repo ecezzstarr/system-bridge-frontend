@@ -219,7 +219,7 @@ export default function BridgerNumbersPage(){
        </div>
        {stock>0?<BatteryCharging className="h-5 w-5 text-cyan-300"/>:<PackageSearch className="h-5 w-5 text-amber-300"/>}
       </div>
-      <p className="mt-4 text-2xl font-black text-white">{price.toLocaleString()} <span className="text-xs text-slate-500">FC</span></p>
+      <p className="mt-4 text-2xl font-black text-white">{price.toLocaleString()} <span className="text-xs text-slate-500">System Switch</span></p>
       {stock>0?
        <p className="mt-2 text-[10px] leading-5 text-slate-500">{stock} in WEAVE stock · immediate assignment after successful purchase.</p>
        :<p className="mt-2 text-[10px] leading-5 text-slate-400">Out of stock · Administration can acquire and deliver this country through WEAVE within the {Number(offer.delivery_minutes)||30}-minute target.</p>}
@@ -249,7 +249,7 @@ export default function BridgerNumbersPage(){
       <div className="flex flex-wrap items-start justify-between gap-3">
        <div>
         <p className="text-[9px] font-black uppercase tracking-wider text-amber-300">{o.country} · {o.status}</p>
-        <p className="mt-1 text-sm font-black text-white">{Number(o.price_flame_coin).toLocaleString()} FC</p>
+        <p className="mt-1 text-sm font-black text-white">{Number(o.price_flame_coin).toLocaleString()} System Switch</p>
        </div>
        {active&&<span className={`rounded-full border px-3 py-1.5 text-[9px] font-black uppercase ${new Date(o.deadline_at).getTime()<now?'border-rose-300/20 bg-rose-400/10 text-rose-200':'border-amber-300/20 bg-amber-400/10 text-amber-200'}`}>{deadlineLabel(o.deadline_at,now)}</span>}
       </div>
@@ -273,7 +273,7 @@ export default function BridgerNumbersPage(){
      return <article key={n.id} className="rounded-2xl border border-emerald-300/10 bg-emerald-400/[.025] p-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
        <div><p className="flex items-center gap-2 font-mono text-lg font-black text-white"><CheckCircle2 className="h-4 w-4 text-emerald-400"/>{n.phone_e164}</p><p className="mt-1 text-[9px] font-black uppercase text-slate-500">Country · {n.country}</p></div>
-       <p className="text-sm font-black text-emerald-200">{Number(n.price_flame_coin).toLocaleString()} FC</p>
+       <p className="text-sm font-black text-emerald-200">{Number(n.price_flame_coin).toLocaleString()} System Switch</p>
       </div>
       {!r?
        <div className="mt-3 flex flex-wrap gap-2"><button onClick={()=>void requestCode(n.id,'sms')} className="rounded-xl border border-white/10 bg-white/[.03] px-3 py-2 text-[10px] font-black text-white">Request SMS</button><button onClick={()=>void requestCode(n.id,'call')} className="rounded-xl border border-white/10 bg-white/[.03] px-3 py-2 text-[10px] font-black text-white">Request Call</button></div>

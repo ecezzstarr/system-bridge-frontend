@@ -79,6 +79,26 @@ export function AgentWorkplace({userName,onOpenDistricts}:{userName?:string|null
         </div>
       </header>
 
+      <section data-agent-daily-job-guide="learn-order-supply-settle" className="mt-5 rounded-2xl border border-[#d6bf8e] bg-white/90 p-5 shadow-sm sm:p-6">
+        <h2 className="text-xl font-bold text-[#293b42]">Your Stability job, from start to payment</h2>
+        <p className="mt-2 text-sm leading-6 text-[#52636b]">Weave supplies the product and commercial systems. Your role is to perform real distribution or an approved digital service, serve people, and keep honest stock and financial records.</p>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            {name:'1. Know the products',detail:'Learn official carton quantities, product prices and store selling rules.',href:'/agent/outlet-training'},
+            {name:'2. Purchase or request work support',detail:'Order authentic stock and submit verified payment proof. Request manager support when you cannot fund an eligible assigned task.',href:'/agent/distribution'},
+            {name:'3. Supply real outlets or customers',detail:'Register shops, allocate only received cartons and use your Carrier Door for customer orders.',href:'/weave/carrier/food'},
+            {name:'4. Collect and check your earnings',detail:'Record actual sales and money collected. Review approved commissions and wallet receipts, not expected income.',href:'/agent/commissions'},
+          ].map(step=><Link key={step.name} href={step.href} className="flex min-h-36 flex-col rounded-xl border border-[#ded0b3] bg-[#fffdfa] p-4 text-[#293c47] hover:border-[#ac8842]">
+            <strong className="text-base">{step.name}</strong><span className="mt-2 flex-1 text-sm leading-6 text-[#56656b]">{step.detail}</span><span className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-[#926d27]">Open work <ArrowRight size={16}/></span>
+          </Link>)}
+        </div>
+        <div className="mt-4 flex flex-wrap gap-3 text-sm">
+          <Link href="/agent/distribution" className="min-h-11 rounded-lg border border-[#d5c399] px-4 py-3 font-semibold text-[#735620]">My live distribution route</Link>
+          <Link href="/weave/lifestyles/support" className="min-h-11 rounded-lg border border-[#d5c399] px-4 py-3 font-semibold text-[#735620]">Request verified manager support</Link>
+          <Link href="/image-workshop/business" className="min-h-11 rounded-lg border border-[#d5c399] px-4 py-3 font-semibold text-[#735620]">Start a digital branding career</Link>
+        </div>
+        <p className="mt-3 text-xs leading-5 text-[#617078]">Stock cost and customer price are displayed by each official product. Gross margin excludes delivery, spoiled or unsold goods and other expenses. Any support advance requires approval and is subject to its recorded repayment rules.</p>
+      </section>
       <nav className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5" aria-label="Agent Stability workplaces">
         {AGENT_SPACES.map(x=>{
           const Icon=ICONS[x.id], selected=!query&&x.id===active

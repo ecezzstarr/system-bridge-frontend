@@ -70,6 +70,7 @@ async function finalizeProspectPurchase(input:{
 export async function POST(request: NextRequest) {
   const authUser=await getAuthUser(request)
   if(!authUser)return NextResponse.json({error:'Unauthorized'},{status:401})
+  if(authUser.role!=='bridger')return NextResponse.json({error:'Only Bridgers may acquire Prospect contact packages'},{status:403})
   const userId=authUser.id
 
   let packageId:string

@@ -145,17 +145,29 @@ export default function BridgerEmailOutreachPage(){
         <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">Email Prospects cost half the normal Prospect reference: <b className="text-white">{data.priceFlameCoin} System Switch</b> each. A Prospect is an unverified candidate tool: acquire one, attempt the connection, and let real response establish what is actually there.</p>
       </header>
 
+      <section data-bridger-email-outreach-steps="sender-acquire-send-response" className="mt-5 rounded-2xl border border-sky-300/20 bg-sky-300/[.045] p-5">
+        <h2 className="text-xl font-bold text-white">Your email outreach job</h2>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            ['1 · Connect your mailbox','A valid Google app password enables WEAVE to send mail from your own address.'],
+            ['2 · Acquire a candidate','Check the current System Switch cost, then buy a candidate. The email may not belong to an interested person.'],
+            ['3 · Send a relevant offer','Write a personal subject and clear service message. Only a provider-accepted message counts as sent.'],
+            ['4 · Follow real replies','Update the outreach record only after a real response; customer purchase and your earnings are separate verified events.'],
+          ].map(([title,description])=><article key={title} className="rounded-xl border border-white/10 bg-[#0a1724] p-4 text-sm leading-6 text-slate-200"><strong className="block text-base text-sky-200">{title}</strong><p className="mt-2">{description}</p></article>)}
+        </div>
+        <p className="mt-3 text-sm leading-6 text-slate-300">The displayed acquisition fee buys the candidate, not a guaranteed response. If the mailbox is disconnected or an address is blocked, the sending controls remain unavailable.</p>
+      </section>
       {(error||notice)&&<div className={`mt-5 border-l-2 px-4 py-3 text-sm ${error?'border-rose-400 text-rose-200':'border-emerald-400 text-emerald-200'}`}>{error||notice}</div>}
 
       <p className="mt-4 text-xs text-slate-300" role="status">{data.providerConfigured&&data.sender ? 'Source configured · provider acceptance can be recorded after each send, but Prospect identity and reachability remain unverified until real response.' : 'Source not ready · activate your mailbox before sending.'}</p>
       <section className="mt-7 grid gap-5 md:grid-cols-[1fr_1fr]">
         <div className="border-y border-white/10 py-5">
-          <p className="text-[8px] font-black uppercase tracking-[.18em] text-sky-300">01 · Email Source</p>
-          <label className="mt-4 block text-[9px] font-black uppercase tracking-[.12em] text-slate-500">Your Google source email</label>
+          <p className="text-xs font-bold uppercase tracking-wider text-sky-300">01 · Email Source</p>
+          <label className="mt-4 block text-sm font-semibold text-slate-300">Your Google source email</label>
           <input value={sourceEmail} onChange={e=>setSourceEmail(e.target.value)} className="mt-2 w-full border border-white/10 bg-black/20 px-3 py-3 text-sm outline-none focus:border-sky-300/50" placeholder="you@gmail.com"/>
-          <label className="mt-4 block text-[9px] font-black uppercase tracking-[.12em] text-slate-500">Display name</label>
+          <label className="mt-4 block text-sm font-semibold text-slate-300">Display name</label>
           <input value={displayName} onChange={e=>setDisplayName(e.target.value)} className="mt-2 w-full border border-white/10 bg-black/20 px-3 py-3 text-sm outline-none focus:border-sky-300/50" placeholder="Your name · WEAVE Bridger"/>
-          <label className="mt-4 block text-[9px] font-black uppercase tracking-[.12em] text-slate-500">Google app password</label>
+          <label className="mt-4 block text-sm font-semibold text-slate-300">Google app password</label>
           <input type="password" value={appPassword} onChange={e=>setAppPassword(e.target.value)} className="mt-2 w-full border border-white/10 bg-black/20 px-3 py-3 text-sm outline-none focus:border-sky-300/50" placeholder="16-character app password" autoComplete="new-password"/>
           <button onClick={saveSender} disabled={busy==='sender'} className="mt-4 border border-sky-300/30 px-4 py-2.5 text-[9px] font-black uppercase tracking-[.14em] text-sky-100 disabled:opacity-40">{busy==='sender'?'Authenticating…':'Activate source email'}</button>
           <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener noreferrer" className="mt-3 block text-xs text-sky-300 underline">Open Google app passwords</a><p className="mt-2 text-xs text-slate-400">Enable Google 2-Step Verification first. Create an app password for the same mailbox entered above.</p>
@@ -163,7 +175,7 @@ export default function BridgerEmailOutreachPage(){
         </div>
 
         <div className="border-y border-white/10 py-5">
-          <p className="text-[8px] font-black uppercase tracking-[.18em] text-emerald-300">02 · Acquire</p>
+          <p className="text-xs font-bold uppercase tracking-wider text-emerald-300">02 · Acquire</p>
           <div className="mt-4 flex items-end justify-between gap-4">
             <div>
               <p className="text-3xl font-black">{data.availableCount}</p>
@@ -185,7 +197,7 @@ export default function BridgerEmailOutreachPage(){
         {data.bridgeUrl ? <input aria-label="Your Bridge link for email replies" readOnly value={data.bridgeUrl} onFocus={e=>e.target.select()} className="mt-3 w-full border border-white/10 bg-black/20 p-3 text-sm text-sky-200"/> : <a href="/bridger/bridge-ai" className="mt-3 inline-block text-xs text-sky-300 underline">Activate Bridge AI to open your Client crossing</a>}
       </section>
       <section className="mt-8 border-t border-white/10 pt-6">
-        <p className="text-[8px] font-black uppercase tracking-[.18em] text-sky-300">03 · Message</p>
+        <p className="text-xs font-bold uppercase tracking-wider text-sky-300">03 · Message</p>
         <input value={subject} onChange={e=>setSubject(e.target.value)} className="mt-4 w-full border border-white/10 bg-black/20 px-3 py-3 text-sm outline-none focus:border-sky-300/50"/>
         <textarea value={message} onChange={e=>setMessage(e.target.value)} rows={5} className="mt-3 w-full border border-white/10 bg-black/20 px-3 py-3 text-sm leading-6 outline-none focus:border-sky-300/50"/>
         <p className="mt-2 text-[10px] text-slate-500">Use <b>{'{{name}}'}</b> for the Prospect name and <b>{'{{lead_code}}'}</b> for the cryptographic lead reference.</p>

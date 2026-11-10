@@ -1,5 +1,6 @@
 'use client'
 import { AgentFoodPricingInfo } from '@/components/weave-food/food-program-info'
+import Link from 'next/link'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useAuth } from '@/lib/auth-provider'
@@ -34,6 +35,8 @@ export default function AgentDistributionPage(){
   const [data,setData]=useState<DistributionData>({outlets:[],placements:[],stock:[],summary:{packages_still_with_outlets:0,outstanding_ngn:0,collected_today_ngn:0,outlet_count:0,carrier_reserved_packages:0}})
   const [orders,setOrders]=useState<StockOrder[]>([])
   const [message,setMessage]=useState('')
+  const [loadError,setLoadError]=useState('')
+  const [hasLoaded,setHasLoaded]=useState(false)
   const [working,setWorking]=useState<string|null>(null)
   const [receivingAddress,setReceivingAddress]=useState('')
   const [receivingPhone,setReceivingPhone]=useState('')
@@ -62,21 +65,23 @@ export default function AgentDistributionPage(){
   const load=async()=>{
     if(!token||!isAgent)return
     setWorking(current=>current||'load')
+    setLoadError('')
     try{
       const [distributionResponse,ordersResponse]=await Promise.all([
         fetch('/api/agent/distribution',{headers:{Authorization:`Bearer ${token}`},cache:'no-store'}),
-        fetch('/api/agility/stock',{headers:{Authorization:`Bearer ${token}`},cache:'no-store'}),
+        fetch('/api/agility/stock?scope=distribution',{headers:{Authorization:`Bearer ${token}`},cache:'no-store'}),
       ])
       const distribution=await distributionResponse.json().catch(()=>({}))
       const orderData=await ordersResponse.json().catch(()=>({}))
       if(!distributionResponse.ok||!distribution.success)throw new Error(distribution.error||'Unable to load distribution route')
       setData(distribution)
+      setHasLoaded(true)
       if(ordersResponse.ok&&orderData.success){
         setOrders(orderData.orders||[])
-      }else if(orderData.error){
-        setMessage(String(orderData.error))
+      }else{
+        setLoadError(String(orderData.error||'Stock order history is unavailable. Refresh before confirming delivery or placing another order.'))
       }
-    }catch(error){setMessage(error instanceof Error?error.message:'Unable to load Agent distribution')}
+    }catch(error){setLoadError(error instanceof Error?error.message:'Unable to load Agent distribution')}
     finally{setWorking(current=>current==='load'?null:current)}
   }
   useEffect(()=>{void load()},[token,isAgent])
@@ -128,11 +133,12 @@ export default function AgentDistributionPage(){
     finally{setWorking(null)}
   }
 
-  const confirmReceipt=async(orderId:string)=>{
+  const confirmReceipt=async(order:StockOrder)=>{
     if(!token)return
-    setWorking(`receive:${orderId}`)
+    setWorking(`receive:${order.id}`)
     try{
-      const response=await fetch('/api/agility/receive',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({orderId})})
+      const receiveRoute=order.variant_id.startsWith('ember')?'/api/ember/receive':order.variant_id.startsWith('electrolyte')?'/api/electrolyte/receive':'/api/agility/receive'
+      const response=await fetch(receiveRoute,{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({orderId:order.id})})
       const result=await response.json().catch(()=>({}))
       if(!response.ok||!result.success)throw new Error(result.error||'Unable to confirm receipt')
       setMessage('Cartons received. They are now available for outlets and Carrier.');await load()
@@ -169,15 +175,41 @@ export default function AgentDistributionPage(){
   }
 
   const postAction=async(body:Record<string,unknown>,key:string,successMessage:string)=>{
-    if(!token)return
+    if(!token||working)return
     setWorking(key)
     try{
       const response=await fetch('/api/agent/distribution',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify(body)})
       const result=await response.json().catch(()=>({}))
       if(!response.ok||!result.success)throw new Error(result.error||'Unable to update distribution movement')
-      setMessage(successMessage);await load()
-    }catch(error){setMessage(error instanceof Error?error.message:'Unable to update distribution movement')}
+      setMessage(successMessage);await load();return true
+    }catch(error){setMessage(error instanceof Error?error.message:'Unable to update distribution movement');return false}
     finally{setWorking(null)}
+  }
+
+  const reportSold=async(placement:DistributionData['placements'][number])=>{
+    const raw=String(soldReport[placement.id]||'').trim()
+    const value=Number(raw)
+    const remaining=Number(placement.package_count)-Number(placement.packages_reported_sold)
+    if(!raw||!Number.isInteger(value)||value<1||value>remaining){
+      setMessage('Record a whole number of packs actually sold, from 1 up to '+remaining+' remaining.')
+      return
+    }
+    if(await postAction({action:'report_sales',placementId:placement.id,soldPackages:value},
+      'sold:'+placement.id,'Outlet sales reported. A report alone is not verified payment.')){
+      setSoldReport(current=>({...current,[placement.id]:''}))
+    }
+  }
+  const collectPayment=async(placement:DistributionData['placements'][number])=>{
+    const raw=String(collection[placement.id]||'').trim()
+    const value=Number(raw),outstanding=Number(placement.outstanding_ngn)
+    if(!raw||!Number.isFinite(value)||value<=0||value>outstanding){
+      setMessage('Record only the money you have collected. Outstanding: '+money(outstanding)+'.')
+      return
+    }
+    if(await postAction({action:'record_collection',placementId:placement.id,amountNgn:value},
+      'collect:'+placement.id,'Actual outlet collection recorded as reported by the Agent.')){
+      setCollection(current=>({...current,[placement.id]:''}))
+    }
   }
 
   const cartonsAvailable=useMemo(()=>data.stock.reduce((sum,item)=>sum+(Number(item.available_packages||0)/Number(item.packages_per_box||AGILITY_PACKAGES_PER_BOX)),0),[data.stock])
@@ -188,23 +220,47 @@ export default function AgentDistributionPage(){
 
   return <div className="mx-auto max-w-7xl space-y-7 pb-20 text-white">
     <AgentFoodPricingInfo product="both"/>
+    <section data-agent-distribution-quick-start="learn-order-supply-collect" className="rounded-3xl border border-amber-200/25 bg-[linear-gradient(135deg,#1d242d,#0c181f)] p-5 sm:p-7">
+      <p className="text-xs font-bold uppercase tracking-wider text-amber-200">Stability · Start earning from verified distribution work</p>
+      <h2 className="mt-2 text-2xl font-bold text-white">From company stock to real customer service</h2>
+      <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {[
+          ['1 · Learn','Check real product packaging, the official selling price and your responsibilities.'],
+          ['2 · Order and receive','Order half or full cartons, pay the displayed OPay account, submit proof, and confirm physical receipt.'],
+          ['3 · Supply a real outlet','Register a shop, allocate only received stock, and choose paid now or pay after sale.'],
+          ['4 · Record real earnings','Report actual units sold, record money collected, and inspect commissions and settlement records.'],
+        ].map(([title,detail])=><article key={title} className="rounded-xl border border-white/15 bg-white/[.04] p-4"><h3 className="text-base font-bold text-amber-100">{title}</h3><p className="mt-2 text-sm leading-6 text-slate-200">{detail}</p></article>)}
+      </div>
+      <div className="mt-4 flex flex-wrap gap-3 text-sm">
+        <Link href="/agent/outlet-training" className="min-h-11 rounded-xl border border-white/20 px-4 py-3 font-semibold text-cyan-100">Watch outlet training</Link>
+        <Link href="/agent/commissions" className="min-h-11 rounded-xl border border-white/20 px-4 py-3 font-semibold text-cyan-100">Check commissions</Link>
+        <Link href="/weave/carrier/food" className="min-h-11 rounded-xl border border-white/20 px-4 py-3 font-semibold text-cyan-100">Customer Carrier Door</Link>
+        <Link href="/weave/lifestyles/support" className="min-h-11 rounded-xl border border-white/20 px-4 py-3 font-semibold text-cyan-100">Ask a manager for support</Link>
+      </div>
+      <p className="mt-4 text-sm leading-6 text-stone-300">Displayed gross margin is the difference between approved selling price and stock cost. It excludes delivery expenses, unsold stock, delayed customer payments and other costs. It is not guaranteed income.</p>
+    </section>
     <section className="border border-cyan-300/20 bg-cyan-300/[.045] p-4 text-sm text-cyan-100"><strong>OUTLET PRICE RULE:</strong> Supply stores at the WEAVE price. Stores choose their independent resale markup; the Agent cannot discount the store supply price. Direct customers also pay WEAVE price.</section>
     <section className="rounded-[2rem] border border-cyan-300/20 bg-gradient-to-br from-cyan-500/10 via-slate-950 to-emerald-500/10 p-6 md:p-9">
       <p className="text-[10px] font-black uppercase tracking-[.3em] text-cyan-300">Agent Department · Physical Distribution</p><h1 className="mt-2 text-4xl font-black md:text-6xl">AGENT DISTRIBUTION ROUTE</h1><p className="mt-4 max-w-4xl text-sm leading-7 text-slate-300 md:text-base">Buy WEAVE cartons, carry them into existing shops and outlets, collect immediately or place stock on pay-after-sale, and use Carrier to sell directly through your link. The Agent is the distributor — not the store owner.</p>
       <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">{[['Outlets',String(data.summary.outlet_count),MapPin],['Cartons in hand',String(cartonsAvailable),Boxes],['Packs with outlets',String(data.summary.packages_still_with_outlets||0),Store],['Carrier reserved',String(data.summary.carrier_reserved_packages||0),PackageCheck],['Money outstanding',money(data.summary.outstanding_ngn),HandCoins]].map(([label,value,Icon]:any)=><div key={label} className="rounded-2xl border border-white/10 bg-black/20 p-4"><Icon className="h-5 w-5 text-cyan-300"/><p className="mt-3 text-[9px] font-black uppercase tracking-[.16em] text-slate-500">{label}</p><p className="mt-1 text-xl font-black">{value}</p></div>)}</div><p className="mt-4 text-xs text-emerald-300">Collected from outlets today: {money(data.summary.collected_today_ngn)}</p>
     </section>
 
-    {message&&<div role="status" className="rounded-2xl border border-cyan-300/20 bg-cyan-300/[.06] px-5 py-4 text-sm leading-6 text-cyan-50">{message}</div>}
+    {loadError&&<div role="alert" className="rounded-2xl border border-red-300/35 bg-red-300/[.08] p-4 text-sm leading-6 text-red-100">
+      <strong>Some live records are unavailable.</strong> {loadError}
+      <button type="button" onClick={()=>void load()} className="ml-3 inline-flex min-h-11 items-center rounded-lg border border-red-200/40 px-4 py-2 font-bold">Retry stock and outlet records</button>
+    </div>}
+    {!hasLoaded&&working==='load'&&<p role="status" className="rounded-lg border border-white/10 p-4 text-sm text-slate-200">Checking real stock and outlet records…</p>}
+        {message&&<div role="status" className="rounded-2xl border border-cyan-300/20 bg-cyan-300/[.06] px-5 py-4 text-sm leading-6 text-cyan-50">{message}</div>}
 
     <section className="rounded-[2rem] border border-white/10 bg-white/[.02] p-5 md:p-7">
       <div className="flex items-center justify-between gap-3"><div><p className="text-[10px] font-black uppercase tracking-[.22em] text-orange-300">01 · Buy from WEAVE</p><h2 className="mt-1 text-2xl font-black">Load cartons for your route</h2><p className="mt-2 text-xs text-slate-500">Agent stock is carton-only: order ½ carton or full-carton steps. No individual pieces can be ordered from WEAVE.</p></div><Truck className="h-7 w-7 text-orange-300"/></div>
       <p className="mt-4 text-xs text-slate-400">Enter both delivery details before choosing a food order.</p>
       <div className="mt-5 grid gap-3 md:grid-cols-2"><Input ref={addressInput} aria-label="Where WEAVE should deliver your cartons" required value={receivingAddress} onChange={e=>setReceivingAddress(e.target.value)} placeholder="Where WEAVE should deliver your cartons"/><Input ref={phoneInput} aria-label="Receiving phone" required type="tel" value={receivingPhone} onChange={e=>setReceivingPhone(e.target.value)} placeholder="Receiving phone"/></div>
       <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {AGILITY_VARIANTS.map(product=>{const economics=getWeaveFoodVariantEconomics(product.id);if(!economics)return null;return <article key={product.id} className={`rounded-2xl border p-5 ${product.id.startsWith('ember')?'border-orange-300/20 bg-orange-300/[.04]':product.id.startsWith('electrolyte')?'border-emerald-300/20 bg-emerald-300/[.03]':'border-white/10 bg-black/20'}`}><a href={product.id.startsWith('ember')?'/weave-food/ember.jpg':product.id.startsWith('electrolyte')?'/weave-food/electrolyte.jpeg':'/weave-food/agility.jpeg'} target="_blank" rel="noopener noreferrer" aria-label={`Open ${product.id.startsWith('ember')?'Ember':product.id.startsWith('electrolyte')?'Electrolyte':'Agility'} product image`}><img src={product.id.startsWith('ember')?'/weave-food/ember.jpg':product.id.startsWith('electrolyte')?'/weave-food/electrolyte.jpeg':'/weave-food/agility.jpeg'} alt={`WEAVE ${product.id.startsWith('ember')?'Ember':product.id.startsWith('electrolyte')?'Electrolyte':'Agility'} product image`} className="mb-4 h-80 w-full rounded-xl bg-[#fffaf0] object-contain" loading="lazy"/></a><p className={`text-[10px] font-black uppercase tracking-[.18em] ${product.id.startsWith('electrolyte')?'text-emerald-300':'text-orange-300'}`}>{product.accent}</p><h3 className="mt-1 text-xl font-black">{product.name}</h3><p className="mt-2 text-xs leading-5 text-slate-500">{product.note}</p><div className="mt-4 grid grid-cols-2 gap-2 text-xs"><div className="rounded-xl bg-white/[.04] p-3"><span className="text-slate-500">½ carton from WEAVE</span><p className="font-black">{money(economics.agentBoxPriceNgn/2)}</p></div><div className="rounded-xl bg-white/[.04] p-3"><span className="text-slate-500">Full carton from WEAVE</span><p className="font-black">{money(economics.agentBoxPriceNgn)}</p></div><div className="rounded-xl bg-white/[.04] p-3"><span className="text-slate-500">Agent → Customer</span><p className="font-black text-emerald-200">{money(economics.agentSellingUnitPriceNgn)} / unit</p></div><div className="rounded-xl bg-white/[.04] p-3"><span className="text-slate-500">Units / carton</span><p className="font-black">{economics.packagesPerBox} · half = {economics.packagesPerBox/2}</p></div></div><div className="mt-4 flex gap-2"><Input aria-label={`${product.name} carton quantity`} className="w-24 text-center" type="number" min={WEAVE_FOOD_MIN_CARTON_ORDER} max={WEAVE_FOOD_MAX_CARTON_ORDER} step={WEAVE_FOOD_CARTON_STEP} value={cartons[product.id]??5} onChange={e=>setCartons(c=>({...c,[product.id]:Number(e.target.value)}))}/><Button type="button" className="flex-1" onClick={()=>void buyFromWeave(product)} disabled={working?.startsWith('buy:')}><Boxes className="mr-2 h-4 w-4"/>{working===`buy:${product.id}`?'ORDERING…':'Buy cartons'}</Button></div>{orderFeedback?.productId===product.id&&<p role="alert" className="mt-3 text-sm leading-6 text-amber-200">{orderFeedback.text}</p>}<p className="mt-2 text-[10px] uppercase tracking-[.12em] text-slate-600">½ · 1 · 1½ · 2 · 2½ … cartons only</p></article>})}
+        {AGILITY_VARIANTS.map(product=>{const economics=getWeaveFoodVariantEconomics(product.id);if(!economics)return null;return <article key={product.id} className={`rounded-2xl border p-5 ${product.id.startsWith('ember')?'border-orange-300/20 bg-orange-300/[.04]':product.id.startsWith('electrolyte')?'border-emerald-300/20 bg-emerald-300/[.03]':'border-white/10 bg-black/20'}`}><a href={product.id.startsWith('ember')?'/weave-food/ember.jpg':product.id.startsWith('electrolyte')?'/weave-food/electrolyte.jpeg':'/weave-food/agility.jpeg'} target="_blank" rel="noopener noreferrer" aria-label={`Open ${product.id.startsWith('ember')?'Ember':product.id.startsWith('electrolyte')?'Electrolyte':'Agility'} product image`}><img src={product.id.startsWith('ember')?'/weave-food/ember.jpg':product.id.startsWith('electrolyte')?'/weave-food/electrolyte.jpeg':'/weave-food/agility.jpeg'} alt={`WEAVE ${product.id.startsWith('ember')?'Ember':product.id.startsWith('electrolyte')?'Electrolyte':'Agility'} product image`} className="mb-4 h-80 w-full rounded-xl bg-[#fffaf0] object-contain" loading="lazy"/></a><p className={`text-[10px] font-black uppercase tracking-[.18em] ${product.id.startsWith('electrolyte')?'text-emerald-300':'text-orange-300'}`}>{product.accent}</p><h3 className="mt-1 text-xl font-black">{product.name}</h3><p className="mt-2 text-xs leading-5 text-slate-500">{product.note}</p><div className="mt-4 grid grid-cols-2 gap-2 text-xs"><div className="rounded-xl bg-white/[.04] p-3"><span className="text-slate-500">½ carton from WEAVE</span><p className="font-black">{money(economics.agentBoxPriceNgn/2)}</p></div><div className="rounded-xl bg-white/[.04] p-3"><span className="text-slate-500">Full carton from WEAVE</span><p className="font-black">{money(economics.agentBoxPriceNgn)}</p></div><div className="rounded-xl bg-white/[.04] p-3"><span className="text-slate-500">Agent → Customer</span><p className="font-black text-emerald-200">{money(economics.agentSellingUnitPriceNgn)} / unit</p></div><div className="rounded-xl bg-white/[.04] p-3"><span className="text-slate-500">Units / carton</span><p className="font-black">{economics.packagesPerBox} · half = {economics.packagesPerBox/2}</p></div></div><p className="mt-3 text-sm font-semibold leading-6 text-emerald-200">Expected gross margin per sold unit: {money(economics.agentGrossProfitPerPackageNgn)} before delivery and other expenses.</p><div className="mt-4 flex gap-2"><Input aria-label={`${product.name} carton quantity`} className="w-24 text-center" type="number" min={WEAVE_FOOD_MIN_CARTON_ORDER} max={WEAVE_FOOD_MAX_CARTON_ORDER} step={WEAVE_FOOD_CARTON_STEP} value={cartons[product.id]??5} onChange={e=>setCartons(c=>({...c,[product.id]:Number(e.target.value)}))}/><Button type="button" className="flex-1" onClick={()=>void buyFromWeave(product)} disabled={working?.startsWith('buy:')}><Boxes className="mr-2 h-4 w-4"/>{working===`buy:${product.id}`?'ORDERING…':'Buy cartons'}</Button></div>{orderFeedback?.productId===product.id&&<p role="alert" className="mt-3 text-sm leading-6 text-amber-200">{orderFeedback.text}</p>}<p className="mt-2 text-[10px] uppercase tracking-[.12em] text-slate-600">½ · 1 · 1½ · 2 · 2½ … cartons only</p></article>})}
       </div>
 
-      {pendingOrders.length>0&&<div className="mt-7 border-t border-white/10 pt-5"><p className="text-[9px] font-black uppercase tracking-[.2em] text-amber-300">Orders moving from WEAVE to you</p><div className="mt-3 space-y-3">{pendingOrders.map(order=><article key={order.id} className="rounded-2xl border border-white/10 bg-black/20 p-4"><div className="flex flex-wrap items-start justify-between gap-3"><div><p className="font-black">{productName(order.variant_id)} · {formatWeaveFoodCartonQuantity(Number(order.box_count))}</p><p className="mt-1 text-xs text-slate-500">{order.package_count} units · {order.payment_status} · {order.fulfillment_status} · {order.payment_reference}</p></div><p className="font-black">{money(order.total_ngn)}</p></div>{order.payment_status==='pending'&&<div className="mt-3 flex gap-2"><Input value={proof[order.id]||''} onChange={e=>setProof(p=>({...p,[order.id]:e.target.value}))} placeholder="OPay transaction reference / receipt"/><Button onClick={()=>submitProof(order)} disabled={working===`proof:${order.id}`}>SEND PROOF</Button></div>}{order.fulfillment_status==='delivered'&&<Button className="mt-3" onClick={()=>confirmReceipt(order.id)} disabled={working===`receive:${order.id}`}><CheckCircle2 className="mr-2 h-4 w-4"/>CONFIRM RECEIVED</Button>}</article>)}</div></div>}
+      {pendingOrders.length>0&&<div className="mt-7 border-t border-white/10 pt-5"><p className="text-[9px] font-black uppercase tracking-[.2em] text-amber-300">Orders moving from WEAVE to you</p><div className="mt-3 space-y-3">{pendingOrders.map(order=><article key={order.id} className="rounded-2xl border border-white/10 bg-black/20 p-4"><div className="flex flex-wrap items-start justify-between gap-3"><div><p className="font-black">{productName(order.variant_id)} · {formatWeaveFoodCartonQuantity(Number(order.box_count))}</p><p className="mt-1 text-xs text-slate-500">{order.package_count} units · {order.payment_status} · {order.fulfillment_status} · {order.payment_reference}</p></div><p className="font-black">{money(order.total_ngn)}</p></div>{order.payment_status==='pending'&&<div className="mt-3 flex gap-2"><Input value={proof[order.id]||''} onChange={e=>setProof(p=>({...p,[order.id]:e.target.value}))} placeholder="OPay transaction reference / receipt"/><Button onClick={()=>submitProof(order)} disabled={working===`proof:${order.id}`}>SEND PROOF</Button></div>}{order.fulfillment_status==='delivered'&&<Button className="mt-3" onClick={()=>confirmReceipt(order)} disabled={working===`receive:${order.id}`}><CheckCircle2 className="mr-2 h-4 w-4"/>CONFIRM RECEIVED</Button>}</article>)}</div></div>}
     </section>
 
     <section className="rounded-[2rem] border border-white/10 bg-white/[.02] p-5 md:p-7">
@@ -220,7 +276,7 @@ export default function AgentDistributionPage(){
 
     <section className="rounded-[2rem] border border-white/10 bg-white/[.02] p-5 md:p-7">
       <p className="text-[10px] font-black uppercase tracking-[.22em] text-violet-300">04 · Follow stock and collect</p><h2 className="mt-1 text-2xl font-black">Pay-after-sale ledger</h2>
-      <div className="mt-5 space-y-4">{data.placements.map(placement=><article key={placement.id} className="rounded-2xl border border-white/10 bg-black/20 p-5"><div className="flex flex-wrap justify-between gap-3"><div><p className="font-black">{placement.outlet_name} · {productName(placement.variant_id)}</p><p className="mt-1 text-xs text-slate-500">{formatWeaveFoodCartonQuantity(Number(placement.carton_count))} · {placement.package_count} units · {placement.supply_mode==='pay_after_sale'?'pay after sale':'paid now'} · {placement.status}</p></div><div className="text-right"><p className="text-[9px] uppercase tracking-wider text-slate-600">Outstanding</p><p className="font-black text-amber-200">{money(placement.outstanding_ngn)}</p></div></div><div className="mt-4 grid gap-2 text-xs sm:grid-cols-4"><div><span className="text-slate-600">Agreed return</span><p className="font-black">{money(placement.agreed_amount_ngn)}</p></div><div><span className="text-slate-600">Collected</span><p className="font-black">{money(placement.amount_collected_ngn)}</p></div><div><span className="text-slate-600">Units sold</span><p className="font-black">{placement.packages_reported_sold}/{placement.package_count}</p></div><div><span className="text-slate-600">Expected Agent margin</span><p className="font-black text-emerald-200">{money(placement.expected_agent_margin_ngn)}</p></div></div>{placement.supply_mode==='pay_after_sale'&&placement.status!=='settled'&&<div className="mt-4 grid gap-3 md:grid-cols-2"><div className="flex gap-2"><Input value={soldReport[placement.id]||''} onChange={e=>setSoldReport(s=>({...s,[placement.id]:e.target.value}))} placeholder="Units sold since last check"/><Button onClick={()=>postAction({action:'report_sales',placementId:placement.id,soldPackages:Number(soldReport[placement.id])},`sold:${placement.id}`,'Outlet sales updated.')}>REPORT SOLD</Button></div><div className="flex gap-2"><Input value={collection[placement.id]||''} onChange={e=>setCollection(s=>({...s,[placement.id]:e.target.value}))} placeholder="Money collected now"/><Button onClick={()=>postAction({action:'record_collection',placementId:placement.id,amountNgn:Number(collection[placement.id])},`collect:${placement.id}`,'Outlet collection recorded.')}><HandCoins className="mr-2 h-4 w-4"/>COLLECT</Button></div></div>}</article>)}{!data.placements.length&&<p className="text-sm text-slate-500">No outlet stock movement recorded yet.</p>}</div>
+      <div className="mt-5 space-y-4">{data.placements.map(placement=><article key={placement.id} className="rounded-2xl border border-white/10 bg-black/20 p-5"><div className="flex flex-wrap justify-between gap-3"><div><p className="font-black">{placement.outlet_name} · {productName(placement.variant_id)}</p><p className="mt-1 text-xs text-slate-500">{formatWeaveFoodCartonQuantity(Number(placement.carton_count))} · {placement.package_count} units · {placement.supply_mode==='pay_after_sale'?'pay after sale':'paid now'} · {placement.status}</p></div><div className="text-right"><p className="text-[9px] uppercase tracking-wider text-slate-600">Outstanding</p><p className="font-black text-amber-200">{money(placement.outstanding_ngn)}</p></div></div><div className="mt-4 grid gap-2 text-xs sm:grid-cols-4"><div><span className="text-slate-600">Agreed return</span><p className="font-black">{money(placement.agreed_amount_ngn)}</p></div><div><span className="text-slate-600">Collected</span><p className="font-black">{money(placement.amount_collected_ngn)}</p></div><div><span className="text-slate-600">Units sold</span><p className="font-black">{placement.packages_reported_sold}/{placement.package_count}</p></div><div><span className="text-slate-600">Expected Agent margin</span><p className="font-black text-emerald-200">{money(placement.expected_agent_margin_ngn)}</p></div></div>{placement.supply_mode==='pay_after_sale'&&placement.status!=='settled'&&<div className="mt-4 grid gap-3 md:grid-cols-2"><div className="flex gap-2"><Input value={soldReport[placement.id]||''} onChange={e=>setSoldReport(s=>({...s,[placement.id]:e.target.value}))} placeholder="Units sold since last check"/><Button disabled={Boolean(working)} onClick={()=>void reportSold(placement)}>REPORT SOLD</Button></div><div className="flex gap-2"><Input value={collection[placement.id]||''} onChange={e=>setCollection(s=>({...s,[placement.id]:e.target.value}))} placeholder="Money collected now"/><Button disabled={Boolean(working)} onClick={()=>void collectPayment(placement)}><HandCoins className="mr-2 h-4 w-4"/>COLLECT</Button></div></div>}</article>)}{!data.placements.length&&<p className="text-sm text-slate-500">No outlet stock movement recorded yet.</p>}</div>
     </section>
 
     <div className="flex justify-end"><Button variant="outline" onClick={()=>void load()} disabled={working==='load'}><RefreshCcw className="mr-2 h-4 w-4"/>REFRESH ROUTE</Button></div>
