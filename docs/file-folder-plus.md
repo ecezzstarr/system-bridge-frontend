@@ -1,6 +1,6 @@
 # Plus File Folder — completed-system product
 
-**Plus package:** 60,000 Flame Coin valuation; payable at the fixed WEAVE package quote of **59,602 TRX**, with **20,000 USDT** as the equivalent reference. These are three explicitly defined amounts, not a live or automatic FX rate. Existing Standard, Pro and Premium File Folder pricing is unchanged.
+**Plus package:** 60,000 System Switch valuation; payable at the fixed WEAVE package quote of **59,602 TRX**, with **20,000 USDT** as the equivalent reference. These are three explicitly defined amounts, not a live or automatic FX rate. Existing Standard, Pro and Premium File Folder pricing is unchanged.
 
 **Promise:** On verified purchase, the Lord receives ownership of a Client File Folder with existing WEAVE-operable systems already commissioned, rather than a new empty construction yard. They can begin recording work, handling services, setting up offers and receiving customer movement. Further construction remains optional.
 
@@ -18,7 +18,7 @@ Only working functions already present in WEAVE are represented as complete. The
 ## Correct lifecycle
 1. The current Plus checkout accepts **59,602 TRX** to the existing WEAVE company TRX wallet. The public site also displays the **20,000 USDT reference**, but USDT is *not* currently a selectable checkout method without an approved company USDT wallet and network.
 2. Administration verifies the **59,602 TRX** blockchain transaction and checks the amount, company destination, network and uniqueness. Future USDT direct payment (20,000 USDT) requires separate network-specific verification.
-3. Only a verified ledger record with `file_folder_tier='plus'`, `status='confirmed'`, a matching Client and File Number, and either `payment_method='trx', amount_trx=59602` or `payment_method='usdt', amount_usdt=20000` may commission Plus systems. The TRX checkout does not mint 60,000 spendable Flame Coin automatically: 60,000 is the Plus package value.
+3. Only a verified ledger record with `file_folder_tier='plus'`, `status='confirmed'`, a matching Client and File Number, and either `payment_method='trx', amount_trx=59602` or `payment_method='usdt', amount_usdt=20000` may commission Plus systems. The TRX checkout does not mint 60,000 spendable System Switch automatically: 60,000 is the Plus package value.
 4. Repeated activation does not charge again; completed systems appear in the existing File Folder world as active. Customer Door bypasses the normal three-day build only for the verified Plus purchase.
 5. The Lord operates those systems, maintains business records and configures actual goods, staff, customers and external integrations.
 
