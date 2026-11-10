@@ -149,7 +149,10 @@ export default function WeaveImageSamples(){
   if(!isInitialized||!user)return <main className="min-h-screen p-8 text-slate-300">Opening the WEAVE Image Workshop…</main>
   const fee=isAdmin?0:Number(studio?.fee??1)
   const existing=studio?.licenses.find(item=>item.sample_id===selected.id&&
-    JSON.stringify(item.edits)===JSON.stringify(edits)&&item.service_order_id===(customerOrderId||null))
+    item.edits.brand===edits.brand&&item.edits.headline===edits.headline&&
+    item.edits.description===edits.description&&item.edits.action===edits.action&&
+    item.edits.format===edits.format&&item.edits.accent===edits.accent&&
+    item.service_order_id===(customerOrderId||null))
   const finalLicenseId=licenseId||existing?.id||''
   const activeRequest=studio?.requests.find(item=>item.id===customerOrderId)
 
