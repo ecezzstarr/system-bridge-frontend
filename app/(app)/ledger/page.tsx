@@ -1,5 +1,6 @@
-import { displayCurrencyName } from '@/lib/flame-coin'
 'use client'
+
+import { displayCurrencyName } from '@/lib/flame-coin'
 
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/lib/auth-provider'
