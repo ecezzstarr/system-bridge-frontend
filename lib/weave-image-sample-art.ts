@@ -75,7 +75,7 @@ export const WEAVE_IMAGE_SAMPLES:ReadonlyArray<SampleDesign>=[
   {id:'golden-journey',name:'Golden Journey',category:'Storybook',sector:'Learning',motif:'storybook',brand:'LITTLE JOURNEYS',headline:'Every day holds a story',description:'Beautiful beginnings for curious minds.',action:'BEGIN READING',palette:gold},
 ]
 
-export type SampleEdits={brand:string;headline:string;description:string;action:string;format:SampleFormat;accent:string;artworkHash?:string;printText?:string;printColor?:string;printX?:number;printY?:number;printScale?:number;printRotation?:number}
+export type SampleEdits={brand:string;headline:string;description:string;action:string;format:SampleFormat;accent:string;artworkHash?:string;productPhotoHash?:string;printText?:string;printColor?:string;printX?:number;printY?:number;printScale?:number;printRotation?:number}
 export function findImageSample(id:string):SampleDesign|null {
   return WEAVE_IMAGE_SAMPLES.find(sample=>sample.id===id)||null
 }
@@ -95,6 +95,7 @@ export function normalizeSampleEdits(sample:SampleDesign,input:unknown):SampleEd
     format:(format in WEAVE_SAMPLE_FORMATS?format:'portrait') as SampleFormat,
     accent:/^#[a-fA-F0-9]{6}$/.test(rawAccent)?rawAccent:sample.palette[3],
     ...(/^[0-9a-f]{64}$/.test(String(src.artworkHash||''))?{artworkHash:String(src.artworkHash)}:{}),
+    ...(/^[0-9a-f]{64}$/.test(String(src.productPhotoHash||''))?{productPhotoHash:String(src.productPhotoHash)}:{}),
     ...(typeof src.printText==='string'&&src.printText.trim()?{printText:src.printText.trim().slice(0,85)}:{}),
     ...(/^#[0-9a-fA-F]{6}$/.test(String(src.printColor||''))?{printColor:String(src.printColor)}:{}),
     ...(typeof src.printX==='number'&&Number.isFinite(src.printX)?{printX:Math.max(-120,Math.min(120,Math.round(src.printX)))}:{}),

@@ -372,18 +372,19 @@ export default function FileFolderPremiumWorld({
  return <section aria-label="Premium File Folder world" data-premium-file-folder-world="official-black-gold"
   data-premium-official-image="weave-premium-file-folder-official.png"
   data-premium-reference-sha256={PREMIUM_FILE_FOLDER_REFERENCE.sha256}
-  data-file-folder-theme={appearance.theme} data-premium-visual-identity="charcoal-black-gold" className="overflow-hidden rounded-2xl border border-[#b99355]/50 bg-[#17151c] text-[#f5ecdd]">
-  <header className="border-b border-[#b99355]/30 bg-[#242027] px-4 py-5 sm:px-6">
+  data-file-folder-theme={appearance.theme} data-premium-visual-identity="charcoal-black-gold" className="overflow-hidden rounded-[1.75rem] border-2 border-[#d9ae69]/65 bg-[#0d0b0e] text-[#f5ecdd] shadow-[0_24px_95px_rgba(0,0,0,.75),inset_0_1px_0_rgba(245,208,144,.2)]">
+  <header className="border-b border-[#b99355]/40 bg-[radial-gradient(ellipse_at_top_right,#51402b_0%,#171218_48%,#08090b_100%)] px-5 py-7 sm:px-8 sm:py-10">
    <p className="text-[11px] font-bold uppercase tracking-[.15em] text-[#ecc789]">WEAVE · Premium File Folder · Your private world</p>
-   <h2 className="mt-2 text-2xl font-black sm:text-3xl">Your private black-and-gold business citadel</h2>
+   <h2 className="mt-3 max-w-2xl text-3xl font-black leading-tight tracking-tight text-[#fff2d5] sm:text-5xl">Your private black-and-gold business citadel</h2>
    <p className="mt-2 max-w-2xl text-sm leading-6 text-[#e0d1c0]">This is your purchased Premium environment. The central citadel connects six places where you plan, acquire materials, build systems, direct work and serve customers. Select any building to discover its purpose, then enter the working area.</p>
-   <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold">
-    <span className="rounded-lg border border-[#a98b57]/40 px-3 py-2">{countBuilding.length} building</span>
+   <p className="mt-4 border-l-2 border-[#e7bb6c] pl-4 text-sm leading-6 text-[#f2d9ad]">A Premium estate includes the architectural environment. Additional systems become operational only when you build and commission them.</p>
+   <div className="mt-5 grid grid-cols-3 gap-2 text-xs font-semibold">
+    <span className="rounded-xl border border-[#a98b57]/45 bg-black/30 px-3 py-4 text-center text-sm text-[#f4d49d]">{countBuilding.length} building</span>
     <span className="rounded-lg border border-[#a98b57]/40 px-3 py-2">{countCompleted.length} completed</span>
     <span className="rounded-lg border border-[#a98b57]/40 px-3 py-2">{countLive.length} live systems</span>
    </div>
   </header>
-  <div className="relative h-[420px] w-full sm:h-[550px]" data-premium-mobile-3d="tap-drag-pinch" aria-label="Interactive Premium black-and-gold citadel, six distinct operating districts, water, connected terraces and ongoing verified construction">
+  <div className="relative h-[min(66svh,650px)] min-h-[440px] w-full sm:h-[650px]" data-premium-mobile-3d="tap-drag-pinch" aria-label="Interactive Premium black-and-gold citadel, six distinct operating districts, water, connected terraces and ongoing verified construction">
    <div className="pointer-events-none absolute left-3 top-3 z-10 max-w-[76%] rounded-lg border border-[#e7bb6c]/40 bg-[#17151c]/85 px-3 py-2 text-xs font-medium text-[#fff0d0] shadow-lg">Tap a building to select · Drag to explore · Pinch to zoom</div>
    <Premium3DRecoveryBoundary>
     <Canvas camera={{position:[26,22,30],fov:47,near:.1,far:140}}
@@ -399,9 +400,9 @@ export default function FileFolderPremiumWorld({
   <div className="border-t border-[#b99355]/30 bg-[#252029] p-4 sm:p-5">
    <p className="text-xs font-bold uppercase tracking-widest text-[#ebc485]">Your six working places</p>
    <p className="mt-1 text-sm leading-6 text-[#e0d1c0]">Each building has a different responsibility. The spaces are real workshops; the world itself does not invent earnings, orders or completed construction.</p>
-   <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
+   <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
     {STATIONS.map(s=><button key={s.key} type="button" aria-pressed={selected===s.key}
-      onClick={()=>setSelected(s.key)} className={'min-h-12 rounded-lg border px-3 py-3 text-left text-sm font-semibold '+(selected===s.key?'border-[#f4c977] bg-[#5b4529] text-[#fff2d9]':'border-[#706054] bg-[#302932] text-[#e0d1bf]')}>
+      onClick={()=>setSelected(s.key)} className={'min-h-24 rounded-2xl border px-4 py-4 text-left text-base font-semibold shadow-[inset_0_1px_0_rgba(255,235,196,.1)] '+(selected===s.key?'border-[#f4c977] bg-[#5b4529] text-[#fff2d9]':'border-[#706054] bg-[#302932] text-[#e0d1bf]')}>
        <span className="block text-sm">{s.name}</span><span className="mt-1 block text-xs font-normal leading-5 text-[#e2c7a6]">{stationStatus[s.key]}</span>
       </button>)}
    </div>

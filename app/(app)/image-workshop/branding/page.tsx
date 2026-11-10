@@ -67,6 +67,8 @@ export default function WeaveMaterialBranding(){
   const [offsetY,setOffsetY]=useState(0)
   const [rotation,setRotation]=useState(0)
   const [photoUrl,setPhotoUrl]=useState('')
+  const [productPhotoUrl,setProductPhotoUrl]=useState('')
+  const [productPhotoHash,setProductPhotoHash]=useState('')
   const [artworkHash,setArtworkHash]=useState('')
   const [licenseId,setLicenseId]=useState('')
   const [requestId,setRequestId]=useState('')
@@ -80,13 +82,15 @@ export default function WeaveMaterialBranding(){
   const fee=user?.role==='admin'?0:Number(studio?.fee??1)
   const change=()=>{setLicenseId('');setAccepted(false)}
   useEffect(()=>{if(photoUrl)return()=>URL.revokeObjectURL(photoUrl)},[photoUrl])
+  useEffect(()=>{if(productPhotoUrl)return()=>URL.revokeObjectURL(productPhotoUrl)},[productPhotoUrl])
   useEffect(()=>{
     if(!user?.id)return
     fetch('/api/image-workshop/samples',{headers:auth(),cache:'no-store'}).then(r=>r.json()).then((d:Studio)=>{if(d.success)setStudio(d)}).catch(()=>setNotice('Production fees and customer work are temporarily unavailable.'))
   },[user?.id])
   const edits:SampleEdits|null=sample&&defaultEdits?{
     ...defaultEdits,brand:brand.trim().slice(0,55),headline:headline.trim().slice(0,110),accent,
-    ...(artworkHash?{artworkHash}:{}),
+    ...(artworkHash||productPhotoHash?{artworkHash:artworkHash||productPhotoHash}:{}),
+    ...(productPhotoHash?{productPhotoHash}:{}),
     ...(printText.trim()?{printText:printText.trim()}:{}),
     printColor,printX:offsetX,printY:offsetY,printScale:scale,printRotation:rotation,
     format:'portrait',
@@ -97,18 +101,18 @@ export default function WeaveMaterialBranding(){
     setReady(false)
     const svg=renderWeaveSampleSvg(sample,edits,!licenseId)
     const imageUrl='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg)
-    Promise.all([loadImage(imageUrl),photoUrl?loadImage(photoUrl):Promise.resolve(null)])
-      .then(([background,art])=>{
+    Promise.all([loadImage(imageUrl),photoUrl?loadImage(photoUrl):Promise.resolve(null),productPhotoUrl?loadImage(productPhotoUrl):Promise.resolve(null)])
+      .then(([background,art,product])=>{
         if(cancelled)return
         const ctx=canvas.getContext('2d');if(!ctx)return
         canvas.width=1080;canvas.height=1350
         ctx.clearRect(0,0,1080,1350)
-        ctx.drawImage(background,0,0,1080,1350)
-        placement(ctx,sampleId,art,printText,printColor,scale,offsetX,offsetY,rotation)
+        if(product){ctx.drawImage(product,0,0,1080,1350);ctx.fillStyle='rgba(0,0,0,.48)';ctx.fillRect(0,0,1080,95);ctx.fillStyle='#f6e5c2';ctx.font='bold 32px Arial';ctx.fillText(brand.slice(0,40),32,57);if(!licenseId){ctx.fillStyle='rgba(0,0,0,.48)';ctx.fillRect(0,1250,1080,100);ctx.fillStyle='white';ctx.font='bold 30px Arial';ctx.fillText('WEAVE PREVIEW · NOT LICENSED',30,1310)}}else ctx.drawImage(background,0,0,1080,1350)
+        if(!product)placement(ctx,sampleId,art,printText,printColor,scale,offsetX,offsetY,rotation)
         setReady(true)
       }).catch(()=>{if(!cancelled)setNotice('Preview unavailable. Check the uploaded image and try again.')})
     return()=>{cancelled=true}
-  },[sampleId,brand,headline,printText,printColor,accent,scale,offsetX,offsetY,rotation,photoUrl,licenseId])
+  },[sampleId,brand,headline,printText,printColor,accent,scale,offsetX,offsetY,rotation,photoUrl,productPhotoUrl,licenseId])
   const upload=async(event:ChangeEvent<HTMLInputElement>)=>{
     const file=event.target.files?.[0];if(!file)return
     if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>5*1024*1024||!file.size){
@@ -121,6 +125,15 @@ export default function WeaveMaterialBranding(){
       setPhotoUrl(URL.createObjectURL(file))
       change();setNotice('Your artwork is loaded locally and has not been sent to a provider.')
     }catch{setNotice('Unable to read that artwork on this phone.')}
+  }
+  const uploadProductPhoto=async(event:ChangeEvent<HTMLInputElement>)=>{
+    const file=event.target.files?.[0];if(!file)return
+    if(!['image/jpeg','image/png','image/webp'].includes(file.type)||!file.size||file.size>5*1024*1024){setNotice('Choose an actual product photograph in JPG, PNG or WEBP, up to 5MB.');return}
+    const bytes=await file.arrayBuffer()
+    const digest=await crypto.subtle.digest('SHA-256',bytes)
+    setProductPhotoHash(Array.from(new Uint8Array(digest)).map(x=>x.toString(16).padStart(2,'0')).join(''))
+    setProductPhotoUrl(URL.createObjectURL(file));change()
+    setNotice('Your real product photograph is now the preview. It stays on your device; do not advertise stock you cannot supply.')
   }
   const license=async()=>{
     if(!edits||!sample||!accepted)return
@@ -146,11 +159,10 @@ export default function WeaveMaterialBranding(){
       const blob=new Blob([await res.text()],{type:'image/svg+xml;charset=utf-8'})
       const svgURL=URL.createObjectURL(blob)
       try{
-        const [background,art]=await Promise.all([loadImage(svgURL),photoUrl?loadImage(photoUrl):Promise.resolve(null)])
+        const [background,art,product]=await Promise.all([loadImage(svgURL),photoUrl?loadImage(photoUrl):Promise.resolve(null),productPhotoUrl?loadImage(productPhotoUrl):Promise.resolve(null)])
         const canvas=document.createElement('canvas');canvas.width=1080;canvas.height=1350
         const ctx=canvas.getContext('2d');if(!ctx)throw Error('Image export is unavailable on this phone.')
-        ctx.drawImage(background,0,0,1080,1350)
-        placement(ctx,sampleId,art,printText,printColor,scale,offsetX,offsetY,rotation)
+        if(product){ctx.drawImage(product,0,0,1080,1350);ctx.fillStyle='rgba(0,0,0,.48)';ctx.fillRect(0,0,1080,95);ctx.fillStyle='#f6e5c2';ctx.font='bold 32px Arial';ctx.fillText(brand.slice(0,40),32,57)}else{ctx.drawImage(background,0,0,1080,1350);placement(ctx,sampleId,art,printText,printColor,scale,offsetX,offsetY,rotation)}
         const png=await new Promise<Blob>((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(Error('PNG export failed.')),'image/png'))
         const url=URL.createObjectURL(png)
         const a=document.createElement('a');a.href=url;a.download='weave-brand-'+sampleId+'.png'
@@ -170,12 +182,13 @@ export default function WeaveMaterialBranding(){
         <Link href="/image-workshop" className="inline-flex items-center gap-2 text-sm text-cyan-200"><ArrowLeft size={16}/>Image House</Link>
         <p className="mt-5 text-xs font-bold uppercase tracking-widest text-amber-200">WEAVE · Material and artist branding</p>
         <h1 className="mt-2 text-3xl font-black leading-tight sm:text-4xl">Put your own artwork on real-world products</h1>
-        <p className="mt-3 max-w-3xl text-base leading-7 text-slate-200">Make a clothing label, present merchandise, customize product packaging or extend an artist's work onto merchandise. The editor works on your phone without an image-generation API. These are product mockups, not proof of manufactured stock.</p>
+        <p className="mt-3 max-w-3xl text-base leading-7 text-slate-200">Use a photograph of an actual product you own or are authorized to sell. The existing vector scenes are design sketches, not photographs or proof of stock. The editor works on your phone without an image-generation API. These are product mockups, not proof of manufactured stock.</p>
       </header>
       {notice&&<div role="status" className="rounded-xl border border-cyan-200/20 p-4 text-sm leading-6">{notice}</div>}
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,.95fr)]">
         <section className="space-y-5 rounded-3xl border border-white/10 bg-[#0e2030] p-4 sm:p-6">
           <div className="flex items-center gap-2"><SlidersHorizontal size={20} className="text-cyan-200"/><h2 className="text-xl font-bold">Choose and edit a material</h2></div>
+          <div className="rounded-2xl border border-amber-300/40 bg-amber-300/[.08] p-4" data-real-product-photo="required-for-real-product-claims"><label className="block text-base font-bold text-amber-100">Real product photograph<input type="file" accept="image/jpeg,image/png,image/webp" className="mt-3 block w-full text-sm" onChange={event=>void uploadProductPhoto(event)}/></label><p className="mt-2 text-sm leading-6 text-stone-200">Upload an authentic photograph of your shirt, bag, packaging or other product. Weave will not describe its drawn templates as real merchandise. Photograph ownership and permission remain your responsibility.</p>{productPhotoUrl&&<button type="button" className={button+" mt-3"} onClick={()=>{setProductPhotoUrl("");setProductPhotoHash("");change()}}>Remove product photograph</button>}</div>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
             {MATERIAL_MOCKUPS.map(item=><button type="button" key={item.sampleId} onClick={()=>{setSampleId(item.sampleId);setBrand(findImageSample(item.sampleId)?.brand||'YOUR BRAND');setAccent(findImageSample(item.sampleId)?.palette[3]||'#b9a36f');change()}} aria-pressed={sampleId===item.sampleId} className={'min-h-20 rounded-xl border p-3 text-left '+(sampleId===item.sampleId?'border-cyan-200 bg-cyan-200/10':'border-white/15')}><span className="block text-sm font-bold">{item.title}</span><span className="mt-1 block text-xs text-slate-300">{item.kind}</span></button>)}
           </div>
@@ -204,7 +217,7 @@ export default function WeaveMaterialBranding(){
           </label>}
           <div className="rounded-xl border border-amber-200/25 bg-amber-200/[.05] p-4">
             <h3 className="text-base font-bold text-amber-100">Commercial licensing</h3>
-            <p className="mt-2 text-sm leading-6 text-slate-200">Your preview is free. {user.role==='admin'?'Official Administrations exports carry no internal fee.':'The company license for a new customized mockup is '+fee+' System Switch. You choose any separate customer service quote; it is not collected here.'}</p>
+            <p className="mt-2 text-sm leading-6 text-slate-200">Your preview is free. Real product photos stay on your device. {user.role==='admin'?'Official Administrations exports carry no internal fee.':'The company license for a new customized mockup is '+fee+' System Switch. You choose any separate customer service quote; it is not collected here.'}</p>
             <label className="mt-3 flex items-start gap-2 text-sm leading-6 text-slate-200"><input type="checkbox" checked={accepted} onChange={e=>setAccepted(e.target.checked)} className="mt-1 h-5 w-5"/>I approve the shown fee and have rights to use any uploaded artwork. This is a digital preview, not a physical print order.</label>
           </div>
           {licenseId?
