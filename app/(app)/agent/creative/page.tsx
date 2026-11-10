@@ -173,7 +173,8 @@ export default function AgentCreativeStudio() {
       <h1 className="text-3xl font-bold sm:text-5xl">WEAVE CREATIVE STUDIO</h1>
       <p className="max-w-3xl text-sm leading-6 text-slate-300">Design clear commercial images for stores, products and companies. Create a finished PNG on your phone, or open the Video Studio for moving advertisements. You can sell the finished work to outside customers at your own price.</p>
       <div className="flex flex-wrap gap-3">
-        <span className="border border-emerald-300/20 bg-emerald-300/5 px-3 py-2 text-xs text-emerald-200">Classic image layout · 0 Flame Coin</span>
+        <span className="border border-emerald-300/20 bg-emerald-300/5 px-3 py-2 text-xs text-emerald-200">Classic image layout · 0 System Switch</span>
+        <Link href="/image-workshop" className="inline-flex items-center border border-sky-300/50 bg-sky-300/10 px-3 py-2 text-xs font-bold text-sky-100">OPEN ADVANCED AI IMAGE WORKSHOP</Link>
         <span className="border border-amber-300/20 bg-amber-300/5 px-3 py-2 text-xs text-amber-200">Video production · role-based pricing shown in Video Studio</span>
       </div>
     </header>
