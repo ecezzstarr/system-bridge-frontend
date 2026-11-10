@@ -1,4 +1,5 @@
 'use client'
+import { displayCurrencyName } from '@/lib/flame-coin'
 import { buildFormationProgress } from '@/lib/file-folder-world-runtime'
 import { quoteFileFolderBlueprint } from '@/lib/file-folder-build-quote'
 import { institutionalArchetype } from '@/lib/file-folder-institutional-visual'
@@ -763,7 +764,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
                 <p className="mt-4 text-2xl font-black text-white">
                   {Number(data.vault?.balance || 0).toLocaleString(undefined, { maximumFractionDigits: 8 })}
                 </p>
-                <p className="text-[10px] text-slate-500">{data.vault?.currency || 'System Switch'} · Client Vault</p>
+                <p className="text-[10px] text-slate-500">{displayCurrencyName(data.vault?.currency || 'System Switch')} · Client Vault</p>
                 <div className="mt-4 space-y-2 text-[10px] text-slate-400">
                   <div className="flex justify-between rounded-lg bg-white/[0.03] px-3 py-2">
                     <span>Main wallet</span>
