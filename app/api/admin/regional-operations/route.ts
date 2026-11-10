@@ -15,8 +15,18 @@ export async function GET(request:NextRequest){
     await ensureRegionalOperationsSchema()
     const pool=getPool()
     const [manager,team,bridger,agent,distribution,food,foodLinks,daily,staffCheckins]=await Promise.all([
-      pool.query(`SELECT rm.user_id AS manager_id,u.name,rm.source_role,rm.appointed_at
-        FROM weave_regional_manager_appointments rm JOIN users u ON u.id=rm.user_id
+      pool.query(`SELECT rm.user_id AS manager_id,u.name,rm.source_role,rm.appointed_at,
+        COALESCE(app.region,'Assigned Region') AS region,
+        latest.direction AS current_direction,latest.created_at AS direction_at
+        FROM weave_regional_manager_appointments rm
+        JOIN users u ON u.id=rm.user_id
+        LEFT JOIN weave_regional_manager_applications app
+          ON app.user_id=rm.user_id AND app.status='approved'
+        LEFT JOIN LATERAL (
+          SELECT direction,created_at FROM weave_regional_gate_directions d
+          WHERE d.regional_manager_user_id=rm.user_id
+          ORDER BY d.created_at DESC LIMIT 1
+        ) latest ON true
         WHERE rm.status='active' AND u.is_active=true ORDER BY rm.appointed_at DESC LIMIT 150`),
       regionalTeam(null,null),
       pool.query(`SELECT id AS user_id,name FROM users
