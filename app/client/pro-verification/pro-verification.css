@@ -382,3 +382,8 @@
   #weave-pro-verification .pv-feature-heading h2 {font-size:27px;}
   #weave-pro-verification .pv-benefit {padding:20px;}
 }
+
+/* Keep emphasized figures larger than the body-copy minimum. */
+#weave-pro-verification .pv-panel p.text-3xl {font-size:30px !important;line-height:1.25;}
+#weave-pro-verification .pv-panel p.text-lg {font-size:20px !important;line-height:1.4;}
+#weave-pro-verification .pv-panel .font-mono {overflow-wrap:anywhere;}
