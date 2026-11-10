@@ -1,48 +1,74 @@
 const fs=require('node:fs')
 const path=require('node:path')
+const vm=require('node:vm')
 const assert=require('node:assert/strict')
 const ts=require('typescript')
 const root=path.resolve(__dirname,'..')
 const read=p=>fs.readFileSync(path.join(root,p),'utf8')
-
-const paths=[
-  'lib/weave-image-workshop.ts',
-  'app/api/image-workshop/route.ts',
-  'app/api/image-workshop/media/route.ts',
-  'app/(app)/image-workshop/page.tsx',
+const typescriptFiles=[
+ 'lib/weave-image-sample-art.ts',
+ 'lib/weave-image-sample-commerce.ts',
+ 'app/api/image-workshop/samples/route.ts',
+ 'app/api/image-workshop/samples/export/route.ts',
+ 'app/api/image-service/[code]/route.ts',
+ 'app/image-service/[code]/page.tsx',
+ 'app/(app)/image-workshop/page.tsx',
 ]
-for(const name of paths){
-  const source=read(name)
-  const file=ts.createSourceFile(name,source,ts.ScriptTarget.Latest,true,
-    name.endsWith('.tsx')?ts.ScriptKind.TSX:ts.ScriptKind.TS)
-  assert.equal(file.parseDiagnostics.length,0,name+' should parse as TypeScript')
+for(const name of typescriptFiles){
+ const file=ts.createSourceFile(name,read(name),ts.ScriptTarget.Latest,true,name.endsWith('.tsx')?ts.ScriptKind.TSX:ts.ScriptKind.TS)
+ assert.equal(file.parseDiagnostics.length,0,name+' has no TS/JSX parse errors')
 }
-const shared=read(paths[0])
-const api=read(paths[1])
-const media=read(paths[2])
-const page=read(paths[3])
-const publicMedia=read('app/api/media/[...path]/route.ts')
-const world=read('components/world/weave-dashboard-world.tsx')
-const authority=read('app/(app)/authority/workshops/page.tsx')
-const classic=read('app/(app)/agent/creative/page.tsx')
+const src=read('lib/weave-image-sample-art.ts')
+const mod={exports:{}}
+vm.runInNewContext(ts.transpileModule(src,{compilerOptions:{target:ts.ScriptTarget.ES2020,module:ts.ModuleKind.CommonJS}}).outputText,
+ {exports:mod.exports,require:name=>{throw Error('Offline art must not import '+name)}},{filename:'lib/weave-image-sample-art.ts'})
+const {WEAVE_IMAGE_SAMPLES,WEAVE_SAMPLE_FORMATS,defaultSampleEdits,normalizeSampleEdits,renderWeaveSampleSvg}=mod.exports
+assert.equal(WEAVE_IMAGE_SAMPLES.length,36,'Thirty-six ready-made original designs exist')
+assert.equal(new Set(WEAVE_IMAGE_SAMPLES.map(x=>x.category)).size,12,'Twelve distinct business visual categories')
+assert.equal(new Set(WEAVE_IMAGE_SAMPLES.map(x=>x.id)).size,36,'Every sample has an independent ID')
+assert.equal(new Set(WEAVE_IMAGE_SAMPLES.map(x=>x.motif)).size,12,'Each category has its own original illustrated scene')
+for(const sample of WEAVE_IMAGE_SAMPLES){
+ const edits=defaultSampleEdits(sample)
+ const preview=renderWeaveSampleSvg(sample,edits,true)
+ const licensed=renderWeaveSampleSvg(sample,edits,false)
+ assert.ok(preview.includes('WEAVE SAMPLE · PREVIEW'),sample.id+' preview carries a watermark')
+ assert.ok(!licensed.includes('WEAVE SAMPLE · PREVIEW'),sample.id+' licensed work is unwatermarked')
+ assert.ok(licensed.includes('MADE WITH WEAVE'),sample.id+' retains creator provenance')
+ assert.ok(licensed.includes('<svg')&&licensed.includes('<g>'),sample.id+' is actual vector artwork')
+}
+const sample=WEAVE_IMAGE_SAMPLES[0]
+const unsafe=normalizeSampleEdits(sample,{headline:'<script>alert(1)</script>',brand:'<svg onload="bad">',format:'wide',accent:'#ca2121'})
+const safe=renderWeaveSampleSvg(sample,unsafe,false)
+assert.ok(safe.includes('&lt;script&gt;')&&!safe.includes('<script>')&&!safe.includes('<svg onload='),'Customer text cannot inject SVG markup')
+assert.ok(safe.includes('width="1600" height="900"'),'Wide exports use real export resolution')
+assert.ok(WEAVE_SAMPLE_FORMATS.story.height===1920,'Portrait story-format deliverables are supported')
 
-assert.ok(shared.includes("process.env.WEAVE_IMAGE_WORKSHOP_ENABLED === 'true'"),'AI provider requires company opt-in')
-assert.ok(shared.includes('OPENAI_API_KEY'),'The provider key stays on the server')
-assert.ok(shared.includes('weave_image_workshop_jobs')&&shared.includes('weave_image_workshop_assets'),'Jobs and private gallery persist')
-assert.ok(shared.includes("'legion'"),'Employed Legions retain workshop access')
-assert.ok(api.includes('getAuthUser(req)')&&api.includes('IMAGE_WORKSHOP_ROLES.has(user.role)'),'Every request authenticates role')
-assert.ok(api.includes('pg_advisory_xact_lock')&&api.includes('imageWorkshopDailyLimit()'),'Concurrent uses cannot bypass budget limits')
-assert.ok(api.includes('imageBytesMatch')&&api.includes('8*1024*1024'),'Uploaded reference content and size are validated')
-assert.ok(api.includes('https://api.openai.com/v1/images/generations')&&api.includes('https://api.openai.com/v1/images/edits'),'Real image-generation and editing endpoints are connected')
-assert.ok(api.includes("imageField=references.length===1?'image':'image[]'"),'Multiple reference files are transmitted')
-assert.ok(api.includes("status='completed'")&&api.includes("status='failed'"),'Provider requests are recorded by outcome')
-assert.ok(media.includes('user_id=$2::uuid')&&media.includes('getAuthUser(req)'),'Only image owners can fetch their files')
-assert.ok(publicMedia.includes("objectName.startsWith('weave-private/images/')"),'The public media route explicitly denies private AI assets')
-assert.ok(page.includes('FormData()')&&page.includes("form.append('references',file)")&&page.includes('refineId'),'Browser supports uploads and iterative edits')
-assert.ok(page.includes('URL.createObjectURL')&&page.includes('URL.revokeObjectURL'),'Image previews use revocable private local URLs')
-assert.ok(page.includes('/api/image-workshop/media?asset='),'Gallery retrieves authorized thumbnails and downloads')
-assert.ok(page.includes('1024x1536')&&page.includes('1536x1024'),'Portrait and landscape creation supported')
-assert.ok(world.includes('data-shared-advanced-image-workshop={role}'),'Role worlds surface advanced creation')
-assert.ok(authority.includes("href: '/image-workshop'"),'Administrations can enter through Authority workshops')
-assert.ok(classic.includes('OPEN ADVANCED AI IMAGE WORKSHOP'),'The free classic canvas studio remains available alongside AI')
-console.log('Advanced WEAVE image production authorization, privacy, controls and navigation contracts verified')
+const commerce=read('lib/weave-image-sample-commerce.ts')
+const api=read('app/api/image-workshop/samples/route.ts')
+const exportApi=read('app/api/image-workshop/samples/export/route.ts')
+const publicApi=read('app/api/image-service/[code]/route.ts')
+const page=read('app/(app)/image-workshop/page.tsx')
+const publicPage=read('app/image-service/[code]/page.tsx')
+const registry=read('lib/weave-environment-registry.ts')
+const authority=read('app/(app)/authority/workshops/page.tsx')
+assert.ok(commerce.includes('BEGIN')&&commerce.includes('FOR UPDATE')&&commerce.includes('COMMIT')&&commerce.includes('ROLLBACK'),'License payment is transactional')
+assert.ok(commerce.includes('balance_trx=balance_trx-$1')&&commerce.includes('SYSTEM_SWITCH'),'Company System Switch production fees are debited and labeled correctly')
+assert.ok(commerce.includes("'image_sample_workshop'")&&commerce.includes('weave_receipts'),'Company purchase receipts persist')
+assert.ok(commerce.includes('user_id=$1::uuid AND content_hash=$2'),'Identical checkout retries are idempotent')
+assert.ok(commerce.includes('sampleFingerprint(sampleId,edits,serviceOrderId)'), 'Commercial licenses are scoped to specific customer jobs')
+assert.ok(commerce.includes('serviceOrderId:string|null=null'),'Separate customer commissions have separate license keys')
+assert.ok(commerce.includes("role==='admin'?0"),'Official Administrations artwork does not count as a paid sale')
+assert.ok(commerce.includes('weave_image_sample_requests')&&commerce.includes('weave_image_sample_providers'),'Service identity and customer requests persist')
+assert.ok(api.includes("action==='admin_set_fee'")&&api.includes("user.role!=='admin'"),'Only Administrations publishes production fee')
+assert.ok(api.includes('companyDaily')||commerce.includes('companyDaily'),'Administrations see actual daily sales')
+assert.ok(exportApi.includes('user_id=$2::uuid')&&exportApi.includes('svg_snapshot'),'Only the owner downloads the paid exact SVG')
+assert.ok(exportApi.includes('Content-Disposition')&&exportApi.includes('nosniff'),'Licensed media is served with hardened headers')
+assert.ok(publicApi.includes('customer_brief')&&publicApi.includes('24 hours'),'Public customer requests are recorded and rate-limited')
+assert.ok(publicPage.includes('No payment is collected on this page.'),'Customer door does not falsely claim payment')
+assert.ok(page.includes('renderWeaveSampleSvg')&&page.includes('data:image/svg+xml'),'Previews run without remote AI or asset providers')
+assert.ok(page.includes("send('checkout'")&&page.includes('canvas.toBlob'),'User approves a paid licence before PNG export')
+assert.ok(page.includes('serviceDoorUrl')&&page.includes('customerOrderId'),'Users can get commissions and tie deliverables to orders')
+assert.ok(page.includes('companyDaily')&&page.includes('admin_set_fee'),'Daily sales and fee configuration accessible to Administrations')
+assert.ok(registry.includes("route:'/image-workshop'"),'The Image House is an actual WEAVE environment')
+assert.ok(authority.includes("href: '/image-workshop'"),'Administrations workshop door is present')
+console.log('WEAVE Image House: 36 original samples, no-API preview, payment, licenses, customer door and daily company accounting verified')
