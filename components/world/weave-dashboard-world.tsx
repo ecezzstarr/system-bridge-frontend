@@ -151,8 +151,8 @@ export function WeaveDashboardWorld({
       {hasRolePresence&&<Link href="/image-workshop" data-shared-advanced-image-workshop={role}
         className="mb-3 flex min-h-20 w-full items-center gap-3 rounded-2xl border border-cyan-300/25 bg-cyan-300/[.06] px-4 py-3">
         <Clapperboard className="h-6 w-6 shrink-0 text-cyan-200"/>
-        <span><span className="block text-xs font-black uppercase text-white">AI Image Workshop · Advanced creation</span>
-        <span className="mt-1 block text-[10px] leading-4 text-slate-300">Generate, edit and refine professional images with references. Save your work privately.</span></span>
+        <span><span className="block text-xs font-black uppercase text-white">WEAVE Image House · Original commercial artwork</span>
+        <span className="mt-1 block text-[10px] leading-4 text-slate-300">Choose from 36 original samples, personalize and license finished customer artwork.</span></span>
       </Link>}
 
       <div className="my-2 border-y border-white/[.07] py-2">
@@ -227,8 +227,8 @@ export function WeaveDashboardWorld({
     {hasRolePresence&&<Link href="/image-workshop" data-shared-advanced-image-workshop={role}
       className="group absolute bottom-[20%] left-1/2 z-20 hidden -translate-x-1/2 items-center gap-2 border border-cyan-300/25 bg-black/40 px-4 py-2.5 backdrop-blur-xl sm:flex">
       <Clapperboard className="h-4 w-4 text-cyan-200"/>
-      <span><span className="block text-[9px] font-black uppercase tracking-[.12em] text-white">Advanced AI Image Workshop</span>
-      <span className="mt-0.5 block text-[8px] text-slate-400">Generate and edit original images · Private gallery</span></span>
+      <span><span className="block text-[9px] font-black uppercase tracking-[.12em] text-white">WEAVE Image House · Commercial designs</span>
+      <span className="mt-0.5 block text-[8px] text-slate-400">36 original samples · Sell finished customer artwork</span></span>
     </Link>}
     {hasVideoStudio&&<Link
       href="/video-ad-studio"
