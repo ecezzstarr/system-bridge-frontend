@@ -30,7 +30,6 @@ export default function RegionalDailyWorkspace(){
   const [workStatus,setWorkStatus]=useState('working')
   const [summary,setSummary]=useState('')
   const [notes,setNotes]=useState<Record<string,string>>({})
-  const [supportStatus,setSupportStatus]=useState<Record<string,string>>({})
   const load=useCallback(async()=>{
     if(!token)return
     try{
