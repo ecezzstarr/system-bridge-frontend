@@ -34,7 +34,7 @@ assert(tickets.includes('departmentEntryTicketPrice(department)'), 'Server price
 assert(tickets.includes('priceSystemSwitch * rateNgnPerTrx * 100'), 'NGN quote based on selected role price')
 assert(tickets.includes('${priceSystemSwitch}'), 'New ticket stores the exact role price')
 assert(!tickets.includes('PRICE_FLAME_COIN = 3'), 'Old common-price constant retired')
-assert(tickets.includes('ALTER COLUMN price_flame_coin DROP DEFAULT'), 'No silent legacy common-price default')
+assert(!tickets.includes('ALTER TABLE departmental_entry_tickets ALTER COLUMN price_flame_coin DROP DEFAULT'), 'Ticket reads do not take repeated schema locks')
 assert(migration.includes('DROP DEFAULT'), 'Existing schema migration drops old default')
 assert(tickets.includes('price_flame_coin NUMERIC(30,8) NOT NULL,'), 'Fresh table requires an explicit price')
 assert(paystack.includes('Number(ticket.amount_ngn) * 100'), 'Paystack uses recorded ticket NGN quote')
