@@ -9,10 +9,11 @@ type Manager={manager_id:string;name:string;source_role:string;staff:number;dire
 type Member={manager_id:string;user_id:string;name:string;role:string;position:string;level:string}
 type FoodAssignment={food_manager_user_id:string;regional_manager_user_id:string}
 type Report={managers:Manager[];team:Member[];foodAssignments:FoodAssignment[];
-  candidates:{bridgers:Person[];distributionManagers:Person[];foodDistributionManagers:Person[]};
+  candidates:{bridgers:Person[];agents:Person[];distributionManagers:Person[];foodDistributionManagers:Person[]};
   generatedAt:string}
 const options=[
   {value:'bridger',title:'Bridger · Hope'},
+  {value:'agent',title:'Agent · Stability'},
   {value:'distribution',title:'Distribution Manager · Lead'},
   {value:'food',title:'Food Distribution Manager · Lead'},
 ]
@@ -48,9 +49,9 @@ export default function AdminRegionalOperations(){
     if(!token)return
     setWorking(true);setError('');setMessage('')
     try{
-      const food=kind==='food'
+      const food=kind==='food'||kind==='agent'
       const path=food?'/api/admin/regional-operations':'/api/admin/regional-managers'
-      const postAction=food?(action==='assign'?'assign_food_lead':'unassign_food_lead'):
+      const postAction=food?(kind==='agent'?(action==='assign'?'assign_agent':'unassign_agent'):(action==='assign'?'assign_food_lead':'unassign_food_lead')):
         kind==='bridger'?(action==='assign'?'assign_bridger':'unassign_bridger'):
           (action==='assign'?'assign_distribution_manager':'unassign_distribution_manager')
       const body=food?{action:postAction,foodManagerId:memberId,regionalManagerId:managerId}:
@@ -68,6 +69,7 @@ export default function AdminRegionalOperations(){
   if(user?.role!=='admin')return <main className="p-6 text-slate-200">Administrations access only.</main>
   if(!report)return <main className="p-6 text-rose-200">{error||'Regional records unavailable'}</main>
   const candidates=position==='bridger'?report.candidates.bridgers:
+    position==='agent'?report.candidates.agents:
     position==='distribution'?report.candidates.distributionManagers:
     report.candidates.foodDistributionManagers
   const counts={
@@ -99,7 +101,7 @@ export default function AdminRegionalOperations(){
     </div>
     <section className="space-y-3 rounded-xl border border-white/15 bg-slate-950/70 p-4">
       <h2 className="text-xl font-black">Authorize regional team assignments</h2>
-      <p className="text-sm text-slate-300">Select an active ordinary Regional Manager, then an eligible direct Bridger or approved lead. Assistants inherit their own verified supervisor and are not independently reassigned here.</p>
+      <p className="text-sm text-slate-300">Select an active ordinary Regional Manager, then an eligible direct Bridger/Agent or approved lead. Assistants inherit their own verified supervisor and are not independently reassigned here.</p>
       <div className="grid gap-3 sm:grid-cols-3">
         <label className="block text-xs text-slate-300">Regional Manager
           <select value={regionId} onChange={e=>setRegionId(e.target.value)} className="mt-2 w-full rounded-lg border border-white/20 bg-slate-950 p-3 text-white">
@@ -145,7 +147,7 @@ export default function AdminRegionalOperations(){
             {!people.length?<p className="text-xs text-slate-400">No assigned staff yet.</p>:
             <div className="space-y-2">
               {people.map((p,i)=>{
-                const kind=p.position==='Bridger'?'bridger':
+                const kind=p.position==='Bridger'?'bridger':p.position==='Agent'?'agent':
                   p.position==='Distribution Manager'?'distribution':
                     p.position==='Food Distribution Manager'?'food':null
                 return <div key={p.user_id+'-'+i} className="flex flex-wrap items-center justify-between gap-2 border-t border-white/10 pt-2 text-xs">
