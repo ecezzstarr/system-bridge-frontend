@@ -12,6 +12,9 @@ const catalog=read('lib/admin-workplace-catalog.ts')
 const staff=read('app/(app)/weave/lifestyles/work/page.tsx')
 
 assert(model.includes('weave_regional_manager_food_distribution_leads'),'Food lead region linkage is separate and authorized')
+assert(model.includes('weave_regional_manager_agents'),'Ordinary Agent regional assignment persists')
+assert(model.includes("u.role='agent'"),'Ordinary Agent must hold the actual Stability role')
+assert(model.includes('ROW_NUMBER() OVER(PARTITION BY manager_id,user_id'),'Overlapping roles cannot double count staff')
 assert(model.includes("e.position='manager' AND e.status='approved'"),'Food lead verified before inclusion')
 assert(model.includes("a.position='assistant' AND a.status='approved'"),'Food assistants inherit the verified lead')
 assert(model.includes("w.manager_user_id=a.distribution_manager_user_id AND w.status='approved'"),'Distribution assistants inherit lead')
@@ -35,6 +38,8 @@ assert(member.includes("action==='respond_support'"),'Manager resolves worker su
 assert(member.includes("action==='task_progress'"),'Evidence and review workflow')
 assert(admin.includes("admin.role!=='admin'"),'Only Administrations assigns Food leads')
 assert(admin.includes("e.status='approved'"),'Approved food leads only')
+assert(appointed.includes("UPDATE weave_regional_manager_agents SET status='ended'"),
+  'Ending a region appointment terminates direct Agent assignments')
 assert(appointed.includes("UPDATE weave_regional_manager_food_distribution_leads SET status='ended'"),
   'Ending a region appointment terminates food oversight')
 assert(page.includes('setInterval(()=>void load(),20000)'),'Staff view refreshes every 20 sec')
