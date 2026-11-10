@@ -79,7 +79,7 @@ export async function GET(request:NextRequest) {
     const food=await read('carrierFood',['carrier_food_orders'],
       "SELECT COUNT(*) FILTER (WHERE payment_status='paid' AND status='fulfilled')::int AS fulfilled_orders, "+
       "COALESCE(SUM(quantity_packages) FILTER (WHERE payment_status='paid' AND status='fulfilled'),0)::int AS fulfilled_units, "+
-      "COALESCE(SUM(total_ngn) FILTER (WHERE payment_status='paid' AND status='fulfilled'),0)::numeric AS fulfilled_value_ngn, "+
+      "COALESCE(SUM(food_subtotal_ngn) FILTER (WHERE payment_status='paid' AND status='fulfilled'),0)::numeric AS fulfilled_value_ngn, "+
       "COUNT(*) FILTER (WHERE payment_status='paid' AND status<>'fulfilled' AND status<>'cancelled')::int AS paid_unfulfilled, "+
       "COUNT(*) FILTER (WHERE payment_status='proof_submitted')::int AS payment_proofs_pending "+
       "FROM carrier_food_orders WHERE (fulfilled_at >= "+since+
@@ -110,7 +110,7 @@ export async function GET(request:NextRequest) {
       "FROM carrier_cake_orders")
     const cakes=await read('cakes',['carrier_cake_orders'],
       "SELECT COUNT(*) FILTER (WHERE status='completed' AND payment_status='paid')::int AS fulfilled_orders, "+
-      "COALESCE(SUM(total_ngn) FILTER (WHERE status='completed' AND payment_status='paid'),0)::numeric AS fulfilled_value_ngn, "+
+      "COALESCE(SUM(quoted_price_ngn) FILTER (WHERE status='completed' AND payment_status='paid'),0)::numeric AS fulfilled_value_ngn, "+
       "COUNT(*) FILTER (WHERE payment_status='paid' AND status NOT IN ('completed','cancelled'))::int AS paid_unfulfilled, "+
       "COUNT(*) FILTER (WHERE payment_status='proof_submitted')::int AS payment_proofs_pending "+
       "FROM carrier_cake_orders WHERE (completed_at >= "+since+" OR created_at >= "+since+")")
@@ -163,7 +163,7 @@ export async function GET(request:NextRequest) {
       definitions:{
         prospect:'Completed package purchases, not verified human responses',
         agility:'Agent-recorded stock resale; payment is not independently verified by this record',
-        fulfilled:'Customer-paid and completed orders only',
+        fulfilled:'Agent-confirmed paid status plus completed orders only; values exclude delivery fees and are not independently bank reconciled by this report',
         folders:'Confirmed unique File Folder sale keys across current and historical rails',
         wallet:'Approved deposits with verified_at in selected period; pending is the current all-time queue',
         ledger:'Entry counts by type and currency, not revenue or cash balances'
