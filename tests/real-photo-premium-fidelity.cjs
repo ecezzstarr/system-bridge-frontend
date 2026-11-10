@@ -44,7 +44,7 @@ assert(read(paths[6]).includes('<ClientPremiumEstate />'),'Premium Client accoun
 assert(estate.includes("identity.tier!=='premium'")&&estate.includes("data.file_folder_tier!=='premium'")&&estate.includes("data.verified"),'Premium estate is shown only to verified Premium Client owners.')
 assert(estate.includes('/api/client/system-switch')&&estate.includes('file_folder_world'),'Premium account status is derived from persistent owner data.')
 assert(estate.includes('doorPublished')&&estate.includes("status==='building'")&&estate.includes("status==='active'"),'No fabricated construction, commissioned systems or published customer doors.')
-assert(owner.includes('tier===\\'premium\\'?<PremiumKingdomArchitecture/>')||owner.includes("tier==='premium'?<PremiumKingdomArchitecture/>"),'Premium owner account has a unique detailed citadel, not the generic castle.')
+assert(owner.includes("tier==='premium'?<PremiumKingdomArchitecture/>"),'Premium owner account has a unique detailed citadel, not the generic castle.')
 assert(owner.includes('premium-ceremonial-column')||premium.includes('premium-ceremonial-column'),'Premium architecture has premium-specific geometry.')
 assert(premium.includes('data-premium-file-folder-world="official-black-gold"')&&premium.includes('data-premium-district-navigation="six-active-workshops"')&&premium.includes('data-premium-private-estate-identity="monumental-obsidian-gold"'),'Private Premium world has an enhanced, legible estate interface.')
 assert(premium.includes('Premium3DRecoveryBoundary')&&premium.includes('data-premium-3d-recovery="webgl-unavailable"'),'The purchased estate is still usable if WebGL fails.')
