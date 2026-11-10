@@ -23,8 +23,9 @@ export const IMAGE_MODELS = ['gpt-image-2.5-flare','gpt-image-2.5-sunburst'] as 
 export type ImageModel = typeof IMAGE_MODELS[number]
 
 export function imageWorkshopConfigured() {
-  // Separate opt-in protects the company's image-provider budget.
-  return process.env.WEAVE_IMAGE_WORKSHOP_ENABLED === 'true' && Boolean(process.env.OPENAI_API_KEY)
+  // Production policy: no provider-billed generation, including when a stale host has API credentials.
+  // Participants use company-owned Image House templates and the offline material editor.
+  return false
 }
 
 export function imageWorkshopDailyLimit() {

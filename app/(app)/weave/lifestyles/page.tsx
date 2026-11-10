@@ -124,6 +124,7 @@ export default function WeaveLifestylesPage() {
           </div>
           <Sparkles className="h-8 w-8 shrink-0 text-yellow-400" />
         </div>
+        {(access?.role==='agent'||access?.role==='bridger')&&<Link href="/image-workshop/business" data-lifestyle-branding-business="true" className="mt-5 mr-3 inline-flex min-h-12 items-center rounded-xl border border-amber-300/35 bg-amber-300/10 px-5 py-3 text-sm font-bold text-amber-100">Start a branding business · Image templates, product mockups and ads →</Link>}
         {(access?.role==='agent'||access?.role==='bridger')&&<Link href="/weave/lifestyles/support" data-company-support-entry="true" className="mt-5 mr-3 inline-flex min-h-11 items-center border border-cyan-300/30 bg-cyan-300/[.06] px-5 py-3 text-xs font-black text-cyan-200">Work Support · Talk to a Manager →</Link>}
         {(access?.role==='agent'||access?.role==='bridger')&&<Link href="/weave/lifestyles/work" data-lifestyle-my-workspaces="true"
           className="mt-5 inline-flex min-h-11 items-center border border-emerald-300/30 bg-emerald-300/[.06] px-5 py-3 text-xs font-black text-emerald-200">

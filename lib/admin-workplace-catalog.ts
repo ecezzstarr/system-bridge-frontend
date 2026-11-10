@@ -347,6 +347,11 @@ export const ADMIN_SPACES:readonly AdminSpace[]=[
     "description": "Open the original Administration workshop."
   },
   {
+    "title": "Branding Business & Image Templates",
+    "href": "/admin/image-branding",
+    "description": "Curate original image and material templates, review Agent/Bridger/Client business formation, ads and verified System Switch license earnings."
+  },
+  {
     "title": "Visual Systems",
     "href": "/admin/visual-systems",
     "description": "Control approved visual systems and environments."
