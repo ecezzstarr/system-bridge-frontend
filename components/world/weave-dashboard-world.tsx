@@ -189,7 +189,7 @@ export function WeaveDashboardWorld({
           </span>
           <span className="min-w-0 flex-1 text-left">
             <span className="block text-[10px] font-black uppercase tracking-[.1em] text-white">Video Ad Studio</span>
-            <span className="mt-1 block text-[9px] leading-4 text-slate-400">Commission quality video content for your business with Flame Coin.</span>
+            <span className="mt-1 block text-[9px] leading-4 text-slate-400">Commission quality video content for your business with System Switch.</span>
           </span>
         </Link>
       </div>}
@@ -223,7 +223,7 @@ export function WeaveDashboardWorld({
       className="group absolute bottom-[7%] left-1/2 z-20 hidden -translate-x-1/2 items-center gap-2 border border-fuchsia-300/15 bg-black/30 px-4 py-2.5 backdrop-blur-xl sm:flex"
     >
       <Clapperboard className="h-4 w-4 text-fuchsia-200"/>
-      <span><span className="block text-[9px] font-black uppercase tracking-[.12em] text-white">{role==='agent'?'Image + Video Studio':'Video Ad Studio'}</span><span className="mt-0.5 block text-[8px] text-slate-500">{role==='agent'?'Image free · Video max 1.5 Flame Coin':'Business video production · Flame Coin'}</span></span>
+      <span><span className="block text-[9px] font-black uppercase tracking-[.12em] text-white">{role==='agent'?'Image + Video Studio':'Video Ad Studio'}</span><span className="mt-0.5 block text-[8px] text-slate-500">{role==='agent'?'Image free · Video max 1.5 System Switch':'Business video production · System Switch'}</span></span>
     </Link>}
 
     <div className="absolute inset-0 z-10 hidden sm:block">
