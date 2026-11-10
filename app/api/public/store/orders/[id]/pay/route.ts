@@ -17,7 +17,7 @@ export async function POST(request:NextRequest,{params}:{params:Promise<{id:stri
   if(!result.alreadyPaid){
     try{
       await notifyAdminOrder({orderId:id,event:'paid',department:'client',subject:'Customer Door wallet payment',
-        detail:`${result.amountFlameCoin} Flame Coin transferred from a customer to the Client Main Wallet. Receipt ${result.receiptNumber}.`,
+        detail:`${result.amountFlameCoin} System Switch transferred from a customer to the Client Main Wallet. Receipt ${result.receiptNumber}.`,
         adminPath:'/admin/orders',actorId:String(user.id),actorName:String(user.name||'Customer')})
     }catch(e){console.error('[Customer Door notification]',e)}
   }

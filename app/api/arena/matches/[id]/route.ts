@@ -3,7 +3,7 @@ import { getPool } from '@/lib/db'
 import { getAuthUser } from '@/lib/auth-api'
 import { ARENA_SETTLEMENT_DELAY_MINUTES, ensureWeaveLifestyleSchema } from '@/lib/weave-lifestyle'
 
-// Legacy regression markers only. This Ace-stream flow does not settle game outcomes in Flame Coin.
+// Legacy regression markers only. This Ace-stream flow does not settle game outcomes in System Switch.
 // WINNER_PERCENTAGE = 0.70
 // PLATFORM_PERCENTAGE = 0.30
 

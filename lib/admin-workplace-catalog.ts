@@ -10,6 +10,16 @@ export const ADMIN_SPACES:readonly AdminSpace[]=[
     "description": "Enter the unchanged Administration district world."
   },
   {
+    "title": "Company Movement Intelligence",
+    "href": "/admin/company-movement",
+    "description": "Monitor prospect purchases, Agent sales, verified Client File Folders, payment queues and transaction categories."
+  },
+  {
+    "title": "Regional Workforce Control",
+    "href": "/admin/regional-operations",
+    "description": "Assign approved regional leads and oversee employee daily participation and support requests."
+  },
+  {
     "title": "Administration Control Center",
     "href": "/admin/control-center",
     "description": "Open the current institutional controls and company authority."
@@ -189,9 +199,9 @@ export const ADMIN_SPACES:readonly AdminSpace[]=[
     "description": "Audit recorded subscription payment states."
   },
   {
-    "title": "Flame Coin Sales",
+    "title": "System Switch Sales",
     "href": "/admin/weave-flame-coin-sales",
-    "description": "Manage confirmed Flame Coin purchase operations."
+    "description": "Manage confirmed System Switch purchase operations."
   },
   {
     "title": "TRX Sales",

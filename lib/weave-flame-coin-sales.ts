@@ -90,7 +90,7 @@ export function ensureFlameCoinSalesSchema(){
 }
 
 /** Verified external payment grants only an entitlement pending an account and
- * available funded Flame Coin; never an unbacked wallet increment. The Admin
+ * available funded System Switch; never an unbacked wallet increment. The Admin
  * reserve loses exactly the value the buyer receives in the SAME transaction.
  */
 export async function creditVerifiedFlameCoinPurchase(input:{
@@ -104,7 +104,7 @@ export async function creditVerifiedFlameCoinPurchase(input:{
   try{
     await db.query('BEGIN')
     const [order]= (await db.query('SELECT * FROM weave_flame_coin_orders WHERE id=$1::uuid FOR UPDATE',[input.orderId])).rows
-    if(!order){await db.query('ROLLBACK');return {success:false,error:'Flame Coin order not found',status:404}}
+    if(!order){await db.query('ROLLBACK');return {success:false,error:'System Switch order not found',status:404}}
     if(order.status==='credited'){
       await db.query('COMMIT');committed=true
       return {success:true,alreadyCredited:true,amountFlameCoin:Number(order.flame_coin_amount),
@@ -116,7 +116,7 @@ export async function creditVerifiedFlameCoinPurchase(input:{
     }
     if(!isFlameCoinPaymentMethod(order.payment_method)||!flameCoinMethodEnabled(order.payment_method)){
       await db.query('ROLLBACK')
-      return {success:false,error:'Selected payment rail is not authorized for Flame Coin purchases',status:403}
+      return {success:false,error:'Selected payment rail is not authorized for System Switch purchases',status:403}
     }
     const [admin]=(await db.query("SELECT id FROM users WHERE id=$1::uuid AND role='admin' AND is_active=true",[input.adminId])).rows
     if(!admin){
@@ -134,7 +134,7 @@ export async function creditVerifiedFlameCoinPurchase(input:{
     }
     const amount=Number(order.flame_coin_amount)
     if(!validFlameCoinAmount(amount)){
-      await db.query('ROLLBACK');return {success:false,error:'Invalid Flame Coin purchase amount',status:409}
+      await db.query('ROLLBACK');return {success:false,error:'Invalid System Switch purchase amount',status:409}
     }
     const walletRows=(await db.query(`
       SELECT id,user_id,balance_trx FROM wallets WHERE user_id=ANY($1::uuid[])
@@ -147,7 +147,7 @@ export async function creditVerifiedFlameCoinPurchase(input:{
     }
     if(Number(funder.balance_trx)<amount){
       await db.query('ROLLBACK')
-      return {success:false,error:'Insufficient backed Flame Coin in Administration reserve; no credit made',status:409}
+      return {success:false,error:'Insufficient backed System Switch in Administration reserve; no credit made',status:409}
     }
     const [debit]=(await db.query(
       'UPDATE wallets SET balance_trx=balance_trx-$1,updated_at=NOW() WHERE id=$2::uuid AND balance_trx>=$1 RETURNING balance_trx',
@@ -169,14 +169,14 @@ export async function creditVerifiedFlameCoinPurchase(input:{
       INSERT INTO ledger_entries
       (id,user_id,entry_type,amount,currency,description,balance_before,balance_after,metadata,created_at)
       VALUES
-      (gen_random_uuid(),$1::uuid,'transfer',$3,'Flame Coin','Funded customer Flame Coin purchase',$4,$5,$6::jsonb,NOW()),
-      (gen_random_uuid(),$2::uuid,'deposit',$3,'Flame Coin','Forensics-verified multi-rail Flame Coin purchase',$7,$8,$6::jsonb,NOW())
+      (gen_random_uuid(),$1::uuid,'transfer',$3,'Flame Coin','Funded customer System Switch purchase',$4,$5,$6::jsonb,NOW()),
+      (gen_random_uuid(),$2::uuid,'deposit',$3,'Flame Coin','Forensics-verified multi-rail System Switch purchase',$7,$8,$6::jsonb,NOW())
     `,[input.adminId,input.recipientId,amount,Number(funder.balance_trx),Number(debit.balance_trx),
        metadata,Number(receiver.balance_trx),Number(credit.balance_trx)])
     await db.query(`
       INSERT INTO weave_receipts(receipt_number,user_id,kind,source,source_id,amount,currency,status,description,metadata)
       VALUES($1,$2::uuid,'purchase','flame_coin_purchase',$3,$4,'Flame Coin','paid',
-        'Flame Coin purchase credited after Forensics verification',$5::jsonb)
+        'System Switch purchase credited after Forensics verification',$5::jsonb)
     `,[receiptNumber,input.recipientId,order.id,amount,metadata])
     await db.query(`
       UPDATE weave_flame_coin_orders SET status='credited',credited_user_id=$2::uuid,
@@ -186,14 +186,14 @@ export async function creditVerifiedFlameCoinPurchase(input:{
     `,[order.id,input.recipientId,funder.id,receiver.id,Number(debit.balance_trx),Number(credit.balance_trx),receiptNumber])
     await db.query(`
       INSERT INTO notifications(user_id,type,title,content,from_user_name,link)
-      VALUES($1::uuid,'flame_coin_purchase','Purchased Flame Coin credited',$2,'WEAVE Administration','/wallet')
-    `,[input.recipientId,`${amount} Flame Coin credited to your WEAVE Main Wallet · Receipt ${receiptNumber}`])
+      VALUES($1::uuid,'flame_coin_purchase','Purchased System Switch credited',$2,'WEAVE Administration','/wallet')
+    `,[input.recipientId,`${amount} System Switch credited to your WEAVE Main Wallet · Receipt ${receiptNumber}`])
     await db.query('COMMIT');committed=true
     return {success:true,amountFlameCoin:amount,recipientId:input.recipientId,
       balanceAfter:Number(credit.balance_trx),receiptNumber}
   }catch(e){
     if(!committed)await db.query('ROLLBACK').catch(()=>{})
-    console.error('[Flame Coin verified purchase credit]',e)
+    console.error('[System Switch verified purchase credit]',e)
     return {success:false,error:'Wallet transfer could not be completed; no purchase confirmed',status:500}
   }finally{db.release()}
 }

@@ -47,10 +47,10 @@ export async function POST(request:NextRequest) {
     const result=await subscribeClientMonthly(clientId)
     if(!result.success) {
       return NextResponse.json({...result,error:
-        result.reason==='insufficient_balance'?'Your Main Client Wallet needs 600 Flame Coin.'
+        result.reason==='insufficient_balance'?'Your Main Client Wallet needs 600 System Switch.'
         :result.reason==='gender_missing'?'Complete the missing registration gender before subscribing.'
         :result.reason==='client_inactive'?'This Client account is not active.'
-        :result.reason==='file_folder_inactive'?'Activate your owned File Folder before beginning the 600 Flame Coin monthly subscription.'
+        :result.reason==='file_folder_inactive'?'Activate your owned File Folder before beginning the 600 System Switch monthly subscription.'
         :'Monthly subscription could not complete.'},
         {status:result.reason==='insufficient_balance'?409:400})
     }

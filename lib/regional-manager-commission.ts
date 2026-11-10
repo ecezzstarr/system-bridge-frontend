@@ -207,7 +207,7 @@ export async function creditRegionalManagerFileFolderCommission(params: {
         ${regionalManagerId}::uuid,
         'commission',
         'Regional File Folder commission credited',
-        ${`Your Regional Manager commission is ${commissionAmount.toFixed(2)} Flame Coin (2% of WEAVE's company share) from a verified File Folder purchase referred by your team Bridger.`},
+        ${`Your Regional Manager commission is ${commissionAmount.toFixed(2)} System Switch (2% of WEAVE's company share) from a verified File Folder purchase referred by your team Bridger.`},
         'WEAVE',
         '/wallet'
       )

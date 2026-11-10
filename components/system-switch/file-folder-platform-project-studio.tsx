@@ -83,7 +83,7 @@ export default function FileFolderPlatformProjectStudio({projects,blueprints,bus
       className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-xl bg-cyan-300 px-4 py-2.5 text-xs font-black text-slate-950 disabled:opacity-40">
       <Plus className="h-4 w-4"/>{creating||busy?'Creating project…':'Establish my platform project'}
     </button>
-    <p className="mt-2 text-[10px] leading-5 text-slate-400">Creating a project plan does not charge Flame Coin. Materials and construction remain purchased separately, with recorded receipts.</p>
+    <p className="mt-2 text-[10px] leading-5 text-slate-400">Creating a project plan does not charge System Switch. Materials and construction remain purchased separately, with recorded receipts.</p>
 
     {projects.length>0&&<div className="mt-6 border-t border-white/10 pt-5">
       <label className="block text-[10px] font-black uppercase tracking-[.14em] text-cyan-200">Platform projects · {projects.length}
@@ -111,7 +111,7 @@ export default function FileFolderPlatformProjectStudio({projects,blueprints,bus
               </div>
               <div className="min-w-0 flex-1"><p className="text-xs font-bold text-white">{stage.label}</p><p className="mt-1 text-[9px] uppercase tracking-wide text-slate-400">{stage.status==='operating'?'Built system operating':stage.status==='building'?'Construction in progress':'Not yet constructed'}</p>
                 {stage.status==='not_started'&&quote&&<p className="mt-2 text-[10px] leading-5 text-amber-100">
-                  Acquire kit: {quote.priceAvailable?quote.requiredMaterialCost.toLocaleString()+' Flame Coin total':'Price unavailable'}
+                  Acquire kit: {quote.priceAvailable?quote.requiredMaterialCost.toLocaleString()+' System Switch total':'Price unavailable'}
                   {' · '}Start-build fee: 0 FC
                   {quote.materialRequired>0&&' · '+quote.materialRequired+' × '+quote.materialName}
                 </p>}

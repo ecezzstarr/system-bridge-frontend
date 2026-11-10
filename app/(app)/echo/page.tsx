@@ -118,7 +118,7 @@ export default function EchoPage() {
         setMessage('Echo is ready. Your immediate next movements are available now.')
         await load()
       } else if (data.reason === 'insufficient_balance') {
-        setError(`Insufficient balance. Need ${data.requiredFlameCoin} Flame Coin, wallet has ${data.availableFlameCoin} Flame Coin.`)
+        setError(`Insufficient balance. Need ${data.requiredFlameCoin} System Switch, wallet has ${data.availableFlameCoin} System Switch.`)
       } else {
         setError('Echo activation failed. Please try again.')
       }

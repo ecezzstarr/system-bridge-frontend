@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 import { useAuth } from '@/lib/auth-provider'
 
 const tasks = [
-  { id: 'staff', title: 'Test an Administration, Agent or Bridger deposit', detail: 'Use test mode and confirm the amount, reference, pending record and final Flame Coin wallet credit.' },
+  { id: 'staff', title: 'Test an Administration, Agent or Bridger deposit', detail: 'Use test mode and confirm the amount, reference, pending record and final System Switch wallet credit.' },
   { id: 'client', title: 'Test a Client deposit', detail: 'Confirm the Client wallet and Administration deposit record match the verified payment.' },
   { id: 'webhook', title: 'Register the Paystack webhook', detail: 'Register the full URL ending in /api/deposit/paystack/webhook in the Paystack dashboard.' },
   { id: 'replay', title: 'Verify duplicate-event safety', detail: 'Replay a test webhook/reference and confirm the wallet is not credited twice.' },
@@ -119,6 +119,6 @@ export default function PaystackIntegrationWorkshopPage() {
       <div className="mt-5 space-y-3">{tasks.map(task => <label key={task.id} className="flex cursor-pointer gap-3 rounded-2xl border border-white/10 p-4"><input type="checkbox" checked={Boolean(checked[task.id])} onChange={event => setChecked(previous => ({ ...previous, [task.id]: event.target.checked }))} className="mt-1 h-4 w-4 accent-emerald-400" /><span><span className="block font-bold">{task.title}</span><span className="mt-1 block text-sm leading-6 text-slate-400">{task.detail}</span></span></label>)}</div>
     </section>
 
-    <section className="rounded-3xl border border-amber-300/20 bg-amber-300/[.04] p-5"><h2 className="text-lg font-black text-amber-200">Release boundary</h2><p className="mt-2 text-sm leading-6 text-slate-300">This integration is for Flame Coin wallet deposits only. Withdrawals remain on the existing method. Saving credentials does not enable automatic live release; complete test-mode staff and Client deposits, verify wallet/ledger records, and confirm duplicate webhooks cannot credit twice.</p><div className="mt-4 flex flex-wrap gap-3"><Link href="/admin/control-center#deposits" className="rounded-xl border border-white/10 px-4 py-3 text-sm font-bold">Open deposit records</Link><Link href="/admin/dashboard" className="rounded-xl border border-white/10 px-4 py-3 text-sm font-bold">Administration dashboard</Link></div></section>
+    <section className="rounded-3xl border border-amber-300/20 bg-amber-300/[.04] p-5"><h2 className="text-lg font-black text-amber-200">Release boundary</h2><p className="mt-2 text-sm leading-6 text-slate-300">This integration is for System Switch wallet deposits only. Withdrawals remain on the existing method. Saving credentials does not enable automatic live release; complete test-mode staff and Client deposits, verify wallet/ledger records, and confirm duplicate webhooks cannot credit twice.</p><div className="mt-4 flex flex-wrap gap-3"><Link href="/admin/control-center#deposits" className="rounded-xl border border-white/10 px-4 py-3 text-sm font-bold">Open deposit records</Link><Link href="/admin/dashboard" className="rounded-xl border border-white/10 px-4 py-3 text-sm font-bold">Administration dashboard</Link></div></section>
   </main>
 }

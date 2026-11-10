@@ -8,8 +8,8 @@ export async function GET() {
     rateGbpPerFlameCoin: rateGbpPerTrx,
     flameCoinPerGbp: rateGbpPerTrx ? 1 / rateGbpPerTrx : null,
     source,
-    peg: '1 Flame Coin = 1 TRX',
-    note: 'GBP is the contract denomination. Flame Coin is shown as a live indicative equivalent and changes with TRX/GBP.',
+    peg: '1 System Switch = 1 TRX',
+    note: 'GBP is the contract denomination. System Switch is shown as a live indicative equivalent and changes with TRX/GBP.',
   }, {
     headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' },
   })

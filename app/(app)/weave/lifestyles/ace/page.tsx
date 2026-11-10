@@ -44,7 +44,7 @@ export default function AceLifestylePage(){
       <section className="mt-7 grid gap-4 md:grid-cols-2">
         <Link href="/arena" className="group min-h-64 border border-yellow-300/20 bg-yellow-300/[0.035] p-6 transition hover:bg-yellow-300/[0.07]" data-ace-environment="arena">
           <div className="flex items-start justify-between gap-4"><div><p className="text-[9px] font-black uppercase tracking-[.22em] text-yellow-300">Ace environment</p><h2 className="mt-2 text-3xl font-black text-white">ARENA</h2></div><Gamepad2 className="h-9 w-9 text-yellow-300"/></div>
-          <p className="mt-5 text-sm leading-6 text-slate-400">Choose an eligible game, stake Flame Coin, stream the game and move through the Arena settlement rules as Ace.</p>
+          <p className="mt-5 text-sm leading-6 text-slate-400">Choose an eligible game, stake System Switch, stream the game and move through the Arena settlement rules as Ace.</p>
           <p className="mt-6 inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-wider text-yellow-200">Enter game ground <Radio className="h-4 w-4"/></p>
         </Link>
 
@@ -61,7 +61,7 @@ export default function AceLifestylePage(){
         </Link>}
       </section>
 
-      {access.role==='bridger'&&<section className="mt-5 border-l-2 border-cyan-300/20 pl-5" data-ace-specialization="agentic-bridger"><p className="text-[9px] font-black uppercase tracking-[.22em] text-cyan-300">Bridger specialization inside Ace</p><h2 className="mt-2 text-2xl font-black text-white">Agentic-Bridger</h2><p className="mt-2 max-w-3xl text-xs leading-5 text-slate-400">Your permanent Agentic-Bridger purchase carries this specialization inside Ace. Normal Bridger work remains free; the one-time 11 Flame Coin purchase opens eligible Lifestyle jobs and the Agentic-Bridger earning rule.</p><Link href="/weave/lifestyles/agentic-bridger" className="mt-4 inline-flex text-[10px] font-black uppercase tracking-wider text-cyan-200">Open Agentic-Bridger →</Link></section>}
+      {access.role==='bridger'&&<section className="mt-5 border-l-2 border-cyan-300/20 pl-5" data-ace-specialization="agentic-bridger"><p className="text-[9px] font-black uppercase tracking-[.22em] text-cyan-300">Bridger specialization inside Ace</p><h2 className="mt-2 text-2xl font-black text-white">Agentic-Bridger</h2><p className="mt-2 max-w-3xl text-xs leading-5 text-slate-400">Your permanent Agentic-Bridger purchase carries this specialization inside Ace. Normal Bridger work remains free; the one-time 11 System Switch purchase opens eligible Lifestyle jobs and the Agentic-Bridger earning rule.</p><Link href="/weave/lifestyles/agentic-bridger" className="mt-4 inline-flex text-[10px] font-black uppercase tracking-wider text-cyan-200">Open Agentic-Bridger →</Link></section>}
     </>}
   </main>
 }

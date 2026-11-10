@@ -41,7 +41,7 @@ export async function POST(request:NextRequest) {
   if(sourceOutreachId&&!ID_RE.test(sourceOutreachId))return NextResponse.json({error:'Invalid owned prospect reference'},{status:400})
   if(body.confirmedRequestedCall!==true || consentSource.length<8)
     return NextResponse.json({error:'Record how this person requested or agreed to an AI phone call before dialing'},{status:400})
-  if(!twilioConfigured()||!aiConfigured())return NextResponse.json({error:'River live calling is not configured. No Flame Coin charged.'},{status:503})
+  if(!twilioConfigured()||!aiConfigured())return NextResponse.json({error:'River live calling is not configured. No System Switch charged.'},{status:503})
   await ensureRiverCallSchema()
   const pool=getPool(),client=await pool.connect()
   const token=newWebhookToken()
@@ -76,7 +76,7 @@ export async function POST(request:NextRequest) {
     const wallet=await client.query('SELECT id,balance_trx FROM wallets WHERE user_id=$1::uuid AND is_primary=true FOR UPDATE',[user.id])
     if(!wallet.rows[0]){await client.query('ROLLBACK');return NextResponse.json({error:'Primary wallet not found'},{status:404})}
     const before=Number(wallet.rows[0].balance_trx)
-    if(before<fee){await client.query('ROLLBACK');return NextResponse.json({error:'Insufficient Flame Coin balance',required:fee,available:before},{status:402})}
+    if(before<fee){await client.query('ROLLBACK');return NextResponse.json({error:'Insufficient System Switch balance',required:fee,available:before},{status:402})}
     balanceAfter=before-fee
     await client.query('UPDATE wallets SET balance_trx=$1,updated_at=NOW() WHERE id=$2',[balanceAfter,wallet.rows[0].id])
     const created=await client.query(
@@ -106,6 +106,6 @@ export async function POST(request:NextRequest) {
   }catch(e){
     console.error('[river voice dial]',e)
     try{await refundUnconnectedCall(id)}catch(err){console.error('[river voice refund requires reconciliation]',err)}
-    return NextResponse.json({error:'The provider did not accept the call. Any charged Flame Coin is being reconciled; check the call ledger.',callId:id},{status:503})
+    return NextResponse.json({error:'The provider did not accept the call. Any charged System Switch is being reconciled; check the call ledger.',callId:id},{status:503})
   }
 }

@@ -31,7 +31,7 @@ async function currentRate() {
     const rate = Number(quote.rateNgnPerTrx || 0)
     return Number.isFinite(rate) && rate > 0 ? rate : null
   } catch (error) {
-    console.error('[referral-bonus] NGN/Flame Coin rate lookup failed:', error)
+    console.error('[referral-bonus] NGN/System Switch rate lookup failed:', error)
     return null
   }
 }
@@ -198,7 +198,7 @@ export async function settleReferralSignupBonus(referredUserId: string) {
           ${notify.userId}::uuid,
           'referral_bonus',
           '₦500 referral bonus credited',
-          ${`A verified ${notify.referredRole} joined through your referral. ₦500 was converted at the current rate and credited as ${flameCoinAmount.toFixed(4)} Flame Coin.`},
+          ${`A verified ${notify.referredRole} joined through your referral. ₦500 was converted at the current rate and credited as ${flameCoinAmount.toFixed(4)} System Switch.`},
           'WEAVE'
         )
       `

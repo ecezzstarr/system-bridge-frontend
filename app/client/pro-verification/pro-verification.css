@@ -297,3 +297,93 @@
  #weave-pro-verification .pv-benefit-grid{grid-template-columns:1fr;gap:11px}
  #weave-pro-verification .pv-benefit{padding:19px}
 }
+
+/* Phone-readable Pro verification: maintain a 16px body floor.
+ * Scoped to the public Client Pro entrance; unrelated File Folder tiers
+ * and the Flame Event retain their own typography.
+ */
+#weave-pro-verification.pv-shell {
+  font-size:16px;
+  line-height:1.6;
+  -webkit-text-size-adjust:100%;
+  text-size-adjust:100%;
+}
+#weave-pro-verification .pv-brand-name {font-size:17px;}
+#weave-pro-verification .pv-brand-sub,
+#weave-pro-verification .pv-company-caption,
+#weave-pro-verification .pv-role-pill,
+#weave-pro-verification .pv-eyebrow,
+#weave-pro-verification .pv-process-label,
+#weave-pro-verification .pv-side-kicker {font-size:14px;line-height:1.5;}
+#weave-pro-verification .pv-hero-description {font-size:16px;line-height:1.7 !important;}
+#weave-pro-verification .pv-hero-signals span,
+#weave-pro-verification .pv-visual-tag,
+#weave-pro-verification .pv-folder-tab {font-size:13px;line-height:1.45;}
+#weave-pro-verification .pv-folder-inner span {font-size:12px;}
+#weave-pro-verification .pv-hero-explore {font-size:16px;line-height:1.5;min-height:48px;}
+#weave-pro-verification .pv-feature-heading > p,
+#weave-pro-verification .pv-benefit p,
+#weave-pro-verification .pv-growth-band span,
+#weave-pro-verification .pv-activation-disclosure :is(summary,p) {
+  font-size:16px;
+  line-height:1.65 !important;
+}
+#weave-pro-verification .pv-benefit h3 {font-size:19px;}
+#weave-pro-verification .pv-growth-band strong {font-size:19px;}
+#weave-pro-verification .pv-steps {gap:10px;}
+#weave-pro-verification .pv-step {font-size:15px;line-height:1.45;min-height:46px;}
+#weave-pro-verification .pv-step-count {font-size:14px;width:27px;height:27px;flex-shrink:0;}
+#weave-pro-verification .pv-panel {font-size:16px;line-height:1.65;}
+#weave-pro-verification .pv-panel > h2 {font-size:24px;line-height:1.25 !important;}
+#weave-pro-verification .pv-panel :is(h3,h4) {font-size:19px;line-height:1.35 !important;}
+#weave-pro-verification .pv-panel :is(p,label,details,summary,small,li),
+#weave-pro-verification .pv-panel :is(.text-xs,.text-sm) {
+  font-size:16px !important;
+  line-height:1.65;
+}
+#weave-pro-verification .pv-panel :is(input:not([type="checkbox"]),textarea,select) {
+  font-size:16px !important;
+  line-height:1.5;
+  min-height:52px;
+}
+#weave-pro-verification .pv-panel textarea {min-height:104px;}
+#weave-pro-verification .pv-panel button {
+  font-size:16px;
+  min-height:48px;
+  line-height:1.5;
+}
+#weave-pro-verification .pv-panel input[type="checkbox"] {width:22px;height:22px;}
+/* Retain a clearly readable status color against the white Pro panels. */
+#weave-pro-verification .pv-panel .text-amber-200 {color:#894607 !important;}
+#weave-pro-verification .pv-panel .text-rose-200 {color:#9f2041 !important;}
+#weave-pro-verification .pv-panel .text-emerald-200 {color:#126e4f !important;}
+#weave-pro-verification .pv-panel .text-cyan-200 {color:#11658c !important;}
+#weave-pro-verification .pv-side-panel p,
+#weave-pro-verification .pv-side-flow :is(strong,small) {
+  font-size:16px;
+  line-height:1.65;
+}
+#weave-pro-verification .pv-side-panel h2 {font-size:24px;}
+#weave-pro-verification .pv-side-number {font-size:14px;width:32px;height:32px;}
+#weave-pro-verification .pv-fee span,
+#weave-pro-verification .pv-fee small {font-size:15px;line-height:1.6;}
+#weave-pro-verification .pv-footer :is(p,a) {font-size:16px;line-height:1.65 !important;}
+@media(max-width:700px) {
+  #weave-pro-verification .pv-brand-name {font-size:17px;}
+  #weave-pro-verification .pv-role-pill {font-size:13px;padding:9px 11px;white-space:normal;text-align:center;}
+  #weave-pro-verification .pv-hero-description {font-size:16px;line-height:1.7 !important;}
+  #weave-pro-verification .pv-step {flex:1 1 calc(50% - 10px);justify-content:flex-start;padding:10px 12px;white-space:normal;font-size:15px;}
+  #weave-pro-verification .pv-panel {padding:20px !important;}
+  #weave-pro-verification .pv-side-panel {padding:20px;}
+}
+@media(max-width:480px) {
+  #weave-pro-verification .pv-steps {flex-direction:column;align-items:stretch;}
+  #weave-pro-verification .pv-step {width:100%;flex:0 0 auto;justify-content:flex-start;}
+  #weave-pro-verification .pv-feature-heading h2 {font-size:27px;}
+  #weave-pro-verification .pv-benefit {padding:20px;}
+}
+
+/* Keep emphasized figures larger than the body-copy minimum. */
+#weave-pro-verification .pv-panel p.text-3xl {font-size:30px !important;line-height:1.25;}
+#weave-pro-verification .pv-panel p.text-lg {font-size:20px !important;line-height:1.4;}
+#weave-pro-verification .pv-panel .font-mono {overflow-wrap:anywhere;}

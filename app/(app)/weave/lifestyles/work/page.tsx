@@ -97,6 +97,7 @@ export default function CompanyWorkspaces(){
         <a href="#my-jobs" className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-cyan-300 px-4 text-xs font-black text-slate-950"><ClipboardList className="h-4 w-4"/> My duties</a>
         {foodTeam&&<a href="#food-team-communication" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-white/25 bg-white/10 px-4 text-xs font-bold text-white"><Users className="h-4 w-4"/> Food team messages</a>}
         {distribution&&<a href="#team-communication" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-white/25 bg-white/10 px-4 text-xs font-bold text-white"><Users className="h-4 w-4"/> Team & assignments</a>}
+        <Link href="/weave/lifestyles/regional-manager/workspace" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-white/25 bg-white/10 px-4 text-xs font-bold text-white"><Users className="h-4 w-4"/> Regional work & check-in</Link>
         <Link href="/weave/lifestyles/support" data-company-work-support-link="true" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-cyan-300/40 bg-cyan-300/10 px-4 text-xs font-bold text-cyan-100"><MessageSquareText className="h-4 w-4"/> One-to-one work support</Link>
         <Link href="/notifications" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-white/25 bg-white/10 px-4 text-xs font-bold text-white"><Bell className="h-4 w-4"/> Messages & alerts</Link>
       </div>

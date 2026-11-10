@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// Each newly opened Bridge AI template path costs 8 Flame Coin once.
+// Each newly opened Bridge AI template path costs 8 System Switch once.
 // Existing paths remain live; there is no Bridge AI monthly subscription.
 export async function POST(request: NextRequest) {
   const user = await getAuthUser(request)

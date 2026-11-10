@@ -20,7 +20,7 @@ export async function GET(){
 export async function POST(request:NextRequest){
   try{
     const buyer=await getAuthUser(request)
-    if(!buyer)return NextResponse.json({error:'Sign in to purchase with Flame Coin'},{status:401})
+    if(!buyer)return NextResponse.json({error:'Sign in to purchase with System Switch'},{status:401})
     const body=await request.json()
     const productId=clean(body.productId,80)
     if(!productId)return NextResponse.json({error:'Product is required'},{status:400})

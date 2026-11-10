@@ -1,6 +1,6 @@
 /**
  * Plus File Folder has three explicit, Administration-defined values.
- * 60,000 Flame Coin is the product entitlement, payable as either
+ * 60,000 System Switch is the product entitlement, payable as either
  * 59,602 TRX or 20,000 USDT. These are a fixed product quotation, NOT
  * a live exchange rate. Never silently apply this price ratio elsewhere.
  */

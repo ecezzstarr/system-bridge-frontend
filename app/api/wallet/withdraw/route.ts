@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Amount and TRON address are required' }, { status: 400 })
     }
     if (amountFlameCoin < 10) {
-      return NextResponse.json({ success: false, error: 'Minimum withdrawal is 10 Flame Coin' }, { status: 400 })
+      return NextResponse.json({ success: false, error: 'Minimum withdrawal is 10 System Switch' }, { status: 400 })
     }
     if (typeof address !== 'string' || !address.startsWith('T') || address.length !== 34) {
       return NextResponse.json({ success: false, error: 'Invalid TRON wallet address' }, { status: 400 })
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     const currentBalance = Number(wallets[0]?.balance_trx || 0)
     if (!wallets[0]) return NextResponse.json({ success: false, error: 'Wallet not found' }, { status: 404 })
     if (currentBalance < amountFlameCoin) {
-      return NextResponse.json({ success: false, error: 'Insufficient Flame Coin balance' }, { status: 400 })
+      return NextResponse.json({ success: false, error: 'Insufficient System Switch balance' }, { status: 400 })
     }
 
     const pending = await sql`
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
       RETURNING id
     `
 
-    await notifyAdminOrder({orderId:String(withdrawal.id),event:'placed',department:user.role==='agent'?'agent':user.role==='bridger'?'bridger':'client',subject:'External Flame Coin withdrawal request',detail:`${user.name||user.username||user.role} requested withdrawal of ${amountFlameCoin.toLocaleString()} Flame Coin. Administration approval required`,adminPath:'/admin/control-center',actorId:user.id,actorName:user.name||user.role})
+    await notifyAdminOrder({orderId:String(withdrawal.id),event:'placed',department:user.role==='agent'?'agent':user.role==='bridger'?'bridger':'client',subject:'External System Switch withdrawal request',detail:`${user.name||user.username||user.role} requested withdrawal of ${amountFlameCoin.toLocaleString()} System Switch. Administration approval required`,adminPath:'/admin/control-center',actorId:user.id,actorName:user.name||user.role})
 
     const receipt = await issueWeaveReceipt({
       userId: user.id,

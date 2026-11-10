@@ -4,12 +4,12 @@ Feature branch: feature/river-bridger-voice-outreach (not deployed automatically
 
 ## User workflow
 1. Bridger opens **My Prospects → AI River Live Calls** or enters a candidate manually. They record the candidate's request or permission to receive an **AI telephone call**; buying a contact alone does not imply permission. The candidate must have a valid E.164 phone number.
-2. Each River phone call is **5 Flame Coin**. Administration can enable or suspend the feature at **/admin/river-call-settings**. The price is fixed at 5 Flame Coin; calling is disabled by default.
-3. On clicking **Call with River**, the backend authenticates an active Bridger, validates ownership of any selected Prospect, checks global opt-outs, atomically charges the primary Flame Coin wallet, writes a ledger entry, and initiates a Twilio Programmable Voice outbound call.
+2. Each River phone call is **5 System Switch**. Administration can enable or suspend the feature at **/admin/river-call-settings**. The price is fixed at 5 System Switch; calling is disabled by default.
+3. On clicking **Call with River**, the backend authenticates an active Bridger, validates ownership of any selected Prospect, checks global opt-outs, atomically charges the primary System Switch wallet, writes a ledger entry, and initiates a Twilio Programmable Voice outbound call.
 4. Twilio calls a signed WEAVE voice webhook. River discloses AI identity and asks whether now is a good time. Voice is synthesized by Twilio speech tools; speech input goes to WEAVE's existing River AI model, with short prompts and a 300-second provider call limit. No audio is recorded.
 5. If the person wants more, River requests separate permission to initiate WhatsApp. On approval, River ends the call, logs the handoff and notifies the Bridger with a direct route to the follow-up workspace.
 6. Automatic **WhatsApp Business template** sending can be configured using the official registered WEAVE sender. The approved template sends the direct WhatsApp URL for the Bridger (from their saved profile). This is **not** a message originating from an ordinary Bridger personal WhatsApp account. Without the official business sender, the Bridger can start the WhatsApp conversation manually using a prefilled link. The report distinguishes provider accepted vs manually ready; neither means delivered.
-7. Failed, unanswered, or busy calls refund Flame Coin exactly once from the call record, with a separate ledger entry. Connected calls are charged. Payment receipts are written through the existing WEAVE receipts system after provider acceptance.
+7. Failed, unanswered, or busy calls refund System Switch exactly once from the call record, with a separate ledger entry. Connected calls are charged. Payment receipts are written through the existing WEAVE receipts system after provider acceptance.
 
 ## Provider variables (server-side, never expose credentials to a client)
 - TWILIO_ACCOUNT_SID
@@ -37,7 +37,7 @@ Do not approve or send an unsolicited template. WhatsApp message initiation requ
 - Video outreach is a separate media channel: a conventional cellular voice call does not carry a video stream. This feature implements live AI voice calling and WhatsApp handoff, and does **not** mislabel a voice call as video.
 
 ## Validation before launch
-- Set test Twilio and River secrets in a nonproduction environment, use the fixed 5 Flame Coin price, call a consenting test number and check the voice webhook with its exact HTTPS URL.
+- Set test Twilio and River secrets in a nonproduction environment, use the fixed 5 System Switch price, call a consenting test number and check the voice webhook with its exact HTTPS URL.
 - Verify refusal, explicit opt-out, no answer/refund, permission-based WhatsApp handoff, retry/idempotency, notification route and payment receipts.
 - Test an approved WhatsApp Business template and the candidate's subsequent direct WhatsApp conversation with the Bridger.
 - Verify build/typecheck, provider coverage and applicable automated-calling rules in every launch jurisdiction.
