@@ -68,7 +68,7 @@ export async function manualCreditStuckPaystack(input: ManualPaystackInput) {
       refuse('This deposit is already processed. Refresh the page; no second credit is permitted.')
     }
     if (!['admin','agent','bridger','client'].includes(String(deposit.owner_role))) {
-      refuse('This account is not eligible for a Flame Coin wallet deposit.')
+      refuse('This account is not eligible for a System Switch wallet deposit.')
     }
     const amountNgn = Number(deposit.amount_usd)
     const flameCoin = Number(deposit.amount_trx)
@@ -124,7 +124,7 @@ export async function manualCreditStuckPaystack(input: ManualPaystackInput) {
     }
     await client.query(
       `INSERT INTO ledger_entries(user_id,entry_type,amount,currency,description,metadata)
-       VALUES($1::uuid,'deposit',$2,'Flame Coin','Administration-confirmed Paystack deposit credit',$3::jsonb)`,
+       VALUES($1::uuid,'deposit',$2,'System Switch','Administration-confirmed Paystack deposit credit',$3::jsonb)`,
       [deposit.user_id, flameCoin, JSON.stringify({
         deposit_id:String(deposit.id), reference, payment_method:'Paystack',
         event_type:'paystack.manual_admin_credit',
@@ -162,14 +162,14 @@ export async function manualCreditStuckPaystack(input: ManualPaystackInput) {
           type:'deposit_approved',
           title:'Administration confirmed your Paystack payment',
           content:'Your ₦'+n.amountNgn.toLocaleString()+' payment was manually confirmed and '
-            +n.flameCoin.toLocaleString()+' Flame Coin credited to your Weave wallet.',
+            +n.flameCoin.toLocaleString()+' System Switch credited to your Weave wallet.',
           link:'/wallet/deposit-withdraw',fromUserName:'WEAVE Administration',
         }),
         notifyAdministrators({
           type:'paystack_manual_credit_audit',
           title:'Paystack manual approval credited · '+n.role,
           content:n.ownerName+' · ₦'+n.amountNgn.toLocaleString()
-            +' · '+n.flameCoin.toLocaleString()+' Flame Coin. '
+            +' · '+n.flameCoin.toLocaleString()+' System Switch. '
             +'Reference '+n.reference+'. Deposit '+n.depositId
             +'. Approved by Administration '+input.adminId+'.',
           link:'/admin/control-center#deposits',fromUserName:'WEAVE Finance',
