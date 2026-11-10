@@ -58,6 +58,7 @@ jobs:
 
       - name: Core recent-feature regression
         run: node tests/recent-features.cjs
+          node tests/system-switch-currency-display.cjs
 
       - name: Agent Creative Studio fee and image regressions
         run: |
