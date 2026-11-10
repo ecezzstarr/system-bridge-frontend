@@ -99,6 +99,9 @@ jobs:
           WEAVE_SYSTEM_SWITCH_TEST_DATABASE_URL: postgres://weave_qa:weave_qa_only@127.0.0.1:5432/weave_switch_test
         run: npx tsx tests/branding-business-postgres.test.ts
 
+      - name: Real material photographs and Premium File Folder Client fidelity
+        run: node tests/real-photo-premium-fidelity.cjs
+
       - name: Contextual WEAVE images and full route preservation
         run: |
           node tests/weave-existing-page-images-regression.cjs

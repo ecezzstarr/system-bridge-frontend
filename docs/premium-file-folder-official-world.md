@@ -49,3 +49,16 @@ This release is the **first interactive 3D interpretation** of the approved imag
 - CI/production build passes, deployment actually includes the commit, authenticated Premium test account sees the new scene before release is described as live.
 
 This file documents intended work and the current implementation. The code commit alone does not establish successful Oracle deployment.
+
+## Premium estate account and private-world fidelity (10 November 2026)
+
+Premium is purchased at 35,800 System Switch in authoritative pricing. This change does not alter the tier, access rights, payment status or ownership conditions.
+
+- The authenticated Client dashboard has a Premium-only enterprise entrance, with accessible type, obsidian/brushed-gold design and entry to the same purchased private File Folder. Figures for blueprints, materials, live systems, active builds and Customer Door are read from a second verified owner-scoped /api/client/system-switch response. Missing records are shown as unavailable, never invented.
+- Its 3D Client dashboard model is Premium-specific: layered terraces, gold colonnades, glass façades, side towers, water and ornamental lights. Standard, Pro and Plus retain their existing scenes.
+- The private Premium world keeps all six selectable operating districts and existing backend operations. Its shell, typography, operating counts, touch targets, district selector, controls and phone interior share the same obsidian/gold design.
+- Style is strictly tier-scoped, never applied to Standard, Pro, Plus, the public System Switch, or Flame Event.
+- No visual detail asserts completed construction, staff work, earnings or public Customer Door availability absent real owner records.
+- The approved original 1122×1402 source image is still in the user Library at /WEAVE/File-Folder/Reference/weave-premium-file-folder-official.png. This PR implements its architectural direction but does not claim the original artwork was bundled as a public raster asset.
+
+Verification: existing owner-recovery regression and tests/real-photo-premium-fidelity.cjs, plus device testing at 320–440px.

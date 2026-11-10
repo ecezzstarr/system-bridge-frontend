@@ -281,11 +281,13 @@ function VerifiedStructures({builds,systems,now,onEnter}:{builds:RecordRow[];sys
 function Scene({selected,onSelect,builds,systems,now,onEnter}:{selected:StationKey;onSelect:(id:StationKey)=>void;builds:RecordRow[];systems:RecordRow[];now:number;onEnter:(district:string)=>void}){
  const live=systems.filter(s=>s.status==='active'||s.status==='complete').length
  return <>
-  <color attach="background" args={['#22202b']}/>
-  <fog attach="fog" args={['#34303b',46,90]}/>
-  <ambientLight intensity={1.2}/>
-  <hemisphereLight args={['#fff1dc','#382c36',1.1]}/>
-  <directionalLight position={[12,24,13]} color="#fff0cb" intensity={2.8}/>
+  <color attach="background" args={['#121016']}/>
+  <fog attach="fog" args={['#28212b',52,112]}/>
+  <ambientLight intensity={.72}/>
+  <hemisphereLight args={['#fff1dc','#211922',.85]}/>
+  <directionalLight position={[12,24,13]} color="#fff0cb" intensity={3.3}/>
+  <spotLight position={[0,28,16]} angle={.52} penumbra={.6} intensity={90} color="#ffd99c"/>
+  <pointLight position={[-15,7,0]} intensity={32} distance={30} color="#d6ae77"/>
   <pointLight position={[0,9,8]} intensity={48} distance={34} color="#f8c87c"/>
   <mesh rotation={[-Math.PI/2,0,0]} position={[0,-.65,0]} receiveShadow>
    <planeGeometry args={[95,95]}/><GoldMaterial color="#24242d"/>
@@ -323,6 +325,22 @@ function Scene({selected,onSelect,builds,systems,now,onEnter}:{selected:StationK
     </group>)}
    </group>
   })}
+  {/* Licensed Premium base estate: architectural ornament never represents a
+      paid Client construction; verified structures below remain record-driven. */}
+  {Array.from({length:9},(_,index)=>{
+    const angle=index*Math.PI*2/9
+    return <group key={'premium-ceremonial-column-'+index} position={[Math.cos(angle)*24,0,Math.sin(angle)*24]} rotation={[0,-angle,0]}>
+      <mesh position={[0,.15,0]}><cylinderGeometry args={[1.2,1.4,.34,10]}/><GoldMaterial color="#34303a"/></mesh>
+      <mesh position={[0,2.2,0]} castShadow><cylinderGeometry args={[.34,.42,4,12]}/><GoldMaterial color="#d0c0ad"/></mesh>
+      <mesh position={[0,4.35,0]}><boxGeometry args={[1.32,.3,1.32]}/><GoldMaterial color="#e3c18b"/></mesh>
+      <mesh position={[0,4.65,0]}><sphereGeometry args={[.36,16,10]}/><meshStandardMaterial color="#ffdb98" emissive="#d3a052" emissiveIntensity={.6}/></mesh>
+    </group>
+  })}
+  {[-1,1].map(side=><group key={'premium-water-bridge-'+side} position={[side*17,-.1,-7.5]}>
+    <mesh rotation={[-Math.PI/2,0,0]} position={[0,-.1,0]}><planeGeometry args={[4.9,10]}/><meshPhysicalMaterial color="#4f8586" metalness={.48} roughness={.13} transparent opacity={.75} depthWrite={false}/></mesh>
+    {[-2.2,2.2].map((z,i)=><mesh key={i} position={[0,.3,z]}><boxGeometry args={[5.4,.2,.14]}/><GoldMaterial/></mesh>)}
+    {[-2.3,2.3].map((x,i)=><mesh key={i} position={[x,.38,0]}><boxGeometry args={[.14,.7,10.1]}/><GoldMaterial/></mesh>)}
+  </group>)}
   <Waterfalls/>
   <PremiumTerraces/>
   <CentralPremiumCitadel/>
@@ -372,19 +390,25 @@ export default function FileFolderPremiumWorld({
  return <section aria-label="Premium File Folder world" data-premium-file-folder-world="official-black-gold"
   data-premium-official-image="weave-premium-file-folder-official.png"
   data-premium-reference-sha256={PREMIUM_FILE_FOLDER_REFERENCE.sha256}
-  data-file-folder-theme={appearance.theme} data-premium-visual-identity="charcoal-black-gold" className="overflow-hidden rounded-2xl border border-[#b99355]/50 bg-[#17151c] text-[#f5ecdd]">
-  <header className="border-b border-[#b99355]/30 bg-[#242027] px-4 py-5 sm:px-6">
-   <p className="text-[11px] font-bold uppercase tracking-[.15em] text-[#ecc789]">WEAVE · Premium File Folder · Your private world</p>
-   <h2 className="mt-2 text-2xl font-black sm:text-3xl">Your private black-and-gold business citadel</h2>
-   <p className="mt-2 max-w-2xl text-sm leading-6 text-[#e0d1c0]">This is your purchased Premium environment. The central citadel connects six places where you plan, acquire materials, build systems, direct work and serve customers. Select any building to discover its purpose, then enter the working area.</p>
-   <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold">
-    <span className="rounded-lg border border-[#a98b57]/40 px-3 py-2">{countBuilding.length} building</span>
-    <span className="rounded-lg border border-[#a98b57]/40 px-3 py-2">{countCompleted.length} completed</span>
-    <span className="rounded-lg border border-[#a98b57]/40 px-3 py-2">{countLive.length} live systems</span>
+  data-file-folder-theme={appearance.theme} data-premium-visual-identity="charcoal-black-gold" className="overflow-hidden rounded-[1.6rem] border border-[#c4a06a]/55 bg-[#0c0b10] text-[#f5ecdd] shadow-[0_26px_88px_rgba(0,0,0,.55),inset_0_1px_0_rgba(249,220,165,.12)]">
+  <header className="relative overflow-hidden border-b border-[#c8a56b]/35 bg-[radial-gradient(circle_at_82%_15%,rgba(167,116,50,.28),transparent_43%),linear-gradient(126deg,#121015,#26201d_64%,#110f13)] px-5 py-7 sm:px-8 sm:py-9" data-premium-private-estate-identity="monumental-obsidian-gold">
+   <div aria-hidden="true" className="pointer-events-none absolute -right-12 -top-24 h-64 w-64 rounded-full border border-[#deb573]/25 shadow-[0_0_90px_rgba(199,145,70,.17),inset_0_0_50px_rgba(164,118,60,.1)]"/>
+   <div className="relative">
+    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#c1a06c]/25 pb-4">
+     <p className="text-sm font-bold uppercase tracking-[.15em] text-[#f1d39d]">WEAVE · PREMIUM · PRIVATE ENTERPRISE ESTATE</p>
+     <span className="rounded-full border border-[#d5ae6d]/40 bg-[#d5ae6d]/10 px-3 py-2 text-xs font-semibold text-[#f9e4bf]">Your purchased Premium environment</span>
+    </div>
+    <h2 className="mt-5 max-w-2xl font-serif text-3xl font-semibold leading-tight text-[#fff4df] sm:text-4xl">The citadel of your business.</h2>
+    <p className="mt-3 max-w-3xl text-base leading-7 text-[#e8dac4]">Your private File Folder is an operating estate: explore the citadel, choose a district, review materials, commission systems and direct the enterprise you are building. Each entrance opens working company systems—not a decorative preview.</p>
+    <div className="mt-5 grid grid-cols-3 gap-2 sm:max-w-xl sm:gap-3" aria-label="Verified Premium operating records">
+     <div className="rounded-xl border border-[#bd955d]/35 bg-black/25 p-3"><strong className="block text-2xl font-semibold tabular-nums text-[#ffdfaa]">{countBuilding.length}</strong><span className="mt-1 block text-sm leading-5 text-[#e7d7c0]">Building</span></div>
+     <div className="rounded-xl border border-[#bd955d]/35 bg-black/25 p-3"><strong className="block text-2xl font-semibold tabular-nums text-[#ffdfaa]">{countCompleted.length}</strong><span className="mt-1 block text-sm leading-5 text-[#e7d7c0]">Completed</span></div>
+     <div className="rounded-xl border border-[#bd955d]/35 bg-black/25 p-3"><strong className="block text-2xl font-semibold tabular-nums text-[#ffdfaa]">{countLive.length}</strong><span className="mt-1 block text-sm leading-5 text-[#e7d7c0]">Systems ready</span></div>
+    </div>
    </div>
   </header>
-  <div className="relative h-[420px] w-full sm:h-[550px]" data-premium-mobile-3d="tap-drag-pinch" aria-label="Interactive Premium black-and-gold citadel, six distinct operating districts, water, connected terraces and ongoing verified construction">
-   <div className="pointer-events-none absolute left-3 top-3 z-10 max-w-[76%] rounded-lg border border-[#e7bb6c]/40 bg-[#17151c]/85 px-3 py-2 text-xs font-medium text-[#fff0d0] shadow-lg">Tap a building to select · Drag to explore · Pinch to zoom</div>
+  <div className="relative h-[min(62dvh,590px)] min-h-[420px] w-full sm:h-[650px]" data-premium-mobile-3d="tap-drag-pinch" aria-label="Interactive Premium black-and-gold citadel, six distinct operating districts, water, connected terraces and ongoing verified construction">
+   <div className="pointer-events-none absolute left-4 top-4 z-10 max-w-[85%] rounded-xl border border-[#e7bb6c]/45 bg-[#100d12]/90 px-4 py-3 text-sm font-semibold leading-6 text-[#fff0d0] shadow-lg backdrop-blur-md">Tap a building to select · Drag to explore · Pinch to zoom</div>
    <Premium3DRecoveryBoundary>
     <Canvas camera={{position:[26,22,30],fov:47,near:.1,far:140}}
      dpr={[1,1.5]} gl={{alpha:false,antialias:true,powerPreference:'high-performance'}}
@@ -396,37 +420,37 @@ export default function FileFolderPremiumWorld({
     </Canvas>
    </Premium3DRecoveryBoundary>
   </div>
-  <div className="border-t border-[#b99355]/30 bg-[#252029] p-4 sm:p-5">
-   <p className="text-xs font-bold uppercase tracking-widest text-[#ebc485]">Your six working places</p>
-   <p className="mt-1 text-sm leading-6 text-[#e0d1c0]">Each building has a different responsibility. The spaces are real workshops; the world itself does not invent earnings, orders or completed construction.</p>
+  <div className="border-t border-[#b99355]/30 bg-[linear-gradient(140deg,#1a171d,#251f20)] p-5 sm:p-7" data-premium-district-navigation="six-active-workshops">
+   <p className="text-sm font-bold uppercase tracking-[.12em] text-[#ebc485]">Six districts · One owned operating world</p>
+   <p className="mt-3 max-w-3xl text-base leading-7 text-[#e0d1c0]">Each district gives you a specific function. Select one to see its verified status, then enter its working system. Earnings, materials and completed construction come from your records.</p>
    <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
     {STATIONS.map(s=><button key={s.key} type="button" aria-pressed={selected===s.key}
-      onClick={()=>setSelected(s.key)} className={'min-h-12 rounded-lg border px-3 py-3 text-left text-sm font-semibold '+(selected===s.key?'border-[#f4c977] bg-[#5b4529] text-[#fff2d9]':'border-[#706054] bg-[#302932] text-[#e0d1bf]')}>
-       <span className="block text-sm">{s.name}</span><span className="mt-1 block text-xs font-normal leading-5 text-[#e2c7a6]">{stationStatus[s.key]}</span>
+      onClick={()=>setSelected(s.key)} className={'min-h-[94px] rounded-xl border px-4 py-4 text-left text-base font-semibold leading-6 transition-colors '+(selected===s.key?'border-[#f4c977] bg-[linear-gradient(130deg,#60482a,#362b25)] text-[#fff3d9] shadow-[inset_0_1px_0_rgba(255,234,194,.16)]':'border-[#817056] bg-[#231e23] text-[#f3e2ca] hover:border-[#dfb970]')}>
+       <span className="block text-base">{s.name}</span><span className="mt-2 block text-sm font-normal leading-5 text-[#e6cfaa]">{stationStatus[s.key]}</span>
       </button>)}
    </div>
-   <div className="mt-3 flex flex-col gap-3 rounded-xl border border-[#b99355]/50 bg-[#17151c] p-4 sm:flex-row sm:items-center sm:justify-between" aria-live="polite" data-premium-selected-workshop={station.key}>
-    <div className="max-w-xl"><p className="font-bold text-[#f7ddb0]">{station.name}</p><p className="mt-1 text-sm leading-6 text-[#e4d6c6]">{station.detail}</p><p className="mt-1 text-xs font-medium text-[#f1c98e]">{stationStatus[station.key]}</p></div>
+   <div className="mt-4 flex flex-col gap-4 rounded-2xl border border-[#d7ad70]/55 bg-[#111015] p-5 sm:flex-row sm:items-center sm:justify-between" aria-live="polite" data-premium-selected-workshop={station.key}>
+    <div className="max-w-xl"><p className="text-xl font-semibold text-[#ffdc9c]">{station.name}</p><p className="mt-2 text-base leading-7 text-[#e4d6c6]">{station.detail}</p><p className="mt-2 text-sm font-medium text-[#f1c98e]">{stationStatus[station.key]}</p></div>
     {selected==='customers'?<div className="flex flex-wrap gap-2">
       <button type="button" onClick={()=>{if(onOpenCustomerDoor)onOpenCustomerDoor();else go(station.district)}}
-        className="rounded-lg bg-[#e7bb6c] px-4 py-3 text-sm font-bold text-[#261e21]">Manage Customer Door →</button>
+        className="min-h-12 rounded-xl bg-[linear-gradient(120deg,#f1d79a,#c69b60)] px-5 py-3 text-base font-bold text-[#261e21]">Manage Customer Door →</button>
       {publishedDoor&&<a href={'/market/'+encodeURIComponent(String(customerDoor?.public_slug))}
-        target="_blank" rel="noreferrer" className="rounded-lg border border-[#e7bb6c] px-4 py-3 text-sm font-bold text-[#f1d4a2]">Preview public door →</a>}
+        target="_blank" rel="noreferrer" className="min-h-12 rounded-xl border border-[#e7bb6c] px-5 py-3 text-base font-bold text-[#f1d4a2]">Preview public door →</a>}
      </div>
     :<button type="button" onClick={()=>go(station.district)}
       className="rounded-lg bg-[#e7bb6c] px-4 py-3 text-sm font-bold text-[#261e21]">Enter {station.name} →</button>}
    </div>
    {selected==='customers'&&!publishedDoor&&<p className="mt-2 text-xs text-[#dfbb82]">The public Customer Door is not yet commissioned. Your private systems are never exposed to visitors.</p>}
   </div>
-  <div className="border-t border-[#b99355]/30 bg-[#19161c] p-4 sm:p-5" data-premium-build-journey="recognize-preview-acquire-build-operate">
-   <div className="flex flex-wrap items-center justify-between gap-3"><div><h3 className="text-lg font-bold">Your next movement</h3><p className="mt-1 max-w-xl text-sm leading-6 text-[#e0d1c0]">{nextInstruction}</p></div>
+  <div className="border-t border-[#b99355]/30 bg-[#0f0e13] p-5 sm:p-7" data-premium-build-journey="recognize-preview-acquire-build-operate">
+   <div className="flex flex-wrap items-center justify-between gap-3"><div><h3 className="text-xl font-semibold text-[#ffdfaa]">Your next authorized movement</h3><p className="mt-2 max-w-xl text-base leading-7 text-[#e0d1c0]">{nextInstruction}</p></div>
     <button type="button" onClick={()=>go(next)} className="rounded-lg border border-[#e7bb6c] px-4 py-2.5 text-sm font-bold text-[#f3d7a8]">{countBuilding.length?'Check current construction':countLive.length?'Operate live systems':'Start your first build'} →</button></div>
    <h4 className="mt-5 text-sm font-bold text-[#f1d29d]">How to build and operate a system</h4>
    <div className="mt-3 grid gap-2 sm:grid-cols-5">
     {STEPS.map((step,index)=><button key={step.name} type="button" onClick={()=>go(step.district)}
-      className="min-h-24 rounded-lg border border-[#685541] bg-[#29232a] px-3 py-3 text-left hover:border-[#e7bb6c]">
-      <p className="text-sm font-bold text-[#efc788]">{index+1}. {step.name}</p>
-      <p className="mt-2 text-xs leading-5 text-[#ded0be]">{step.description}</p>
+      className="min-h-[110px] rounded-xl border border-[#876e51] bg-[#241f24] px-4 py-4 text-left hover:border-[#e7bb6c]">
+      <p className="text-base font-semibold text-[#efc788]">{index+1}. {step.name}</p>
+      <p className="mt-2 text-sm leading-6 text-[#ded0be]">{step.description}</p>
     </button>)}
    </div>
    {blueprints.length>0&&<p className="mt-3 text-xs leading-5 text-[#dec29b]">{blueprints.length} available blueprints · {readyBluePrints.length} with required kits already in inventory. Every blueprint displays its own Acquire &amp; Build Price before construction.</p>}

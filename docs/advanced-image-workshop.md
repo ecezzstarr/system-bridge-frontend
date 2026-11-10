@@ -35,3 +35,15 @@ The companion high-fidelity visual reference images made during design discussio
 ## Production release and QA
 
 Run tests/image-workshop.cjs, tests/advanced-image-workshop.cjs, tests/branding-business-regression.cjs and tests/branding-business-postgres.test.ts with the company Production Check, TypeScript, full Next build and container checks. Audit a device journey for each position, receipt duplication, customer ownership, logo changes, local download, offline mode, and the Administrations featured view. A GitHub merge is not an Oracle deployment or proof of external social delivery.
+
+## Real photographic product materials (10 November 2026)
+
+The existing 47 vector templates remain openly labelled illustrations. They are not presented as literal photographs of products. Physical apparel and merchandise material templates now use credited photographs of actual physical items from Unsplash pages or existing WEAVE product photography, and these photo-backed examples appear in the catalogue, Ads and Administrations.
+
+The editor uses a real photographed base or accepts a participant's own actual product photo. It applies logos, artwork, type, size, position and rotation using an offline local canvas. Customer product photos stay on the device. Each photograph digest and edited placement become part of the existing company production-license fingerprint.
+
+A remote image is not trusted until it can be loaded and read from the export canvas. If unavailable, export is blocked before checkout and the participant can provide their own photograph. License/receipt authorization remains required for high-resolution commercial delivery.
+
+Sources: free Unsplash photographs under Unsplash License with source credits, and actual WEAVE owned product photography. Brand or identifiable-person rights may require further permission. Stock-photo display does not represent WEAVE physical stock. WEAVE does not sell an unmodified original photo as-is. Photographic previews and product printing are distinct deliverables. Remote photos need network and CORS; local customer uploads are supported without AI API.
+
+Validation: tests/real-photo-premium-fidelity.cjs, Image House licensing regressions, TypeScript, full production build and mobile upload/export acceptance.

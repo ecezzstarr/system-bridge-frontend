@@ -6,6 +6,7 @@ import {useAuth} from '@/lib/auth-provider'
 import {ArrowLeft,CheckCircle2,Copy,ExternalLink,Image as ImageIcon,Megaphone,RefreshCw,Store,Users} from 'lucide-react'
 import {BRANDING_KITS,BRANDING_LAUNCH_STEPS,createBrandingAd,getBrandingKit} from '@/lib/weave-branding-business'
 import {findImageSample,defaultSampleEdits,renderWeaveSampleSvg} from '@/lib/weave-image-sample-art'
+import {photoForSample} from '@/lib/weave-image-photo-library'
 
 type Plan={role:string;kit_id:string;business_name:string;offer_text:string;audience:string;customer_quote_ngn:string|null;daily_outreach_goal:number}
 type Ad={id:string;kit_id:string;sample_id:string;channel:string;headline:string;message:string;customer_door:string|null;status:string;created_at:string;external_post_url?:string|null}
@@ -38,7 +39,7 @@ export default function WeaveBrandingBusinessStarter(){
   const [postUrl,setPostUrl]=useState('')
   const kit=getBrandingKit(kitId)||BRANDING_KITS[0]
   const sample=findImageSample(sampleId)||findImageSample(kit.sampleIds[0])
-  const preview=useMemo(()=>sample?'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(renderWeaveSampleSvg(sample,defaultSampleEdits(sample),true)):'',[sample?.id])
+  const preview=useMemo(()=>sample?photoForSample(sample.id)?.url||'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(renderWeaveSampleSvg(sample,defaultSampleEdits(sample),true)):'',[sample?.id])
   const load=async()=>{
     setLoading(true)
     try{
@@ -161,18 +162,18 @@ export default function WeaveBrandingBusinessStarter(){
           <h2 className="text-2xl font-bold">2. Make an advertisement</h2>
           <p className="mt-2 text-sm leading-6 text-slate-300">Choose an original WEAVE template, edit your brand and prepare an ad with an actual service link. Exporting a commercial image still uses the normal Image House licensing fee.</p>
           <div className="mt-5 grid grid-cols-2 gap-3">
-            {kit.sampleIds.map(id=>{const item=findImageSample(id);return item?<button key={id} type="button" onClick={()=>setSampleId(id)} className={'overflow-hidden rounded-xl border text-left '+(sampleId===id?'border-cyan-300':'border-white/15')}><img src={'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(renderWeaveSampleSvg(item,defaultSampleEdits(item),true))} alt={item.name+' preview'} className="aspect-[4/5] w-full object-cover"/><span className="block p-2 text-sm font-bold">{item.name}</span></button>:null})}
+            {kit.sampleIds.map(id=>{const item=findImageSample(id);return item?<button key={id} type="button" onClick={()=>setSampleId(id)} className={'overflow-hidden rounded-xl border text-left '+(sampleId===id?'border-cyan-300':'border-white/15')}><img src={photoForSample(item.id)?.url||'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(renderWeaveSampleSvg(item,defaultSampleEdits(item),true))} alt={item.name+' real photographic or original vector preview'} className="aspect-[4/5] w-full object-cover"/><span className="block p-2 text-sm font-bold">{item.name}</span></button>:null})}
           </div>
           <label className="mt-4 block text-sm font-bold">Advertisement headline<input className={field} maxLength={110} value={headline} onChange={e=>setHeadline(e.target.value)}/></label>
           <label className="mt-4 block text-sm font-bold">Where will you share it?
             <select className={field} value={channel} onChange={e=>setChannel(e.target.value)}>{channels.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select>
           </label>
-          <div className="mt-4 flex flex-wrap gap-2"><button type="button" className={btn} disabled={!data?.plan||Boolean(busy)} onClick={()=>void createAd()}><Megaphone size={16}/>Record prepared ad</button><Link className={btn} href="/image-workshop">Customize and license artwork</Link></div>
+          <div className="mt-4 flex flex-wrap gap-2"><button type="button" className={btn} disabled={!data?.plan||Boolean(busy)} onClick={()=>void createAd()}><Megaphone size={16}/>Record prepared ad</button><Link className={btn} href={photoForSample(sampleId)?.printZone?'/image-workshop/branding?sampleId='+encodeURIComponent(sampleId):'/image-workshop'}>Customize and license artwork</Link></div>
         </div>
         <div className="space-y-4 rounded-3xl border border-white/10 bg-[#102033] p-4 sm:p-6">
           <h2 className="text-xl font-bold">Example advertising image</h2>
           {preview&&<img src={preview} alt={sample?.name+' licensed-image example'} className="max-h-[60vh] w-full rounded-xl border border-white/15 object-contain"/>}
-          <p className="text-xs leading-5 text-slate-300">Watermarked example only. Customize and pay the displayed System Switch license fee before commercial delivery. No provider API.</p>
+          <p className="text-xs leading-5 text-slate-300">Product photography is a sourced example, not evidence of your own inventory. Apply your own brand and license a customized output before commercial delivery. No AI provider API.</p>
           <h3 className="text-lg font-bold">Advertising message</h3>
           <pre className="whitespace-pre-wrap rounded-xl bg-[#071622] p-4 text-sm leading-6 text-slate-200">{proposedAd||'Save a real business offer to prepare customer-facing advertising text.'}</pre>
           <button className={btn} type="button" disabled={!proposedAd} onClick={()=>void copy(proposedAd)}><Copy size={16}/>Copy advertising text</button>

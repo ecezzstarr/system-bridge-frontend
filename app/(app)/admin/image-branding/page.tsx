@@ -6,6 +6,7 @@ import {useAuth} from '@/lib/auth-provider'
 import {CheckCircle2,Image as ImageIcon,RefreshCw,ShieldCheck,Store} from 'lucide-react'
 import {BRANDING_KITS,BRANDING_LAUNCH_STEPS} from '@/lib/weave-branding-business'
 import {WEAVE_IMAGE_SAMPLES,defaultSampleEdits,renderWeaveSampleSvg} from '@/lib/weave-image-sample-art'
+import {photoForSample} from '@/lib/weave-image-photo-library'
 type Data={success:boolean;featured:string[];totals?:{roles:{role:string;launch_count:number}[];campaigns:{prepared:number;reported_shared:number;last_seven_days:number};licenses:{licenses:number;company_earned_system_switch:string};topKits:{kit_id:string;starters:number}[]};error?:string}
 const button='inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/[.05] px-4 py-3 text-sm font-bold text-white disabled:opacity-40'
 const headers=(json=false):Record<string,string>=>{
@@ -92,7 +93,7 @@ export default function AdministrationsBrandingWorkshop(){
         <div className="flex flex-wrap gap-2">{categories.map(x=><button type="button" key={x} onClick={()=>setCategory(x)} aria-pressed={category===x} className={'min-h-11 rounded-lg border px-3 text-sm '+(x===category?'border-cyan-200 bg-cyan-200/10':'border-white/10')}>{x}</button>)}</div>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
           {WEAVE_IMAGE_SAMPLES.filter(s=>category==='All'||s.category===category).map(s=><article key={s.id} className="overflow-hidden rounded-xl border border-white/10 bg-[#0e2131]">
-            <img alt={'WEAVE template: '+s.name} loading="lazy" src={'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(renderWeaveSampleSvg(s,defaultSampleEdits(s),true))} className="aspect-[4/5] w-full object-cover"/>
+            <img alt={'WEAVE template: '+s.name} loading="lazy" src={photoForSample(s.id)?.url||'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(renderWeaveSampleSvg(s,defaultSampleEdits(s),true))} className="aspect-[4/5] w-full object-cover"/>
             <div className="space-y-2 p-3"><strong className="block text-sm">{s.name}</strong><p className="text-xs text-slate-300">{s.category}</p><button type="button" className={button+' w-full text-xs'} disabled={Boolean(busy)} onClick={()=>void feature(s.id,!data?.featured.includes(s.id))}>{data?.featured.includes(s.id)?<><CheckCircle2 size={15}/>Featured · Remove</>:'Feature template'}</button></div>
           </article>)}
         </div>
