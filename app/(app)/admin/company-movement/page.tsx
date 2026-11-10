@@ -4,9 +4,16 @@ import {useCallback,useEffect,useState} from 'react'
 import {useAuth} from '@/lib/auth-provider'
 
 type Section={available:boolean;rows:Record<string,unknown>[];note?:string}
+type CompanyAction={id:string;position:string;priority:'immediate'|'today'|'monitor';title:string;why:string;href:string;count:number|null}
+type CompanyTime={
+  manifesto:{event:string;targetCompanyEarningsNgn:number;principle:string;responsibilities:Record<string,string>}
+  earnings:{status:string;verifiedCompanyEarningsNgn:number|null;progressPercent:number|null;reason:string}
+  nextMovements:CompanyAction[]
+}
 type Report={
   success:boolean;days:number;generatedAt:string;missing:string[]
   sections:Record<string,Section>
+  companyTime?:CompanyTime
 }
 const formatNumber=(n:unknown)=>Number(n||0).toLocaleString('en-NG')
 const formatMoney=(n:unknown)=>Number(n||0).toLocaleString('en-NG',{maximumFractionDigits:2})
@@ -79,6 +86,38 @@ export default function CompanyMovementPage(){
     </div>
     {error&&<p role="alert" className="rounded-lg border border-rose-400/30 p-3 text-sm text-rose-200">{error}. Last successful snapshot remains visible where available.</p>}
     {report&&<p className="text-xs text-slate-400">Snapshot {new Date(report.generatedAt).toLocaleString()} · Automatically checks again every 20 seconds · No assumed totals for unavailable records</p>}
+    {report?.companyTime&&<section className="space-y-4 rounded-xl border border-cyan-300/20 bg-[#071a27]/80 p-4 sm:p-6" data-company-of-time-loop-one="manifesto">
+      <div>
+        <p className="text-xs font-bold uppercase tracking-widest text-amber-200">Company of Time · Burning River · Loop 1</p>
+        <h2 className="mt-2 text-2xl font-black">The ₦200 Million Manifesto</h2>
+        <p className="mt-2 text-sm text-slate-300">Every person carries their own work. Administrations recognizes where that work needs support, verification, or the next authorized movement.</p>
+        <p className="mt-2 text-xs text-cyan-100">{report.companyTime.manifesto.principle}</p>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="rounded-lg border border-white/15 bg-slate-950/60 p-4">
+          <p className="text-xs text-slate-300">November–December 2026 company earnings objective</p>
+          <p className="mt-2 text-3xl font-black tabular-nums">₦{formatNumber(report.companyTime.manifesto.targetCompanyEarningsNgn)}</p>
+        </div>
+        <div className="rounded-lg border border-amber-300/20 bg-slate-950/60 p-4">
+          <p className="text-xs text-slate-300">Independently reconciled company earnings</p>
+          <p className="mt-2 text-xl font-black text-amber-100">
+            {report.companyTime.earnings.verifiedCompanyEarningsNgn===null?'Not yet reconciled':
+              '₦'+formatNumber(report.companyTime.earnings.verifiedCompanyEarningsNgn)}
+          </p>
+          <p className="mt-2 text-xs leading-5 text-slate-400">Gross sales, deposits, Client-owned revenue and staff commissions must not be mistaken for company earnings.</p>
+        </div>
+      </div>
+      <h3 className="text-lg font-bold">Next authorized movements from the actual records</h3>
+      {!report.companyTime.nextMovements.length?
+        <p className="text-sm text-slate-300">No exception-triggered work appears from available sources. Continue normal departmental activity; unavailable evidence is listed below.</p>:
+        <div className="grid gap-3 lg:grid-cols-2">{report.companyTime.nextMovements.map(item=>
+          <article key={item.id} className="rounded-lg border border-white/15 bg-slate-950/50 p-4">
+            <p className="text-xs uppercase tracking-wider text-cyan-200">{item.position} · {item.priority}</p>
+            <h4 className="mt-2 font-bold">{item.title}</h4>
+            <p className="mt-2 text-sm leading-6 text-slate-300">{item.why}</p>
+            <Link className="mt-3 inline-block text-sm font-semibold text-cyan-200 underline" href={item.href}>Open authorized work →</Link>
+          </article>)}</div>}
+    </section>}
     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
       {cards.map(c=><article key={c.title} className="rounded-xl border border-white/15 bg-slate-950/75 p-4">
         <p className="text-xs font-semibold text-slate-300">{c.title}</p>
