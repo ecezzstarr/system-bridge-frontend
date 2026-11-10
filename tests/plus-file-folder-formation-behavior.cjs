@@ -65,6 +65,16 @@ assert.equal(real.zones.operations.live,1)
 assert.equal(real.zones.people.live,0,'Inactive systems cannot create operating architecture')
 assert.equal(real.environmentStage,'operating')
 
+const mixed=derivePlusWorldFormation([
+  {id:'done',system_type:'operations_board',status:'complete'},
+  {id:'new',system_type:'commerce_storefront',status:'building',started_at:started,completes_at:end},
+],[
+  {id:'live',system_type:'operations_board',status:'active'},
+],now)
+assert.equal(mixed.zones.operations.live,1)
+assert.equal(mixed.zones.operations.building,1)
+assert.equal(mixed.zones.operations.progress,50,'A live system cannot mark a separate build in its district complete')
+
 const systems=Array.from({length:64},(_,i)=>({
   id:String(i),system_type:'network_route',status:'active'
 }))

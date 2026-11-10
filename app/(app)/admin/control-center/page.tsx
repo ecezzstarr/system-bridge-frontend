@@ -4,9 +4,12 @@ import AdministrationControlTerminal from '@/components/admin/administration-con
 export default function AdministrationControlCenter(){
   return <>
     <div className="mx-auto max-w-6xl px-4 pt-4">
+      <Link href="/admin/regional-operations" data-admin-regional-operations="true" className="inline-flex min-h-10 items-center border border-amber-300/25 bg-amber-300/[.05] px-4 py-2 text-xs font-black text-amber-100">Regional Workforce · Daily participation and staff support</Link>
+      <Link href="/admin/company-movement" data-admin-company-movement-link="true" className="inline-flex min-h-10 items-center border border-cyan-300/25 bg-cyan-300/[.05] px-4 py-2 text-xs font-black text-cyan-100">Company Movement · Sales, prospects, Clients and payments</Link>
       <Link href="/admin/food-distribution-employment" data-admin-food-distribution-review-link="true" className="inline-flex min-h-10 items-center border border-amber-300/25 bg-amber-300/[.05] px-4 py-2 text-xs font-black text-amber-100">
         Food Distribution Employment · Review Agent applications →
       </Link>
+      <Link href="/weave/lifestyles/support" data-admin-manager-support-link="true" className="ml-2 inline-flex min-h-10 items-center border border-emerald-300/25 bg-emerald-300/[.05] px-4 py-2 text-xs font-black text-emerald-100">Company Work Support · Assign and review →</Link>
       <Link href="/admin/regional-manager-applications" data-admin-regional-manager-review-link="true" className="ml-2 inline-flex min-h-10 items-center border border-cyan-300/25 bg-cyan-300/[.05] px-4 py-2 text-xs font-black text-cyan-100">
         Regional Manager Applications · Review queue →
       </Link>

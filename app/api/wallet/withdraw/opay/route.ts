@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
 
   if (!Number.isFinite(amountFlameCoin) || amountFlameCoin < 10 || !bankName || !accountNumber || !accountName) {
     return NextResponse.json(
-      { success: false, error: 'Valid amount, bank name, account number, and account name are required. Minimum withdrawal is 10 Flame Coin.' },
+      { success: false, error: 'Valid amount, bank name, account number, and account name are required. Minimum withdrawal is 10 System Switch.' },
       { status: 400 },
     )
   }
@@ -115,7 +115,7 @@ export async function POST(request: NextRequest) {
     client.release()
   }
 
-  if(withdrawalId&&['agent','bridger'].includes(authedUser.role))await notifyAdminOrder({orderId:withdrawalId,event:'placed',department:authedUser.role as 'agent'|'bridger',subject:'OPay withdrawal approval request',detail:`${authedUser.name||'WEAVE staff'} requested ${amountFlameCoin.toLocaleString()} Flame Coin withdrawal (estimated ₦${amountNgn.toLocaleString()}). Administration approval required`,adminPath:'/admin/control-center',actorId:authedUser.id,actorName:authedUser.name||authedUser.role})
+  if(withdrawalId&&['agent','bridger'].includes(authedUser.role))await notifyAdminOrder({orderId:withdrawalId,event:'placed',department:authedUser.role as 'agent'|'bridger',subject:'OPay withdrawal approval request',detail:`${authedUser.name||'WEAVE staff'} requested ${amountFlameCoin.toLocaleString()} System Switch withdrawal (estimated ₦${amountNgn.toLocaleString()}). Administration approval required`,adminPath:'/admin/control-center',actorId:authedUser.id,actorName:authedUser.name||authedUser.role})
 
   let receipt = null
   try {
@@ -143,7 +143,7 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json({
     success: true,
-    message: 'Withdrawal request submitted: ' + amountFlameCoin + ' Flame Coin approx NGN ' + amountNgn.toLocaleString() + ' via OPay',
+    message: 'Withdrawal request submitted: ' + amountFlameCoin + ' System Switch approx NGN ' + amountNgn.toLocaleString() + ' via OPay',
     reference,
     receipt,
     rateUsed: rate,

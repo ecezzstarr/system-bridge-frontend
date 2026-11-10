@@ -207,7 +207,7 @@ export function AppHeader({ user }: AppHeaderProps) {
           data-phone-chrome="interaction"
           className="h-9 w-9 shrink-0 rounded-full px-0 text-slate-300 hover:bg-sky-300/[0.06] hover:text-white"
           onClick={() => router.push('/search')}
-          aria-label="Search human cadences"
+          aria-label="Search WEAVE work and systems"
         >
           <Search className="h-4 w-4" />
         </Button>
@@ -218,7 +218,7 @@ export function AppHeader({ user }: AppHeaderProps) {
           data-phone-chrome="value"
           className="h-9 w-9 shrink-0 rounded-full px-0 text-slate-300 hover:bg-cyan-300/[0.06] hover:text-white"
           onClick={() => router.push('/wallet')}
-          aria-label={flameCoinBalance !== null ? `Open Flame Coin wallet, balance ${flameCoinBalance.toLocaleString(undefined,{maximumFractionDigits:6})}` : 'Open Flame Coin wallet'}
+          aria-label={flameCoinBalance !== null ? `Open System Switch wallet, balance ${flameCoinBalance.toLocaleString(undefined,{maximumFractionDigits:6})}` : 'Open System Switch wallet'}
         >
           <Wallet className="h-4 w-4 text-cyan-300" />
         </Button>
@@ -239,8 +239,8 @@ export function AppHeader({ user }: AppHeaderProps) {
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
             <Input
               type="search"
-              placeholder="Search human cadences..."
-              aria-label="Search human cadences"
+              placeholder="Search WEAVE work and systems..."
+              aria-label="Search WEAVE work and systems"
               value={search}
               onChange={e => setSearch(e.target.value)}
               onKeyDown={e => {
@@ -260,11 +260,11 @@ export function AppHeader({ user }: AppHeaderProps) {
             size="sm"
             className="h-8 min-w-10 gap-2 border-white/5 bg-transparent px-3"
             onClick={() => router.push('/wallet')}
-            aria-label="Open Flame Coin wallet"
+            aria-label="Open System Switch wallet"
           >
             <Wallet className="h-4 w-4 text-cyan-400" />
             <span data-weave-live-word="station" className="font-mono text-xs">
-              {flameCoinBalance !== null ? `${flameCoinBalance.toLocaleString(undefined,{maximumFractionDigits:6})} Flame Coin` : '—'}
+              {flameCoinBalance !== null ? `${flameCoinBalance.toLocaleString(undefined,{maximumFractionDigits:6})} System Switch` : '—'}
             </span>
           </Button>
 

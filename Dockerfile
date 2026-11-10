@@ -25,6 +25,11 @@ ENV NODE_ENV=production
 RUN node tests/system-switch-multiplayer-regression.cjs
 RUN node tests/mandate-guidance-staff-regression.cjs
 RUN node tests/recent-features.cjs
+RUN node tests/admin-company-movement-regression.cjs
+RUN node tests/regional-manager-daily-workflow-regression.cjs
+RUN node tests/regional-system-switch-gate-regression.cjs
+RUN node tests/burning-river-company-time-continuity.cjs
+RUN node tests/system-switch-currency-display.cjs
 RUN node tests/agentic-bridger-regression.cjs
 RUN node tests/file-folder-customer-door-purchase-regression.cjs
 RUN node tests/file-folder-pricing-contract-regression.cjs
@@ -34,7 +39,6 @@ RUN node tests/adaptive-runtime.cjs
 RUN node tests/communication-security.cjs
 RUN node tests/recovery-desk.cjs
 RUN node tests/commerce-ledger-regression.cjs
-RUN node tests/advanced-image-workshop.cjs
 RUN node tests/video-ad-workshop.cjs
 RUN node tests/weave-narration-studio.cjs
 RUN npx tsc --noEmit

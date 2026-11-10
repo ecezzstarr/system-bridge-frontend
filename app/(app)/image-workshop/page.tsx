@@ -1,211 +1,337 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useState, type FormEvent } from 'react'
-import { useAuth } from '@/lib/auth-provider'
-import { ArrowLeft, Download, ImagePlus, Loader2, RefreshCcw, Sparkles, WandSparkles } from 'lucide-react'
+import {useEffect,useMemo,useState} from 'react'
+import {useRouter} from 'next/navigation'
+import {useAuth} from '@/lib/auth-provider'
+import {
+  WEAVE_IMAGE_SAMPLES,WEAVE_SAMPLE_FORMATS,defaultSampleEdits,
+  renderWeaveSampleSvg,type SampleEdits,type SampleFormat,
+} from '@/lib/weave-image-sample-art'
+import {
+  ArrowLeft,CheckCircle2,Copy,Download,Image as ImageIcon,
+  Paintbrush,ReceiptText,RefreshCw,ShoppingBag,Wallet,
+} from 'lucide-react'
 
-type Asset = {
-  id: string; prompt: string; style: string; model: string; aspect: string;
-  quality: string; format: string; status: string; url: string | null; createdAt: string;
+type License={id:string;sample_id:string;edits:SampleEdits;fee_system_switch:number;receipt_number:string|null;service_order_id:string|null;created_at:string}
+type Request={id:string;sample_id:string|null;customer_name:string;customer_contact:string;customer_brief:string;quoted_price_ngn:number|null;status:string;customer_payment_status:string;created_at:string}
+type Profile={public_code:string;display_name:string;description:string;example_price_ngn:number|null;active:boolean}
+type Day={day:string;sales:number;companyEarned:number}
+type Studio={
+  success:boolean;error?:string;fee:number;walletBalance:number;
+  licenses:License[];requests:Request[];profile:Profile|null;serviceDoorUrl:string|null;companyDaily?:Day[]
 }
-type StudioState = { available: boolean; limit: number; used: number; remaining: number; assets: Asset[] }
-type Format = 'png' | 'webp' | 'jpeg' | 'gif' | 'svg'
-const STYLES = [
-  ['general','Open creative'], ['photographic','Realistic photography'],
-  ['cinematic','Cinematic 3D'], ['product','Product imagery'],
-  ['architecture','Architecture'], ['illustration','Illustration'],
-  ['anime','Anime'], ['advertising','Advertising'],
-  ['infographic','Infographics'], ['branding','Brand design'],
-] as const
-const inputClass = 'w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100'
-const helperClass = 'mb-2 block text-xs font-semibold text-slate-600'
 
-export default function WeaveAdvancedImageWorkshop() {
-  const { user } = useAuth()
-  const [studio, setStudio] = useState<StudioState | null>(null)
-  const [busy, setBusy] = useState(false)
-  const [loading, setLoading] = useState(true)
-  const [notice, setNotice] = useState('')
-  const [prompt, setPrompt] = useState('')
-  const [style, setStyle] = useState('general')
-  const [aspect, setAspect] = useState('square')
-  const [format, setFormat] = useState<Format>('png')
-  const [model, setModel] = useState('detail')
-  const [quality, setQuality] = useState('high')
-  const [complexity, setComplexity] = useState('high')
-  const [transparent, setTransparent] = useState(false)
-  const [reference, setReference] = useState<File | null>(null)
-  const [mask, setMask] = useState<File | null>(null)
-  const [source, setSource] = useState<Asset | null>(null)
-  const [preview, setPreview] = useState<Asset | null>(null)
+const input='mt-2 w-full rounded-xl border border-white/15 bg-[#0a1824] px-3 py-3 text-sm text-white outline-none focus:border-cyan-300'
+const small='inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/[.04] px-3 py-2 text-xs font-bold text-slate-100 hover:border-cyan-200/40 disabled:opacity-40'
+const num=(value:number)=>Number(value).toLocaleString('en-NG',{maximumFractionDigits:3})
 
-  const headers = (): Record<string,string> => {
-    const token = typeof window === 'undefined' ? null : localStorage.getItem('ssb_auth_token')
-    return token ? { Authorization: 'Bearer ' + token } : {}
+export default function WeaveImageSamples(){
+  const {user,isInitialized}=useAuth()
+  const router=useRouter()
+  const [loading,setLoading]=useState(true)
+  const [busy,setBusy]=useState('')
+  const [error,setError]=useState('')
+  const [message,setMessage]=useState('')
+  const [studio,setStudio]=useState<Studio|null>(null)
+  const [category,setCategory]=useState('All')
+  const [chosen,setChosen]=useState(WEAVE_IMAGE_SAMPLES[0].id)
+  const selected=WEAVE_IMAGE_SAMPLES.find(item=>item.id===chosen)||WEAVE_IMAGE_SAMPLES[0]
+  const [edits,setEdits]=useState<SampleEdits>(defaultSampleEdits(WEAVE_IMAGE_SAMPLES[0]))
+  const [licenseId,setLicenseId]=useState('')
+  const [confirmed,setConfirmed]=useState(false)
+  const [customerOrderId,setCustomerOrderId]=useState('')
+  const [profile,setProfile]=useState({displayName:'',description:'',examplePriceNgn:'',active:true})
+  const [adminFee,setAdminFee]=useState('')
+  const isAdmin=user?.role==='admin'
+  const categories=useMemo(()=>['All',...Array.from(new Set(WEAVE_IMAGE_SAMPLES.map(sample=>sample.category)))],[])
+  const samples=useMemo(()=>category==='All'?WEAVE_IMAGE_SAMPLES:WEAVE_IMAGE_SAMPLES.filter(sample=>sample.category===category),[category])
+  const selectedPreview=useMemo(()=>'data:image/svg+xml;charset=utf-8,'+
+    encodeURIComponent(renderWeaveSampleSvg(selected,edits,true)),[selected,edits])
+
+  const headers=():Record<string,string>=>{
+    const token=typeof window==='undefined'?'':localStorage.getItem('ssb_auth_token')||''
+    return token?{Authorization:'Bearer '+token}:{}
   }
-
-  const load = async () => {
-    setLoading(true)
-    try {
-      const response = await fetch('/api/image-workshop', { headers: headers(), cache: 'no-store' })
-      const data = await response.json()
-      if (!response.ok || !data.success) throw new Error(data.error || 'Unable to open the image workshop.')
-      setStudio(data as StudioState)
-      setPreview(current => current || (data.assets as Asset[])[0] || null)
-    } catch (error: any) {
-      setNotice(error?.message || 'Unable to open the image workshop.')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => { if (user) void load() }, [user?.id])
-
-  const create = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    if (busy) return
-    if (prompt.trim().length < 8) return setNotice('Describe the image you want to make in more detail.')
-    setBusy(true)
-    setNotice('Your image request is being rendered. Keep this page open until it completes.')
-    try {
-      const form = new FormData()
-      form.append('prompt', prompt.trim())
-      form.append('style', style)
-      form.append('aspect', aspect)
-      form.append('format', format)
-      form.append('model', model)
-      form.append('quality', quality)
-      form.append('complexity', complexity)
-      form.append('background', transparent ? 'transparent' : 'opaque')
-      if (reference) form.append('reference', reference)
-      else if (source) form.append('sourceAssetId', source.id)
-      if (mask) form.append('mask', mask)
-      const response = await fetch('/api/image-workshop', {
-        method: 'POST', headers: headers(), body: form,
+  const load=async()=>{
+    try{
+      const response=await fetch('/api/image-workshop/samples',{headers:headers(),cache:'no-store'})
+      const data:Studio=await response.json()
+      if(!response.ok||!data.success)throw new Error(data.error||'Image Studio could not be opened')
+      setStudio(data)
+      if(data.profile)setProfile({
+        displayName:data.profile.display_name||'',description:data.profile.description||'',
+        examplePriceNgn:data.profile.example_price_ngn===null?'':String(data.profile.example_price_ngn),
+        active:data.profile.active!==false,
       })
-      const data = await response.json()
-      if (!response.ok || !data.success) throw new Error(data.error || 'The image could not be created.')
-      const asset = data.asset as Asset
-      setStudio(current => current ? {
-        ...current, assets: [asset, ...current.assets], remaining: data.remaining,
-        used: current.limit - data.remaining,
-      } : current)
-      setPreview(asset)
-      setReference(null)
-      setMask(null)
-      setSource(null)
-      setNotice('Image created and saved to your WEAVE workshop history. Open, download or refine it.')
-    } catch (error: any) {
-      setNotice(error?.message || 'The image could not be created.')
-    } finally { setBusy(false) }
+      setAdminFee(String(data.fee))
+    }catch(e){setError(e instanceof Error?e.message:'Image Studio could not be opened')}
+    finally{setLoading(false)}
   }
+  useEffect(()=>{if(isInitialized&&!user)router.replace('/login')},[isInitialized,user,router])
+  useEffect(()=>{if(user?.id)void load()},[user?.id])
 
-  const selectPrevious = (asset: Asset) => {
-    if (!['png','webp','jpeg'].includes(asset.format)) {
-      setNotice('Choose a PNG, WEBP or JPEG result as the next edit reference.')
-      return
-    }
-    setSource(asset)
-    setReference(null)
-    setMask(null)
-    setFormat('png')
-    setTransparent(false)
-    setPrompt('Refine this image: preserve the important details while ')
-    setNotice('Saved image selected. Finish describing the change and generate an edited version.')
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+  const send=async(action:string,rest:Record<string,unknown>)=>{
+    const response=await fetch('/api/image-workshop/samples',{
+      method:'POST',headers:{...headers(),'Content-Type':'application/json'},
+      body:JSON.stringify({action,...rest}),
+    })
+    const data=await response.json().catch(()=>({}))
+    if(!response.ok||!data.success)throw new Error(data.error||'WEAVE could not finish the action')
+    return data
   }
+  const run=async(key:string,fn:()=>Promise<void>)=>{
+    setBusy(key);setError('');setMessage('')
+    try{await fn()}catch(e){setError(e instanceof Error?e.message:'The action did not finish')}
+    finally{setBusy('')}
+  }
+  const choose=(id:string)=>{
+    const sample=WEAVE_IMAGE_SAMPLES.find(item=>item.id===id)
+    if(!sample)return
+    setChosen(id);setEdits(defaultSampleEdits(sample));setLicenseId('');setConfirmed(false)
+  }
+  const update=(key:keyof SampleEdits,value:string)=>{
+    setEdits(previous=>({...previous,[key]:value}))
+    setLicenseId('');setConfirmed(false)
+  }
+  const checkout=()=>void run('checkout',async()=>{
+    if(!confirmed)throw new Error('Review and approve the displayed production fee and commercial license.')
+    const result=await send('checkout',{sampleId:selected.id,edits,serviceOrderId:customerOrderId||null})
+    setLicenseId(result.license.id)
+    setMessage(result.existing?'This exact production is already licensed to you. No second charge was made.':
+      'Commercial design licensed. The System Switch fee is recorded for WEAVE, and your final artwork is ready.')
+    await load()
+  })
+  const download=async(license:string)=>{
+    await run('download-'+license,async()=>{
+      const response=await fetch('/api/image-workshop/samples/export?license='+encodeURIComponent(license),
+        {headers:headers(),cache:'no-store'})
+      if(!response.ok)throw new Error('This design is not available as a licensed download.')
+      const content=await response.text()
+      const svgUrl=URL.createObjectURL(new Blob([content],{type:'image/svg+xml;charset=utf-8'}))
+      try{
+        const img=new Image()
+        await new Promise<void>((resolve,reject)=>{img.onload=()=>resolve();img.onerror=()=>reject(new Error('Could not render licensed artwork.'));img.src=svgUrl})
+        const width=img.naturalWidth||1080,height=img.naturalHeight||1350
+        const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height
+        const ctx=canvas.getContext('2d')
+        if(!ctx)throw new Error('Image export is unavailable on this phone.')
+        ctx.drawImage(img,0,0,width,height)
+        const png=await new Promise<Blob>((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(new Error('PNG export failed.')),'image/png'))
+        const pngUrl=URL.createObjectURL(png)
+        const anchor=document.createElement('a');anchor.href=pngUrl;anchor.download='weave-commercial-'+license.slice(0,8)+'.png'
+        document.body.append(anchor);anchor.click();anchor.remove()
+        setTimeout(()=>URL.revokeObjectURL(pngUrl),30000)
+        setMessage('Licensed high-resolution PNG prepared for download.')
+      }finally{URL.revokeObjectURL(svgUrl)}
+    })
+  }
+  const copyDoor=()=>void run('copy',async()=>{
+    if(!studio?.serviceDoorUrl)return
+    await navigator.clipboard.writeText(studio.serviceDoorUrl)
+    setMessage('Your customer service link was copied.')
+  })
+  const saveProfile=()=>void run('profile',async()=>{
+    await send('save_profile',{...profile})
+    setMessage('Your image service identity and public quote have been updated.')
+    await load()
+  })
+  const changeOrder=(id:string,transition:string)=>void run('order-'+id,async()=>{
+    await send('request_status',{id,transition})
+    setMessage('Customer request record updated. Unverified outside payments are not counted as WEAVE earnings.')
+    await load()
+  })
+  const saveFee=()=>void run('fee',async()=>{
+    const result=await send('admin_set_fee',{fee:Number(adminFee)})
+    setMessage('Administrations production fee updated to '+num(Number(result.fee))+' System Switch.')
+    await load()
+  })
+  if(!isInitialized||!user)return <main className="min-h-screen p-8 text-slate-300">Opening the WEAVE Image Workshop…</main>
+  const fee=isAdmin?0:Number(studio?.fee??1)
+  const existing=studio?.licenses.find(item=>item.sample_id===selected.id&&
+    item.edits.brand===edits.brand&&item.edits.headline===edits.headline&&
+    item.edits.description===edits.description&&item.edits.action===edits.action&&
+    item.edits.format===edits.format&&item.edits.accent===edits.accent&&
+    item.service_order_id===(customerOrderId||null))
+  const finalLicenseId=licenseId||existing?.id||''
+  const activeRequest=studio?.requests.find(item=>item.id===customerOrderId)
 
-  const isEditing = Boolean(source || reference)
-  const supportsTransparency = format === 'png' || format === 'webp'
-  const locked = busy || !studio?.available || (studio?.remaining || 0) <= 0
-  const access = ['agent','bridger','client','admin','legion'].includes(user?.role || '')
-  if (!user) return <main className="mx-auto max-w-5xl px-4 py-12 text-slate-300">Opening WEAVE Image Workshop…</main>
-  if (!access) return <main className="mx-auto max-w-5xl px-4 py-12 text-white">Image production is not available to this position.</main>
-
-  return <main className="mx-auto max-w-7xl space-y-6 px-3 py-5 sm:px-6 sm:py-8" data-weave-advanced-image-workshop="true">
-    <header className="rounded-[1.75rem] border border-sky-200/60 bg-gradient-to-br from-white via-slate-50 to-sky-100 px-5 py-7 text-slate-900 shadow-xl sm:px-8">
-      <Link href="/dashboard" className="inline-flex items-center gap-2 text-xs font-semibold text-slate-600"><ArrowLeft size={15}/>Company operating center</Link>
-      <p className="mt-7 text-[10px] font-black uppercase tracking-[.24em] text-sky-700">WEAVE of Presence · Company of Time</p>
-      <h1 className="mt-2 text-3xl font-black tracking-tight sm:text-5xl">Advanced Image Workshop</h1>
-      <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-700">Make original images from words, edit a supplied photograph, continue refining your previous work and produce artwork for your business, Client File Folder, Customer Door or company campaigns.</p>
-      <div className="mt-5 flex flex-wrap gap-2 text-xs font-semibold">
-        <span className="rounded-full border border-sky-200 bg-white px-3 py-2">AI image generation + editing</span>
-        <span className="rounded-full border border-sky-200 bg-white px-3 py-2">Detail or fast rendering</span>
-        <span className="rounded-full border border-sky-200 bg-white px-3 py-2">Still images · animated GIF · vector SVG</span>
-        {user.role!=='admin'&&<Link href="/agent/creative" className="rounded-full bg-slate-900 px-3 py-2 text-white">Classic layout editor · no AI</Link>}
+  return <main data-weave-offline-image-business="true" className="mx-auto min-h-screen max-w-7xl space-y-6 px-3 py-5 text-white sm:px-6">
+    <Link href={isAdmin?'/authority/workshops':'/dashboard'} className="inline-flex items-center gap-2 text-xs text-slate-300"><ArrowLeft className="h-4 w-4"/>Return to WEAVE</Link>
+    <header className="rounded-[1.6rem] border border-cyan-200/20 bg-[radial-gradient(ellipse_at_top_right,#25445b,#091723_70%)] p-5 sm:p-9">
+      <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-cyan-200/30 bg-cyan-200/10"><Paintbrush className="h-6 w-6 text-cyan-200"/></div>
+      <p className="mt-5 text-[10px] font-black uppercase tracking-[.2em] text-cyan-200">WEAVE of Presence · Company creative workshop</p>
+      <h1 className="mt-2 max-w-3xl text-3xl font-black tracking-tight sm:text-5xl">The WEAVE Image House</h1>
+      <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">
+        Explore original visual collections, personalize a finished design for a real business, and sell your production to customers.
+        No API key, live AI generation or paid image provider is required.
+      </p>
+      <div className="mt-5 grid grid-cols-2 gap-2 sm:max-w-2xl sm:grid-cols-4">
+        <div className="rounded-xl border border-white/10 bg-white/[.04] p-3"><div className="text-2xl font-black text-cyan-100">{WEAVE_IMAGE_SAMPLES.length}</div><p className="text-[10px] text-slate-400">Original examples</p></div>
+        <div className="rounded-xl border border-white/10 bg-white/[.04] p-3"><div className="text-2xl font-black text-cyan-100">{categories.length-1}</div><p className="text-[10px] text-slate-400">Business styles</p></div>
+        <div className="rounded-xl border border-white/10 bg-white/[.04] p-3"><div className="text-2xl font-black text-cyan-100">{loading?'…':num(fee)}</div><p className="text-[10px] text-slate-400">System Switch / license</p></div>
+        <div className="rounded-xl border border-white/10 bg-white/[.04] p-3"><div className="text-2xl font-black text-cyan-100">{loading?'…':num(studio?.walletBalance||0)}</div><p className="text-[10px] text-slate-400">Your System Switch balance</p></div>
       </div>
     </header>
+    <Link href="/image-workshop/ai" className="inline-flex min-h-12 items-center rounded-xl border border-amber-300/50 bg-amber-300/10 px-5 py-3 text-sm font-bold text-amber-100" data-image-house-ai-extension="true">Optional advanced AI images · Requires Administrations provider activation</Link>
 
-    {notice && <p role="status" className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-slate-800">{notice}</p>}
-    {!loading && studio && !studio.available && <div role="alert" className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950">AI rendering is not configured on this WEAVE host. Administrations must add the server-side OpenAI API key before generation can begin. The Classic Studio remains available.</div>}
+    {error&&<div role="alert" className="rounded-xl border border-rose-300/25 bg-rose-400/10 p-4 text-sm text-rose-100">{error}</div>}
+    {message&&<div role="status" className="rounded-xl border border-emerald-200/20 bg-emerald-300/10 p-4 text-sm text-emerald-100">{message}</div>}
 
-    <div className="grid gap-5 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,.95fr)]">
-      <form onSubmit={create} className="space-y-5 rounded-3xl border border-slate-200 bg-slate-50 p-4 text-slate-900 shadow-lg sm:p-6">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div><p className="text-[10px] font-black uppercase tracking-widest text-sky-700">Production desk</p><h2 className="mt-1 text-xl font-black">Describe your image</h2></div>
-          <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-right"><span className="block text-[10px] text-slate-500">Remaining / 24h</span><strong className="text-lg">{loading ? '…' : String(studio?.remaining ?? 0) + ' / ' + String(studio?.limit ?? 0)}</strong></div>
-        </div>
-        <label className="block"><span className={helperClass}>What should WEAVE create or change?</span>
-          <textarea required minLength={8} maxLength={6000} rows={6} value={prompt} onChange={e=>setPrompt(e.target.value)} placeholder="Example: A detailed 3D white-and-gold Client File Folder kingdom on a smartphone, clean architecture, readable signs, realistic morning light. Preserve..." className={inputClass + ' resize-y'} />
-        </label>
-        <div>
-          <p className={helperClass}>Choose the kind of image</p>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-            {STYLES.map(([key,label])=><button type="button" key={key} aria-pressed={style===key} onClick={()=>setStyle(key)} className={'min-h-12 rounded-xl border px-3 py-2 text-left text-xs font-semibold transition ' + (style===key?'border-sky-500 bg-sky-100 text-sky-950':'border-slate-200 bg-white text-slate-600 hover:border-slate-400')}>{label}</button>)}
-          </div>
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <label className="block"><span className={helperClass}>AI model</span><select value={model} onChange={e=>setModel(e.target.value)} className={inputClass}><option value="detail">Sunburst · detailed</option><option value="fast">Flare · faster</option></select></label>
-          <label className="block"><span className={helperClass}>Image shape</span><select value={aspect} onChange={e=>setAspect(e.target.value)} className={inputClass}><option value="square">Square</option><option value="portrait">Portrait</option><option value="landscape">Landscape</option></select></label>
-          <label className="block"><span className={helperClass}>Save format</span><select value={format} onChange={e=>{setFormat(e.target.value as Format);setTransparent(false);setMask(null)}} className={inputClass}><option value="png">PNG · lossless</option><option value="webp">WEBP</option><option value="jpeg">JPEG</option><option value="gif">GIF · animated</option>{!isEditing&&<option value="svg">SVG · vector</option>}</select></label>
-          <label className="block"><span className={helperClass}>Render quality</span><select value={quality} onChange={e=>setQuality(e.target.value)} className={inputClass}><option value="high">High</option><option value="medium">Medium</option><option value="low">Draft</option></select></label>
-          <label className="block"><span className={helperClass}>Planning detail</span><select value={complexity} onChange={e=>setComplexity(e.target.value)} className={inputClass}><option value="high">Complex scene</option><option value="medium">Balanced</option><option value="low">Simple</option></select></label>
-          <label className="flex items-end gap-2 pb-3 text-xs font-semibold text-slate-700"><input type="checkbox" checked={transparent && supportsTransparency} disabled={!supportsTransparency} onChange={e=>setTransparent(e.target.checked)} className="h-4 w-4 accent-sky-600"/>Transparent background</label>
-        </div>
-        <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-4">
-          <div className="flex items-center gap-2 text-sm font-bold"><ImagePlus size={17}/>Optional image reference</div>
-          <p className="text-xs leading-5 text-slate-600">Attach your own PNG, WEBP or JPEG (up to 10MB), or choose a previously generated result below. Describe exactly what to retain and what to change.</p>
-          <input type="file" accept="image/png,image/jpeg,image/webp" className="block w-full text-xs text-slate-700 file:mr-3 file:rounded-lg file:border-0 file:bg-sky-100 file:px-3 file:py-2 file:font-bold file:text-sky-950" onChange={e=>{setReference(e.target.files?.[0]||null);setSource(null);setMask(null);if(e.target.files?.[0]&&format==='svg')setFormat('png')}} />
-          {reference&&<p className="text-xs font-semibold text-sky-800">Using uploaded reference: {reference.name} <button type="button" className="underline" onClick={()=>setReference(null)}>Clear</button></p>}
-          {source&&<p className="text-xs font-semibold text-sky-800">Editing saved image: {source.prompt.slice(0,90)} <button type="button" className="underline" onClick={()=>setSource(null)}>Clear</button></p>}
-          {isEditing&&format!=='gif'&&<label className="block"><span className={helperClass}>Optional edit mask · PNG, up to 4MB</span><input type="file" accept="image/png" className="w-full text-xs" onChange={e=>setMask(e.target.files?.[0]||null)}/></label>}
-          {mask&&<p className="text-xs text-slate-500">Mask: {mask.name}</p>}
-        </div>
-        {format==='gif'&&<p className="text-xs text-slate-600">Animated GIFs use six frames at 220ms each. Describe the motion and a seamless loop in your prompt. Provider GIF access may require approval.</p>}
-        {format==='svg'&&<p className="text-xs text-slate-600">SVG output is delivered as a downloadable vector file rather than an inline preview.</p>}
-        <button type="submit" disabled={locked} className="flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-50">
-          {busy?<Loader2 className="animate-spin" size={19}/>:<WandSparkles size={19}/>}
-          {busy?'CREATING IMAGE…':isEditing?'REFINE IMAGE':'GENERATE IMAGE'}
-        </button>
-        <p className="text-xs leading-5 text-slate-500">An OpenAI API integration powers AI outputs; ChatGPT subscriptions do not cover these API calls. WEAVE currently enforces a limited included allowance rather than silently charging your System Switch balance. Use images you have permission to edit and publish.</p>
-      </form>
+    <section aria-label="WEAVE sample catalogue" className="space-y-4">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div><p className="text-[10px] font-black uppercase tracking-[.16em] text-amber-200">WEAVE original productions</p>
+          <h2 className="mt-1 text-xl font-bold">Choose a business image</h2></div>
+        <span className="text-xs text-slate-400">Free samples to preview · Commercial exports are licensed</span>
+      </div>
+      <div className="flex gap-2 overflow-x-auto pb-2">
+        {categories.map(item=><button type="button" key={item} onClick={()=>setCategory(item)}
+          aria-pressed={item===category} className={'shrink-0 rounded-full border px-4 py-2 text-xs font-bold '+(item===category?'border-cyan-200 bg-cyan-200 text-[#071622]':'border-white/15 text-slate-300')}>{item}</button>)}
+      </div>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+        {samples.map(item=>{
+          const thumb=renderWeaveSampleSvg(item,defaultSampleEdits(item),true)
+          return <button key={item.id} type="button" onClick={()=>{choose(item.id);document.getElementById('weave-image-editor')?.scrollIntoView({behavior:'smooth',block:'start'})}}
+            aria-pressed={chosen===item.id} className={'group overflow-hidden rounded-2xl border text-left transition '+(chosen===item.id?'border-cyan-200 ring-2 ring-cyan-200/20':'border-white/10 hover:border-white/30')}>
+            <img src={'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(thumb)} loading="lazy" alt={item.name+' illustrated sample'} className="aspect-[4/5] w-full object-cover"/>
+            <span className="block space-y-1 bg-[#102031] p-3"><strong className="block text-[11px] text-white">{item.name}</strong>
+              <span className="block text-[10px] text-slate-400">{item.sector}</span></span>
+          </button>
+        })}
+      </div>
+    </section>
 
-      <aside className="min-w-0 space-y-4">
-        <section className="rounded-3xl border border-slate-200 bg-white p-4 shadow-lg sm:p-6">
-          <div className="flex items-center justify-between gap-3"><div><p className="text-[10px] font-black uppercase tracking-widest text-sky-700">Image floor</p><h2 className="mt-1 text-xl font-black text-slate-900">Latest production</h2></div><Sparkles size={20} className="text-sky-700"/></div>
-          {preview?.url ? <>
-            {preview.format==='svg'
-              ? <div className="mt-4 flex aspect-square items-center justify-center rounded-2xl bg-slate-100 p-6 text-center text-sm text-slate-600">Vector artwork ready. Download the SVG file to open it in a vector editor.</div>
-              : <div className="mt-4 overflow-hidden rounded-2xl border border-slate-200 bg-[linear-gradient(45deg,#f1f5f9_25%,transparent_25%,transparent_75%,#f1f5f9_75%),linear-gradient(45deg,#f1f5f9_25%,transparent_25%,transparent_75%,#f1f5f9_75%)] bg-[length:24px_24px] bg-[position:0_0,12px_12px]"><img src={preview.url} alt={preview.prompt} className="max-h-[60vh] w-full object-contain"/></div>}
-            <p className="mt-3 text-xs leading-5 text-slate-700">{preview.prompt}</p>
-            <div className="mt-4 flex flex-wrap gap-2">
-              <a href={preview.url} download={'weave-image-' + preview.id + '.' + preview.format} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-xs font-bold text-white"><Download size={16}/>Download {preview.format.toUpperCase()}</a>
-              {['png','webp','jpeg'].includes(preview.format)&&<button type="button" onClick={()=>selectPrevious(preview)} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-sky-300 px-4 py-2 text-xs font-bold text-sky-950"><RefreshCcw size={16}/>Edit this image</button>}
+    <section id="weave-image-editor" className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(300px,.9fr)]">
+      <div className="space-y-5 rounded-2xl border border-white/10 bg-[#0b1927] p-4 sm:p-6">
+        <div><p className="text-[10px] font-black uppercase tracking-widest text-cyan-200">Production desk</p>
+          <h2 className="mt-1 text-xl font-bold">{selected.name}</h2>
+          <p className="mt-1 text-xs leading-5 text-slate-400">Edit the words, size and finish. The watermarked preview is free. A paid license unlocks your exact finished image.</p></div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="text-xs text-slate-200">Business or brand
+            <input className={input} maxLength={55} value={edits.brand} onChange={e=>update('brand',e.target.value)}/></label>
+          <label className="text-xs text-slate-200">Final image format
+            <select className={input} value={edits.format} onChange={e=>update('format',e.target.value as SampleFormat)}>
+              {Object.entries(WEAVE_SAMPLE_FORMATS).map(([key,value])=><option value={key} key={key}>{value.label}</option>)}
+            </select></label>
+        </div>
+        <label className="block text-xs text-slate-200">Main headline
+          <textarea className={input+' min-h-24 resize-y'} maxLength={110} value={edits.headline} onChange={e=>update('headline',e.target.value)}/></label>
+        <label className="block text-xs text-slate-200">Supporting message
+          <textarea className={input+' min-h-24 resize-y'} maxLength={150} value={edits.description} onChange={e=>update('description',e.target.value)}/></label>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="text-xs text-slate-200">Customer action
+            <input className={input} maxLength={55} value={edits.action} onChange={e=>update('action',e.target.value)}/></label>
+          <label className="text-xs text-slate-200">Decorative accent
+            <input className={input+' h-12 cursor-pointer p-1'} type="color" value={edits.accent} onChange={e=>update('accent',e.target.value)}/></label>
+        </div>
+        {!isAdmin&&studio?.requests.some(item=>item.status==='accepted')&&<label className="block text-xs text-slate-200">Attach to an accepted customer job
+          <select className={input} value={customerOrderId} onChange={e=>{setCustomerOrderId(e.target.value);setLicenseId('');setConfirmed(false)}}>
+            <option value="">Own production / portfolio</option>
+            {studio.requests.filter(item=>item.status==='accepted').map(item=><option value={item.id} key={item.id}>{item.customer_name} · {item.customer_brief.slice(0,50)}</option>)}
+          </select></label>}
+        {activeRequest&&<p className="text-xs text-slate-300">Production linked to request from <strong>{activeRequest.customer_name}</strong>. Each customer commission requires its own WEAVE production license.</p>}
+        <div className="rounded-xl border border-amber-200/20 bg-amber-200/[.06] p-4">
+          <h3 className="text-sm font-bold text-amber-100">Commercial production terms</h3>
+          <p className="mt-2 text-xs leading-5 text-slate-300">
+            {isAdmin?'Official Administrations output · No internal wallet debit.':
+              'WEAVE company fee: '+num(fee)+' System Switch for this customized production. You may sell the finished, licensed output at a price you agree with your customer. No third-party customer payment is collected by this checkout.'}
+          </p>
+          <label className="mt-3 flex items-start gap-2 text-xs leading-5 text-slate-300">
+            <input type="checkbox" className="mt-1" checked={confirmed} onChange={e=>setConfirmed(e.target.checked)}/>
+            I approve the displayed production fee and understand that I may sell customized finished work, not the unmodified source templates or WEAVE brand ownership.
+          </label>
+        </div>
+        {finalLicenseId?<button disabled={Boolean(busy)} type="button" onClick={()=>void download(finalLicenseId)}
+          className="flex min-h-14 w-full items-center justify-center gap-2 rounded-xl bg-emerald-200 px-4 text-sm font-black text-[#0d2a21] disabled:opacity-50">
+          <Download className="h-5 w-5"/>Download licensed high-resolution PNG</button>:
+          <button type="button" onClick={checkout} disabled={Boolean(busy)||!confirmed||loading}
+            className="flex min-h-14 w-full items-center justify-center gap-2 rounded-xl bg-cyan-200 px-4 text-sm font-black text-[#061521] disabled:opacity-50">
+            <ShoppingBag className="h-5 w-5"/>{busy==='checkout'?'Recording purchase…':isAdmin?'License official image · No charge':'Approve '+num(fee)+' System Switch and license image'}
+          </button>}
+        {!isAdmin&&<Link href="/wallet/deposit-withdraw" className={small+' w-full'}><Wallet className="h-4 w-4"/>Fund System Switch wallet</Link>}
+        <p className="text-[11px] leading-5 text-slate-400">All sample artwork is predesigned, vector-based illustration. This is not live AI photography or custom AI generation. The licensed file contains your edits and is saved in your WEAVE production records.</p>
+      </div>
+      <div className="space-y-4 lg:sticky lg:top-5">
+        <div className="rounded-2xl border border-white/10 bg-[#0b1927] p-3 sm:p-5">
+          <div className="mb-3 flex items-center justify-between gap-3"><h2 className="flex items-center gap-2 text-sm font-bold"><ImageIcon className="h-4 w-4 text-cyan-200"/>Live image preview</h2>
+            <span className="text-[10px] text-slate-400">{WEAVE_SAMPLE_FORMATS[edits.format].width}×{WEAVE_SAMPLE_FORMATS[edits.format].height}</span></div>
+          <img src={selectedPreview} alt={'Current WEAVE sample preview: '+selected.name} className="max-h-[72vh] w-full rounded-xl border border-white/10 bg-black/30 object-contain"/>
+          <p className="mt-3 text-xs text-slate-400">Watermark disappears from the purchased commercial export.</p>
+        </div>
+      </div>
+    </section>
+
+    <section className="grid gap-5 lg:grid-cols-2">
+      {!isAdmin&&<div className="space-y-4 rounded-2xl border border-white/10 bg-[#0b1927] p-5">
+        <div><p className="text-[10px] font-bold uppercase tracking-widest text-amber-200">Your business door</p>
+          <h2 className="mt-1 text-xl font-bold">Let customers commission you</h2>
+          <p className="mt-2 text-xs leading-5 text-slate-400">Choose your customer quote. Share your WEAVE service link. Each customer submits a brief, and you create and license their finished design.</p></div>
+        <label className="block text-xs text-slate-200">Business display name<input className={input} maxLength={160} value={profile.displayName} onChange={e=>setProfile(p=>({...p,displayName:e.target.value}))}/></label>
+        <label className="block text-xs text-slate-200">What you offer<textarea className={input+' min-h-20'} maxLength={350} value={profile.description} onChange={e=>setProfile(p=>({...p,description:e.target.value}))}/></label>
+        <label className="block text-xs text-slate-200">Indicative customer price in NGN (optional, not a guaranteed sale)
+          <input className={input} type="number" min={0} step={1} value={profile.examplePriceNgn} onChange={e=>setProfile(p=>({...p,examplePriceNgn:e.target.value}))}/></label>
+        <label className="flex items-center gap-2 text-xs text-slate-300"><input type="checkbox" checked={profile.active} onChange={e=>setProfile(p=>({...p,active:e.target.checked}))}/>Public customer service door open</label>
+        <div className="flex flex-wrap gap-2"><button type="button" onClick={saveProfile} disabled={Boolean(busy)} className={small}><CheckCircle2 className="h-4 w-4"/>Save your service door</button>
+          <button type="button" onClick={copyDoor} disabled={!studio?.serviceDoorUrl||Boolean(busy)} className={small}><Copy className="h-4 w-4"/>Copy customer link</button></div>
+        {studio?.serviceDoorUrl&&<a href={studio.serviceDoorUrl} target="_blank" rel="noreferrer" className="block break-all text-xs text-cyan-200 underline">{studio.serviceDoorUrl}</a>}
+        <p className="text-xs leading-5 text-slate-400">Outside customer payments remain your responsibility. Reporting receipt is not verification by WEAVE and is not company revenue.</p>
+      </div>}
+      {isAdmin&&<div className="space-y-4 rounded-2xl border border-white/10 bg-[#0b1927] p-5">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-amber-200">Administrations · company production income</p>
+        <h2 className="text-xl font-bold">Verified System Switch earnings</h2>
+        <label className="block text-xs text-slate-200">Published fee per commercial production license
+          <input className={input} type="number" min={0} max={1000} step=".001" value={adminFee} onChange={e=>setAdminFee(e.target.value)}/></label>
+        <button type="button" onClick={saveFee} disabled={Boolean(busy)} className={small}>Publish company fee</button>
+        <div className="max-h-80 space-y-2 overflow-y-auto">
+          {(studio?.companyDaily||[]).length?<table className="w-full text-left text-xs"><thead><tr><th className="p-2">Day (UTC)</th><th className="p-2">Licenses sold</th><th className="p-2">Company earnings</th></tr></thead>
+          <tbody>{(studio?.companyDaily||[]).map(item=><tr className="border-t border-white/10" key={item.day}>
+            <td className="p-2">{new Date(item.day).toISOString().slice(0,10)}</td><td className="p-2">{item.sales}</td><td className="p-2">{num(item.companyEarned)} System Switch</td>
+          </tr>)}</tbody></table>:<p className="py-6 text-xs text-slate-400">No paid sample exports recorded yet. Previews and official internal designs do not count as company sales.</p>}
+        </div>
+        <p className="text-xs text-slate-400">Only committed paid licensing records appear here. Unverified customer promises and sample views are excluded.</p>
+      </div>}
+
+      <div className="rounded-2xl border border-white/10 bg-[#0b1927] p-5">
+        <div className="flex items-center justify-between gap-3"><h2 className="text-lg font-bold">Your licensed productions</h2><button type="button" onClick={()=>void load()} className={small} disabled={Boolean(busy)}><RefreshCw className="h-4 w-4"/>Refresh</button></div>
+        <div className="mt-3 max-h-96 space-y-2 overflow-auto">
+          {!studio?.licenses?.length?<p className="py-8 text-center text-xs text-slate-400">Commercial licenses and their receipts will be saved here.</p>:
+            studio.licenses.map(item=><div key={item.id} className="rounded-xl border border-white/10 bg-white/[.03] p-3">
+              <p className="text-xs font-bold">{WEAVE_IMAGE_SAMPLES.find(s=>s.id===item.sample_id)?.name||item.sample_id}</p>
+              <p className="mt-1 text-[11px] text-slate-300">{item.edits.brand} · {item.edits.format} · {num(item.fee_system_switch)} System Switch</p>
+              <p className="mt-1 break-all text-[10px] text-slate-500"><ReceiptText className="mr-1 inline h-3 w-3"/>{item.receipt_number||'Official Administrations production'} · {new Date(item.created_at).toLocaleDateString()}</p>
+              <button type="button" className={small+' mt-2'} disabled={Boolean(busy)} onClick={()=>void download(item.id)}><Download className="h-4 w-4"/>Download PNG again</button>
+            </div>)}
+        </div>
+      </div>
+    </section>
+
+    {!isAdmin&&<section className="rounded-2xl border border-white/10 bg-[#0b1927] p-5">
+      <h2 className="text-lg font-bold">Customer requests · Daily work</h2>
+      <p className="mt-1 text-xs leading-5 text-slate-400">Respond to inquiries, agree on the customer's price, produce the image, then record completion. The customer payment status below is a producer report, not a verified WEAVE settlement.</p>
+      <div className="mt-4 grid gap-3 md:grid-cols-2">
+        {!studio?.requests?.length?<p className="p-4 text-xs text-slate-400">No incoming requests yet. Share your service door to begin prospecting.</p>:
+          studio.requests.map(order=><article key={order.id} className="space-y-2 rounded-xl border border-white/10 bg-[#102031] p-4">
+            <div className="flex items-start justify-between gap-3"><strong className="text-sm">{order.customer_name}</strong>
+              <span className="rounded-full border border-white/15 px-2 py-1 text-[10px] uppercase text-slate-300">{order.status}</span></div>
+            <p className="text-xs leading-5 text-slate-300">{order.customer_brief}</p>
+            <p className="text-[11px] text-slate-400">Contact: {order.customer_contact}</p>
+            <p className="text-[11px] text-slate-400">Payment: {order.customer_payment_status==='reported_received'?'Reported received (unverified)':'Not verified'}{order.quoted_price_ngn!==null?' · Quoted ₦'+num(Number(order.quoted_price_ngn)):''}</p>
+            <div className="flex flex-wrap gap-2">
+              {order.status==='requested'&&<><button type="button" className={small} disabled={Boolean(busy)} onClick={()=>changeOrder(order.id,'accept')}>Accept</button>
+                <button type="button" className={small} disabled={Boolean(busy)} onClick={()=>changeOrder(order.id,'reject')}>Decline</button></>}
+              {order.status==='accepted'&&<>
+                <button type="button" className={small} onClick={()=>{setCustomerOrderId(order.id);if(order.sample_id)choose(order.sample_id);setTimeout(()=>document.getElementById('weave-image-editor')?.scrollIntoView({behavior:'smooth'}),0)}}>Create this image</button>
+                {order.customer_payment_status!=='reported_received'&&<button type="button" className={small} disabled={Boolean(busy)} onClick={()=>changeOrder(order.id,'payment_reported')}>Report customer paid</button>}
+                <button type="button" className={small} disabled={Boolean(busy)} onClick={()=>changeOrder(order.id,'complete')}>Mark production complete</button>
+              </>}
             </div>
-          </> : <div className="mt-5 flex aspect-[4/3] items-center justify-center rounded-2xl bg-slate-100 p-5 text-center text-sm text-slate-500">Your first generated image appears here. Saved artwork remains in your personal workshop history.</div>}
-        </section>
-        <section className="rounded-3xl border border-slate-200 bg-slate-50 p-4 text-slate-900 shadow-lg sm:p-6">
-          <div className="flex items-center justify-between"><h2 className="text-lg font-black">My image history</h2><button type="button" onClick={()=>void load()} disabled={loading} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold">Refresh</button></div>
-          {loading?<p className="mt-4 text-sm text-slate-500">Loading saved artwork…</p>:studio?.assets.length
-            ? <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">{studio.assets.map(asset=><button type="button" key={asset.id} onClick={()=>setPreview(asset)} className={'overflow-hidden rounded-xl border bg-white text-left ' + (preview?.id===asset.id?'border-sky-500 ring-2 ring-sky-100':'border-slate-200')}>
-              {asset.format==='svg'?<div className="flex aspect-square items-center justify-center bg-slate-100 text-xs font-bold text-slate-700">SVG vector</div>:<img src={asset.url||''} alt={asset.prompt} loading="lazy" className="aspect-square w-full object-cover"/>}
-              <div className="px-2 py-2"><p className="truncate text-[10px] font-bold">{asset.style}</p><p className="text-[9px] uppercase text-slate-500">{asset.format}</p></div>
-            </button>)}</div>
-            : <p className="mt-4 text-sm text-slate-500">No AI images saved yet. Your Classic Studio designs are separate and remain on your device.</p>}
-        </section>
-        <Link href="/video-ad-studio" className="flex min-h-14 items-center justify-center rounded-2xl border border-sky-200 bg-white px-5 py-3 text-sm font-bold text-sky-950">Continue into WEAVE Video Ad Studio</Link>
-      </aside>
-    </div>
+          </article>)}
+      </div>
+    </section>}
+    <footer className="flex flex-wrap gap-3 border-t border-white/10 pt-5">
+      <Link href="/agent/creative" className={small}>Free classic image layouts</Link>
+      <Link href={isAdmin?'/admin/video-ad-workshop':'/video-ad-studio'} className={small}>Video production workshop</Link>
+      <Link href="/receipts" className={small}>My company receipts</Link>
+    </footer>
   </main>
 }

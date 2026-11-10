@@ -10,6 +10,16 @@ export const ADMIN_SPACES:readonly AdminSpace[]=[
     "description": "Enter the unchanged Administration district world."
   },
   {
+    "title": "Company Movement Intelligence",
+    "href": "/admin/company-movement",
+    "description": "Monitor prospect purchases, Agent sales, verified Client File Folders, payment queues and transaction categories."
+  },
+  {
+    "title": "Regional Workforce Control",
+    "href": "/admin/regional-operations",
+    "description": "Assign approved regional leads and oversee employee daily participation and support requests."
+  },
+  {
     "title": "Administration Control Center",
     "href": "/admin/control-center",
     "description": "Open the current institutional controls and company authority."
@@ -85,6 +95,11 @@ export const ADMIN_SPACES:readonly AdminSpace[]=[
     "title": "Guidance Personnel",
     "href": "/admin/guidance-staff",
     "description": "Approve staff for Mandate, Forensics and Attorney guidance."
+  },
+  {
+    "title": "Company Work Support & Advances",
+    "href": "/weave/lifestyles/support",
+    "description": "Assign employees to verified managers, oversee private support cases, funded credit, stock assistance and repayments."
   },
   {
     "title": "Regional Manager Applications",
@@ -184,9 +199,9 @@ export const ADMIN_SPACES:readonly AdminSpace[]=[
     "description": "Audit recorded subscription payment states."
   },
   {
-    "title": "Flame Coin Sales",
+    "title": "System Switch Sales",
     "href": "/admin/weave-flame-coin-sales",
-    "description": "Manage confirmed Flame Coin purchase operations."
+    "description": "Manage confirmed System Switch purchase operations."
   },
   {
     "title": "TRX Sales",
@@ -375,11 +390,6 @@ export const ADMIN_SPACES:readonly AdminSpace[]=[
     "title": "Advertising Workshop",
     "href": "/admin/ad-workshop",
     "description": "Manage company advertising creatives and distribution."
-  },
-  {
-    "title": "Advanced Image Workshop",
-    "href": "/image-workshop",
-    "description": "Generate, edit and refine professional images, vector artwork and animated image assets for WEAVE company work."
   },
   {
     "title": "Video Ad Workshop",

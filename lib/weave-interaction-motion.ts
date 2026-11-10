@@ -27,7 +27,7 @@ export function classifyWeaveMotion(label:string,type?:string):WeaveMotionKind{
   if(type==='arrival'||/arrived|enter territory|enter district|open .*world|open .*gate/.test(value))return 'arrival'
   if(/failed|error|unable|insufficient|locked|denied|unavailable|out of stock/.test(value))return 'interruption'
   if(/build|blueprint|foundation|structure|construction|commission|activate|system live|attach|install|module/.test(value))return 'emergence'
-  if(/buy|purchase|deposit|withdraw|wallet|flame coin|payment|value|order|fund|credit/.test(value))return 'value'
+  if(/buy|purchase|deposit|withdraw|wallet|System Switch|payment|value|order|fund|credit/.test(value))return 'value'
   if(/route|movement|stream|broadcast|message|outreach|prospect|distribution|network/.test(value))return 'route'
   if(/publish|flame event|ignite|launch|ceremony/.test(value))return 'ignition'
   if(/verify|verified|confirm|confirmed|complete|completed|accept|approved|assigned|delivered/.test(value))return 'confirmation'

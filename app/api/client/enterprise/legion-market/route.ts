@@ -100,7 +100,7 @@ export async function POST(request:NextRequest){
   const enterprise=await getEnterprise(clientId)
   if(!enterprise)return NextResponse.json({success:false,error:'Legion Quarters are required before recruitment.'},{status:409})
   const monthlyStanding=await getClientMonthlyStanding(clientId)
-  if(!monthlyStanding.active)return NextResponse.json({success:false,error:'Renew your 600 Flame Coin Client monthly subscription before recruiting new Legions.'},{status:403})
+  if(!monthlyStanding.active)return NextResponse.json({success:false,error:'Renew your 600 System Switch Client monthly subscription before recruiting new Legions.'},{status:403})
   const capacity=await capacityState(clientId)
   if(capacity.count>=capacity.capacity)return NextResponse.json({success:false,error:'Legion Quarter capacity is full.'},{status:409})
 

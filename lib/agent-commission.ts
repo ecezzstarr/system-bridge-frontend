@@ -1,4 +1,5 @@
 import { getPool, sql } from '@/lib/db'
+import { recoverSupportAdvanceFromEarning } from '@/lib/company-support'
 import { WORLD_RULES } from './world/constants'
 
 export type CommissionActivity =
@@ -118,6 +119,7 @@ export async function creditAgentCommission(params: {
     )
     if(profileUpdate.rows.length!==1)throw new Error('Agent earnings profile unavailable')
 
+    await recoverSupportAdvanceFromEarning(client,agentId,commissionAmount,sourceKey)
     await client.query('COMMIT')
     credited = true
   } catch (error) {
@@ -139,7 +141,7 @@ export async function creditAgentCommission(params: {
           ${agentId}::uuid,
           'commission',
           'A return has come to you',
-          ${`You earned ${commissionAmount.toFixed(2)} Flame Coin (${(rate * 100).toFixed(0)}%) from ${movement}.`},
+          ${`You earned ${commissionAmount.toFixed(2)} System Switch (${(rate * 100).toFixed(0)}%) from ${movement}.`},
           'WEAVE',
           '/agent/commissions'
         )

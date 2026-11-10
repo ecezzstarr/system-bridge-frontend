@@ -14,7 +14,7 @@ An authenticated hourly scheduler checks **published, unsold marketplace candida
 - Maximum published target is **120**, not 120 additional items.
 - Country selection excludes the last **two** published country codes; persisted history preserves spacing across scheduler runs. With three sources the sequence rotates; with more sources the eligible selection is randomized.
 - Uniqueness check prevents reusing an existing phone number, and every source's numeric cursor advances across runs.
-- Each package costs 1.1 Flame Coin per candidate, consistent with existing default.
+- Each package costs 1.1 System Switch per candidate, consistent with existing default.
 - Records are explicitly **unverified candidates**: phone ownership, existence, WhatsApp reachability, interest, permission and country validity are not established. The generator does not send any message or place calls.
 - Source seeds and cross-border prospect handling require Administration review of provenance and applicable privacy/marketing requirements.
 

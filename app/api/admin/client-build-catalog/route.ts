@@ -49,11 +49,11 @@ export async function PATCH(request: NextRequest) {
     if (kind === 'item') {
       const price = Number(body.priceFlameCoin)
       if (!Number.isFinite(price) || price < 0) {
-        return NextResponse.json({ error: 'Valid Flame Coin price required' }, { status: 400 })
+        return NextResponse.json({ error: 'Valid System Switch price required' }, { status: 400 })
       }
       const published = body.published !== false
       if (published && ['music_studio_kit','animation_production_kit'].includes(key) && price <= 0) {
-        return NextResponse.json({ error:'Set a positive, approved Flame Coin price before publishing this production workshop kit.' }, { status:400 })
+        return NextResponse.json({ error:'Set a positive, approved System Switch price before publishing this production workshop kit.' }, { status:400 })
       }
       const rows = await sql`
         UPDATE weave_file_folder_items

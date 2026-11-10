@@ -40,6 +40,7 @@ export default function RegionalManagerApplicationPage(){
   }
   if(!isInitialized||isLoading||loading)return <main className="p-6 text-sm text-slate-200">Opening Regional Manager application…</main>
   return <main className="weave-operating-environment mx-auto min-h-screen max-w-4xl px-4 py-8 text-white" data-regional-manager-application="true">
+    <div className="mb-4 rounded-xl border border-cyan-300/20 p-4 text-sm text-white"><Link className="font-bold text-cyan-200" href="/weave/lifestyles/support">Open Regional Employee Support →</Link><p className="mt-2 text-xs text-slate-300">Speak privately with assigned Bridgers, Agents and lead managers. Review obstacles, offer support and record outcomes without bypassing Administrations authority.</p></div>
     <div className="flex flex-wrap gap-4 text-xs text-cyan-200"><Link href="/weave/lifestyles">← Lifestyle</Link><Link href="/weave/lifestyles/work">My approved workspaces →</Link></div>
     <p className="mt-7 text-[10px] font-black uppercase tracking-[.2em] text-amber-200">The Company of Time · Regional leadership</p>
     <h1 className="mt-2 text-3xl font-black">Apply to become a Regional Manager</h1>
@@ -47,7 +48,7 @@ export default function RegionalManagerApplicationPage(){
     <div className="mt-5 grid gap-3 sm:grid-cols-3">{[['Eligible applicants','Bridger · Agent'],['File Folder','None · ordinary Regional Manager'],['Supporting team','Up to 20 assistants']].map(([label,value])=><div key={label} className="border border-white/10 p-4"><p className="text-[10px] uppercase tracking-wider text-slate-400">{label}</p><p className="mt-2 text-sm font-black">{value}</p></div>)}</div>
     {error&&<p role="alert" className="mt-4 border border-rose-400/30 p-3 text-sm text-rose-200">{error}</p>}
     {message&&<p role="status" className="mt-4 border border-emerald-300/20 p-3 text-sm text-emerald-200">{message}</p>}
-    {appointment?.status==='active'&&<section className="mt-6 border border-emerald-300/25 p-5"><h2 className="text-xl font-black">Regional Manager appointment active</h2><p className="mt-2 text-sm text-slate-300">Administration has recorded your appointment. Team assignments remain subject to the defined capacity.</p></section>}
+    {appointment?.status==='active'&&<section className="mt-6 border border-emerald-300/25 p-5"><h2 className="text-xl font-black">Regional Manager appointment active</h2><p className="mt-2 text-sm text-slate-300">Administration has recorded your appointment. Team assignments remain subject to the defined capacity.</p><Link href="/weave/lifestyles/regional-manager/workspace" className="mt-4 inline-flex min-h-11 items-center rounded-lg border border-cyan-300/40 px-4 py-2 text-sm font-semibold text-cyan-100">Open Regional Manager daily operations →</Link></section>}
     {application&&<section className="mt-6 border border-cyan-300/20 bg-cyan-300/[.04] p-5">
       <p className="text-[10px] font-black uppercase tracking-wider text-cyan-200">Your application · {application.status.replaceAll('_',' ')}</p>
       <h2 className="mt-2 text-xl font-black">{application.region}</h2>

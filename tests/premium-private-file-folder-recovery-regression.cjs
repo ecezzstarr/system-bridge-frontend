@@ -145,6 +145,18 @@ assert(entry.includes("existingTier!=='premium'&&existingTier!=='plus'")&&
 assert(operating.includes("data-premium-file-folder-entrance=\"official-live-world\"")&&
   operating.includes('<FileFolderPremiumWorld'),
   'Premium tier reaches the dedicated black/gold real private scene')
+assert(premium3d.includes('PremiumDistrictLandmark')&&
+  premium3d.includes('PremiumCitadelArchitecture')&&
+  premium3d.includes('PremiumTerraces')&&
+  premium3d.includes('data-premium-mobile-3d="tap-drag-pinch"')&&
+  premium3d.includes('stationStatus:Record<StationKey,string>')&&
+  premium3d.includes("stationForDistrict(active)")&&
+  premium3d.includes("['selling','ready_for_offer']")&&
+  premium3d.includes('data-premium-visual-identity="charcoal-black-gold"'),
+  'Premium world has distinguishable 3D places, active district context and verified Customer Door visibility')
+assert(operating.includes('data-file-folder-tier={data.file_folder_tier}')&&
+  read('app/client/system-switch/file-folder-phone.css').includes('[data-file-folder-tier="premium"]'),
+  'Premium mobile shell retains its owned black-and-gold theme without changing other tiers')
 assert(premium3d.includes('Premium3DRecoveryBoundary')&&
   premium3d.includes('data-premium-3d-recovery="webgl-unavailable"')&&
   premium3d.includes('STATIONS.map(s=><button'),

@@ -81,7 +81,7 @@ export function WeaveDashboardWorld({
   const {isVisible,orderFor}=useEnvironmentOrganizer()
   const hasRolePresence=role==='agent'||role==='bridger'||role==='client'
   const hasVideoStudio=role!=='admin'&&isVisible('/video-ad-studio')
-  const hasImageStudio=role!=='admin'&&isVisible('/image-workshop')
+  const hasImageStudio=role!=='admin'&&isVisible('/agent/creative')
 
   const districts=getRoleDistricts(role)
     .map(district=>({
@@ -143,9 +143,16 @@ export function WeaveDashboardWorld({
         </span>
       </Link>
 
-      {hasImageStudio&&<Link href="/image-workshop" data-agent-creative-first-step={role==='agent'?'true':undefined} data-shared-image-studio={role} className="mb-3 flex min-h-20 w-full items-center gap-3 rounded-2xl border border-amber-300/30 bg-amber-300/[.07] px-4 py-3">
+      {hasImageStudio&&<Link href="/agent/creative" data-agent-creative-first-step={role==='agent'?'true':undefined} data-shared-image-studio={role} className="mb-3 flex min-h-20 w-full items-center gap-3 rounded-2xl border border-amber-300/30 bg-amber-300/[.07] px-4 py-3">
         <Clapperboard className="h-6 w-6 shrink-0 text-amber-200"/>
-        <span><span className="block text-xs font-black uppercase text-white">Advanced AI Image Workshop</span><span className="mt-1 block text-[10px] leading-4 text-slate-300">Create, edit and refine professional images with a controlled daily AI allowance. The Classic layout editor remains available.</span></span>
+        <span><span className="block text-xs font-black uppercase text-white">Image Studio · Shared WEAVE</span><span className="mt-1 block text-[10px] leading-4 text-slate-300">Create image advertisements free. Continue to the Video Studio for narrated productions and your position's displayed price.</span></span>
+      </Link>}
+
+      {hasRolePresence&&<Link href="/image-workshop" data-shared-advanced-image-workshop={role}
+        className="mb-3 flex min-h-20 w-full items-center gap-3 rounded-2xl border border-cyan-300/25 bg-cyan-300/[.06] px-4 py-3">
+        <Clapperboard className="h-6 w-6 shrink-0 text-cyan-200"/>
+        <span><span className="block text-xs font-black uppercase text-white">WEAVE Image House · Original commercial artwork</span>
+        <span className="mt-1 block text-[10px] leading-4 text-slate-300">Choose from 36 original samples, personalize and license finished customer artwork.</span></span>
       </Link>}
 
       <div className="my-2 border-y border-white/[.07] py-2">
@@ -212,10 +219,16 @@ export function WeaveDashboardWorld({
       <span className="mt-1 block text-[8px] text-slate-500">{hasRolePresence?'Understand your position':'Enter institutional control'}</span>
     </Link>
 
-    {hasImageStudio&&<Link href="/image-workshop" data-shared-image-studio={role}
+    {hasImageStudio&&<Link href="/agent/creative" data-shared-image-studio={role}
       className="group absolute bottom-[14%] left-1/2 z-20 hidden -translate-x-1/2 items-center gap-2 border border-amber-300/25 bg-black/40 px-4 py-2.5 backdrop-blur-xl sm:flex">
       <Clapperboard className="h-4 w-4 text-amber-200"/>
-      <span><span className="block text-[9px] font-black uppercase tracking-[.12em] text-white">Advanced AI Image Workshop</span><span className="mt-0.5 block text-[8px] text-slate-400">Generate and refine advanced imagery</span></span>
+      <span><span className="block text-[9px] font-black uppercase tracking-[.12em] text-white">Image Studio · Shared WEAVE</span><span className="mt-0.5 block text-[8px] text-slate-400">Create and download real artwork · Free</span></span>
+    </Link>}
+    {hasRolePresence&&<Link href="/image-workshop" data-shared-advanced-image-workshop={role}
+      className="group absolute bottom-[20%] left-1/2 z-20 hidden -translate-x-1/2 items-center gap-2 border border-cyan-300/25 bg-black/40 px-4 py-2.5 backdrop-blur-xl sm:flex">
+      <Clapperboard className="h-4 w-4 text-cyan-200"/>
+      <span><span className="block text-[9px] font-black uppercase tracking-[.12em] text-white">WEAVE Image House · Commercial designs</span>
+      <span className="mt-0.5 block text-[8px] text-slate-400">36 original samples · Sell finished customer artwork</span></span>
     </Link>}
     {hasVideoStudio&&<Link
       href="/video-ad-studio"
@@ -223,7 +236,7 @@ export function WeaveDashboardWorld({
       className="group absolute bottom-[7%] left-1/2 z-20 hidden -translate-x-1/2 items-center gap-2 border border-fuchsia-300/15 bg-black/30 px-4 py-2.5 backdrop-blur-xl sm:flex"
     >
       <Clapperboard className="h-4 w-4 text-fuchsia-200"/>
-      <span><span className="block text-[9px] font-black uppercase tracking-[.12em] text-white">{role==='agent'?'Image + Video Studio':'Video Ad Studio'}</span><span className="mt-0.5 block text-[8px] text-slate-500">{role==='agent'?'AI images · Video has separate pricing':'Business video production · System Switch'}</span></span>
+      <span><span className="block text-[9px] font-black uppercase tracking-[.12em] text-white">{role==='agent'?'Image + Video Studio':'Video Ad Studio'}</span><span className="mt-0.5 block text-[8px] text-slate-500">{role==='agent'?'Image free · Video max 1.5 System Switch':'Business video production · System Switch'}</span></span>
     </Link>}
 
     <div className="absolute inset-0 z-10 hidden sm:block">

@@ -124,14 +124,14 @@ export async function POST(request: NextRequest) {
       )
       if (!wallet.rows[0]) {
         await client.query('ROLLBACK')
-        return NextResponse.json({ error: 'Primary Flame Coin wallet not found' }, { status: 404 })
+        return NextResponse.json({ error: 'Primary System Switch wallet not found' }, { status: 404 })
       }
 
       const balanceBefore = Number(wallet.rows[0].balance_trx || 0)
       if (balanceBefore < EMAIL_PROSPECT_PRICE_FLAME_COIN) {
         await client.query('ROLLBACK')
         return NextResponse.json({
-          error: 'Insufficient Flame Coin balance',
+          error: 'Insufficient System Switch balance',
           required: EMAIL_PROSPECT_PRICE_FLAME_COIN,
           currentBalance: balanceBefore,
         }, { status: 400 })

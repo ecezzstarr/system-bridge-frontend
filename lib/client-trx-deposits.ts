@@ -73,7 +73,7 @@ export async function decideClientTronDeposit(input:{
       normalizeTronAmount(amount)
       const hash=normalizeTronTxHash(deposit.receipt_data)
       const credited=trxPaymentToFlameCoin(amount)
-      if(!Number.isFinite(credited)||credited<=0)throw new Error('Invalid Flame Coin credit amount')
+      if(!Number.isFinite(credited)||credited<=0)throw new Error('Invalid System Switch credit amount')
       if(normalizeTronAmount(input.verifiedAmountTrx)!==amount)
         throw new Error('Confirmed on-chain TRX amount must exactly match the submitted amount')
       await client.query('SELECT pg_advisory_xact_lock(hashtext($1))',['client-tron:'+hash])

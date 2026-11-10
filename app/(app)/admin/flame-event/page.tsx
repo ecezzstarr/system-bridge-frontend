@@ -173,6 +173,8 @@ export default function FlameEventWorkshopPage() {
       <nav className="flex snap-x snap-mandatory gap-0 overflow-x-auto border-b border-white/10 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {[
           ['/event','Open Event Ground',Eye],
+          ['/admin/company-movement','Company of Time · Work and Value',Eye],
+          ['/admin/regional-operations','Daily Regional Participation',Sprout],
           ['/admin/dj-workshop','DJ Workshop',Music2],
           ['/admin/food-bridge','Farmer Supply Review',Sprout],
           ['/admin/ad-workshop','Ad Workshop',Megaphone],

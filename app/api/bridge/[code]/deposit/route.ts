@@ -52,7 +52,7 @@ export async function POST(
           proStartingPrice: FILE_FOLDER_PRICING.proStartingFlameCoin,
           premiumPrice: FILE_FOLDER_PRICING.premiumFlameCoin,
           currency: 'Flame Coin',
-          peg: '1 Flame Coin = 1 TRX',
+          peg: '1 System Switch = 1 TRX',
         },
         { status: 400 }
       )
@@ -80,8 +80,8 @@ export async function POST(
 
     /*
      * Bridge prospect sales are Pro or Premium.
-     * Pro normally starts at 6,500 Flame Coin and may be negotiated down to 3,000.
-     * Premium is exactly 35,800 Flame Coin.
+     * Pro normally starts at 6,500 System Switch and may be negotiated down to 3,000.
+     * Premium is exactly 35,800 System Switch.
      */
     const result = await sql`
       INSERT INTO bridge_deposits (
@@ -136,11 +136,11 @@ export async function POST(
       fileFolderTier,
       currency: 'Flame Coin',
       fundingAsset: 'TRX',
-      peg: '1 Flame Coin = 1 TRX',
+      peg: '1 System Switch = 1 TRX',
       status: 'pending',
       companyWallet: COMPANY_TRX_WALLET,
       message:
-        `${tierLabel} TRX File Folder payment submitted for administrator verification. Verified TRX is recognized 1:1 as Flame Coin.`,
+        `${tierLabel} TRX File Folder payment submitted for administrator verification. Verified TRX is recognized 1:1 as System Switch.`,
     })
   } catch (error: any) {
     console.error('[bridge deposit] error:', error)

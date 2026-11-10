@@ -1,30 +1,20 @@
-# WEAVE Advanced Image Workshop
+# WEAVE Image House and optional advanced AI studio
 
-Source path: `/image-workshop` (Agent, Bridger, Client, Legion and Administrations). Existing `/agent/creative` stays the offline, zero-System-Switch Classic canvas editor. No legacy image, Video Ad Studio, Customer Door or File Folder page is removed.
+The Company Image House (/image-workshop) is the default commercial product. It serves original editable visual samples without an AI key. User-authorized paid licenses create positive company System Switch receipts and can support independent customer service work. Never replace or redirect this paid workshop to a free or unconfigured AI generator.
 
-## What is implemented
+The optional advanced AI desk (/image-workshop/ai) uses the existing server-only OpenAI /api/image-workshop API. It offers PNG image generation, PNG/JPEG/WEBP reference editing and saved-image refinement with current IMAGE_PRESETS, IMAGE_MODELS and IMAGE_SIZES. Its private gallery uses authenticated image download /api/image-workshop/assets/[id] with owner-scoped database checks. It does not claim GIF animation, SVG vector delivery, unsupplied editing masks or other currently unsupported provider behavior.
 
-- Live OpenAI **GPT Image 2.6** calls on the WEAVE server. Detailed mode uses `gpt-image-2.6-sunburst`; fast mode uses `gpt-image-2.6-flare`. Both require verified provider/API access.
-- User-controlled natural-language prompts; realistic photography, product, cinematic 3D, architecture, advertising, illustration, anime, infographic and branding presets.
-- PNG, WEBP, JPEG, animated GIF and SVG outputs; high/medium/low rendering quality and complexity. Transparent backgrounds apply to PNG/WEBP.
-- Image-to-image editing: authenticated upload of PNG/JPEG/WEBP references (up to 10MB), or refinement of a previous image selected from the account's saved history. Optional PNG mask (up to 4MB). GIF export uses six frames and a 220ms duration, subject to provider access.
-- Gallery records in PostgreSQL with original prompt and rendering metadata; image bytes stored in WEAVE's existing persistent `WEAVE_MEDIA_ROOT` instead of transient container space. Export/download from the phone interface.
-- No automatic publishing into the Client's Customer Door, shared social posts or paid Video Ad orders. People choose where their authorized finished work goes.
+## Costs and activation
 
-## Activation and operating costs
+- Default: disabled; WEAVE_IMAGE_WORKSHOP_ENABLED must equal true, and OPENAI_API_KEY must be configured privately on the WEAVE host. A ChatGPT Plus subscription cannot be used as an API key.
+- Administrations explicitly authorizes provider spending and IMAGE_WORKSHOP_DAILY_LIMIT quotas before enabling it. The existing API consumes provider-billed credits, and **does not currently charge System Switch or create a WEAVE commercial sale**.
+- Keep the paid no-API Image House fully usable regardless of provider readiness. Do not describe free AI requests as company earnings.
+- API quality and model access require an actual preview/provider call and independent billing verification; passing source CI is not external proof.
 
-Set the server-side `OPENAI_API_KEY` for the WEAVE host and ensure the OpenAI account has GPT Image 2.6 permission and billing. A ChatGPT subscription is **not** an OpenAI API subscription and cannot automatically power a separate company's image service. If the key is not present, the gallery remains available but generation fails closed with a configuration notice.
+## Authorization and privacy
 
-Default image generations per account in the most recent 24 hours: 3 for non-admin roles and 10 for Administrations. Override both with `WEAVE_IMAGE_DAILY_LIMIT` set to an integer from 1 through 100. A database transaction and per-account advisory lock reserve requests before calling the paid provider; failed generations are excluded from the allowance, and stale in-progress requests stop holding the allowance after 20 minutes. Reconciliation is automatic; **no System Switch wallet debit** is made by this initial implementation. A later paid quota/credit product must add explicit prices, payment authorization, reconciled wallet transactions, and Administration revenue reports before charging people.
+GET image downloads confirm the requested database record belongs to the authenticated active account; direct public media URL use is avoided in the AI studio. Originals and user-created files remain subject to the company's terms, appropriate rights and approved work permissions. Providers receive the user prompt and any uploaded reference when AI generation is enabled.
 
-## Safety, privacy and storage
+## Release checks
 
-- Every request checks the real current server session, re-evaluates role access, and enforces upload-type and length validation.
-- Saved-reference edits can only read a valid previous output belonging to the same authenticated account. The provider key is never returned to the client.
-- Provider moderation is left at the default level, and blocked requests are reported without silently resubmitting them.
-- SVG output is intentionally served as `text/plain` and downloadable rather than rendered as active same-origin SVG. It is not safe to serve untrusted active SVG in the WEAVE origin without a separate sanitizer and CSP.
-- Media delivery is the existing WEAVE media route: asset URLs contain UUIDs and are not indexed by the private gallery, but anyone possessing a direct media URL may be able to open it. Do not upload confidential, sensitive or restricted material until a fully authenticated media-delivery route is deployed.
-
-## Verification and release requirements
-
-Run `node tests/advanced-image-workshop.cjs`, `npx tsc --noEmit`, existing creative-studio and role-navigation regressions, then `npm run build`. Test generation/edit/GIF/SVG against a funded provider account in a preview release and verify media volume persistence through a restart. Never treat a merged PR as a live deployment. Oracle release authority must pin and verify the main SHA and explicitly promote it through the established WEAVE release procedure.
+Run node tests/advanced-image-workshop.cjs along with paid Image House regressions, TypeScript, production build and container checks. Test Agent, Bridger, Client and Administrations access from actual sessions. Confirm Image House sales, AI off-state, secure asset reads, provider calls and persistence in staging before promotion. A merged PR is not proof of live operation.

@@ -149,7 +149,7 @@ export function SystemSwitchDoorPlaza(){
         <h1 className="mt-2 text-3xl font-black">System Switch · Customer Door Plaza</h1>
         <p className="mt-2 text-xs text-stone-400">Arrive as your {position} Presence. Flow to a hosted Client Customer Door and cross into its public File Folder territory.</p>
       </div>
-      <Link href="/system-switch/bridge-radiance/flame-coin" className="inline-flex items-center gap-2 border border-amber-200/25 bg-amber-300/[.07] p-3 text-xs font-bold text-amber-200">Buy Flame Coin · Purchase enquiry</Link>
+      <Link href="/system-switch/bridge-radiance/flame-coin" className="inline-flex items-center gap-2 border border-amber-200/25 bg-amber-300/[.07] p-3 text-xs font-bold text-amber-200">Buy System Switch · Purchase enquiry</Link>
       <PresenceChoiceBar/>
       <Link href={position==='visitor'?'/market':'/system-switch/flame-event'} className="inline-flex items-center gap-2 border border-white/10 p-3 text-xs text-sky-200"><ArrowLeft className="h-4 w-4"/>Back</Link>
     </header>

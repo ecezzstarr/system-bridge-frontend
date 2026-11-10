@@ -8,6 +8,7 @@ import { useAuth } from '@/lib/auth-provider'
 import { WeaveDashboardWorld } from '@/components/world/weave-dashboard-world'
 import { BridgerWorkplace } from '@/components/bridger/bridger-workplace'
 import { ManagerLifestyleEntry } from '@/components/manager-lifestyle-entry'
+import { RegionalSystemSwitchGate } from '@/components/weave/regional-system-switch-gate'
 
 export default function BridgerDashboardPage() {
   const { user, isInitialized, isLoading } = useAuth()
@@ -21,6 +22,7 @@ export default function BridgerDashboardPage() {
   if (!isInitialized || isLoading || user?.role!=='bridger')return null
 
   return <>
+    <div className="mx-auto w-full max-w-5xl px-3 sm:px-5"><RegionalSystemSwitchGate compact /></div>
     {originalWorld ? (
       <div data-bridger-original-district-world="preserved">
         <button

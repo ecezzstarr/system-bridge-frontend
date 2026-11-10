@@ -1,12 +1,12 @@
-# Weave · System Switch — Bridge of Radiance · Flame Coin purchase flow
+# Weave · System Switch — Bridge of Radiance · System Switch purchase flow
 
-The prospect purchases **Flame Coin inside WEAVE**, not TRX, USDT or BTC as an asset for delivery. The prospect can select a preferred **bank transfer, card, TRX, USDT (TRC20), or BTC** payment method.
+The prospect purchases **System Switch inside WEAVE**, not TRX, USDT or BTC as an asset for delivery. The prospect can select a preferred **bank transfer, card, TRX, USDT (TRC20), or BTC** payment method.
 
 Public: `/system-switch/bridge-radiance/flame-coin`. Administration Forensics: `/admin/weave-flame-coin-sales`. The old prospect TRX-sales pages redirect here, and their old APIs are retired.
 
 ## Journey
 
-1. Prospect supplies a name, email, desired Flame Coin quantity and preferred payment method. No payment is collected from an enquiry.
+1. Prospect supplies a name, email, desired System Switch quantity and preferred payment method. No payment is collected from an enquiry.
 2. Administration sees the enquiry and checks that WEAVE has actual regulatory authority and a contracted receiving rail for the selected payment method.
 3. Administration creates an **order-specific fiat or crypto quote**: amount, currency/asset, network when applicable, and verified instructions or address. It uses no fixed or invented conversion rate.
 4. Prospect sends the quoted payment through the chosen approved method and submits the bank/card reference or 64-character blockchain transaction ID.
@@ -17,10 +17,10 @@ Public: `/system-switch/bridge-radiance/flame-coin`. Administration Forensics: `
    - USDT: **TRC20 on TRON only** at `WEAVE_USDT_TRC20_RECEIVING_ADDRESS` configured and confirmed by Administration. The TRX address must not be assumed to accept USDT; a specifically verified address is required.
    - BTC: **Bitcoin mainnet only** at `WEAVE_BTC_RECEIVING_ADDRESS` configured and confirmed by Administration.
    Chain explorer confirmations and correctness of recipient/network/token/amount are **manual Forensics responsibilities**. The current implementation does not independently query Bitcoin or TRC20 chain settlement for every order and must not be marketed as automatic.
-6. Forensics records the verification evidence. On a matching active WEAVE account under the buyer's email and available **funded Administration Flame Coin reserve**, a single DB transaction debits Administration's Main Wallet and credits equal Flame Coin to the buyer's Main Wallet.
+6. Forensics records the verification evidence. On a matching active WEAVE account under the buyer's email and available **funded Administration System Switch reserve**, a single DB transaction debits Administration's Main Wallet and credits equal System Switch to the buyer's Main Wallet.
 7. Paired ledger entries, immutable receipt, purchase state, and notification are committed together. Retrying the same order returns the existing receipt without double credit.
 
-The currently stored `wallets.balance_trx` is the legacy database field holding internal Flame Coin. Its name is not evidence of an on-chain TRX transfer to the buyer. 1 Flame Coin = 1 TRX is the WEAVE reference for internally denominated value, not a promise of fixed fiat pricing.
+The currently stored `wallets.balance_trx` is the legacy database field holding internal System Switch. Its name is not evidence of an on-chain TRX transfer to the buyer. 1 System Switch = 1 TRX is the WEAVE reference for internally denominated value, not a promise of fixed fiat pricing.
 
 ## Safety controls
 

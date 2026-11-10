@@ -86,7 +86,7 @@ export async function POST(request:NextRequest){
     const price=Number(body.priceFlameCoin)
     const deliveryMinutes=BRIDGER_NUMBER_ORDER_DELIVERY_MINUTES
     if(!country) return NextResponse.json({error:'Country is required'},{status:400})
-    if(!Number.isFinite(price)||price<=0) return NextResponse.json({error:'Enter a valid Bridger price in Flame Coin'},{status:400})
+    if(!Number.isFinite(price)||price<=0) return NextResponse.json({error:'Enter a valid Bridger price in System Switch'},{status:400})
 
     const [offer]=await sql`
       INSERT INTO bridger_number_country_offers(
@@ -121,7 +121,7 @@ export async function POST(request:NextRequest){
     return NextResponse.json({error:'Valid Aphone acquisition cost is required'},{status:400})
   }
   if(!Number.isFinite(price)||price<=0){
-    return NextResponse.json({error:'Enter the Bridger purchase price in Flame Coin (greater than 0)'},{status:400})
+    return NextResponse.json({error:'Enter the Bridger purchase price in System Switch (greater than 0)'},{status:400})
   }
 
   try{
@@ -254,7 +254,7 @@ export async function PATCH(request:NextRequest){
         after,
       ])
 
-      const message=String(body.message||'Administration cancelled this number order and returned the Flame Coin to your wallet.').trim().slice(0,1000)
+      const message=String(body.message||'Administration cancelled this number order and returned the System Switch to your wallet.').trim().slice(0,1000)
       const updated=(await client.query(`
         UPDATE bridger_number_orders
         SET status='cancelled',admin_message=$2,cancelled_at=NOW(),updated_at=NOW()
@@ -266,7 +266,7 @@ export async function PATCH(request:NextRequest){
       await notifyUser(String(order.bridger_id),{
         type:'bridger_number_order',
         title:`Number order cancelled · ${order.country}`,
-        content:`${message} ${refund.toLocaleString()} Flame Coin was returned.`,
+        content:`${message} ${refund.toLocaleString()} System Switch was returned.`,
         link:'/bridger/numbers',
         fromUserId:user.id,
         fromUserName:'WEAVE Administration',

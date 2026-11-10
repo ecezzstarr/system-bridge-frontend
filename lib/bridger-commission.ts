@@ -1,4 +1,5 @@
 import { getPool, sql } from '@/lib/db'
+import { recoverSupportAdvanceFromEarning } from '@/lib/company-support'
 import { WORLD_RULES } from './world/constants'
 import { getAgenticBridgerState } from './weave-lifestyle'
 
@@ -91,6 +92,7 @@ export async function creditBridgerCommission(params: {
     )
     if(profileUpdate.rows.length!==1)throw new Error('Bridger earnings profile unavailable')
 
+    await recoverSupportAdvanceFromEarning(client,bridgerId,commissionAmount,sourceKey)
     await client.query('COMMIT')
     credited = true
   } catch (error) {
@@ -109,7 +111,7 @@ export async function creditBridgerCommission(params: {
           ${bridgerId}::uuid,
           'commission',
           ${lifestyle === 'agentic_bridger' ? 'Agentic-Bridger return has come to you' : 'A File Folder return has come to you'},
-          ${`You earned ${commissionAmount.toFixed(2)} Flame Coin (${(rate * 100).toFixed(0)}%) from a verified Client File Folder purchase${lifestyle === 'agentic_bridger' ? ' through your Agentic-Bridger lifestyle.' : '.'}`},
+          ${`You earned ${commissionAmount.toFixed(2)} System Switch (${(rate * 100).toFixed(0)}%) from a verified Client File Folder purchase${lifestyle === 'agentic_bridger' ? ' through your Agentic-Bridger lifestyle.' : '.'}`},
           'WEAVE',
           '/wallet'
         )

@@ -5,9 +5,10 @@ import {usePathname} from 'next/navigation'
 import {useEffect,useRef,useState,type PointerEvent} from 'react'
 import {BookOpen,ChevronRight,X} from 'lucide-react'
 import {roleOperatingGuideForPath} from '@/lib/weave-loading-guidance'
+import {useAuth} from '@/lib/auth-provider'
 
 // A 48px movable bubble replaces the former auto-opening obstructive panel.
-function RoleSmartGuide({userId,role}:{userId:string;role:'agent'|'bridger'}){
+function RoleSmartGuide({userId,role}:{userId:string;role:'agent'|'bridger'|'client'|'admin'}){
   const pathname=usePathname()||'/'
   const guide=roleOperatingGuideForPath(role,pathname)
   const [open,setOpen]=useState(false)
@@ -67,7 +68,7 @@ function RoleSmartGuide({userId,role}:{userId:string;role:'agent'|'bridger'}){
     data-weave-guide-bubble={role} data-agent-guide-location={pathname}>
     {open&&<section id="weave-role-guide-panel"
       className="max-h-[min(48svh,380px)] w-[min(19rem,calc(100vw-1.5rem))] overflow-y-auto overscroll-contain rounded-xl border border-sky-300/30 bg-[#07121e] p-4 text-white shadow-lg"
-      aria-label={role==='agent'?'Agent page guide':'Bridger page guide'}>
+      aria-label={role==='agent'?'Agent page guide':role==='bridger'?'Bridger page guide':role==='client'?'Client page guide':'Administration page guide'}>
       <div className="flex items-start justify-between gap-3">
         <div><p className="text-[10px] font-bold uppercase tracking-wide text-sky-200">WEAVE · {role.toUpperCase()}</p>
           <h2 className="mt-1 text-sm font-bold">{guide.title}</h2></div>
@@ -81,7 +82,8 @@ function RoleSmartGuide({userId,role}:{userId:string;role:'agent'|'bridger'}){
       <Link href={guide.nextHref} onClick={()=>setOpen(false)} className="mt-4 flex min-h-11 items-center justify-between gap-3 rounded-lg border border-sky-300/25 bg-sky-300/10 px-3 py-2 text-xs font-semibold text-sky-100">
         <span>{guide.nextLabel}</span><ChevronRight className="h-4 w-4 shrink-0"/>
       </Link>
-      <p className="mt-3 text-[10px] leading-4 text-slate-400">A page visit does not confirm an order, payment or job appointment. Check the working record.</p>
+      <Link href="/search" onClick={()=>setOpen(false)} className="mt-3 block rounded-lg border border-sky-300/20 p-3 text-sm font-semibold text-sky-100">Find another function by describing what I need</Link>
+      <p className="mt-3 text-xs leading-5 text-slate-400">A page visit does not confirm an order, payment or job appointment. Check the working record.</p>
     </section>}
     <button type="button" data-weave-guide-trigger="bubble" aria-expanded={open} aria-controls="weave-role-guide-panel"
       aria-label={open?'Close WEAVE Guide':'Open WEAVE Guide'} title="WEAVE Guide · drag horizontally to move"
@@ -94,3 +96,6 @@ function RoleSmartGuide({userId,role}:{userId:string;role:'agent'|'bridger'}){
 }
 export function AgentSmartGuide({userId}:{userId:string}){return <RoleSmartGuide userId={userId} role="agent"/>}
 export function BridgerSmartGuide({userId}:{userId:string}){return <RoleSmartGuide userId={userId} role="bridger"/>}
+
+export function AdminSmartGuide({userId}:{userId:string}){return <RoleSmartGuide userId={userId} role="admin"/>}
+export function ClientSmartGuide(){const {user}=useAuth();return user?.role==='client'&&user.id?<RoleSmartGuide userId={user.id} role="client"/>:null}

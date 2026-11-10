@@ -40,6 +40,7 @@ export default function FoodDistributionEmploymentPage(){
   if(!isInitialized||isLoading||loading)return <main className="p-6 text-sm text-slate-200">Opening Food Distribution employment…</main>
   return <main className="weave-operating-environment mx-auto min-h-screen max-w-4xl px-4 py-8 text-white" data-food-distribution-employment="agent">
     <div className="flex flex-wrap gap-4 text-xs text-cyan-200"><Link href="/weave/lifestyles">← Lifestyle</Link><Link href="/weave/lifestyles/work">My approved workspaces →</Link></div>
+    <Link href="/weave/lifestyles/support" className="mt-5 inline-flex min-h-11 items-center rounded-xl border border-cyan-300/30 bg-cyan-300/10 px-4 text-xs font-black text-cyan-100">Food Distribution · Private Agent support →</Link>
     <p className="mt-7 text-[10px] font-black uppercase tracking-[.2em] text-amber-200">Stability · Agent Department employment</p>
     <h1 className="mt-2 text-3xl font-black">Food Distribution Manager</h1>
     <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">This is the Agent food logistics path, separate from Bridger Distribution Manager employment and from Food Preparation. The work coordinates available stock, food outlets, order handoffs, carrier movement and delivery confirmation across the existing WEAVE food systems. The monthly operating target is 200 recorded food distributions; every count must be supported by a verifiable order or delivery record.</p>

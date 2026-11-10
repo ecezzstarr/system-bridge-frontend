@@ -1,4 +1,5 @@
 import { getPool, sql } from '@/lib/db'
+import { recoverSupportAdvanceFromEarning } from '@/lib/company-support'
 import { ngnToFlameCoin } from '@/lib/flame-coin'
 import { getTrxPaymentNgnRate } from '@/lib/trx-payment'
 
@@ -30,7 +31,7 @@ async function currentRate() {
     const rate = Number(quote.rateNgnPerTrx || 0)
     return Number.isFinite(rate) && rate > 0 ? rate : null
   } catch (error) {
-    console.error('[referral-bonus] NGN/Flame Coin rate lookup failed:', error)
+    console.error('[referral-bonus] NGN/System Switch rate lookup failed:', error)
     return null
   }
 }
@@ -176,6 +177,9 @@ export async function settleReferralSignupBonus(referredUserId: string) {
       )
     }
 
+    await recoverSupportAdvanceFromEarning(client,String(award.referrer_user_id),flameCoinAmount,'referral_signup:'+String(award.referred_user_id))
+    const currentBalance=await client.query('SELECT balance_trx FROM wallets WHERE id=$1::uuid',[wallet.id])
+    balanceAfter=Number(currentBalance.rows[0]?.balance_trx ?? balanceAfter)
     notify = { userId: String(award.referrer_user_id), referredRole: String(award.referred_role) }
     await client.query('COMMIT')
   } catch (error) {
@@ -194,7 +198,7 @@ export async function settleReferralSignupBonus(referredUserId: string) {
           ${notify.userId}::uuid,
           'referral_bonus',
           '₦500 referral bonus credited',
-          ${`A verified ${notify.referredRole} joined through your referral. ₦500 was converted at the current rate and credited as ${flameCoinAmount.toFixed(4)} Flame Coin.`},
+          ${`A verified ${notify.referredRole} joined through your referral. ₦500 was converted at the current rate and credited as ${flameCoinAmount.toFixed(4)} System Switch.`},
           'WEAVE'
         )
       `

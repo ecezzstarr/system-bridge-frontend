@@ -13,6 +13,7 @@ import { useEnvironmentRuntimeConfig } from '@/components/world/use-environment-
 import type { EnvironmentRuntimeConfig } from '@/lib/weave-environment-runtime-profile'
 import { FLAME_EVENT, resolveEventStatus } from '@/lib/weave-event'
 import { visiblePoll } from '@/lib/visible-poll'
+import { isFlameEventVisualRoute } from '@/lib/weave-visual-theme'
 
 // Every readiness resource has one bounded lifetime, including image listeners.
 export function waitForEnvironmentReadiness(mode:'boot'|'transit',config:EnvironmentRuntimeConfig,signal:AbortSignal){
@@ -269,6 +270,9 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
   },[])
 
   const destinationPath=(requestedPath||pathname).split('?')[0]
+  // The event has its own visual identity; the architectural Company Loader
+  // is shared by every other entrance, regardless of role or File Folder tier.
+  const flameVisual=isFlameEventVisualRoute(destinationPath)
   // Staff roles come from the authenticated account, never from an inferred identity.
   const role:WeaveLoadingRole=user?.role==='agent'||user?.role==='bridger'||user?.role==='client'||user?.role==='admin'
     ? user.role
@@ -395,7 +399,7 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
     : showClientBriefing
       ? 'Client training · File Folder'
       : showAdminBriefing
-        ? 'Administration · Work Introduction'
+        ? 'Administrations · Work Introduction'
         : showHopeBriefing
     ? 'Hope · forming the Bridger field'
     : showFlameBriefing
@@ -410,7 +414,7 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
     : showClientBriefing||(!booting&&role==='client')
       ? 'CLIENT · PREVIEW → BUILD → ACTIVATE → OPERATE'
       : showAdminBriefing||(!booting&&role==='admin')
-        ? 'ADMINISTRATION · EVIDENCE → APPROVAL → RECORD'
+        ? 'ADMINISTRATIONS · EVIDENCE → APPROVAL → RECORD'
         : showHopeBriefing||(!booting&&hopeDestination)
     ? 'HOPE · WEAVE BUILDS → PROSPECT → CLIENT → OWNERSHIP + USE'
     : showFlameBriefing
@@ -428,7 +432,7 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
       {children}
     </div>
     {covered&&<div
-      className={'weave-loader-stable fixed inset-0 z-[9999] flex h-[100svh] min-h-[100svh] items-stretch justify-center overflow-hidden bg-[#02050a] text-white '+(showFlameBriefing?'data-[flame=true]:bg-[#02050a]':'')}
+      className={'weave-loader-stable fixed inset-0 z-[9999] flex h-[100svh] min-h-[100svh] items-stretch justify-center overflow-hidden '+(flameVisual?'weave-loader-flame bg-[#02050a] text-white':'weave-loader-platform')}
       role="status"
       aria-live="polite"
       aria-label={booting?'Loading WEAVE environment':'Moving to '+destinationEnvironment.title}
@@ -438,13 +442,15 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
       data-flame={showFlameBriefing?'true':'false'}
       data-hope-loader={hopeDestination?'bridger-department':undefined}
       data-weave-loader-art="bridge-of-radiance-river"
+      data-weave-loader-design={flameVisual?'burning-river':'architectural-company-world'}
       data-weave-loader-role={role}
       data-weave-loader-destination={destinationPath}
       data-weave-loader-direction={returningToWorld?'return':'opening'}
       data-weave-loader-lyrics="three-complete-lessons"
       data-weave-loader-flow="automatic-readiness-gate"
     >
-      {/* Scalable river artwork is painted once behind legible live text. */}
+      {/* The Company Loader uses a shared architectural illustration. Flame
+          Event destinations keep their original Burning River atmosphere. */}
       <div className="weave-loader-scenery" aria-hidden="true">
         <div className="weave-loader-scenery-portrait"/>
         <div className="weave-loader-scenery-landscape"/>
@@ -463,12 +469,13 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
           </div>
 
           <p className={'mt-3 text-[10px] font-black uppercase tracking-[.13em] '+(showFlameBriefing?'text-orange-200':'text-amber-200')}>
-            {showAgentBriefing?'AGENT · STABILITY':showClientBriefing?'CLIENT · FILE FOLDER':showAdminBriefing?'ADMINISTRATION':showHopeBriefing?'HOPE · BRIDGER DEPARTMENT':showFlameBriefing?'FLAME EVENT':'WEAVE of Presence'}
+            {showAgentBriefing?'AGENT · STABILITY':showClientBriefing?'CLIENT · FILE FOLDER':showAdminBriefing?'ADMINISTRATIONS':showHopeBriefing?'HOPE · BRIDGER DEPARTMENT':showFlameBriefing?'FLAME EVENT':'WEAVE of Presence'}
           </p>
           <p className={'mt-1 text-[8px] font-bold uppercase tracking-[.18em] '+(showFlameBriefing?'text-rose-200/70':'text-stone-500')}>
             {showAgentBriefing?'Learn WEAVE · operate one system · verify results':showClientBriefing?'Preview · build · activate · operate':showAdminBriefing?'Organize · verify · preserve records':showHopeBriefing?'WEAVE builds · Hope searches · Clients own and use':showFlameBriefing?'Burning River · The River that Burns':'System Switch — Bridge Radiance'}
           </p>
           <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl">{openingLabel}</h1>
+          {!flameVisual&&<p className="weave-loader-platform-caption">SYSTEMS · PEOPLE · OPERATIONS · EXPANSION</p>}
         </div>
 
         <section
@@ -506,7 +513,7 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
           data-weave-loader-enter="automatic" aria-live="off">
           <span className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-amber-200"/>
           <p className="text-xs font-semibold leading-5 text-slate-100">
-            {environmentReady?'Opening your environment automatically after the three lessons.':'Preparing your environment while the lessons continue.'}
+            {environmentReady?'Environment ready · completing the three lessons before entering.':'Preparing the destination · confirming systems are ready.'}
           </p>
         </div>
 
