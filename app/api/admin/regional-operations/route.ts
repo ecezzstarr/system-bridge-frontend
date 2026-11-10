@@ -25,6 +25,7 @@ export async function GET(request:NextRequest){
         LEFT JOIN LATERAL (
           SELECT direction,created_at FROM weave_regional_gate_directions d
           WHERE d.regional_manager_user_id=rm.user_id
+            AND d.created_at>=NOW()-INTERVAL '72 hours'
           ORDER BY d.created_at DESC LIMIT 1
         ) latest ON true
         WHERE rm.status='active' AND u.is_active=true ORDER BY rm.appointed_at DESC LIMIT 150`),
