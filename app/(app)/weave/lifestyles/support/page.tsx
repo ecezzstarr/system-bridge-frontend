@@ -3,7 +3,7 @@ import Link from 'next/link'
 import {useCallback,useEffect,useState} from 'react'
 import {useAuth} from '@/lib/auth-provider'
 type Person={id:string;name:string;role?:string;managerKinds?:string[]}
-type SupportCase={id:string;worker_id:string;manager_id:string;worker_name:string;manager_name:string;purpose:string;description:string;task_reference:string|null;status:string;requested_amount:number;offered_amount:number|null;terms:string|null;principal:number|null;repaid:number|null;currency:string|null;funding_reference:string|null;created_at:string}
+type SupportCase={id:string;worker_id:string;manager_id:string;worker_name:string;manager_name:string;purpose:string;description:string;task_reference:string|null;status:string;requested_amount:number;offered_amount:number|null;terms:string|null;principal:number|null;spent:number|null;refunded:number|null;repaid:number|null;currency:string|null;funding_reference:string|null;created_at:string}
 type Message={id:string;message:string;author_id:string;author_name:string;created_at:string}
 type Workspace={cases:SupportCase[];managers:Person[];kinds:string[];team:Person[];candidates:Person[]}
 const money=(v:unknown)=>Number(v||0).toLocaleString('en-NG',{maximumFractionDigits:2})
@@ -72,7 +72,7 @@ export default function CompanySupportWorkspace(){
    const res=await fetch('/api/company-support?search='+encodeURIComponent(search),{headers:auth(),cache:'no-store'})
    const data=await res.json()
    if(!res.ok)throw new Error(data.error||'Search failed')
-   setState(current=>({...current,candidates:data.candidates||[]}))
+   setState(current=>({...current,candidates:[...current.candidates,...(data.candidates||[]).filter((n:Person)=>!current.candidates.some(x=>x.id===n.id))]}))
   }catch(e){setError(e instanceof Error?e.message:'Search failed')}
  }
  const active=state.cases.find(c=>c.id===selected)
@@ -80,7 +80,8 @@ export default function CompanySupportWorkspace(){
  const isManager=active?.manager_id===user?.id && state.kinds.length>0
  const isAdmin=user?.role==='admin'
  const canOffer=(isManager||isAdmin)&&active?.status==='open'
- const due=Math.max(0,Number(active?.principal||0)-Number(active?.repaid||0))
+ const due=Math.max(0,Number(active?.spent||0)-Number(active?.repaid||0))
+ const unused=Math.max(0,Number(active?.principal||0)-Number(active?.spent||0)-Number(active?.refunded||0))
  return <main className="weave-operating-environment mx-auto max-w-6xl space-y-5 px-3 py-6 text-white sm:px-6" data-company-manager-support="true">
   <Link href={isAdmin?'/admin/dashboard':'/weave/lifestyles/work'} className="text-xs font-bold text-cyan-200">← Company workspace</Link>
   <header className="rounded-2xl border border-cyan-200/25 bg-gradient-to-br from-[#092e3e] to-[#080f1c] p-5">
@@ -143,7 +144,7 @@ export default function CompanySupportWorkspace(){
      {active.task_reference&&<p className="mt-1 text-xs text-amber-200">Task reference: {active.task_reference}</p>}
      <p className="mt-2 text-xs">Requested: {active.purpose==='guidance'?'Guidance':money(active.requested_amount)+(active.purpose==='food_stock'?' NGN':' System Switch')}</p>
      {active.terms&&<div className="mt-3 rounded-lg border border-amber-200/25 p-3"><p className="text-xs font-black text-amber-100">Written support terms · {active.offered_amount?money(active.offered_amount):'Guidance only'}</p><p className="mt-2 whitespace-pre-wrap text-xs leading-5">{active.terms}</p></div>}
-     {active.principal!=null&&<p className="mt-3 text-sm font-bold text-cyan-100">Recoverable principal: {money(active.principal)} {active.currency} · Repaid: {money(active.repaid)} · Outstanding: {money(due)}</p>}
+     {active.principal!=null&&<div className="mt-3 space-y-1 text-sm font-bold text-cyan-100"><p>Committed support: {money(active.principal)} {active.currency}</p><p>Used: {money(active.spent)} · Repaid: {money(active.repaid)} · Outstanding: {money(due)}</p>{active.currency==='SYSTEM_SWITCH'&&<p>Restricted available for Prospect Market: {money(unused)}</p>}</div>}
     </header>
     <div className="max-h-72 space-y-2 overflow-y-auto rounded-xl border border-white/10 bg-slate-950/40 p-3">
      {messages.map(m=><div key={m.id} className={'rounded-lg border p-3 '+(m.author_id===user?.id?'border-cyan-200/30 bg-cyan-200/10':'border-white/10')}>
@@ -164,9 +165,10 @@ export default function CompanySupportWorkspace(){
      <div className="flex flex-wrap gap-2"><button onClick={()=>void act('accept')} disabled={busy} className="min-h-11 rounded-lg bg-emerald-300 px-4 text-xs font-black text-slate-950">Accept terms</button><button disabled={busy} onClick={()=>void act('decline')} className="min-h-11 rounded-lg border border-white/25 px-4 text-xs">Decline</button></div>
     </div>}
     {(isManager||isAdmin)&&active.status==='accepted'&&active.purpose==='system_switch'&&<div className="border-t border-white/15 pt-4">
-     <p className="text-xs text-amber-100">Funding debits your own funded System Switch wallet and credits the employee. This is not a company treasury transfer.</p>
+     <p className="text-xs text-amber-100">Funding reserves credit from your own funded System Switch wallet. It will be usable only for approved Prospect Market purchases, not as a withdrawable wallet deposit. Repayment begins after use.</p>
      <button onClick={()=>void act('fund')} disabled={busy} className="mt-2 min-h-11 rounded-lg bg-amber-200 px-4 text-xs font-black text-slate-950">Fund accepted advance from my wallet</button>
     </div>}
+    {(isManager||isAdmin)&&active.currency==='SYSTEM_SWITCH'&&unused>0&&<button disabled={busy} onClick={()=>void act('refund_unused')} className="min-h-11 rounded-lg border border-amber-200/35 px-4 text-xs text-amber-100">Return unused reserved support to the funder</button>}
     {isAdmin&&active.status==='accepted'&&active.purpose==='food_stock'&&<div className="space-y-2 border-t border-white/15 pt-4">
      <p className="text-xs font-black">Verify real stock funding</p><input value={proof} onChange={e=>setProof(e.target.value)} placeholder="Unique verified supplier/payment reference" className="w-full rounded-lg border border-white/20 bg-slate-900 p-3 text-xs"/>
      <button disabled={busy||proof.length<12} onClick={()=>void act('record_stock_funding',{reference:proof})} className="min-h-11 rounded-lg bg-amber-200 px-4 text-xs font-bold text-slate-950">Record verified stock support</button>
@@ -177,7 +179,7 @@ export default function CompanySupportWorkspace(){
      <input value={proof} onChange={e=>setProof(e.target.value)} placeholder="Unique received payment reference" className="w-full rounded-lg border border-white/20 bg-slate-900 p-3 text-xs"/>
      <button disabled={busy||proof.length<12} onClick={()=>void act('record_stock_repayment',{amount:Number(repayAmount),reference:proof})} className="min-h-11 rounded-lg border border-cyan-200/50 px-4 text-xs">Record verified repayment</button>
     </div>}
-    {['open','accepted','funded'].includes(active.status)&&due===0&&<button disabled={busy} onClick={()=>void act('resolve')} className="min-h-11 rounded-lg border border-white/20 px-4 text-xs">Resolve completed support case</button>}
+    {['open','accepted','funded'].includes(active.status)&&due===0&&unused===0&&<button disabled={busy} onClick={()=>void act('resolve')} className="min-h-11 rounded-lg border border-white/20 px-4 text-xs">Resolve completed support case</button>}
    </section>}
   </div>
   <p className="text-xs text-slate-400">All approval, worker acceptance, funding and repayment actions are recorded. Managers cannot authorize third-party debits, invent stock payments or collect another worker’s earnings without the accepted terms.</p>
