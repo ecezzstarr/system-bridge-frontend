@@ -58,7 +58,7 @@ const AGENT_TRAINING: readonly WeaveLoadingBrief[] = [
   {
     eyebrow:'AGENT TRAINING · 2 OF 3',
     title:'Learn the work before spending.',
-    body:'Agent Work opens real food and customer sales. Order stock, supply outlets and follow verified payments. Creative Studio makes image layouts free and videos at an Agent Studio fee of up to 1.5 Flame Coin. Attached Bridger commissions are separate.',
+    body:'Agent Work opens real food and customer sales. Order stock, supply outlets and follow verified payments. Creative Studio makes image layouts free and videos at an Agent Studio fee of up to 1.5 System Switch. Attached Bridger commissions are separate.',
     movement:'Agent Work → product or creative service → customer',
   },
   {
@@ -271,7 +271,7 @@ const BRIDGER_GUIDES:ReadonlyArray<{match:(pathname:string)=>boolean;guide:Weave
     nextHref:'/bridger/email-outreach',nextLabel:'Open Email Outreach'
   }},
   {match:path=>/deposit|withdraw|wallet/.test(path),guide:{
-    title:'Verify Flame Coin movement',
+    title:'Verify System Switch movement',
     explanation:'A payment request and a verified wallet credit are different states.',
     steps:['Choose the correct deposit or withdrawal route.','Follow the displayed instructions and preserve any required evidence.','Wait for the actual wallet and receipt record before marking funds as confirmed.'],
     nextHref:'/wallet/deposit-withdraw',nextLabel:'Open Wallet Movement'
