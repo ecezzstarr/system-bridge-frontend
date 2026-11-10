@@ -9,6 +9,9 @@
  * Hope, Stability and Dream Lovely. Each authorized department remains
  * the owner of its work; this read-only projection never approves money.
  */
+import {WEAVE_ARCHITECTURE} from '@/lib/weave-architecture'
+import {WEAVE_SYSTEM_MAP} from '@/lib/weave-system-map'
+
 export const BURNING_RIVER_MANIFESTO = {
   loop:'flame-event-01',
   event:'Burning River',
@@ -16,6 +19,9 @@ export const BURNING_RIVER_MANIFESTO = {
   endsAt:'2026-12-31T23:59:59+01:00',
   targetCompanyEarningsNgn:200_000_000,
   goalKind:'company_earnings' as const,
+  subject:WEAVE_ARCHITECTURE.subject.name,
+  topicRule:WEAVE_ARCHITECTURE.topic.description,
+  humanSource:WEAVE_SYSTEM_MAP.principle.source,
   principle:'Human source → Presence → Interaction → Work → Value → Participation → Livelihood',
   responsibilities:{
     administrations:'See the whole movement, authorize work, resolve failures and preserve financial and operational records.',
