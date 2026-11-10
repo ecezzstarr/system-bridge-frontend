@@ -485,7 +485,7 @@ assert.ok(!rootLayoutSource.includes('<FlameEventAd />'),'Flame Event signal is 
 assert.ok(appLayoutSource.includes('<FlameEventAd />'),'Staff operating shell owns the Flame Event system signal')
 assert.ok(clientLayoutSource.includes('<FlameEventAd />'),'Client operating shell owns the Flame Event system signal')
 assert.ok(clientLayoutSource.includes('<AppHeader />'),'Client shell mounts the same global top header as staff roles')
-assert.ok(appHeaderRoleShellSource.includes('Search human cadences')&&appHeaderRoleShellSource.includes("router.push('/search')"),'Global top header exposes cadence search on desktop and mobile')
+assert.ok(appHeaderRoleShellSource.includes('Search WEAVE work and systems')&&appHeaderRoleShellSource.includes("router.push('/search')"),'Global top header exposes role-aware company search on desktop and mobile')
 assert.ok(appHeaderRoleShellSource.includes("effectiveUser.role === 'client' ? '/client/settings' : '/settings'"),'Global top header routes every role into its Settings place')
 assert.ok(clientLayoutSource.includes('<FlameEventRoleAtmosphere userRole="client">'),'Client environments carry the live Burning River atmosphere')
 assert.ok(normalWorldAtmosphereSource.includes('Home is the compact WEAVE world'),'Role Home is a compact WEAVE landing page')
@@ -1396,8 +1396,10 @@ assert.ok(!roleWorldReturnSource.includes('Bridge Plaza'),'Retired /weave route 
 assert.ok(fs.readFileSync(path.join(root,'components/events/position-event-world.tsx'),'utf8').includes('<BurningRiverOfficialGateway staff staffHref=') &&
   fs.readFileSync(path.join(root,'components/events/burning-river-live-world.tsx'),'utf8').includes('/api/system-switch/open-world'),
   'Staff Flame Event shows an explicit crossing into the live purchased Client world instead of a joystick scene')
-assert.ok(cadenceEngineSource.includes('Human Cadence Engine'),'Search is an attributed human knowledge system')
-assert.ok(cadenceEngineSource.includes('Results are human cadences, not generated answers'),'Cadence search preserves human attribution')
+assert.ok(cadenceEngineSource.includes('WEAVE · Company Search'),'Global search finds real role-specific workstations')
+const attributedHumanCadenceSource=fs.readFileSync(path.join(root,'app/(app)/search/cadences/page.tsx'),'utf8')
+assert.ok(attributedHumanCadenceSource.includes('Human Cadence Engine'),'Human Cadences retain their distinct attributed knowledge section')
+assert.ok(attributedHumanCadenceSource.includes('Results are human cadences, not generated answers'),'Cadence search preserves human attribution')
 
 for(const file of [
  'app/(app)/roles/page.tsx',

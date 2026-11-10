@@ -207,7 +207,7 @@ export function AppHeader({ user }: AppHeaderProps) {
           data-phone-chrome="interaction"
           className="h-9 w-9 shrink-0 rounded-full px-0 text-slate-300 hover:bg-sky-300/[0.06] hover:text-white"
           onClick={() => router.push('/search')}
-          aria-label="Search human cadences"
+          aria-label="Search WEAVE work and systems"
         >
           <Search className="h-4 w-4" />
         </Button>
@@ -239,8 +239,8 @@ export function AppHeader({ user }: AppHeaderProps) {
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
             <Input
               type="search"
-              placeholder="Search human cadences..."
-              aria-label="Search human cadences"
+              placeholder="Search WEAVE work and systems..."
+              aria-label="Search WEAVE work and systems"
               value={search}
               onChange={e => setSearch(e.target.value)}
               onKeyDown={e => {
