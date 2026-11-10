@@ -133,7 +133,7 @@ export default function WeaveAdvancedImageWorkshop() {
         <span className="rounded-full border border-sky-200 bg-white px-3 py-2">AI image generation + editing</span>
         <span className="rounded-full border border-sky-200 bg-white px-3 py-2">Detail or fast rendering</span>
         <span className="rounded-full border border-sky-200 bg-white px-3 py-2">Still images · animated GIF · vector SVG</span>
-        <Link href="/agent/creative" className="rounded-full bg-slate-900 px-3 py-2 text-white">Classic layout editor · no AI</Link>
+        {user.role!=='admin'&&<Link href="/agent/creative" className="rounded-full bg-slate-900 px-3 py-2 text-white">Classic layout editor · no AI</Link>}
       </div>
     </header>
 
