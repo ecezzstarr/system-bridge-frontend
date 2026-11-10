@@ -92,6 +92,10 @@ export async function managerAssignedTo(workerId:string,managerId:string):Promis
     const t=await db.query("SELECT to_regclass('weave_regional_manager_bridgers') AS bridgers,to_regclass('weave_regional_manager_distribution_managers') AS leads")
     if(t.rows[0]?.bridgers&&(await db.query("SELECT 1 FROM weave_regional_manager_bridgers WHERE bridger_user_id=$1::uuid AND regional_manager_user_id=$2::uuid AND status='active'",[workerId,managerId])).rowCount)return true
     if(t.rows[0]?.leads&&(await db.query("SELECT 1 FROM weave_regional_manager_distribution_managers WHERE distribution_manager_user_id=$1::uuid AND regional_manager_user_id=$2::uuid AND status='active'",[workerId,managerId])).rowCount)return true
+    const assistantTable=await db.query("SELECT to_regclass('weave_distribution_assistants') AS relation")
+    if(t.rows[0]?.leads&&assistantTable.rows[0]?.relation&&(await db.query(`SELECT 1 FROM weave_regional_manager_distribution_managers r
+      JOIN weave_distribution_assistants a ON a.manager_user_id=r.distribution_manager_user_id AND a.status='approved'
+      WHERE a.user_id=$1::uuid AND r.regional_manager_user_id=$2::uuid AND r.status='active'`,[workerId,managerId])).rowCount)return true
   }
   if(kinds.includes('distribution_lead')){
     const t=await db.query("SELECT to_regclass('weave_distribution_assistants') AS assistants")
@@ -122,6 +126,7 @@ export async function eligibleManagers(workerId:string){
   if(t.bridgers)relations.push({sql:"SELECT regional_manager_user_id AS id FROM weave_regional_manager_bridgers WHERE bridger_user_id=$1::uuid AND status='active'"})
   if(t.leads)relations.push({sql:"SELECT regional_manager_user_id AS id FROM weave_regional_manager_distribution_managers WHERE distribution_manager_user_id=$1::uuid AND status='active'"})
   if(t.assistants)relations.push({sql:"SELECT manager_user_id AS id FROM weave_distribution_assistants WHERE user_id=$1::uuid AND status='approved' AND manager_user_id IS NOT NULL"})
+  if(t.assistants&&t.leads)relations.push({sql:"SELECT r.regional_manager_user_id AS id FROM weave_distribution_assistants a JOIN weave_regional_manager_distribution_managers r ON r.distribution_manager_user_id=a.manager_user_id AND r.status='active' WHERE a.user_id=$1::uuid AND a.status='approved'"})
   if(t.food)relations.push({sql:"SELECT manager_user_id AS id FROM weave_food_distribution_employment WHERE user_id=$1::uuid AND status='approved' AND manager_user_id IS NOT NULL"})
   for(const relation of relations){
     const ids=await db.query(relation.sql,[workerId])
