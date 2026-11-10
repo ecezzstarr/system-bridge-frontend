@@ -26,6 +26,7 @@ RUN node tests/system-switch-multiplayer-regression.cjs
 RUN node tests/mandate-guidance-staff-regression.cjs
 RUN node tests/recent-features.cjs
 RUN node tests/admin-company-movement-regression.cjs
+RUN node tests/regional-manager-daily-workflow-regression.cjs
 RUN node tests/agentic-bridger-regression.cjs
 RUN node tests/file-folder-customer-door-purchase-regression.cjs
 RUN node tests/file-folder-pricing-contract-regression.cjs
