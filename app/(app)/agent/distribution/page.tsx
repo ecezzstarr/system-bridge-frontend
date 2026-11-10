@@ -135,7 +135,7 @@ export default function AgentDistributionPage(){
 
   const confirmReceipt=async(order:StockOrder)=>{
     if(!token)return
-    setWorking(`receive:${orderId}`)
+    setWorking(`receive:${order.id}`)
     try{
       const receiveRoute=order.variant_id.startsWith('ember')?'/api/ember/receive':order.variant_id.startsWith('electrolyte')?'/api/electrolyte/receive':'/api/agility/receive'
       const response=await fetch(receiveRoute,{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({orderId:order.id})})
