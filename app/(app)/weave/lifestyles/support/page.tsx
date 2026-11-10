@@ -26,6 +26,9 @@ export default function CompanySupportWorkspace(){
  const [search,setSearch]=useState('')
  const [workerAssign,setWorkerAssign]=useState('')
  const [managerAssign,setManagerAssign]=useState('')
+ const [staffId,setStaffId]=useState('')
+ const [staffNote,setStaffNote]=useState('')
+ const [stockFunder,setStockFunder]=useState('manager')
  const [busy,setBusy]=useState(false)
  const [error,setError]=useState('')
  const [notice,setNotice]=useState('')
@@ -60,6 +63,7 @@ export default function CompanySupportWorkspace(){
    if(!res.ok)throw new Error(data.error||'Action failed')
    setNotice(action.replaceAll('_',' ')+' recorded.')
    if(action==='message')setMessage('')
+   if(action==='start_case'){setStaffNote('');setSelected(data.case.id)}
    if(action==='create'){setDescription('');setAmount('');setReference('');setSelected(data.case.id)}
    await load()
    if(selected||data.case?.id)await loadMessages(data.case?.id||selected)
@@ -93,6 +97,15 @@ export default function CompanySupportWorkspace(){
   {loading&&<p className="text-sm text-slate-300">Opening verified support assignments…</p>}
   {error&&<p role="alert" className="rounded-xl border border-rose-300/30 p-3 text-sm text-rose-200">{error}</p>}
   {notice&&<p role="status" className="rounded-xl border border-emerald-300/30 p-3 text-sm text-emerald-100">{notice}</p>}
+  {state.kinds.length>0&&state.team.length>0&&<section className="rounded-2xl border border-cyan-200/20 p-4" data-proactive-manager-support="true">
+   <h2 className="text-lg font-black">Start a private conversation with an assigned employee</h2>
+   <p className="mt-1 text-xs text-slate-300">A manager can reach out before an obstacle becomes a missed task. This opens a recorded, one-to-one support case.</p>
+   <label className="mt-3 block text-xs font-bold">Team member<select className="mt-1 w-full rounded-lg border border-white/20 bg-slate-900 p-3" value={staffId} onChange={e=>setStaffId(e.target.value)}>
+    <option value="">Choose your employee</option>{state.team.map(p=><option key={p.id} value={p.id}>{p.name} · {p.role}</option>)}
+   </select></label>
+   <label className="mt-3 block text-xs font-bold">Instruction, check-in or issue<textarea maxLength={1800} rows={3} className="mt-1 w-full rounded-lg border border-white/20 bg-slate-900 p-3" placeholder="What needs attention and what should the employee do next?" value={staffNote} onChange={e=>setStaffNote(e.target.value)}/></label>
+   <button disabled={busy||!staffId||staffNote.trim().length<15} onClick={()=>void act('start_case',{workerId:staffId,description:staffNote})} className="mt-3 min-h-11 rounded-lg bg-cyan-300 px-4 text-xs font-black text-slate-950 disabled:opacity-40">Open private support conversation</button>
+  </section>}
   {user?.role!=='admin'&&state.managers.length>0&&<section className="rounded-2xl border border-white/15 bg-slate-950/60 p-4">
    <h2 className="text-lg font-black">Request one-to-one work support</h2>
    <p className="mt-1 text-xs text-slate-300">Choose the authorized manager assigned to you and explain what is stopping the current task.</p>
@@ -170,8 +183,12 @@ export default function CompanySupportWorkspace(){
     </div>}
     {(isManager||isAdmin)&&active.currency==='SYSTEM_SWITCH'&&unused>0&&<button disabled={busy} onClick={()=>void act('refund_unused')} className="min-h-11 rounded-lg border border-amber-200/35 px-4 text-xs text-amber-100">Return unused reserved support to the funder</button>}
     {isAdmin&&active.status==='accepted'&&active.purpose==='food_stock'&&<div className="space-y-2 border-t border-white/15 pt-4">
-     <p className="text-xs font-black">Verify real stock funding</p><input value={proof} onChange={e=>setProof(e.target.value)} placeholder="Unique verified supplier/payment reference" className="w-full rounded-lg border border-white/20 bg-slate-900 p-3 text-xs"/>
-     <button disabled={busy||proof.length<12} onClick={()=>void act('record_stock_funding',{reference:proof})} className="min-h-11 rounded-lg bg-amber-200 px-4 text-xs font-bold text-slate-950">Record verified stock support</button>
+     <p className="text-xs font-black">Verify real stock funding</p>
+     <label className="block text-xs">Who funded the supplier?<select value={stockFunder} onChange={e=>setStockFunder(e.target.value)} className="mt-1 w-full rounded-lg border border-white/20 bg-slate-900 p-3">
+      <option value="manager">Assigned Manager</option><option value="admin">Administrations</option>
+     </select></label>
+     <input value={proof} onChange={e=>setProof(e.target.value)} placeholder="Unique verified supplier/payment reference" className="w-full rounded-lg border border-white/20 bg-slate-900 p-3 text-xs"/>
+     <button disabled={busy||proof.length<12} onClick={()=>void act('record_stock_funding',{reference:proof,funderId:stockFunder==='admin'?user?.id:active.manager_id})} className="min-h-11 rounded-lg bg-amber-200 px-4 text-xs font-bold text-slate-950">Record verified stock support</button>
     </div>}
     {isAdmin&&active.currency==='NGN'&&due>0&&<div className="space-y-2 border-t border-white/15 pt-4">
      <p className="text-xs font-black">Verify actual NGN repayment</p>
