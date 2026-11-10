@@ -34,6 +34,6 @@ assert(api.includes("effectType === 'speed_boost'")&&api.includes('completes_at=
 assert(api.includes('CLIENT_BUILD_SPEED_MAX'),'Boost has an enforced maximum')
 assert(runtime.includes('export function buildFormationProgress')&&runtime.includes('completes_at'),'Displayed progress derives from persisted dates')
 assert(blueprint.includes('materialMissing')&&blueprint.includes('purchaseAvailable'),'Acquisition quotes use actual owned and published materials')
-assert(client.includes('Boost Bay · Acceleration Bay'),'Client workspace routes to the same Boost Bay')
+assert(client.includes("label:'Acceleration Bay'"),'Existing Client navigation still reaches the same acceleration district')
 assert(!workspace.includes('guaranteed customer earnings'),'No guaranteed earnings are introduced')
 console.log('PASS: career-to-customer journey, actual prices, real-time builds, optional purchased boosts, owned installation and truthful income')

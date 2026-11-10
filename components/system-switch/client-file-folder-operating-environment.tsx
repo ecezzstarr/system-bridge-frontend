@@ -586,7 +586,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
     { label:'Materials Depot', district:'build_market', phase:'Supply' },
     { label:'Parts Workshop', district:'parts_workshop', phase:'Equip' },
     { label:'Formation Yard', district:'formation_yard', phase:'Form' },
-    { label:'Boost Bay · Acceleration Bay', district:'boost_bay', phase:'Accelerate' },
+    { label:'Acceleration Bay', district:'boost_bay', phase:'Accelerate' },
     { label:'Systems in Motion', district:'active_systems', phase:'Operate + Connect' },
     { label:'Formation Intelligence', district:'library_district', phase:'Recognize + Direct' },
   ].filter(item=>isVisible(`/client/system-switch#studio:${item.district}`))
@@ -667,7 +667,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
                     {key:'build_market',label:'Materials Depot'},
                     {key:'parts_workshop',label:'Parts Workshop'},
                     {key:'formation_yard',label:'Construction Yard'},
-                    {key:'boost_bay',label:'Boost Bay · Acceleration Bay'},
+                    {key:'boost_bay',label:'Acceleration Bay'},
                     {key:'active_systems',label:'Systems in Motion'},
                     {key:'library_district',label:'Formation Intelligence'},
                   ]}
