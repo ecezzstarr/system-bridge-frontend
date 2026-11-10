@@ -117,7 +117,7 @@ export default function ReserveEnginePage() {
             </div>
 
             <div className="mt-4 grid gap-3 sm:grid-cols-3">
-              <Metric label="Escrow locked" value={isLoading?'…':Number(data?.stats.totalLocked||0).toLocaleString(undefined,{maximumFractionDigits:2})} detail="Flame Coin awaiting release" tone="amber"/>
+              <Metric label="Escrow locked" value={isLoading?'…':Number(data?.stats.totalLocked||0).toLocaleString(undefined,{maximumFractionDigits:2})} detail="System Switch awaiting release" tone="amber"/>
               <Metric label="Completed transactions" value={isLoading?'…':Number(data?.stats.totalTransactions||0).toLocaleString()} detail="Recorded completed movement" tone="sky"/>
               <Metric label="Last sweep" value={data?.stats.lastSweep ? new Date(data.stats.lastSweep).toLocaleDateString() : 'None'} detail="Most recent recorded sweep" tone="violet"/>
             </div>
@@ -142,7 +142,7 @@ export default function ReserveEnginePage() {
                         <p className="mt-1 truncate font-mono text-[9px] text-slate-500">{sweep.from || 'source not recorded'} → {sweep.to || 'destination not recorded'}</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-black text-emerald-200">+{Number(sweep.amount||0).toLocaleString(undefined,{maximumFractionDigits:2})} Flame Coin</p>
+                        <p className="text-sm font-black text-emerald-200">+{Number(sweep.amount||0).toLocaleString(undefined,{maximumFractionDigits:2})} System Switch</p>
                         <p className="mt-1 text-[9px] text-slate-500">{sweep.completedAt ? new Date(sweep.completedAt).toLocaleString() : 'Recorded'}</p>
                       </div>
                     </div>
@@ -182,7 +182,7 @@ function WalletState({label,detail,balance,address,tone,copied,onCopy}:{label:st
     <section className={`rounded-2xl border p-5 ${color}`}>
       <div className="flex items-center gap-2"><Wallet className="h-4 w-4"/><p className="text-[9px] font-black uppercase tracking-[0.18em]">{label}</p></div>
       <p className="mt-4 text-3xl font-black text-white">{Number(balance||0).toLocaleString(undefined,{maximumFractionDigits:2})}</p>
-      <p className="text-xs font-black text-slate-300">Flame Coin</p>
+      <p className="text-xs font-black text-slate-300">System Switch</p>
       <p className="mt-2 text-[10px] leading-4 text-slate-400">{detail}</p>
       <div className="mt-4 flex items-center gap-2 rounded-xl border border-white/8 bg-black/25 p-2.5">
         <code className="min-w-0 flex-1 truncate text-[9px] text-slate-300">{address || 'No wallet address recorded'}</code>

@@ -27,10 +27,10 @@ export async function POST(request:NextRequest){
     const amount=Number(body.amountFlameCoin)
     const paymentMethod=String(body.paymentMethod||'').trim().toLowerCase()
     if(!isFlameCoinPaymentMethod(paymentMethod))
-      return NextResponse.json({error:'Choose bank, card, TRX, USDT or BTC to request Flame Coin'},{status:400})
+      return NextResponse.json({error:'Choose bank, card, TRX, USDT or BTC to request System Switch'},{status:400})
     if(buyerName.length<2||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(buyerEmail)
        ||!/^(?:[1-9]\d{0,8}|0)(?:\.\d{1,8})?$/.test(String(body.amountFlameCoin||''))||!validFlameCoinAmount(amount)){
-      return NextResponse.json({error:'Name, valid email and a positive Flame Coin amount required'},{status:400})
+      return NextResponse.json({error:'Name, valid email and a positive System Switch amount required'},{status:400})
     }
     const provider='manual_forensics'
     const {rows}=await getPool().query(`
@@ -40,11 +40,11 @@ export async function POST(request:NextRequest){
     const order=rows[0]
     try{
       await notifyAdminOrder({orderId:String(order.id),event:'placed',department:'visitor',
-        subject:'Flame Coin purchase inquiry',detail:`${buyerName} requested ${amount} Flame Coin, choosing ${paymentMethod}. Forensics must verify rail authorization and actual payment before any wallet credit.`,
+        subject:'System Switch purchase inquiry',detail:`${buyerName} requested ${amount} System Switch, choosing ${paymentMethod}. Forensics must verify rail authorization and actual payment before any wallet credit.`,
         adminPath:'/admin/weave-flame-coin-sales',actorName:'Bridge of Radiance'})
-    }catch(e){console.error('[Flame Coin interest alert]',e)}
+    }catch(e){console.error('[System Switch interest alert]',e)}
     return NextResponse.json({success:true,sale:order,
-      instruction:'Your preferred payment method is recorded. Do not send money or coins until Administration supplies approved instructions and a quote. Your Flame Coin is credited to a matching WEAVE account after independent payment verification, subject to availability and authorization.'},{status:201})
+      instruction:'Your preferred payment method is recorded. Do not send money or coins until Administration supplies approved instructions and a quote. Your System Switch is credited to a matching WEAVE account after independent payment verification, subject to availability and authorization.'},{status:201})
   }
   if(action==='submit_proof'){
     const id=String(body.orderId||'')
@@ -60,7 +60,7 @@ export async function POST(request:NextRequest){
     const previous=await getPool().query(
       'SELECT id FROM weave_flame_coin_orders WHERE bank_reference=$1 AND id<>$2::uuid LIMIT 1',[reference,id]
     )
-    if(previous.rows.length)return NextResponse.json({error:'This bank/card reference or blockchain transaction was already submitted for a different Flame Coin order'},{status:409})
+    if(previous.rows.length)return NextResponse.json({error:'This bank/card reference or blockchain transaction was already submitted for a different System Switch order'},{status:409})
     const {rows}=await getPool().query(`
       UPDATE weave_flame_coin_orders SET bank_reference=$3,status='proof_submitted',updated_at=NOW()
       WHERE id=$1::uuid AND buyer_email=$2 AND status='quoted' AND COALESCE(payment_asset_amount,bank_amount)>0
@@ -68,9 +68,9 @@ export async function POST(request:NextRequest){
     `,[id,email,reference])
     if(!rows.length)return NextResponse.json({error:'Quote unavailable, proof already submitted or email mismatch'},{status:409})
     try{await notifyAdminOrder({orderId:id,event:'payment_submitted',department:'visitor',
-      subject:'Flame Coin purchase payment proof',detail:`${method.toUpperCase()} payment reference received for independent Forensics checks. No Flame Coin has been credited.`,
+      subject:'System Switch purchase payment proof',detail:`${method.toUpperCase()} payment reference received for independent Forensics checks. No System Switch has been credited.`,
       adminPath:'/admin/weave-flame-coin-sales',actorName:'Bridge of Radiance'})}
-    catch(e){console.error('[Flame Coin proof alert]',e)}
+    catch(e){console.error('[System Switch proof alert]',e)}
     return NextResponse.json({success:true,status:'proof_submitted',message:'Forensics must independently verify the selected payment method, amount, destination and final receipt before any wallet credit.'})
   }
   return NextResponse.json({error:'Unsupported action'},{status:400})

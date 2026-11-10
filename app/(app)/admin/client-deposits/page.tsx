@@ -58,7 +58,7 @@ export default function AdminClientDepositsPage() {
     const approved=status==='approved'
     if(!window.confirm(approved
       ? 'Have you independently verified the TRON transaction, its amount, and receipt at the Company TRX wallet? Confirm only after all three match.'
-      : 'Reject this Client deposit? No Flame Coin will be credited.'))return
+      : 'Reject this Client deposit? No System Switch will be credited.'))return
     setBusy(depositId)
     try {
       const res = await fetch('/api/admin/deposit/tron/verify', {
@@ -87,7 +87,7 @@ export default function AdminClientDepositsPage() {
           <p className="text-sm font-black uppercase tracking-[0.18em] text-emerald-300">Administration · Client Funding</p>
           <h1 className="mt-2 text-3xl font-black md:text-5xl">Client Deposit Requests</h1>
           <p className="mt-3 max-w-3xl text-base leading-7 text-slate-300">
-            Clients fund Flame Coin by sending TRX to the Company wallet. Review the Client, File Number, amount and transaction hash here before approving or rejecting the request.
+            Clients fund System Switch by sending TRX to the Company wallet. Review the Client, File Number, amount and transaction hash here before approving or rejecting the request.
           </p>
         </div>
         <button onClick={() => void load()} className="inline-flex items-center gap-2 rounded-full border border-white/10 px-4 py-2 text-sm font-bold">
@@ -119,7 +119,7 @@ export default function AdminClientDepositsPage() {
                   <div>
                     <p className="text-sm font-bold uppercase tracking-wider text-slate-500">Amount</p>
                     <p className="mt-1 text-2xl font-black text-emerald-300">{Number(deposit.amount_trx || 0).toLocaleString()} TRX</p>
-                    <p className="text-sm text-slate-500">→ same Flame Coin after verification</p>
+                    <p className="text-sm text-slate-500">→ same System Switch after verification</p>
                   </div>
                   <div className="min-w-0">
                     <p className="text-sm font-bold uppercase tracking-wider text-slate-500">Transaction hash</p>

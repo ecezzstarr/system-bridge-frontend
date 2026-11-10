@@ -3,7 +3,8 @@ import {useMemo,useRef,useState} from 'react'
 import {Canvas,useFrame} from '@react-three/fiber'
 import {OrbitControls,Text,useTexture} from '@react-three/drei'
 import type {Group} from 'three'
-import {DoubleSide,RepeatWrapping,SRGBColorSpace} from 'three'
+import {DoubleSide,RepeatWrapping,Shape,SRGBColorSpace} from 'three'
+import {ArrowRight, Boxes, Hammer, Layers3, Settings, TrendingUp, Users} from 'lucide-react'
 import {FILE_FOLDER_EQUIPMENT,FILE_FOLDER_PALETTES,PLUS_FILE_FOLDER_REFERENCE,
   type EquipmentZone,type FileFolderWorldAppearance} from '@/lib/file-folder-world-presets'
 import {buildFormationProgress} from '@/lib/file-folder-world-runtime'
@@ -14,9 +15,9 @@ type Props={
   appearance:FileFolderWorldAppearance
   districts:District[]
   onEnter:(key:string)=>void
-  active:string
-  systems:number
-  building:number
+  phoneLayout?:boolean
+  onOpenSystem?:(id:string)=>void
+  onOpenBuild?:(id:string)=>void
   builds:PlusBuildRecord[]
   systemRecords:PlusSystemRecord[]
   now:number
@@ -24,6 +25,31 @@ type Props={
 const ANGLES=[-2.55,-1.58,-.55,.55,1.58,2.55]
 const RADIUS=9.8
 const ZONE_IDS:EquipmentZone[]=['systems','modules','tools','people','operations','expansion']
+const ZONE_ICONS={systems:Layers3,modules:Boxes,tools:Hammer,people:Users,operations:Settings,expansion:TrendingUp}
+
+function folderFace(tab:boolean){
+  const shape=new Shape()
+  shape.moveTo(-2.15,-1)
+  shape.lineTo(2.15,-1)
+  shape.quadraticCurveTo(2.3,-1,2.3,-.85)
+  shape.lineTo(2.3,.79)
+  shape.quadraticCurveTo(2.3,.95,2.15,.95)
+  if(tab){
+    shape.lineTo(-.18,.95)
+    shape.lineTo(-.53,1.3)
+    shape.lineTo(-2.15,1.3)
+    shape.quadraticCurveTo(-2.3,1.3,-2.3,1.15)
+  }else{
+    shape.lineTo(-2.15,.95)
+    shape.quadraticCurveTo(-2.3,.95,-2.3,.8)
+  }
+  shape.lineTo(-2.3,-.85)
+  shape.quadraticCurveTo(-2.3,-1,-2.15,-1)
+  return shape
+}
+const FOLDER_BACK=folderFace(true)
+const FOLDER_FRONT=folderFace(false)
+const FOLDER_EXTRUSION={depth:.11,bevelEnabled:false}
 
 function RadiantMaterial({color,gold=false,glass=false,realness='high'}:{
   color:string;gold?:boolean;glass?:boolean;realness?:string
@@ -44,9 +70,10 @@ function RadiantMaterial({color,gold=false,glass=false,realness='high'}:{
     side={DoubleSide}/>
 }
 
-function EquipmentBuilding({zone,index,selected,appearance,formation,onSelect}:{
+function EquipmentBuilding({zone,index,selected,appearance,formation,onSelect,phoneLayout}:{
   zone:EquipmentZone;index:number;selected:boolean;appearance:FileFolderWorldAppearance
   formation:PlusZoneProgress
+  phoneLayout:boolean
   onSelect:(zone:EquipmentZone)=>void
 }){
   const angle=ANGLES[index]
@@ -68,6 +95,30 @@ function EquipmentBuilding({zone,index,selected,appearance,formation,onSelect}:{
         <torusGeometry args={[1.11,.038,8,40]}/><RadiantMaterial color={palette.accent} gold/>
       </mesh>)}
       <mesh><sphereGeometry args={[.4,16,12]}/><meshStandardMaterial color={palette.accent} emissive={palette.glow} emissiveIntensity={.45}/></mesh>
+    </group>:phoneLayout?<group>
+      <mesh position={[0,.37,0]}><boxGeometry args={[2.45,.22,1.96]}/><RadiantMaterial color={palette.structure}/></mesh>
+      <mesh position={[0,height/2+.36,-.88]} castShadow><boxGeometry args={[2.25,height,.14]}/><RadiantMaterial color={palette.structure}/></mesh>
+      <mesh position={[0,height+.43,0]}><boxGeometry args={[2.52,.12,2.06]}/><RadiantMaterial color={palette.accent} gold/></mesh>
+      <mesh position={[0,height+.56,0]}><boxGeometry args={[2.44,.15,1.98]}/><RadiantMaterial color={palette.structure}/></mesh>
+      {[-1.11,1.11].map(side=><group key={side}>
+        {[-.88,.88].map(depth=><mesh key={depth} position={[side,height/2+.36,depth]}>
+          <boxGeometry args={[.1,height,.1]}/><RadiantMaterial color={palette.accent} gold/>
+        </mesh>)}
+        <mesh position={[side,height/2+.36,0]} rotation={[0,Math.PI/2,0]}>
+          <planeGeometry args={[1.74,height-.13]}/><RadiantMaterial color={palette.glass} glass/>
+        </mesh>
+      </group>)}
+      <mesh position={[0,height/2+.36,.88]}>
+        <planeGeometry args={[2.15,height-.13]}/><RadiantMaterial color={palette.glass} glass/>
+      </mesh>
+      {detailed&&<group position={[0,.52,-.43]}>
+        <mesh position={[0,.47,0]}><boxGeometry args={[1.5,.94,.62]}/><RadiantMaterial color={palette.structure}/></mesh>
+        <mesh position={[0,.97,0]}><boxGeometry args={[1.56,.1,.65]}/><RadiantMaterial color={palette.accent} gold/></mesh>
+        <mesh position={[0,1.22,0]}>
+          <boxGeometry args={[1.05,.4,.1]}/>
+          <meshStandardMaterial color={palette.sky} emissive={palette.glow} emissiveIntensity={formation.live?.6:.07}/>
+        </mesh>
+      </group>}
     </group>:<group>
       <mesh position={[0,height/2+.28,0]} castShadow><boxGeometry args={[2.15,height,1.65]}/><RadiantMaterial color={palette.structure}/></mesh>
       <mesh position={[0,height+.45,0]}><boxGeometry args={[2.5,.18,2]}/><RadiantMaterial color={palette.accent} gold/></mesh>
@@ -90,7 +141,7 @@ function EquipmentBuilding({zone,index,selected,appearance,formation,onSelect}:{
       <mesh position={[side,1.82,0]}><sphereGeometry args={[.19,12,8]}/><meshStandardMaterial color={palette.glow} emissive={palette.glow} emissiveIntensity={.5}/></mesh>
     </group>)}
     <Text position={[0,kind==='globe'?3.45:height+1,0]} rotation={[0,-angle,0]}
-      fontSize={.44} color={palette.sky} anchorX="center" anchorY="middle" maxWidth={3.6} outlineWidth={.015} outlineColor={palette.glass}>
+      fontSize={phoneLayout?.42:.44} color={phoneLayout?"#263b54":palette.sky} anchorX="center" anchorY="middle" maxWidth={3.6} outlineWidth={.015} outlineColor={palette.glass}>
       {FILE_FOLDER_EQUIPMENT[zone].name.toUpperCase()}
     </Text>
     {formation.building>0&&<group>
@@ -136,7 +187,7 @@ function EquipmentBuilding({zone,index,selected,appearance,formation,onSelect}:{
   </group>
 }
 
-function CentralFolder({appearance}:{appearance:FileFolderWorldAppearance}){
+function CentralFolder({appearance,phoneLayout}:{appearance:FileFolderWorldAppearance;phoneLayout:boolean}){
  const palette=FILE_FOLDER_PALETTES[appearance.theme]
  const ring=useRef<Group>(null)
  useFrame(({clock})=>{if(ring.current)ring.current.rotation.y=clock.elapsedTime*.075})
@@ -147,6 +198,11 @@ function CentralFolder({appearance}:{appearance:FileFolderWorldAppearance}){
   <mesh position={[0,.86,0]}><cylinderGeometry args={[2.6,3.05,.82,48]}/><RadiantMaterial color={palette.structure}/></mesh>
   <mesh position={[0,1.31,0]}><cylinderGeometry args={[2.35,2.45,.13,48]}/><RadiantMaterial color={palette.accent} gold/></mesh>
   <group position={[0,2.35,0]}>
+    {phoneLayout?[FOLDER_BACK,FOLDER_FRONT].map((face,index)=><group key={index}
+      position={[0,index===0?.16:-.16,index===0?-.42:.55]} rotation={[index===0?-.18:.24,0,0]}>
+      <mesh castShadow><extrudeGeometry args={[face,FOLDER_EXTRUSION]}/><RadiantMaterial color={palette.accent} gold/></mesh>
+      <mesh position={[0,0,.025]} scale={[.96,.94,1]}><extrudeGeometry args={[face,FOLDER_EXTRUSION]}/><RadiantMaterial color={palette.structure}/></mesh>
+    </group>):<>
     <mesh rotation={[0,-.42,-.16]} position={[-1.05,0,0]} castShadow>
       <boxGeometry args={[2.4,2.9,.22]}/><RadiantMaterial color={palette.structure}/>
     </mesh>
@@ -155,12 +211,13 @@ function CentralFolder({appearance}:{appearance:FileFolderWorldAppearance}){
     </mesh>
     <mesh position={[0,-.07,.21]}><boxGeometry args={[.18,2.75,.27]}/><RadiantMaterial color={palette.accent} gold/></mesh>
     <mesh position={[0,1.62,0]}><sphereGeometry args={[.3,12,9]}/><meshStandardMaterial color={palette.glow} emissive={palette.glow} emissiveIntensity={1.2}/></mesh>
+    </>}
   </group>
   <group ref={ring} position={[0,2.3,0]}>
     <mesh rotation={[-Math.PI/2,0,0]}><torusGeometry args={[3.45,.035,7,62]}/><meshStandardMaterial color={palette.accent} metalness={.66} roughness={.2}/></mesh>
     <mesh rotation={[.6,0,.17]}><torusGeometry args={[3.0,.025,7,62]}/><meshStandardMaterial color={palette.glow} emissive={palette.accent} emissiveIntensity={.26}/></mesh>
   </group>
-  <Text position={[0,4.9,0]} fontSize={.64} color={palette.sky} anchorX="center" outlineColor={palette.glass} outlineWidth={.026}>
+  <Text position={[0,phoneLayout?4.25:4.9,0]} fontSize={phoneLayout?.48:.64} color={phoneLayout?"#263b54":palette.sky} anchorX="center" outlineColor={palette.glass} outlineWidth={.026}>
     PLUS FILE FOLDER
   </Text>
  </group>
@@ -238,8 +295,8 @@ function RadiantLandscape({appearance,formation}:{appearance:FileFolderWorldAppe
  </group>
 }
 
-function Scene({appearance,formation,selected,onSelect}:{appearance:FileFolderWorldAppearance;
-  formation:PlusWorldFormation;selected:EquipmentZone;onSelect:(zone:EquipmentZone)=>void}){
+function Scene({appearance,formation,selected,onSelect,phoneLayout,interactive}:{appearance:FileFolderWorldAppearance;
+  formation:PlusWorldFormation;selected:EquipmentZone;onSelect:(zone:EquipmentZone)=>void;phoneLayout:boolean;interactive:boolean}){
  const palette=FILE_FOLDER_PALETTES[appearance.theme]
  const zones=useMemo(()=>new Set(appearance.equipmentZones),[appearance.equipmentZones])
  return <>
@@ -252,47 +309,48 @@ function Scene({appearance,formation,selected,onSelect}:{appearance:FileFolderWo
   <mesh rotation={[-Math.PI/2,0,0]} position={[0,-.38,0]} receiveShadow>
     <circleGeometry args={[23,64]}/><RadiantMaterial color={palette.ground}/>
   </mesh>
+  {phoneLayout&&<mesh rotation={[-Math.PI/2,0,0]} position={[0,-.32,0]}>
+    <circleGeometry args={[13.3,64]}/>
+    <meshPhysicalMaterial color="#b2d8e6" roughness={.32} metalness={.19} clearcoat={.6}/>
+  </mesh>}
   {[7,13.3,18.5].map((r,i)=><mesh key={r} rotation={[-Math.PI/2,0,0]} position={[0,-.28+i*.004,0]}>
     <torusGeometry args={[r,.065+i*.006,8,72]}/><RadiantMaterial color={palette.accent} gold/>
   </mesh>)}
   {ZONE_IDS.map((zone,index)=>zones.has(zone)&&<group key={zone}>
     <mesh position={[Math.sin(ANGLES[index])*RADIUS*.5,-.24,Math.cos(ANGLES[index])*RADIUS*.5]}
       rotation={[0,ANGLES[index],0]}>
-      <boxGeometry args={[1.05,.13,RADIUS*.75]}/><RadiantMaterial color={palette.structure}/>
+      <boxGeometry args={[1.05,.13,RADIUS*.75]}/><RadiantMaterial color={phoneLayout?palette.accent:palette.structure} gold={phoneLayout}/>
     </mesh>
-    <EquipmentBuilding zone={zone} index={index} appearance={appearance}
+    <EquipmentBuilding zone={zone} index={index} appearance={appearance} phoneLayout={phoneLayout}
       formation={formation.zones[zone]} selected={zone===selected} onSelect={onSelect}/>
   </group>)}
   <RadiantLandscape appearance={appearance} formation={formation}/>
-  <CentralFolder appearance={appearance}/>
-  <OrbitControls enablePan={false} enableDamping dampingFactor={.085}
+  <CentralFolder appearance={appearance} phoneLayout={phoneLayout}/>
+  <OrbitControls enabled={interactive} enablePan={false} enableDamping dampingFactor={.085}
     minDistance={17} maxDistance={48} minPolarAngle={.38} maxPolarAngle={1.32}
     target={[0,1,0]} makeDefault/>
  </>
 }
-export default function FileFolderPlusRadiantWorld({appearance,districts,onEnter,active,systems,building,builds,systemRecords,now}:Props){
- const [selected,setSelected]=useState<EquipmentZone>('systems')
+export default function FileFolderPlusRadiantWorld({
+ appearance,districts,onEnter,onOpenSystem,onOpenBuild,builds,systemRecords,now,phoneLayout=false,
+}:Props){
+ const [selection,setSelected]=useState<EquipmentZone>(phoneLayout?'operations':'systems')
+ const [exploring,setExploring]=useState(false)
+ const buildsRef=useRef<HTMLDivElement>(null)
  const [referenceUnavailable,setReferenceUnavailable]=useState(false)
  const formation=useMemo(()=>derivePlusWorldFormation(builds,systemRecords,now),
    [builds,systemRecords,now])
- const enabled=appearance.equipmentZones.filter(zone=>FILE_FOLDER_EQUIPMENT_ZONES.has(zone))
+ const enabled=phoneLayout?ZONE_IDS.filter(zone=>appearance.equipmentZones.includes(zone)):appearance.equipmentZones
+ const selected=enabled.includes(selection)?selection:(enabled[0]||'operations')
  const selectedInfo=FILE_FOLDER_EQUIPMENT[selected]
- const canEnter=districts.some(d=>d.key===selectedInfo.district)
- const forming=builds.filter(b=>b.status==='building').slice(0,2)
- return <section aria-label="Plus File Folder world" className="relative isolate overflow-hidden rounded-2xl border border-[#d4b16a]/40 bg-[#eef2f9] text-[#1f3148]"
-   data-plus-file-folder-world="official-white-gold" data-file-folder-reality={appearance.realness}
-   data-file-folder-equipment-pack={appearance.equipmentPack}>
-   <header className="border-b border-[#d4b16a]/35 bg-[#fcfaf2] px-4 py-4">
-    <p className="text-[10px] font-black uppercase tracking-[.18em] text-[#966b27]">WEAVE · Plus File Folder · Radiant Systems</p>
-    <h3 className="mt-1 text-xl font-black">A complete systems world for immediate uses</h3>
-    <p className="mt-1 text-xs leading-5 text-[#52657c]">Built from the Administrator-approved white-and-gold Plus File Folder reference. Inspect the living 3D world, select equipment, and enter the real Client workshop. Drag to look; pinch or scroll to move closer.</p>
-    <p className="mt-2 text-xs font-bold text-[#8a5f22]" data-plus-world-stage={formation.environmentStage}>
-      {formation.activeBuilds} active builds · {formation.completedBuilds} completed builds · {formation.liveSystems} active systems · {formation.environmentStage} world · advancement stage {formation.expansionLevel}
-    </p>
-   </header>
-   <details className="border-b border-[#d4b16a]/35 bg-[#fffdf9]" data-plus-file-folder-construction-reference="389215.png">
+ const targetDistrict=districts.find(d=>d.key===selectedInfo.district)
+ const activeSystems=systemRecords.filter(system=>system.status==='active')
+ const forming=builds.filter(build=>build.status==='building')
+ const showSystems=selected==='operations'||selected==='systems'
+ const interactive=!phoneLayout||exploring
+ const designReference=<details className={`border-[#d4b16a]/35 bg-[#fffdf9] ${phoneLayout?'border-t':'border-b'}`} data-plus-file-folder-construction-reference="389215.png">
     <summary className="cursor-pointer px-4 py-3 text-sm font-black text-[#855e1b]">
-      View the official Plus File Folder construction reference
+      {phoneLayout?'View design reference':'View the official Plus File Folder construction reference'}
     </summary>
     <div className="grid gap-4 px-4 pb-5 sm:grid-cols-[minmax(0,320px)_minmax(0,1fr)]">
       <div className="overflow-hidden rounded-lg border border-[#d9c48d] bg-white">
@@ -318,12 +376,104 @@ export default function FileFolderPlusRadiantWorld({appearance,districts,onEnter
       </div>
     </div>
    </details>
-   <div className="h-[430px] w-full sm:h-[570px]" role="img" aria-label="Interactive three-dimensional white and gold Plus File Folder, central opening folder and six functional equipment districts">
-    <Canvas camera={{position:[20,20,25],fov:46,near:.1,far:130}} dpr={[1,1.5]} gl={{antialias:true,alpha:false,powerPreference:'high-performance'}}>
-      <Scene appearance={appearance} formation={formation} selected={selected} onSelect={setSelected}/>
+
+ return <section aria-label="Plus File Folder world" className="relative isolate overflow-hidden rounded-2xl border border-[#d4b16a]/40 bg-[#eef2f9] text-[#1f3148]"
+   data-plus-file-folder-world="official-white-gold" data-file-folder-reality={appearance.realness}
+   data-file-folder-equipment-pack={appearance.equipmentPack}>
+   {phoneLayout?<header className="border-b border-[#d4b16a]/35 bg-[#fcfaf2] px-3 py-2.5">
+    <h2 className="text-xl font-bold sm:text-2xl">Plus File Folder</h2>
+    <p className="mt-1 text-sm text-[#52657c]" data-plus-world-stage={formation.environmentStage}>
+      {formation.liveSystems} active {formation.liveSystems===1?'system':'systems'} · {formation.activeBuilds} in construction
+    </p>
+   </header> : <header className="border-b border-[#d4b16a]/35 bg-[#fcfaf2] px-4 py-4">
+    <p className="text-[10px] font-black uppercase tracking-[.18em] text-[#966b27]">WEAVE · Plus File Folder · Radiant Systems</p>
+    <h3 className="mt-1 text-xl font-black">A complete systems world for immediate uses</h3>
+    <p className="mt-1 text-xs leading-5 text-[#52657c]">Built from the Administrator-approved white-and-gold Plus File Folder reference. Inspect the living 3D world, select equipment, and enter the real Client workshop. Drag to look; pinch or scroll to move closer.</p>
+    <p className="mt-2 text-xs font-bold text-[#8a5f22]" data-plus-world-stage={formation.environmentStage}>
+      {formation.activeBuilds} active builds · {formation.completedBuilds} completed builds · {formation.liveSystems} active systems · {formation.environmentStage} world · advancement stage {formation.expansionLevel}
+    </p>
+   </header>}
+   {!phoneLayout&&designReference}
+   <div className={phoneLayout?'relative h-[clamp(9rem,25svh,14rem)]':'h-[430px] w-full sm:h-[570px]'}>
+    <div className={`h-full w-full ${interactive?'':'pointer-events-none'}`} role="img" aria-label="Three-dimensional white and gold Plus File Folder with six workspaces">
+    <Canvas camera={{position:[20,20,25],fov:46,near:.1,far:130}}
+      dpr={phoneLayout?[1,1.25]:[1,1.5]} frameloop={interactive?'always':'demand'}
+      style={interactive?undefined:{pointerEvents:'none'}}
+      gl={{antialias:true,alpha:false,powerPreference:'high-performance'}}
+      fallback={phoneLayout?<p className="p-4 text-sm">The 3D view is unavailable. You can open your workspaces below.</p>:undefined}>
+      <Scene appearance={appearance} formation={formation} selected={selected} onSelect={setSelected} phoneLayout={phoneLayout} interactive={interactive}/>
     </Canvas>
+    </div>
+    {phoneLayout&&<div className="pointer-events-none absolute inset-x-2 bottom-2 flex items-end justify-end gap-2">
+      {exploring&&<p className="mr-auto rounded-lg bg-[#263448] px-2 py-1 text-xs font-semibold text-white">Drag to turn. Pinch to zoom.</p>}
+      <button type="button" aria-pressed={exploring} onClick={()=>setExploring(value=>!value)}
+        className="pointer-events-auto min-h-11 min-w-11 shrink-0 rounded-lg border border-[#b49862] bg-[#fffdf7] px-3 text-xs font-bold text-[#263448] shadow-sm">
+        {exploring?'Done':'Explore 3D'}
+      </button>
+    </div>}
    </div>
-   <div className="border-t border-[#d4b16a]/35 bg-[#fffdf7] px-3 py-4">
+   {phoneLayout?<div className="border-t border-[#d4b16a]/35 bg-[#fffdf7] p-2.5">
+    <nav aria-label="Plus File Folder workspaces" className="grid grid-cols-3 gap-1.5 min-[640px]:grid-cols-6">
+      {enabled.map(zone=>{
+        const Icon=ZONE_ICONS[zone]
+        return <button type="button" key={zone} aria-pressed={selected===zone} onClick={()=>setSelected(zone)}
+          className={`flex min-h-11 items-center justify-center gap-1.5 rounded-lg border px-1.5 py-2 text-xs font-semibold sm:text-sm ${selected===zone?'border-[#c69745] bg-[#fff0cc] text-[#71460f]':'border-[#d9d9d2] bg-white text-[#374b64]'}`}>
+          <Icon aria-hidden="true" className="hidden size-4 shrink-0 min-[390px]:block"/>
+          {FILE_FOLDER_EQUIPMENT[zone].name}
+        </button>
+      })}
+    </nav>
+    {showSystems ? <section aria-label="Systems in Motion" className="mt-3 rounded-xl bg-[#263448] p-3 text-[#fffdf7] sm:p-4">
+      <div className="flex items-center justify-between gap-2">
+        <h3 className="text-base font-bold">Systems in Motion</h3>
+        {forming.length>0&&<button type="button" onClick={()=>{
+          buildsRef.current?.focus({preventScroll:true})
+          buildsRef.current?.scrollIntoView({block:'start'})
+        }} className="min-h-11 shrink-0 rounded-lg border border-white/25 px-2.5 text-xs font-semibold">See builds</button>}
+      </div>
+      {activeSystems.length ? <ul aria-label="Active systems" className="mt-2 divide-y divide-white/15">
+        {activeSystems.map(system=>{
+          const title=system.title||system.name||'System'
+          return <li key={system.id} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 py-1.5">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold [overflow-wrap:anywhere]">{title}</p>
+              <span className="mt-0.5 inline-block rounded-full bg-[#d6efcc] px-2 py-0.5 text-xs font-bold text-[#1c4932]">Active</span>
+            </div>
+            <button type="button" aria-label={`Open ${title}`} onClick={()=>system.id&&onOpenSystem?onOpenSystem(system.id):onEnter('active_systems')}
+              className="min-h-11 min-w-11 rounded-lg border border-white/25 px-3 text-xs font-semibold hover:bg-white/10">Open</button>
+          </li>
+        })}
+      </ul> : <p className="mt-3 text-sm text-slate-200">Your systems will appear here when they are ready to use.</p>}
+      <div ref={buildsRef} tabIndex={-1} className="mt-3 space-y-2 scroll-mt-2" data-plus-world-recorded-progress="true">
+        <h4 className="text-sm font-bold">In construction</h4>
+        {forming.length ? forming.map(build=>{
+          const title=build.title||build.blueprint_name||'System build'
+          const progress=Math.floor(buildFormationProgress(build,now))
+          return <div key={build.id} className="rounded-lg bg-[#ffe8b6] p-3 text-[#513609]">
+            <div className="flex items-center justify-between gap-2">
+              <div className="min-w-0">
+                <p className="text-sm font-bold [overflow-wrap:anywhere]">{title}</p>
+                <p className="text-xs">{progress===100?'Awaiting completion':`${progress}% built`}</p>
+              </div>
+              <button type="button" aria-label={`View build for ${title}`} onClick={()=>build.id&&onOpenBuild?onOpenBuild(build.id):onEnter('formation_yard')}
+                className="min-h-11 shrink-0 rounded-lg border border-[#a8792a] px-2.5 text-xs font-bold hover:bg-[#f7d38e]">View build</button>
+            </div>
+            <progress aria-label={`${title} construction progress`} value={progress} max={100}
+              className="mt-2 block h-2 w-full accent-[#9c6618]"/>
+          </div>
+        }) : <p className="text-sm text-slate-200">No systems are being built right now.</p>}
+      </div>
+    </section> : <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#dfcfab] p-3">
+      <div>
+        <p className="font-bold text-[#79571f]">{targetDistrict?.label||selectedInfo.name}</p>
+        <p className="mt-1 text-sm text-[#52657c]">{selectedInfo.meaning}</p>
+      </div>
+      {targetDistrict&&<button type="button" onClick={()=>onEnter(selectedInfo.district)}
+        className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-[#805919] px-3 text-sm font-bold text-white">
+        Open {targetDistrict.label} <ArrowRight aria-hidden="true" className="size-4"/>
+      </button>}
+    </div>}
+   </div> : <div className="border-t border-[#d4b16a]/35 bg-[#fffdf7] px-3 py-4">
     <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
       {enabled.map(zone=><button type="button" key={zone} aria-pressed={selected===zone}
         onClick={()=>setSelected(zone)}
@@ -347,15 +497,15 @@ export default function FileFolderPlusRadiantWorld({appearance,districts,onEnter
         </p>
         <p className="mt-1 text-[10px] text-[#64748b]">World equipment is an entrance to recorded Client work, not simulated business activity.</p>
       </div>
-      <button type="button" disabled={!canEnter} onClick={()=>onEnter(selectedInfo.district)}
+      <button type="button" disabled={!targetDistrict} onClick={()=>onEnter(selectedInfo.district)}
         className="min-h-11 rounded-lg bg-[#a8792a] px-4 py-2 text-xs font-black text-white disabled:opacity-40">
         Enter {selectedInfo.name} →
       </button>
     </div>
     {forming.length>0&&<div className="mt-3 text-xs text-[#68778c]" data-plus-world-recorded-progress="true">
-      {forming.map(b=><p key={b.id}>{b.title}: {Math.round(buildFormationProgress(b,now))}% built · formation continues through real time</p>)}
+      {forming.slice(0,2).map(b=><p key={b.id}>{b.title}: {Math.round(buildFormationProgress(b,now))}% built · formation continues through real time</p>)}
     </div>}
-   </div>
+   </div>}
+   {phoneLayout&&designReference}
   </section>
 }
-const FILE_FOLDER_EQUIPMENT_ZONES=new Set<EquipmentZone>(ZONE_IDS)

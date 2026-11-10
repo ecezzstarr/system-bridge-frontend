@@ -163,9 +163,11 @@ export function BridgerWorkplace({
               <Search className="h-4 w-4 shrink-0 text-[#9b772f]"/>
               <span className="sr-only">Search Bridger workstations</span>
               <input type="search" value={search} onChange={event => setSearch(event.target.value)}
-                placeholder="Find a workstation..." className="w-full bg-transparent py-3 text-sm text-[#263c4c] outline-none placeholder:text-[#75828a]"/>
+                placeholder="Example: find Clients or send messages" className="w-full bg-transparent py-3 text-sm text-[#263c4c] outline-none placeholder:text-[#75828a]"/>
             </label>
           </div>
+
+          <Link href="/search" data-role-company-search="bridger" className="mt-4 inline-flex min-h-11 items-center rounded-lg border border-[#b38b51] bg-white/80 px-4 py-2 text-sm font-semibold text-[#5e4823]">Describe a task instead: find Clients, explain File Folders, or follow a job.</Link>
 
           {selected === 'desk' && !trimmedSearch && (
             <section className="mt-6 rounded-2xl bg-[#f2f3f0] p-4 sm:p-5" aria-label="How to begin working">

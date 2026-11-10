@@ -45,10 +45,10 @@ export async function POST(request: NextRequest) {
     const gameType = typeof body.gameType === 'string' ? body.gameType : 'dice'
 
     if (!Number.isFinite(betAmount) || betAmount < 2) {
-      return NextResponse.json({ error: 'Minimum bet is 2 Flame Coin' }, { status: 400 })
+      return NextResponse.json({ error: 'Minimum bet is 2 System Switch' }, { status: 400 })
     }
     if (betAmount > 1000) {
-      return NextResponse.json({ error: 'Maximum bet is 1000 Flame Coin' }, { status: 400 })
+      return NextResponse.json({ error: 'Maximum bet is 1000 System Switch' }, { status: 400 })
     }
 
     await client.query('BEGIN')
@@ -174,12 +174,12 @@ export async function POST(request: NextRequest) {
       lossReturn,
       hostedBy: 'Platform',
       message: lossReturn > 0
-        ? `Weekly loss threshold reached. ${lossReturn.toFixed(2)} Flame Coin returned.`
+        ? `Weekly loss threshold reached. ${lossReturn.toFixed(2)} System Switch returned.`
         : outcome === 'win'
-          ? `You won ${payout.toFixed(6)} Flame Coin.`
+          ? `You won ${payout.toFixed(6)} System Switch.`
           : outcome === 'lose'
-            ? `You lost ${betAmount} Flame Coin to the platform.`
-            : `Push - ${PUSH_RETURN_PERCENT}% of your stake returned (${payout.toFixed(6)} Flame Coin).`
+            ? `You lost ${betAmount} System Switch to the platform.`
+            : `Push - ${PUSH_RETURN_PERCENT}% of your stake returned (${payout.toFixed(6)} System Switch).`
     })
   } catch (error) {
     try { await client.query('ROLLBACK') } catch {}

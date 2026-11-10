@@ -40,8 +40,6 @@ export async function ensureDepartmentEntryTicketSchema() {
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `
-  // Historical ticket prices remain recorded; no per-request schema lock is needed.
-  // The rollout migration drops the obsolete default once.
   await sql`ALTER TABLE departmental_codes ADD COLUMN IF NOT EXISTS registration_request_id UUID`
   await sql`
     CREATE UNIQUE INDEX IF NOT EXISTS idx_departmental_codes_registration_request
@@ -208,7 +206,7 @@ export async function submitDepartmentEntryPayment(
   const ticket = rows[0]
   await notifyAdmins(
     `${ticket.department} ticket payment awaiting verification`,
-    `${input.payerName} submitted payment evidence for ${ticket.ticket_number}: ₦${Number(ticket.amount_ngn).toLocaleString()} for ${Number(ticket.price_flame_coin)} System Switch.`
+    `${input.payerName} submitted OPay payment evidence for ${ticket.ticket_number}: ₦${Number(ticket.amount_ngn).toLocaleString()} for ${Number(ticket.price_flame_coin)} System Switch.`
   )
 
   return ticket

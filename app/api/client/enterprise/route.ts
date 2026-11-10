@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json()
     const monthlyStanding = await getClientMonthlyStanding(clientId)
-    if(!monthlyStanding.active || !monthlyStanding.title)return NextResponse.json({error:'Activate the 600 Flame Coin Client monthly subscription before submitting an enterprise plan.'},{status:403})
+    if(!monthlyStanding.active || !monthlyStanding.title)return NextResponse.json({error:'Activate the 600 System Switch Client monthly subscription before submitting an enterprise plan.'},{status:403})
     const requestedPosition = monthlyStanding.title
     const enterpriseName = cleanText(body.enterpriseName, 255)
     const sector = cleanText(body.sector, 255)

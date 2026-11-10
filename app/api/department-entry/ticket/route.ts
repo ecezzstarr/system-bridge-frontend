@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
       ticket: safeTicket(result.ticket),
       accessToken: result.accessToken,
       rateSource: result.rateSource,
-      peg: '1 System Switch = 1 TRX (ticket NGN quotation)',
+      peg: '1 System Switch = 1 TRX',
     }, { status: 201 })
   } catch (error: any) {
     console.error('[department-entry] create ticket error:', error)

@@ -659,9 +659,9 @@ const additionalVisions:Record<string,Visual>={
     ]
   },
   "/admin/weave-flame-coin-sales": {
-    "eyebrow": "Administration · Flame Coin sales",
+    "eyebrow": "Administration · System Switch sales",
     "title": "Payment and credit need evidence",
-    "meaning": "Verify the real Flame Coin purchase flow before recording a balance.",
+    "meaning": "Verify the real System Switch purchase flow before recording a balance.",
     "pictures": [
       {
         "src": "/weave/file-folder/assets/payments-module.svg",

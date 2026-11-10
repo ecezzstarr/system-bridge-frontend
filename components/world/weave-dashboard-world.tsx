@@ -148,6 +148,13 @@ export function WeaveDashboardWorld({
         <span><span className="block text-xs font-black uppercase text-white">Image Studio · Shared WEAVE</span><span className="mt-1 block text-[10px] leading-4 text-slate-300">Create image advertisements free. Continue to the Video Studio for narrated productions and your position's displayed price.</span></span>
       </Link>}
 
+      {hasRolePresence&&<Link href="/image-workshop" data-shared-advanced-image-workshop={role}
+        className="mb-3 flex min-h-20 w-full items-center gap-3 rounded-2xl border border-cyan-300/25 bg-cyan-300/[.06] px-4 py-3">
+        <Clapperboard className="h-6 w-6 shrink-0 text-cyan-200"/>
+        <span><span className="block text-xs font-black uppercase text-white">AI Image Workshop · Advanced creation</span>
+        <span className="mt-1 block text-[10px] leading-4 text-slate-300">Generate, edit and refine professional images with references. Save your work privately.</span></span>
+      </Link>}
+
       <div className="my-2 border-y border-white/[.07] py-2">
         <p className="px-1 text-[8px] font-black uppercase tracking-[.14em] text-sky-300">Presence → District → Place</p>
       </div>
@@ -189,7 +196,7 @@ export function WeaveDashboardWorld({
           </span>
           <span className="min-w-0 flex-1 text-left">
             <span className="block text-[10px] font-black uppercase tracking-[.1em] text-white">Video Ad Studio</span>
-            <span className="mt-1 block text-[9px] leading-4 text-slate-400">Commission quality video content for your business with Flame Coin.</span>
+            <span className="mt-1 block text-[9px] leading-4 text-slate-400">Commission quality video content for your business with System Switch.</span>
           </span>
         </Link>
       </div>}
@@ -217,13 +224,19 @@ export function WeaveDashboardWorld({
       <Clapperboard className="h-4 w-4 text-amber-200"/>
       <span><span className="block text-[9px] font-black uppercase tracking-[.12em] text-white">Image Studio · Shared WEAVE</span><span className="mt-0.5 block text-[8px] text-slate-400">Create and download real artwork · Free</span></span>
     </Link>}
+    {hasRolePresence&&<Link href="/image-workshop" data-shared-advanced-image-workshop={role}
+      className="group absolute bottom-[20%] left-1/2 z-20 hidden -translate-x-1/2 items-center gap-2 border border-cyan-300/25 bg-black/40 px-4 py-2.5 backdrop-blur-xl sm:flex">
+      <Clapperboard className="h-4 w-4 text-cyan-200"/>
+      <span><span className="block text-[9px] font-black uppercase tracking-[.12em] text-white">Advanced AI Image Workshop</span>
+      <span className="mt-0.5 block text-[8px] text-slate-400">Generate and edit original images · Private gallery</span></span>
+    </Link>}
     {hasVideoStudio&&<Link
       href="/video-ad-studio"
       data-shared-video-ad-studio={role}
       className="group absolute bottom-[7%] left-1/2 z-20 hidden -translate-x-1/2 items-center gap-2 border border-fuchsia-300/15 bg-black/30 px-4 py-2.5 backdrop-blur-xl sm:flex"
     >
       <Clapperboard className="h-4 w-4 text-fuchsia-200"/>
-      <span><span className="block text-[9px] font-black uppercase tracking-[.12em] text-white">{role==='agent'?'Image + Video Studio':'Video Ad Studio'}</span><span className="mt-0.5 block text-[8px] text-slate-500">{role==='agent'?'Image free · Video max 1.5 Flame Coin':'Business video production · Flame Coin'}</span></span>
+      <span><span className="block text-[9px] font-black uppercase tracking-[.12em] text-white">{role==='agent'?'Image + Video Studio':'Video Ad Studio'}</span><span className="mt-0.5 block text-[8px] text-slate-500">{role==='agent'?'Image free · Video max 1.5 System Switch':'Business video production · System Switch'}</span></span>
     </Link>}
 
     <div className="absolute inset-0 z-10 hidden sm:block">

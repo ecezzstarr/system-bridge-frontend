@@ -91,7 +91,7 @@ export async function notifyDepositDecision(input: {
 }) {
   const credited =
     input.approved && Number.isFinite(input.creditedFlameCoin)
-      ? ` ${Number(input.creditedFlameCoin).toLocaleString()} Flame Coin has been credited to your Weave wallet.`
+      ? ` ${Number(input.creditedFlameCoin).toLocaleString()} System Switch has been credited to your Weave wallet.`
       : ''
 
   return notifyUser(input.userId, {
@@ -101,7 +101,7 @@ export async function notifyDepositDecision(input: {
       ? input.rail === 'PAYSTACK'
         ? `Paystack verified your ${input.amountLabel} payment and Weave credited it.${credited}`
         : `Administration approved your ${input.amountLabel} ${input.rail} deposit.${credited}`
-      : `Administration rejected your ${input.amountLabel} ${input.rail} deposit. No Flame Coin was credited. Check the payment details before submitting again.`,
+      : `Administration rejected your ${input.amountLabel} ${input.rail} deposit. No System Switch was credited. Check the payment details before submitting again.`,
     link: '/wallet/deposit-withdraw',
     fromUserId: input.adminId || null,
     fromUserName: 'WEAVE Administration',

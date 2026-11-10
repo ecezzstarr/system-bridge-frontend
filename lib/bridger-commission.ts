@@ -109,7 +109,7 @@ export async function creditBridgerCommission(params: {
           ${bridgerId}::uuid,
           'commission',
           ${lifestyle === 'agentic_bridger' ? 'Agentic-Bridger return has come to you' : 'A File Folder return has come to you'},
-          ${`You earned ${commissionAmount.toFixed(2)} Flame Coin (${(rate * 100).toFixed(0)}%) from a verified Client File Folder purchase${lifestyle === 'agentic_bridger' ? ' through your Agentic-Bridger lifestyle.' : '.'}`},
+          ${`You earned ${commissionAmount.toFixed(2)} System Switch (${(rate * 100).toFixed(0)}%) from a verified Client File Folder purchase${lifestyle === 'agentic_bridger' ? ' through your Agentic-Bridger lifestyle.' : '.'}`},
           'WEAVE',
           '/wallet'
         )

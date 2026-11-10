@@ -23,7 +23,7 @@ for(const role of ['visitor','agent','bridger','client','admin']){
   }
 }
 assert.ok(trainingBriefsForRole('agent')[0].title.includes('Stability'))
-assert.ok(trainingBriefsForRole('agent')[1].body.includes('1.5 Flame Coin'))
+assert.ok(trainingBriefsForRole('agent')[1].body.includes('1.5 System Switch'))
 assert.ok(trainingBriefsForRole('agent')[0].body.includes('Agility')&&trainingBriefsForRole('agent')[0].body.includes('Ember'),'Agent lesson describes real WEAVE products')
 assert.ok(trainingBriefsForRole('agent')[0].body.includes('Nigeria'),'Agent Stability operates Nigerian product commerce')
 assert.ok(trainingBriefsForRole('agent')[2].body.includes('Company Loop 1')&&trainingBriefsForRole('agent')[2].body.includes('December 31, 2026'),'Agent lesson preserves Loop 1 period')

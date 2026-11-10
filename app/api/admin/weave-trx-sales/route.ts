@@ -1,6 +1,6 @@
 import {NextResponse} from 'next/server'
 const retired=()=>NextResponse.json({
-  error:'TRX sales retired. Forensics now manages Flame Coin purchases and wallet credits.',
+  error:'TRX sales retired. Forensics now manages System Switch purchases and wallet credits.',
   adminPath:'/admin/weave-flame-coin-sales'
 },{status:410})
 export async function GET(){return retired()}

@@ -112,8 +112,8 @@ export default function AdminBridgerNumbersPage(){
  }
 
  const cancelOrder=async(order:any)=>{
-  if(!window.confirm(`Cancel this ${order.country} order and return ${Number(order.price_flame_coin).toLocaleString()} Flame Coin to the Bridger?`))return
-  const message=window.prompt('Cancellation reason / message to Bridger')||'Administration cancelled this number order and returned the Flame Coin to your wallet.'
+  if(!window.confirm(`Cancel this ${order.country} order and return ${Number(order.price_flame_coin).toLocaleString()} System Switch to the Bridger?`))return
+  const message=window.prompt('Cancellation reason / message to Bridger')||'Administration cancelled this number order and returned the System Switch to your wallet.'
   await orderAction(order,'cancel_order',{message})
  }
 
@@ -122,7 +122,7 @@ export default function AdminBridgerNumbersPage(){
   {key:'country',label:'Country',placeholder:'Nigeria',type:'text'},
   {key:'providerReference',label:'Provider reference',placeholder:'',type:'text'},
   {key:'acquisitionCost',label:'Administration acquisition cost',placeholder:'0',type:'number'},
-  {key:'priceFlameCoin',label:'Bridger price · Flame Coin',placeholder:'0',type:'number'},
+  {key:'priceFlameCoin',label:'Bridger price · System Switch',placeholder:'0',type:'number'},
   {key:'notes',label:'Administration notes',placeholder:'',type:'text'},
  ] as const
 
@@ -132,7 +132,7 @@ export default function AdminBridgerNumbersPage(){
  const assigned=numbers.filter(n=>n.assigned_to).length
 
  const left=<>
-  <section className="rounded-3xl border border-emerald-300/15 bg-emerald-400/[.035] p-4"><BatteryCharging className="h-5 w-5 text-emerald-300"/><p className="mt-3 text-sm font-black text-white">Inventory authority</p><p className="mt-2 text-xs leading-5 text-slate-400">Load actual provider stock or publish a country offer even when no number is currently stocked. Bridgers see only country, Flame Coin price, stock state and delivery movement.</p></section>
+  <section className="rounded-3xl border border-emerald-300/15 bg-emerald-400/[.035] p-4"><BatteryCharging className="h-5 w-5 text-emerald-300"/><p className="mt-3 text-sm font-black text-white">Inventory authority</p><p className="mt-2 text-xs leading-5 text-slate-400">Load actual provider stock or publish a country offer even when no number is currently stocked. Bridgers see only country, System Switch price, stock state and delivery movement.</p></section>
   <section className="rounded-3xl border border-white/10 bg-black/20 p-4"><p className="text-[9px] font-black uppercase text-slate-500">Engine state</p><div className="mt-3 grid grid-cols-2 gap-2 text-center"><div className="rounded-xl border border-white/10 p-2"><p className="text-lg font-black text-emerald-200">{available}</p><p className="text-[7px] uppercase text-slate-500">Ready stock</p></div><div className="rounded-xl border border-white/10 p-2"><p className="text-lg font-black text-sky-200">{assigned}</p><p className="text-[7px] uppercase text-slate-500">Assigned</p></div><div className="rounded-xl border border-white/10 p-2"><p className="text-lg font-black text-amber-200">{openOrders.length}</p><p className="text-[7px] uppercase text-slate-500">Orders</p></div><div className="rounded-xl border border-white/10 p-2"><p className="text-lg font-black text-violet-200">{pendingVerification.length}</p><p className="text-[7px] uppercase text-slate-500">Codes</p></div></div></section>
  </>
 

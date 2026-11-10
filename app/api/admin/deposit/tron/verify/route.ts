@@ -40,11 +40,11 @@ export async function POST(request:NextRequest){
       }catch(error){console.error('[TRX verify] File Folder funding refresh unavailable',error)}
     }
     return NextResponse.json({
-      success:true,message:result.decision==='approved'?'Client Flame Coin credited and receipt issued.':'Client deposit rejected. No wallet credit applied.',
+      success:true,message:result.decision==='approved'?'Client System Switch credited and receipt issued.':'Client deposit rejected. No wallet credit applied.',
       depositId:result.depositId,status:result.decision,
       paidTrx:result.paidTrx,flameCoinAmount:result.flameCoinAmount,
       newBalance:result.balance,receipt:result.receipt,buildFunding,
-      peg:'1 Flame Coin = 1 TRX',
+      peg:'1 System Switch = 1 TRX',
     },{headers:{'Cache-Control':'private, no-store'}})
   }catch(error:any){
     const message=String(error?.message||'Client deposit decision failed')

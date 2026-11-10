@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { LiveAdSurface } from '@/components/live-ad-surface'
 import { AppHeader } from '@/components/app-header'
+import { ClientSmartGuide } from '@/components/agent/agent-smart-guide'
 import { ClientRouteGuard } from '@/components/client/client-route-guard'
 import { FlameEventAd } from '@/components/events/flame-event-ad'
 import { CompanyLoopTwoScroll } from '@/components/events/company-loop-two-scroll'
@@ -53,6 +54,7 @@ export default function ClientLayout({
             </WeaveEnvironmentSurface>
           </PresenceCameraViewport>
           <PresenceCameraSignal />
+          <ClientSmartGuide />
         </div>
       </ClientRouteGuard>
     </div>

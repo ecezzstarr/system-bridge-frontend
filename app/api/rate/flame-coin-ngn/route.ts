@@ -7,8 +7,9 @@ export async function GET() {
   return NextResponse.json({
     rate: rateNgnPerTrx,
     source,
-    currency: 'Flame Coin',
-    peg: '1 Flame Coin = 1 TRX',
+    currency: 'System Switch',
+    legacyCurrencyCode: 'FLAME_COIN',
+    peg: '1 System Switch = 1 TRX',
     platformFeePercent: WORLD_RULES.PLATFORM_FEE_PERCENT,
   })
 }

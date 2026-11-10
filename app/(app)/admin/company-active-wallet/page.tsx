@@ -130,7 +130,7 @@ export default function CompanyActiveWalletSettings(){
   <section className="space-y-3 rounded-2xl border border-slate-200 bg-white/90 p-6">
    <h2 className="text-xl font-bold">Separate company TRX funding rail</h2>
    <p className="text-sm leading-7">WEAVE also records a TRX funding destination for its separate
-    Flame Coin funding workflow. That rail is not edited here. If Administration chooses the same
+    System Switch funding workflow. That rail is not edited here. If Administration chooses the same
     receiving address for both, each payment must still be verified in its correct asset and ledger.</p>
    <p className="break-all rounded-xl border border-slate-200 bg-slate-50 p-3 font-mono text-sm">{settings?.companyTrxFundingWallet||'Unavailable'}</p>
   </section>

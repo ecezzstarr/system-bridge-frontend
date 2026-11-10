@@ -139,7 +139,7 @@ export async function creditAgentCommission(params: {
           ${agentId}::uuid,
           'commission',
           'A return has come to you',
-          ${`You earned ${commissionAmount.toFixed(2)} Flame Coin (${(rate * 100).toFixed(0)}%) from ${movement}.`},
+          ${`You earned ${commissionAmount.toFixed(2)} System Switch (${(rate * 100).toFixed(0)}%) from ${movement}.`},
           'WEAVE',
           '/agent/commissions'
         )

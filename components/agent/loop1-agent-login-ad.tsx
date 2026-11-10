@@ -73,7 +73,7 @@ export function Loop1AgentLoginAd({ open, onOpenChange, onOpenContinuance }: Pro
                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Prospect Purchase Return</p>
                 <p className="mt-2 text-6xl font-black text-emerald-300">30%</p>
                 <p className="mt-2 text-sm leading-6 text-slate-300">
-                  Credited as Flame Coin when the eligible Prospect-package purchase is completed.
+                  Credited as System Switch when the eligible Prospect-package purchase is completed.
                 </p>
               </div>
             </div>
@@ -103,7 +103,7 @@ export function Loop1AgentLoginAd({ open, onOpenChange, onOpenContinuance }: Pro
               <p className="mt-4 text-[10px] font-black uppercase tracking-[0.2em] text-emerald-300">3 · Your Return</p>
               <h3 className="mt-1 text-xl font-black text-white">30% returns to your Agent balance.</h3>
               <p className="mt-3 text-sm leading-6 text-slate-400">
-                Example: a 100 Flame Coin Prospect purchase produces a 30 Flame Coin Agent commission.
+                Example: a 100 System Switch Prospect purchase produces a 30 System Switch Agent commission.
               </p>
             </div>
           </section>

@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
       )
     `
 
-    return NextResponse.json({ success: true, message: `Vault funded with ${amountTrx} Flame Coin` })
+    return NextResponse.json({ success: true, message: `Vault funded with ${amountTrx} System Switch` })
   } catch (error: any) {
     console.error('Vault fund error:', error)
     return NextResponse.json({ error: error.message }, { status: 500 })

@@ -297,7 +297,7 @@ export default function FileFolderPurchase({
               >
                 <div className="flex items-center gap-2"><Wallet className="h-4 w-4 text-sky-200" /><p className="text-[9px] font-black uppercase tracking-[.14em]">Pro File Folder</p></div>
                 <p className="mt-4 text-2xl font-black text-sky-100">From {PRO_STARTING_PRICE.toLocaleString()}</p>
-                <p className="mt-1 text-[9px] text-stone-500">Flame Coin · negotiable to {PRO_NEGOTIATED_MIN.toLocaleString()}</p>
+                <p className="mt-1 text-[9px] text-stone-500">System Switch · negotiable to {PRO_NEGOTIATED_MIN.toLocaleString()}</p>
               </button>
               <button
                 type="button"
@@ -307,7 +307,7 @@ export default function FileFolderPurchase({
               >
                 <div className="flex items-center gap-2"><Crown className="h-4 w-4 text-orange-200" /><p className="text-[9px] font-black uppercase tracking-[.14em]">Premium</p></div>
                 <p className="mt-4 text-2xl font-black text-orange-100">{PREMIUM_PRICE.toLocaleString()}</p>
-                <p className="mt-1 text-[9px] text-stone-500">Flame Coin · fixed Premium value</p>
+                <p className="mt-1 text-[9px] text-stone-500">System Switch · fixed Premium value</p>
               </button>
             </div>
 
@@ -325,9 +325,9 @@ export default function FileFolderPurchase({
                     onChange={event => setProPrice(event.target.value)}
                     className="min-w-0 flex-1 bg-transparent text-2xl font-black text-white outline-none"
                   />
-                  <span className="pb-1 text-[9px] font-bold uppercase tracking-[.12em] text-stone-500">Flame Coin</span>
+                  <span className="pb-1 text-[9px] font-bold uppercase tracking-[.12em] text-stone-500">System Switch</span>
                 </div>
-                <p className="mt-2 text-[9px] leading-4 text-stone-500">Normal Pro starting value is {PRO_STARTING_PRICE.toLocaleString()} Flame Coin. Administration may approve a negotiated Pro sale down to {PRO_NEGOTIATED_MIN.toLocaleString()}.</p>
+                <p className="mt-2 text-[9px] leading-4 text-stone-500">Normal Pro starting value is {PRO_STARTING_PRICE.toLocaleString()} System Switch. Administration may approve a negotiated Pro sale down to {PRO_NEGOTIATED_MIN.toLocaleString()}.</p>
               </div>
             )}
 
@@ -344,11 +344,11 @@ export default function FileFolderPurchase({
               <p className="text-[8px] font-black uppercase tracking-[.22em] text-sky-200">Paystack Checkout</p>
             </div>
             <p className="mt-4 text-xs leading-6 text-stone-400">
-              Pay securely in Naira through Paystack. The checkout amount is calculated from the current Flame Coin/TRX payment rate. Do not send TRX or submit a manual transaction hash for this purchase.
+              Pay securely in Naira through Paystack. The checkout amount is calculated from the current System Switch/TRX payment rate. Do not send TRX or submit a manual transaction hash for this purchase.
             </p>
             <div className="mt-6 border-y border-white/8 py-4">
               <p className="text-[8px] uppercase tracking-[.15em] text-stone-500">File Folder value</p>
-              <p className="mt-1 text-2xl font-black text-white">{Number.isFinite(selectedPrice) ? selectedPrice.toLocaleString() : '—'} Flame Coin</p>
+              <p className="mt-1 text-2xl font-black text-white">{Number.isFinite(selectedPrice) ? selectedPrice.toLocaleString() : '—'} System Switch</p>
               <p className="mt-1 text-[9px] text-stone-500">The exact NGN total appears in Paystack checkout.</p>
             </div>
           </div>
