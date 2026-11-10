@@ -244,7 +244,7 @@ export async function POST(request: NextRequest) {
       `
       if (!chargedRows[0]) {
         return NextResponse.json({
-          error: `Bridge AI assistance requires ${feeFlameCoin.toLocaleString()} Flame Coin per assisted reply. Add Flame Coin to continue.`,
+          error: `Bridge AI assistance requires ${feeFlameCoin.toLocaleString()} System Switch per assisted reply. Add System Switch to continue.`,
           code: 'INSUFFICIENT_FLAME_COIN',
           billing: { feeFlameCoin, currency: 'Flame Coin' },
         }, { status: 409 })

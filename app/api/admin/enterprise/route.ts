@@ -88,7 +88,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     const monthlyStanding=await getClientMonthlyStanding(String(application.client_id))
-    if(!monthlyStanding.active || !monthlyStanding.title)return NextResponse.json({error:'Client must maintain a verified 600 Flame Coin monthly subscription for enterprise approval.'},{status:409})
+    if(!monthlyStanding.active || !monthlyStanding.title)return NextResponse.json({error:'Client must maintain a verified 600 System Switch monthly subscription for enterprise approval.'},{status:409})
 
     const [approved] = await sql`
       UPDATE enterprise_applications

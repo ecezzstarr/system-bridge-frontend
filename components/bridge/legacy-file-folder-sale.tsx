@@ -62,7 +62,7 @@ export function LegacyFileFolderSale({
           <p className="text-[9px] font-black uppercase tracking-[.24em] text-orange-200">Prospect File Folder Sale</p>
           <h2 className="mt-3 text-3xl font-black tracking-tight">Pro File Folder</h2>
           <p className="mt-3 max-w-xl text-xs leading-6 text-white/45">
-            Pro normally starts at {FILE_FOLDER_PRICING.proStartingFlameCoin.toLocaleString()} Flame Coin. A real negotiated sale may be approved as low as {FILE_FOLDER_PRICING.proNegotiatedMinimumFlameCoin.toLocaleString()} Flame Coin. Premium remains fixed at {FILE_FOLDER_PRICING.premiumFlameCoin.toLocaleString()} Flame Coin.
+            Pro normally starts at {FILE_FOLDER_PRICING.proStartingFlameCoin.toLocaleString()} System Switch. A real negotiated sale may be approved as low as {FILE_FOLDER_PRICING.proNegotiatedMinimumFlameCoin.toLocaleString()} System Switch. Premium remains fixed at {FILE_FOLDER_PRICING.premiumFlameCoin.toLocaleString()} System Switch.
           </p>
         </header>
 
@@ -74,7 +74,7 @@ export function LegacyFileFolderSale({
           >
             <div className="flex items-center gap-2 text-cyan-200"><Wallet className="h-4 w-4" /><span className="text-[9px] font-black uppercase tracking-[.16em]">Pro</span></div>
             <p className="mt-4 text-2xl font-black">From {FILE_FOLDER_PRICING.proStartingFlameCoin.toLocaleString()}</p>
-            <p className="mt-1 text-[9px] text-white/35">Negotiable to {FILE_FOLDER_PRICING.proNegotiatedMinimumFlameCoin.toLocaleString()} Flame Coin</p>
+            <p className="mt-1 text-[9px] text-white/35">Negotiable to {FILE_FOLDER_PRICING.proNegotiatedMinimumFlameCoin.toLocaleString()} System Switch</p>
           </button>
           <button
             type="button"
@@ -83,7 +83,7 @@ export function LegacyFileFolderSale({
           >
             <div className="flex items-center gap-2 text-orange-200"><Crown className="h-4 w-4" /><span className="text-[9px] font-black uppercase tracking-[.16em]">Premium</span></div>
             <p className="mt-4 text-2xl font-black">{FILE_FOLDER_PRICING.premiumFlameCoin.toLocaleString()}</p>
-            <p className="mt-1 text-[9px] text-white/35">Fixed Flame Coin value</p>
+            <p className="mt-1 text-[9px] text-white/35">Fixed System Switch value</p>
           </button>
         </div>
 
@@ -101,7 +101,7 @@ export function LegacyFileFolderSale({
                   onChange={event => setAmount(Number(event.target.value))}
                   className="min-w-0 flex-1 bg-transparent py-3 text-xl font-black outline-none"
                 />
-                <span className="text-[9px] font-black uppercase tracking-[.12em] text-white/35">Flame Coin</span>
+                <span className="text-[9px] font-black uppercase tracking-[.12em] text-white/35">System Switch</span>
               </div>
               <p className="mt-2 text-[9px] leading-4 text-white/35">Values below {FILE_FOLDER_PRICING.proStartingFlameCoin.toLocaleString()} are negotiated Pro sales, not Standard purchases.</p>
             </label>
@@ -115,7 +115,7 @@ export function LegacyFileFolderSale({
               </div>
               <button type="button" onClick={() => navigator.clipboard.writeText(WORLD_RULES.COMPANY_TRX_WALLET)} className="rounded-xl border border-white/10 p-2 text-white/50 hover:text-white"><Copy className="h-4 w-4" /></button>
             </div>
-            <p className="mt-3 text-[9px] text-white/35">1 Flame Coin = 1 TRX for this File Folder movement.</p>
+            <p className="mt-3 text-[9px] text-white/35">1 System Switch = 1 TRX for this File Folder movement.</p>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">

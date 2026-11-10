@@ -111,7 +111,7 @@ export default function PrivateGroundPage() {
                         </div>
                         <div className="text-right">
                           <p className="text-[9px] font-black uppercase tracking-[0.1em]">{String(session.status||'recorded')}</p>
-                          <p className="mt-1 text-xs font-black text-white">{rate.toLocaleString()} Flame Coin</p>
+                          <p className="mt-1 text-xs font-black text-white">{rate.toLocaleString()} System Switch</p>
                         </div>
                       </div>
                     </article>

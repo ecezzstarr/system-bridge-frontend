@@ -402,7 +402,7 @@ export default function FileFolderOpenWorld({
             <div className="min-w-0">
               <span className="font-black uppercase tracking-wider">Funding · </span>
               <span className="md:hidden">{Number(buildFunding.totalParticipationFlameCoin || 0).toLocaleString()} / {Number(buildFunding.publicDoorThresholdFlameCoin || 0).toLocaleString()} FC</span>
-              <span className="hidden md:inline">{Number(buildFunding.totalParticipationFlameCoin || 0).toLocaleString()} / {Number(buildFunding.publicDoorThresholdFlameCoin || 0).toLocaleString()} Flame Coin for the first public door.{!buildFunding.publicDoorUnlocked && <> Add {Number(buildFunding.requiredToOpenPublicDoorFlameCoin || 0).toLocaleString()} more Flame Coin before the Customer Door can open and new construction can continue after that gate.</>}</span>
+              <span className="hidden md:inline">{Number(buildFunding.totalParticipationFlameCoin || 0).toLocaleString()} / {Number(buildFunding.publicDoorThresholdFlameCoin || 0).toLocaleString()} System Switch for the first public door.{!buildFunding.publicDoorUnlocked && <> Add {Number(buildFunding.requiredToOpenPublicDoorFlameCoin || 0).toLocaleString()} more System Switch before the Customer Door can open and new construction can continue after that gate.</>}</span>
             </div>
             {!buildFunding.publicDoorUnlocked && (
               <Link href="/client/deposit" className="inline-flex shrink-0 items-center gap-1 rounded-full bg-amber-300 px-2.5 py-1.5 font-black uppercase tracking-wider text-slate-950 md:px-3">
@@ -634,11 +634,11 @@ export default function FileFolderOpenWorld({
                       <p className="font-black text-amber-100">Acquire &amp; Build Price</p>
                       <p>Materials: {quote.materialRequired} × {quote.materialName} · {quote.materialOwned} owned</p>
                       {quote.priceAvailable ? <>
-                        <p>Kit price: <strong>{quote.unitPrice.toLocaleString()} Flame Coin each</strong> · Full requirement: {quote.requiredMaterialCost.toLocaleString()} FC</p>
-                        <p className="font-black text-emerald-200">Still to acquire: {quote.materialMissing} kit(s) · {quote.acquireCost.toLocaleString()} Flame Coin</p>
+                        <p>Kit price: <strong>{quote.unitPrice.toLocaleString()} System Switch each</strong> · Full requirement: {quote.requiredMaterialCost.toLocaleString()} System Switch</p>
+                        <p className="font-black text-emerald-200">Still to acquire: {quote.materialMissing} kit(s) · {quote.acquireCost.toLocaleString()} System Switch</p>
                       </> : <p role="alert" className="font-bold text-amber-200">Kit pricing is unavailable. Administration must publish this item before acquisition.</p>}
                       {quote.materialMissing>0&&!quote.purchaseAvailable&&<p role="alert" className="text-amber-200">Required kit is not currently published for purchase.</p>}
-                      <p>Start construction: <strong>No separate Flame Coin charge</strong> after required kits are owned. Formation time: {effectiveLabel}.</p>
+                      <p>Start construction: <strong>No separate System Switch charge</strong> after required kits are owned. Formation time: {effectiveLabel}.</p>
                     </div>
                     <div className="mt-4 grid gap-2">
                       <input value={buildDrafts[blueprint.blueprint_key]?.title||''} onChange={event=>setBuildDrafts(current=>({...current,[blueprint.blueprint_key]:{title:event.target.value,purpose:current[blueprint.blueprint_key]?.purpose||''}}))} className="rounded-xl border border-white/10 bg-black/25 px-3 py-2.5 text-xs text-white outline-none" placeholder={`Business name for this system · ${blueprint.name}`}/>
@@ -663,14 +663,14 @@ export default function FileFolderOpenWorld({
               </div>}
               <div className="mt-5 grid gap-3 md:grid-cols-2">
                 {buildMarketItems.filter((item:any)=>fileFolderTier!=='premium'||!premiumFocusMaterial||premiumShowAllMaterials||item.item_key===premiumFocusMaterial).map((item:any) => <div key={item.item_key} className="rounded-2xl border border-emerald-300/10 bg-emerald-400/[0.035] p-5">
-                  <div className="flex items-start justify-between gap-3"><div><h4 className="font-bold text-white">{item.name}</h4><p className="mt-1 text-[9px] uppercase tracking-wider text-emerald-300">{item.category}</p></div><div className="text-right"><p className="flex items-center gap-1 text-sm font-black text-white"><Coins className="h-3.5 w-3.5 text-amber-300"/>{Number(item.price_flame_coin).toLocaleString()}</p><p className="text-[8px] text-slate-500">Flame Coin</p></div></div>
+                  <div className="flex items-start justify-between gap-3"><div><h4 className="font-bold text-white">{item.name}</h4><p className="mt-1 text-[9px] uppercase tracking-wider text-emerald-300">{item.category}</p></div><div className="text-right"><p className="flex items-center gap-1 text-sm font-black text-white"><Coins className="h-3.5 w-3.5 text-amber-300"/>{Number(item.price_flame_coin).toLocaleString()}</p><p className="text-[8px] text-slate-500">System Switch</p></div></div>
                   <p className="mt-3 text-xs leading-5 text-slate-400">{item.description}</p>
                   <div className="mt-3 rounded-xl border border-emerald-300/10 bg-black/20 px-3 py-2 text-[9px] leading-4 text-slate-400">
                     <span className="font-black uppercase tracking-wider text-emerald-300">Operating result · </span>
                     {(materialPurpose.get(item.item_key)||[]).length ? `Required to begin ${materialPurpose.get(item.item_key)!.join(', ')}. ${operatingEffect(item)}` : operatingEffect(item)}
                   </div>
                   <p className="mt-3 text-[10px] text-slate-500">Inventory: {Number(inventory.get(item.item_key) || 0)}</p>
-                  {fileFolderTier==='premium'&&premiumFocusMaterial===item.item_key&&premiumFocusRecord&&<p className="mt-2 text-xs font-bold text-[#f0d5a0]">For your chosen blueprint: {Math.max(0,Number(premiumFocusRecord.required_item_quantity||1)-Number(inventory.get(item.item_key)||0))} more kit(s) required · estimated acquisition {Math.max(0,Number(premiumFocusRecord.required_item_quantity||1)-Number(inventory.get(item.item_key)||0))*Number(item.price_flame_coin||0)} Flame Coin</p>}
+                  {fileFolderTier==='premium'&&premiumFocusMaterial===item.item_key&&premiumFocusRecord&&<p className="mt-2 text-xs font-bold text-[#f0d5a0]">For your chosen blueprint: {Math.max(0,Number(premiumFocusRecord.required_item_quantity||1)-Number(inventory.get(item.item_key)||0))} more kit(s) required · estimated acquisition {Math.max(0,Number(premiumFocusRecord.required_item_quantity||1)-Number(inventory.get(item.item_key)||0))*Number(item.price_flame_coin||0)} System Switch</p>}
                   <button disabled={busy===item.item_key||(fileFolderTier==='premium'&&premiumFocusMaterial===item.item_key&&premiumFocusRecord&&Number(inventory.get(item.item_key)||0)>=Number(premiumFocusRecord.required_item_quantity||1))} onClick={()=>act({action:'purchase_item',item_key:item.item_key,quantity:fileFolderTier==='premium'&&premiumFocusMaterial===item.item_key&&premiumFocusRecord?Math.min(25,Math.max(1,Number(premiumFocusRecord.required_item_quantity||1)-Number(inventory.get(item.item_key)||0))):1},item.item_key)} className="mt-4 rounded-full border border-emerald-300/20 bg-emerald-400/10 px-4 py-2 text-[10px] font-black uppercase tracking-wider text-emerald-200 disabled:opacity-50">{busy===item.item_key?'Acquiring…':fileFolderTier==='premium'&&premiumFocusMaterial===item.item_key&&premiumFocusRecord?(Number(inventory.get(item.item_key)||0)>=Number(premiumFocusRecord.required_item_quantity||1)?'Required kits owned':'Acquire required kits'):'Acquire material'}</button>
                 </div>)}
               </div>
@@ -703,7 +703,7 @@ export default function FileFolderOpenWorld({
               <p className="mt-2 max-w-3xl text-xs leading-6 text-slate-400">Acquire acceleration here, then attach it to an active build in Construction Yard. The remaining countdown is recalculated immediately from recorded File Folder state.</p>
               <div className="mt-5 grid gap-3 md:grid-cols-2">
                 {boostItems.map((item:any) => <div key={item.item_key} className="rounded-2xl border border-amber-300/12 bg-amber-400/[0.035] p-5">
-                  <div className="flex items-start justify-between gap-3"><div><h4 className="font-bold text-white">{item.name}</h4><p className="mt-1 text-[9px] uppercase tracking-wider text-amber-300">Live acceleration</p></div><div className="text-right"><p className="flex items-center gap-1 text-sm font-black text-white"><Coins className="h-3.5 w-3.5 text-amber-300"/>{Number(item.price_flame_coin).toLocaleString()}</p><p className="text-[8px] text-slate-500">Flame Coin</p></div></div>
+                  <div className="flex items-start justify-between gap-3"><div><h4 className="font-bold text-white">{item.name}</h4><p className="mt-1 text-[9px] uppercase tracking-wider text-amber-300">Live acceleration</p></div><div className="text-right"><p className="flex items-center gap-1 text-sm font-black text-white"><Coins className="h-3.5 w-3.5 text-amber-300"/>{Number(item.price_flame_coin).toLocaleString()}</p><p className="text-[8px] text-slate-500">System Switch</p></div></div>
                   <p className="mt-3 text-xs leading-5 text-slate-400">{item.description}</p>
                   <p className="mt-3 text-[10px] text-slate-500">Inventory: {Number(inventory.get(item.item_key) || 0)}</p>
                   <p className="mt-2 inline-flex rounded-full border border-amber-300/15 bg-amber-400/5 px-2.5 py-1 text-[9px] font-black text-amber-200">Applies live · ×{Number(item.effect_value || 1).toFixed(2)} build speed</p>

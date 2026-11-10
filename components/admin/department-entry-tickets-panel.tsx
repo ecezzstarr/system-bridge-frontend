@@ -96,7 +96,7 @@ export function DepartmentEntryTicketsPanel() {
           </div>
 
           <p className="mt-3 text-sm font-bold text-white">
-            {Number(ticket.price_flame_coin).toLocaleString()} Flame Coin · ₦{Number(ticket.amount_ngn).toLocaleString()}
+            {Number(ticket.price_flame_coin).toLocaleString()} System Switch · ₦{Number(ticket.amount_ngn).toLocaleString()}
           </p>
 
           <div className="mt-2 space-y-1 text-xs text-slate-400">
@@ -155,7 +155,7 @@ export function DepartmentEntryTicketsPanel() {
             <h2 className="text-sm font-black uppercase tracking-widest">Department Entry Tickets</h2>
           </div>
           <p className="mt-1 text-xs text-slate-500">
-            Agent and Bridger visitors pay for a 3 Flame Coin ticket. Verify OPay payment here to release the one-use departmental code.
+            Agent and Bridger visitors pay for a 3 System Switch ticket. Verify OPay payment here to release the one-use departmental code.
           </p>
         </div>
         <Button size="sm" variant="ghost" onClick={() => load()} disabled={loading} className="text-slate-400">

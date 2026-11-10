@@ -25,7 +25,7 @@ Open the source image itself, not a new image generation. The reference is a **v
 
 ### Target 9:16 composition (pixel priorities)
 
-1. Upper status/navigation HUD: gold WEAVE brand, File Folder title/subtitle, live Flame Coin balance and true Client file number. Preserve mobile safe-area layout.
+1. Upper status/navigation HUD: gold WEAVE brand, File Folder title/subtitle, live System Switch balance and true Client file number. Preserve mobile safe-area layout.
 2. A readable "File Overview" control showing live **system, installed-part and build** counts; no fixed demonstration figures.
 3. Scenic high-fidelity, warm daylight 3D city/industrial valley with cliffs, waterways and waterfalls, distant buildings, layered bridges, golden lighting and perspective depth. The view is Client-centric and includes a human-scale third-person walking presence (Client avatar).
 4. Central monumental WEAVE technology facility, lit WEAVE emblem and legible "YOUR BUSINESS BUILDS HERE" facade, with real 3D parallax, not an image plane replacing the scene.

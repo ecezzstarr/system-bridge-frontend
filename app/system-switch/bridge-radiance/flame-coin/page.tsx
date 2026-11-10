@@ -64,16 +64,16 @@ export default function BuyWeaveFlameCoin(){
    <div className="mx-auto max-w-2xl">
      <Link href="/system-switch/world#domains" className="text-xs font-bold text-sky-200">← Weave Open World · Customer Doors</Link>
      <div className="mt-7 flex items-center gap-3 text-amber-200"><Waves className="h-6 w-6"/><Coins className="h-6 w-6"/><span className="text-[10px] font-black uppercase tracking-[.2em]">Weave · Bridge of Radiance</span></div>
-     <h1 className="mt-4 text-4xl font-black">Buy Flame Coin</h1>
-     <p className="mt-4 text-sm leading-7 text-slate-300">Choose how you want to pay. You receive Flame Coin inside your Weave Main Wallet, not TRX, USDT or BTC back. Administration manually quotes the price and independently verifies payment before any Flame Coin is credited.</p>
+     <h1 className="mt-4 text-4xl font-black">Buy System Switch</h1>
+     <p className="mt-4 text-sm leading-7 text-slate-300">Choose how you want to pay. You receive System Switch inside your Weave Main Wallet, not TRX, USDT or BTC back. Administration manually quotes the price and independently verifies payment before any System Switch is credited.</p>
      <div className="mt-5 rounded-2xl border border-amber-300/20 bg-amber-200/[.045] p-4 text-xs leading-6 text-amber-100">
        Requesting a quote does not authorize payment. Each payment method becomes available for actual collection only after Weave has verified the required licensing and the receiving provider's permission. Do not send money or cryptocurrency before receiving an approved order-specific quote. Wise account transfers are not used for coin purchases.
      </div>
      <form onSubmit={request} className="mt-6 grid gap-4 rounded-2xl border border-white/10 bg-white/[.035] p-5">
-       <h2 className="text-xl font-black">Flame Coin purchase enquiry</h2>
+       <h2 className="text-xl font-black">System Switch purchase enquiry</h2>
        <label className="text-xs text-slate-300">Full name<input required minLength={2} maxLength={180} value={name} onChange={e=>setName(e.target.value)} className="mt-2 w-full rounded-xl border border-white/15 bg-slate-950 p-3 text-base"/></label>
        <label className="text-xs text-slate-300">Email for your Weave account<input type="email" required value={email} onChange={e=>setEmail(e.target.value)} className="mt-2 w-full rounded-xl border border-white/15 bg-slate-950 p-3 text-base"/></label>
-       <label className="text-xs text-slate-300">Flame Coin amount<input required type="number" min="0.00000001" step="0.00000001" value={amount} onChange={e=>setAmount(e.target.value)} className="mt-2 w-full rounded-xl border border-white/15 bg-slate-950 p-3 text-base"/></label>
+       <label className="text-xs text-slate-300">System Switch amount<input required type="number" min="0.00000001" step="0.00000001" value={amount} onChange={e=>setAmount(e.target.value)} className="mt-2 w-full rounded-xl border border-white/15 bg-slate-950 p-3 text-base"/></label>
        <fieldset className="grid gap-2"><legend className="mb-2 text-xs font-bold text-amber-200">Choose how to pay</legend>
          {methods.map(m=><label key={m.value} className={`flex min-h-14 cursor-pointer items-start gap-3 rounded-xl border p-3 ${method===m.value?'border-amber-300 bg-amber-100/10':'border-white/15'}`}>
            <input type="radio" name="paymentMethod" checked={method===m.value} onChange={()=>setMethod(m.value)} className="mt-1"/>
@@ -89,7 +89,7 @@ export default function BuyWeaveFlameCoin(){
        <input aria-label="Buyer email" type="email" placeholder="Email" value={lookupEmail} onChange={e=>setLookupEmail(e.target.value)} className="mt-3 w-full rounded-lg border border-white/15 bg-slate-950 p-3 text-sm"/>
        <button type="button" onClick={()=>void refresh()} disabled={busy||!orderId||!lookupEmail} className="mt-3 min-h-11 rounded-lg border border-sky-200/30 px-4 py-2 text-xs text-sky-100">Check status</button>
        {sale&&<div className="mt-4 space-y-3 text-sm">
-         <p>Amount: <strong>{Number(sale.flame_coin_amount).toLocaleString()} Flame Coin</strong></p>
+         <p>Amount: <strong>{Number(sale.flame_coin_amount).toLocaleString()} System Switch</strong></p>
          <p>Payment choice: <strong>{sale.payment_method.toUpperCase()}</strong></p>
          <p>Status: <strong className="capitalize text-amber-200">{sale.status.replaceAll('_',' ')}</strong></p>
          {sale.bank_currency&&<p>Quote: <strong>{Number(sale.payment_asset_amount||sale.bank_amount||0).toLocaleString()} {sale.bank_currency}</strong>{sale.payment_network&&` · ${sale.payment_network}`}</p>}
@@ -101,12 +101,12 @@ export default function BuyWeaveFlameCoin(){
            <button disabled={busy} className="min-h-11 rounded-lg bg-sky-200 px-4 py-3 text-xs font-bold text-slate-950">Submit payment reference</button>
          </form>}
          {['proof_submitted','payment_verified','bank_verified'].includes(sale.status)&&<p className="text-xs text-slate-300">Forensics review / funded Main Wallet credit is pending. Do not repay unless instructed after review.</p>}
-         {sale.status==='credited'&&<p className="break-words text-emerald-200">Flame Coin credited to your Weave Main Wallet · Receipt {sale.receipt_number}</p>}
+         {sale.status==='credited'&&<p className="break-words text-emerald-200">System Switch credited to your Weave Main Wallet · Receipt {sale.receipt_number}</p>}
        </div>}
      </section>
      {error&&<p role="alert" className="mt-4 rounded-xl border border-red-300/25 p-3 text-xs text-red-200">{error}</p>}
      {message&&<p role="status" className="mt-4 rounded-xl border border-emerald-300/25 p-3 text-xs text-emerald-200">{message}</p>}
-     <div className="mt-8 flex items-start gap-3 text-xs leading-6 text-slate-400"><ShieldCheck className="h-5 w-5 shrink-0 text-amber-200"/><p>No raw card data is collected by Weave. Forensics checks real bank receipts, final card settlement or confirmed cryptocurrency deposits on the specified network before transferring funded Flame Coin and issuing receipts.</p></div>
+     <div className="mt-8 flex items-start gap-3 text-xs leading-6 text-slate-400"><ShieldCheck className="h-5 w-5 shrink-0 text-amber-200"/><p>No raw card data is collected by Weave. Forensics checks real bank receipts, final card settlement or confirmed cryptocurrency deposits on the specified network before transferring funded System Switch and issuing receipts.</p></div>
    </div>
  </main>
 }

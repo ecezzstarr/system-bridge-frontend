@@ -169,8 +169,8 @@ export default function MarketplacePage() {
             <p className="text-sm font-black uppercase tracking-wider text-amber-200">Contract scale</p>
             <p className="mt-1 text-2xl font-black text-white">£2.8M – £24M</p>
             <p className="mt-1 text-sm text-slate-400">Base system prices before bespoke scope.</p>
-            <p className="mt-2 text-sm font-bold text-cyan-200">1 Flame Coin = 1 TRX</p>
-            <p className="mt-1 text-sm text-slate-400">{gbpPerFlameCoin ? `Live reference: £${gbpPerFlameCoin.toFixed(4)} per Flame Coin` : 'Live Flame Coin reference temporarily unavailable'}</p>
+            <p className="mt-2 text-sm font-bold text-cyan-200">1 System Switch = 1 TRX</p>
+            <p className="mt-1 text-sm text-slate-400">{gbpPerFlameCoin ? `Live reference: £${gbpPerFlameCoin.toFixed(4)} per System Switch` : 'Live System Switch reference temporarily unavailable'}</p>
           </div>
         </div>
       </header>
@@ -236,8 +236,8 @@ export default function MarketplacePage() {
                 <p className="mt-1 text-2xl font-black text-amber-200">{gbp(system.price_gbp)}</p>
                 <p className="mt-1 text-[10px] font-bold text-cyan-200">
                   {gbpPerFlameCoin
-                    ? `≈ ${flame(Number(system.price_gbp) / gbpPerFlameCoin)} Flame Coin`
-                    : 'Flame Coin reference unavailable'}
+                    ? `≈ ${flame(Number(system.price_gbp) / gbpPerFlameCoin)} System Switch`
+                    : 'System Switch reference unavailable'}
                 </p>
                 <button
                   onClick={() => setSelected(system)}
@@ -267,14 +267,14 @@ export default function MarketplacePage() {
               <span className="rounded-full border border-amber-300/20 bg-amber-300/[0.06] px-4 py-2 text-lg font-black text-amber-200">{gbp(selected.price_gbp)}</span>
               {gbpPerFlameCoin && (
                 <span className="rounded-full border border-cyan-300/20 bg-cyan-300/[0.05] px-4 py-2 text-lg font-black text-cyan-100">
-                  ≈ {flame(Number(selected.price_gbp) / gbpPerFlameCoin)} Flame Coin
+                  ≈ {flame(Number(selected.price_gbp) / gbpPerFlameCoin)} System Switch
                 </span>
               )}
               <span className="rounded-full border border-white/10 px-4 py-2 text-sm text-slate-300">{selected.delivery_model}</span>
             </div>
 
             <p className="mt-5 text-base leading-7 text-slate-300">
-              GBP is the contract denomination. The Flame Coin number is an indicative live conversion only, calculated from TRX/GBP because 1 Flame Coin = 1 TRX; it changes with the market rate. Final commercial terms depend on deployment scale, hardware quantities, integrations, implementation environment, support scope and approved specifications.
+              GBP is the contract denomination. The System Switch number is an indicative live conversion only, calculated from TRX/GBP because 1 System Switch = 1 TRX; it changes with the market rate. Final commercial terms depend on deployment scale, hardware quantities, integrations, implementation environment, support scope and approved specifications.
             </p>
 
             {(user?.role === 'client' || user?.role === 'admin') ? (

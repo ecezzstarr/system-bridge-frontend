@@ -97,7 +97,7 @@ export default function BridgerWorkshopPage() {
         setCustomWelcome('')
         await loadData()
       } else if (data.reason === 'insufficient_balance') {
-        setSubError(`Opening a Bridge AI template costs ${data.requiredFlameCoin} Flame Coin; wallet has ${data.availableFlameCoin} Flame Coin.`)
+        setSubError(`Opening a Bridge AI template costs ${data.requiredFlameCoin} System Switch; wallet has ${data.availableFlameCoin} System Switch.`)
         setDialogOpen(false)
       } else {
         setSubError(data.error || 'Bridge AI template could not be opened.')
@@ -143,7 +143,7 @@ export default function BridgerWorkshopPage() {
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Open a Bridge AI Template · {BRIDGE_AI_TEMPLATE_PRICE} Flame Coin</DialogTitle>
+              <DialogTitle>Open a Bridge AI Template · {BRIDGE_AI_TEMPLATE_PRICE} System Switch</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 py-2">
               <div>
@@ -173,7 +173,7 @@ export default function BridgerWorkshopPage() {
             </div>
             <DialogFooter>
               <Button onClick={handleCreate} disabled={!selectedTemplateId || creating}>
-                {creating ? 'Opening...' : `Open Template · ${BRIDGE_AI_TEMPLATE_PRICE} Flame Coin`}
+                {creating ? 'Opening...' : `Open Template · ${BRIDGE_AI_TEMPLATE_PRICE} System Switch`}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -181,7 +181,7 @@ export default function BridgerWorkshopPage() {
       </header>
 
       <section className="border-b border-slate-800 bg-black/10 px-5 py-5 md:px-7" data-bridge-ai-station="per-template">
-        <h2 className="text-lg font-bold text-white">Bridge AI · {BRIDGE_AI_TEMPLATE_PRICE} Flame Coin per template opening</h2>
+        <h2 className="text-lg font-bold text-white">Bridge AI · {BRIDGE_AI_TEMPLATE_PRICE} System Switch per template opening</h2>
         <p className="mt-2 text-sm text-slate-400">Each new Bridge AI path is purchased once when you open a template. Existing paths remain available with no monthly subscription. Your wallet is charged only when a new path is created.</p>
       </section>
       {subError && <div role="alert" className="border-b border-red-400/20 px-5 py-3 text-sm text-red-200">{subError}</div>}

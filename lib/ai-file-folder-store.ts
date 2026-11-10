@@ -297,7 +297,7 @@ export async function purchaseAiFileFolder(sql:any,input:{aiId:string;amountFlam
     )
     SELECT * FROM acquired
   `
-  if(!rows[0])throw new Error('AI operating wallet does not contain enough Flame Coin for this File Folder.')
+  if(!rows[0])throw new Error('AI operating wallet does not contain enough System Switch for this File Folder.')
   return rows[0]
 }
 
@@ -337,7 +337,7 @@ export async function purchaseAiFileFolderItem(sql:any,input:{aiId:string;itemKe
       (SELECT wallet_flame_coin FROM debited LIMIT 1) AS wallet_flame_coin,
       (SELECT quantity FROM inventory LIMIT 1) AS inventory_quantity
   `
-  if(!rows[0]?.inventory_quantity)throw new Error(`Insufficient AI operating Flame Coin for ${item.name}.`)
+  if(!rows[0]?.inventory_quantity)throw new Error(`Insufficient AI operating System Switch for ${item.name}.`)
   return rows[0]
 }
 
@@ -612,7 +612,7 @@ export async function purchaseAiProductFromWallet(sql:any,input:{
       (SELECT balance_trx FROM platform_settlement LIMIT 1) AS weave_balance_after
     FROM order_row JOIN debited ON debited.product_id=order_row.product_id
   `
-  if(!rows[0])throw new Error('AI product is unavailable or the buyer wallet does not contain enough Flame Coin.')
+  if(!rows[0])throw new Error('AI product is unavailable or the buyer wallet does not contain enough System Switch.')
   return rows[0]
 }
 
@@ -630,7 +630,7 @@ export async function adminCreditAiOperatingFlameCoin(sql:any,input:{aiId:string
     ledger AS (
       INSERT INTO weave_ai_earnings_ledger(ai_id,movement_type,amount_flame_coin,beneficiary,source_id,description)
       SELECT ai_id,'admin_operating_credit',${amount},'ai_operating_wallet',${input.adminReference},
-        ${input.description||'Administration Flame Coin operating allocation'}
+        ${input.description||'Administration System Switch operating allocation'}
       FROM credited
       RETURNING id
     )

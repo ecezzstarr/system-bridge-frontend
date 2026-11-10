@@ -170,7 +170,7 @@ for (const token of ['Manual credit after Paystack confirmation', 'Approve and c
   'manual_credited', 'role="alert"']) {
   if (!adminTerminal.includes(token)) throw new Error('Administration manual credit workflow missing: '+token)
 }
-if (!depositRoute.includes('manual_credited') || !walletUi.includes('Administration-confirmed · Flame Coin credited')) {
+if (!depositRoute.includes('manual_credited') || !walletUi.includes('Administration-confirmed · System Switch credited')) {
   throw new Error('User wallet history must distinguish Administration confirmed funds from Paystack API-verified funds')
 }
 console.log('Paystack verified deposits, secured Administration review, and legacy endpoint regressions passed')

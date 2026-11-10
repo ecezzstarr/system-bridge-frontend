@@ -1,17 +1,21 @@
 /**
- * WEAVE Flame Coin
- *
- * Flame Coin is Weave's internal wrapper for TRX value.
- * 1 Flame Coin always represents 1 TRX unit of value inside Weave.
- *
- * Users never need Flame Coin on-chain:
- * - Clients fund with real TRX and receive the same number of Flame Coins.
- * - Administration, Agents and Bridgers fund with NGN through OPay; NGN is
- *   converted at the current TRX/NGN price and the matching Flame Coin amount
- *   is credited after verification.
+ * System Switch is WEAVE's public name for its existing internal balance unit.
+ * This is not a blockchain token or a registered cryptocurrency.
+ * The internal accounting identifier and 1-TRX unit reference remain unchanged.
+ * Keep legacy database names until a separately reviewed migration.
  */
-export const FLAME_COIN_NAME = 'Flame Coin'
+export const SYSTEM_SWITCH_NAME = 'System Switch'
+/** @deprecated Historical identifier; display System Switch instead. */
+export const FLAME_COIN_NAME = SYSTEM_SWITCH_NAME
 export const FLAME_COIN_CODE = 'FLAME_COIN'
+/** Persisted wallet/ledger code is unchanged for backwards compatibility. */
+export const SYSTEM_SWITCH_ACCOUNTING_CODE = FLAME_COIN_CODE
+
+/** Map old receipt and ledger labels only at presentation time. */
+export function displayCurrencyName(value: string | null | undefined): string {
+  const code = String(value || '').trim().toUpperCase().replace(/[\s-]+/g, '_')
+  return ['FLAME_COIN', 'FLAMECOIN', 'SYSTEM_SWITCH'].includes(code) ? SYSTEM_SWITCH_NAME : String(value || '')
+}
 
 export function trxToFlameCoin(trxAmount: number): number {
   if (!Number.isFinite(trxAmount) || trxAmount < 0) return 0
@@ -35,6 +39,8 @@ export function flameCoinToNgn(flameCoinAmount: number, rateNgnPerTrx: number): 
   return Math.round(flameCoinAmount * rateNgnPerTrx * 100) / 100
 }
 
-export function formatFlameCoin(amount: number): string {
-  return `${Number(amount || 0).toLocaleString()} ${FLAME_COIN_NAME}`
+export function formatSystemSwitch(amount: number): string {
+  return Number(amount || 0).toLocaleString() + ' ' + SYSTEM_SWITCH_NAME
 }
+/** @deprecated Existing callers continue to work. */
+export const formatFlameCoin = formatSystemSwitch

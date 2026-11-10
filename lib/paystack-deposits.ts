@@ -36,7 +36,7 @@ export async function settlePaystackDeposit(reference: string, signedEvent?: Pay
       return { settled: false, reason: paystackMismatchReason(matchInput) || 'Paystack could not match the original checkout.' }
     }
     const flameCoin = Number(deposit.amount_trx)
-    if (!Number.isFinite(flameCoin) || flameCoin <= 0) throw new Error('Stored Flame Coin credit is invalid')
+    if (!Number.isFinite(flameCoin) || flameCoin <= 0) throw new Error('Stored System Switch credit is invalid')
     // An old manual approval may already have credited the wallet. Inspect
     // immutable ledger evidence before ANY repair, including pending records.
     const previous = await client.query(
@@ -115,7 +115,7 @@ export async function settlePaystackDeposit(reference: string, signedEvent?: Pay
           title:'Paystack confirmed · '+notification.role+' wallet credited',
           content:notification.name+' paid ₦'+notification.amountNgn.toLocaleString()
             +' via Paystack. '+notification.flameCoin.toLocaleString()
-            +' Flame Coin has been credited automatically (no Administration approval). '
+            +' System Switch has been credited automatically (no Administration approval). '
             +'Reference: '+notification.reference+'. Deposit: '+notification.depositId+'.',
           link:'/admin/control-center#deposits',
           fromUserName:'WEAVE Paystack',

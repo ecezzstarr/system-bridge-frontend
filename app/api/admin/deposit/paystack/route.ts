@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({
           success:true, credited:result.credited, depositId:result.depositId,
           flameCoin:result.flameCoin,
-          message:'Administration confirmed the Paystack charge and credited '+result.flameCoin.toLocaleString()+' Flame Coin once.',
+          message:'Administration confirmed the Paystack charge and credited '+result.flameCoin.toLocaleString()+' System Switch once.',
         },{headers:{'Cache-Control':'private, no-store',Vary:'Authorization'}})
       } catch (error) {
         if (error instanceof ManualPaystackCreditError) {

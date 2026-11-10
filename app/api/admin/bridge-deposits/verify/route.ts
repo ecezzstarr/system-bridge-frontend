@@ -176,7 +176,7 @@ async function verifyBridgeRadiancePurchase({
       await notifyUser(String(purchase.bridger_id), {
         type: 'client_deposit_rejected',
         title: 'Public movement File Folder payment rejected',
-        content: `Administration rejected ${purchase.buyer_name || purchase.buyer_email || 'a Prospect'}'s ${Number(purchase.amount_trx).toLocaleString()} Flame Coin File Folder payment. No File Number was issued.`,
+        content: `Administration rejected ${purchase.buyer_name || purchase.buyer_email || 'a Prospect'}'s ${Number(purchase.amount_trx).toLocaleString()} System Switch File Folder payment. No File Number was issued.`,
         link: '/bridger/presence',
         fromUserId: admin.id,
         fromUserName: 'WEAVE Administration',
@@ -292,7 +292,7 @@ async function verifyBridgeRadiancePurchase({
     await notifyUser(bridgerId, {
       type: 'client_deposit_approved',
       title: 'Public movement Client crossed',
-      content: `Administration approved ${prospectName}'s ${Number(confirmed.amount_trx).toLocaleString()} Flame Coin ${tierLabel} File Folder. File Number ${fileNumber} was issued.`,
+      content: `Administration approved ${prospectName}'s ${Number(confirmed.amount_trx).toLocaleString()} System Switch ${tierLabel} File Folder. File Number ${fileNumber} was issued.`,
       link: '/bridger/presence',
       fromUserId: admin.id,
       fromUserName: 'WEAVE Administration',

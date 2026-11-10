@@ -30,7 +30,7 @@ export async function GET(request:NextRequest){
   )
   return NextResponse.json({sales:rows,enabledMethods:methods(),
     availableReserveFlameCoin:Number(reserve.rows[0]?.balance_trx||0),
-    rule:'Manual purchase review: approve quotes only for authorized payment rails, inspect actual bank/card settlement or blockchain transaction independently, then fund buyer Flame Coin from existing Administration reserve. Payment proof alone is never enough.'},
+    rule:'Manual purchase review: approve quotes only for authorized payment rails, inspect actual bank/card settlement or blockchain transaction independently, then fund buyer System Switch from existing Administration reserve. Payment proof alone is never enough.'},
     {headers:{'Cache-Control':'private, no-store'}})
 }
 
@@ -50,10 +50,10 @@ export async function POST(request:NextRequest){
     if(!paid.success)return NextResponse.json(paid,{status:paid.status||500})
     if(!paid.alreadyCredited){
       try{await notifyAdminOrder({orderId:id,event:'paid',department:'visitor',
-        subject:'Flame Coin purchase credited',
-        detail:`${paid.amountFlameCoin} Flame Coin transferred from funded Administration reserve to the matching buyer Main Wallet. Receipt ${paid.receiptNumber}.`,
+        subject:'System Switch purchase credited',
+        detail:`${paid.amountFlameCoin} System Switch transferred from funded Administration reserve to the matching buyer Main Wallet. Receipt ${paid.receiptNumber}.`,
         adminPath:'/admin/weave-flame-coin-sales',actorId:adminId,actorName:'Forensics'})}
-      catch(e){console.error('[Flame Coin credit notification]',e)}
+      catch(e){console.error('[System Switch credit notification]',e)}
     }
     return NextResponse.json(paid)
   }
@@ -63,7 +63,7 @@ export async function POST(request:NextRequest){
   try {
     await conn.query('BEGIN')
     const [sale]=(await conn.query('SELECT * FROM weave_flame_coin_orders WHERE id=$1::uuid FOR UPDATE',[id])).rows
-    if(!sale){await conn.query('ROLLBACK');return NextResponse.json({error:'Flame Coin order not found'},{status:404})}
+    if(!sale){await conn.query('ROLLBACK');return NextResponse.json({error:'System Switch order not found'},{status:404})}
     const method=sale.payment_method
     if(!isFlameCoinPaymentMethod(method)){
       await conn.query('ROLLBACK')
@@ -177,15 +177,15 @@ export async function POST(request:NextRequest){
     await conn.query('COMMIT');committed=true
     if(action==='verify_payment'){
       try{await notifyAdminOrder({orderId:id,event:'paid',department:'visitor',
-        subject:'Flame Coin payment verified — wallet credit pending',
-        detail:`${method.toUpperCase()} payment independently reviewed by Forensics; matching registered recipient and funded reserve required for final Flame Coin credit.`,
+        subject:'System Switch payment verified — wallet credit pending',
+        detail:`${method.toUpperCase()} payment independently reviewed by Forensics; matching registered recipient and funded reserve required for final System Switch credit.`,
         adminPath:'/admin/weave-flame-coin-sales',actorId:adminId,actorName:'Forensics'})}
-      catch(e){console.error('[Flame Coin payment verified notification]',e)}
+      catch(e){console.error('[System Switch payment verified notification]',e)}
     }
     return NextResponse.json({success:true,result})
   }catch(e){
     if(!committed)await conn.query('ROLLBACK').catch(()=>{})
-    console.error('[Flame Coin multi-rail Forensics]',e)
+    console.error('[System Switch multi-rail Forensics]',e)
     return NextResponse.json({error:'Forensics action failed; no payment was confirmed'},{status:500})
   }finally{conn.release()}
 }

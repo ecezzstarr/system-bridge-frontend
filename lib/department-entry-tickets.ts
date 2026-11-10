@@ -122,7 +122,7 @@ export async function createDepartmentEntryTicket(department: Department) {
       const ticket = rows[0]
       await notifyAdmins(
         `New ${department} entry visitor`,
-        `A visitor entered the ${department} ticket gate. Ticket ${ticketNumber} has been presented at 3 Flame Coin (₦${amountNgn.toLocaleString()}).`
+        `A visitor entered the ${department} ticket gate. Ticket ${ticketNumber} has been presented at 3 System Switch (₦${amountNgn.toLocaleString()}).`
       )
 
       return {
@@ -205,7 +205,7 @@ export async function submitDepartmentEntryPayment(
   const ticket = rows[0]
   await notifyAdmins(
     `${ticket.department} ticket payment awaiting verification`,
-    `${input.payerName} submitted OPay payment evidence for ${ticket.ticket_number}: ₦${Number(ticket.amount_ngn).toLocaleString()} for 3 Flame Coin.`
+    `${input.payerName} submitted OPay payment evidence for ${ticket.ticket_number}: ₦${Number(ticket.amount_ngn).toLocaleString()} for 3 System Switch.`
   )
 
   return ticket
