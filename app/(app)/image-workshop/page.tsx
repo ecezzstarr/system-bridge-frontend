@@ -173,6 +173,7 @@ export default function WeaveImageSamples(){
         <div className="rounded-xl border border-white/10 bg-white/[.04] p-3"><div className="text-2xl font-black text-cyan-100">{loading?'…':num(studio?.walletBalance||0)}</div><p className="text-[10px] text-slate-400">Your System Switch balance</p></div>
       </div>
     </header>
+    <Link href="/image-workshop/ai" className="inline-flex min-h-12 items-center rounded-xl border border-amber-300/50 bg-amber-300/10 px-5 py-3 text-sm font-bold text-amber-100" data-image-house-ai-extension="true">Optional advanced AI images · Requires Administrations provider activation</Link>
 
     {error&&<div role="alert" className="rounded-xl border border-rose-300/25 bg-rose-400/10 p-4 text-sm text-rose-100">{error}</div>}
     {message&&<div role="status" className="rounded-xl border border-emerald-200/20 bg-emerald-300/10 p-4 text-sm text-emerald-100">{message}</div>}
