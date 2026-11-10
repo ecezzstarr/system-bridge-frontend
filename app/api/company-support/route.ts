@@ -19,9 +19,22 @@ export async function GET(request:NextRequest){
   const managers=user.role==='admin'?[]:await eligibleManagers(user.id)
   const kinds=user.role==='admin'?[]:await managerKinds(user.id)
   const db=getPool()
-  const team=kinds.length?(await db.query(`SELECT a.worker_id AS id,u.name,u.role FROM weave_company_support_assignments a
+  const team:{id:string;name:string;role:string}[]=kinds.length?(await db.query(`SELECT a.worker_id AS id,u.name,u.role FROM weave_company_support_assignments a
    JOIN users u ON u.id=a.worker_id WHERE a.manager_id=$1::uuid AND a.active=true AND u.is_active=true
    ORDER BY u.name LIMIT 150`,[user.id])).rows:[]
+  if(kinds.length){
+   const relations=await db.query("SELECT to_regclass('weave_regional_manager_bridgers') AS bridgers,to_regclass('weave_regional_manager_distribution_managers') AS leads,to_regclass('weave_distribution_assistants') AS assistants,to_regclass('weave_food_distribution_employment') AS food")
+   const t=relations.rows[0]||{}
+   const queries:string[]=[]
+   if(kinds.includes('regional')){
+    if(t.bridgers)queries.push("SELECT u.id,u.name,u.role FROM weave_regional_manager_bridgers a JOIN users u ON u.id=a.bridger_user_id WHERE a.regional_manager_user_id=$1::uuid AND a.status='active' AND u.is_active=true")
+    if(t.leads)queries.push("SELECT u.id,u.name,u.role FROM weave_regional_manager_distribution_managers a JOIN users u ON u.id=a.distribution_manager_user_id WHERE a.regional_manager_user_id=$1::uuid AND a.status='active' AND u.is_active=true")
+    if(t.leads&&t.assistants)queries.push("SELECT u.id,u.name,u.role FROM weave_regional_manager_distribution_managers r JOIN weave_distribution_assistants a ON a.manager_user_id=r.distribution_manager_user_id JOIN users u ON u.id=a.user_id WHERE r.regional_manager_user_id=$1::uuid AND r.status='active' AND a.status='approved' AND u.is_active=true")
+   }
+   if(kinds.includes('distribution_lead')&&t.assistants)queries.push("SELECT u.id,u.name,u.role FROM weave_distribution_assistants a JOIN users u ON u.id=a.user_id WHERE a.manager_user_id=$1::uuid AND a.status='approved' AND u.is_active=true")
+   if(kinds.includes('food_distribution_lead')&&t.food)queries.push("SELECT u.id,u.name,u.role FROM weave_food_distribution_employment a JOIN users u ON u.id=a.user_id WHERE a.manager_user_id=$1::uuid AND a.position='assistant' AND a.status='approved' AND u.is_active=true")
+   for(const q of queries){const r=await db.query(q,[user.id]);for(const row of r.rows)if(!team.some(t=>t.id===row.id))team.push(row)}
+  }
   let candidates:unknown[]=[]
   if(user.role==='admin'){
    const name=limitText(request.nextUrl.searchParams.get('search'),80)
