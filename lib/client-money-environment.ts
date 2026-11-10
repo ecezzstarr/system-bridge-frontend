@@ -59,7 +59,7 @@ export async function ensureClientMoneyEnvironment(
 
   const [vault] = await sql`
     INSERT INTO client_vaults (client_id, balance, currency)
-    VALUES (${clientId}::uuid, 0, 'System Switch')
+    VALUES (${clientId}::uuid, 0, 'Flame Coin')
     ON CONFLICT (client_id) DO UPDATE SET
       currency = 'Flame Coin',
       updated_at = NOW()
@@ -138,7 +138,7 @@ export async function ensureAllClientMoneyEnvironments(sql: any) {
 
   await sql`
     INSERT INTO client_vaults (client_id, balance, currency)
-    SELECT id, 0, 'System Switch'
+    SELECT id, 0, 'Flame Coin'
     FROM users
     WHERE role = 'client'
     ON CONFLICT (client_id) DO NOTHING

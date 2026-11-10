@@ -190,15 +190,15 @@ export async function settleCustomerDoorPayment(input:{
     await conn.query(`
       INSERT INTO ledger_entries
       (id,user_id,entry_type,amount,currency,description,balance_before,balance_after,metadata,created_at)
-      VALUES (gen_random_uuid(),$1::uuid,'transfer',$2,'System Switch',$3,$4,$5,$6::jsonb,NOW()),
-             (gen_random_uuid(),$7::uuid,'earning',$2,'System Switch',$8,$9,$10,$6::jsonb,NOW())
+      VALUES (gen_random_uuid(),$1::uuid,'transfer',$2,'Flame Coin',$3,$4,$5,$6::jsonb,NOW()),
+             (gen_random_uuid(),$7::uuid,'earning',$2,'Flame Coin',$8,$9,$10,$6::jsonb,NOW())
     `,[input.fundingUserId,flame,internal?'Customer Door purchase':'Verified external Customer Door settlement',
        Number(payer.balance_trx),Number(debit.rows[0].balance_trx),metadata,
        order.client_id,'Customer Door earnings · '+String(order.store_name).slice(0,160),Number(client.balance_trx),balanceAfter])
     await conn.query(`
       INSERT INTO weave_receipts
       (receipt_number,user_id,kind,source,source_id,amount,currency,status,description,metadata)
-      VALUES ($1,$2::uuid,'payment','customer_door_settlement',$3,$4,'System Switch','paid',$5,$6::jsonb)
+      VALUES ($1,$2::uuid,'payment','customer_door_settlement',$3,$4,'Flame Coin','paid',$5,$6::jsonb)
     `,[receiptNumber,order.client_id,order.id,flame,'Customer Door settlement · '+String(order.store_name).slice(0,150),metadata])
     await conn.query(`
       UPDATE client_store_orders

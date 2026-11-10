@@ -82,7 +82,7 @@ export async function creditBridgerReferralCommission(params: {
         ${referrerId}::uuid,
         'earning',
         ${commissionAmount},
-        'System Switch',
+        'Flame Coin',
         ${description},
         NOW(),
         jsonb_build_object(

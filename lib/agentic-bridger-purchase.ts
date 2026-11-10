@@ -71,7 +71,7 @@ export async function purchaseAgenticBridger(userId: string) {
     purchase = added.rows[0]
     await client.query(
       `INSERT INTO ledger_entries (id,user_id,entry_type,amount,currency,description,balance_before,balance_after,metadata,created_at)
-       VALUES (gen_random_uuid(),$1::uuid,'fee',$2,'System Switch','Agentic-Bridger attainment · one-time 11 System Switch',$3,$4,$5::jsonb,NOW())`,
+       VALUES (gen_random_uuid(),$1::uuid,'fee',$2,'Flame Coin','Agentic-Bridger attainment · one-time 11 System Switch',$3,$4,$5::jsonb,NOW())`,
       [userId,AGENTIC_BRIDGER_ONE_TIME_FLAME_COIN,before,balanceAfter,
        JSON.stringify({commerce_type:'purchase',source:'agentic_bridger_one_time',purchase_id:purchase.receipt_reference})]
     )

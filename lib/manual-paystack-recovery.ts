@@ -124,7 +124,7 @@ export async function manualCreditStuckPaystack(input: ManualPaystackInput) {
     }
     await client.query(
       `INSERT INTO ledger_entries(user_id,entry_type,amount,currency,description,metadata)
-       VALUES($1::uuid,'deposit',$2,'System Switch','Administration-confirmed Paystack deposit credit',$3::jsonb)`,
+       VALUES($1::uuid,'deposit',$2,'Flame Coin','Administration-confirmed Paystack deposit credit',$3::jsonb)`,
       [deposit.user_id, flameCoin, JSON.stringify({
         deposit_id:String(deposit.id), reference, payment_method:'Paystack',
         event_type:'paystack.manual_admin_credit',

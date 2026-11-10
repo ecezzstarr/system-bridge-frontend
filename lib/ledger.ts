@@ -115,7 +115,7 @@ export async function createEscrow(data: {
         ${data.transactionId}::uuid,
         ${data.userId}::uuid,
         ${data.amount},
-        ${data.currency || 'System Switch'},
+        ${data.currency || 'Flame Coin'},
         ${data.reason || null}
       )
       RETURNING *
