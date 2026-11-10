@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '@/lib/auth-provider'
+import { displayCurrencyName } from '@/lib/flame-coin'
 import {
   ArrowRight,
   CheckCircle2,
@@ -54,7 +55,7 @@ export default function ClientVaultAuthorityEnginePage() {
       body:JSON.stringify({client_id:selected.id,amount:numeric,reference:'Admin Client Vault',note:reason||'Administration System Switch credit'}),
     })
     const data=await response.json()
-    setMessage(response.ok?`Vault credit recorded. New balance: ${data.balance} ${data.currency}`:data.error||data.message||'Credit failed')
+    setMessage(response.ok?`Vault credit recorded. New balance: ${data.balance} ${displayCurrencyName(data.currency)}`:data.error||data.message||'Credit failed')
     if(response.ok){setAmount('');setReason('');await load(q)}
   }
 
@@ -62,7 +63,7 @@ export default function ClientVaultAuthorityEnginePage() {
     if(!token) return
     const response=await fetch(`/api/admin/client-vault/withdrawals/${id}/approve`,{method:'POST',headers})
     const data=await response.json()
-    setMessage(response.ok?`Withdrawal approved. ${data.withdrawal.amount} ${data.withdrawal.currency} is now ready for manual settlement.`:data.error||data.message||'Approval failed')
+    setMessage(response.ok?`Withdrawal approved. ${data.withdrawal.amount} ${displayCurrencyName(data.withdrawal.currency)} is now ready for manual settlement.`:data.error||data.message||'Approval failed')
     if(response.ok) await load(q)
   }
 
@@ -111,7 +112,7 @@ export default function ClientVaultAuthorityEnginePage() {
 
         <section className="mt-4 weave-reading-surface rounded-3xl p-4 md:p-5">
           <div className="flex items-center justify-between border-b border-white/10 pb-4"><div><p className="text-[9px] font-black uppercase tracking-[0.18em] text-amber-300">Withdrawal approval queue</p><p className="mt-1 text-xs text-slate-400">Approval moves a request to ready-for-manual-settlement state.</p></div><CheckCircle2 className="h-5 w-5 text-amber-300"/></div>
-          <div className="mt-4 space-y-2">{withdrawals.map(w=><div key={w.id} className="flex flex-col gap-3 rounded-2xl border border-white/8 bg-black/20 p-4 md:flex-row md:items-center md:justify-between"><div><p className="text-sm font-black text-white">{w.client_name}</p><p className="mt-1 text-[10px] text-slate-500">{w.file_number||'No File Number'} · {w.destination||'No destination supplied'}</p><p className="mt-2 text-xs text-slate-300">{w.amount} {w.currency} · <span className="font-black text-amber-300">{w.status}</span></p></div>{w.status==='pending_approval'&&<button onClick={()=>void approve(w.id)} className="rounded-xl bg-emerald-300 px-4 py-2.5 text-[9px] font-black uppercase text-slate-950">Approve for settlement</button>}</div>)}{withdrawals.length===0&&<p className="py-8 text-center text-xs text-slate-400">No withdrawal request is recorded.</p>}</div>
+          <div className="mt-4 space-y-2">{withdrawals.map(w=><div key={w.id} className="flex flex-col gap-3 rounded-2xl border border-white/8 bg-black/20 p-4 md:flex-row md:items-center md:justify-between"><div><p className="text-sm font-black text-white">{w.client_name}</p><p className="mt-1 text-[10px] text-slate-500">{w.file_number||'No File Number'} · {w.destination||'No destination supplied'}</p><p className="mt-2 text-xs text-slate-300">{w.amount} {displayCurrencyName(w.currency)} · <span className="font-black text-amber-300">{w.status}</span></p></div>{w.status==='pending_approval'&&<button onClick={()=>void approve(w.id)} className="rounded-xl bg-emerald-300 px-4 py-2.5 text-[9px] font-black uppercase text-slate-950">Approve for settlement</button>}</div>)}{withdrawals.length===0&&<p className="py-8 text-center text-xs text-slate-400">No withdrawal request is recorded.</p>}</div>
         </section>
 
         <Link href="/ledger" className="mt-4 inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.1em] text-sky-300">Open institutional Record <ArrowRight className="h-3.5 w-3.5"/></Link>
