@@ -36,7 +36,8 @@ export async function GET(request: NextRequest) {
       flameCoinBalance: actualBalance,
       recordedAt:new Date().toISOString(),
       playFlameCoin: Number(wallet?.play_balance || 0),
-      currency: 'Flame Coin',
+      currency: 'System Switch',
+      legacyCurrencyCode: 'FLAME_COIN',
       peg: '1 System Switch = 1 TRX',
       ...(clientMoney ? {
         clientMoney: {
