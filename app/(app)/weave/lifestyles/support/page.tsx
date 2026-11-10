@@ -88,7 +88,7 @@ export default function CompanySupportWorkspace(){
    <p className="text-[10px] font-black uppercase tracking-[.18em] text-amber-200">Weave of Presence · A Time · Company work</p>
    <h1 className="mt-2 text-2xl font-black sm:text-3xl">Manager Support & Work Continuity</h1>
    <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-200">Speak privately about a task that cannot be completed. Record the obstacle, agree on the next action, and follow an authorized advance through funding and verified recovery.</p>
-   <p className="mt-2 text-xs text-amber-100">System Switch support is a recoverable internal credit funded by a real wallet. NGN stock support requires independent payment verification; off-platform cash is never automatically collected.</p>
+   <p className="mt-2 text-xs text-amber-100">System Switch support is a restricted, recoverable internal credit funded by a real wallet. NGN stock support requires independent payment verification; off-platform cash is never automatically collected.</p>
   </header>
   {loading&&<p className="text-sm text-slate-300">Opening verified support assignments…</p>}
   {error&&<p role="alert" className="rounded-xl border border-rose-300/30 p-3 text-sm text-rose-200">{error}</p>}
