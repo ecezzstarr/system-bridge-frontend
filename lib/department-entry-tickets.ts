@@ -40,9 +40,8 @@ export async function ensureDepartmentEntryTicketSchema() {
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `
-  // Legacy tickets keep their original 3-unit price. New tickets always store
-  // their department-specific amount explicitly; prevent future default=3 inserts.
-  await sql`ALTER TABLE departmental_entry_tickets ALTER COLUMN price_flame_coin DROP DEFAULT`
+  // Historical ticket prices remain recorded; no per-request schema lock is needed.
+  // The rollout migration drops the obsolete default once.
   await sql`ALTER TABLE departmental_codes ADD COLUMN IF NOT EXISTS registration_request_id UUID`
   await sql`
     CREATE UNIQUE INDEX IF NOT EXISTS idx_departmental_codes_registration_request
