@@ -634,7 +634,7 @@ export default function FileFolderOpenWorld({
                       <p className="font-black text-amber-100">Acquire &amp; Build Price</p>
                       <p>Materials: {quote.materialRequired} × {quote.materialName} · {quote.materialOwned} owned</p>
                       {quote.priceAvailable ? <>
-                        <p>Kit price: <strong>{quote.unitPrice.toLocaleString()} System Switch each</strong> · Full requirement: {quote.requiredMaterialCost.toLocaleString()} FC</p>
+                        <p>Kit price: <strong>{quote.unitPrice.toLocaleString()} System Switch each</strong> · Full requirement: {quote.requiredMaterialCost.toLocaleString()} System Switch</p>
                         <p className="font-black text-emerald-200">Still to acquire: {quote.materialMissing} kit(s) · {quote.acquireCost.toLocaleString()} System Switch</p>
                       </> : <p role="alert" className="font-bold text-amber-200">Kit pricing is unavailable. Administration must publish this item before acquisition.</p>}
                       {quote.materialMissing>0&&!quote.purchaseAvailable&&<p role="alert" className="text-amber-200">Required kit is not currently published for purchase.</p>}
