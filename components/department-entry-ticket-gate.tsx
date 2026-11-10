@@ -305,7 +305,7 @@ export function DepartmentEntryTicketGate({
             <p className="text-xs font-black uppercase tracking-widest text-white">WEAVE Payment Center · Paystack</p>
           </div>
           <p className="mt-3 text-xs leading-5 text-slate-400">
-            Pay securely through Paystack checkout. The amount is for this 3 System Switch Department Entry Ticket, not a wallet top-up.
+            Pay securely through Paystack checkout. The amount is for this {ticket.department === 'AGENT' ? 'Agent' : 'Bridger'} Department Entry Ticket ({ticket.priceFlameCoin} System Switch), not a wallet top-up.
           </p>
         </div>
       </div>

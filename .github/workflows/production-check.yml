@@ -59,13 +59,17 @@ jobs:
       - name: Core recent-feature regression
         run: node tests/recent-features.cjs
 
+      - name: Agent and Bridger department entry pricing regression
+        run: |
+          node tests/department-entry-role-pricing-regression.cjs
+          node tests/system-switch-currency-display.cjs
+
       - name: Administrations company movement and regional System Switch contracts
         run: |
           node tests/admin-company-movement-regression.cjs
           node tests/regional-manager-daily-workflow-regression.cjs
           node tests/regional-system-switch-gate-regression.cjs
           node tests/burning-river-company-time-continuity.cjs
-          node tests/system-switch-currency-display.cjs
 
       - name: Agent Creative Studio fee and image regressions
         run: |
@@ -75,6 +79,11 @@ jobs:
           node tests/one-nigerian-scroll-regression.cjs
           node tests/bridge-ai-shared-file-folder-assistance.cjs
           node tests/admin-loader-workshop-contract.cjs
+
+      - name: Image House paid commercial licenses and company revenue PostgreSQL check
+        env:
+          WEAVE_SYSTEM_SWITCH_TEST_DATABASE_URL: postgres://weave_qa:weave_qa_only@127.0.0.1:5432/weave_switch_test
+        run: npx tsx tests/image-sample-postgres.test.ts
 
       - name: Smart WEAVE loading guidance regression
         run: node tests/weave-loading-guidance-regression.cjs

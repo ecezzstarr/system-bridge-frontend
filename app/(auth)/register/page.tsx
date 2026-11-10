@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Eye, EyeOff, Lock, Mail, User, Briefcase, Handshake, Gift, ShieldCheck, ScrollText, Target, ArrowLeft, CheckCircle2, MessageCircle, ShieldAlert, Key, Loader2 } from 'lucide-react'
 import { WeaveLogo } from '@/components/weave-logo'
 import { DepartmentEntryTicketGate } from '@/components/department-entry-ticket-gate'
+import { departmentEntryTicketPrice } from '@/lib/department-entry-pricing'
 import { WEAVE_WRITING } from '@/lib/weave-writing'
 import { WEAVE_SYSTEM_MAP } from '@/lib/weave-system-map'
 import { FLAME_EVENT_INTRO } from '@/lib/weave-event'
@@ -230,7 +231,7 @@ function RegisterContent() {
             <p className="text-xs font-bold text-slate-200">{FLAME_EVENT_INTRO.period} · Same event for both departments</p>
             <p className="text-xs leading-5 text-slate-300">{FLAME_EVENT_INTRO.summary}</p>
             <p className="text-xs leading-5 text-slate-400">{FLAME_EVENT_INTRO.next}</p>
-            <p className="text-[11px] font-semibold text-amber-100">Agent or Bridger: same 3 System Switch entry ticket, different daily work. Entry alone does not create earnings.</p>
+            <p className="text-[11px] font-semibold text-amber-100">Agent entry: 5 System Switch · Bridger entry: 8 System Switch. Their daily work differs. Entry alone does not create earnings.</p>
           </section>
           <div className="text-center text-sm pt-2">
             <span className="text-slate-500">{WEAVE_WRITING.positionAccess.existing} </span>
@@ -249,7 +250,7 @@ function RegisterContent() {
           <ShieldAlert className="h-10 w-10 text-amber-500 mb-2" />
           <CardTitle className="text-xl sm:text-2xl uppercase tracking-tighter">Department Entry Ticket</CardTitle>
           <CardDescription>
-            {formData.role === 'agent' ? 'Agent' : 'Bridger'} entry is released through a verified 3 System Switch ticket.
+            {formData.role === 'agent' ? 'Agent' : 'Bridger'} entry is released through a verified {departmentEntryTicketPrice(formData.role === 'agent' ? 'AGENT' : 'BRIDGER')} System Switch ticket.
           </CardDescription>
         </CardHeader>
         <CardContent>

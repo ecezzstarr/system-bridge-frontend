@@ -155,7 +155,7 @@ export function DepartmentEntryTicketsPanel() {
             <h2 className="text-sm font-black uppercase tracking-widest">Department Entry Tickets</h2>
           </div>
           <p className="mt-1 text-xs text-slate-500">
-            Agent and Bridger visitors pay for a 3 System Switch ticket. Verify OPay payment here to release the one-use departmental code.
+            New Agent tickets cost 5 System Switch and new Bridger tickets cost 8 System Switch. Existing ticket amounts stay unchanged. Verify the recorded payment before releasing a one-use departmental code.
           </p>
         </div>
         <Button size="sm" variant="ghost" onClick={() => load()} disabled={loading} className="text-slate-400">
