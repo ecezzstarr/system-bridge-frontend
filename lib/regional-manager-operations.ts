@@ -2,11 +2,12 @@ import {getPool} from '@/lib/db'
 import {ensureRegionalManagerCommissionSchema} from '@/lib/regional-manager-commission'
 import {ensureFoodDistributionEmploymentSchema} from '@/lib/food-distribution-employment'
 import {ensureDistributionAssistantSchema} from '@/lib/distribution-assistants'
+import {ensureManagerEmploymentTable} from '@/lib/manager-employment'
 
 /** Ordinary Regional Manager workflow: supervision only, no payroll or financial permissions. */
 export async function ensureRegionalOperationsSchema(){
   await ensureRegionalManagerCommissionSchema()
-  await Promise.all([ensureFoodDistributionEmploymentSchema(),ensureDistributionAssistantSchema()])
+  await Promise.all([ensureFoodDistributionEmploymentSchema(),ensureDistributionAssistantSchema(),ensureManagerEmploymentTable()])
   const pool=getPool()
   await pool.query(`CREATE TABLE IF NOT EXISTS weave_regional_manager_food_distribution_leads(
     food_manager_user_id uuid PRIMARY KEY REFERENCES users(id),
