@@ -35,6 +35,7 @@ export default function WeaveImageSamples(){
   const [message,setMessage]=useState('')
   const [studio,setStudio]=useState<Studio|null>(null)
   const [category,setCategory]=useState('All')
+  const [featured,setFeatured]=useState<string[]>([])
   const [chosen,setChosen]=useState(WEAVE_IMAGE_SAMPLES[0].id)
   const selected=WEAVE_IMAGE_SAMPLES.find(item=>item.id===chosen)||WEAVE_IMAGE_SAMPLES[0]
   const [edits,setEdits]=useState<SampleEdits>(defaultSampleEdits(WEAVE_IMAGE_SAMPLES[0]))
@@ -45,7 +46,7 @@ export default function WeaveImageSamples(){
   const [adminFee,setAdminFee]=useState('')
   const isAdmin=user?.role==='admin'
   const categories=useMemo(()=>['All',...Array.from(new Set(WEAVE_IMAGE_SAMPLES.map(sample=>sample.category)))],[])
-  const samples=useMemo(()=>category==='All'?WEAVE_IMAGE_SAMPLES:WEAVE_IMAGE_SAMPLES.filter(sample=>sample.category===category),[category])
+  const samples=useMemo(()=>[...(category==='All'?WEAVE_IMAGE_SAMPLES:WEAVE_IMAGE_SAMPLES.filter(sample=>sample.category===category))].sort((a,b)=>Number(featured.includes(b.id))-Number(featured.includes(a.id))),[category,featured])
   const selectedPreview=useMemo(()=>'data:image/svg+xml;charset=utf-8,'+
     encodeURIComponent(renderWeaveSampleSvg(selected,edits,true)),[selected,edits])
 
@@ -70,6 +71,7 @@ export default function WeaveImageSamples(){
   }
   useEffect(()=>{if(isInitialized&&!user)router.replace('/login')},[isInitialized,user,router])
   useEffect(()=>{if(user?.id)void load()},[user?.id])
+  useEffect(()=>{if(!user?.id)return;fetch('/api/image-workshop/business',{headers:headers(),cache:'no-store'}).then(r=>r.json()).then(d=>{if(d.success&&Array.isArray(d.featured))setFeatured(d.featured)}).catch(()=>{})},[user?.id])
 
   const send=async(action:string,rest:Record<string,unknown>)=>{
     const response=await fetch('/api/image-workshop/samples',{
@@ -148,7 +150,7 @@ export default function WeaveImageSamples(){
   })
   if(!isInitialized||!user)return <main className="min-h-screen p-8 text-slate-300">Opening the WEAVE Image Workshop…</main>
   const fee=isAdmin?0:Number(studio?.fee??1)
-  const existing=studio?.licenses.find(item=>item.sample_id===selected.id&&
+  const existing=studio?.licenses.find(item=>item.sample_id===selected.id&&!item.edits.artworkHash&&!item.edits.printText&&
     item.edits.brand===edits.brand&&item.edits.headline===edits.headline&&
     item.edits.description===edits.description&&item.edits.action===edits.action&&
     item.edits.format===edits.format&&item.edits.accent===edits.accent&&
@@ -173,7 +175,11 @@ export default function WeaveImageSamples(){
         <div className="rounded-xl border border-white/10 bg-white/[.04] p-3"><div className="text-2xl font-black text-cyan-100">{loading?'…':num(studio?.walletBalance||0)}</div><p className="text-[10px] text-slate-400">Your System Switch balance</p></div>
       </div>
     </header>
-    <Link href="/image-workshop/ai" className="inline-flex min-h-12 items-center rounded-xl border border-amber-300/50 bg-amber-300/10 px-5 py-3 text-sm font-bold text-amber-100" data-image-house-ai-extension="true">Optional advanced AI images · Requires Administrations provider activation</Link>
+    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" data-image-house-business-systems="true">
+      <Link href="/image-workshop/branding" className="flex min-h-16 items-center justify-center rounded-xl border border-cyan-200/25 bg-cyan-200/[.06] px-5 py-3 text-center text-base font-bold text-cyan-100">Brand clothes, mugs, packaging and artist merchandise</Link>
+      <Link href="/image-workshop/business" className="flex min-h-16 items-center justify-center rounded-xl border border-amber-200/25 bg-amber-200/[.06] px-5 py-3 text-center text-base font-bold text-amber-100">Start and scale a branding business · Guided ads</Link>
+      {isAdmin&&<Link href="/admin/image-branding" className="flex min-h-16 items-center justify-center rounded-xl border border-white/20 bg-white/[.05] px-5 py-3 text-center text-base font-bold text-white">Administrations · Branding workshop</Link>}
+    </div>
 
     {error&&<div role="alert" className="rounded-xl border border-rose-300/25 bg-rose-400/10 p-4 text-sm text-rose-100">{error}</div>}
     {message&&<div role="status" className="rounded-xl border border-emerald-200/20 bg-emerald-300/10 p-4 text-sm text-emerald-100">{message}</div>}
@@ -262,7 +268,7 @@ export default function WeaveImageSamples(){
     </section>
 
     <section className="grid gap-5 lg:grid-cols-2">
-      {!isAdmin&&<div className="space-y-4 rounded-2xl border border-white/10 bg-[#0b1927] p-5">
+      {!isAdmin&&<div id="image-house-customer-door" className="space-y-4 rounded-2xl border border-white/10 bg-[#0b1927] p-5">
         <div><p className="text-[10px] font-bold uppercase tracking-widest text-amber-200">Your business door</p>
           <h2 className="mt-1 text-xl font-bold">Let customers commission you</h2>
           <p className="mt-2 text-xs leading-5 text-slate-400">Choose your customer quote. Share your WEAVE service link. Each customer submits a brief, and you create and license their finished design.</p></div>
@@ -305,7 +311,7 @@ export default function WeaveImageSamples(){
       </div>
     </section>
 
-    {!isAdmin&&<section className="rounded-2xl border border-white/10 bg-[#0b1927] p-5">
+    {!isAdmin&&<section id="image-house-orders" className="rounded-2xl border border-white/10 bg-[#0b1927] p-5">
       <h2 className="text-lg font-bold">Customer requests · Daily work</h2>
       <p className="mt-1 text-xs leading-5 text-slate-400">Respond to inquiries, agree on the customer's price, produce the image, then record completion. The customer payment status below is a producer report, not a verified WEAVE settlement.</p>
       <div className="mt-4 grid gap-3 md:grid-cols-2">

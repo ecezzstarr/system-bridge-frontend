@@ -85,11 +85,19 @@ jobs:
           WEAVE_SYSTEM_SWITCH_TEST_DATABASE_URL: postgres://weave_qa:weave_qa_only@127.0.0.1:5432/weave_switch_test
         run: npx tsx tests/image-sample-postgres.test.ts
 
-      - name: Optional advanced AI image desk and paid Image House boundary
+      - name: Provider-free Image House and protected historical image gallery
         run: node tests/advanced-image-workshop.cjs
 
       - name: Smart WEAVE loading guidance regression
         run: node tests/weave-loading-guidance-regression.cjs
+
+      - name: Offline branding business · real templates, adverts and role workflows
+        run: node tests/branding-business-regression.cjs
+
+      - name: Company branding launch PostgreSQL accounting and deduplication
+        env:
+          WEAVE_SYSTEM_SWITCH_TEST_DATABASE_URL: postgres://weave_qa:weave_qa_only@127.0.0.1:5432/weave_switch_test
+        run: npx tsx tests/branding-business-postgres.test.ts
 
       - name: Contextual WEAVE images and full route preservation
         run: |

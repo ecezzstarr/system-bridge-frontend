@@ -23,10 +23,10 @@ const mod={exports:{}}
 vm.runInNewContext(ts.transpileModule(src,{compilerOptions:{target:ts.ScriptTarget.ES2020,module:ts.ModuleKind.CommonJS}}).outputText,
  {exports:mod.exports,require:name=>{throw Error('Offline art must not import '+name)}},{filename:'lib/weave-image-sample-art.ts'})
 const {WEAVE_IMAGE_SAMPLES,WEAVE_SAMPLE_FORMATS,defaultSampleEdits,normalizeSampleEdits,renderWeaveSampleSvg}=mod.exports
-assert.equal(WEAVE_IMAGE_SAMPLES.length,36,'Thirty-six ready-made original designs exist')
-assert.equal(new Set(WEAVE_IMAGE_SAMPLES.map(x=>x.category)).size,12,'Twelve distinct business visual categories')
-assert.equal(new Set(WEAVE_IMAGE_SAMPLES.map(x=>x.id)).size,36,'Every sample has an independent ID')
-assert.equal(new Set(WEAVE_IMAGE_SAMPLES.map(x=>x.motif)).size,12,'Each category has its own original illustrated scene')
+assert.ok(WEAVE_IMAGE_SAMPLES.length>=47,'Original Image House now includes the new merchandise, packaging and artist editions')
+assert.ok(new Set(WEAVE_IMAGE_SAMPLES.map(x=>x.category)).size>=15,'Business visual categories extend beyond original catalogue')
+assert.equal(new Set(WEAVE_IMAGE_SAMPLES.map(x=>x.id)).size,WEAVE_IMAGE_SAMPLES.length,'Every sample has an independent ID')
+assert.ok(new Set(WEAVE_IMAGE_SAMPLES.map(x=>x.motif)).size>=21,'All material mockups have distinct original vector scenes')
 for(const sample of WEAVE_IMAGE_SAMPLES){
  const edits=defaultSampleEdits(sample)
  const preview=renderWeaveSampleSvg(sample,edits,true)
@@ -36,6 +36,16 @@ for(const sample of WEAVE_IMAGE_SAMPLES){
  assert.ok(licensed.includes('MADE WITH WEAVE'),sample.id+' retains creator provenance')
  assert.ok(licensed.includes('<svg')&&licensed.includes('<g>'),sample.id+' is actual vector artwork')
 }
+const shirt=findImageSampleForTest('brand-tee-classic')
+function findImageSampleForTest(id){return WEAVE_IMAGE_SAMPLES.find(x=>x.id===id)}
+assert.ok(shirt,'Branding shirts are real samples in the company catalogue')
+const plain=normalizeSampleEdits(shirt,defaultSampleEdits(shirt))
+assert.ok(!Object.hasOwn(plain,'artworkHash'),'Legacy licensing fingerprints remain unchanged when no artwork is uploaded')
+const withArt=normalizeSampleEdits(shirt,{...defaultSampleEdits(shirt),artworkHash:'a'.repeat(64),printText:'ARTIST MERCH',printX:30,printY:-10,printScale:.75,printRotation:5,printColor:'#ffffff'})
+assert.equal(withArt.artworkHash,'a'.repeat(64),'Uploaded artwork changes the license fingerprint')
+assert.equal(withArt.printText,'ARTIST MERCH')
+assert.notDeepEqual(plain,withArt,'Distinct customer artwork is tracked separately')
+
 const sample=WEAVE_IMAGE_SAMPLES[0]
 const unsafe=normalizeSampleEdits(sample,{headline:'<script>alert(1)</script>',brand:'<svg onload="bad">',format:'wide',accent:'#ca2121'})
 const safe=renderWeaveSampleSvg(sample,unsafe,false)
