@@ -73,7 +73,7 @@ export async function decideClientTronDeposit(input:{
       normalizeTronAmount(amount)
       const hash=normalizeTronTxHash(deposit.receipt_data)
       const credited=trxPaymentToFlameCoin(amount)
-      if(!Number.isFinite(credited)||credited<=0)throw new Error('Invalid Flame Coin credit amount')
+      if(!Number.isFinite(credited)||credited<=0)throw new Error('Invalid System Switch credit amount')
       if(normalizeTronAmount(input.verifiedAmountTrx)!==amount)
         throw new Error('Confirmed on-chain TRX amount must exactly match the submitted amount')
       await client.query('SELECT pg_advisory_xact_lock(hashtext($1))',['client-tron:'+hash])
@@ -93,7 +93,7 @@ export async function decideClientTronDeposit(input:{
       if(creditedWallet.rowCount!==1)throw new Error('Client primary wallet is missing or duplicated; credit was not applied')
       await client.query(
         'INSERT INTO ledger_entries(user_id,entry_type,amount,currency,description,metadata) VALUES($1::uuid,$2,$3,$4,$5,$6::jsonb)',
-        [deposit.user_id,'deposit',credited,'Flame Coin','Verified Client TRX deposit credited',
+        [deposit.user_id,'deposit',credited,'System Switch','Verified Client TRX deposit credited',
           JSON.stringify({deposit_id:input.depositId,approved_by:input.adminId,paid_trx:amount,tx_hash:hash,credited_flame_coin:credited})],
       )
       const receipt=await client.query(
