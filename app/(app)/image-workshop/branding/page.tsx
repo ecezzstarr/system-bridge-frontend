@@ -163,7 +163,7 @@ export default function WeaveMaterialBranding(){
   }
   if(!isInitialized)return <main className="p-8 text-white">Opening WEAVE branding…</main>
   if(!user)return <main className="p-8"><Link href="/login" className="text-cyan-200 underline">Sign in to use the Branding Workshop</Link></main>
-  if(!['agent','bridger','client','admin'].includes(user.role))return <main className="p-8 text-white">This company workshop requires an approved role.</main>
+  if(!['agent','bridger','client','admin'].includes(String(user.role||'')))return <main className="p-8 text-white">This company workshop requires an approved role.</main>
   return <main className="weave-operating-environment min-h-screen bg-[#071523] px-3 py-6 text-white sm:px-6" data-weave-material-branding="true">
     <div className="mx-auto max-w-6xl space-y-5">
       <header className="rounded-3xl border border-cyan-200/20 bg-[radial-gradient(ellipse_at_top_right,#2c495b,#071523_75%)] p-5 sm:p-8">

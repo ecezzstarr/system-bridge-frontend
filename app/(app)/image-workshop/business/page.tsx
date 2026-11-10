@@ -102,7 +102,7 @@ export default function WeaveBrandingBusinessStarter(){
   if(!isInitialized)return <main className="p-8 text-white">Opening the company business system…</main>
   if(!user)return <main className="p-8"><Link href="/login" className="text-cyan-200 underline">Sign in to start your branding business</Link></main>
   if(user.role==='admin')return <main className="p-8 text-white"><Link href="/admin/image-branding" className="text-cyan-200 underline">Open Administrations Branding Workshop</Link></main>
-  if(!['agent','bridger','client'].includes(user.role))return <main className="p-8 text-white">This workshop is for active Agents, Bridgers and Clients.</main>
+  if(!['agent','bridger','client'].includes(String(user.role||'')))return <main className="p-8 text-white">This workshop is for active Agents, Bridgers and Clients.</main>
   const prepared=data?.campaigns.length||0,reported=data?.campaigns.filter(a=>a.status==='reported_shared').length||0
   const proposedAd=(()=>{try{return createBrandingAd({businessName,offer,kitId,audience,customerDoor:data?.door?.active?data.door.url:'',quoteNgn:quoteNgn===''?null:Number(quoteNgn)})}catch{return ''}})()
   const focus=user.role==='agent'
