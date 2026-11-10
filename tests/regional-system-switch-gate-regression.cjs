@@ -44,7 +44,8 @@ assert(!api.includes('SELECT * FROM file_folder_purchases'),
 assert(!api.includes('SELECT * FROM weave_regional_daily_checkins'),
   'Regional presence never exposes personal staff support notes')
 assert(ui.includes("data-regional-company-signals=\"verified\""),'Staff see others work through real company signs')
-assert(ui.includes("Regional Manager's direction"), 'Manager direction appears to workers')
+assert(ui.includes("Recent Regional Manager direction"), 'Recent dated manager direction appears to workers')
+assert(api.includes("AND created_at>=NOW()-INTERVAL '72 hours'"), 'Stale directions are not presented as current work')
 assert(ui.includes("data-regional-manager-gate-direction=\"authorized\""),
   'Manager gets a direction workspace without financial write powers')
 assert(entrance.includes('<RegionalSystemSwitchGate compact />'), 'Gate appears before crossing the shared world')
