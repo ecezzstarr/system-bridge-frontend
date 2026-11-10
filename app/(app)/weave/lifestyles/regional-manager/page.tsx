@@ -40,6 +40,7 @@ export default function RegionalManagerApplicationPage(){
   }
   if(!isInitialized||isLoading||loading)return <main className="p-6 text-sm text-slate-200">Opening Regional Manager application…</main>
   return <main className="weave-operating-environment mx-auto min-h-screen max-w-4xl px-4 py-8 text-white" data-regional-manager-application="true">
+    <div className="mb-4 rounded-xl border border-cyan-300/20 p-4 text-sm text-white"><Link className="font-bold text-cyan-200" href="/weave/lifestyles/support">Open Regional Employee Support →</Link><p className="mt-2 text-xs text-slate-300">Speak privately with assigned Bridgers, Agents and lead managers. Review obstacles, offer support and record outcomes without bypassing Administrations authority.</p></div>
     <div className="flex flex-wrap gap-4 text-xs text-cyan-200"><Link href="/weave/lifestyles">← Lifestyle</Link><Link href="/weave/lifestyles/work">My approved workspaces →</Link></div>
     <p className="mt-7 text-[10px] font-black uppercase tracking-[.2em] text-amber-200">The Company of Time · Regional leadership</p>
     <h1 className="mt-2 text-3xl font-black">Apply to become a Regional Manager</h1>
