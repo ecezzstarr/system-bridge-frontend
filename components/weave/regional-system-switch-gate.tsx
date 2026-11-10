@@ -69,6 +69,7 @@ export function RegionalSystemSwitchGate({compact=false}:{compact?:boolean}){
     <p role="status" className="text-xs text-amber-200">{error}</p>:null
 
   const active=data.signals.filter(item=>item.available&&Number(item.count)>0)
+    .sort((a,b)=>new Date(b.lastAt||0).getTime()-new Date(a.lastAt||0).getTime())
   const missing=data.signals.filter(item=>!item.available).length
   const latest=data.directions[0]
   const canPublish=!compact&&data.gate.position==='manager'
@@ -92,7 +93,13 @@ export function RegionalSystemSwitchGate({compact=false}:{compact?:boolean}){
       {active.slice(0,compact?3:5).map(signal=><span key={signal.id}
         className="inline-flex max-w-full items-center gap-2 rounded-lg border border-sky-100/20 bg-white/[.05] px-3 py-2 text-xs">
         <span className="font-black tabular-nums text-amber-200">{Number(signal.count).toLocaleString()}</span>
-        <span className="text-sky-50">{signal.title}</span>
+        <span className="min-w-0">
+          <span className="block text-[10px] font-bold text-sky-200">{signal.department}</span>
+          <span className="block text-sky-50">{signal.title}</span>
+          {signal.lastAt&&<span className="mt-0.5 block text-[10px] text-slate-300">
+            Latest recorded: {new Date(signal.lastAt).toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}
+          </span>}
+        </span>
       </span>)}
     </div>:
       <p className="mt-3 text-xs text-slate-300" data-no-assumed-activity="true">
