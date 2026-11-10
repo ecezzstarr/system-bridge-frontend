@@ -159,9 +159,9 @@ function PreviewFrame({ blueprint, label = 'Design preview', onBuild }: { bluepr
       {priceQuote&&<div data-client-blueprint-preview-price className="border-b border-amber-200/20 bg-amber-300/[.04] px-5 py-4 text-xs leading-6 text-amber-100">
         <p className="font-black">Acquire &amp; Build Price</p>
         {priceQuote.priceAvailable
-          ? <p>Required materials: {priceQuote.materialRequired} × {priceQuote.materialName} · Total kit cost {priceQuote.requiredMaterialCost.toLocaleString()} Flame Coin</p>
+          ? <p>Required materials: {priceQuote.materialRequired} × {priceQuote.materialName} · Total kit cost {priceQuote.requiredMaterialCost.toLocaleString()} System Switch</p>
           : <p role="alert">Required kit price unavailable. Administration must publish the missing material.</p>}
-        <p>Starting the build has no separate Flame Coin fee after the required kit is acquired. Check your owned kit balance in Blueprint Foundry.</p>
+        <p>Starting the build has no separate System Switch fee after the required kit is acquired. Check your owned kit balance in Blueprint Foundry.</p>
       </div>}
       <div className="grid gap-3 p-5 sm:grid-cols-2 lg:grid-cols-4">
         {modules.map((module, index) => (
@@ -763,15 +763,15 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
                 <p className="mt-4 text-2xl font-black text-white">
                   {Number(data.vault?.balance || 0).toLocaleString(undefined, { maximumFractionDigits: 8 })}
                 </p>
-                <p className="text-[10px] text-slate-500">{data.vault?.currency || 'Flame Coin'} · Client Vault</p>
+                <p className="text-[10px] text-slate-500">{data.vault?.currency || 'System Switch'} · Client Vault</p>
                 <div className="mt-4 space-y-2 text-[10px] text-slate-400">
                   <div className="flex justify-between rounded-lg bg-white/[0.03] px-3 py-2">
                     <span>Main wallet</span>
-                    <span>{Number(data.vault?.main_wallet?.flameCoin || 0).toLocaleString()} Flame Coin</span>
+                    <span>{Number(data.vault?.main_wallet?.flameCoin || 0).toLocaleString()} System Switch</span>
                   </div>
                   <div className="flex justify-between rounded-lg bg-white/[0.03] px-3 py-2">
                     <span>Siblings funds</span>
-                    <span>{Number(data.vault?.siblings_funds?.flameCoin || 0).toLocaleString()} Flame Coin</span>
+                    <span>{Number(data.vault?.siblings_funds?.flameCoin || 0).toLocaleString()} System Switch</span>
                   </div>
                 </div>
               </div>
