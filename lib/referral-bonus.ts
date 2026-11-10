@@ -1,4 +1,5 @@
 import { getPool, sql } from '@/lib/db'
+import { recoverSupportAdvanceFromEarning } from '@/lib/company-support'
 import { ngnToFlameCoin } from '@/lib/flame-coin'
 import { getTrxPaymentNgnRate } from '@/lib/trx-payment'
 
@@ -176,6 +177,9 @@ export async function settleReferralSignupBonus(referredUserId: string) {
       )
     }
 
+    await recoverSupportAdvanceFromEarning(client,String(award.referrer_user_id),flameCoinAmount,'referral_signup:'+String(award.referred_user_id))
+    const currentBalance=await client.query('SELECT balance_trx FROM wallets WHERE id=$1::uuid',[wallet.id])
+    balanceAfter=Number(currentBalance.rows[0]?.balance_trx ?? balanceAfter)
     notify = { userId: String(award.referrer_user_id), referredRole: String(award.referred_role) }
     await client.query('COMMIT')
   } catch (error) {
