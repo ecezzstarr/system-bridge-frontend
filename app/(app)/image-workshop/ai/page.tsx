@@ -43,7 +43,7 @@ export default function WeaveOptionalAiImageWorkshop(){
   useEffect(()=>{
     if(!selected){setPreviewUrl('');return}
     let alive=true;let created=''
-    fetch('/api/image-workshop/assets/'+encodeURIComponent(selected.id),{headers:headers(),cache:'no-store'})
+    fetch('/api/image-workshop/assets/[id]'.replace('[id]',encodeURIComponent(selected.id)),{headers:headers(),cache:'no-store'})
       .then(async r=>{if(!r.ok)throw new Error('The saved image could not be opened.');return r.blob()})
       .then(blob=>{if(!alive)return;created=URL.createObjectURL(blob);setPreviewUrl(created)})
       .catch(()=>{if(alive)setPreviewUrl('')})
@@ -71,7 +71,7 @@ export default function WeaveOptionalAiImageWorkshop(){
   const download=async(asset:Asset)=>{
     setNotice('')
     try{
-      const res=await fetch('/api/image-workshop/assets/'+encodeURIComponent(asset.id),{headers:headers(),cache:'no-store'})
+      const res=await fetch('/api/image-workshop/assets/[id]'.replace('[id]',encodeURIComponent(asset.id)),{headers:headers(),cache:'no-store'})
       if(!res.ok)throw new Error('The selected image is unavailable.')
       const url=URL.createObjectURL(await res.blob())
       const a=document.createElement('a');a.href=url;a.download='weave-image-'+asset.id.slice(0,8)+'.png'
