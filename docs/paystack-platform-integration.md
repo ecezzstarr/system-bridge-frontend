@@ -2,15 +2,15 @@
 
 ## Scope
 
-Paystack is used to fund Flame Coin wallets and to collect approved File Folder purchase payments:
+Paystack is used to fund System Switch wallets and to collect approved File Folder purchase payments:
 - Administration, Agents and Bridgers use Paystack instead of the manual OPay deposit process.
-- Clients use Paystack instead of sending TRX to the Company wallet to purchase Flame Coin.
+- Clients use Paystack instead of sending TRX to the Company wallet to purchase System Switch.
 
 Withdrawals remain on their existing methods and are not changed by this integration. Customer Door orders, food, stock, subscriptions and other unrelated commerce flows remain outside this change. Department Entry Tickets use a separate Paystack checkout and never credit a wallet. File Folder purchases use a separate Paystack checkout and remain pending until server-side payment verification succeeds and Administration approves the purchase.
 
 ## Deposit lifecycle
 
-1. The authenticated user submits an NGN amount. Weave resolves the current NGN/TRX rate server-side and stores the resulting Flame Coin amount before redirecting to Paystack.
+1. The authenticated user submits an NGN amount. Weave resolves the current NGN/TRX rate server-side and stores the resulting System Switch amount before redirecting to Paystack.
 2. The server creates a unique reference and initializes a Paystack NGN transaction in kobo. The callback URL must use the canonical HTTPS `WEAVE_PUBLIC_ORIGIN`.
 3. The webhook validates `x-paystack-signature` against the raw request body. Both webhook and browser callback call the same server-side Paystack transaction verification path.
 4. Weave requires a successful transaction with matching reference, NGN currency, exact kobo amount and account email.
@@ -64,7 +64,7 @@ Administration → Control Center → Paystack Deposit Reconciliation now provid
 
 A rejected deposit can be retried even if Paystack's `charge.failed` webhook arrived before an eventual successful provider confirmation. It is credited only when the provider returns **success**, the original reference, NGN kobo amount, and immutable Weave checkout user/deposit metadata all match, and no earlier ledger credit or refund exists. Modern checkout metadata allows a user to change their Weave email without falsely rejecting the original payment. Legacy records without metadata still require matching email. Each accepted credit remains inside a single locked PostgreSQL transaction.
 
-For `approved` deposits with missing `verified_at`, the repair **never credits the wallet again**. If Paystack confirms the transaction and exactly one existing ledger credit matches the recorded Flame Coin amount and no refund occurred, it attaches independently verified proof. Missing or conflicting ledger credits must be audited manually. Old OPay manual approvals may already have increased the wallet.
+For `approved` deposits with missing `verified_at`, the repair **never credits the wallet again**. If Paystack confirms the transaction and exactly one existing ledger credit matches the recorded System Switch amount and no refund occurred, it attaches independently verified proof. Missing or conflicting ledger credits must be audited manually. Old OPay manual approvals may already have increased the wallet.
 
 If a transaction cannot be located, inspect the **original** Paystack merchant account and whether the current integration uses the correct live/test mode. A screenshot, checkout opening, or Paystack reference alone is not proof of a successful charge. No reverse, duplicate credit, or manual bypass is permitted.
 
@@ -85,7 +85,7 @@ The signed webhook and browser callback both share the same settlement logic.
 The callback performs independent server-to-server Paystack verification when
 a webhook has not yet settled the payment. On a **new** verified wallet credit,
 Weave sends both a user confirmation and an Administration notification with
-the original reference, depositor, role, NGN amount and Flame Coin credit.
+the original reference, depositor, role, NGN amount and System Switch credit.
 These notices are dispatched after the credit is committed; no manual
 Administration approval is required. A Paystack checkout *opened* notification
 must not be mistaken for confirmation of a completed payment.
@@ -135,7 +135,7 @@ The server permits only a Paystack wallet deposit currently pending/rejected,
 locks that deposit row, checks all prior positive ledger credits and refund
 events, and enforces unique manual transaction ID and checkout reference.
 It saves an immutable Administration identity, evidence note, reference,
-amount and Flame Coin amount; updates exactly one primary wallet; appends a
+amount and System Switch amount; updates exactly one primary wallet; appends a
 positive audit ledger entry; and approves the deposit in one PostgreSQL
 transaction. Failures roll everything back. Once committed, the user and
 Administration receive notifications and the user balance refreshes through
@@ -163,7 +163,7 @@ button remained disabled without adequate explanation. A runtime
 `CREATE TABLE` statement could also fail due to production database
 permissions. Those dependencies have been removed.
 
-Administration now reviews the stored recipient, NGN amount, Flame Coin amount
+Administration now reviews the stored recipient, NGN amount, System Switch amount
 and original reference, checks Paystack's merchant dashboard, optionally adds
 a numeric transaction ID, and explicitly affirms confirmation. One approval
 credits the stored amount. The backend never uses client-submitted wallet
