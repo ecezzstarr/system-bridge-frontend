@@ -1,7 +1,6 @@
 import {NextRequest,NextResponse} from 'next/server'
 import {getAuthUser} from '@/lib/auth-api'
 import {getPool,sql} from '@/lib/db'
-import {getLifestyleAccess} from '@/lib/weave-lifestyle'
 import {getActiveLegionEmployment} from '@/lib/legion-employment'
 import {ensureRegionalOperationsSchema,regionalTeam} from '@/lib/regional-manager-operations'
 
@@ -21,10 +20,10 @@ const localDay=`((NOW() AT TIME ZONE 'Africa/Lagos')::date)`
  */
 async function resolveGate(user:{id:string;role:string}):Promise<GateIdentity|null>{
   if(!['agent','bridger'].includes(user.role))return null
-  const [access,legion]=await Promise.all([
-    getLifestyleAccess(user.id),getActiveLegionEmployment(sql,user.id)
-  ])
-  if(!access.active||legion.active)return null
+  // A verified regional assignment is the access authority. Ordinary Bridgers
+  // must not be required to buy Agentic-Bridger merely to participate locally.
+  const legion=await getActiveLegionEmployment(sql,user.id)
+  if(legion.active)return null
   const pool=getPool()
   const appointment=await pool.query(`SELECT a.user_id
     FROM weave_regional_manager_appointments a
