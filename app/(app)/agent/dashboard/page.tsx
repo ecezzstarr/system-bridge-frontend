@@ -10,6 +10,7 @@ import { ArrowLeft } from 'lucide-react'
 import { AgilityAgentLoginAd, AGILITY_AGENT_LOGIN_AD_KEY } from '@/components/agility-agent-login-ad'
 import { Loop1AgentLoginAd, LOOP1_AGENT_LOGIN_AD_KEY } from '@/components/agent/loop1-agent-login-ad'
 import { ManagerLifestyleEntry } from '@/components/manager-lifestyle-entry'
+import { RegionalSystemSwitchGate } from '@/components/weave/regional-system-switch-gate'
 import { useRouter } from 'next/navigation'
 
 export default function AgentWorld() {
@@ -57,6 +58,7 @@ export default function AgentWorld() {
           onClick={()=>{const kind=loginNotice;setLoginNotice(null);if(kind==='loop1')setShowLoop1Ad(true);else setShowAgilityAd(true)}}>Read update</button>
       </div>
     </aside>}
+    <div className="mx-auto w-full max-w-5xl px-3 sm:px-5"><RegionalSystemSwitchGate compact /></div>
     {originalWorld ? (
       <div data-agent-original-district-world="preserved">
         <button type="button" onClick={()=>setOriginalWorld(false)}

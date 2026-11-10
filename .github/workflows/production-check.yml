@@ -60,8 +60,16 @@ jobs:
         run: node tests/recent-features.cjs
 
       - name: Agent and Bridger department entry pricing regression
-        run: node tests/department-entry-role-pricing-regression.cjs
+        run: |
+          node tests/department-entry-role-pricing-regression.cjs
           node tests/system-switch-currency-display.cjs
+
+      - name: Administrations company movement and regional System Switch contracts
+        run: |
+          node tests/admin-company-movement-regression.cjs
+          node tests/regional-manager-daily-workflow-regression.cjs
+          node tests/regional-system-switch-gate-regression.cjs
+          node tests/burning-river-company-time-continuity.cjs
 
       - name: Agent Creative Studio fee and image regressions
         run: |

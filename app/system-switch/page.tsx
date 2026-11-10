@@ -9,6 +9,7 @@ import { AdaptiveCanvas } from '@/components/world/adaptive-canvas'
 import { RiverSurface } from '@/components/events/flame-event-mobile-scene'
 import { SystemSwitchThreshold } from '@/components/world/system-switch-threshold'
 import { WEAVE_WRITING } from '@/lib/weave-writing'
+import { RegionalSystemSwitchGate } from '@/components/weave/regional-system-switch-gate'
 
 /**
  * One staff crossing: Flame Event -> Burning River System Switch Gate
@@ -86,6 +87,7 @@ export default function SystemSwitchEntryPage() {
               ))}
             </ol>
           </section>
+          {role!=='admin'&&<RegionalSystemSwitchGate compact />}
           <Link
             href="/system-switch/world?via=system-switch"
             data-system-switch-crossing="open-file-folder-world"

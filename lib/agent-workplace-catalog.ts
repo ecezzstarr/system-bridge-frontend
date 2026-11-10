@@ -72,6 +72,7 @@ export const AGENT_SPACES: readonly AgentSpace[] = [
       {title:'My Staff Workspace',href:'/weave/lifestyles/work',description:'See verified appointments, assigned duties and team communication.',access:'approval'},
       {title:'Food Distribution Manager',href:'/weave/lifestyles/food-distribution',description:'Apply to manage or assist in Agent food distribution.',access:'approval'},
       {title:'Food Preparation Manager',href:'/weave/lifestyles/food-preparation',description:'Review preparation, delivery and assigned handoff work.',access:'approval'},
+      {title:'Regional Daily Participation',href:'/weave/lifestyles/regional-manager/workspace',description:'Record regional assignments, reports and staff requests after team authorization.',access:'lifestyle'},
       {title:'Regional Manager',href:'/weave/lifestyles/regional-manager',description:'Apply for regional supervision and verified company responsibility.',access:'approval'},
       {title:'Distribution Assistant Manager',href:'/weave/lifestyles/distribution-assistant',description:'Review the company distribution-team assistant employment terms.',access:'approval'},
       {title:'Mandate · Forensics · Attorney',href:'/weave/lifestyles/mandate',description:'Apply for authorized Company Guidance appointments.',access:'approval'},

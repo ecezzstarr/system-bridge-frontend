@@ -3,6 +3,7 @@ import { getAuthUser } from '@/lib/auth-api'
 import { getPool, sql } from '@/lib/db'
 import { ensureRegionalManagerCommissionSchema } from '@/lib/regional-manager-commission'
 import { ensureManagerEmploymentTable } from '@/lib/manager-employment'
+import { ensureRegionalOperationsSchema } from '@/lib/regional-manager-operations'
 
 export async function GET(request: NextRequest) {
   const admin = await getAuthUser(request)
@@ -162,6 +163,7 @@ export async function POST(request: NextRequest) {
   }
 
   if (action === 'end_appointment') {
+    await ensureRegionalOperationsSchema()
     const userId = String(body?.userId || '')
     const [appointment] = await sql`
       UPDATE weave_regional_manager_appointments SET status='ended',updated_at=NOW()
@@ -174,6 +176,14 @@ export async function POST(request: NextRequest) {
     `
     await sql`
       UPDATE weave_regional_manager_distribution_managers SET status='ended',updated_at=NOW()
+      WHERE regional_manager_user_id=${userId}::uuid AND status='active'
+    `
+    await sql`
+      UPDATE weave_regional_manager_food_distribution_leads SET status='ended',updated_at=NOW()
+      WHERE regional_manager_user_id=${userId}::uuid AND status='active'
+    `
+    await sql`
+      UPDATE weave_regional_manager_agents SET status='ended',updated_at=NOW()
       WHERE regional_manager_user_id=${userId}::uuid AND status='active'
     `
     return NextResponse.json({ success: true, appointment })

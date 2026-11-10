@@ -69,6 +69,7 @@ export const BRIDGER_WORKPLACE_SPACES: readonly BridgerWorkplaceSpace[] = [
       { label: 'Approved Staff Workspace', href: '/weave/lifestyles/work', detail: 'Assignments, instructions and reports for your verified jobs.', access: 'approval' },
       { label: 'Distribution Manager', href: '/manager/dashboard', detail: 'Review the actual team, employment document, targets and approval status.', access: 'approval' },
       { label: 'Assistant Distribution Manager', href: '/weave/lifestyles/distribution-assistant', detail: 'Apply to support a verified Distribution Manager and team.', access: 'approval' },
+      { label: 'Regional Daily Work & Check-in', href: '/weave/lifestyles/regional-manager/workspace', detail: 'For a verified regional assignment: receive duties, record evidence, request help or supervise staff.' },
       { label: 'Regional Manager Application', href: '/weave/lifestyles/regional-manager', detail: 'Review and apply for a region-based appointment.', access: 'approval' },
       { label: 'Mandate, Forensics & Attorney', href: '/weave/lifestyles/mandate', detail: 'Apply for eligible Company Guidance department appointments.', access: 'approval' },
       { label: 'Approved Guidance Inbox', href: '/weave/lifestyles/mandate/inbox', detail: 'Read and answer assigned guidance conversations after authorization.', access: 'approval' },
