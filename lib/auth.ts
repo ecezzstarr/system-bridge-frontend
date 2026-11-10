@@ -2,7 +2,7 @@ import type { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
 import { usableBcryptPasswordHash } from '@/lib/password-hash'
-import { getUserByUsername, updateUserLastLogin } from './db'
+import { getUserByUsername, getUserById, updateUserLastLogin } from './db'
 import { getDivineShieldState } from './weave-infrastructure'
 
 declare module 'next-auth' {
@@ -14,6 +14,7 @@ declare module 'next-auth' {
       role: string
       avatar?: string
       walletAddress?: string
+    recoveryEpoch?: string
     }
   }
   interface User {
@@ -23,6 +24,7 @@ declare module 'next-auth' {
     role: string
     avatar?: string
     walletAddress?: string
+    recoveryEpoch?: string
   }
 }
 
@@ -34,6 +36,7 @@ declare module 'next-auth/jwt' {
     role: string
     avatar?: string
     walletAddress?: string
+    recoveryEpoch?: string
   }
 }
 
@@ -100,6 +103,7 @@ const providers: NextAuthOptions['providers'] = [
           role: user.role,
           avatar: user.avatar_url,
           walletAddress: user.tron_wallet_address,
+          recoveryEpoch: user.admin_recovery_rotated_at ? new Date(user.admin_recovery_rotated_at).toISOString() : undefined,
         }
       } catch (error) {
         console.error('[WEAVE] Authorize error:', error)
@@ -121,6 +125,12 @@ export const authOptions: NextAuthOptions = {
         token.role = user.role
         token.avatar = user.avatar
         token.walletAddress = user.walletAddress
+        token.recoveryEpoch = user.recoveryEpoch
+      }
+      if(token.role==='admin'){
+        const admin=await getUserById(token.id)
+        const epoch=admin?.admin_recovery_rotated_at ? new Date(admin.admin_recovery_rotated_at).toISOString() : undefined
+        if(admin?.role!=='admin'||epoch!==token.recoveryEpoch){token.id='';token.role='revoked'}
       }
       return token
     },

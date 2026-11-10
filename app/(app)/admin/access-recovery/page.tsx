@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Copy, KeyRound, RefreshCw, Search, ShieldCheck, XCircle } from 'lucide-react'
 
+import Link from 'next/link'
 import { getAuthHeaders } from '@/lib/auth-client'
 
 type UserRow={
@@ -138,6 +139,7 @@ export default function AdminAccessRecoveryPage(){
           <span className="text-[9px] font-black uppercase tracking-[.2em]">Administration · Access Recovery</span>
         </div>
         <h1 className="mt-3 text-3xl font-black">Access Recovery Desk</h1>
+      <Link href="/admin-continuity" className="text-sm text-cyan-300">Administration continuity settings</Link>
         <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">
           Restore access without exposing a user's old password. Verify the person, issue a one-time code, and let the user choose a new password at the WEAVE Access Recovery Gate.
         </p>

@@ -118,6 +118,7 @@ export default function ForgotPasswordPage() {
       </CardDescription>
     </CardHeader>
     <CardContent className="space-y-4">
+      <Link href="/admin-continuity" className="block text-sm text-cyan-300">Recover Administration access</Link>
       {error && <p role="alert" className="text-sm text-rose-300">{error}</p>}
       {stage === 'request' && <form onSubmit={requestPasscode} className="space-y-4">
         <Input aria-label="Registered email" type="email" placeholder="Registered email" value={email} onChange={e => setEmail(e.target.value)} autoComplete="email" required disabled={busy}/>

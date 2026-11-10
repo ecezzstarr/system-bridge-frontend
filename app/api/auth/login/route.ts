@@ -9,14 +9,23 @@ import { ensureUserReferralCode } from '@/lib/user-referral'
 const PLATFORM_ADMIN_EMAIL = 'ecezzstarr@gmail.com'
 
 
-async function createSession(user: { id: string }) {
+async function createSession(user: { id: string; role: string; password_hash?: string|null; admin_recovery_rotated_at?: Date|string|null }) {
   const token = `token_${randomBytes(32).toString('hex')}`
   const sessionId = randomUUID()
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-  await sql`
-    INSERT INTO sessions (id, user_id, token, created_at, expires_at)
-    VALUES (${sessionId}::uuid, ${user.id}::uuid, ${token}, NOW(), ${expiresAt.toISOString()})
+  const inserted=await sql`
+    WITH verified_identity AS (
+      SELECT id FROM users WHERE id=${user.id}::uuid AND is_active=true AND role=${user.role}
+        AND password_hash IS NOT DISTINCT FROM ${user.password_hash??null}
+        AND (to_jsonb(users)->>'admin_recovery_rotated_at')::timestamptz
+          IS NOT DISTINCT FROM ${user.admin_recovery_rotated_at??null}::timestamptz
+      FOR UPDATE
+    )
+    INSERT INTO sessions (id,user_id,token,created_at,expires_at)
+      SELECT ${sessionId}::uuid,id,${token},NOW(),${expiresAt.toISOString()}::timestamptz FROM verified_identity
+    RETURNING id
   `
+  if(!inserted.length)throw new Error('Credentials changed during sign-in')
   await sql`UPDATE users SET last_login = NOW() WHERE id = ${user.id}::uuid`
   return token
 }
@@ -65,6 +74,7 @@ export async function POST(request: NextRequest) {
         WHERE LOWER(u.email) = LOWER(${PLATFORM_ADMIN_EMAIL})
           AND u.is_active = true
           AND u.role = 'admin'
+          AND (to_jsonb(u)->>'admin_recovery_rotated_at') IS NULL
         LIMIT 1
       `
       const admin = admins[0]
