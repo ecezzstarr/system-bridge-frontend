@@ -85,7 +85,7 @@ export function RegionalSystemSwitchGate({compact=false}:{compact?:boolean}){
       Your fellow workers are carrying distinct activities in the same region. These signs come from recorded work, not invented activity.
     </p>
     {latest&&<div className="mt-3 rounded-lg border-l-2 border-amber-300/60 bg-white/[.04] px-3 py-2">
-      <p className="text-[10px] uppercase tracking-wide text-amber-200">Regional Manager's direction</p>
+      <p className="text-[10px] uppercase tracking-wide text-amber-200">Recent Regional Manager direction · {new Date(latest.created_at).toLocaleDateString()}</p>
       <p className="mt-1 text-sm font-semibold">{latest.direction}</p>
       <p className="mt-1 text-xs leading-5 text-slate-200">{latest.next_action}</p>
     </div>}
