@@ -2,6 +2,7 @@ import {NextRequest,NextResponse} from 'next/server'
 import {getAuthUser} from '@/lib/auth-api'
 import {getPool} from '@/lib/db'
 import {ensureRegionalOperationsSchema,regionalTeam} from '@/lib/regional-manager-operations'
+import {ensureCompanySupportSchema} from '@/lib/company-support'
 
 export const dynamic='force-dynamic'
 const headers={'Cache-Control':'private, no-store','Vary':'Authorization'}
@@ -57,20 +58,44 @@ export async function GET(request:NextRequest){
         WHERE c.work_date=((NOW() AT TIME ZONE 'Africa/Lagos')::date)
         GROUP BY c.regional_manager_user_id`),
     ])
+    // Read only audited support counts here. This Admin overview never
+    // returns private employee messages, task notes or customer details.
+    let supportAvailable=true
+    let supportRecords:{manager_id:string;open_cases:number;due_system_switch:number;due_ngn:number}[]=[]
+    try{
+      await ensureCompanySupportSchema()
+      const movement=await pool.query(`SELECT c.manager_id,
+        COUNT(*) FILTER(WHERE c.status NOT IN ('resolved','declined','cancelled'))::int AS open_cases,
+        COALESCE(SUM(CASE WHEN a.currency='SYSTEM_SWITCH' THEN GREATEST(a.spent-a.repaid,0) ELSE 0 END),0)::numeric AS due_system_switch,
+        COALESCE(SUM(CASE WHEN a.currency='NGN' THEN GREATEST(a.spent-a.repaid,0) ELSE 0 END),0)::numeric AS due_ngn
+        FROM weave_company_support_cases c LEFT JOIN weave_company_support_advances a ON a.case_id=c.id
+        GROUP BY c.manager_id`)
+      supportRecords=movement.rows.map(row=>({
+        manager_id:String(row.manager_id),open_cases:Number(row.open_cases),
+        due_system_switch:Number(row.due_system_switch),due_ngn:Number(row.due_ngn)
+      }))
+    }catch(error){
+      supportAvailable=false
+      console.error('[Administrations regional support aggregates]',error)
+    }
     const report=manager.rows.map(m=>{
       const members=team.filter(x=>x.manager_id===m.manager_id)
       const work=daily.rows.find(x=>x.manager_id===m.manager_id)
       const checkin=staffCheckins.rows.find(x=>x.manager_id===m.manager_id)
+      const support=supportRecords.find(x=>x.manager_id===m.manager_id)
       return {...m,staff:members.length,
         direct:members.filter(x=>x.level==='direct').length,
         assistants:members.filter(x=>x.level==='assistant').length,
         tasks_completed:work?.tasks_completed||0,tasks_open:work?.tasks_open||0,
-        checkins:checkin?.checkins||0,needs_help:checkin?.needs_help||0}
+        checkins:checkin?.checkins||0,needs_help:checkin?.needs_help||0,
+        support_cases_pending:supportAvailable?support?.open_cases||0:null,
+        support_due_system_switch:supportAvailable?support?.due_system_switch||0:null,
+        support_due_ngn:supportAvailable?support?.due_ngn||0:null}
     })
     return NextResponse.json({success:true,managers:report,team,
       candidates:{bridgers:bridger.rows,agents:agent.rows,distributionManagers:distribution.rows,
         foodDistributionManagers:food.rows},
-      foodAssignments:foodLinks.rows,generatedAt:new Date().toISOString()
+      foodAssignments:foodLinks.rows,supportAvailable,generatedAt:new Date().toISOString()
     },{headers})
   }catch(error){
     console.error('[Administrations regional operations GET]',error)
