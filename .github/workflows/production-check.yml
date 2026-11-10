@@ -59,15 +59,18 @@ jobs:
       - name: Core recent-feature regression
         run: node tests/recent-features.cjs
 
-      - name: Administrations company movement reporting contract
-        run: node tests/admin-company-movement-regression.cjs
+      - name: Administrations company movement and regional System Switch contracts
+        run: |
+          node tests/admin-company-movement-regression.cjs
           node tests/regional-manager-daily-workflow-regression.cjs
           node tests/regional-system-switch-gate-regression.cjs
           node tests/burning-river-company-time-continuity.cjs
+          node tests/system-switch-currency-display.cjs
 
       - name: Agent Creative Studio fee and image regressions
         run: |
           node tests/agent-creative-studio-regression.cjs
+          node tests/image-workshop.cjs
           node tests/echo-immediate-regression.cjs
           node tests/one-nigerian-scroll-regression.cjs
           node tests/bridge-ai-shared-file-folder-assistance.cjs
@@ -86,6 +89,9 @@ jobs:
 
       - name: WEAVE loader visual stability regression
         run: node tests/weave-loader-visual-stability.cjs
+
+      - name: Company-wide architectural loader and Flame Event isolation
+        run: node tests/weave-platform-loader-visual-regression.cjs
 
       - name: Burning River and System Switch living-world continuity
         run: |
@@ -210,6 +216,7 @@ jobs:
           node tests/formation-foundation.cjs
           node tests/file-folder-source-engine.cjs
           node tests/file-folder-owner-earnings-regression.cjs
+          node tests/weave-role-company-search-regression.cjs
           node tests/file-folder-module-connections.cjs
           node tests/file-folder-module-connection-api-regression.cjs
           node tests/file-folder-module-runtime.cjs

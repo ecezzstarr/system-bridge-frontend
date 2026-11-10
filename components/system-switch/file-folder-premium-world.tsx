@@ -1,5 +1,5 @@
 'use client'
-import {Component,useMemo,useRef,useState,type ReactNode} from 'react'
+import {Component,useEffect,useMemo,useRef,useState,type ReactNode} from 'react'
 import {Canvas,useFrame} from '@react-three/fiber'
 import {OrbitControls,Text} from '@react-three/drei'
 import type {Group} from 'three'
@@ -35,7 +35,7 @@ type Props={
 }
 const STATIONS=[
  {key:'build',name:'Build Zone',detail:'Choose a blueprint, see its acquisition price and prepare construction.',district:'blueprint_foundry',location:[-10.6,0,-1.9] as const},
- {key:'materials',name:'Materials Depot',detail:'Acquire the exact required kits at their displayed Flame Coin prices.',district:'build_market',location:[-10.6,0,7.5] as const},
+ {key:'materials',name:'Materials Depot',detail:'Acquire the exact required kits at their displayed System Switch prices.',district:'build_market',location:[-10.6,0,7.5] as const},
  {key:'systems',name:'Systems',detail:'See the technology and capabilities you have already commissioned.',district:'active_systems',location:[-7.2,0,-11.4] as const},
  {key:'operations',name:'Live Operations',detail:'Operate live systems, record output and follow completed work.',district:'active_systems',location:[10.6,0,-1.9] as const},
  {key:'participation',name:'Participation',detail:'Organize the Client business, team and the value it serves.',district:'workshop_core',location:[10.6,0,7.5] as const},
@@ -49,7 +49,14 @@ const STEPS=[
  {name:'Build',district:'formation_yard',description:'Start the blueprint, then watch real-time formation and install compatible parts.'},
  {name:'Operate',district:'active_systems',description:'Use commissioned systems and record actual business output.'},
 ] as const
-const GOLD='#dfb56b',STONE='#d6d1c8',INK='#191924',GLASS='#a8d1db'
+const GOLD='#dfb56b',STONE='#d6d1c8',INK='#15131c',GLASS='#a8d1db'
+function stationForDistrict(district:string):StationKey{
+ if(district==='build_market'||district==='parts_workshop'||district==='boost_bay')return 'materials'
+ if(district==='active_systems')return 'systems'
+ if(district==='workshop_core')return 'participation'
+ if(district==='library_district')return 'operations'
+ return 'build'
+}
 function GoldMaterial({color=GOLD,glass=false}:{color?:string;glass?:boolean}){
  return <meshPhysicalMaterial color={color} metalness={glass?.18:.73} roughness={glass?.18:.24}
   clearcoat={1} clearcoatRoughness={.12} transparent={glass} opacity={glass?.68:1}
@@ -68,6 +75,106 @@ function Waterfalls(){
   </group>)}
  </group>
 }
+
+/**
+ * Premium-only physical architecture: buildings are recognizable by their
+ * function before the Client reads a label. These are part of the purchased
+ * environment, not invented commissioned systems.
+ */
+function PremiumDistrictLandmark({index}:{index:number}){
+ if(index===0)return <group>
+  <mesh position={[0,7.3,0]} rotation={[0,0,.08]}><boxGeometry args={[4.4,.22,3.2]}/><GoldMaterial/></mesh>
+  <mesh position={[-1.35,8.05,-.5]}><cylinderGeometry args={[.26,.37,2.1,10]}/><GoldMaterial color="#514039"/></mesh>
+  <mesh position={[-1.35,9.12,-.5]}><coneGeometry args={[.39,.55,10]}/><GoldMaterial/></mesh>
+  <mesh position={[0,1.5,2.15]}><boxGeometry args={[2.8,.18,.65]}/><GoldMaterial/></mesh>
+  {[-.9,0,.9].map(x=><mesh key={x} position={[x,2.2,2.2]}>
+   <boxGeometry args={[.09,1.4,.09]}/><GoldMaterial color="#f2ce85"/></mesh>)}
+ </group>
+ if(index===1)return <group>
+  {[-1.35,0,1.35].map((x,i)=><group key={i} position={[x,1.25,2.15]}>
+   <mesh position={[0,.23,0]}><boxGeometry args={[1.05,.72,1.25]}/><GoldMaterial color={i===1?"#b49b75":"#463e43"}/></mesh>
+   <mesh position={[0,.62,0]}><boxGeometry args={[1.1,.12,1.3]}/><GoldMaterial/></mesh>
+  </group>)}
+  <mesh position={[0,6.1,0]}><boxGeometry args={[4.7,.26,3.5]}/><GoldMaterial/></mesh>
+  <mesh position={[0,6.52,0]}><boxGeometry args={[3.6,.62,2.7]}/><GoldMaterial color="#342d33"/></mesh>
+ </group>
+ if(index===2)return <group>
+  {[-1.25,1.25].map(x=><group key={x}>
+   <mesh position={[x,4.1,1.49]}><boxGeometry args={[.12,3.1,.15]}/><GoldMaterial/></mesh>
+   {[3.15,4.05,4.95].map(y=><mesh key={y} position={[x,y,1.6]}>
+    <sphereGeometry args={[.13,10,8]}/><meshStandardMaterial color="#baf7ed" emissive="#3da79a" emissiveIntensity={.55}/></mesh>)}
+  </group>)}
+  <mesh position={[0,6.38,0]}><cylinderGeometry args={[1.2,1.55,.7,12]}/><GoldMaterial color="#352f39"/></mesh>
+  <mesh position={[0,6.76,0]} rotation={[-Math.PI/2,0,0]}><torusGeometry args={[1.05,.12,8,32]}/><GoldMaterial/></mesh>
+ </group>
+ if(index===3)return <group>
+  <mesh position={[0,7.2,0]}><cylinderGeometry args={[1.5,1.8,.85,10]}/><GoldMaterial color="#332b32"/></mesh>
+  <mesh position={[0,7.75,0]}><cylinderGeometry args={[.24,.35,1.2,10]}/><GoldMaterial/></mesh>
+  <mesh position={[0,8.53,0]}><sphereGeometry args={[.42,16,12]}/>
+   <meshStandardMaterial color="#ffe8aa" emissive="#d6a252" emissiveIntensity={1}/></mesh>
+  {[-1.2,1.2].map(x=><mesh key={x} position={[x,2.15,1.56]}>
+   <boxGeometry args={[.36,1.35,.16]}/><GoldMaterial color="#bdcdd0" glass/></mesh>)}
+ </group>
+ if(index===4)return <group>
+  {[-1.7,-.85,0,.85,1.7].map(x=><group key={x}>
+   <mesh position={[x,1.45,2.2]}><cylinderGeometry args={[.16,.2,2.25,10]}/><GoldMaterial color={STONE}/></mesh>
+   <mesh position={[x,2.7,2.2]}><boxGeometry args={[.33,.16,.36]}/><GoldMaterial/></mesh>
+  </group>)}
+  <mesh position={[0,3.0,2.1]}><boxGeometry args={[4.3,.3,.8]}/><GoldMaterial/></mesh>
+  <mesh position={[0,6.1,0]}><cylinderGeometry args={[2.25,2.4,.55,16]}/><GoldMaterial/></mesh>
+  <mesh position={[0,6.65,0]}><coneGeometry args={[1.8,1.25,16]}/><GoldMaterial color="#50423d"/></mesh>
+ </group>
+ return <group>
+  {[-1.65,1.65].map(x=><group key={x}>
+   <mesh position={[x,1.85,2]}><boxGeometry args={[.5,3.4,.7]}/><GoldMaterial/></mesh>
+   <mesh position={[x,3.75,2]}><coneGeometry args={[.45,.95,8]}/><GoldMaterial/></mesh>
+  </group>)}
+  <mesh position={[0,3.4,2]}><boxGeometry args={[3.8,.34,.75]}/><GoldMaterial/></mesh>
+  <mesh position={[0,2.05,2.05]}><boxGeometry args={[2.3,2.6,.12]}/><GoldMaterial color="#172d38"/></mesh>
+  <mesh position={[0,2.05,2.14]}><boxGeometry args={[1.75,2.2,.08]}/><GoldMaterial color="#b6dce2" glass/></mesh>
+  <mesh position={[0,4.3,2]}><boxGeometry args={[3.7,.2,.8]}/><GoldMaterial/></mesh>
+ </group>
+}
+
+function PremiumCitadelArchitecture(){
+ return <group>
+  {/* Front colonnade, windows, crowned roof, and an actual stair entrance. */}
+  {[-2.65,-1.8,1.8,2.65].map(x=><group key={x}>
+   <mesh position={[x,3.0,2.02]}><boxGeometry args={[.18,4.65,.25]}/><GoldMaterial color="#b89c77"/></mesh>
+   {[2.05,3.35,4.65].map(y=><mesh key={y} position={[x,y,2.19]}>
+    <boxGeometry args={[.62,.83,.06]}/><GoldMaterial color="#a8cbd2" glass/></mesh>)}
+  </group>)}
+  {[-3.1,3.1].map(x=><group key={x}>
+   <mesh position={[x,7.45,-.5]}><cylinderGeometry args={[.64,.82,2.85,12]}/><GoldMaterial color="#262029"/></mesh>
+   <mesh position={[x,9.05,-.5]}><coneGeometry args={[.82,1.5,12]}/><GoldMaterial/></mesh>
+   <mesh position={[x,8.1,-.5]} rotation={[-Math.PI/2,0,0]}><torusGeometry args={[.68,.07,8,32]}/><GoldMaterial/></mesh>
+  </group>)}
+  <mesh position={[0,7.52,-.35]}><boxGeometry args={[4.4,.28,2.95]}/><GoldMaterial color="#edce92"/></mesh>
+  {[-1.1,0,1.1].map(x=><mesh key={x} position={[x,7.9,-.35]}>
+   <boxGeometry args={[.7,.65,2.6]}/><GoldMaterial color="#38313b"/></mesh>)}
+  {[0,1,2,3].map(i=><mesh key={i} position={[0,.18+i*.19,4.65-i*.4]}>
+   <boxGeometry args={[3.8-i*.3,.2,.7]}/><GoldMaterial color={i%2?"#c5b5a2":"#e0c28e"}/></mesh>)}
+  <mesh position={[0,5.85,2.03]}><boxGeometry args={[2.7,.14,.2]}/><GoldMaterial/></mesh>
+ </group>
+}
+
+function PremiumTerraces(){
+ return <group>
+  {[-1,1].map(side=><group key={side}>
+   <mesh position={[side*13,.04,-7.5]}><boxGeometry args={[5.4,.28,4.6]}/><GoldMaterial color="#32333b"/></mesh>
+   <mesh position={[side*13,.19,-7.5]}><boxGeometry args={[5,.08,4.2]}/><GoldMaterial color="#42606b" glass/></mesh>
+   {[-1.9,1.9].map(z=><mesh key={z} position={[side*13,.33,-7.5+z]}>
+    <boxGeometry args={[5.2,.18,.14]}/><GoldMaterial/></mesh>)}
+  </group>)}
+  {[0,Math.PI/2,Math.PI,Math.PI*1.5].map((a,i)=><group key={i}
+   position={[Math.sin(a)*24,.1,Math.cos(a)*24]}>
+   <mesh position={[0,.68,0]}><cylinderGeometry args={[.22,.32,1.5,10]}/><GoldMaterial color="#c7b8a0"/></mesh>
+   <mesh position={[0,1.58,0]}><sphereGeometry args={[.3,12,8]}/>
+    <meshStandardMaterial color="#ffebbd" emissive="#d6a252" emissiveIntensity={.65}/></mesh>
+  </group>)}
+ </group>
+}
+
 function PremiumBuilding({index,selected,onSelect,live,building}:{index:number;selected:boolean;onSelect:()=>void;live:number;building:number}){
  const station=STATIONS[index]
  const [x,,z]=station.location
@@ -99,6 +206,7 @@ function PremiumBuilding({index,selected,onSelect,live,building}:{index:number;s
    color="#fff1d0" anchorX="center" outlineColor="#292021" outlineWidth={.02}>
    {station.name.toUpperCase()}
   </Text>
+  <PremiumDistrictLandmark index={index}/>
   {selected&&<mesh rotation={[-Math.PI/2,0,0]} position={[0,.59,0]}>
    <torusGeometry args={[3.44,.1,9,52]}/>
    <meshStandardMaterial color="#ffe4a3" emissive="#ffe4a3" emissiveIntensity={.6}/>
@@ -124,7 +232,8 @@ function CentralPremiumCitadel(){
   <group ref={halo} position={[0,6.5,0]}>
    <mesh rotation={[-Math.PI/2,0,0]}><torusGeometry args={[6.1,.035,8,96]}/><GoldMaterial/></mesh>
   </group>
-  <Text position={[0,8.85,0]} fontSize={.72} color="#fff0c5" anchorX="center" outlineWidth={.03} outlineColor="#201c23">
+  <PremiumCitadelArchitecture/>
+  <Text position={[0,10.8,0]} fontSize={.72} color="#fff0c5" anchorX="center" outlineWidth={.03} outlineColor="#201c23">
    PREMIUM FILE FOLDER
   </Text>
  </group>
@@ -172,17 +281,17 @@ function VerifiedStructures({builds,systems,now,onEnter}:{builds:RecordRow[];sys
 function Scene({selected,onSelect,builds,systems,now,onEnter}:{selected:StationKey;onSelect:(id:StationKey)=>void;builds:RecordRow[];systems:RecordRow[];now:number;onEnter:(district:string)=>void}){
  const live=systems.filter(s=>s.status==='active'||s.status==='complete').length
  return <>
-  <color attach="background" args={['#8d8890']}/>
-  <fog attach="fog" args={['#9e9092',40,88]}/>
+  <color attach="background" args={['#22202b']}/>
+  <fog attach="fog" args={['#34303b',46,90]}/>
   <ambientLight intensity={1.2}/>
   <hemisphereLight args={['#fff1dc','#382c36',1.1]}/>
   <directionalLight position={[12,24,13]} color="#fff0cb" intensity={2.8}/>
   <pointLight position={[0,9,8]} intensity={48} distance={34} color="#f8c87c"/>
   <mesh rotation={[-Math.PI/2,0,0]} position={[0,-.65,0]} receiveShadow>
-   <planeGeometry args={[95,95]}/><GoldMaterial color="#3b4453"/>
+   <planeGeometry args={[95,95]}/><GoldMaterial color="#24242d"/>
   </mesh>
   <mesh rotation={[-Math.PI/2,0,0]} position={[0,-.54,-.5]}>
-   <circleGeometry args={[27,72]}/><GoldMaterial color="#6c8790" glass/>
+   <circleGeometry args={[27,72]}/><GoldMaterial color="#3e6570" glass/>
   </mesh>
   <mesh rotation={[-Math.PI/2,0,0]} position={[0,-.39,-.5]}>
    <ringGeometry args={[17,17.5,72]}/><GoldMaterial/>
@@ -215,6 +324,7 @@ function Scene({selected,onSelect,builds,systems,now,onEnter}:{selected:StationK
    </group>
   })}
   <Waterfalls/>
+  <PremiumTerraces/>
   <CentralPremiumCitadel/>
   <VerifiedStructures builds={builds} systems={systems} now={now} onEnter={onEnter}/>
   {Array.from({length:12},(_,i)=>{
@@ -231,9 +341,10 @@ function Scene({selected,onSelect,builds,systems,now,onEnter}:{selected:StationK
  </>
 }
 export default function FileFolderPremiumWorld({
- appearance,districts,onEnter,onOpenCustomerDoor,builds,systemRecords,blueprints=[],inventory=[],customerDoor,now
+ appearance,districts,active,onEnter,onOpenCustomerDoor,builds,systemRecords,blueprints=[],inventory=[],customerDoor,now
 }:Props){
- const [selected,setSelected]=useState<StationKey>('build')
+ const [selected,setSelected]=useState<StationKey>(()=>stationForDistrict(active))
+ useEffect(()=>{setSelected(stationForDistrict(active))},[active])
  const station=STATIONS.find(s=>s.key===selected)!
  const countBuilding=builds.filter(b=>b.status==='building')
  const countCompleted=builds.filter(b=>b.status==='complete')
@@ -241,25 +352,39 @@ export default function FileFolderPremiumWorld({
  const availableKits=new Map(inventory.map(item=>[item.item_key,Number(item.quantity||0)]))
  const readyBluePrints=blueprints.filter(blueprint=>Boolean(blueprint.required_item_key)&&
   Number(availableKits.get(blueprint.required_item_key!)||0)>=Math.max(1,Number(blueprint.required_item_quantity||1)))
- const publishedDoor=Boolean(customerDoor?.public_slug)
+ const publishedDoor=Boolean(customerDoor?.public_slug&&['selling','ready_for_offer'].includes(String(customerDoor.formation_status||'')))
  const go=(district:string)=>{if(districts.some(d=>d.key===district))onEnter(district)}
  const next=countBuilding.length?'formation_yard':countLive.length?'active_systems':'blueprint_foundry'
+ const stationStatus:Record<StationKey,string>={
+  build:blueprints.length+' blueprints to review',
+  materials:inventory.filter(item=>Number(item.quantity||0)>0).length+' kits in inventory',
+  systems:countLive.length+' commissioned systems',
+  operations:countLive.length?'Open recorded system work':'No commissioned systems yet',
+  participation:'Your business direction and team',
+  customers:publishedDoor?'Public Customer Door available':'Customer Door not public yet',
+ }
+ const nextInstruction=countBuilding.length
+  ? 'Construction is underway. Open Formation Yard to inspect confirmed progress and compatible parts.'
+  : countLive.length
+  ? 'You have commissioned systems. Open Systems in Motion to work with real outputs.'
+  : 'Start with a blueprint, review the full material cost, then build your first system.'
  const buildProgresses=useMemo(()=>countBuilding.map(b=>({id:b.id,title:b.title||'Construction',progress:buildFormationProgress(b,now)})),[builds,now])
  return <section aria-label="Premium File Folder world" data-premium-file-folder-world="official-black-gold"
   data-premium-official-image="weave-premium-file-folder-official.png"
   data-premium-reference-sha256={PREMIUM_FILE_FOLDER_REFERENCE.sha256}
-  data-file-folder-theme={appearance.theme} className="overflow-hidden rounded-2xl border border-[#b99355]/50 bg-[#17151c] text-[#f5ecdd]">
+  data-file-folder-theme={appearance.theme} data-premium-visual-identity="charcoal-black-gold" className="overflow-hidden rounded-2xl border border-[#b99355]/50 bg-[#17151c] text-[#f5ecdd]">
   <header className="border-b border-[#b99355]/30 bg-[#242027] px-4 py-5 sm:px-6">
    <p className="text-[11px] font-bold uppercase tracking-[.15em] text-[#ecc789]">WEAVE · Premium File Folder · Your private world</p>
-   <h2 className="mt-2 text-2xl font-black sm:text-3xl">Your systems, built and operated here.</h2>
-   <p className="mt-2 max-w-2xl text-sm leading-6 text-[#d4c5b6]">Select a building to enter its workshop. Start with a blueprint, see the materials and full cost, construct the system, then operate it. Nothing is counted as live until your Client records confirm it.</p>
+   <h2 className="mt-2 text-2xl font-black sm:text-3xl">Your private black-and-gold business citadel</h2>
+   <p className="mt-2 max-w-2xl text-sm leading-6 text-[#e0d1c0]">This is your purchased Premium environment. The central citadel connects six places where you plan, acquire materials, build systems, direct work and serve customers. Select any building to discover its purpose, then enter the working area.</p>
    <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold">
     <span className="rounded-lg border border-[#a98b57]/40 px-3 py-2">{countBuilding.length} building</span>
     <span className="rounded-lg border border-[#a98b57]/40 px-3 py-2">{countCompleted.length} completed</span>
     <span className="rounded-lg border border-[#a98b57]/40 px-3 py-2">{countLive.length} live systems</span>
    </div>
   </header>
-  <div className="h-[390px] w-full sm:h-[540px]" aria-label="Interactive Premium black-and-gold citadel, six operating districts, water, connected terraces and ongoing verified construction">
+  <div className="relative h-[420px] w-full sm:h-[550px]" data-premium-mobile-3d="tap-drag-pinch" aria-label="Interactive Premium black-and-gold citadel, six distinct operating districts, water, connected terraces and ongoing verified construction">
+   <div className="pointer-events-none absolute left-3 top-3 z-10 max-w-[76%] rounded-lg border border-[#e7bb6c]/40 bg-[#17151c]/85 px-3 py-2 text-xs font-medium text-[#fff0d0] shadow-lg">Tap a building to select · Drag to explore · Pinch to zoom</div>
    <Premium3DRecoveryBoundary>
     <Canvas camera={{position:[26,22,30],fov:47,near:.1,far:140}}
      dpr={[1,1.5]} gl={{alpha:false,antialias:true,powerPreference:'high-performance'}}
@@ -272,15 +397,16 @@ export default function FileFolderPremiumWorld({
    </Premium3DRecoveryBoundary>
   </div>
   <div className="border-t border-[#b99355]/30 bg-[#252029] p-4 sm:p-5">
-   <p className="text-xs font-bold uppercase tracking-widest text-[#ebc485]">Enter an area of your Premium world</p>
+   <p className="text-xs font-bold uppercase tracking-widest text-[#ebc485]">Your six working places</p>
+   <p className="mt-1 text-sm leading-6 text-[#e0d1c0]">Each building has a different responsibility. The spaces are real workshops; the world itself does not invent earnings, orders or completed construction.</p>
    <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
     {STATIONS.map(s=><button key={s.key} type="button" aria-pressed={selected===s.key}
       onClick={()=>setSelected(s.key)} className={'min-h-12 rounded-lg border px-3 py-3 text-left text-sm font-semibold '+(selected===s.key?'border-[#f4c977] bg-[#5b4529] text-[#fff2d9]':'border-[#706054] bg-[#302932] text-[#e0d1bf]')}>
-       {s.name}
+       <span className="block text-sm">{s.name}</span><span className="mt-1 block text-xs font-normal leading-5 text-[#e2c7a6]">{stationStatus[s.key]}</span>
       </button>)}
    </div>
-   <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#b99355]/30 bg-[#17151c] p-4">
-    <div className="max-w-xl"><p className="font-bold text-[#f7ddb0]">{station.name}</p><p className="mt-1 text-sm leading-6 text-[#d4c8b8]">{station.detail}</p></div>
+   <div className="mt-3 flex flex-col gap-3 rounded-xl border border-[#b99355]/50 bg-[#17151c] p-4 sm:flex-row sm:items-center sm:justify-between" aria-live="polite" data-premium-selected-workshop={station.key}>
+    <div className="max-w-xl"><p className="font-bold text-[#f7ddb0]">{station.name}</p><p className="mt-1 text-sm leading-6 text-[#e4d6c6]">{station.detail}</p><p className="mt-1 text-xs font-medium text-[#f1c98e]">{stationStatus[station.key]}</p></div>
     {selected==='customers'?<div className="flex flex-wrap gap-2">
       <button type="button" onClick={()=>{if(onOpenCustomerDoor)onOpenCustomerDoor();else go(station.district)}}
         className="rounded-lg bg-[#e7bb6c] px-4 py-3 text-sm font-bold text-[#261e21]">Manage Customer Door →</button>
@@ -293,9 +419,10 @@ export default function FileFolderPremiumWorld({
    {selected==='customers'&&!publishedDoor&&<p className="mt-2 text-xs text-[#dfbb82]">The public Customer Door is not yet commissioned. Your private systems are never exposed to visitors.</p>}
   </div>
   <div className="border-t border-[#b99355]/30 bg-[#19161c] p-4 sm:p-5" data-premium-build-journey="recognize-preview-acquire-build-operate">
-   <div className="flex flex-wrap items-center justify-between gap-3"><div><h3 className="text-lg font-bold">Build a system in five movements</h3><p className="mt-1 text-sm text-[#c9b9a8]">Use the steps in order. Return to any step without losing your recorded work.</p></div>
+   <div className="flex flex-wrap items-center justify-between gap-3"><div><h3 className="text-lg font-bold">Your next movement</h3><p className="mt-1 max-w-xl text-sm leading-6 text-[#e0d1c0]">{nextInstruction}</p></div>
     <button type="button" onClick={()=>go(next)} className="rounded-lg border border-[#e7bb6c] px-4 py-2.5 text-sm font-bold text-[#f3d7a8]">{countBuilding.length?'Check current construction':countLive.length?'Operate live systems':'Start your first build'} →</button></div>
-   <div className="mt-4 grid gap-2 sm:grid-cols-5">
+   <h4 className="mt-5 text-sm font-bold text-[#f1d29d]">How to build and operate a system</h4>
+   <div className="mt-3 grid gap-2 sm:grid-cols-5">
     {STEPS.map((step,index)=><button key={step.name} type="button" onClick={()=>go(step.district)}
       className="min-h-24 rounded-lg border border-[#685541] bg-[#29232a] px-3 py-3 text-left hover:border-[#e7bb6c]">
       <p className="text-sm font-bold text-[#efc788]">{index+1}. {step.name}</p>
@@ -309,7 +436,7 @@ export default function FileFolderPremiumWorld({
       <div className="h-2 overflow-hidden rounded-full bg-[#393039]"><div className="h-full bg-[#e7bb6c]" style={{width:Math.max(0,Math.min(100,build.progress))+'%'}}/></div>
     </div>)}
    </div>}
-   <p className="mt-4 text-xs text-[#ad9b86]">The approved Premium image specifies the design; actual buildings and construction stages must follow verified Client records. This scene is interactive 3D, not a flat image or simulated earnings.</p>
+   <p className="mt-4 text-xs leading-5 text-[#c4b39d]">The black-and-gold buildings are the Premium environment you own. New constructions, operating systems and Customer Door availability come only from your verified Client records.</p>
   </div>
  </section>
 }

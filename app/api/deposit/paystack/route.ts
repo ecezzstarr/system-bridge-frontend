@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const user = await getAuthUser(request)
   if (!user) return NextResponse.json({error:'Unauthorized'},{status:401})
-  if (!['admin','agent','bridger','client'].includes(user.role)) return NextResponse.json({error:'This role cannot fund a Flame Coin wallet.'},{status:403})
+  if (!['admin','agent','bridger','client'].includes(user.role)) return NextResponse.json({error:'This role cannot fund a System Switch wallet.'},{status:403})
   try {
     const body = await request.json()
     const amountNgn = Number(body?.amount)
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
     if (!user.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(user.email)) return NextResponse.json({error:'A valid email is required on your Weave account for Paystack checkout.'},{status:400})
     const {rateNgnPerTrx,source:rateSource}=await getTrxPaymentNgnRate()
     const flameCoin=ngnToFlameCoin(amountNgn,rateNgnPerTrx)
-    if (!Number.isFinite(flameCoin)||flameCoin<=0) return NextResponse.json({error:'This amount cannot produce a valid Flame Coin credit.'},{status:400})
+    if (!Number.isFinite(flameCoin)||flameCoin<=0) return NextResponse.json({error:'This amount cannot produce a valid System Switch credit.'},{status:400})
     const reference=createPaystackReference(user.role.toUpperCase())
     const pool=getPool()
     const inserted=await pool.query(
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
       const checkout=await initializePaystackTransaction({
         email:user.email,amountKobo:amountKobo,reference,
         callbackUrl:origin+'/api/deposit/paystack/verify',
-        metadata:{deposit_id:inserted.rows[0].id,user_id:user.id,user_role:user.role,flame_coin_amount:flameCoin,rate_ngn_per_trx:rateNgnPerTrx,rate_source:rateSource,custom_fields:[{display_name:'Weave deposit ID',variable_name:'weave_deposit_id',value:inserted.rows[0].id},{display_name:'Flame Coin credit',variable_name:'flame_coin_amount',value:String(flameCoin)}]},
+        metadata:{deposit_id:inserted.rows[0].id,user_id:user.id,user_role:user.role,flame_coin_amount:flameCoin,rate_ngn_per_trx:rateNgnPerTrx,rate_source:rateSource,custom_fields:[{display_name:'Weave deposit ID',variable_name:'weave_deposit_id',value:inserted.rows[0].id},{display_name:'System Switch credit',variable_name:'flame_coin_amount',value:String(flameCoin)}]},
       })
       await notifyDepositSubmitted({
         depositorId:user.id,
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
         depositId:String(inserted.rows[0].id),
         rail:'PAYSTACK',
         amountLabel:'₦'+amountNgn.toLocaleString(),
-        secondaryLabel:flameCoin.toLocaleString()+' Flame Coin pending Paystack confirmation',
+        secondaryLabel:flameCoin.toLocaleString()+' System Switch pending Paystack confirmation',
         adminLink:'/admin/control-center#deposits',
       })
       return NextResponse.json({success:true,depositId:inserted.rows[0].id,reference,amountNgn,flameCoin,paymentLink:checkout.authorizationUrl,status:'pending'})

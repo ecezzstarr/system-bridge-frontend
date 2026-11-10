@@ -12,7 +12,7 @@ export async function GET() {
   return NextResponse.json({
     success: true,
     fundingAsset: 'TRX',
-    creditedAsset: 'Flame Coin',
+    creditedAsset: 'System Switch',
     companyTrxWallet: WORLD_RULES.COMPANY_TRX_WALLET,
     depositWallet: WORLD_RULES.COMPANY_TRX_WALLET,
     plus: {priceFlameCoin:FILE_FOLDER_PRICING.plusFlameCoin,quoteRequired:true,checkoutEnabled:false},
@@ -38,7 +38,7 @@ export async function GET() {
       maximumTrx: standardMaximumFlameCoin,
       fixed: false,
     },
-    peg: '1 Flame Coin = 1 TRX',
+    peg: '1 System Switch = 1 TRX',
     // Compatibility aliases for older clients. Canonical callers should use
     // standard/pro/premium above instead of inferring a tier from these values.
     standardPriceFlameCoin: standardMaximumFlameCoin,

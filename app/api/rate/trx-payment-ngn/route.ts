@@ -7,7 +7,7 @@ export async function GET() {
   return NextResponse.json({
     success: true,
     fundingAsset: 'TRX',
-    creditedAsset: 'Flame Coin',
+    creditedAsset: 'System Switch',
     rateNgnPerTrx,
     flameCoinPerTrx: 1,
     source,

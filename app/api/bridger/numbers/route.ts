@@ -174,7 +174,7 @@ export async function POST(request:NextRequest){
       if(before<price){
         await client.query('ROLLBACK')
         return NextResponse.json({
-          error:'Insufficient Flame Coin balance',
+          error:'Insufficient System Switch balance',
           required:price,
           currentBalance:before,
         },{status:400})
@@ -209,7 +209,7 @@ export async function POST(request:NextRequest){
 
       await client.query('COMMIT')
 
-      await notifyAdminOrder({orderId:String(order.id),event:'placed',department:'bridger',subject:'Bridger Number Bay country order',detail:`${user.name||user.email||'Bridger'} ordered a WhatsApp number for ${offer.country}, ${price} Flame Coin debited; fulfillment due by ${new Date(order.deadline_at).toLocaleString()}`,adminPath:'/admin/bridger-numbers',actorId:user.id,actorName:user.name||'Bridger'})
+      await notifyAdminOrder({orderId:String(order.id),event:'placed',department:'bridger',subject:'Bridger Number Bay country order',detail:`${user.name||user.email||'Bridger'} ordered a WhatsApp number for ${offer.country}, ${price} System Switch debited; fulfillment due by ${new Date(order.deadline_at).toLocaleString()}`,adminPath:'/admin/bridger-numbers',actorId:user.id,actorName:user.name||'Bridger'})
 
       let receipt:any=null
       try{
@@ -327,7 +327,7 @@ export async function POST(request:NextRequest){
     if(!debited){
       await client.query('ROLLBACK')
       return NextResponse.json({
-        error:'Insufficient Flame Coin balance',
+        error:'Insufficient System Switch balance',
         required:price,
         currentBalance:before,
       },{status:400})
@@ -357,14 +357,14 @@ export async function POST(request:NextRequest){
     if(!assigned){
       await client.query('ROLLBACK')
       return NextResponse.json({
-        error:'That number changed state before assignment. Your Flame Coin was not charged. Refresh the Number Bay.',
+        error:'That number changed state before assignment. Your System Switch was not charged. Refresh the Number Bay.',
         gate:'stock_changed',
       },{status:409})
     }
 
     await client.query('COMMIT')
 
-    await notifyAdminOrder({orderId:String(assigned.id),event:'paid',department:'bridger',subject:'Bridger Number Bay purchase',detail:`${user.name||user.email||'Bridger'} purchased an in-stock WhatsApp number for ${assigned.country}; ${price} Flame Coin deducted and assignment recorded`,adminPath:'/admin/bridger-numbers',actorId:user.id,actorName:user.name||'Bridger'})
+    await notifyAdminOrder({orderId:String(assigned.id),event:'paid',department:'bridger',subject:'Bridger Number Bay purchase',detail:`${user.name||user.email||'Bridger'} purchased an in-stock WhatsApp number for ${assigned.country}; ${price} System Switch deducted and assignment recorded`,adminPath:'/admin/bridger-numbers',actorId:user.id,actorName:user.name||'Bridger'})
 
     let receipt:any=null
     try{

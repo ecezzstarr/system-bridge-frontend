@@ -2,6 +2,7 @@
 
 import {useCallback,useEffect,useState} from 'react'
 import {getClientToken} from '@/lib/client-auth'
+import {displayCurrencyName} from '@/lib/flame-coin'
 
 type Report={
   fileNumber:string
@@ -124,7 +125,7 @@ export default function ClientOwnerEarningsPanel({storeApiPath,systems=[]}:{
         {report.accountingNote}
       </div>
       {report.costTotals.filter(row=>row.currency!=='FLAME COIN').length>0&&
-        <p className="text-xs text-slate-300">Other-currency reported costs (not converted): {report.costTotals.filter(row=>row.currency!=='FLAME COIN').map(row=>fmt(row.amount)+' '+row.currency).join(' · ')}</p>}
+        <p className="text-xs text-slate-300">Other-currency reported costs (not converted): {report.costTotals.filter(row=>row.currency!=='FLAME COIN').map(row=>fmt(row.amount)+' '+displayCurrencyName(row.currency)).join(' · ')}</p>}
       <div className="grid gap-5 lg:grid-cols-2">
         <div>
           <h4 className="text-sm font-bold">Verified Customer Door receipts</h4>
@@ -148,7 +149,7 @@ export default function ClientOwnerEarningsPanel({storeApiPath,systems=[]}:{
             </select></label>
             <div className="grid grid-cols-2 gap-2">
               <label className="text-xs text-slate-300">Amount<input type="number" min="0.00000001" step="any" value={amount} onChange={e=>{setAmount(e.target.value);setRequestId('')}} className="mt-1 w-full rounded-lg border border-white/15 bg-[#0d263b] p-3"/></label>
-              <label className="text-xs text-slate-300">Currency<select value={currency} onChange={e=>{setCurrency(e.target.value);setRequestId('')}} className="mt-1 w-full rounded-lg border border-white/15 bg-[#0d263b] p-3">{currencies.map(c=><option key={c}>{c}</option>)}</select></label>
+              <label className="text-xs text-slate-300">Currency<select value={currency} onChange={e=>{setCurrency(e.target.value);setRequestId('')}} className="mt-1 w-full rounded-lg border border-white/15 bg-[#0d263b] p-3">{currencies.map(c=><option key={c} value={c}>{displayCurrencyName(c)}</option>)}</select></label>
             </div>
             <label className="text-xs text-slate-300">Purpose or obligation<input value={description} maxLength={300} onChange={e=>{setDescription(e.target.value);setRequestId('')}} className="mt-1 w-full rounded-lg border border-white/15 bg-[#0d263b] p-3" placeholder="For example, production material purchase"/></label>
             <label className="text-xs text-slate-300">Evidence reference (optional)<input value={evidence} maxLength={160} onChange={e=>{setEvidence(e.target.value);setRequestId('')}} className="mt-1 w-full rounded-lg border border-white/15 bg-[#0d263b] p-3" placeholder="Receipt or invoice reference"/></label>
@@ -162,7 +163,7 @@ export default function ClientOwnerEarningsPanel({storeApiPath,systems=[]}:{
         <div className="mt-3 max-h-64 space-y-2 overflow-y-auto">
           {report.costs.map(cost=><div key={cost.id} className="flex flex-wrap justify-between gap-2 rounded-lg border border-white/10 p-3 text-xs">
             <div><p className="font-semibold">{cost.description}</p><p className="mt-1 text-slate-400">{cost.category.replaceAll('_',' ')} · {date(cost.recorded_at)}{cost.system_title?' · '+cost.system_title:''}</p></div>
-            <span className="font-bold">{fmt(cost.amount)} {cost.currency}</span>
+            <span className="font-bold">{fmt(cost.amount)} {displayCurrencyName(cost.currency)}</span>
           </div>)}
           {report.costs.length===0&&<p className="text-xs text-slate-400">No operating costs have been reported yet.</p>}
         </div>

@@ -11,7 +11,7 @@ export type DoorPaymentResult = {
 
 let schemaReady:Promise<void>|null=null
 
-/** Every settlement is a transfer of already funded Flame Coin, never a mint.
+/** Every settlement is a transfer of already funded System Switch, never a mint.
  * Legacy 'received' order status is not proof: only a settlement row proves
  * the money moved to the Client's Main Wallet.
  */
@@ -66,7 +66,7 @@ export async function settleCustomerDoorPayment(input:{
     if(!input.adminId || input.adminId!==input.fundingUserId
       ||!input.verifiedReference ||input.verifiedReference.trim().length<8
       || !validFlameAmount(input.creditedFlameCoin)){
-      return {success:false,error:'Verified WEAVE funds, valid external reference and credited Flame Coin amount are required',status:400}
+      return {success:false,error:'Verified WEAVE funds, valid external reference and credited System Switch amount are required',status:400}
     }
   }
   await ensureCustomerDoorSettlementSchema()
@@ -117,7 +117,7 @@ export async function settleCustomerDoorPayment(input:{
     const internal=input.source==='weave_wallet'
     if(internal && !['FLAME COIN','FLAME_COIN','FC'].includes(currency)){
       await conn.query('ROLLBACK')
-      return {success:false,error:'This offer is not priced in Flame Coin; select verified external payment instead',status:409}
+      return {success:false,error:'This offer is not priced in System Switch; select verified external payment instead',status:409}
     }
     if(order.client_id===input.fundingUserId){
       await conn.query('ROLLBACK')
@@ -165,7 +165,7 @@ export async function settleCustomerDoorPayment(input:{
     }
     if(Number(payer.balance_trx)<flame){
       await conn.query('ROLLBACK')
-      return {success:false,error:'Insufficient confirmed Flame Coin in the funding wallet',status:409}
+      return {success:false,error:'Insufficient confirmed System Switch in the funding wallet',status:409}
     }
     const debit=await conn.query('UPDATE wallets SET balance_trx=balance_trx-$1,updated_at=NOW() WHERE id=$2::uuid AND balance_trx>=$1 RETURNING balance_trx',[flame,payer.id])
     if(!debit.rows.length)throw Error('Concurrent buyer wallet debit failed')
@@ -209,7 +209,7 @@ export async function settleCustomerDoorPayment(input:{
       INSERT INTO notifications(user_id,type,title,content,from_user_name,link)
       VALUES ($1::uuid,'customer_door_payment','Customer Door sale credited',
        $2,'WEAVE Customer Door','/client/system-switch#business')
-    `,[order.client_id,'Order '+order.id+' paid. '+flame+' Flame Coin credited to your Main Client Wallet. Receipt '+receiptNumber])
+    `,[order.client_id,'Order '+order.id+' paid. '+flame+' System Switch credited to your Main Client Wallet. Receipt '+receiptNumber])
     await conn.query('COMMIT');committed=true
     return {success:true,orderId:order.id,clientId:order.client_id,settlementId,
       amountFlameCoin:flame,clientBalanceAfter:balanceAfter,receiptNumber}

@@ -69,14 +69,16 @@ export function derivePlusWorldFormation(
     }else if(build.status==='complete'){
       completedBuilds++
       zone.completed++
-      zone.progress=100
     }
   }
   for(const system of live){
     const zone=zones[plusZoneFor(system)]
     zone.live++
-    zone.progress=100
     zone.stage='commissioned'
+  }
+  // An operating district can also contain a separate unfinished build.
+  for(const zone of Object.values(zones)){
+    if(!zone.building&&(zone.live||zone.completed))zone.progress=100
   }
   return {
     zones,

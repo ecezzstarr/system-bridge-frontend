@@ -164,7 +164,7 @@ export default function ClientGrowthWorld({
         <div className="p-5 md:p-6">
           <p className="text-[9px] font-black uppercase tracking-[0.22em] text-cyan-300">Expansion Command</p>
           <h2 className="mt-2 text-2xl font-black text-white">Build capability, then earn activity through real use.</h2>
-          <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">Flame Coin purchases create infrastructure and capacity. Business Vitality is separate: it rises from customer orders, completed operating movements, Business Route movement, streaming programs and active Legion participation.</p>
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">System Switch purchases create infrastructure and capacity. Business Vitality is separate: it rises from customer orders, completed operating movements, Business Route movement, streaming programs and active Legion participation.</p>
           <button onClick={()=>onOpenConstruction?.('blueprint_foundry')} className="mt-5 inline-flex items-center gap-2 rounded-full border border-violet-300/20 bg-violet-400/10 px-4 py-2.5 text-[10px] font-black uppercase tracking-wider text-violet-100"><Zap className="h-4 w-4"/>Open expansion blueprints <ArrowRight className="h-4 w-4"/></button>
         </div>
         <div className="border-t border-white/10 p-5 xl:border-l xl:border-t-0">

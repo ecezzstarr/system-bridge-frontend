@@ -6,7 +6,7 @@ Animation Workshop is a new **Client-owned, built system** in Streaming. It is n
 
 Construction chain: completed Customer Door → completed Creator Booth → acquire Animation Production Kit → construct and activate Animation Workshop. A new blueprint can be formed only once per Client. The workshop remains closed to all users until `client_built_systems.system_type='animation_studio'` is active.
 
-**Release hold:** the Animation Production Kit and its blueprint are seeded unpublished. Price is **not set by engineering** (placeholder 0 is not a price offered for purchase). Administration must set an approved Flame Coin kit price and publish the kit/blueprint through the existing build catalog controls before public use. The changes on this branch do not deploy.
+**Release hold:** the Animation Production Kit and its blueprint are seeded unpublished. Price is **not set by engineering** (placeholder 0 is not a price offered for purchase). Administration must set an approved System Switch kit price and publish the kit/blueprint through the existing build catalog controls before public use. The changes on this branch do not deploy.
 
 ## Roles and permissions
 

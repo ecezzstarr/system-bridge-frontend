@@ -180,7 +180,9 @@ assert(scene.includes('<WorldImageCapture captureRef={captureWorldRef}/>'),'Exac
 assert(scene.includes("gl.domElement.toDataURL('image/png')"),'Captured File Folder images are actual renderer pixels')
 assert(!scene.includes('preserveDrawingBuffer:true'),'Phone render performance is not penalized to enable image capture')
 assert(env.includes('navigationEnabled={!panelOpen}'),'Closing a build workspace restores phone movement')
-assert(env.includes('onBuildEnter={id=>'),'World taps select a particular active construction record')
+assert(env.includes('onBuildEnter={openBuild}') && env.includes('onOpenBuild={openBuild}') &&
+ env.includes("enterWorkshopDistrict('formation_yard',id)"),
+ 'Both the territory and Plus build list open the matching active construction record')
 assert(env.includes('initialBuildId={selectedBuildId}'),'Selected site reaches the purchase and installation workspace')
 const studio=fs.readFileSync('components/system-switch/file-folder-open-world.tsx','utf8')
 assert(studio.includes('orderedBuilds.map'),'Tapped structure rises to the top of its construction controls')
@@ -220,7 +222,7 @@ assert(env.includes('onStudioEnter={district=>travelToStudio(district)}'),'Physi
 assert(env.includes('speedMultiplier:Number(build.speed_multiplier||1)'),'World receives persisted construction boost')
 assert(env.includes('Array.isArray(build.applied_parts)'),'World receives the purchased installed parts')
 assert(env.includes('system.configuration?.appliedParts'),'Installed parts persist on completed systems')
-assert(env.includes('onSystemEnter={id=>'));assert(env.includes('<BuiltSystemRuntime'))
+assert(env.includes('onSystemEnter={openHostedSystem}') && env.includes('onOpenSystem={openHostedSystem}'));assert(env.includes('<BuiltSystemRuntime'))
 for(const capability of ['work_queue','record_search','customer_door','system_routes'])assert(host.includes(`selected==='${capability}'`))
 assert(env.includes("action:'toggle_system_entry'"),'Work queue retains authenticated API')
 console.log('File Folder Phase 1: movement, frame/input lifecycle, proximity, collision, capability graph, queues, search and hosting passed')

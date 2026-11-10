@@ -221,7 +221,7 @@ export async function POST(request: NextRequest) {
         const balance = Number(wallet?.balance_trx || 0)
         if (!wallet || balance < studioFee) {
           await client.query('ROLLBACK')
-          return NextResponse.json({ success:false, error:'Insufficient Flame Coin to pay Administration for this Studio use', requiredFlameCoin:studioFee, availableFlameCoin:balance },{status:402})
+          return NextResponse.json({ success:false, error:'Insufficient System Switch to pay Administration for this Studio use', requiredFlameCoin:studioFee, availableFlameCoin:balance },{status:402})
         }
         await client.query('UPDATE wallets SET balance_trx=balance_trx-$1,updated_at=NOW() WHERE id=$2::uuid',[studioFee,wallet.id])
         const studioResult = await client.query(
@@ -296,7 +296,7 @@ async function purchaseOwnVideo(user:any, body:any) {
     const walletResult = await client.query('SELECT id,balance_trx FROM wallets WHERE user_id=$1::uuid AND is_primary=true FOR UPDATE',[user.id])
     const wallet = walletResult.rows[0]
     const balance = Number(wallet?.balance_trx || 0)
-    if (!wallet || balance < price) { await client.query('ROLLBACK'); return NextResponse.json({ success:false, error:'Insufficient Flame Coin for this video package', requiredFlameCoin:price, availableFlameCoin:balance }, { status:402 }) }
+    if (!wallet || balance < price) { await client.query('ROLLBACK'); return NextResponse.json({ success:false, error:'Insufficient System Switch for this video package', requiredFlameCoin:price, availableFlameCoin:balance }, { status:402 }) }
 
     await client.query('UPDATE wallets SET balance_trx=balance_trx-$1,updated_at=NOW() WHERE id=$2::uuid', [price, wallet.id])
     const orderResult = await client.query(

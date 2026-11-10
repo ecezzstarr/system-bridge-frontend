@@ -76,7 +76,7 @@ const cases=[
   ['app/api/video-service/[code]/route.ts',["subject:'Video Ad Studio service order'"]],
   ['app/api/client/system-store/route.ts',["subject:'Client System Store version submitted'"]],
   ['app/api/enterprise-systems/route.ts',["subject:'Enterprise system acquisition request'"]],
-  ['app/api/wallet/withdraw/route.ts',["subject:'External Flame Coin withdrawal request'"]],
+  ['app/api/wallet/withdraw/route.ts',["subject:'External System Switch withdrawal request'"]],
   ['app/api/wallet/withdraw/opay/route.ts',["subject:'OPay withdrawal approval request'"]],
 ]
 for(const [path,checks] of cases){

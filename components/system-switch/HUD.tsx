@@ -649,7 +649,7 @@ export function HUD({
                         : 'text-[#e8b93f]'
                     }`}
                   >
-                    {WORLD_RULES.FILE_FOLDER_PREMIUM_PRICE_FLAME_COIN.toLocaleString()} Flame Coin
+                    {WORLD_RULES.FILE_FOLDER_PREMIUM_PRICE_FLAME_COIN.toLocaleString()} System Switch
                   </div>
                   <p className={`text-sm font-bold uppercase tracking-widest ${
                     depositFlow.tier === WORLD_RULES.FILE_FOLDER_PREMIUM_PRICE_FLAME_COIN
@@ -686,7 +686,7 @@ export function HUD({
                       Standard File Folder
                     </p>
                     <p className="mt-2 text-2xl font-black text-white">
-                      From {WORLD_RULES.FILE_FOLDER_STANDARD_MIN_FLAME_COIN.toLocaleString()} Flame Coin
+                      From {WORLD_RULES.FILE_FOLDER_STANDARD_MIN_FLAME_COIN.toLocaleString()} System Switch
                     </p>
                     <p className="mt-1 text-xs text-white/40">
                       Choose any value below {WORLD_RULES.FILE_FOLDER_PREMIUM_PRICE_FLAME_COIN.toLocaleString()}. Same numeric amount in TRX.
@@ -721,13 +721,13 @@ export function HUD({
                         placeholder={WORLD_RULES.FILE_FOLDER_STANDARD_MIN_FLAME_COIN.toString()}
                         className="w-full bg-transparent py-3 text-lg font-bold text-white outline-none"
                       />
-                      <span className="text-xs text-white/35">Flame Coin / TRX</span>
+                      <span className="text-xs text-white/35">System Switch / TRX</span>
                     </div>
                     {depositFlow.tier !== null &&
                       depositFlow.tier < WORLD_RULES.FILE_FOLDER_PREMIUM_PRICE_FLAME_COIN &&
                       depositFlow.tier < WORLD_RULES.FILE_FOLDER_STANDARD_MIN_FLAME_COIN && (
                         <p className="mt-2 text-xs text-red-300">
-                          Standard begins at {WORLD_RULES.FILE_FOLDER_STANDARD_MIN_FLAME_COIN.toLocaleString()} Flame Coin.
+                          Standard begins at {WORLD_RULES.FILE_FOLDER_STANDARD_MIN_FLAME_COIN.toLocaleString()} System Switch.
                         </p>
                       )}
                   </div>

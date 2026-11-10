@@ -109,7 +109,7 @@ export default function ReferralMovementPage() {
         <p>1 · Share your stable referral entrance.</p>
         <p>2 · The person completes verified Agent or Bridger registration.</p>
         <p>3 · WEAVE records attribution once.</p>
-        <p>4 · ₦500 converts at the current Flame Coin rate and enters your wallet.</p>
+        <p>4 · ₦500 converts at the current System Switch rate and enters your wallet.</p>
       </div>
     </section>
   </>
@@ -122,7 +122,7 @@ export default function ReferralMovementPage() {
         {error && <div className="rounded-xl border border-red-300/15 bg-red-400/[.04] px-3 py-2 text-xs text-red-200">{error}</div>}
         <div className="grid gap-3 sm:grid-cols-3">
           <div className="rounded-2xl border border-white/10 bg-black/20 p-4"><UsersRound className="h-4 w-4 text-cyan-300"/><p className="mt-3 text-[9px] uppercase text-slate-500">Successful referrals</p><p className="mt-1 text-2xl font-black text-white">{core?.successfulReferrals ?? 0}</p></div>
-          <div className="rounded-2xl border border-white/10 bg-black/20 p-4"><WalletCards className="h-4 w-4 text-emerald-300"/><p className="mt-3 text-[9px] uppercase text-slate-500">Bonus earned</p><p className="mt-1 text-2xl font-black text-white">₦{Number(core?.totalBonusNgn || 0).toLocaleString()}</p><p className="mt-1 text-[10px] text-slate-500">{Number(core?.totalBonusFlameCoin || 0).toFixed(4)} Flame Coin credited</p></div>
+          <div className="rounded-2xl border border-white/10 bg-black/20 p-4"><WalletCards className="h-4 w-4 text-emerald-300"/><p className="mt-3 text-[9px] uppercase text-slate-500">Bonus earned</p><p className="mt-1 text-2xl font-black text-white">₦{Number(core?.totalBonusNgn || 0).toLocaleString()}</p><p className="mt-1 text-[10px] text-slate-500">{Number(core?.totalBonusFlameCoin || 0).toFixed(4)} System Switch credited</p></div>
           <div className="rounded-2xl border border-white/10 bg-black/20 p-4"><RefreshCcw className="h-4 w-4 text-amber-300"/><p className="mt-3 text-[9px] uppercase text-slate-500">Pending settlement</p><p className="mt-1 text-2xl font-black text-white">{core?.pendingBonusCount ?? 0}</p></div>
         </div>
 
@@ -140,7 +140,7 @@ export default function ReferralMovementPage() {
           <div className="flex items-center justify-between gap-3"><div><p className="text-[9px] font-black uppercase tracking-[.16em] text-slate-500">Recent movement</p><h3 className="mt-1 text-base font-black text-white">People you carried in</h3></div><button type="button" onClick={()=>void load(true)} className="rounded-lg border border-white/10 px-3 py-2 text-[10px] font-black uppercase text-slate-300">Refresh</button></div>
           <div className="mt-3 space-y-2">
             {(core?.recent || []).length === 0 && <p className="rounded-xl border border-white/10 px-3 py-3 text-xs text-slate-500">No verified Agent or Bridger referral has crossed yet.</p>}
-            {(core?.recent || []).map(item => <div key={item.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[.02] px-3 py-3"><div><p className="text-xs font-black text-white">{item.name}</p><p className="mt-1 text-[10px] uppercase text-slate-500">{item.role} · {new Date(item.created_at).toLocaleDateString()}</p></div><div className="text-right"><p className={item.bonus_status === 'paid' ? 'text-xs font-black text-emerald-300' : 'text-xs font-black text-amber-300'}>{item.bonus_status === 'paid' ? '₦500 credited' : '₦500 pending'}</p>{item.bonus_flame_coin && <p className="mt-1 text-[10px] text-slate-500">{Number(item.bonus_flame_coin).toFixed(4)} Flame Coin</p>}</div></div>)}
+            {(core?.recent || []).map(item => <div key={item.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[.02] px-3 py-3"><div><p className="text-xs font-black text-white">{item.name}</p><p className="mt-1 text-[10px] uppercase text-slate-500">{item.role} · {new Date(item.created_at).toLocaleDateString()}</p></div><div className="text-right"><p className={item.bonus_status === 'paid' ? 'text-xs font-black text-emerald-300' : 'text-xs font-black text-amber-300'}>{item.bonus_status === 'paid' ? '₦500 credited' : '₦500 pending'}</p>{item.bonus_flame_coin && <p className="mt-1 text-[10px] text-slate-500">{Number(item.bonus_flame_coin).toFixed(4)} System Switch</p>}</div></div>)}
           </div>
         </section>
       </>

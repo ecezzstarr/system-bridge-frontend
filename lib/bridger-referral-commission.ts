@@ -107,7 +107,7 @@ export async function creditBridgerReferralCommission(params: {
           ${referrerId}::uuid,
           'commission',
           ${lifestyle === 'agentic_bridger' ? 'Agentic-Bridger return has come to you' : 'A return has come to you'},
-          ${`You earned ${commissionAmount.toFixed(2)} Flame Coin (${(rate * 100).toFixed(0)}%) from ${activity.replaceAll('_',' ')}${lifestyle === 'agentic_bridger' ? ' through Agentic-Bridger.' : '.'}`},
+          ${`You earned ${commissionAmount.toFixed(2)} System Switch (${(rate * 100).toFixed(0)}%) from ${activity.replaceAll('_',' ')}${lifestyle === 'agentic_bridger' ? ' through Agentic-Bridger.' : '.'}`},
           'WEAVE'
         )
       `

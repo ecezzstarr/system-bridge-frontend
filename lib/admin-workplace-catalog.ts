@@ -194,9 +194,9 @@ export const ADMIN_SPACES:readonly AdminSpace[]=[
     "description": "Audit recorded subscription payment states."
   },
   {
-    "title": "Flame Coin Sales",
+    "title": "System Switch Sales",
     "href": "/admin/weave-flame-coin-sales",
-    "description": "Manage confirmed Flame Coin purchase operations."
+    "description": "Manage confirmed System Switch purchase operations."
   },
   {
     "title": "TRX Sales",

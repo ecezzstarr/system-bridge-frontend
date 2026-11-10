@@ -11,5 +11,5 @@ export async function GET(request:NextRequest) {
 export async function POST(request:NextRequest) {
   const user=await getAuthUser(request)
   if(!user)return NextResponse.json({error:'Unauthorized'},{status:401})
-  return NextResponse.json({error:'Monthly Bridge AI subscriptions are retired. Open a template for 8 Flame Coin.',retired:true},{status:410})
+  return NextResponse.json({error:'Monthly Bridge AI subscriptions are retired. Open a template for 8 System Switch.',retired:true},{status:410})
 }

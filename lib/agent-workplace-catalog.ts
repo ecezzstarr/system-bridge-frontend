@@ -97,7 +97,7 @@ export const AGENT_SPACES: readonly AgentSpace[] = [
       {title:'Daisy Orders',href:'/agent/cakes',description:'Follow quotations, verification and production records.'},
       {title:'Food Carrier Orders',href:'/weave/carrier/food',description:'Review customer orders and verified payments.'},
       {title:'Referral Rewards',href:'/referrals',description:'Track only verified ₦500 registration bonuses.'},
-      {title:'Wallet',href:'/wallet',description:'Read your actual Flame Coin balance.'},
+      {title:'Wallet',href:'/wallet',description:'Read your actual System Switch balance.'},
       {title:'Deposit & Withdrawal',href:'/wallet/deposit-withdraw',description:'Use the current authorized money movement.'},
       {title:'Receipts',href:'/receipts',description:'Review verified transaction receipts.'},
       {title:'Ledger',href:'/ledger',description:'Read recorded financial movements.'},

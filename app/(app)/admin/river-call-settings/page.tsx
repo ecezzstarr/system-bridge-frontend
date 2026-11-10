@@ -25,7 +25,7 @@ export default function RiverCallSettingsPage(){
         body:JSON.stringify({enabled})})
       const result=await response.json()
       if(!response.ok)throw new Error(result.error||'Unable to save settings')
-      setNotice('River calling availability updated. Each call costs 5 Flame Coin.')
+      setNotice('River calling availability updated. Each call costs 5 System Switch.')
       await load()
     }catch(e:any){setError(e?.message||'Could not save')}
     finally{setBusy(false)}
@@ -34,7 +34,7 @@ export default function RiverCallSettingsPage(){
     <div className="mx-auto max-w-4xl">
       <Link href="/admin/dashboard" className="text-xs text-sky-300">← Administration</Link>
       <h1 className="mt-5 text-3xl font-black">River Call Outreach · Administration</h1>
-      <p className="mt-2 text-sm leading-6 text-slate-400">Each River call costs 5 Flame Coin. Activate or suspend calling without redeployment. Activation is restricted until both the verified telephony service and River AI are available.</p>
+      <p className="mt-2 text-sm leading-6 text-slate-400">Each River call costs 5 System Switch. Activate or suspend calling without redeployment. Activation is restricted until both the verified telephony service and River AI are available.</p>
       <div className="mt-7 grid gap-4 sm:grid-cols-3">
         {[
           ['Voice provider',data?.voiceConfigured?'Configured':'Not configured'],
@@ -44,7 +44,7 @@ export default function RiverCallSettingsPage(){
       </div>
       {(error||notice)&&<p role="alert" className={'mt-5 text-sm '+(error?'text-rose-300':'text-emerald-300')}>{error||notice}</p>}
       <div className="mt-8 border-y border-white/10 py-6">
-        <p className="text-sm font-bold">One River call = 5 Flame Coin</p>
+        <p className="text-sm font-bold">One River call = 5 System Switch</p>
         <label className="mt-6 flex items-center gap-3 text-sm"><input type="checkbox" checked={enabled} onChange={e=>setEnabled(e.target.checked)}/> Enable new River calls</label>
         <button onClick={save} disabled={busy} className="mt-5 border border-sky-300/40 px-5 py-3 text-sm font-bold text-sky-100 disabled:opacity-40">{busy?'Saving…':'Save River calling availability'}</button>
       </div>

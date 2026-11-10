@@ -171,9 +171,10 @@ export default function AgentCreativeStudio() {
     <header className="space-y-3 border-b border-white/10 pb-6">
       <p className="text-[10px] font-bold uppercase tracking-[.2em] text-amber-300">WEAVE · Agent · Bridger · Client · Creative work</p>
       <h1 className="text-3xl font-bold sm:text-5xl">WEAVE CREATIVE STUDIO</h1>
+      <Link href="/image-workshop" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-cyan-300/30 bg-cyan-300/10 px-4 py-3 text-xs font-bold text-cyan-100">OPEN ADVANCED AI IMAGE WORKSHOP · GENERATION & EDITING</Link>
       <p className="max-w-3xl text-sm leading-6 text-slate-300">Design clear commercial images for stores, products and companies. Create a finished PNG on your phone, or open the Video Studio for moving advertisements. You can sell the finished work to outside customers at your own price.</p>
       <div className="flex flex-wrap gap-3">
-        <span className="border border-emerald-300/20 bg-emerald-300/5 px-3 py-2 text-xs text-emerald-200">Classic image layout · 0 Flame Coin</span>
+        <span className="border border-emerald-300/20 bg-emerald-300/5 px-3 py-2 text-xs text-emerald-200">Classic image layout · 0 System Switch</span>
         <span className="border border-amber-300/20 bg-amber-300/5 px-3 py-2 text-xs text-amber-200">Video production · role-based pricing shown in Video Studio</span>
       </div>
     </header>
@@ -209,7 +210,7 @@ export default function AgentCreativeStudio() {
           <ImagePlus className="h-5 w-5 text-amber-200" />Use a real product, location, work or customer photo
           <input type="file" className="hidden" accept="image/*" onChange={selectPhoto} />
         </label>
-        <p className="text-xs leading-5 text-slate-400">Choose Product photo, Portrait or Minimal for new real-photo layouts. The image is composed locally on your device; this layout tool does not generate new AI imagery, upload the photo, or deduct Flame Coin. Use photos you have permission to publish.</p>
+        <p className="text-xs leading-5 text-slate-400">Choose Product photo, Portrait or Minimal for new real-photo layouts. The image is composed locally on your device; this layout tool does not generate new AI imagery, upload the photo, or deduct System Switch. Use photos you have permission to publish.</p>
         <button onClick={saveImage} disabled={!ready} className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-amber-200 px-4 py-3 text-sm font-bold text-slate-950 disabled:opacity-50">
           <Download className="h-5 w-5" />SAVE HIGH-RESOLUTION PNG · FREE
         </button>
