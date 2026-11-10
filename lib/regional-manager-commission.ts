@@ -173,7 +173,7 @@ export async function creditRegionalManagerFileFolderCommission(params: {
     await client.query(
       `INSERT INTO ledger_entries
        (id,user_id,entry_type,amount,currency,description,balance_before,balance_after,metadata,created_at)
-       VALUES (gen_random_uuid(),$1::uuid,'earning',$2,'Flame Coin',$3,$4,$5,
+       VALUES (gen_random_uuid(),$1::uuid,'earning',$2,'System Switch',$3,$4,$5,
          ($6::jsonb)||jsonb_build_object('commerce_type','regional_manager_file_folder_commission'),NOW())`,
       [
         regionalManagerId, commissionAmount, description, before, after,
@@ -205,7 +205,7 @@ export async function creditRegionalManagerFileFolderCommission(params: {
         ${regionalManagerId}::uuid,
         'commission',
         'Regional File Folder commission credited',
-        ${`Your Regional Manager commission is ${commissionAmount.toFixed(2)} Flame Coin (2% of WEAVE's company share) from a verified File Folder purchase referred by your team Bridger.`},
+        ${`Your Regional Manager commission is ${commissionAmount.toFixed(2)} System Switch (2% of WEAVE's company share) from a verified File Folder purchase referred by your team Bridger.`},
         'WEAVE',
         '/wallet'
       )

@@ -24,7 +24,7 @@ async function finalizeProspectPurchase(input:{
       activity:'prospect_package_purchase',
       baseAmount:input.priceTrx,
       sourceId:input.packageId,
-      description:`Agent Prospect share from Bridger purchase of ${input.priceTrx} Flame Coin`,
+      description:`Agent Prospect share from Bridger purchase of ${input.priceTrx} System Switch`,
     })
 
     if(commissionMovement.agentExpected&&!commissionMovement.agentShare){
@@ -165,7 +165,7 @@ export async function POST(request: NextRequest) {
     const currentBalance=Number(wallet.balance_trx)||0
     if(currentBalance<priceTrx){
       await client.query('ROLLBACK')
-      return NextResponse.json({error:'Insufficient Flame Coin balance',currentBalance,required:priceTrx},{status:400})
+      return NextResponse.json({error:'Insufficient System Switch balance',currentBalance,required:priceTrx},{status:400})
     }
 
     const newBalance=currentBalance-priceTrx
@@ -177,7 +177,7 @@ export async function POST(request: NextRequest) {
     await client.query(
       `INSERT INTO ledger_entries
        (id,user_id,entry_type,amount,currency,description,balance_before,balance_after,created_at)
-       VALUES (gen_random_uuid(),$1::uuid,'prospect_package_purchase',$2,'Flame Coin',$3,$4,$5,NOW())`,
+       VALUES (gen_random_uuid(),$1::uuid,'prospect_package_purchase',$2,'System Switch',$3,$4,$5,NOW())`,
       [userId,priceTrx,`Purchased prospect package ${packageId}`,currentBalance,newBalance],
     )
 
@@ -224,7 +224,7 @@ export async function POST(request: NextRequest) {
 
     await client.query('COMMIT')
     primaryCommitted=true
-    await notifyAdminOrder({orderId:String(packageId),event:'paid',department:'bridger',subject:'Bridger prospect package purchase',detail:`Bridger purchased prospect package ${packageId} for ${priceTrx} Flame Coin with ${contactsResult.rows.length} prospects; Agent share reconciliation follows`,adminPath:'/admin/orders',actorId:userId,actorName:'Bridger'})
+    await notifyAdminOrder({orderId:String(packageId),event:'paid',department:'bridger',subject:'Bridger prospect package purchase',detail:`Bridger purchased prospect package ${packageId} for ${priceTrx} System Switch with ${contactsResult.rows.length} prospects; Agent share reconciliation follows`,adminPath:'/admin/orders',actorId:userId,actorName:'Bridger'})
 
     import('@/lib/fulfillment-agent').then(({fulfillmentAgent})=>{
       fulfillmentAgent.reconcile().catch(err=>console.error('[market purchase] reconcile error:',err))
