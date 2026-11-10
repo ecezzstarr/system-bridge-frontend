@@ -21,7 +21,7 @@ export default function WeaveImageServiceDoor(){
   const [sampleId,setSampleId]=useState('')
   const [consent,setConsent]=useState(false)
   useEffect(()=>{
-    void fetch('/api/image-service/'+encodeURIComponent(code),{cache:'no-store'})
+    void fetch(`/api/image-service/${encodeURIComponent(code)}`,{cache:'no-store'})
       .then(r=>r.json().then(data=>{if(!r.ok)throw new Error(data.error||'Service unavailable');setProvider(data.provider)}))
       .catch(e=>setError(e instanceof Error?e.message:'Service unavailable'))
       .finally(()=>setLoading(false))
@@ -30,7 +30,7 @@ export default function WeaveImageServiceDoor(){
     if(!consent){setError('Confirm that your contact details can be shared with this producer.');return}
     setBusy(true);setError('')
     try{
-      const response=await fetch('/api/image-service/'+encodeURIComponent(code),{
+      const response=await fetch(`/api/image-service/${encodeURIComponent(code)}`,{
         method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({customerName:name,customerContact:contact,customerBrief:brief,sampleId}),
       })
