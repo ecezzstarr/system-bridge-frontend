@@ -65,6 +65,8 @@ const districts = [
   { key: 'library_district', label: 'Formation Intelligence', icon: Library, detail: 'Understand why each system works, what it can connect to and what larger capability can emerge.' },
 ]
 
+export { districts as FILE_FOLDER_WORKSHOP_DISTRICTS }
+
 function duration(seconds: number) {
   if (seconds <= 0) return 'Completing…'
   const days = Math.floor(seconds / 86400)
@@ -420,13 +422,14 @@ export default function FileFolderOpenWorld({
               districts={visibleDistricts} active={district} onEnter={enterDistrict}
               systems={world?.systems?.length||0} building={activeBuilds.length} builds={activeBuilds}
               operatingSystems={world?.systems||[]} customerDoor={world?.customerDoor} now={now}/>
-          : fileFolderTier==='plus'
+          : fileFolderTier==='plus'&&!embedded
           ? <FileFolderPlusRadiantWorld appearance={worldAppearance||resolveFileFolderAppearance('plus')}
-              districts={visibleDistricts} active={district} onEnter={enterDistrict}
-              systems={world?.systems?.length||0} building={activeBuilds.length}
+              districts={visibleDistricts} onEnter={enterDistrict}
               builds={Array.isArray(world?.builds)?world.builds:[]}
               systemRecords={Array.isArray(world?.systems)?world.systems:[]}
               now={now}/>
+          : fileFolderTier==='plus'&&embedded
+          ? null
           : fileFolderTier==='premium'&&embedded
           ? <div className="border-b border-[#c59b5c]/30 bg-[#251e21] px-4 py-4 text-[#f5dfc2]" data-premium-workshop-interior="true">
               <p className="text-xs font-bold uppercase tracking-widest text-[#f2c67d]">Premium File Folder · Operating Workshop</p>
@@ -716,7 +719,7 @@ export default function FileFolderOpenWorld({
           {district === 'active_systems' && (
             <div>
               <p className="text-[9px] font-black uppercase tracking-[0.22em] text-sky-300">Systems in Motion</p>
-              <h3 className="mt-2 text-2xl font-black">A finished structure becomes valuable when it moves, connects and produces an output.</h3>
+              <h3 className="mt-2 text-2xl font-black">Use your finished systems and record the work they carry.</h3>
               <div className="mt-5 space-y-4">
                 {(world?.systems || []).length === 0 && <p className="rounded-xl border border-dashed border-white/10 p-5 text-sm text-slate-500">No system has finished construction yet.</p>}
                 {(world?.systems || []).map((system:any) => <div key={system.id} className="rounded-2xl border border-sky-300/15 bg-sky-400/[0.035] p-5">

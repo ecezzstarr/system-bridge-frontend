@@ -13,6 +13,7 @@ const ui=read('app/(app)/admin/file-folder-world-releases/page.tsx')
 const api=read('app/api/client/file-folder-release/route.ts')
 const client=read('app/client/system-switch/page.tsx')
 const docs=read('docs/plus-file-folder-official-world.md')
+const phoneCss=read('app/client/system-switch/file-folder-phone.css')
 
 assert.ok(tiers.includes("['standard','pro','premium','plus']"),'Exactly four types')
 assert.ok(presets.includes('PLUS_FILE_FOLDER_REFERENCE')&&presets.includes("referenceImage: '389215.png'"))
@@ -28,6 +29,13 @@ assert.ok(renderer.includes('onEnter(selectedInfo.district)')&&renderer.includes
 assert.ok(world.includes("fileFolderTier==='plus'")&&world.includes('FileFolderPlusRadiantWorld'))
 assert.ok(entry.includes('worldAppearance={resolveFileFolderAppearance(')&&
  entry.includes('fileFolderTier={data.file_folder_tier}'),'Server verified tier determines the Client renderer')
+const phoneMedia=entry.match(/matchMedia\('([^']+)'\)/)?.[1]
+assert.ok(phoneMedia&&phoneCss.replace(/\s/g,'').includes('@media'+phoneMedia.replace(/\s/g,'')),
+ 'Plus entrance and phone workspace CSS follow the same viewport rule')
+assert.ok(entry.includes("const showPlusMap=plusPhone&&!walkPlusTerritory")&&entry.includes("embedded={data.file_folder_tier==='premium'||plusPhone}"),
+ 'Only phones open the Plus operations map at entry. Larger viewports retain the workshop entrance')
+assert.ok(renderer.includes("frameloop={interactive?'always':'demand'}")&&renderer.includes("style={interactive?undefined:{pointerEvents:'none'}}"),
+ 'The phone map renders on demand and leaves swipes to the page until Explore 3D is selected')
 assert.ok(terrain.includes('data-file-folder-live-equipment')&&terrain.includes('appearance.equipmentZones'),
  'Non-Plus tiers also respect central equipment releases')
 assert.ok(release.includes('validateFileFolderAppearance')&&release.includes('tierVisuals'),
