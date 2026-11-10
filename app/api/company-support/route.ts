@@ -135,23 +135,18 @@ export async function POST(request:NextRequest){
     const wallets=await conn.query(`SELECT id,user_id,balance_trx FROM wallets
       WHERE user_id=ANY($1::uuid[]) AND is_primary=true ORDER BY user_id FOR UPDATE`,[[user.id,current.worker_id]])
     const funder=wallets.rows.find(w=>String(w.user_id)===user.id)
-    const receiver=wallets.rows.find(w=>String(w.user_id)===String(current.worker_id))
-    if(!funder||!receiver||Number(funder.balance_trx)<amount)throw new Error('Funding wallet is missing or has insufficient verified balance')
+    if(!funder||Number(funder.balance_trx)<amount)throw new Error('Funding wallet is missing or has insufficient verified balance')
     const reference='company-support:'+caseId
     await conn.query('UPDATE wallets SET balance_trx=balance_trx-$1,updated_at=now() WHERE id=$2::uuid',[amount,funder.id])
-    await conn.query('UPDATE wallets SET balance_trx=balance_trx+$1,updated_at=now() WHERE id=$2::uuid',[amount,receiver.id])
     await conn.query(`INSERT INTO weave_company_support_advances(case_id,worker_id,funder_id,currency,principal,funding_reference,verified_by)
       VALUES($1::uuid,$2::uuid,$3::uuid,'SYSTEM_SWITCH',$4,$5,$3::uuid)`,[caseId,current.worker_id,user.id,amount,reference])
-    const movements=[
-     {id:user.id,entry:'debit',before:Number(funder.balance_trx),after:Number(funder.balance_trx)-amount,desc:'Funded agreed company work support'},
-     {id:current.worker_id,entry:'earning',before:Number(receiver.balance_trx),after:Number(receiver.balance_trx)+amount,desc:'Interest-free System Switch work support advance'}
-    ]
-    for(const movement of movements)await conn.query(`INSERT INTO ledger_entries(user_id,entry_type,amount,currency,description,balance_before,balance_after,metadata,created_at)
-      VALUES($1::uuid,$2,$3,'System Switch',$4,$5,$6,$7::jsonb,now())`,
-      [movement.id,movement.entry,amount,movement.desc,movement.before,movement.after,JSON.stringify({commerce_type:'company_support_advance',case_id:caseId,reference})])
+    await conn.query(`INSERT INTO ledger_entries(user_id,entry_type,amount,currency,description,balance_before,balance_after,metadata,created_at)
+      VALUES($1::uuid,'debit',$2,'System Switch',$3,$4,$5,$6::jsonb,now())`,
+      [user.id,amount,'Funded restricted prospect-work support reserve',Number(funder.balance_trx),Number(funder.balance_trx)-amount,
+       JSON.stringify({commerce_type:'company_support_reserve',case_id:caseId,reference})])
     await conn.query("UPDATE weave_company_support_cases SET status='funded',funded_at=now(),funding_reference=$2,updated_at=now() WHERE id=$1::uuid",[caseId,reference])
     await conn.query('COMMIT')
-    await notifySupport(current.worker_id,'Work support funded','Your agreed System Switch advance is available. Eligible verified earnings will repay the principal automatically.')
+    await notifySupport(current.worker_id,'Restricted work credit funded','Your manager funded a restricted System Switch reserve for eligible prospect purchases. Repayment begins only when support is used.')
     return ok({funded:true,amount,reference})
    }catch(e){await conn.query('ROLLBACK').catch(()=>{});return fail(e instanceof Error?e.message:'Funding failed',409)}
    finally{conn.release()}
@@ -166,8 +161,8 @@ export async function POST(request:NextRequest){
     await conn.query('BEGIN')
     const locked=await conn.query("SELECT * FROM weave_company_support_cases WHERE id=$1::uuid AND status='accepted' FOR UPDATE",[caseId])
     if(!locked.rows.length)throw new Error('Case was already funded or changed')
-    await conn.query(`INSERT INTO weave_company_support_advances(case_id,worker_id,funder_id,currency,principal,funding_reference,verified_by)
-     VALUES($1::uuid,$2::uuid,$3::uuid,'NGN',$4,$5,$3::uuid)`,
+    await conn.query(`INSERT INTO weave_company_support_advances(case_id,worker_id,funder_id,currency,principal,spent,funding_reference,verified_by)
+     VALUES($1::uuid,$2::uuid,$3::uuid,'NGN',$4,$4,$5,$3::uuid)`,
      [caseId,item.worker_id,user.id,item.offered_amount,reference])
     await conn.query("UPDATE weave_company_support_cases SET status='funded',funding_reference=$2,funded_at=now(),updated_at=now() WHERE id=$1::uuid",[caseId,reference])
     await conn.query('COMMIT')
@@ -194,10 +189,35 @@ export async function POST(request:NextRequest){
    }catch(e){await conn.query('ROLLBACK').catch(()=>{});return fail(e instanceof Error?e.message:'Repayment verification failed',409)}
    finally{conn.release()}
   }
+  if(action==='refund_unused'){
+   if(!manager&&!admin)return fail('Only the assigned manager or Administrations can release unused support',403)
+   const conn=await db.connect()
+   try{
+    await conn.query('BEGIN')
+    const rec=await conn.query("SELECT * FROM weave_company_support_advances WHERE case_id=$1::uuid AND currency='SYSTEM_SWITCH' AND status='active' FOR UPDATE",[caseId])
+    const a=rec.rows[0]
+    if(!a)throw new Error('There is no funded System Switch reserve to release')
+    if(!admin&&String(a.funder_id)!==user.id)throw new Error('Only the original funder or Administrations can return this reserve')
+    const unused=Number(a.principal)-Number(a.spent)-Number(a.refunded)
+    if(unused<=0)throw new Error('No unused reserved credit remains')
+    const w=await conn.query("SELECT id,balance_trx FROM wallets WHERE user_id=$1::uuid AND is_primary=true FOR UPDATE",[a.funder_id])
+    if(!w.rows[0])throw new Error('Original funding wallet is unavailable')
+    const before=Number(w.rows[0].balance_trx)
+    await conn.query('UPDATE wallets SET balance_trx=balance_trx+$1,updated_at=now() WHERE id=$2::uuid',[unused,w.rows[0].id])
+    await conn.query(`INSERT INTO ledger_entries(user_id,entry_type,amount,currency,description,balance_before,balance_after,metadata,created_at)
+     VALUES($1::uuid,'earning',$2,'System Switch','Unused company work reserve returned',$3,$4,$5::jsonb,now())`,
+     [a.funder_id,unused,before,before+unused,JSON.stringify({commerce_type:'company_support_refund',advance_id:a.id,case_id:caseId})])
+    await conn.query("UPDATE weave_company_support_advances SET refunded=refunded+$2,status=CASE WHEN repaid>=spent THEN 'repaid' ELSE 'active' END,updated_at=now() WHERE id=$1::uuid",[a.id,unused])
+    await conn.query('COMMIT')
+    await notifySupport(item.worker_id,'Unused support returned','Unspent reserved support was returned to its original funder. Used support remains repayable under the agreed terms.')
+    return ok({refunded:unused})
+   }catch(e){await conn.query('ROLLBACK').catch(()=>{});return fail(e instanceof Error?e.message:'Refund failed',409)}
+   finally{conn.release()}
+  }
   if(action==='resolve'){
    if(!worker&&!manager&&!admin)return fail('Unauthorized',403)
-   const a=await db.query('SELECT principal,repaid FROM weave_company_support_advances WHERE case_id=$1::uuid',[caseId])
-   if(a.rows[0]&&Number(a.rows[0].principal)>Number(a.rows[0].repaid))return fail('Outstanding advances must be repaid or formally resolved by Administrations before closing',409)
+   const a=await db.query('SELECT principal,spent,refunded,repaid FROM weave_company_support_advances WHERE case_id=$1::uuid',[caseId])
+   if(a.rows[0]&&(Number(a.rows[0].spent)>Number(a.rows[0].repaid)||Number(a.rows[0].principal)>Number(a.rows[0].spent)+Number(a.rows[0].refunded)))return fail('Unused reserves must be refunded and used advances repaid before closing',409)
    const changed=await db.query(`UPDATE weave_company_support_cases SET status='resolved',resolved_at=now(),updated_at=now()
     WHERE id=$1::uuid AND status IN ('open','accepted','funded') RETURNING id`,[caseId])
    if(!changed.rows.length)return fail('This support case cannot be closed',409)
