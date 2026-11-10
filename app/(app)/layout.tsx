@@ -69,7 +69,7 @@ export default function AppLayout({
         const data = await res.json().catch(() => ({}))
         const employment = data?.employment?.active ? data.employment : null
         setLegionEmployment(employment)
-        if (employment && !pathname.startsWith('/weave/lifestyles/legion') && !legionEventRoute && pathname !== '/echo' && pathname !== '/animation-workshop' && pathname !== '/music-workshop') {
+        if (employment && !pathname.startsWith('/weave/lifestyles/legion') && !legionEventRoute && pathname !== '/echo' && pathname !== '/animation-workshop' && pathname !== '/music-workshop' && pathname !== '/image-workshop') {
           router.replace('/weave/lifestyles/legion')
         }
       } catch (e) {
