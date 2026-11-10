@@ -29,6 +29,7 @@ export default function CompanySupportWorkspace(){
  const [staffId,setStaffId]=useState('')
  const [staffNote,setStaffNote]=useState('')
  const [stockFunder,setStockFunder]=useState('manager')
+ const [acceptRecovery,setAcceptRecovery]=useState(false)
  const [busy,setBusy]=useState(false)
  const [error,setError]=useState('')
  const [notice,setNotice]=useState('')
@@ -175,7 +176,8 @@ export default function CompanySupportWorkspace(){
     </div>}
     {isWorker&&active.status==='offered'&&<div className="space-y-2 border-t border-white/15 pt-4">
      <p className="text-xs text-amber-100">Read the terms carefully. Accepting creates the agreed repayment obligation only if funds are actually advanced.</p>
-     <div className="flex flex-wrap gap-2"><button onClick={()=>void act('accept')} disabled={busy} className="min-h-11 rounded-lg bg-emerald-300 px-4 text-xs font-black text-slate-950">Accept terms</button><button disabled={busy} onClick={()=>void act('decline')} className="min-h-11 rounded-lg border border-white/25 px-4 text-xs">Decline</button></div>
+     {active.purpose!=='guidance'&&<label className="flex items-start gap-2 text-xs text-slate-100"><input type="checkbox" checked={acceptRecovery} onChange={e=>setAcceptRecovery(e.target.checked)} className="mt-1"/> I have read and accept the stated principal, funding conditions and recovery rules. I authorize recovery only from the eligible sources described above.</label>}
+     <div className="flex flex-wrap gap-2"><button onClick={()=>void act('accept',{consentToRecovery:active.purpose==='guidance'||acceptRecovery})} disabled={busy||(active.purpose!=='guidance'&&!acceptRecovery)} className="min-h-11 rounded-lg bg-emerald-300 px-4 text-xs font-black text-slate-950">Accept terms</button><button disabled={busy} onClick={()=>void act('decline')} className="min-h-11 rounded-lg border border-white/25 px-4 text-xs">Decline</button></div>
     </div>}
     {(isManager||isAdmin)&&active.status==='accepted'&&active.purpose==='system_switch'&&<div className="border-t border-white/15 pt-4">
      <p className="text-xs text-amber-100">Funding reserves credit from your own funded System Switch wallet. It will be usable only for approved Prospect Market purchases, not as a withdrawable wallet deposit. Repayment begins after use.</p>
