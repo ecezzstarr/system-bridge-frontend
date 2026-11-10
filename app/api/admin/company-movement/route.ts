@@ -30,7 +30,7 @@ export async function GET(request:NextRequest) {
     )
     const sources:Sources=Object.fromEntries(names.map((n,i)=>[n,available.rows[0]?.['t'+i]===true]))
     const missing:string[]=[]
-    async function read(name:string, required:string[], query:string, args:unknown[]=[days]):Promise<Section>{
+    async function read(name:string, required:string[], query:string, args:unknown[]=query.includes('$1')?[days]:[]):Promise<Section>{
       if(required.some(n=>!sources[n])){
         const absent=required.filter(n=>!sources[n]).join(', ')
         missing.push(name+': '+absent+' not installed')
@@ -100,6 +100,14 @@ export async function GET(request:NextRequest) {
       "COALESCE(SUM(s.quantity_packages),0)::int AS units "+
       "FROM agility_agent_sales s JOIN agility_stock_orders o ON o.id=s.order_id "+
       "WHERE s.sold_at >= "+since+" GROUP BY o.variant_id ORDER BY units DESC LIMIT 20")
+    const foodQueue=await read('foodQueue',['carrier_food_orders'],
+      "SELECT COUNT(*) FILTER (WHERE payment_status='paid' AND status NOT IN ('fulfilled','cancelled'))::int AS paid_unfulfilled, "+
+      "COUNT(*) FILTER (WHERE payment_status='proof_submitted')::int AS payment_proofs_pending "+
+      "FROM carrier_food_orders")
+    const cakeQueue=await read('cakeQueue',['carrier_cake_orders'],
+      "SELECT COUNT(*) FILTER (WHERE payment_status='paid' AND status NOT IN ('completed','cancelled'))::int AS paid_unfulfilled, "+
+      "COUNT(*) FILTER (WHERE payment_status='proof_submitted')::int AS payment_proofs_pending "+
+      "FROM carrier_cake_orders")
     const cakes=await read('cakes',['carrier_cake_orders'],
       "SELECT COUNT(*) FILTER (WHERE status='completed' AND payment_status='paid')::int AS fulfilled_orders, "+
       "COALESCE(SUM(total_ngn) FILTER (WHERE status='completed' AND payment_status='paid'),0)::numeric AS fulfilled_value_ngn, "+
@@ -151,7 +159,7 @@ export async function GET(request:NextRequest) {
     return NextResponse.json({
       success:true,days,generatedAt:new Date().toISOString(),sources,missing,
       sections:{prospects,bridgerLeaders,prospectContacts,outreach,agility,agentLeaders,
-        food,cakes,stock,agentFoodLeaders,paidFoodProducts,recordedStockProducts,folders,folderQueue,wallet,ledger,recent},
+        food,cakes,foodQueue,cakeQueue,stock,agentFoodLeaders,paidFoodProducts,recordedStockProducts,folders,folderQueue,wallet,ledger,recent},
       definitions:{
         prospect:'Completed package purchases, not verified human responses',
         agility:'Agent-recorded stock resale; payment is not independently verified by this record',
