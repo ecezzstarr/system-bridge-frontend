@@ -1,4 +1,5 @@
 import { getPool, sql } from '@/lib/db'
+import { recoverSupportAdvanceFromEarning } from '@/lib/company-support'
 import { WORLD_RULES } from './world/constants'
 import { getAgenticBridgerState } from './weave-lifestyle'
 
@@ -91,6 +92,7 @@ export async function creditBridgerCommission(params: {
     )
     if(profileUpdate.rows.length!==1)throw new Error('Bridger earnings profile unavailable')
 
+    await recoverSupportAdvanceFromEarning(client,bridgerId,commissionAmount,sourceKey)
     await client.query('COMMIT')
     credited = true
   } catch (error) {

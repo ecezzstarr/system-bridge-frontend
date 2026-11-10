@@ -2,6 +2,7 @@ import { notifyAdminOrder } from '@/lib/admin-order-notifications'
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { getPool } from '@/lib/db'
+import { consumeProspectSupport } from '@/lib/company-support'
 import { creditBridgerActivityCommission } from '@/lib/bridger-commission-router'
 import { ensureMarketTables } from '@/lib/market'
 import { ensureWeaveReceiptSchema, issueWeaveReceipt } from '@/lib/weave-receipts'
@@ -163,22 +164,27 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({error:'Wallet not found'},{status:404})
     }
     const currentBalance=Number(wallet.balance_trx)||0
-    if(currentBalance<priceTrx){
+    // Manager-funded support is held outside the spendable wallet. It can
+    // ONLY pay for an actual published prospect package, not withdrawals,
+    // gaming, unapproved subscriptions or unrelated wallet transfers.
+    const supported=currentBalance<priceTrx
+      ?await consumeProspectSupport(client,String(userId),priceTrx,packageId)
+      :null
+    if(currentBalance<priceTrx&&!supported){
       await client.query('ROLLBACK')
-      return NextResponse.json({error:'Insufficient System Switch balance',currentBalance,required:priceTrx},{status:400})
+      return NextResponse.json({error:'Insufficient System Switch wallet and approved work support balance',currentBalance,required:priceTrx},{status:400})
     }
-
-    const newBalance=currentBalance-priceTrx
-    await client.query(
+    const newBalance=supported?currentBalance:currentBalance-priceTrx
+    if(!supported)await client.query(
       `UPDATE wallets SET balance_trx=$1,updated_at=NOW() WHERE user_id=$2::uuid AND is_primary=true`,
       [newBalance,userId],
     )
-
     await client.query(
       `INSERT INTO ledger_entries
-       (id,user_id,entry_type,amount,currency,description,balance_before,balance_after,created_at)
-       VALUES (gen_random_uuid(),$1::uuid,'prospect_package_purchase',$2,'Flame Coin',$3,$4,$5,NOW())`,
-      [userId,priceTrx,`Purchased prospect package ${packageId}`,currentBalance,newBalance],
+       (id,user_id,entry_type,amount,currency,description,balance_before,balance_after,metadata,created_at)
+       VALUES (gen_random_uuid(),$1::uuid,'prospect_package_purchase',$2,'System Switch',$3,$4,$5,$6::jsonb,NOW())`,
+      [userId,priceTrx,`Purchased prospect package ${packageId}`,currentBalance,newBalance,
+       JSON.stringify({commerce_type:'prospect_package_purchase',support_advance_id:supported?.advanceId||null,source_key:'prospect:'+packageId})],
     )
 
     const soldResult=await client.query(

@@ -66,6 +66,7 @@ export function DistributionTeamWorkspace(){
         <p className="flex items-center gap-2 text-xs font-bold text-emerald-200"><Users className="h-4 w-4"/>{team.members.length} approved team members · {team.memberPosition==='manager'?'Lead Manager':'Assistant Manager'}</p>
         <button type="button" onClick={()=>void load()} className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-white/15 px-3 text-xs font-bold text-cyan-100"><RefreshCw className="h-4 w-4"/> Refresh team</button>
       </div>
+      <Link href="/weave/lifestyles/support" className="inline-flex min-h-11 items-center rounded-xl border border-cyan-300/40 bg-cyan-300/10 px-4 text-xs font-bold text-cyan-100">Open individual employee support cases →</Link>
       <div className="flex flex-wrap gap-2">{team.members.map(member=><span key={member.id} className="rounded-full border border-emerald-300/20 bg-emerald-200/[.045] px-3 py-2 text-[11px] text-emerald-100">{member.name} · {member.position==='manager'?'Lead':'Assistant'}</span>)}</div>
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(15rem,.6fr)]">
         <section className="min-w-0 rounded-2xl border border-cyan-200/15 bg-slate-950/45 p-4 sm:p-5" aria-label="Distribution team conversation">

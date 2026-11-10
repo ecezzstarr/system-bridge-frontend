@@ -1,4 +1,5 @@
 import { getPool, sql } from '@/lib/db'
+import { recoverSupportAdvanceFromEarning } from '@/lib/company-support'
 import { WORLD_RULES } from './world/constants'
 
 export type CommissionActivity =
@@ -118,6 +119,7 @@ export async function creditAgentCommission(params: {
     )
     if(profileUpdate.rows.length!==1)throw new Error('Agent earnings profile unavailable')
 
+    await recoverSupportAdvanceFromEarning(client,agentId,commissionAmount,sourceKey)
     await client.query('COMMIT')
     credited = true
   } catch (error) {
