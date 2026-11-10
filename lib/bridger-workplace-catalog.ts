@@ -106,6 +106,7 @@ export const BRIDGER_WORKPLACE_SPACES: readonly BridgerWorkplaceSpace[] = [
     places: [
       { label: 'Echo', href: '/echo', detail: 'Receive immediate guidance and see relevant next movements.' },
       { label: 'Company Guidance', href: '/company-chat', detail: 'Contact the appropriate company support department.' },
+      { label: 'Manager Work Support', href: '/weave/lifestyles/support', detail: 'Request verified manager assistance or eligible restricted work support for a legitimate blocked outreach task.' },
       { label: 'Direct Communication', href: '/communications', detail: 'Continue existing authorized conversations.' },
       { label: 'People & Presences', href: '/profiles', detail: 'Explore recognized people and Presences inside Weave.' },
       { label: 'Flame Event · Loop 1', href: '/event', detail: 'Company event world; its distinct Burning River theme remains unchanged.' },
