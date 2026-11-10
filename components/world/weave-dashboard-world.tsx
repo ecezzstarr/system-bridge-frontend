@@ -81,7 +81,7 @@ export function WeaveDashboardWorld({
   const {isVisible,orderFor}=useEnvironmentOrganizer()
   const hasRolePresence=role==='agent'||role==='bridger'||role==='client'
   const hasVideoStudio=role!=='admin'&&isVisible('/video-ad-studio')
-  const hasImageStudio=role!=='admin'&&isVisible('/agent/creative')
+  const hasImageStudio=role!=='admin'&&isVisible('/image-workshop')
 
   const districts=getRoleDistricts(role)
     .map(district=>({
