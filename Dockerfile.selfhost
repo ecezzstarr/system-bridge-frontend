@@ -33,6 +33,7 @@ ARG WEAVE_RELEASE_SHA
 ENV WEAVE_RELEASE_SHA=$WEAVE_RELEASE_SHA
 
 # Keep the same acceptance gate used by the current production Docker image.
+RUN node tests/admin-company-movement-regression.cjs
 RUN node tests/recent-features.cjs
 RUN node tests/agentic-bridger-regression.cjs
 RUN node tests/file-folder-customer-door-purchase-regression.cjs
