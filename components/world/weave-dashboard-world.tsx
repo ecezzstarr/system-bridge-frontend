@@ -119,6 +119,16 @@ export function WeaveDashboardWorld({
       </div>
     </header>
 
+    {role==='client'&&kingdom?.tier==='premium'&&<aside data-premium-client-account="verified-premium" className="relative z-30 mx-3 mt-3 rounded-3xl border border-[#d9ae69]/60 bg-[linear-gradient(130deg,rgba(8,8,11,.97),rgba(41,31,29,.95),rgba(10,10,14,.97))] p-5 text-[#f8ebd4] shadow-[0_25px_90px_rgba(0,0,0,.7)] sm:absolute sm:left-6 sm:top-32 sm:mx-0 sm:max-w-[26rem]">
+      <p className="text-xs font-bold uppercase tracking-[.18em] text-[#edc985]">Verified Premium · Private Client Estate</p>
+      <h2 className="mt-2 text-2xl font-black leading-tight">Your business citadel</h2>
+      <p className="mt-3 text-sm leading-6 text-[#e5d7c3]">Your Premium File Folder is an owned business environment, not a decorative membership card. Enter to direct the real build pipeline, material acquisition, commissioned systems, customer reception and your business records.</p>
+      <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
+        {['Private 3D Citadel','Blueprint & Materials','Systems & Operations','Customer Door'].map(label=><div key={label} className="rounded-xl border border-[#b9955c]/35 bg-[#d4a75e]/[.06] p-3 text-[#f2dfbd]">{label}</div>)}
+      </div>
+      <Link href="/client/system-switch" className="mt-4 flex min-h-12 items-center justify-center rounded-xl bg-[#e6bf7d] px-4 text-sm font-black text-[#1b1414]">Enter Premium Private File Folder</Link>
+      <p className="mt-3 text-xs leading-5 text-[#cbb99f]">Only recorded purchases, builds, systems and orders are shown as active.</p>
+    </aside>}
     {role==='client'&&kingdom&&<div className="relative z-30 mx-3 mt-2 sm:absolute sm:bottom-[16%] sm:left-1/2 sm:mx-0 sm:-translate-x-1/2">
       <Link href="/client/system-switch" className="kingdom-identity-link inline-flex min-h-12 w-full items-center justify-center rounded-xl px-5 py-3 text-center text-xs font-black uppercase tracking-wider sm:w-auto" data-enter-client-kingdom="verified-file-folder">
         Enter {kingdom.tier.toUpperCase()} File Folder Kingdom
