@@ -55,7 +55,7 @@ assert.ok(commerce.includes('BEGIN')&&commerce.includes('FOR UPDATE')&&commerce.
 assert.ok(commerce.includes('balance_trx=balance_trx-$1')&&commerce.includes('SYSTEM_SWITCH'),'Company System Switch production fees are debited and labeled correctly')
 assert.ok(commerce.includes("'image_sample_workshop'")&&commerce.includes('weave_receipts'),'Company purchase receipts persist')
 assert.ok(commerce.includes('user_id=$1::uuid AND content_hash=$2'),'Identical checkout retries are idempotent')
-assert.ok(commerce.includes('serviceOrderId}')).valueOf()
+assert.ok(commerce.includes('sampleFingerprint(sampleId,edits,serviceOrderId)'), 'Commercial licenses are scoped to specific customer jobs')
 assert.ok(commerce.includes('serviceOrderId:string|null=null'),'Separate customer commissions have separate license keys')
 assert.ok(commerce.includes("role==='admin'?0"),'Official Administrations artwork does not count as a paid sale')
 assert.ok(commerce.includes('weave_image_sample_requests')&&commerce.includes('weave_image_sample_providers'),'Service identity and customer requests persist')
