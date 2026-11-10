@@ -124,11 +124,17 @@ export async function POST(request:NextRequest){
    if(!manager&&!admin)return fail('Assigned manager required',403)
    if(item.status!=='open')return fail('Only open cases can be offered support',409)
    const amount=Number(body.amount||0),terms=limitText(body.terms,1600)
+   const recoveryDisclosure=item.purpose==='system_switch'
+     ?'INTERNAL SYSTEM SWITCH CREDIT: The agreed amount is reserved from the funder wallet for eligible Prospect Market purchases only. Unused reserves can be returned to the funder. On verified use, the worker owes only the amount actually spent. Up to the full amount of each future eligible platform commission or referral earning may automatically repay the outstanding used principal, until paid. No interest; no unrelated wallet deposits, salary, external customer receipts or third-party funds are collected.'
+     :item.purpose==='food_stock'
+       ?'REAL NGN STOCK SUPPORT: A support offer is not proof of funding. Administrations must independently verify actual supplier funding before any stock advance is active. Platform wallet earnings are not converted or seized for NGN repayment. Repayments require separately verified real-world money received, with an auditable reference. No automatic access to external bank accounts or customer cash.'
+       :'Guidance only: No money is advanced or repayable.'
+   const writtenTerms=recoveryDisclosure+'\\n\\nManager work terms: '+(terms||'No additional financial terms.')
    if(item.purpose!=='guidance'&&(!Number.isFinite(amount)||amount<=0||amount>1000000||terms.length<40))
     return fail('Specify a positive amount and clear written repayment terms (40 characters minimum)')
    const offered=await db.query(`UPDATE weave_company_support_cases
     SET status='offered',offered_amount=$2,terms=$3,offered_by=$4::uuid,offered_at=now(),updated_at=now()
-    WHERE id=$1::uuid AND status='open' RETURNING *`,[caseId,item.purpose==='guidance'?null:amount,terms||'Manager guidance and work assistance without a financial advance.',user.id])
+    WHERE id=$1::uuid AND status='open' RETURNING *`,[caseId,item.purpose==='guidance'?null:amount,writtenTerms,user.id])
    if(!offered.rows.length)return fail('Case changed before approval',409)
    await notifySupport(item.worker_id,'Manager support offer','Review and accept or decline the terms in Company Support. No financial advance has been issued.')
    return ok({case:offered.rows[0]})
@@ -136,6 +142,7 @@ export async function POST(request:NextRequest){
   if(action==='accept'||action==='decline'){
    if(!worker)return fail('Only the supported worker can accept or decline terms',403)
    if(item.status!=='offered')return fail('No outstanding offer to accept',409)
+   if(action==='accept'&&item.purpose!=='guidance'&&body.consentToRecovery!==true)return fail('Explicit agreement to the stated repayment and verification terms is required',422)
    const status=action==='accept'?'accepted':'declined'
    const changed=await db.query(`UPDATE weave_company_support_cases
     SET status=$2,accepted_at=CASE WHEN $2='accepted' THEN now() ELSE null END,updated_at=now()
