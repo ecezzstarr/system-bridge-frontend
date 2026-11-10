@@ -4,7 +4,7 @@ import {useAuth} from '@/lib/auth-provider'
 import {useCallback,useEffect,useState} from 'react'
 
 type Person={user_id:string;name:string}
-type Manager={manager_id:string;name:string;source_role:string;staff:number;direct:number;assistants:number;
+type Manager={manager_id:string;name:string;source_role:string;region:string;current_direction:string|null;direction_at:string|null;staff:number;direct:number;assistants:number;
   tasks_completed:number;tasks_open:number;checkins:number;needs_help:number}
 type Member={manager_id:string;user_id:string;name:string;role:string;position:string;level:string}
 type FoodAssignment={food_manager_user_id:string;regional_manager_user_id:string}
@@ -136,6 +136,10 @@ export default function AdminRegionalOperations(){
           const people=report.team.filter(t=>t.manager_id===m.manager_id)
           return <article key={m.manager_id} className="space-y-3 rounded-xl border border-white/15 bg-slate-950/70 p-4">
             <h3 className="text-lg font-bold">{m.name} · {m.source_role}</h3>
+            <p className="text-xs text-amber-100">Regional System Switch Gate · {m.region||'Assigned Region'}</p>
+            <p className="text-xs leading-5 text-slate-300">
+              {m.current_direction?'Current manager direction: '+m.current_direction:'No regional direction published yet'}
+            </p>
             <div className="grid grid-cols-3 gap-2 text-xs">
               <div className="border-t border-white/10 pt-2"><p className="text-slate-400">Assigned staff</p><p className="mt-1 text-xl font-bold">{m.staff}</p></div>
               <div className="border-t border-white/10 pt-2"><p className="text-slate-400">Today's check-ins</p><p className="mt-1 text-xl font-bold">{m.checkins}</p></div>
