@@ -20,6 +20,7 @@ const transpiled = ts.transpileModule(lib,{compilerOptions:{target:ts.ScriptTarg
 const moduleExports = {}
 vm.runInNewContext(transpiled,{
   exports:moduleExports,
+  process:{env:{}},
   require: name => {
     if(name==='@/lib/db')return {getPool:()=>{throw Error('No database needed for image configuration test')}}
     throw Error('Unexpected module: '+name)
