@@ -1,4 +1,5 @@
 'use client'
+import Link from 'next/link'
 import {useCallback,useEffect,useState} from 'react'
 import {MessageSquareText,RefreshCw,Send,Users} from 'lucide-react'
 import {useAuth} from '@/lib/auth-provider'
