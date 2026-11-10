@@ -461,3 +461,208 @@ body {
   border-left-width: 0 !important;
   border-right-width: 0 !important;
 }
+
+
+/* Platform-wide Company Loader · architectural world.
+   This is the one transit gate, not a second Client File Folder loader.
+   Actual readiness and all three lessons are still driven by React state.
+   The artwork is decorative and deliberately carries no fabricated
+   balances, build percentages, business status or activity records. */
+.weave-loader-platform {
+  color: #152d48;
+  background: #edf5f8;
+  color-scheme: light;
+}
+
+.weave-loader-platform .weave-loader-scenery {
+  z-index: 0;
+  background-color: #d2e6f2;
+  background-image: url('/weave/loader-company-world.svg');
+  background-repeat: no-repeat;
+  background-position: center clamp(3.5rem, 10svh, 7rem);
+  background-size: max(610px, 100vw) auto;
+}
+
+.weave-loader-platform .weave-loader-scenery-portrait,
+.weave-loader-platform .weave-loader-scenery-landscape {
+  display: none;
+}
+
+.weave-loader-platform .weave-loader-scenery-shade {
+  background: linear-gradient(180deg,
+    rgba(255, 252, 246, .92) 0%,
+    rgba(255, 251, 241, .42) 19%,
+    rgba(228, 240, 245, .02) 34%,
+    rgba(8, 33, 59, .24) 44%,
+    rgba(5, 26, 49, .85) 61%,
+    #06182c 80%,
+    #041325 100%);
+}
+
+.weave-loader-platform .weave-loader-layout {
+  z-index: 1;
+  grid-template-rows: minmax(0, 1fr) minmax(0, min(19rem, 43svh)) auto auto auto auto auto;
+  gap: clamp(.28rem, .9svh, .65rem);
+  max-width: 54rem;
+  padding-inline: clamp(.75rem, 3vw, 1.4rem);
+}
+
+.weave-loader-platform .weave-loader-heading {
+  align-self: stretch;
+  justify-content: flex-start;
+  padding-top: clamp(.25rem, 1.2svh, .8rem);
+}
+
+.weave-loader-platform .weave-loader-heading > div:first-child {
+  display: none;
+}
+
+.weave-loader-platform .weave-loader-heading :is(p,h1) {
+  color: #16324e;
+}
+
+.weave-loader-platform .weave-loader-heading > p:first-of-type {
+  margin-top: 0;
+  color: #926124;
+  font-size: clamp(.62rem, 1.5vw, .73rem);
+  letter-spacing: .16em;
+}
+
+.weave-loader-platform .weave-loader-heading > p:nth-of-type(2) {
+  color: #435e71;
+  font-size: .59rem;
+  letter-spacing: .1em;
+}
+
+.weave-loader-platform .weave-loader-heading h1 {
+  max-width: min(100%, 34rem);
+  margin-top: .3rem;
+  border: 1px solid rgba(186, 141, 69, .42);
+  border-radius: 1rem;
+  background: linear-gradient(115deg, rgba(255, 255, 255, .91), rgba(255, 247, 224, .84));
+  box-shadow: 0 5px 19px rgba(17, 53, 83, .08);
+  padding: .32rem .9rem;
+  font-family: Georgia, Cambria, serif;
+  font-size: clamp(1.03rem, 4.3vw, 1.65rem);
+  font-weight: 700;
+  line-height: 1.15;
+  text-wrap: balance;
+}
+
+.weave-loader-platform .weave-loader-platform-caption {
+  max-width: 100%;
+  border-radius: 999px;
+  background: rgba(254, 252, 246, .9);
+  border: 1px solid rgba(172, 124, 48, .35);
+  padding: .28rem .68rem;
+  margin-top: .38rem;
+  color: #684b28;
+  font-size: clamp(.5rem, 1.7vw, .65rem);
+  font-weight: 800;
+  letter-spacing: .07em;
+}
+
+.weave-loader-platform .weave-loader-card {
+  background: linear-gradient(145deg, rgba(13, 40, 68, .99), rgba(4, 19, 39, .99));
+  border: 1px solid #c69c56;
+  border-radius: 1.3rem;
+  box-shadow: 0 0 0 2px rgba(253, 242, 208, .22), 0 10px 35px rgba(1, 9, 27, .4);
+}
+
+.weave-loader-platform .weave-loader-card > div:first-child {
+  border-bottom: 1px solid rgba(220, 174, 89, .3);
+  padding-bottom: .6rem;
+}
+
+.weave-loader-platform .weave-loader-card h2 {
+  color: #fff6e1;
+  font-family: Georgia, Cambria, serif;
+  font-weight: 700;
+  letter-spacing: -.015em;
+}
+
+.weave-loader-platform .weave-loader-card-body {
+  scrollbar-color: rgba(218, 184, 105, .6) transparent;
+}
+
+.weave-loader-platform .weave-loader-card-movement,
+.weave-loader-platform .weave-loader-lyric-stack > p:last-child {
+  border-color: #e5bd70;
+  color: #f7dc9f;
+}
+
+.weave-loader-platform .weave-loader-progress > span {
+  min-height: 5px;
+  box-shadow: 0 0 0 1px rgba(244, 226, 189, .12);
+}
+
+.weave-loader-platform .weave-loader-actions {
+  background: linear-gradient(105deg, rgba(255, 249, 230, .96), rgba(240, 214, 156, .98));
+  border: 1px solid #b98533;
+  box-shadow: inset 0 1px rgba(255, 255, 255, .8);
+}
+
+.weave-loader-platform .weave-loader-actions p {
+  color: #223a50;
+}
+
+.weave-loader-platform .weave-loader-actions > span {
+  background: #318766;
+}
+
+.weave-loader-platform .weave-loader-return {
+  background: #fff9e8;
+  color: #253f52;
+  border-color: #b88538;
+}
+
+.weave-loader-platform .weave-loader-status p {
+  color: #f8e6c5;
+  font-size: clamp(.57rem, 1.7vw, .7rem);
+}
+
+@media (min-width: 700px) and (min-aspect-ratio: 1/1) {
+  .weave-loader-platform .weave-loader-scenery {
+    background-position: center 5svh;
+    background-size: min(900px, 84vw) auto;
+  }
+  .weave-loader-platform .weave-loader-layout {
+    max-width: 46rem;
+    grid-template-rows: minmax(0, 1fr) minmax(0, min(21rem, 45svh)) auto auto auto auto auto;
+  }
+}
+
+@media (max-width: 400px) {
+  .weave-loader-platform .weave-loader-layout {
+    padding-inline: .6rem;
+  }
+  .weave-loader-platform .weave-loader-heading h1 {
+    font-size: clamp(.98rem, 4.6vw, 1.23rem);
+  }
+  .weave-loader-platform .weave-loader-platform-caption {
+    font-size: .5rem;
+    padding: .25rem .43rem;
+  }
+}
+
+@media (max-height: 610px) {
+  .weave-loader-platform .weave-loader-layout {
+    grid-template-rows: minmax(0, 1fr) minmax(0, 42svh) auto auto auto auto auto;
+    gap: .25rem;
+  }
+  .weave-loader-platform .weave-loader-heading {
+    padding-top: 0;
+  }
+  .weave-loader-platform .weave-loader-heading h1 {
+    padding-block: .25rem;
+  }
+  .weave-loader-platform .weave-loader-platform-caption {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .weave-loader-platform .weave-loader-actions > span {
+    animation: none;
+  }
+}
