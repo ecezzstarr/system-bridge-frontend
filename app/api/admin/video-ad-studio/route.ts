@@ -51,7 +51,7 @@ export async function PATCH(request: NextRequest) {
       const packageKey = String(body.packageKey || '').slice(0,80)
       const price = Number(body.priceFlameCoin)
       if (!packageKey || !Number.isFinite(price) || price < 0 || price > 1000000) {
-        return NextResponse.json({ success:false, error:'Valid package and Flame Coin price are required' }, { status:400 })
+        return NextResponse.json({ success:false, error:'Valid package and System Switch price are required' }, { status:400 })
       }
       const active = body.active === undefined ? null : Boolean(body.active)
       const result = await pool.query(

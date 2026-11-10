@@ -95,7 +95,7 @@ export default function AgentCommissionsPage() {
             <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">Prospect purchase rate</p>
             <p className="mt-2 text-6xl font-black text-emerald-300">{leadRate}%</p>
             <p className="mt-2 text-xs leading-5 text-slate-400">
-              Example: 100 Flame Coin spent on a Prospect package → 30 Flame Coin Agent return.
+              Example: 100 System Switch spent on a Prospect package → 30 System Switch Agent return.
             </p>
           </div>
         </div>
@@ -118,7 +118,7 @@ export default function AgentCommissionsPage() {
         <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-5">
           <p className="text-xs text-slate-500">Total commission credited</p>
           <p className="mt-2 text-3xl font-black text-emerald-300">
-            {commissions ? commissions.totalEarnings.toFixed(2) : '—'} Flame Coin
+            {commissions ? commissions.totalEarnings.toFixed(2) : '—'} System Switch
           </p>
         </div>
         <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-5">
@@ -184,9 +184,9 @@ export default function AgentCommissionsPage() {
 
                 <div className="mt-3 rounded-xl border border-emerald-400/15 bg-emerald-400/[0.05] p-3">
                   <p className="text-[10px] uppercase tracking-wider text-emerald-300">Prospect purchase value</p>
-                  <p className="mt-1 text-lg font-black text-white">{bridger.prospectPurchaseValue.toFixed(2)} Flame Coin</p>
+                  <p className="mt-1 text-lg font-black text-white">{bridger.prospectPurchaseValue.toFixed(2)} System Switch</p>
                   <p className="mt-2 text-[10px] text-slate-500">
-                    {leadRate}% represented Agent share: <span className="font-bold text-emerald-300">{bridger.prospectCommissionValue.toFixed(2)} Flame Coin</span>
+                    {leadRate}% represented Agent share: <span className="font-bold text-emerald-300">{bridger.prospectCommissionValue.toFixed(2)} System Switch</span>
                   </p>
                 </div>
               </div>
@@ -216,7 +216,7 @@ export default function AgentCommissionsPage() {
                 </div>
                 <div className="flex items-center gap-2 font-black text-emerald-300">
                   <TrendingUp className="h-4 w-4" />
-                  +{item.amount.toFixed(2)} Flame Coin
+                  +{item.amount.toFixed(2)} System Switch
                 </div>
               </div>
             ))}
