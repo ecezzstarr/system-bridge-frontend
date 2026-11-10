@@ -182,6 +182,10 @@ export async function POST(request: NextRequest) {
       UPDATE weave_regional_manager_food_distribution_leads SET status='ended',updated_at=NOW()
       WHERE regional_manager_user_id=${userId}::uuid AND status='active'
     `
+    await sql`
+      UPDATE weave_regional_manager_agents SET status='ended',updated_at=NOW()
+      WHERE regional_manager_user_id=${userId}::uuid AND status='active'
+    `
     return NextResponse.json({ success: true, appointment })
   }
 
