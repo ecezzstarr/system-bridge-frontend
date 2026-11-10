@@ -56,8 +56,10 @@ jobs:
           node tests/today-food-postgres.cjs
           node tests/phone-push-postgres.cjs
 
-      - name: Core recent-feature regression
-        run: node tests/recent-features.cjs
+      - name: Core recent-feature and Department Entry pricing regression
+        run: |
+          node tests/recent-features.cjs
+          node tests/department-entry-role-pricing-regression.cjs
 
       - name: Agent Creative Studio fee and image regressions
         run: |
