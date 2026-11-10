@@ -115,7 +115,7 @@ export default function ClientBuildCatalogAdminPage() {
           <p className="text-sm font-black uppercase tracking-[0.18em] text-cyan-300">Administration · Client Building</p>
           <h1 className="mt-2 text-3xl font-black md:text-5xl">Client Build Catalog</h1>
           <p className="mt-3 max-w-3xl text-base leading-7 text-slate-300">
-            Control what Clients can buy and build inside their File Folders. Component prices are in Flame Coin. Blueprint build time and visibility can be changed here without redeploying WEAVE.
+            Control what Clients can buy and build inside their File Folders. Component prices are in System Switch. Blueprint build time and visibility can be changed here without redeploying WEAVE.
           </p>
         </div>
         <button onClick={() => void load()} className="inline-flex items-center gap-2 rounded-full border border-white/10 px-4 py-2 text-sm font-bold">
@@ -130,7 +130,7 @@ export default function ClientBuildCatalogAdminPage() {
           <ShoppingBag className="h-5 w-5 text-emerald-300" />
           <h2 className="text-xl font-black">Build Market components</h2>
         </div>
-        <p className="mt-2 text-base text-slate-400">These are the things Clients spend Flame Coin on before starting builds.</p>
+        <p className="mt-2 text-base text-slate-400">These are the things Clients spend System Switch on before starting builds.</p>
 
         <div className="mt-5 grid gap-4 lg:grid-cols-2">
           {items.map((item, index) => (
@@ -153,7 +153,7 @@ export default function ClientBuildCatalogAdminPage() {
 
               <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end">
                 <label className="flex-1">
-                  <span className="text-sm font-bold text-slate-400">Price · Flame Coin</span>
+                  <span className="text-sm font-bold text-slate-400">Price · System Switch</span>
                   <input
                     type="number"
                     min="0"

@@ -132,7 +132,7 @@ export default function EnterpriseSystemsAdminPage() {
           <p className="text-sm font-black uppercase tracking-[0.18em] text-cyan-300">Administration · Enterprise Systems</p>
           <h1 className="mt-2 text-4xl font-black md:text-5xl">Enterprise Systems Workshop</h1>
           <p className="mt-3 max-w-4xl text-base leading-7 text-slate-300">
-            Operate the high-value systems sold through the Enterprise Exchange. GBP remains the contract denomination; WEAVE also records the Flame Coin equivalent at the live TRX/GBP rate because 1 Flame Coin = 1 TRX. Administration controls publication and advances each acquisition through review, contract, build and delivery.
+            Operate the high-value systems sold through the Enterprise Exchange. GBP remains the contract denomination; WEAVE also records the System Switch equivalent at the live TRX/GBP rate because 1 System Switch = 1 TRX. Administration controls publication and advances each acquisition through review, contract, build and delivery.
           </p>
         </div>
         <button onClick={() => void load()} className="inline-flex items-center gap-2 rounded-full border border-white/10 px-4 py-2 text-sm font-bold">
@@ -210,9 +210,9 @@ export default function EnterpriseSystemsAdminPage() {
                     <p className="mt-1 text-sm text-slate-500">{order.buyer_email}</p>
                     <p className="mt-3 text-2xl font-black text-amber-200">{gbp(order.quoted_price_gbp)}</p>
                     {order.quoted_flame_coin != null && (
-                      <p className="mt-1 text-base font-black text-cyan-200">≈ {Number(order.quoted_flame_coin).toLocaleString(undefined,{maximumFractionDigits:0})} Flame Coin</p>
+                      <p className="mt-1 text-base font-black text-cyan-200">≈ {Number(order.quoted_flame_coin).toLocaleString(undefined,{maximumFractionDigits:0})} System Switch</p>
                     )}
-                    <p className="mt-1 text-sm text-slate-500">{order.rate_source === 'live' ? 'Live TRX/GBP reference captured at request time' : 'Flame Coin reference unavailable at request time'}</p>
+                    <p className="mt-1 text-sm text-slate-500">{order.rate_source === 'live' ? 'Live TRX/GBP reference captured at request time' : 'System Switch reference unavailable at request time'}</p>
                     <p className="mt-1 text-sm text-slate-500">{new Date(order.created_at).toLocaleString()}</p>
                   </div>
 
