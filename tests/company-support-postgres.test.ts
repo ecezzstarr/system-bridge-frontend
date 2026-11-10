@@ -46,6 +46,31 @@ async function main(){
   await getPool().query(`INSERT INTO weave_company_support_advances
     (case_id,worker_id,funder_id,currency,principal,funding_reference)
     VALUES($1,$2,$3,'SYSTEM_SWITCH',50,$4)`,[caseId,workerId,managerId,'test:'+caseId])
+  // A regional gate contains more than Bridgers: ordinary Agents, verified
+  // Food Distribution lead managers and their approved assistants require
+  // genuine one-to-one Work Support without an unrelated manual assignment.
+  await working.query("CREATE TABLE weave_regional_manager_agents(agent_user_id uuid PRIMARY KEY REFERENCES users(id),regional_manager_user_id uuid REFERENCES weave_regional_manager_appointments(user_id),status text)")
+  await working.query("CREATE TABLE weave_regional_manager_food_distribution_leads(food_manager_user_id uuid PRIMARY KEY REFERENCES users(id),regional_manager_user_id uuid REFERENCES weave_regional_manager_appointments(user_id),status text)")
+  await working.query("CREATE TABLE weave_food_distribution_employment(user_id uuid PRIMARY KEY REFERENCES users(id),manager_user_id uuid REFERENCES users(id),position text,status text)")
+  const agentId=randomUUID(),foodLeadId=randomUUID(),foodAssistantId=randomUUID(),outsiderId=randomUUID()
+  await working.query("INSERT INTO users(id,name,username,role) VALUES($1,'Regional Agent','regionalagent','agent'),($2,'Food Manager','foodmanager','agent'),($3,'Food Assistant','foodassistant','agent'),($4,'Stranger','stranger','agent')",[agentId,foodLeadId,foodAssistantId,outsiderId])
+  await working.query("INSERT INTO weave_regional_manager_agents(agent_user_id,regional_manager_user_id,status) VALUES($1,$2,'active')",[agentId,managerId])
+  await working.query("INSERT INTO weave_food_distribution_employment(user_id,manager_user_id,position,status) VALUES($1,NULL,'manager','approved'),($2,$1,'assistant','approved')",[foodLeadId,foodAssistantId])
+  await working.query("INSERT INTO weave_regional_manager_food_distribution_leads(food_manager_user_id,regional_manager_user_id,status) VALUES($1,$2,'active')",[foodLeadId,managerId])
+  const {eligibleManagers}=await import('../lib/company-support')
+  for(const person of [agentId,foodLeadId,foodAssistantId]){
+    assert.equal(await managerAssignedTo(person,managerId),true,'Regional role chain admits verified employee')
+    assert((await eligibleManagers(person)).some(m=>m.id===managerId),'Employee sees actual Regional Manager as their support contact')
+  }
+  assert.equal(await managerAssignedTo(outsiderId,managerId),false,'Unassigned Agent cannot use regional work support')
+  await working.query("UPDATE weave_regional_manager_agents SET status='ended' WHERE agent_user_id=$1",[agentId])
+  await working.query("UPDATE weave_food_distribution_employment SET status='ended' WHERE user_id=$1",[foodAssistantId])
+  assert.equal(await managerAssignedTo(agentId,managerId),false,'Ending direct Agent region removes private access')
+  assert.equal(await managerAssignedTo(foodAssistantId,managerId),false,'Ending Food assistant appointment removes private access')
+  assert.equal(await managerAssignedTo(foodLeadId,managerId),true,'Lead remains independently assigned')
+  await working.query("UPDATE weave_regional_manager_appointments SET status='ended' WHERE user_id=$1",[managerId])
+  assert.equal(await managerAssignedTo(foodLeadId,managerId),false,'Ended regional appointment cannot supervise food lead')
+  await working.query("UPDATE weave_regional_manager_appointments SET status='active' WHERE user_id=$1",[managerId])
   // Funding is a reserve: only manager's real wallet loses 50.
   await getPool().query('UPDATE wallets SET balance_trx=50 WHERE user_id=$1',[managerId])
   const before=await getPool().query('SELECT balance_trx FROM wallets WHERE user_id=$1',[workerId])

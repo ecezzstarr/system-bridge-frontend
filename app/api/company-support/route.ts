@@ -23,11 +23,14 @@ export async function GET(request:NextRequest){
    JOIN users u ON u.id=a.worker_id WHERE a.manager_id=$1::uuid AND a.active=true AND u.is_active=true
    ORDER BY u.name LIMIT 150`,[user.id])).rows:[]
   if(kinds.length){
-   const relations=await db.query("SELECT to_regclass('weave_regional_manager_bridgers') AS bridgers,to_regclass('weave_regional_manager_distribution_managers') AS leads,to_regclass('weave_distribution_assistants') AS assistants,to_regclass('weave_food_distribution_employment') AS food")
+   const relations=await db.query("SELECT to_regclass('weave_regional_manager_bridgers') AS bridgers,to_regclass('weave_regional_manager_distribution_managers') AS leads,to_regclass('weave_regional_manager_agents') AS agents,to_regclass('weave_regional_manager_food_distribution_leads') AS food_leads,to_regclass('weave_distribution_assistants') AS assistants,to_regclass('weave_food_distribution_employment') AS food")
    const t=relations.rows[0]||{}
    const queries:string[]=[]
    if(kinds.includes('regional')){
     if(t.bridgers)queries.push("SELECT u.id,u.name,u.role FROM weave_regional_manager_bridgers a JOIN users u ON u.id=a.bridger_user_id WHERE a.regional_manager_user_id=$1::uuid AND a.status='active' AND u.is_active=true")
+    if(t.agents)queries.push("SELECT u.id,u.name,u.role FROM weave_regional_manager_agents a JOIN users u ON u.id=a.agent_user_id AND u.role='agent' AND u.is_active=true WHERE a.regional_manager_user_id=$1::uuid AND a.status='active'")
+    if(t.food_leads&&t.food)queries.push("SELECT u.id,u.name,u.role FROM weave_regional_manager_food_distribution_leads f JOIN weave_food_distribution_employment e ON e.user_id=f.food_manager_user_id AND e.position='manager' AND e.status='approved' JOIN users u ON u.id=e.user_id AND u.is_active=true AND u.role='agent' WHERE f.regional_manager_user_id=$1::uuid AND f.status='active'")
+    if(t.food_leads&&t.food)queries.push("SELECT u.id,u.name,u.role FROM weave_regional_manager_food_distribution_leads f JOIN weave_food_distribution_employment lead ON lead.user_id=f.food_manager_user_id AND lead.position='manager' AND lead.status='approved' JOIN weave_food_distribution_employment a ON a.manager_user_id=f.food_manager_user_id AND a.position='assistant' AND a.status='approved' JOIN users u ON u.id=a.user_id AND u.is_active=true AND u.role='agent' WHERE f.regional_manager_user_id=$1::uuid AND f.status='active'")
     if(t.leads)queries.push("SELECT u.id,u.name,u.role FROM weave_regional_manager_distribution_managers a JOIN users u ON u.id=a.distribution_manager_user_id WHERE a.regional_manager_user_id=$1::uuid AND a.status='active' AND u.is_active=true")
     if(t.leads&&t.assistants)queries.push("SELECT u.id,u.name,u.role FROM weave_regional_manager_distribution_managers r JOIN weave_distribution_assistants a ON a.manager_user_id=r.distribution_manager_user_id JOIN users u ON u.id=a.user_id WHERE r.regional_manager_user_id=$1::uuid AND r.status='active' AND a.status='approved' AND u.is_active=true")
    }
@@ -78,10 +81,20 @@ export async function POST(request:NextRequest){
   if(action==='start_case'){
    if(user.role==='admin'||!(await managerKinds(user.id)).length)return fail('Verified manager appointment required',403)
    const workerId=limitText(body.workerId,50),description=limitText(body.description,1800),taskReference=limitText(body.taskReference,200)
+   const purpose=limitText(body.purpose||'guidance',24),amount=Number(body.amount||0)
    if(!uuid(workerId)||description.length<15||!(await managerAssignedTo(workerId,user.id)))
     return fail('Choose an assigned employee and describe the obstacle',403)
-   const created=await db.query(`INSERT INTO weave_company_support_cases(worker_id,manager_id,purpose,description,task_reference)
-     VALUES($1::uuid,$2::uuid,'guidance',$3,$4) RETURNING *`,[workerId,user.id,description,taskReference||null])
+   const who=await db.query("SELECT role FROM users WHERE id=$1::uuid AND is_active=true",[workerId])
+   const workerRole=String(who.rows[0]?.role||'')
+   if(!['guidance','system_switch','food_stock'].includes(purpose)||
+     (purpose==='food_stock'&&workerRole!=='agent')||
+     (purpose==='system_switch'&&workerRole!=='bridger')||
+     !Number.isFinite(amount)||(purpose==='guidance'&&amount!==0)||
+     (purpose!=='guidance'&&(amount<=0||amount>1000000)))
+    return fail('Choose guidance, Bridger prospect-work System Switch, or Agent food-stock support with a valid amount',422)
+   const created=await db.query(`INSERT INTO weave_company_support_cases(worker_id,manager_id,purpose,description,task_reference,requested_amount)
+     VALUES($1::uuid,$2::uuid,$3,$4,$5,$6) RETURNING *`,
+     [workerId,user.id,purpose,description,taskReference||null,amount])
    const item=created.rows[0]
    await db.query('INSERT INTO weave_company_support_messages(case_id,author_id,message) VALUES($1::uuid,$2::uuid,$3)',[item.id,user.id,description])
    await notifySupport(workerId,'Your manager opened a private work conversation','Open Company Support to discuss your task, obstacles or work progress.')
@@ -94,6 +107,8 @@ export async function POST(request:NextRequest){
    const amount=Number(body.amount||0)
    if(!uuid(managerId)||!(await managerAssignedTo(user.id,managerId)))return fail('Choose your assigned active manager',403)
    if(!['guidance','system_switch','food_stock'].includes(purpose)||description.length<15)return fail('Describe the obstacle and support type')
+   if((purpose==='system_switch'&&user.role!=='bridger')||(purpose==='food_stock'&&user.role!=='agent'))
+     return fail('System Switch advance is for assigned Bridger Prospect work; NGN food-stock support is for verified Agents. Other services require guidance until a restricted funding workflow is approved.',422)
    if(!Number.isFinite(amount)||amount<0||(purpose==='guidance'&&amount!==0)
      ||(purpose!=='guidance'&&(amount<=0||amount>1000000)))return fail('Enter a valid amount for the requested support')
    const created=await db.query(`INSERT INTO weave_company_support_cases(worker_id,manager_id,purpose,description,task_reference,requested_amount)
@@ -190,15 +205,15 @@ export async function POST(request:NextRequest){
    const funderId=limitText(body.funderId,50)||String(item.manager_id)
    if(!uuid(funderId)||!([String(item.manager_id),user.id].includes(funderId)))
     return fail('The funder must be the assigned manager or Administrations',422)
-   if(reference.length<12)return fail('Provide an independently verified unique supplier payment or stock allocation reference')
+   if(reference.length<12||body.confirmedVerified!==true)return fail('Administrations must independently verify the supplier payment and explicitly confirm the evidence before recording funding')
    const conn=await db.connect()
    try{
     await conn.query('BEGIN')
     const locked=await conn.query("SELECT * FROM weave_company_support_cases WHERE id=$1::uuid AND status='accepted' FOR UPDATE",[caseId])
     if(!locked.rows.length)throw new Error('Case was already funded or changed')
     await conn.query(`INSERT INTO weave_company_support_advances(case_id,worker_id,funder_id,currency,principal,spent,funding_reference,verified_by)
-     VALUES($1::uuid,$2::uuid,$3::uuid,'NGN',$4,$4,$5,$3::uuid)`,
-     [caseId,item.worker_id,funderId,item.offered_amount,reference])
+     VALUES($1::uuid,$2::uuid,$3::uuid,'NGN',$4,$4,$5,$6::uuid)`,
+     [caseId,item.worker_id,funderId,item.offered_amount,reference,user.id])
     await conn.query("UPDATE weave_company_support_cases SET status='funded',funding_reference=$2,funded_at=now(),updated_at=now() WHERE id=$1::uuid",[caseId,reference])
     await conn.query('COMMIT')
     await notifySupport(item.worker_id,'Stock support verified','Administrations recorded verified stock funding. Repayments require actual verified naira settlements.')
@@ -209,7 +224,7 @@ export async function POST(request:NextRequest){
   if(action==='record_stock_repayment'){
    if(!admin)return fail('Administrations must verify actual naira repayments',403)
    const amount=Number(body.amount),reference=limitText(body.reference,180)
-   if(!Number.isFinite(amount)||amount<=0||reference.length<12)return fail('Enter verified repayment amount and unique bank or settlement reference')
+   if(!Number.isFinite(amount)||amount<=0||reference.length<12||body.confirmedVerified!==true)return fail('Confirm the actual received repayment in Administrations records and supply its unique evidence reference')
    const conn=await db.connect()
    try{
     await conn.query('BEGIN')

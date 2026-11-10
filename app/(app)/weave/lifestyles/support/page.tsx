@@ -28,7 +28,11 @@ export default function CompanySupportWorkspace(){
  const [managerAssign,setManagerAssign]=useState('')
  const [staffId,setStaffId]=useState('')
  const [staffNote,setStaffNote]=useState('')
+ const [staffPurpose,setStaffPurpose]=useState('guidance')
+ const [staffAmount,setStaffAmount]=useState('')
+ const [staffReference,setStaffReference]=useState('')
  const [stockFunder,setStockFunder]=useState('manager')
+ const [confirmedVerified,setConfirmedVerified]=useState(false)
  const [acceptRecovery,setAcceptRecovery]=useState(false)
  const [busy,setBusy]=useState(false)
  const [error,setError]=useState('')
@@ -42,7 +46,15 @@ export default function CompanySupportWorkspace(){
    const data=await response.json()
    if(!response.ok)throw new Error(data.error||'Support unavailable')
    setState({cases:data.cases||[],managers:data.managers||[],kinds:data.kinds||[],team:data.team||[],candidates:[]})
-   setSelected(current=>current&&data.cases?.some((c:SupportCase)=>c.id===current)?current:(data.cases?.[0]?.id||''))
+   const params=new URLSearchParams(window.location.search)
+   const deepCase=params.get('caseId')
+   setSelected(current=>current&&data.cases?.some((c:SupportCase)=>c.id===current)?current:
+     deepCase&&data.cases?.some((c:SupportCase)=>c.id===deepCase)?deepCase:(data.cases?.[0]?.id||''))
+   const manager=params.get('managerId'),worker=params.get('workerId')
+   if(manager&&(data.managers||[]).some((p:Person)=>p.id===manager))setManagerId(current=>current||manager)
+   if(worker&&(data.team||[]).some((p:Person)=>p.id===worker))setStaffId(current=>current||worker)
+   const task=String(params.get('task')||'').slice(0,200)
+   if(task)setReference(current=>current||task)
    setError('')
   }catch(e){setError(e instanceof Error?e.message:'Support unavailable')}
   finally{setLoading(false)}
@@ -63,8 +75,9 @@ export default function CompanySupportWorkspace(){
    const data=await res.json()
    if(!res.ok)throw new Error(data.error||'Action failed')
    setNotice(action.replaceAll('_',' ')+' recorded.')
+   if(['record_stock_funding','record_stock_repayment'].includes(action))setConfirmedVerified(false)
    if(action==='message')setMessage('')
-   if(action==='start_case'){setStaffNote('');setSelected(data.case.id)}
+   if(action==='start_case'){setStaffNote('');setStaffAmount('');setStaffReference('');setStaffPurpose('guidance');setSelected(data.case.id)}
    if(action==='create'){setDescription('');setAmount('');setReference('');setSelected(data.case.id)}
    await load()
    if(selected||data.case?.id)await loadMessages(data.case?.id||selected)
@@ -85,6 +98,7 @@ export default function CompanySupportWorkspace(){
  const isManager=active?.manager_id===user?.id && state.kinds.length>0
  const isAdmin=user?.role==='admin'
  const canOffer=(isManager||isAdmin)&&active?.status==='open'
+ const staffRole=state.team.find(p=>p.id===staffId)?.role
  const due=Math.max(0,Number(active?.spent||0)-Number(active?.repaid||0))
  const unused=Math.max(0,Number(active?.principal||0)-Number(active?.spent||0)-Number(active?.refunded||0))
  return <main className="weave-operating-environment mx-auto max-w-6xl space-y-5 px-3 py-6 text-white sm:px-6" data-company-manager-support="true">
@@ -93,7 +107,7 @@ export default function CompanySupportWorkspace(){
    <p className="text-[10px] font-black uppercase tracking-[.18em] text-amber-200">Weave of Presence · A Time · Company work</p>
    <h1 className="mt-2 text-2xl font-black sm:text-3xl">Manager Support & Work Continuity</h1>
    <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-200">Speak privately about a task that cannot be completed. Record the obstacle, agree on the next action, and follow an authorized advance through funding and verified recovery.</p>
-   <p className="mt-2 text-xs text-amber-100">System Switch support is a restricted, recoverable internal credit funded by a real wallet. NGN stock support requires independent payment verification; off-platform cash is never automatically collected.</p>
+   <p className="mt-2 text-xs text-amber-100">System Switch is a restricted, recoverable internal credit funded by a real wallet for eligible Bridger Prospect Market purchases only. NGN food-stock support requires independently verified supplier funding. Nothing is automatically withdrawn from external customer or bank accounts.</p>
   </header>
   {loading&&<p className="text-sm text-slate-300">Opening verified support assignments…</p>}
   {error&&<p role="alert" className="rounded-xl border border-rose-300/30 p-3 text-sm text-rose-200">{error}</p>}
@@ -101,11 +115,18 @@ export default function CompanySupportWorkspace(){
   {state.kinds.length>0&&state.team.length>0&&<section className="rounded-2xl border border-cyan-200/20 p-4" data-proactive-manager-support="true">
    <h2 className="text-lg font-black">Start a private conversation with an assigned employee</h2>
    <p className="mt-1 text-xs text-slate-300">A manager can reach out before an obstacle becomes a missed task. This opens a recorded, one-to-one support case.</p>
-   <label className="mt-3 block text-xs font-bold">Team member<select className="mt-1 w-full rounded-lg border border-white/20 bg-slate-900 p-3" value={staffId} onChange={e=>setStaffId(e.target.value)}>
+   <label className="mt-3 block text-xs font-bold">Team member<select className="mt-1 w-full rounded-lg border border-white/20 bg-slate-900 p-3" value={staffId} onChange={e=>{setStaffId(e.target.value);setStaffPurpose('guidance');setStaffAmount('')}}>
     <option value="">Choose your employee</option>{state.team.map(p=><option key={p.id} value={p.id}>{p.name} · {p.role}</option>)}
    </select></label>
-   <label className="mt-3 block text-xs font-bold">Instruction, check-in or issue<textarea maxLength={1800} rows={3} className="mt-1 w-full rounded-lg border border-white/20 bg-slate-900 p-3" placeholder="What needs attention and what should the employee do next?" value={staffNote} onChange={e=>setStaffNote(e.target.value)}/></label>
-   <button disabled={busy||!staffId||staffNote.trim().length<15} onClick={()=>void act('start_case',{workerId:staffId,description:staffNote})} className="mt-3 min-h-11 rounded-lg bg-cyan-300 px-4 text-xs font-black text-slate-950 disabled:opacity-40">Open private support conversation</button>
+   <label className="mt-3 block text-sm font-bold">Support category<select value={staffPurpose} onChange={event=>setStaffPurpose(event.target.value)} className="mt-2 w-full rounded-lg border border-white/20 bg-slate-900 p-3 text-sm">
+      <option value="guidance">Private guidance · no money</option>
+      {staffRole==='bridger'&&<option value="system_switch">Restricted System Switch · Bridger Prospect Market</option>}
+      {staffRole==='agent'&&<option value="food_stock">NGN stock funding · Agent company food</option>}
+    </select></label>
+    {staffPurpose!=='guidance'&&<label className="mt-3 block text-sm font-bold">Proposed funding amount ({staffPurpose==='food_stock'?'NGN':'System Switch'})<input type="number" min="0.000001" max="1000000" className="mt-2 w-full rounded-lg border border-white/20 bg-slate-900 p-3 text-sm" value={staffAmount} onChange={event=>setStaffAmount(event.target.value)}/></label>}
+    <label className="mt-3 block text-sm font-bold">Company task or customer reference<input value={staffReference} maxLength={200} onChange={event=>setStaffReference(event.target.value)} placeholder="Existing task, prospect or stock order reference" className="mt-2 w-full rounded-lg border border-white/20 bg-slate-900 p-3 text-sm"/></label>
+    <label className="mt-3 block text-xs font-bold">Instruction, check-in or issue<textarea maxLength={1800} rows={3} className="mt-1 w-full rounded-lg border border-white/20 bg-slate-900 p-3" placeholder="What needs attention and what should the employee do next?" value={staffNote} onChange={e=>setStaffNote(e.target.value)}/></label>
+   <button disabled={busy||!staffId||staffNote.trim().length<15||(staffPurpose!=='guidance'&&(!Number.isFinite(Number(staffAmount))||Number(staffAmount)<=0||Number(staffAmount)>1000000))} onClick={()=>void act('start_case',{workerId:staffId,description:staffNote,purpose:staffPurpose,amount:staffPurpose==='guidance'?0:Number(staffAmount),taskReference:staffReference})} className="mt-3 min-h-11 rounded-lg bg-cyan-300 px-4 text-xs font-black text-slate-950 disabled:opacity-40">Open private support case · no funds issued yet</button>
   </section>}
   {user?.role!=='admin'&&state.managers.length>0&&<section className="rounded-2xl border border-white/15 bg-slate-950/60 p-4">
    <h2 className="text-lg font-black">Request one-to-one work support</h2>
@@ -115,7 +136,7 @@ export default function CompanySupportWorkspace(){
      <option value="">Choose assigned manager</option>{state.managers.map(m=><option key={m.id} value={m.id}>{m.name}</option>)}
     </select></label>
     <label className="text-xs font-bold">Support needed<select className="mt-1 w-full rounded-lg border border-white/20 bg-slate-900 p-3" value={purpose} onChange={e=>setPurpose(e.target.value)}>
-     <option value="guidance">Guidance · no money</option><option value="system_switch">System Switch credit</option><option value="food_stock">Food stock · NGN</option>
+     <option value="guidance">Guidance · no money</option>{user?.role==='bridger'&&<option value="system_switch">Restricted System Switch · Prospect Market only</option>}{user?.role==='agent'&&<option value="food_stock">Company food stock · verified NGN</option>}
     </select></label>
     <label className="text-xs font-bold">Task or order reference<input className="mt-1 w-full rounded-lg border border-white/20 bg-slate-900 p-3" placeholder="Customer order, prospect or job ID" value={reference} onChange={e=>setReference(e.target.value)}/></label>
     {purpose!=='guidance'&&<label className="text-xs font-bold">Requested amount ({purpose==='food_stock'?'₦':'System Switch'})<input type="number" min=".000001" step="any" className="mt-1 w-full rounded-lg border border-white/20 bg-slate-900 p-3" value={amount} onChange={e=>setAmount(e.target.value)}/></label>}
@@ -184,19 +205,24 @@ export default function CompanySupportWorkspace(){
      <button onClick={()=>void act('fund')} disabled={busy} className="mt-2 min-h-11 rounded-lg bg-amber-200 px-4 text-xs font-black text-slate-950">Fund accepted advance from my wallet</button>
     </div>}
     {(isManager||isAdmin)&&active.currency==='SYSTEM_SWITCH'&&unused>0&&<button disabled={busy} onClick={()=>void act('refund_unused')} className="min-h-11 rounded-lg border border-amber-200/35 px-4 text-xs text-amber-100">Return unused reserved support to the funder</button>}
+    {isAdmin&&(active.purpose==='food_stock'||active.currency==='NGN')&&
+     <label data-administrations-verified-evidence="true" className="my-4 flex items-start gap-3 rounded-xl border border-amber-200/30 p-3 text-sm leading-6 text-amber-100">
+       <input type="checkbox" className="mt-1 h-4 w-4 shrink-0" checked={confirmedVerified} onChange={event=>setConfirmedVerified(event.target.checked)}/>
+       I independently checked the supplier funding or actual repayment in Administrations records. The reference belongs to a real verified transaction, not an unsupported screenshot, promise or estimate.
+     </label>}
     {isAdmin&&active.status==='accepted'&&active.purpose==='food_stock'&&<div className="space-y-2 border-t border-white/15 pt-4">
      <p className="text-xs font-black">Verify real stock funding</p>
      <label className="block text-xs">Who funded the supplier?<select value={stockFunder} onChange={e=>setStockFunder(e.target.value)} className="mt-1 w-full rounded-lg border border-white/20 bg-slate-900 p-3">
       <option value="manager">Assigned Manager</option><option value="admin">Administrations</option>
      </select></label>
      <input value={proof} onChange={e=>setProof(e.target.value)} placeholder="Unique verified supplier/payment reference" className="w-full rounded-lg border border-white/20 bg-slate-900 p-3 text-xs"/>
-     <button disabled={busy||proof.length<12} onClick={()=>void act('record_stock_funding',{reference:proof,funderId:stockFunder==='admin'?user?.id:active.manager_id})} className="min-h-11 rounded-lg bg-amber-200 px-4 text-xs font-bold text-slate-950">Record verified stock support</button>
+     <button disabled={busy||proof.length<12||!confirmedVerified} onClick={()=>void act('record_stock_funding',{reference:proof,funderId:stockFunder==='admin'?user?.id:active.manager_id,confirmedVerified})} className="min-h-11 rounded-lg bg-amber-200 px-4 text-xs font-bold text-slate-950">Record verified stock support</button>
     </div>}
     {isAdmin&&active.currency==='NGN'&&due>0&&<div className="space-y-2 border-t border-white/15 pt-4">
      <p className="text-xs font-black">Verify actual NGN repayment</p>
      <input value={repayAmount} onChange={e=>setRepayAmount(e.target.value)} type="number" min="0.01" step="0.01" placeholder="Verified amount" className="w-full rounded-lg border border-white/20 bg-slate-900 p-3 text-xs"/>
      <input value={proof} onChange={e=>setProof(e.target.value)} placeholder="Unique received payment reference" className="w-full rounded-lg border border-white/20 bg-slate-900 p-3 text-xs"/>
-     <button disabled={busy||proof.length<12} onClick={()=>void act('record_stock_repayment',{amount:Number(repayAmount),reference:proof})} className="min-h-11 rounded-lg border border-cyan-200/50 px-4 text-xs">Record verified repayment</button>
+     <button disabled={busy||proof.length<12||!confirmedVerified} onClick={()=>void act('record_stock_repayment',{amount:Number(repayAmount),reference:proof,confirmedVerified})} className="min-h-11 rounded-lg border border-cyan-200/50 px-4 text-xs">Record verified repayment</button>
     </div>}
     {['open','accepted','funded'].includes(active.status)&&due===0&&unused===0&&<button disabled={busy} onClick={()=>void act('resolve')} className="min-h-11 rounded-lg border border-white/20 px-4 text-xs">Resolve completed support case</button>}
    </section>}

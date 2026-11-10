@@ -68,6 +68,7 @@ jobs:
         run: |
           node tests/admin-company-movement-regression.cjs
           node tests/regional-manager-daily-workflow-regression.cjs
+          node tests/regional-manager-work-support-integrity.cjs
           node tests/regional-system-switch-gate-regression.cjs
           node tests/burning-river-company-time-continuity.cjs
 

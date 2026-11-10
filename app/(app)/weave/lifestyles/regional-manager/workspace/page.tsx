@@ -9,10 +9,15 @@ type Task={id:string;assigned_user_id:string;assigned_name:string;title:string;i
   evidence_note:string|null;manager_note:string|null;work_date:string}
 type Checkin={member_user_id:string;member_name:string;work_date:string;work_status:string;
   summary:string;support_status:string;manager_response:string|null}
+type SupportRecord={id:string;worker_id:string;worker_name:string;purpose:string;status:string;
+  task_reference:string|null;requested_amount:number;offered_amount:number|null;currency:string|null;
+  outstanding:number;unused:number;updated_at:string}
 type Value={available:boolean;packages?:number;folders?:number;orders?:number;units?:number}
 type Data={mode:'manager'|'member';managerId:string;team:Member[];membership:Member|null;
-  tasks:Task[];checkins:Checkin[];summary:{teamMembers:number;directReports:number;assistantReports:number;
-    todayCheckins:number;needsHelp:number;tasksOpen:number;tasksCompleted:number}|null;
+  tasks:Task[];checkins:Checkin[];supportAvailable:boolean;supportQueue:SupportRecord[];
+  summary:{teamMembers:number;directReports:number;assistantReports:number;
+    todayCheckins:number;needsHelp:number;tasksOpen:number;tasksCompleted:number;
+    awaitingTaskReviews:number;supportCasesPending:number|null;outstandingSystemSwitchSupport:number|null;outstandingNgnSupport:number|null}|null;
   metrics:{prospectPurchases:Value;confirmedFileFolders:Value;fulfilledFood:Value}|null}
 const format=(n:unknown)=>Number(n||0).toLocaleString('en-NG')
 const date=(s:string)=>String(s||'').slice(0,10)
@@ -70,6 +75,10 @@ export default function RegionalDailyWorkspace(){
   const isManager=data.mode==='manager'
   const direct=data.team.filter(x=>x.level==='direct')
   const support=data.checkins.filter(x=>['open','acknowledged'].includes(x.support_status))
+  const localDay=new Date().toLocaleDateString('en-CA',{timeZone:'Africa/Lagos'})
+  const missingCheckins=data.team.filter(person=>!data.checkins.some(c=>c.member_user_id===person.user_id&&date(c.work_date)===localDay))
+  const pendingReviews=data.tasks.filter(task=>task.status==='submitted')
+  const waitingSupport=data.supportQueue.filter(caseItem=>['open','offered','accepted'].includes(caseItem.status)||caseItem.outstanding>0||caseItem.unused>0)
   const cards=[
     {name:'Assigned staff',value:data.summary?.teamMembers},
     {name:'Lead and direct staff',value:data.summary?.directReports},
@@ -77,6 +86,7 @@ export default function RegionalDailyWorkspace(){
     {name:'Staff needing support',value:data.summary?.needsHelp},
     {name:'Open assignments',value:data.summary?.tasksOpen},
     {name:'Completed assignments',value:data.summary?.tasksCompleted},
+    {name:'Work needing review',value:data.summary?.awaitingTaskReviews},
   ]
   return <main className="weave-operating-environment mx-auto min-h-screen max-w-7xl space-y-6 px-3 py-6 text-white sm:px-6" data-regional-daily-workspace>
     <header className="space-y-2">
@@ -89,6 +99,7 @@ export default function RegionalDailyWorkspace(){
       </p>
       <div className="flex flex-wrap gap-3 text-sm text-cyan-200">
         <Link href="/communications">Team communications</Link>
+        <Link href={isManager?'/weave/lifestyles/support':'/weave/lifestyles/support?managerId='+encodeURIComponent(data.managerId)}>Work support · private conversations</Link>
         <Link href="/weave/lifestyles/work">All approved positions</Link>
         <Link href="/event">Burning River · Company Loop</Link>
       </div>
@@ -97,12 +108,34 @@ export default function RegionalDailyWorkspace(){
     </header>
     <RegionalSystemSwitchGate />
     {isManager&&<>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+      <section data-regional-manager-daily-cycle="verify-direct-delegate-support-record" className="rounded-2xl border border-amber-200/25 bg-gradient-to-br from-[#152531] to-[#0b1722] p-5 sm:p-6">
+        <h2 className="text-2xl font-bold">Regional Manager · A complete working day</h2>
+        <p className="mt-2 text-sm leading-6 text-slate-200">One active region, many real company careers. Your duty is to keep verified leads, their assistants, Bridgers and Agents working with clear instructions, support and records. You do not take over a lead's assistants or approve unverified company payments.</p>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            ['1 · Start at the regional gate','Review the latest company direction, participation and verified regional activity.'],
+            ['2 · Check every department','Review each direct worker and lead, confirm assistants are supported, and find people missing their daily check-in.'],
+            ['3 · Give work and remove obstacles','Assign specific tasks, ask for evidence, respond to support requests and open authorized one-to-one cases.'],
+            ['4 · Verify progress and report','Accept or return submitted tasks, monitor actual service orders and follow outstanding support balances.'],
+          ].map(([name,detail])=><div key={name} className="rounded-xl border border-white/15 bg-white/[.035] p-4"><h3 className="text-base font-bold text-amber-100">{name}</h3><p className="mt-2 text-sm leading-6 text-slate-200">{detail}</p></div>)}
+        </div>
+      </section>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-7">
         {cards.map(c=><section key={c.name} className="rounded-xl border border-white/15 bg-slate-950/75 p-3">
           <p className="text-xs text-slate-400">{c.name}</p>
           <p className="mt-2 text-2xl font-bold tabular-nums">{format(c.value)}</p>
         </section>)}
       </div>
+      <section data-regional-manager-live-attention="today" className="rounded-xl border border-cyan-300/25 bg-[#0f1c28] p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3"><h2 className="text-xl font-bold">Daily attention queue</h2><button type="button" onClick={()=>void load()} className="min-h-11 rounded-lg border border-cyan-200/30 px-4 py-2 text-sm font-semibold text-cyan-100">Refresh verified records</button></div>
+        <div className="mt-4 grid gap-3 sm:grid-cols-3">
+          <div className="rounded-xl border border-white/10 p-4"><p className="text-sm text-slate-300">Assigned staff without a check-in today</p><p className="mt-2 text-3xl font-bold">{missingCheckins.length}</p></div>
+          <div className="rounded-xl border border-white/10 p-4"><p className="text-sm text-slate-300">Tasks submitted for your decision</p><p className="mt-2 text-3xl font-bold">{pendingReviews.length}</p></div>
+          <div className="rounded-xl border border-white/10 p-4"><p className="text-sm text-slate-300">Private support cases awaiting follow-up</p><p className="mt-2 text-3xl font-bold">{data.supportAvailable?waitingSupport.length:'Unavailable'}</p></div>
+        </div>
+        {missingCheckins.length>0&&<div className="mt-4 rounded-xl border border-amber-300/20 p-4"><h3 className="font-semibold text-amber-100">Contact and assist absent workers</h3><p className="mt-2 text-sm leading-6 text-slate-200">{missingCheckins.map(m=>m.name+' ('+m.position+')').join(' · ')}</p><p className="mt-2 text-xs text-slate-400">Missing a check-in is not proof of misconduct. Contact the person or their lead before interpreting the absence.</p></div>}
+        {!data.supportAvailable&&<p role="alert" className="mt-4 text-sm text-amber-200">Work Support records are unavailable. No zero balance or absence of requests is assumed. Open the support workspace and retry.</p>}
+      </section>
       <section className="rounded-xl border border-white/15 bg-slate-950/70 p-4">
         <h2 className="text-xl font-black">Today's recorded company movement</h2>
         <p className="mt-2 text-xs text-slate-400">Only staff formally assigned to this Regional Manager count here. Activity is not company profit.</p>
@@ -128,9 +161,30 @@ export default function RegionalDailyWorkspace(){
           {data.team.map((m,i)=><article key={m.user_id+'-'+i} className="rounded-lg border border-white/10 p-3">
             <p className="font-semibold">{m.name}</p>
             <p className="mt-1 text-xs text-slate-300">{m.position} · {m.role} · {m.level==='direct'?'Direct report':'Under appointed lead'}</p>
-            <p className="mt-1 text-xs text-cyan-100">Daily check-in: {data.checkins.some(c=>c.member_user_id===m.user_id&&date(c.work_date)===new Date().toLocaleDateString('en-CA',{timeZone:'Africa/Lagos'}))?'Recorded':'Not recorded'}</p>
+            <p className="mt-1 text-sm text-cyan-100">Daily check-in: {data.checkins.some(c=>c.member_user_id===m.user_id&&date(c.work_date)===localDay)?'Recorded':'Not recorded'}</p>
+            <p className="mt-2 text-sm text-slate-300">Assigned tasks: {data.tasks.filter(t=>t.assigned_user_id===m.user_id).length} · Awaiting review: {data.tasks.filter(t=>t.assigned_user_id===m.user_id&&t.status==='submitted').length}</p>
+            <Link href={'/weave/lifestyles/support?workerId='+encodeURIComponent(m.user_id)} className="mt-3 inline-flex min-h-11 items-center rounded-lg border border-cyan-200/25 px-4 py-2 text-sm font-semibold text-cyan-100">Private support and follow-up</Link>
           </article>)}
         </div>}
+      </section>
+      <section data-regional-work-support-queue="private" className="rounded-xl border border-amber-300/20 bg-slate-950/70 p-5">
+        <h2 className="text-xl font-bold">Manager Work Support · Approved advances and conversations</h2>
+        <p className="mt-2 text-sm leading-6 text-slate-300">One-to-one obstacles belong to their real employee. Guidance is a conversation; financial support requires a written offer, worker acceptance and confirmed funding. System Switch credit is restricted to approved Prospect Market purchases, with recovery from eligible verified platform earnings. Food stock funding in NGN requires separate Administrations verification and repayment evidence.</p>
+        {data.supportAvailable?<div className="mt-4 grid gap-3 sm:grid-cols-3">
+          <div className="rounded-xl border border-white/10 p-4"><p className="text-sm text-slate-300">Cases needing action</p><p className="mt-2 text-2xl font-bold">{waitingSupport.length}</p></div>
+          <div className="rounded-xl border border-white/10 p-4"><p className="text-sm text-slate-300">Used support awaiting recovery</p><p className="mt-2 text-2xl font-bold">{format(data.summary?.outstandingSystemSwitchSupport)} System Switch</p><p className="mt-2 text-sm text-slate-300">NGN stock repayment: ₦{format(data.summary?.outstandingNgnSupport)} · separately verified</p></div>
+          <div className="rounded-xl border border-white/10 p-4"><p className="text-sm text-slate-300">Unspent reserved support</p><p className="mt-2 text-2xl font-bold">{waitingSupport.filter(c=>c.currency==='SYSTEM_SWITCH').reduce((sum,c)=>sum+c.unused,0).toLocaleString('en-NG')} System Switch</p></div>
+        </div>:<p role="alert" className="mt-4 text-sm text-amber-200">Support records are temporarily unavailable. Recheck in the private support workspace; no financial records have been assumed.</p>}
+        <div className="mt-4 space-y-3">
+          {waitingSupport.slice(0,18).map(c=><article key={c.id} className="rounded-xl border border-white/15 p-4">
+            <p className="font-semibold">{c.worker_name} · {label(c.purpose)}</p>
+            <p className="mt-1 text-sm text-slate-300">Stage: {label(c.status)}{c.task_reference?' · '+c.task_reference:''}</p>
+            {c.currency&&<p className="mt-1 text-sm text-amber-100">Used and unpaid: {format(c.outstanding)} {c.currency==='NGN'?'NGN':'System Switch'} · Reserved unused: {format(c.unused)}</p>}
+            <Link href={'/weave/lifestyles/support?caseId='+encodeURIComponent(c.id)} className="mt-3 inline-flex min-h-11 items-center rounded-lg border border-cyan-200/30 px-4 py-2 text-sm font-semibold text-cyan-100">Open case · reply or take authorized action</Link>
+          </article>)}
+        </div>
+        {data.supportAvailable&&waitingSupport.length===0&&<p className="mt-4 text-sm text-slate-400">No pending support cases for the currently assigned team. Staff may still submit a new request.</p>}
+        <Link href="/weave/lifestyles/support" className="mt-4 inline-flex min-h-11 items-center rounded-lg bg-amber-200 px-5 py-3 text-sm font-bold text-[#172633]">Open private Support Workshop</Link>
       </section>
       <section className="space-y-3 rounded-xl border border-white/15 bg-slate-950/70 p-4">
         <h2 className="text-xl font-black">Assign today's work</h2>
@@ -180,7 +234,8 @@ export default function RegionalDailyWorkspace(){
       </div>)}
     </section>}
     {isManager&&<section className="space-y-3 rounded-xl border border-amber-300/20 bg-slate-950/70 p-4">
-      <h2 className="text-xl font-black">Employee care · Requests needing attention</h2>
+      <h2 className="text-xl font-black">Employee care · Check-in obstacles needing attention</h2>
+      <p className="text-sm leading-6 text-slate-300">These are regional check-in responses. For funded help, open the employee's private Work Support case; acknowledging a check-in does not approve money or discharge a repayment obligation.</p>
       {!support.length?<p className="text-sm text-slate-400">No unresolved requests for staff support in the displayed period.</p>:
       support.map(c=>{
         const k=c.member_user_id+'-'+date(c.work_date)
@@ -192,6 +247,7 @@ export default function RegionalDailyWorkspace(){
             onChange={e=>setNotes(x=>({...x,[k]:e.target.value}))}
             className="w-full rounded-lg border border-white/20 bg-slate-950 p-3 text-sm text-white"/>
           <div className="flex flex-wrap gap-2">
+            <Link href={'/weave/lifestyles/support?workerId='+encodeURIComponent(c.member_user_id)} className="inline-flex min-h-11 items-center rounded-lg border border-amber-200/30 px-3 py-2 text-sm font-semibold text-amber-100">Open a private support conversation</Link>
             {['acknowledged','resolved'].map(status=><button key={status} disabled={working||(notes[k]||'').trim().length<10}
               onClick={()=>void send({action:'respond_support',memberId:c.member_user_id,workDate:date(c.work_date),note:notes[k],supportStatus:status})}
               className="min-h-10 rounded-lg border border-white/25 px-3 text-xs font-semibold disabled:opacity-50">

@@ -5,12 +5,13 @@ import {useCallback,useEffect,useState} from 'react'
 
 type Person={user_id:string;name:string}
 type Manager={manager_id:string;name:string;source_role:string;region:string;current_direction:string|null;direction_at:string|null;staff:number;direct:number;assistants:number;
-  tasks_completed:number;tasks_open:number;checkins:number;needs_help:number}
+  tasks_completed:number;tasks_open:number;checkins:number;needs_help:number;
+  support_cases_pending:number|null;support_due_system_switch:number|null;support_due_ngn:number|null}
 type Member={manager_id:string;user_id:string;name:string;role:string;position:string;level:string}
 type FoodAssignment={food_manager_user_id:string;regional_manager_user_id:string}
 type Report={managers:Manager[];team:Member[];foodAssignments:FoodAssignment[];
   candidates:{bridgers:Person[];agents:Person[];distributionManagers:Person[];foodDistributionManagers:Person[]};
-  generatedAt:string}
+  generatedAt:string;supportAvailable:boolean}
 const options=[
   {value:'bridger',title:'Bridger · Hope'},
   {value:'agent',title:'Agent · Stability'},
@@ -89,8 +90,10 @@ export default function AdminRegionalOperations(){
         <Link href="/admin/regional-manager-applications">Regional Manager applications</Link>
         <Link href="/admin/company-movement">Company sales and payment movement</Link>
         <Link href="/admin/food-distribution-employment">Food Distribution appointments</Link>
+        <Link href="/weave/lifestyles/support" className="font-bold text-amber-100">Manager Support · restricted advances, repayment and private cases</Link>
       </div>
     </header>
+    {!report.supportAvailable&&<p role="alert" className="rounded-xl border border-amber-300/25 p-4 text-sm text-amber-100">Regional Work Support balances cannot be verified right now. Existing cases and repayments have not been assumed to be zero. Open Manager Support and retry.</p>}
     {error&&<p role="alert" className="border border-rose-300/35 p-3 text-sm text-rose-200">{error}</p>}
     {message&&<p role="status" className="border border-cyan-300/25 p-3 text-sm text-cyan-100">{message}</p>}
     <div className="grid grid-cols-2 gap-2 md:grid-cols-5">
@@ -147,6 +150,15 @@ export default function AdminRegionalOperations(){
               <div className="border-t border-white/10 pt-2"><p className="text-slate-400">Open tasks</p><p className="mt-1 text-xl font-bold">{m.tasks_open}</p></div>
               <div className="border-t border-white/10 pt-2"><p className="text-slate-400">Completed tasks</p><p className="mt-1 text-xl font-bold">{m.tasks_completed}</p></div>
               <div className="border-t border-white/10 pt-2"><p className="text-slate-400">Assistants</p><p className="mt-1 text-xl font-bold">{m.assistants}</p></div>
+            </div>
+            <div data-administrations-regional-support-metrics="verified" className="rounded-xl border border-amber-200/20 bg-amber-200/[.035] p-4 text-sm">
+              <h4 className="font-bold text-amber-100">One-to-one Work Support</h4>
+              {report.supportAvailable?<>
+                <p className="mt-2 text-slate-200">Cases awaiting resolution: <strong>{m.support_cases_pending??0}</strong></p>
+                <p className="mt-2 text-slate-200">Outstanding used System Switch advances: <strong>{Number(m.support_due_system_switch||0).toLocaleString('en-NG')}</strong></p>
+                <p className="mt-1 text-slate-200">Outstanding independently verified NGN stock repayments: <strong>₦{Number(m.support_due_ngn||0).toLocaleString('en-NG')}</strong></p>
+              </>:<p role="alert" className="mt-2 text-amber-200">Financial support records are unavailable; do not infer zero outstanding.</p>}
+              <Link href="/weave/lifestyles/support" className="mt-3 inline-flex min-h-11 items-center rounded-lg border border-amber-200/30 px-4 py-2 text-sm font-semibold text-amber-100">Open Administrations Support and verification records</Link>
             </div>
             {!people.length?<p className="text-xs text-slate-400">No assigned staff yet.</p>:
             <div className="space-y-2">

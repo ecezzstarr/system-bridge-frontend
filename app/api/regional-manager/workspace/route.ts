@@ -3,6 +3,7 @@ import {getAuthUser} from '@/lib/auth-api'
 import {sql,getPool} from '@/lib/db'
 import {getActiveLegionEmployment} from '@/lib/legion-employment'
 import {ensureRegionalOperationsSchema,regionalTeam,type RegionalTeamMember} from '@/lib/regional-manager-operations'
+import {listSupportCases} from '@/lib/company-support'
 
 export const dynamic='force-dynamic'
 const headers={'Cache-Control':'private, no-store','Vary':'Authorization'}
@@ -101,6 +102,32 @@ export async function GET(request:NextRequest){
         [ctx.managerId,ctx.kind==='member'?user.id:null])
     ])
     const tasks=taskResult.rows,checkins=checkinResult.rows
+    let supportAvailable=true
+    let supportQueue:{
+      id:string;worker_id:string;worker_name:string;purpose:string;status:string;
+      task_reference:string|null;requested_amount:number;offered_amount:number|null;
+      currency:string|null;outstanding:number;unused:number;updated_at:string
+    }[]=[]
+    if(ctx.kind==='manager'){
+      try{
+        const allowed=new Set(ctx.team.map(member=>member.user_id))
+        const cases=await listSupportCases(user)
+        supportQueue=cases.filter(c=>String(c.manager_id)===user.id&&allowed.has(String(c.worker_id)))
+          .map(c=>({
+            id:String(c.id),worker_id:String(c.worker_id),worker_name:String(c.worker_name),
+            purpose:String(c.purpose),status:String(c.status),task_reference:c.task_reference||null,
+            requested_amount:Number(c.requested_amount||0),
+            offered_amount:c.offered_amount==null?null:Number(c.offered_amount),
+            currency:c.currency||null,
+            outstanding:Math.max(0,Number(c.spent||0)-Number(c.repaid||0)),
+            unused:Math.max(0,Number(c.principal||0)-Number(c.spent||0)-Number(c.refunded||0)),
+            updated_at:String(c.updated_at)
+          }))
+      }catch(error){
+        supportAvailable=false
+        console.error('[Regional Manager support queue]',error)
+      }
+    }
     const summary=ctx.kind==='manager'?{
       teamMembers:ctx.team.length,
       directReports:ctx.team.filter(x=>x.level==='direct').length,
@@ -108,6 +135,10 @@ export async function GET(request:NextRequest){
       todayCheckins:checkins.filter(x=>String(x.work_date).slice(0,10)===
         new Date().toLocaleDateString('en-CA',{timeZone:'Africa/Lagos'})).length,
       needsHelp:checkins.filter(x=>x.support_status==='open'||x.support_status==='acknowledged').length,
+      awaitingTaskReviews:tasks.filter(x=>x.status==='submitted').length,
+      supportCasesPending:supportAvailable?supportQueue.filter(x=>['open','offered','accepted'].includes(x.status)||x.outstanding>0||x.unused>0).length:null,
+      outstandingSystemSwitchSupport:supportAvailable?supportQueue.filter(x=>x.currency==='SYSTEM_SWITCH').reduce((sum,x)=>sum+x.outstanding,0):null,
+      outstandingNgnSupport:supportAvailable?supportQueue.filter(x=>x.currency==='NGN').reduce((sum,x)=>sum+x.outstanding,0):null,
       tasksOpen:tasks.filter(x=>!['completed'].includes(x.status)).length,
       tasksCompleted:tasks.filter(x=>x.status==='completed').length
     }:null
@@ -115,7 +146,8 @@ export async function GET(request:NextRequest){
       success:true,mode:ctx.kind,managerId:ctx.managerId,
       team:ctx.kind==='manager'?ctx.team:[],
       membership:ctx.kind==='member'?ctx.member:null,
-      tasks,checkins,summary,
+      tasks,checkins,summary,supportAvailable,
+      supportQueue:ctx.kind==='manager'?supportQueue:[],
       metrics:ctx.kind==='manager'?await metrics(ctx.team):null
     },{headers})
   }catch(error){
@@ -143,16 +175,31 @@ export async function POST(request:NextRequest){
       if(!member||!uuid.test(memberId)||title.length<6||title.length>160||
         instructions.length<15||instructions.length>2000)
         return NextResponse.json({error:'Select an appointed direct team member and provide clear work instructions'},{status:422,headers})
-      const result=await pool.query(`INSERT INTO weave_regional_daily_tasks
-        (regional_manager_user_id,assigned_user_id,title,instructions)
-        VALUES($1::uuid,$2::uuid,$3,$4) RETURNING id`,
-        [ctx.managerId,memberId,title,instructions])
-      await pool.query(`INSERT INTO weave_regional_daily_task_history
-        (task_id,actor_user_id,from_status,to_status,note)
-        VALUES($1::uuid,$2::uuid,NULL,'assigned','Assigned by the Regional Manager')`,
-        [result.rows[0].id,user.id])
+      const db=await pool.connect()
+      let taskId:string
+      try{
+        await db.query('BEGIN')
+        const authorized=await db.query("SELECT 1 FROM weave_regional_manager_appointments WHERE user_id=$1::uuid AND status='active' FOR UPDATE",[ctx.managerId])
+        if(!authorized.rowCount){
+          await db.query('ROLLBACK')
+          return NextResponse.json({error:'Regional appointment is no longer active'},{status:403,headers})
+        }
+        const result=await db.query(`INSERT INTO weave_regional_daily_tasks
+          (regional_manager_user_id,assigned_user_id,title,instructions)
+          VALUES($1::uuid,$2::uuid,$3,$4) RETURNING id`,
+          [ctx.managerId,memberId,title,instructions])
+        taskId=String(result.rows[0].id)
+        await db.query(`INSERT INTO weave_regional_daily_task_history
+          (task_id,actor_user_id,from_status,to_status,note)
+          VALUES($1::uuid,$2::uuid,NULL,'assigned','Assigned by the Regional Manager')`,
+          [taskId,user.id])
+        await db.query('COMMIT')
+      }catch(error){
+        await db.query('ROLLBACK').catch(()=>{})
+        throw error
+      }finally{db.release()}
       await notify(memberId,'Regional assignment · '+title,'Open your staff workspace to read and record progress.')
-      return NextResponse.json({success:true,taskId:result.rows[0].id},{headers})
+      return NextResponse.json({success:true,taskId},{headers})
     }
     if(action==='check_in'){
       if(ctx.kind!=='member')return NextResponse.json({error:'Only assigned staff submit personal check-ins'},{status:403,headers})
@@ -166,10 +213,20 @@ export async function POST(request:NextRequest){
         VALUES($1::uuid,$2::uuid,`+today+`,$3,$4,$5)
         ON CONFLICT(regional_manager_user_id,member_user_id,work_date)
         DO UPDATE SET work_status=EXCLUDED.work_status,summary=EXCLUDED.summary,
-          support_status=EXCLUDED.support_status,
-          manager_response=CASE WHEN EXCLUDED.support_status='open' THEN NULL
+          -- A later "working" check-in cannot erase an unresolved support
+          -- obstacle. Only the manager's recorded resolution closes it.
+          support_status=CASE
+            WHEN EXCLUDED.support_status='open' THEN 'open'
+            WHEN weave_regional_daily_checkins.support_status IN ('open','acknowledged')
+              THEN weave_regional_daily_checkins.support_status
+            ELSE EXCLUDED.support_status END,
+          manager_response=CASE
+            WHEN EXCLUDED.support_status='open' AND
+              weave_regional_daily_checkins.support_status NOT IN ('open') THEN NULL
             ELSE weave_regional_daily_checkins.manager_response END,
-          responded_at=CASE WHEN EXCLUDED.support_status='open' THEN NULL
+          responded_at=CASE
+            WHEN EXCLUDED.support_status='open' AND
+              weave_regional_daily_checkins.support_status NOT IN ('open') THEN NULL
             ELSE weave_regional_daily_checkins.responded_at END,
           updated_at=NOW()`,[ctx.managerId,user.id,workStatus,summary,
           workStatus==='needs_help'?'open':'none'])
