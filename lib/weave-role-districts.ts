@@ -238,7 +238,7 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
         {label:'Infrastructure',href:'/admin/infrastructure',detail:'Inspect WEAVE host, health checks and maintenance.'},
         {label:'Release Workshop',href:'/admin/release-workshop',detail:'Request verified production deployment or historical rollback and observe host verification.',daily:true},
         {label:'Visual Systems · Interaction in Motion',href:'/admin/visual-systems',detail:'Govern live Flame, River, route current and visual runtime.'},
-        {label:'AI Image Workshop',href:'/image-workshop',detail:'Generate and refine advanced original image productions in a private gallery.'},
+        {label:'Image House · Commercial Production',href:'/image-workshop',detail:'Personalize WEAVE original illustrations, license customer work and record System Switch production earnings.'},
         {label:'Environment Organizer',href:'/admin/environment-organizer',detail:'Withdraw, restore and reorder active WEAVE environments.'},
         {label:'Loader Workshop',href:'/admin/loader-workshop',detail:'Publish automatic loader speed and department wording live without deployment.'},
         {label:'Loop Workshop',href:'/admin/loop-workshop',detail:'Create and publish Company Loops.'},
