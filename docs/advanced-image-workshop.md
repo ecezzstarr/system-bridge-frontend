@@ -7,7 +7,7 @@ The optional advanced AI desk (/image-workshop/ai) uses the existing server-only
 ## Costs and activation
 
 - Default: disabled; WEAVE_IMAGE_WORKSHOP_ENABLED must equal true, and OPENAI_API_KEY must be configured privately on the WEAVE host. A ChatGPT Plus subscription cannot be used as an API key.
-- Administrations explicitly authorizes provider spending and IMAGE_WORKSHOP_DAILY_LIMIT quotas before enabling it. The existing API consumes provider-billed credits, and **does not currently charge System Switch or create a WEAVE commercial sale**.
+- Administrations explicitly authorizes provider spending and WEAVE_IMAGE_WORKSHOP_DAILY_LIMIT quotas before enabling it. The existing API consumes provider-billed credits, and **does not currently charge System Switch or create a WEAVE commercial sale**.
 - Keep the paid no-API Image House fully usable regardless of provider readiness. Do not describe free AI requests as company earnings.
 - API quality and model access require an actual preview/provider call and independent billing verification; passing source CI is not external proof.
 
