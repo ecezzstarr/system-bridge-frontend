@@ -133,7 +133,7 @@ export default function CompanyMovementPage(){
         <dl className="grid grid-cols-2 gap-3">
           {[
             ['Bridgers purchasing',value('prospects','purchasing_bridgers')],
-            ['Flame Coin spent',money('prospects','spent_flame_coin')],
+            ['System Switch spent',money('prospects','spent_flame_coin')],
             ['Candidates in sold packages',value('prospectContacts','candidates_in_sold_packages')],
             ['Prospect contacts attempted',value('outreach','attempted')],
             ['Responses recorded',value('outreach','responded')],
@@ -177,7 +177,7 @@ export default function CompanyMovementPage(){
         <h2 className="text-xl font-black">A Time · Payments and Exceptions</h2>
         <dl className="mt-3 grid grid-cols-2 gap-3">
           {[
-            ['Approved wallet credits · Flame Coin',money('wallet','credited_flame_coin')],
+            ['Approved wallet credits · System Switch',money('wallet','credited_flame_coin')],
             ['Pending deposit records',value('wallet','pending_deposits')],
             ['Rejected deposit records',value('wallet','rejected_deposits')],
             ['Paid food orders not fulfilled',value('foodQueue','paid_unfulfilled')],
