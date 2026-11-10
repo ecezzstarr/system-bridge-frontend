@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import {photoForSample} from '@/lib/weave-image-photo-library'
 import {useEffect,useMemo,useState} from 'react'
 import {useRouter} from 'next/navigation'
 import {useAuth} from '@/lib/auth-provider'
@@ -46,7 +47,7 @@ export default function WeaveImageSamples(){
   const [adminFee,setAdminFee]=useState('')
   const isAdmin=user?.role==='admin'
   const categories=useMemo(()=>['All',...Array.from(new Set(WEAVE_IMAGE_SAMPLES.map(sample=>sample.category)))],[])
-  const samples=useMemo(()=>[...(category==='All'?WEAVE_IMAGE_SAMPLES:WEAVE_IMAGE_SAMPLES.filter(sample=>sample.category===category))].sort((a,b)=>Number(featured.includes(b.id))-Number(featured.includes(a.id))),[category,featured])
+  const samples=useMemo(()=>[...(category==='All'?WEAVE_IMAGE_SAMPLES:WEAVE_IMAGE_SAMPLES.filter(sample=>sample.category===category))].sort((a,b)=>Number(featured.includes(b.id))-Number(featured.includes(a.id)) || Number(Boolean(photoForSample(b.id)))-Number(Boolean(photoForSample(a.id)))),[category,featured])
   const selectedPreview=useMemo(()=>'data:image/svg+xml;charset=utf-8,'+
     encodeURIComponent(renderWeaveSampleSvg(selected,edits,true)),[selected,edits])
 
@@ -188,8 +189,9 @@ export default function WeaveImageSamples(){
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div><p className="text-[10px] font-black uppercase tracking-[.16em] text-amber-200">WEAVE original productions</p>
           <h2 className="mt-1 text-xl font-bold">Choose a business image</h2></div>
-        <span className="text-xs text-slate-400">Free samples to preview · Commercial exports are licensed</span>
+        <span className="text-sm text-slate-300">Real product photography for physical mockups · Original vector artwork for other concepts</span>
       </div>
+      <p className="max-w-3xl text-sm leading-6 text-slate-200">Photographic examples are actual product images with a credited source—not digitally invented clothing. Select one to edit a branded material, or use the vector collection for illustrated campaigns. Upload your actual goods for a faithful customer presentation.</p>
       <div className="flex gap-2 overflow-x-auto pb-2">
         {categories.map(item=><button type="button" key={item} onClick={()=>setCategory(item)}
           aria-pressed={item===category} className={'shrink-0 rounded-full border px-4 py-2 text-xs font-bold '+(item===category?'border-cyan-200 bg-cyan-200 text-[#071622]':'border-white/15 text-slate-300')}>{item}</button>)}
@@ -197,12 +199,13 @@ export default function WeaveImageSamples(){
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         {samples.map(item=>{
           const thumb=renderWeaveSampleSvg(item,defaultSampleEdits(item),true)
-          return <button key={item.id} type="button" onClick={()=>{choose(item.id);document.getElementById('weave-image-editor')?.scrollIntoView({behavior:'smooth',block:'start'})}}
-            aria-pressed={chosen===item.id} className={'group overflow-hidden rounded-2xl border text-left transition '+(chosen===item.id?'border-cyan-200 ring-2 ring-cyan-200/20':'border-white/10 hover:border-white/30')}>
-            <img src={'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(thumb)} loading="lazy" alt={item.name+' illustrated sample'} className="aspect-[4/5] w-full object-cover"/>
-            <span className="block space-y-1 bg-[#102031] p-3"><strong className="block text-[11px] text-white">{item.name}</strong>
-              <span className="block text-[10px] text-slate-400">{item.sector}</span></span>
-          </button>
+          const photo=photoForSample(item.id)
+          const preview=photo?.url||'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(thumb)
+          const content=<><div className="relative"><img src={preview} loading="lazy" alt={photo?item.name+' · actual material photograph':item.name+' illustrated vector concept'} className="aspect-[4/5] w-full object-cover"/>{photo&&<span className="absolute bottom-2 left-2 rounded-md border border-white/30 bg-black/80 px-2 py-1 text-[11px] font-bold text-white">Real photograph · editable</span>}</div>
+            <span className="block space-y-1 bg-[#102031] p-3"><strong className="block text-sm text-white">{item.name}</strong><span className="block text-xs text-slate-300">{item.sector}</span></span></>
+          return photo?.printZone?<Link key={item.id} href={'/image-workshop/branding?sampleId='+encodeURIComponent(item.id)} className="group overflow-hidden rounded-2xl border border-amber-300/40 text-left transition hover:border-amber-200">{content}</Link>
+            :<button key={item.id} type="button" onClick={()=>{choose(item.id);document.getElementById('weave-image-editor')?.scrollIntoView({behavior:'smooth',block:'start'})}}
+              aria-pressed={chosen===item.id} className={'group overflow-hidden rounded-2xl border text-left transition '+(chosen===item.id?'border-cyan-200 ring-2 ring-cyan-200/20':'border-white/10 hover:border-white/30')}>{content}</button>
         })}
       </div>
     </section>

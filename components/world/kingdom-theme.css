@@ -25,3 +25,61 @@
   border:1px solid color-mix(in srgb,var(--kingdom-accent) 46%,transparent);
   background:linear-gradient(110deg,color-mix(in srgb,var(--kingdom-ground) 48%,#07111e),rgba(5,13,25,.75));
 }
+
+
+/* Premium Client estate (35,800 System Switch): own purchased identity follows
+   the verified Client into account, dashboard, and private File Folder.
+   Never repaint Standard, Pro, Plus, Flame Event or the shared Open World. */
+.kingdom-theme-frame[data-kingdom-tier="premium"] {
+  color:#f5e8d7;
+  background:
+    radial-gradient(circle at 80% 10%,rgba(171,132,73,.15),transparent 34%),
+    linear-gradient(164deg,#0d0c11,#18141a 46%,#09090c);
+}
+.kingdom-theme-frame[data-kingdom-tier="premium"] .weave-client-shell {
+  background:
+    radial-gradient(ellipse at 50% 6%,rgba(189,136,64,.12),transparent 49%),
+    #0d0b10;
+}
+.kingdom-theme-frame[data-kingdom-tier="premium"] [data-role-world="client"] {
+  border-block:1px solid rgba(218,172,103,.24);
+  background:
+    linear-gradient(180deg,rgba(9,8,11,.72),rgba(24,18,23,.24) 45%,rgba(8,8,11,.8));
+}
+.kingdom-theme-frame[data-kingdom-tier="premium"] .weave-dashboard-position,
+.kingdom-theme-frame[data-kingdom-tier="premium"] [data-role-world-beacon] {
+  border-color:rgba(205,163,97,.38);
+  background:linear-gradient(125deg,rgba(39,31,31,.94),rgba(15,14,19,.86));
+  box-shadow:0 15px 48px rgba(0,0,0,.45),inset 0 1px rgba(237,201,151,.11);
+}
+.kingdom-theme-frame[data-kingdom-tier="premium"] .weave-dashboard-position :is(span,strong),
+.kingdom-theme-frame[data-kingdom-tier="premium"] [data-role-world-beacon] :is(span,strong){
+  font-size:max(13px,1rem);
+  line-height:1.5;
+}
+.kingdom-theme-frame[data-kingdom-tier="premium"] .kingdom-identity-link {
+  min-height:54px;
+  font-size:14px;
+  font-weight:750;
+  letter-spacing:.06em;
+  color:#1b130c;
+  background:linear-gradient(112deg,#f0d59d,#bc9155);
+  border:1px solid #d7af69;
+  box-shadow:0 16px 48px rgba(149,98,46,.28);
+}
+.kingdom-theme-frame[data-kingdom-tier="premium"] :is(a,button):focus-visible {
+  outline:2px solid #f0cb86;
+  outline-offset:3px;
+}
+.kingdom-theme-frame[data-kingdom-tier="premium"] .premium-client-estate p {
+  text-wrap:pretty;
+}
+@media (max-width:640px) {
+  .kingdom-theme-frame[data-kingdom-tier="premium"] [data-role-world="client"] {
+    min-height:660px;
+  }
+  .kingdom-theme-frame[data-kingdom-tier="premium"] .weave-dashboard-position,
+  .kingdom-theme-frame[data-kingdom-tier="premium"] [data-role-world-beacon] {
+    min-height:75px;
+  }
+}

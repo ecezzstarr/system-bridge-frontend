@@ -213,3 +213,101 @@
   outline:2px solid #f3c979;
   outline-offset:3px;
 }
+
+
+/* Premium is a purchased owner estate, not the generic Plus/Standard shell.
+   These rules follow the authenticated data-file-folder-tier only. */
+.ff-environment[data-file-folder-tier="premium"] {
+  color:#f7e9d3;
+  background:
+    radial-gradient(ellipse at 78% 8%,rgba(187,139,67,.15),transparent 49%),
+    #0d0b11;
+  border-color:#ad8853;
+}
+.ff-environment[data-file-folder-tier="premium"] .ff-environment-header {
+  background:linear-gradient(180deg,rgba(12,10,15,.98),rgba(35,27,28,.94),rgba(12,10,15,.82));
+  border-bottom:1px solid rgba(220,178,113,.62);
+  box-shadow:0 18px 50px rgba(0,0,0,.45),inset 0 1px rgba(251,225,177,.1);
+}
+.ff-environment[data-file-folder-tier="premium"] .ff-phone-identity h1 {
+  font-family:Georgia,serif;
+  font-size:22px;
+  font-weight:600;
+  color:#fff0d6;
+}
+.ff-environment[data-file-folder-tier="premium"] .ff-phone-identity > span,
+.ff-environment[data-file-folder-tier="premium"] .ff-phone-identity .ff-brand,
+.ff-environment[data-file-folder-tier="premium"] .ff-phone-identity p {
+  color:#e6c38d;
+}
+.ff-environment[data-file-folder-tier="premium"] .ff-file-badge{
+  border:1px solid rgba(204,159,88,.45);
+  border-radius:12px;
+  background:rgba(37,29,25,.8);
+}
+.ff-environment[data-file-folder-tier="premium"] .ff-phone-dock {
+  background:linear-gradient(160deg,#141117,#26201f);
+  border-color:#b3915d;
+  box-shadow:0 -12px 38px rgba(0,0,0,.4);
+}
+.ff-environment[data-file-folder-tier="premium"] .ff-phone-dock :is(label,select){
+  color:#f1debe;
+  font-size:14px;
+}
+.ff-environment[data-file-folder-tier="premium"] .ff-phone-dock select{
+  min-height:48px;
+  border:1px solid #bd965d;
+  border-radius:12px;
+  background:#282126;
+}
+.ff-environment[data-file-folder-tier="premium"] .ff-world-tools > summary {
+  background:#251d22;
+  border-color:#c9a267;
+  color:#ffe4af;
+  font-size:13px;
+}
+.ff-environment[data-file-folder-tier="premium"] .ff-workspace-frame {
+  border-color:#b98d54;
+  background:linear-gradient(155deg,#17131b,#0b0a0f);
+  color:#f0e3d1;
+}
+.ff-environment[data-file-folder-tier="premium"] .ff-workspace-heading,
+.ff-environment[data-file-folder-tier="premium"] .ff-workspace-picker {
+  background:linear-gradient(120deg,#2a2126,#131015);
+  border-color:#ae8651;
+}
+.ff-environment[data-file-folder-tier="premium"] .ff-workspace-heading p,
+.ff-environment[data-file-folder-tier="premium"] .ff-workspace-scroll h2,
+.ff-environment[data-file-folder-tier="premium"] .ff-workspace-scroll h3 {
+  color:#ffdfaa;
+}
+.ff-environment[data-file-folder-tier="premium"] .ff-workspace-scroll :is(p,li,label){
+  color:#e8d8bf;
+}
+.ff-environment[data-file-folder-tier="premium"] .ff-workspace-scroll :is(input,textarea,select){
+  border-color:#806749;
+  background:#1d1920;
+  color:#fff3dc;
+}
+.ff-environment[data-file-folder-tier="premium"] :is(button,summary,a):focus-visible{
+  outline:2px solid #f2c878;
+  outline-offset:3px;
+}
+@media (max-width:767px) {
+  .ff-environment[data-file-folder-tier="premium"] {
+    grid-template-rows:auto minmax(0,1fr);
+  }
+  .ff-environment[data-file-folder-tier="premium"] .ff-environment-header{
+    padding:11px 63px 13px 17px;
+  }
+  .ff-environment[data-file-folder-tier="premium"] .ff-phone-identity h1{
+    font-size:20px;
+  }
+  .ff-environment[data-file-folder-tier="premium"] [data-premium-file-folder-entrance]{
+    padding-top:16px;
+    padding-bottom:calc(110px + env(safe-area-inset-bottom,0px));
+  }
+  .ff-environment[data-file-folder-tier="premium"] .ff-workspace-scroll{
+    padding:22px 16px calc(26px + env(safe-area-inset-bottom,0px));
+  }
+}
