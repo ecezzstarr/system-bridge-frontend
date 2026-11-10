@@ -109,7 +109,7 @@ export async function POST(request:NextRequest){
   const c=await db.query('SELECT * FROM weave_company_support_cases WHERE id=$1::uuid',[caseId])
   const item=c.rows[0]
   if(!item)return fail('Support case not found',404)
-  const worker=user.id===item.worker_id,manager=user.id===item.manager_id && (await managerKinds(user.id)).length>0
+  const worker=user.id===item.worker_id,manager=user.id===item.manager_id && (await managerKinds(user.id)).length>0 && await managerAssignedTo(String(item.worker_id),user.id)
   const admin=user.role==='admin'
   if(!worker&&!manager&&!admin)return fail('Case belongs to another employee or manager',403)
   if(action==='message'){
