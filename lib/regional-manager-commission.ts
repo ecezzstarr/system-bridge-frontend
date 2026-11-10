@@ -1,6 +1,7 @@
 // The ordinary Regional Manager belongs only to Hope/Bridger or Stability/Agent.
 // It has no File Folder; Pro Regional Manager is an independent job and activation flow.
 import { getPool, sql } from '@/lib/db'
+import { recoverSupportAdvanceFromEarning } from '@/lib/company-support'
 
 // The Regional Manager receives 2% of WEAVE's company share, not 2% of the
 // full File Folder price. WEAVE's existing crossing economics define the
@@ -189,6 +190,7 @@ export async function creditRegionalManagerFileFolderCommission(params: {
         }),
       ],
     )
+    await recoverSupportAdvanceFromEarning(client,regionalManagerId,commissionAmount,sourceKey)
     await client.query('COMMIT')
   } catch (error) {
     try { await client.query('ROLLBACK') } catch {}
