@@ -10,6 +10,8 @@ const regional=read('app/(app)/weave/lifestyles/regional-manager/workspace/page.
 const hope=read('app/(app)/bridger/dashboard/page.tsx')
 const stability=read('app/(app)/agent/dashboard/page.tsx')
 const ordinary=read('app/api/regional-manager/workspace/route.ts')
+const admin=read('app/api/admin/regional-operations/route.ts')
+const adminPage=read('app/(app)/admin/regional-operations/page.tsx')
 
 assert(model.includes('weave_regional_gate_directions'),'Each regional gate retains manager directions')
 assert(api.includes("if(!['agent','bridger'].includes(user.role))return null"),
@@ -49,6 +51,12 @@ assert(entrance.includes('<RegionalSystemSwitchGate compact />'), 'Gate appears 
 assert(regional.includes('<RegionalSystemSwitchGate />'),'Regional workspace carries one company movement')
 assert(hope.includes('<RegionalSystemSwitchGate compact />'),'Bridgers see company participation in daily work')
 assert(stability.includes('<RegionalSystemSwitchGate compact />'),'Agents see company participation in daily work')
+assert(admin.includes("LEFT JOIN weave_regional_manager_applications app"),
+  'Administrations sees the approved region as the gate location label')
+assert(admin.includes('weave_regional_gate_directions d'),
+  'Administrations sees the Regional Manager current direction')
+assert(adminPage.includes('Regional System Switch Gate · {m.region'),
+  'Administrations can identify each regional gate on its operations page')
 assert(entrance.includes('/system-switch/world?via=system-switch'),
   'One shared 3D System Switch world remains, not multiple disconnected worlds')
 console.log('Regional System Switch company participation and authority: passed')
