@@ -70,4 +70,18 @@ assert.ok(ownerEarnings.includes("OWNER_COST_CURRENCIES = ['FLAME COIN','NGN'"),
 const customerDoor=fs.readFileSync(path.join(root,'lib/customer-door-settlement.ts'),'utf8')
 assert.ok(customerDoor.includes("'FLAME COIN','SYSTEM SWITCH','FLAME_COIN','FC'"),
   'Existing Customer Door offers must remain purchasable through verified wallet settlement')
+// Existing Client money paths must retain the historical stored currency,
+ // while controls show the new public System Switch label.
+const checkout=fs.readFileSync(path.join(root,'components/public/customer-door-checkout.tsx'),'utf8')
+assert.ok(checkout.includes("'FLAME COIN','SYSTEM SWITCH','FLAME_COIN','FC'"),
+  'Historical Customer Door offers must keep wallet checkout')
+assert.ok(checkout.includes('displayCurrencyName(currency)'),
+  'Customer Door checkout should display the public currency name')
+const ownerPanel=fs.readFileSync(path.join(root,'components/system-switch/client-owner-earnings-panel.tsx'),'utf8')
+assert.ok(ownerPanel.includes("const currencies=['FLAME COIN','NGN'"),
+  'Owner cost options must match the financial database constraint')
+assert.ok(ownerPanel.includes("useState('FLAME COIN')"),
+  'Owner cost form must not default to a value rejected by its SQL constraint')
+assert.ok(!ownerPanel.includes("row.currency!=='SYSTEM SWITCH'"),
+  'Historical System Switch costs must not be miscategorized as foreign currency')
 console.log(`PASS: ${routes.length} named page entrances, ${findings.length} source files, 18 loader lessons, saved-default upgrade and authored-copy preservation`)
