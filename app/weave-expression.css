@@ -319,3 +319,120 @@ html[data-weave-shell-theme="plus-white-gold"] [data-file-folder-tier-preview] [
   html[data-weave-shell-theme="plus-white-gold"] [data-public-weave-world] .weave-home-nav > div { justify-content: center; }
   html[data-weave-shell-theme="plus-white-gold"] [data-public-weave-world] .weave-home-nav a { font-size: .72rem; }
 }
+
+
+/*
+ * Homepage scroll continuity. The original dark navigation/footer and Reach
+ * form controls introduced navy bands into an otherwise porcelain Plus world.
+ * Keep this scoped to the public home so Flame Event and private tier themes
+ * continue to own their separate colour systems.
+ */
+html[data-weave-shell-theme="plus-white-gold"]:has([data-public-weave-world]) {
+  background-color: #f7f9f9;
+}
+html[data-weave-shell-theme="plus-white-gold"]:has([data-public-weave-world]) body {
+  background: #f7f9f9;
+}
+html[data-weave-shell-theme="plus-white-gold"] [data-public-weave-world] .weave-home-nav {
+  background: #f9faf9;
+  background-image: linear-gradient(105deg,rgba(252,251,247,.98),rgba(245,249,252,.97));
+  border-bottom: 1px solid var(--home-gold-line);
+  box-shadow: 0 5px 18px rgba(43,69,84,.055);
+}
+html[data-weave-shell-theme="plus-white-gold"] [data-public-weave-world] .weave-home-nav a {
+  color: #29475b;
+}
+html[data-weave-shell-theme="plus-white-gold"] [data-public-weave-world] .weave-home-nav a:hover {
+  color: var(--home-deep-gold);
+  background-color: rgba(176,137,70,.08);
+}
+html[data-weave-shell-theme="plus-white-gold"] [data-public-weave-world] :is(.weave-home-nav,.weave-home-footer) .weave-logo-live {
+  padding: .35rem .55rem;
+  border: 1px solid rgba(164,123,62,.4);
+  border-radius: .35rem;
+  background: #203b4b; /* The existing white wordmark remains legible. */
+}
+html[data-weave-shell-theme="plus-white-gold"] [data-public-weave-world] .weave-home-footer {
+  background: #f8faf9;
+  background-image: linear-gradient(100deg,#fffdfa,#f3f8fb);
+  border-top: 1px solid var(--home-gold-line);
+}
+html[data-weave-shell-theme="plus-white-gold"] [data-public-weave-world] .weave-home-footer p {
+  color: #405a6c;
+}
+
+/* No full-width navy strips beneath the Plus poster. Keep each station open. */
+html[data-weave-shell-theme="plus-white-gold"] [data-public-weave-world] :is(
+  .weave-home-reach,.weave-home-reach-tracking,
+  .weave-home-agent-application,.weave-home-presence-signature
+) {
+  background: transparent;
+  color: var(--home-ink);
+  border-color: var(--home-gold-line);
+  box-shadow: none;
+}
+html[data-weave-shell-theme="plus-white-gold"] [data-public-weave-world] :is(
+  .weave-home-reach,.weave-home-agent-application,.weave-home-presence-signature
+) {
+  border-top: 1px solid var(--home-gold-line);
+}
+html[data-weave-shell-theme="plus-white-gold"] [data-public-weave-world] :is(
+  .weave-home-reach,.weave-home-reach-tracking,.weave-home-agent-application,.weave-home-presence-signature
+) :is(label,.text-slate-100,.text-slate-200,.text-slate-300,.text-slate-400,.text-white) {
+  color: #3d5668;
+}
+html[data-weave-shell-theme="plus-white-gold"] [data-public-weave-world] :is(
+  .weave-home-reach,.weave-home-reach-tracking
+) :is(input:not([type="checkbox"]),textarea,select) {
+  background: #fff;
+  background-image: none;
+  border: 1px solid #c4ced2;
+  color: #203b4b;
+  -webkit-text-fill-color: #203b4b;
+  box-shadow: 0 1px 2px rgba(22,46,58,.04);
+  color-scheme: light;
+}
+html[data-weave-shell-theme="plus-white-gold"] [data-public-weave-world] :is(
+  .weave-home-reach,.weave-home-reach-tracking
+) :is(input,textarea)::placeholder {
+  color: #637987;
+  opacity: 1;
+}
+html[data-weave-shell-theme="plus-white-gold"] [data-public-weave-world] :is(
+  .weave-home-reach,.weave-home-reach-tracking
+) :is(input,textarea,select):focus-visible {
+  outline: 2px solid #3979a1;
+  outline-offset: 2px;
+  border-color: #3979a1;
+}
+html[data-weave-shell-theme="plus-white-gold"] [data-public-weave-world] :is(
+  .weave-home-reach,.weave-home-reach-tracking
+) button {
+  background: linear-gradient(110deg,#f5e7ca,#fff9ed);
+  border: 1px solid #b79969;
+  color: #24445a;
+  box-shadow: none;
+}
+html[data-weave-shell-theme="plus-white-gold"] [data-public-weave-world] :is(
+  .weave-home-reach,.weave-home-reach-tracking
+) button:hover:not(:disabled) {
+  background: #f2ddb5;
+}
+html[data-weave-shell-theme="plus-white-gold"] [data-public-weave-world] [data-reach-request-tracker] {
+  border-top: 1px solid var(--home-gold-line);
+}
+html[data-weave-shell-theme="plus-white-gold"] [data-public-weave-world] [data-reach-request-tracker] [class*="bg-black/"],
+html[data-weave-shell-theme="plus-white-gold"] [data-public-weave-world] .weave-home-reach [class*="bg-emerald-200/"] {
+  background: rgba(255,255,255,.84);
+  border-color: var(--home-gold-line);
+}
+html[data-weave-shell-theme="plus-white-gold"] [data-public-weave-world] :is(
+  .weave-home-reach,.weave-home-reach-tracking
+) [role="alert"] {
+  color: #a13237;
+}
+html[data-weave-shell-theme="plus-white-gold"] [data-public-weave-world] :is(
+  .weave-home-reach,.weave-home-reach-tracking
+) [role="status"] {
+  color: #206a52;
+}
