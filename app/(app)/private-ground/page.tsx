@@ -48,7 +48,7 @@ export default function PrivateGroundPage() {
           <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
             <div>
               <p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.22em] text-violet-300">Private Ground · Session State</p>
-              <h1 className="mt-2 text-2xl font-black text-white md:text-3xl">Private interaction is tracked as a state transition.</h1>
+              <h1 className="mt-2 text-2xl font-black text-white md:text-3xl">A private place to continue the conversation.</h1>
               <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-300">
                 This surface reads the session service and shows what is scheduled, live or completed. It no longer displays Start, End or Schedule buttons unless an authorized action channel actually exists.
               </p>

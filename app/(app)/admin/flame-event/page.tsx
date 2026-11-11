@@ -148,15 +148,15 @@ export default function FlameEventWorkshopPage() {
         <div className="flex flex-wrap items-end justify-between gap-5">
           <div className="min-w-0">
             <p className="inline-flex items-center gap-2 text-[9px] font-black uppercase tracking-[.22em] text-orange-200">
-              <Flame className="h-4 w-4"/> Administration · Company Loop 1
+              <Flame className="h-4 w-4"/> Administrations · Company Loop 1
             </p>
             <h1 className="mt-2 text-3xl font-black tracking-tight sm:text-5xl">Flame Event Command</h1>
             <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">
               {live
-                ? `Burning River is live. Day ${Math.max(1,progress.day)} is moving across Client, Bridger, Agent and Administration positions.`
+                ? `Burning River is live. Day ${Math.max(1,progress.day)} is moving across Client, Bridger, Agent and Administrations positions.`
                 : effectiveStatus==='closed'
-                  ? 'Company Loop 1 is closed. Administration can inspect the final state or extend the schedule before reopening.'
-                  : 'Company Loop 1 is preparing. Administration controls the opening boundary and the signal carried into every position.'}
+                  ? 'Company Loop 1 is closed. Administrations can inspect the final state or extend the schedule before reopening.'
+                  : 'Company Loop 1 is preparing. Administrations controls the opening boundary and the signal carried into every position.'}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -199,7 +199,7 @@ export default function FlameEventWorkshopPage() {
             <textarea value={subtitle} onChange={e=>setSubtitle(e.target.value)} rows={2} className="mt-2 w-full resize-none border-0 bg-transparent px-0 py-2 text-sm leading-6 text-white outline-none"/>
           </label>
           <label className="block pt-4">
-            <span className="text-[9px] font-black uppercase tracking-wider text-slate-500">Administration signal</span>
+            <span className="text-[9px] font-black uppercase tracking-wider text-slate-500">Administrations signal</span>
             <textarea value={announcement} onChange={e=>setAnnouncement(e.target.value)} rows={5} className="mt-2 w-full resize-y border-0 bg-transparent px-0 py-2 text-sm leading-6 text-white outline-none"/>
           </label>
         </div>

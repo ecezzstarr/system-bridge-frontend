@@ -203,7 +203,7 @@ export async function exitWeaveEmployment(
   try{
     await pool.query(`INSERT INTO notifications(user_id,type,title,content,from_user_name)
       VALUES($1::uuid,'employment_exit',$2,$3,'WEAVE Administration')`,[
-        employeeId,action==='fire'?'Your WEAVE employment appointment was ended by Administration':exitKind==='withdrawn'?'Your WEAVE employment application was withdrawn':'Your WEAVE employment resignation was recorded',
+        employeeId,action==='fire'?'Your WEAVE employment appointment was ended by Administrations':exitKind==='withdrawn'?'Your WEAVE employment application was withdrawn':'Your WEAVE employment resignation was recorded',
         reason.slice(0,550)])
     if(action==='resign'){
       await pool.query(`INSERT INTO notifications(user_id,type,title,content,from_user_name)

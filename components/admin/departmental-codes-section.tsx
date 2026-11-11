@@ -220,7 +220,7 @@ export function DepartmentalCodesSection() {
 
           <div className="bg-blue-500/5 border border-blue-500/20 rounded-xl p-4 space-y-3">
             <p className="text-[10px] text-slate-400 leading-relaxed italic">
-              "Verify identity via Administration Chat before issuing departmental entry keys. Each key is an institutional boundary."
+              "Verify identity via Administrations Chat before issuing departmental entry keys. Each key is an institutional boundary."
             </p>
             <Link href="/admin/client-messages">
               <Button

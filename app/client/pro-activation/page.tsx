@@ -50,7 +50,7 @@ export default function ProActivationPage(){
    const body=await res.json()
    if(!res.ok)throw new Error(body.error||'Submission unavailable')
    setMessage(action==='sign_agreement'
-    ?'Your electronic signature is recorded. Administration must review it before the business-plan stage.'
+    ?'Your electronic signature is recorded. Administrations must review it before the business-plan stage.'
     : action==='business_plan'
     ?'Business plan recorded. Read the official wallet details and transfer exactly 680 USDT on TRC-20.'
     :'Payment evidence received. Forensics must independently verify the blockchain transaction before your private File Folder opens.')
@@ -69,7 +69,7 @@ export default function ProActivationPage(){
    <section className="rounded-2xl border border-sky-200/80 bg-white/95 p-6 shadow-sm" data-pro-verification-next-step="true">
     <p className="text-xs font-bold uppercase tracking-widest text-sky-800">Official Weave company entry</p>
     <h2 className="mt-2 text-2xl font-bold text-slate-900">Ready to verify your position?</h2>
-    <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-700">If Administration has issued you a Pro File Number, use it to present your business plan and signed agreement. Your identity and company appointment are reviewed separately. You do not need a password or new account to begin; no payment is requested at this entrance.</p>
+    <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-700">If Administrations has issued you a Pro File Number, use it to present your business plan and signed agreement. Your identity and company appointment are reviewed separately. You do not need a password or new account to begin; no payment is requested at this entrance.</p>
     <Link href="/client/pro-verification" className="mt-4 inline-flex rounded-xl bg-[#1d628e] px-5 py-3 text-sm font-bold text-white">Continue with issued File Number</Link>
    </section>
   </div>
@@ -104,10 +104,10 @@ export default function ProActivationPage(){
    <section className="rounded-2xl border border-sky-200 bg-white/95 p-6 shadow-sm" data-pro-current-progress="true">
     <h2 className="text-lg font-bold text-slate-900">Verification progress</h2>
     <p className="mt-2 text-sm capitalize text-slate-300">{status.replaceAll('_',' ')}</p>
-    {status==='awaiting_preparation'&&<p className="mt-3 text-sm text-amber-200">Administration must reconcile your existing File Number and prepare this Pro activation. No payment is requested yet.</p>}
+    {status==='awaiting_preparation'&&<p className="mt-3 text-sm text-amber-200">Administrations must reconcile your existing File Number and prepare this Pro activation. No payment is requested yet.</p>}
     {status==='awaiting_signature'&&<p className="mt-3 text-sm text-amber-200">{activation?.client_signature_at
-     ? 'Your electronic signature was received. Administration is reviewing the signed agreement before business planning.'
-     : 'Read the agreement below and sign electronically. Administration will review your signature before business planning.'}</p>}
+     ? 'Your electronic signature was received. Administrations is reviewing the signed agreement before business planning.'
+     : 'Read the agreement below and sign electronically. Administrations will review your signature before business planning.'}</p>}
     {status==='pending_forensics'&&<p className="mt-3 text-sm text-amber-200">Payment evidence submitted. Forensics will verify 680 USDT on the TRON blockchain. Do not send a second transfer unless advised after review.</p>}
     {status==='active'&&<div className="mt-3 space-y-3"><p className="text-sm text-emerald-200">The one-time fee was verified. Your private Pro File Folder is open.</p><Link href="/client/system-switch" className="inline-block rounded-lg bg-cyan-300 px-5 py-3 font-semibold text-slate-950">Enter System Switch</Link></div>}
    </section>
@@ -122,7 +122,7 @@ export default function ProActivationPage(){
     </div>
     <p className="text-sm leading-7 text-slate-200">For any reported Siblings Event business earnings or other historical balance, source verification and separate Mandate accounting remain required. This fee does not establish or release a 9,000 USDT balance, and existing employment or personal financial obligations remain unchanged.</p>
     {activation?.client_signature_at
-     ?<p className="rounded-lg border border-cyan-300/30 p-3 text-sm text-cyan-100">Signed electronically by {activation.client_signature_name} · {new Date(activation.client_signature_at).toLocaleString()} · Awaiting Administration review</p>
+     ?<p className="rounded-lg border border-cyan-300/30 p-3 text-sm text-cyan-100">Signed electronically by {activation.client_signature_name} · {new Date(activation.client_signature_at).toLocaleString()} · Awaiting Administrations review</p>
      :<div className="space-y-3 border-t border-white/10 pt-4">
       <label className="block text-sm">Full registered Client name (electronic signature)
        <input value={signedName} onChange={e=>setSignedName(e.target.value)} autoComplete="name"

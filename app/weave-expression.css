@@ -6,6 +6,31 @@
   font-weight: 200 800;
   font-display: swap;
 }
+
+/* The single company loader carries the same writing hierarchy for every
+   role and File Folder tier, including the separate Burning River artwork. */
+.weave-loader-stable {
+  font-family: 'Weave Manrope', system-ui, sans-serif;
+}
+.weave-loader-stable .weave-loader-heading h1,
+.weave-loader-stable .weave-loader-card h2 {
+  font-family: 'Weave Cormorant', Georgia, serif !important;
+  font-weight: 600 !important;
+  letter-spacing: -.015em;
+  text-transform: none;
+  text-shadow: none !important;
+}
+.weave-loader-stable .weave-loader-heading h1 {
+  font-size: clamp(1.5rem,5.5vw,2.1rem);
+  line-height: 1.1;
+}
+.weave-loader-stable .weave-loader-card-body h2 {
+  font-size: clamp(1.35rem,4.5vw,1.8rem);
+  line-height: 1.15;
+}
+.weave-loader-stable .weave-loader-card-body p {
+  font-weight: 450;
+}
 @font-face {
   font-family: 'Weave Cormorant';
   src: url('/fonts/weave-cormorant-latin.woff2') format('woff2');

@@ -48,10 +48,10 @@ export default function AdminFarmEscrow(){
   finally{setBusy('')}
  }
  if(!isInitialized)return <main className="p-6 text-white">Opening Farm-to-Family settlement desk…</main>
- if(user?.role!=='admin')return <main className="p-6 text-white">Administration only.</main>
+ if(user?.role!=='admin')return <main className="p-6 text-white">Administrations only.</main>
  return <main className="mx-auto max-w-6xl px-4 pb-24 pt-6 text-white" data-admin-farm-escrow="flat-seller-fee">
     <FarmToFamilySettlementInfo audience="admin"/>
-  <Link href="/admin/food-bridge" className="text-xs text-emerald-200">← Farm-to-Family Administration</Link>
+  <Link href="/admin/food-bridge" className="text-xs text-emerald-200">← Farm-to-Family Administrations</Link>
   <h1 className="mt-5 text-3xl font-black">FARM-TO-FAMILY · PAYMENT HOLD & SETTLEMENT</h1>
   <p className="mt-3 text-sm leading-6 text-stone-300">WEAVE deducts <strong>₦1,000 from the farmer for each successfully completed order</strong>, regardless of quantity. The buyer pays the accepted food and delivery total with no added WEAVE fee. Confirm actual bank credit before dispatch; after buyer receipt send the net total (buyer payment minus ₦1,000) to the farmer’s verified bank account, then record the bank transfer reference. These controls record external payment movements; they cannot initiate or prove a bank transfer automatically.</p>
   {error&&<p role="alert" className="mt-4 border border-rose-300/20 p-3 text-sm text-rose-200">{error}</p>}
@@ -87,7 +87,7 @@ export default function AdminFarmEscrow(){
       <input type="checkbox" checked={confirmed[o.order_id]||false} onChange={e=>setConfirmed(p=>({...p,[o.order_id]:e.target.checked}))}/>
       I have completed and reconciled the external bank transfer; not merely initiated it.
      </label>}
-     <label className="block text-xs text-stone-300">Administration verification or resolution note
+     <label className="block text-xs text-stone-300">Administrations verification or resolution note
       <textarea minLength={12} rows={3} value={notes[o.order_id]||''} onChange={e=>setNotes(p=>({...p,[o.order_id]:e.target.value}))}
        className="mt-2 w-full border border-white/10 bg-[#14251c] p-3 text-white"/>
      </label>

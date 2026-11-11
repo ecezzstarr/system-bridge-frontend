@@ -8,7 +8,7 @@ import { NextResponse } from 'next/server'
  */
 export async function GET(){
  return NextResponse.json({
-  error:'Direct OPay callback is not enabled. Use the WEAVE OPay deposit submission and Administration verification flow.',
+  error:'Direct OPay callback is not enabled. Use the WEAVE OPay deposit submission and Administrations verification flow.',
   code:'opay_manual_verification_required',
  },{status:410,headers:{'Cache-Control':'no-store'}})
 }

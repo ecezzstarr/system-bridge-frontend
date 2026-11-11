@@ -61,7 +61,7 @@ export default function ClientPresenceRegistryPage() {
           <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
             <div>
               <p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.22em] text-emerald-300">Client Presence Registry</p>
-              <h1 className="mt-2 text-2xl font-black text-white md:text-3xl">A Client record is a relationship state, not a CRM row.</h1>
+              <h1 className="mt-2 text-2xl font-black text-white md:text-3xl">Keep the Client relationship in view.</h1>
               <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-300">
                 This registry shows Client relationship state returned by the WEAVE core service. Conversation, File Folder support and Client movement continue through their canonical operating surfaces.
               </p>

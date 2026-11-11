@@ -66,7 +66,7 @@ export async function POST(request:NextRequest) {
     const cfg=await client.query('SELECT enabled,price_flame_coin FROM weave_river_call_settings WHERE id=1')
     fee=RIVER_CALL_PRICE_FLAME_COIN
     if(!cfg.rows[0]?.enabled || !Number.isFinite(fee) || fee<=0){
-      await client.query('ROLLBACK');return NextResponse.json({error:'Administration has not activated a River call price'},{status:503})
+      await client.query('ROLLBACK');return NextResponse.json({error:'Administrations has not activated a River call price'},{status:503})
     }
     const wa=await client.query('SELECT whatsapp_number FROM users WHERE id=$1::uuid',[user.id])
     const bridgerWhatsapp=String(wa.rows[0]?.whatsapp_number||'').replace(/\D/g,'')

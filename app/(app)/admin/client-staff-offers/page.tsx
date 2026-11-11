@@ -95,11 +95,11 @@ export default function AdminClientStaffOffers() {
   }
 
   if(!isInitialized)return <main className="p-6 text-slate-300">Opening company employment tickets…</main>
-  if(user?.role!=='admin')return <main className="p-6 text-slate-300">Administration only.</main>
+  if(user?.role!=='admin')return <main className="p-6 text-slate-300">Administrations only.</main>
   return <main className="mx-auto max-w-6xl space-y-7 px-4 py-7 text-white">
     <Link href="/admin/employment-applications" className="text-sm text-cyan-200">← Employment applications</Link>
     <header className="space-y-2">
-      <p className="text-xs uppercase tracking-widest text-cyan-200">Administration · Client staff employment</p>
+      <p className="text-xs uppercase tracking-widest text-cyan-200">Administrations · Client staff employment</p>
       <h1 className="text-3xl font-black">Company offers & employee tickets</h1>
       <p className="max-w-3xl text-sm leading-6 text-slate-300">Create private employment offers, inspect independently verified USDT ticket references and issue a granted Client File Folder. These entries do not appear in retail File Folder purchase sales. Offered salaries are confidential and are not paid automatically.</p>
     </header>

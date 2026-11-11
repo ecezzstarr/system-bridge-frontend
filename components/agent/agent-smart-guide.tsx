@@ -68,7 +68,7 @@ function RoleSmartGuide({userId,role}:{userId:string;role:'agent'|'bridger'|'cli
     data-weave-guide-bubble={role} data-agent-guide-location={pathname}>
     {open&&<section id="weave-role-guide-panel"
       className="max-h-[min(48svh,380px)] w-[min(19rem,calc(100vw-1.5rem))] overflow-y-auto overscroll-contain rounded-xl border border-sky-300/30 bg-[#07121e] p-4 text-white shadow-lg"
-      aria-label={role==='agent'?'Agent page guide':role==='bridger'?'Bridger page guide':role==='client'?'Client page guide':'Administration page guide'}>
+      aria-label={role==='agent'?'Agent page guide':role==='bridger'?'Bridger page guide':role==='client'?'Client page guide':'Administrations page guide'}>
       <div className="flex items-start justify-between gap-3">
         <div><p className="text-[10px] font-bold uppercase tracking-wide text-sky-200">WEAVE · {role.toUpperCase()}</p>
           <h2 className="mt-1 text-sm font-bold">{guide.title}</h2></div>

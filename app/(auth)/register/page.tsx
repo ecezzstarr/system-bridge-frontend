@@ -323,7 +323,7 @@ function RegisterContent() {
             <p><strong className="text-slate-300">3. Financial Conduct.</strong> All deposits, withdrawals, and client fund handling must go through WEAVE's official channels. Off-platform arrangements with clients are not covered or protected by WEAVE.</p>
             <p><strong className="text-slate-300">4. Continuance & Access.</strong> Bridger positions do not expire due to monthly fees. Lifestyle job access for Bridgers follows permanent Agentic-Bridger ownership.</p>
             <p><strong className="text-slate-300">5. Conduct.</strong> Misrepresentation of WEAVE, fraudulent client dealings, or circumventing platform fees may result in immediate suspension.</p>
-            <p><strong className="text-slate-300">6. Data & Communication.</strong> Your registered contact details may be used by WEAVE Administration for account verification, payouts, and platform notices.</p>
+            <p><strong className="text-slate-300">6. Data & Communication.</strong> Your registered contact details may be used by WEAVE Administrations for account verification, payouts, and platform notices.</p>
             <p><strong className="text-slate-300">7. Changes.</strong> WEAVE may update these terms; continued use of the platform after an update constitutes acceptance.</p>
             <p className="text-slate-500 italic pt-2 text-center">— End of Terms —</p>
           </div>

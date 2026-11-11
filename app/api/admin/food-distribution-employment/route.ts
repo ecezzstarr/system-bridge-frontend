@@ -5,7 +5,7 @@ import { ensureFoodDistributionEmploymentSchema } from '@/lib/food-distribution-
 export const dynamic='force-dynamic'
 export async function GET(request:NextRequest){
   const user=await getAuthUser(request)
-  if(user?.role!=='admin')return NextResponse.json({success:false,error:'Administration access required.'},{status:403})
+  if(user?.role!=='admin')return NextResponse.json({success:false,error:'Administrations access required.'},{status:403})
   try{
     await ensureFoodDistributionEmploymentSchema()
     const {rows}=await getPool().query(`
@@ -24,7 +24,7 @@ export async function GET(request:NextRequest){
 }
 export async function POST(request:NextRequest){
   const admin=await getAuthUser(request)
-  if(admin?.role!=='admin')return NextResponse.json({success:false,error:'Administration access required.'},{status:403})
+  if(admin?.role!=='admin')return NextResponse.json({success:false,error:'Administrations access required.'},{status:403})
   const body=await request.json().catch(()=>({}))
   const applicantId=typeof body.applicantId==='string'?body.applicantId:''
   const action=body.action
@@ -43,11 +43,11 @@ export async function POST(request:NextRequest){
       ))
     RETURNING user_id,position,status,manager_user_id,reviewed_at,hired_at
   `,[applicantId,action==='approve'?'approved':'rejected',note,admin.id])
-  if(!rows.length)return NextResponse.json({success:false,error:'Application is no longer pending, or the selected lead Manager is no longer active. Refresh Administration.'},{status:409})
+  if(!rows.length)return NextResponse.json({success:false,error:'Application is no longer pending, or the selected lead Manager is no longer active. Refresh Administrations.'},{status:409})
   try{await getPool().query(`
     INSERT INTO notifications(user_id,type,title,content,from_user_name)
     VALUES($1::uuid,'food_distribution_employment',$2,$3,'WEAVE Administration')
   `,[applicantId,action==='approve'?'Food Distribution appointment approved':'Food Distribution application reviewed',
-    action==='approve'?'Administration approved your Food Distribution appointment. Open your approved workspace to coordinate verified food stock, outlets and deliveries.':`Administration did not approve this application. Review note: ${note}`])}catch(error){console.error('[food distribution admin] notification failed',error)}
+    action==='approve'?'Administrations approved your Food Distribution appointment. Open your approved workspace to coordinate verified food stock, outlets and deliveries.':`Administrations did not approve this application. Review note: ${note}`])}catch(error){console.error('[food distribution admin] notification failed',error)}
   return NextResponse.json({success:true,appointment:rows[0]},{headers:{'Cache-Control':'private, no-store'}})
 }

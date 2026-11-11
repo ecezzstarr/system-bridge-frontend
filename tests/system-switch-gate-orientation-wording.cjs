@@ -9,7 +9,7 @@ const load = file => {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 }
   }).outputText
   const exported = {}
-  new Function('exports', 'require', output)(exported, require)
+  new Function('exports', 'require', output)(exported, id => id.startsWith('@/') ? require('./helpers/load-ts-module.cjs')(id.slice(2)+'.ts') : require(id))
   return exported
 }
 

@@ -46,9 +46,9 @@ export async function reviewAssistantEligibilityByAdministration(
       await pool.query(`INSERT INTO notifications(user_id,type,title,content,from_user_name,link)
         VALUES($1::uuid,'assistant_application_review',$2,$3,'WEAVE Administration',
           '/weave/lifestyles/distribution-assistant')`,
-        [applicantId,verified?'Administration verified your assistant application':'Administration declined your assistant application',
-        verified?'Your application has passed Administration eligibility verification. A verified lead Distribution Manager will make the separate appointment decision. You are not employed yet.':
-          'Your Assistant Distribution Manager application was declined by Administration. Open Lifestyle to review your record.'])
+        [applicantId,verified?'Administrations verified your assistant application':'Administrations declined your assistant application',
+        verified?'Your application has passed Administrations eligibility verification. A verified lead Distribution Manager will make the separate appointment decision. You are not employed yet.':
+          'Your Assistant Distribution Manager application was declined by Administrations. Open Lifestyle to review your record.'])
       if(verified){
         await pool.query(`INSERT INTO notifications(user_id,type,title,content,from_user_name,link)
           SELECT me.user_id,'assistant_eligible','Verified assistant application ready',

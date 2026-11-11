@@ -14,12 +14,9 @@ import {
   type LoaderCopyRole,
   type EnvironmentRuntimeConfig,
 } from '@/lib/weave-environment-runtime-profile'
-import type {WeaveLoadingBrief,WeaveLoadingRole} from '@/lib/weave-loading-guidance'
+import {loaderAudienceName,type WeaveLoadingBrief,type WeaveLoadingRole} from '@/lib/weave-loading-guidance'
 
-const labels:Record<LoaderCopyRole,string>={
-  visitor:'Visitors',agent:'Agent · Stability',bridger:'Bridger · Hope',
-  client:'Client · File Folder',admin:'Administration', 'flame-event':'Flame Event',
-}
+const labels=Object.fromEntries(LOADER_COPY_ROLES.map(role=>[role,loaderAudienceName(role)])) as Record<LoaderCopyRole,string>
 type RuntimeResponse={success:boolean;runtime?:{config:EnvironmentRuntimeConfig;version:number;updatedAt:string|null};error?:string}
 type DurationField='bootMinMs'|'transitMinMs'|'autoAdvanceMs'|'maxWaitMs'
 const numberToSec=(number:number)=>Number((number/1000).toFixed(2))
@@ -109,9 +106,9 @@ export default function LoaderWorkshop(){
       <Link href="/admin/environment-organizer" className="inline-flex items-center gap-2 text-xs text-sky-200"><ArrowLeft className="h-4 w-4"/> Environment Organizer</Link>
       <header className="mt-5 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="text-[10px] font-black uppercase tracking-[.2em] text-amber-200">Administration · System Workshop</p>
+          <p className="text-[10px] font-black uppercase tracking-[.2em] text-amber-200">Administrations · System Workshop</p>
           <h1 className="mt-2 text-3xl font-black">Loader Workshop</h1>
-          <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">Control WEAVE's single automatic loader across Visitors, Stability, Hope, Clients, Administration and Flame Event. Publish live wordings and speed to Cloud SQL without redeploying the application.</p>
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">Shape the first words people meet in Weave. Review the three entrance lessons for every department and Flame Event, set their reading pace and publish the wording across the company.</p>
         </div>
         <div className="rounded-xl border border-white/10 p-3 text-xs text-slate-400">Live version <strong className="text-white">v{version||'—'}</strong>{updatedAt&&<p className="mt-1">{new Date(updatedAt).toLocaleString()}</p>}</div>
       </header>
@@ -130,7 +127,7 @@ export default function LoaderWorkshop(){
         <section className="mt-5 grid gap-5 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,.8fr)]">
           <div className="rounded-2xl border border-white/10 bg-[#0d1726] p-5">
             <div className="flex items-center gap-2 text-amber-200"><BookOpen className="h-5 w-5"/><h2 className="font-black">Department wordings</h2></div>
-            <p className="mt-2 text-xs text-slate-300">Choose a department, then edit its three automatic entrance lessons. The original location-specific system instructions remain available for each movement.</p>
+            <p className="mt-2 text-xs text-slate-300">Choose an audience and refine its three entrance lessons. During page transitions, the loader introduces the destination and its work. Unchanged older defaults receive the current company wording; your authored lessons remain yours to direct.</p>
             <div className="mt-4 flex flex-wrap gap-2">{LOADER_COPY_ROLES.map(role=><button key={role} type="button" onClick={()=>{setAudience(role);setLessonIndex(0)}} className={audience===role?'rounded-xl bg-amber-200 px-3 py-2 text-xs font-black text-slate-950':'rounded-xl border border-white/10 px-3 py-2 text-xs font-semibold text-slate-200'}>{labels[role]}</button>)}</div>
             <div className="mt-4 flex gap-2">{[0,1,2].map(index=><button key={index} type="button" onClick={()=>setLessonIndex(index)} className={index===lessonIndex?'flex-1 rounded-lg bg-sky-200 px-3 py-2 text-xs font-black text-slate-950':'flex-1 rounded-lg border border-white/10 px-3 py-2 text-xs font-semibold text-white'}>Lesson {index+1}</button>)}</div>
             <div className="mt-4 space-y-3">{(['eyebrow','title','body','movement'] as const).map(field=><label key={field} className="block text-xs font-semibold text-slate-200">

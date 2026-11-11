@@ -166,7 +166,7 @@ export async function signProActivationAgreement(clientId:string,fileNumber:stri
     WHERE client_id=${clientId}::uuid AND file_number=${fileNumber}
       AND status='awaiting_signature' AND client_signature_at IS NULL
     RETURNING id,client_signature_at`
-  if(!row)throw new Error('This agreement was already signed or requires Administration preparation.')
+  if(!row)throw new Error('This agreement was already signed or requires Administrations preparation.')
   await writeProActivationAudit(String(row.id),'client_e_signature',clientId,{
     version:'PRO-680-USDT-2026-11',feeUSDT:PRO_ACTIVATION_FEE_USDT,
     network:'TRC-20 USDT',signedName:name,

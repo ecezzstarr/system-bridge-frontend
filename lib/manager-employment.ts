@@ -17,7 +17,7 @@ export const DISTRIBUTION_MANAGER_LIFESTYLE = DISTRIBUTION_MANAGER_LIFESTYLE_KEY
 // itself is now named Distribution Manager; it remains an overlay on Agent/Bridger.
 export const MANAGER_LIFESTYLE = DISTRIBUTION_MANAGER_LIFESTYLE
 export const POSITION_MONTHLY_SUBSCRIPTION_NGN = 0 // Retired: no monthly Bridger subscription
-export const DISTRIBUTION_MANAGER_CORE_DUTY = 'Distribute WEAVE across public channels, carry verified Agent and Bridger acquisition, coordinate campaign movement, coach field distribution, and report distribution movement to Administration.'
+export const DISTRIBUTION_MANAGER_CORE_DUTY = 'Distribute WEAVE across public channels, carry verified Agent and Bridger acquisition, coordinate campaign movement, coach field distribution, and report distribution movement to Administrations.'
 // Compatibility alias for the existing Manager API/UI. This amount renews the
 // underlying Agent/Bridger monthly position subscription, not a Manager-only fee.
 export const MANAGER_CONTINUANCE_NGN = POSITION_MONTHLY_SUBSCRIPTION_NGN

@@ -19,7 +19,7 @@ export async function initializeDepartmentEntryPaystackTicket(input: { accessTok
   const reference = createPaystackReference('ENTRY')
   const config = await getPaystackConfig()
   const origin = (config.publicOrigin || process.env.WEAVE_PUBLIC_ORIGIN || '').replace(/\/$/, '')
-  if (!origin.startsWith('https://')) throw new Error('Administration must configure the canonical HTTPS origin in the Paystack Integration Workshop.')
+  if (!origin.startsWith('https://')) throw new Error('Administrations must configure the canonical HTTPS origin in the Paystack Integration Workshop.')
   const checkout = await initializePaystackTransaction({
     email: input.payerEmail,
     amountKobo,

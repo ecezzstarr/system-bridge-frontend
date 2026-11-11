@@ -156,7 +156,7 @@ export default function CompanyMovementPage(){
             ['Paid Agent stock value ₦',money('stock','verified_stock_value_ngn')],
           ].map(([k,v])=><div key={k} className="border-t border-white/10 pt-3"><dt className="text-xs text-slate-400">{k}</dt><dd className="mt-1 break-all text-lg font-bold tabular-nums">{report?v:'—'}</dd></div>)}
         </dl>
-        <Link className="inline-block text-sm text-cyan-200 underline" href="/admin/cakes">Open Daisy Pastries Administration</Link>
+        <Link className="inline-block text-sm text-cyan-200 underline" href="/admin/cakes">Open Daisy Pastries Administrations</Link>
       </section>
     </div>
     <div className="grid gap-4 lg:grid-cols-2">

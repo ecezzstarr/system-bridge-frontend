@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   if (authUser.role !== 'admin') {
-    return NextResponse.json({ error: 'Administration access required' }, { status: 403 })
+    return NextResponse.json({ error: 'Administrations access required' }, { status: 403 })
   }
 
   try {

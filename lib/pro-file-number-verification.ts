@@ -95,7 +95,7 @@ export async function submitProFileNumberPlan(input:{
    postalCode.length>30)
   throw new Error('Provide the country, city, region and contact address for your actual company operating location.')
  if(fileNumber===CJ_DORADO_FILE_NUMBER&&operatingCountry.toLowerCase()!=='spain')
-  throw new Error('CJ Dorado has been assigned to Spain; contact Administration if this territory is incorrect.')
+  throw new Error('CJ Dorado has been assigned to Spain; contact Administrations if this territory is incorrect.')
 
  if(!proNumberPattern.test(fileNumber)||businessName.length<3||businessName.length>180
   ||signedName.length<4||signedName.length>255||input.termsAccepted!==true)
@@ -115,7 +115,7 @@ export async function submitProFileNumberPlan(input:{
  const [volume]=await sql`SELECT COUNT(*)::int AS total FROM pro_file_number_verifications
   WHERE file_number=${fileNumber} AND created_at>now()-interval '1 hour'`
  if(Number(volume?.total||0)>=5)
-  throw new Error('This File Number has recent verification requests. Contact Administration to reconcile them.')
+  throw new Error('This File Number has recent verification requests. Contact Administrations to reconcile them.')
  // Multiple submissions are reviewed independently; no approved record is overwritten.
  const ticket=randomBytes(32).toString('hex')
  const [row]=await sql`INSERT INTO pro_file_number_verifications

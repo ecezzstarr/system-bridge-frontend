@@ -163,7 +163,7 @@ function ClientRegisterContent() {
 
               <div className="text-center">
                 <p className="text-[10px] text-slate-500 italic">
-                  A File Number is issued after Administration verifies a File Folder movement.
+                  A File Number is issued after Administrations verifies a File Folder movement.
                 </p>
               </div>
             </form>
@@ -272,7 +272,7 @@ function ClientRegisterContent() {
         </CardContent>
       </Card>
 
-      <p className="mt-12 text-[10px] text-slate-600 font-black uppercase tracking-[0.4em]">© 2026 WEAVE of Presence · System Switch · Bridge Radiance</p>
+      <p className="mt-12 text-[10px] text-slate-600 font-black uppercase tracking-[0.4em]">© 2026 WEAVE of Presence · System Switch · Bridge of Radiance</p>
     </div>
   )
 }

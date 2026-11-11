@@ -8,7 +8,7 @@ export const dynamic='force-dynamic'
 export async function GET(request:NextRequest){
   const user=await getAuthUser(request)
   if(!user||!['agent','bridger','admin'].includes(user.role))
-    return NextResponse.json({error:'Agent, Bridger or Administration required.'},{status:403})
+    return NextResponse.json({error:'Agent, Bridger or Administrations required.'},{status:403})
   try{
     const sql=getBusinessDb()
     await ensureClientBusinessStoreSchema(sql)

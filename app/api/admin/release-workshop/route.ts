@@ -8,7 +8,7 @@ export const dynamic='force-dynamic'
 async function authorize(request:NextRequest){
   const user=await getAuthUser(request)
   if(!user)return {error:NextResponse.json({error:'Login required'},{status:401})}
-  if(user.role!=='admin')return {error:NextResponse.json({error:'Administration only'},{status:403})}
+  if(user.role!=='admin')return {error:NextResponse.json({error:'Administrations only'},{status:403})}
   return {user}
 }
 

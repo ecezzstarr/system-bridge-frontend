@@ -152,7 +152,7 @@ export async function GET(request: NextRequest) {
         gate: {
           stage: 'bridge_file_folder' as GateStage,
           title: 'File Folder Gate',
-          detail: 'This Client account exists, but no verified File Folder is attached yet. Complete the File Folder purchase and Administration verification before System Switch can open.',
+          detail: 'This Client account exists, but no verified File Folder is attached yet. Complete the File Folder purchase and Administrations verification before System Switch can open.',
         },
         client: { id: client.id, name: client.name, file_number: null },
         bridger: bridger || null,
@@ -340,12 +340,12 @@ export async function GET(request: NextRequest) {
     } else if (purchasePending || bridgePending) {
       stage = 'forensics'
       title = 'Forensics Gate'
-      detail = 'Your File Folder payment evidence has been submitted. Forensics must confirm that the movement is real before Administration can open System Switch.'
+      detail = 'Your File Folder payment evidence has been submitted. Forensics must confirm that the movement is real before Administrations can open System Switch.'
     } else if (!folder) {
       if (paymentConfirmed) {
         stage = 'administration'
         title = 'System Switch Gate'
-        detail = 'Your File Folder payment is recognized, but the Client environment has not yet been opened. Administration must open System Switch.'
+        detail = 'Your File Folder payment is recognized, but the Client environment has not yet been opened. Administrations must open System Switch.'
       } else {
         stage = 'bridge_file_folder'
         title = 'File Folder Gate'
@@ -355,7 +355,7 @@ export async function GET(request: NextRequest) {
       stage = paymentConfirmed ? 'administration' : 'forensics'
       title = paymentConfirmed ? 'System Switch Gate' : 'Forensics Gate'
       detail = paymentConfirmed
-        ? 'The File Folder exists and payment is recognized. Administration must open System Switch for this Client.'
+        ? 'The File Folder exists and payment is recognized. Administrations must open System Switch for this Client.'
         : 'The File Folder exists, but verification is not complete.'
     } else if (!workshop || !sameId(workshop.client_id,client.id) || !sameId(workshop.file_number,client.file_number) || folder.workshop_type === 'pending_personalization') {
       stage = 'personalization'

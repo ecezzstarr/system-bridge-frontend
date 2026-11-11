@@ -9,7 +9,7 @@ const uuid=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i
 export async function GET(request:NextRequest){
   try{
     const admin=await getAuthUser(request)
-    if(!admin||admin.role!=='admin')return NextResponse.json({success:false,error:'Administration only'},{status:403})
+    if(!admin||admin.role!=='admin')return NextResponse.json({success:false,error:'Administrations only'},{status:403})
     await ensureGuidanceDepartmentSchema()
     const {rows}=await getPool().query(`
       SELECT a.id,a.user_id,a.source_role,a.department,a.application_note,
@@ -30,7 +30,7 @@ export async function GET(request:NextRequest){
 export async function PATCH(request:NextRequest){
   try{
     const admin=await getAuthUser(request)
-    if(!admin||admin.role!=='admin')return NextResponse.json({success:false,error:'Administration only'},{status:403})
+    if(!admin||admin.role!=='admin')return NextResponse.json({success:false,error:'Administrations only'},{status:403})
     const body=await request.json().catch(()=>({}))
     const applicationId=typeof body.applicationId==='string'?body.applicationId:''
     const decision=body.decision
@@ -62,7 +62,7 @@ export async function PATCH(request:NextRequest){
       reviewed.user_id,
       decision==='approved'?'WEAVE Company Guidance appointment approved':
         decision==='rejected'?'WEAVE Company Guidance application declined':'WEAVE Company Guidance access revoked',
-      reviewNote.slice(0,1000),admin.id,admin.name||'Administration',
+      reviewNote.slice(0,1000),admin.id,admin.name||'Administrations',
     ]).catch(()=>{})
     return NextResponse.json({success:true,application:reviewed})
   }catch(error){

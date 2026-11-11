@@ -39,10 +39,10 @@ export default function CustomerDoorForensics(){
     }catch(e){setError(e instanceof Error?e.message:'Payment was not settled')}finally{setBusy('')}
   }
   return <main className="mx-auto max-w-6xl space-y-5 px-4 py-8 text-slate-100">
-    <Link href="/admin/dashboard" className="text-xs text-amber-200">← Administration</Link>
+    <Link href="/admin/dashboard" className="text-xs text-amber-200">← Administrations</Link>
     <h1 className="text-3xl font-black">Customer Door · Payment Forensics</h1>
-    <p className="text-sm leading-6 text-slate-300">Customer payments belong to the Client, not to an Agent or Legion. Wallet-to-wallet purchases are credited automatically in a single transaction. External transfers must be independently verified as real company receipts before moving backed System Switch from Administration's funded Main Wallet into the Client Main Wallet.</p>
-    <div className="rounded-xl border border-amber-300/25 p-4"><p className="text-xs uppercase text-amber-200">Available confirmed Administration reserve</p><p className="mt-2 text-2xl font-black">{reserve.toLocaleString()} System Switch</p><p className="mt-2 text-xs text-slate-400">This is already-funded wallet value, not a newly minted payment. Never approve twice or without actual bank receipt.</p></div>
+    <p className="text-sm leading-6 text-slate-300">Customer payments belong to the Client, not to an Agent or Legion. Wallet-to-wallet purchases are credited automatically in a single transaction. External transfers must be independently verified as real company receipts before moving backed System Switch from Administrations’ funded Main Wallet into the Client Main Wallet.</p>
+    <div className="rounded-xl border border-amber-300/25 p-4"><p className="text-xs uppercase text-amber-200">Available confirmed Administrations reserve</p><p className="mt-2 text-2xl font-black">{reserve.toLocaleString()} System Switch</p><p className="mt-2 text-xs text-slate-400">This is already-funded wallet value, not a newly minted payment. Never approve twice or without actual bank receipt.</p></div>
     <button onClick={()=>void reload()} className="rounded-lg border border-white/15 px-4 py-2 text-xs">Refresh orders</button>
     {error&&<p role="alert" className="border border-red-300/30 p-3 text-sm text-red-200">{error}</p>}
     {message&&<p role="status" className="border border-emerald-300/25 p-3 text-sm text-emerald-200">{message}</p>}

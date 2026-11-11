@@ -63,7 +63,7 @@ export function companyTimeNextMovements(sections:Record<string,CompanyMovementS
   if(awaitingFolder!==null&&awaitingFolder>0)append({
     id:'verify-folder',position:'administrations',priority:'immediate',count:awaitingFolder,
     title:'Complete the Client crossing',
-    why:awaitingFolder+' File Folder purchase(s) await Administration confirmation. Check independent payment evidence and activate the rightful Client owner.',
+    why:awaitingFolder+' File Folder purchase(s) await Administrations confirmation. Check independent payment evidence and activate the rightful Client owner.',
     href:'/admin/file-folder-sales-manager'
   })
   const approvedWithoutOwner=numberAt(sections,'folderActivation','confirmed_without_client')

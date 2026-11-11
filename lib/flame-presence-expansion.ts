@@ -56,7 +56,7 @@ export function assessFlameExpansion(input:{
   now?:string
 }):{stage:FlameExpansionStage;ready:boolean;missing:FlameConnection[];reason:string}{
   if(!input.identityExists)return {stage:'identity',ready:false,missing:FLAME_REQUIRED_CONNECTIONS,reason:'No registered AI identity.'}
-  if(!input.authority)return {stage:'identity',ready:false,missing:FLAME_REQUIRED_CONNECTIONS,reason:'Administration has not approved an operating mandate.'}
+  if(!input.authority)return {stage:'identity',ready:false,missing:FLAME_REQUIRED_CONNECTIONS,reason:'Administrations has not approved an operating mandate.'}
   const now=Date.parse(input.now||new Date().toISOString())
   if(!validAuthority(input.authority,now))return {stage:'paused',ready:false,missing:[],reason:'Operating mandate is invalid, incomplete or expired.'}
   const missing=FLAME_REQUIRED_CONNECTIONS.filter(connection=>!input.authority!.allowedConnections.includes(connection)||!input.connections.some(status=>status.connection===connection&&status.configured&&status.verified))

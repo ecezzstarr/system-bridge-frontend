@@ -13,7 +13,7 @@ export type WeaveLoadingBrief = {
 /**
  * Three complete reading passages, never five rapidly disappearing fragments.
  * Titles, practical explanation and next movement retain their actual meaning.
- * The reader decides when to advance to the next lesson.
+ * The shared readiness gate advances each complete lesson at the configured pace.
  */
 export function lyricLinesForBrief(brief:WeaveLoadingBrief):readonly string[] {
   return [brief.title.trim(),brief.body.trim(),brief.movement.trim()]
@@ -29,106 +29,106 @@ export type WeaveOperatingGuide = {
 
 const PLATFORM_TRAINING: readonly WeaveLoadingBrief[] = [
   {
-    eyebrow:'WEAVE · SYSTEM INTRODUCTION',
-    title:'What is WEAVE?',
-    body:'WEAVE of Presence develops systems, products and practical ways to participate. System Switch is the gate where the website becomes a navigable 3D File Folder Open World. Bridge Radiance makes the continuation visible through real interaction.',
-    movement:'Notice → Recognize → Solve → Move',
+    eyebrow: "THE COMPANY OF TIME · PRESENCE",
+    title: "The Weave of Presence.",
+    body: "Bring the work you know and the dreams you carry. Weave gives participation a working form through people, business systems and practical services. System Switch is the crossing from the website into the 3D File Folder Open World.",
+    movement: "Recognize your purpose → find your place → begin",
   },
   {
-    eyebrow:'WEAVE · FOUR POSITIONS',
-    title:'Know who operates each part.',
-    body:'Agents work in Stability by selling and distributing WEAVE products in Nigeria and supporting Bridger programs. Bridgers work in Hope, introducing digital File Folders to interested people worldwide. Clients own their businesses. Administration organizes the company.',
-    movement:'Agent · Bridger · Client · Administration',
+    eyebrow: "THE COMPANY OF TIME · PEOPLE",
+    title: "One company. Four departments.",
+    body: "Stability carries the work of Agents. Hope connects people through Bridgers. Dream Lovely gives Clients a place to build their businesses. A Time brings direction, care and a lasting record through Administrations.",
+    movement: "Stability · Hope · Dream Lovely · A Time",
   },
   {
-    eyebrow:'WEAVE · HOW TO BEGIN',
-    title:'Choose one real action.',
-    body:'Company Loop 1 — Flame Event: Burning River runs October 1 to December 31, 2026. Every department continues its own real business activities within this shared three-month event. Later loops will reflect verified results and new needs.',
-    movement:'Choose a system → operate → verify → continue',
+    eyebrow: "THE COMPANY OF TIME · PARTICIPATION",
+    title: "Let your work speak through time.",
+    body: "Company Loop 1 — Flame Event: Burning River runs October 1 to December 31, 2026. Enter through your position, find a useful service or system and take your next step. Your orders, work and payments become part of the company record when confirmed.",
+    movement: "Enter → participate → confirm → continue",
   },
 ]
 
 const AGENT_TRAINING: readonly WeaveLoadingBrief[] = [
   {
-    eyebrow:'AGENT TRAINING · 1 OF 3',
-    title:'Your position is Stability.',
-    body:'Stability is WEAVE product commerce in Nigeria. Agents offer Agility, Electrolyte, Ember and Daisy Pastries to customers, manage orders and supply shops, while also supporting attached Bridger programs. Choose one real function first.',
-    movement:'Recognize Agent position → choose one working system',
+    eyebrow: "STABILITY · YOUR POSITION",
+    title: "Stability. Work that reaches people.",
+    body: "Bring Weave into everyday life through Agility, Electrolyte, Ember and Daisy Pastries. Serve customers, supply outlets and support your assigned Bridgers. Check each product’s delivery area before ordering.",
+    movement: "Know your product → serve your customer → record the work",
   },
   {
-    eyebrow:'AGENT TRAINING · 2 OF 3',
-    title:'Learn the work before spending.',
-    body:'Agent Work opens real food and customer sales. Order stock, supply outlets and follow verified payments. Creative Studio makes image layouts free and videos at an Agent Studio fee of up to 1.5 System Switch. Attached Bridger commissions are separate.',
-    movement:'Agent Work → product or creative service → customer',
+    eyebrow: "STABILITY · YOUR INSTRUMENTS",
+    title: "From useful work to a business of your own.",
+    body: "Order stock, follow payments and supply your outlets. Creative Studio supports image layouts and paid video work, with an Agent Studio fee of up to 1.5 System Switch. Review the displayed fee before production; attached Bridger commissions have their own records.",
+    movement: "Choose a product or creative service → agree the work → deliver",
   },
   {
-    eyebrow:'AGENT TRAINING · 3 OF 3',
-    title:'Make your first verified movement.',
-    body:'Your activity contributes to Company Loop 1 — Flame Event: Burning River, October 1 to December 31, 2026. Open Agent Work, follow one real customer order or stock movement, verify it and continue. The Guide bubble can explain each page.',
-    movement:'Open → learn → act → verify',
+    eyebrow: "STABILITY · YOUR NEXT STEP",
+    title: "Carry today’s work forward.",
+    body: "Your participation contributes to Company Loop 1 — Flame Event: Burning River, October 1 to December 31, 2026. Open Agent Work, follow an order or stock delivery and confirm the result. Your manager and Guide are there when you need direction.",
+    movement: "Open Agent Work → complete a task → confirm its record",
   },
 ]
 
 const BRIDGER_TRAINING: readonly WeaveLoadingBrief[] = [
   {
-    eyebrow:'BRIDGER TRAINING · 1 OF 3',
-    title:'Your position is Hope.',
-    body:'Hope is WEAVE digital outreach. Bridgers introduce File Folders and cloud-based systems to interested people worldwide, including Europe. Listen first: only a real response can lead to an informed Client crossing.',
-    movement:'Prospect possibility → contact → response',
+    eyebrow: "HOPE · YOUR POSITION",
+    title: "Hope. A relationship begins here.",
+    body: "Your work is digital outreach: introduce Weave and File Folders to interested people worldwide. Begin with what the person already knows, makes or hopes to build. Listen for the need before offering the crossing.",
+    movement: "Find a prospect → make contact → listen",
   },
   {
-    eyebrow:'BRIDGER TRAINING · 2 OF 3',
-    title:'A contact is not yet a Client.',
-    body:'A number or lead is unverified until a real person responds. Use the authorized Prospect tools, respect a person who declines and record the actual response.',
-    movement:'Receive candidate → attempt → recognize response',
+    eyebrow: "HOPE · YOUR PRACTICE",
+    title: "Make room for a useful conversation.",
+    body: "Each Prospect begins as an unverified contact. Use your authorized outreach tools, introduce yourself clearly and record the response. Respect a person who declines; continue when someone chooses to explore what Weave can offer.",
+    movement: "Introduce → listen → record → follow through",
   },
   {
-    eyebrow:'BRIDGER TRAINING · 3 OF 3',
-    title:'Carry an informed crossing.',
-    body:'During Company Loop 1 — Flame Event: Burning River, October 1 to December 31, 2026, explain File Folder ownership, the actual price and verification process. Share an authorized Bridge AI entrance only with an interested Prospect. No guaranteed income or conversion.',
-    movement:'Explain → consent → System Switch → verified ownership',
+    eyebrow: "HOPE · YOUR NEXT STEP",
+    title: "Guide an informed beginning.",
+    body: "During Company Loop 1 — Flame Event: Burning River, explain File Folder ownership, the current price and payment verification. Share the approved Bridge AI entrance with an interested person. Earnings follow qualifying, confirmed activity.",
+    movement: "Explain the offer → invite a choice → verify the crossing",
   },
 ]
 
 const CLIENT_TRAINING: readonly WeaveLoadingBrief[] = [
   {
-    eyebrow:'CLIENT TRAINING · 1 OF 3',
-    title:'Your File Folder is an operating world.',
-    body:'You cross System Switch from WEAVE website pages into the 3D File Folder Open World. Your verified Client File Folder is the private operating environment you own there. Learn the difference between public places and your private systems; then inspect real build functions before construction. A File Folder is not a picture or a promise of income.',
-    movement:'Recognize → preview → build → activate → operate',
+    eyebrow: "DREAM LOVELY · YOUR PLACE",
+    title: "Your business has a home.",
+    body: "Your File Folder is your private operating world inside Weave. System Switch connects it to the shared 3D File Folder Open World, where people can discover published Customer Doors. Your business, private systems and decisions remain yours.",
+    movement: "Enter your File Folder → recognize your work → choose what comes next",
   },
   {
-    eyebrow:'CLIENT TRAINING · 2 OF 3',
-    title:'A build uses real time.',
-    body:'Before starting a build, preview its result, materials, requirements and stated construction time. Once a build starts, watch the real status of the site rather than treating a preview as finished work. Only the confirmed completion and activation of a system make it ready for actual operation.',
-    movement:'Inspect requirements → start build → monitor real status',
+    eyebrow: "DREAM LOVELY · YOUR BUILD",
+    title: "Give your plans real time to take form.",
+    body: "Preview the system you want to build. Review its materials, cost and construction time, then follow progress from its recorded start to completion. Completed systems become available after the required activation.",
+    movement: "Preview → acquire materials → build in real time → activate",
   },
   {
-    eyebrow:'CLIENT TRAINING · 3 OF 3',
-    title:'Operate what you have built.',
-    body:'When your system becomes active, set up the functions you actually own and choose what customers may see through your Customer Door. Staff and visitors discover only published offerings. Real orders, payments and delivery require their own recorded confirmation. Return to the Weave Open World whenever you need to recognize your next working place.',
-    movement:'Activate → publish authorized door → operate',
+    eyebrow: "DREAM LOVELY · YOUR BUSINESS",
+    title: "Open the door to the work you do.",
+    body: "Shape an offer, direct your authorized team and welcome customers through your Customer Door. Keep orders, payments and delivery in view. Confirmed work and the people it serves give your business its living record.",
+    movement: "Publish an offer → serve customers → confirm the result",
   },
 ]
 
 const ADMIN_TRAINING: readonly WeaveLoadingBrief[] = [
   {
-    eyebrow:'ADMINISTRATION · 1 OF 3',
-    title:'WEAVE operates through verified roles.',
-    body:'Administration coordinates the operating institution without replacing the work of its departments. Agents carry Stability, Bridgers carry Hope and Clients own their enterprises. Use the authorized workshops to review positions, applications, permissions and pending work; keep decisions tied to actual company records.',
-    movement:'Identify → review → authorize',
+    eyebrow: "A TIME · THE COMPANY",
+    title: "The company, in your care.",
+    body: "Administrations gives Weave direction through its people and departments. Review responsibilities, support the work of Stability and Hope, and help Clients build with clarity. Each decision belongs with the company record it affects.",
+    movement: "Recognize → support → direct → preserve",
   },
   {
-    eyebrow:'ADMINISTRATION · 2 OF 3',
-    title:'Separate a request from proof.',
-    body:'A request for approval is not approval. Forensics verifies the relevant order, receipt, payment or delivery evidence before a status changes. Administration can approve, reject or request correction through its designated systems. Preserve the resulting record so the worker, department and Client can see what actually happened.',
-    movement:'Request → evidence → Forensics → confirmation',
+    eyebrow: "A TIME · EVIDENCE AND DECISIONS",
+    title: "Let evidence carry the decision.",
+    body: "Forensics verifies the relevant payment, order or delivery evidence. Use the appropriate workshop to approve, request correction or decline. Preserve the reason and result so the person and department can continue with a clear record.",
+    movement: "Review evidence → decide → record → inform",
   },
   {
-    eyebrow:'ADMINISTRATION · 3 OF 3',
-    title:'Keep work continuous.',
-    body:'Review real notifications, outstanding orders, employed teams and support cases. Keep each department responsible for its authorized activities while Administration observes outcomes and resolves exceptions. Changes to prices, permissions, employment terms or public content must be made from the correct workshop and reflected in the recorded state.',
-    movement:'Recognize exception → resolve → record → continue',
+    eyebrow: "A TIME · CONTINUITY",
+    title: "Keep the company moving together.",
+    body: "Read outstanding notices, orders, team reports and support requests. Resolve what holds a participant back, verify the outcome and return responsibility to the right department. Prices, permissions and employment terms remain governed by their approved controls.",
+    movement: "Notice what needs care → resolve → confirm → continue",
   },
 ]
 
@@ -140,15 +140,22 @@ export function trainingBriefsForRole(role: WeaveLoadingRole): readonly WeaveLoa
   return PLATFORM_TRAINING
 }
 
+export function loaderAudienceName(role:WeaveLoadingRole|'flame-event'):string {
+  return {
+    visitor:'The Company of Time',agent:'Stability · Agent',bridger:'Hope · Bridger',
+    client:'Dream Lovely · Client',admin:'A Time · Administrations','flame-event':'Flame Event · Burning River',
+  }[role]
+}
+
 // Guidance explains the live forms and who decides the result; it never
 // treats an application or activity as verified before the system records it.
 const EMPLOYMENT_GUIDES:ReadonlyArray<{match:(path:string)=>boolean;guide:WeaveOperatingGuide}>=[
   {match:path=>path.startsWith('/manager/dashboard'),guide:{
     title:'Distribution Manager · sign and begin',
-    explanation:'Three lead Distribution Manager positions are available through active Agent or Bridger identities. Your signature sends the application to Administration. One-month probation starts only after Administration verifies the appointment.',
+    explanation:'Three lead Distribution Manager positions are available through active Agent or Bridger identities. Your signature sends the application to Administrations. One-month probation starts only after Administrations verifies the appointment.',
     steps:[
       'Read the employment conditions and confirm an active Agent position or permanent Agentic-Bridger purchase.',
-      'Accept the terms and type your registered full account name into the signature field. Submit for Administration verification and check its actual status before treating probation as started.',
+      'Accept the terms and type your registered full account name into the signature field. Submit for Administrations verification and check its actual status before treating probation as started.',
       'An appointed lead may review assistant applications. The lead and up to two assistants share 300 verified referrals in probation, then 500 per later month; salary is subject to verification.',
     ],
     nextHref:'/manager/dashboard',nextLabel:'View Distribution Manager employment',
@@ -166,10 +173,10 @@ const EMPLOYMENT_GUIDES:ReadonlyArray<{match:(path:string)=>boolean;guide:WeaveO
 ]
 const FOOD_PREPARATION_GUIDE:WeaveOperatingGuide={
   title:'Food Preparation · Agent employment',
-  explanation:'One lead Food Preparation Manager works with two Assistant Managers. Only Agents apply; Administration decides appointments, and work follows verified paid orders.',
+  explanation:'One lead Food Preparation Manager works with two Assistant Managers. Only Agents apply; Administrations decides appointments, and work follows verified paid orders.',
   steps:[
     'Select an available position and enter your actual food preparation, handling and delivery experience.',
-    'Submit the application and check Administration approval before treating the position as active.',
+    'Submit the application and check Administrations approval before treating the position as active.',
     'The approved lead assigns preparation work to approved assistants. Record actual packaging and dispatch handoffs.',
   ],
   nextHref:'/weave/lifestyles/food-preparation',nextLabel:'View food preparation',
@@ -292,7 +299,7 @@ export function bridgerOperatingGuideForPath(path:string):WeaveOperatingGuide {
 
 const DEFAULT_CLIENT_GUIDE:WeaveOperatingGuide={
   title:'Dream Lovely · Your business comes first',
-  explanation:'Your File Folder is an owned business environment, not a guaranteed income or a completed system. Build and operate what serves real customers.',
+  explanation:'Give your business a clear next step. Build the systems it needs, serve customers through your Customer Door and follow confirmed work through its records.',
   steps:[
     'Open your File Folder and recognize your current business and unfinished construction.',
     'Choose one useful system. Read materials, cost, permissions and the confirmed build state.',
@@ -310,18 +317,18 @@ const CLIENT_GUIDES:ReadonlyArray<{match:(path:string)=>boolean;guide:WeaveOpera
   {match:p=>p.startsWith('/client/pro-activation')||p.startsWith('/client/pro-verification'),guide:{
     title:'Verify a Pro File Folder appointment',
     explanation:'A Pro appointment is independently approved. A report of payment, file number or agreement is not activation until verified.',
-    steps:['Review the official job offer and signed business agreement.','Submit the required evidence through the correct verification process.','Open the work environment only after Administration confirms activation.'],
+    steps:['Review the official job offer and signed business agreement.','Submit the required evidence through the correct verification process.','Open the work environment only after Administrations confirms activation.'],
     nextHref:'/client/pro-activation',nextLabel:'Review Activation',
   }},
   {match:p=>p.startsWith('/client/system-store'),guide:{
     title:'Publish only real built systems',
-    explanation:'A system blueprint or sample is not yet deployed production technology.',
-    steps:['Inspect your active File Folder systems and required authorization.','Prepare a complete release package and verify actual functions.','Submit it through the original system publication and Administration review process.'],
+    explanation:'Bring a completed system to publication through the required release package, review and authorization.',
+    steps:['Inspect your active File Folder systems and required authorization.','Prepare a complete release package and verify actual functions.','Submit it through the original system publication and Administrations review process.'],
     nextHref:'/client/system-store',nextLabel:'Review System Publishing',
   }},
   {match:p=>p.startsWith('/client/system-switch'),guide:{
     title:'Turn your File Folder into an operating business',
-    explanation:'The File Folder connects your business, built systems and public Customer Door. The visible construction and settlement records determine what is real.',
+    explanation:'Your business, built systems and public Customer Door meet in your File Folder. Follow construction, customer work and settlement through their records.',
     steps:['Identify your business and the next system it needs.','Check the blueprint, materials and build status before activating a Customer Door.','Publish a real offer; confirm actual customer payment, fulfilment and business costs in the Owner Earnings area.'],
     nextHref:'/client/system-switch',nextLabel:'Operate File Folder',
   }},
@@ -339,7 +346,7 @@ export function clientOperatingGuideForPath(path:string):WeaveOperatingGuide{
 
 const DEFAULT_ADMIN_GUIDE:WeaveOperatingGuide={
   title:'A Time · Continue verified company work',
-  explanation:'Administration organizes one company. Review evidence, issue decisions through the correct workshop, and preserve the resulting record.',
+  explanation:'Administrations organizes one company. Review evidence, issue decisions through the correct workshop, and preserve the resulting record.',
   steps:['Identify the person, department or system requiring action.','Open the exact company workshop and check its current state.','Authorize only with the required evidence and verify the recorded outcome.'],
   nextHref:'/admin/control-center',nextLabel:'Open Control Center',
 }
@@ -416,10 +423,10 @@ export function transitTrainingForPath(role:WeaveLoadingRole,path:string):WeaveL
     return {eyebrow:'BRIDGER · OPERATING INTRODUCTION',title:guide.title,body:guide.explanation+' '+guide.steps[0],movement:'Next: '+guide.steps[1]}
   }
   if(role==='client'&&/system-switch|file-folder|workshop/.test(path)){
-    return {eyebrow:'CLIENT · OPERATING INTRODUCTION',title:'Builds are not instant.',body:'Preview your chosen system, check the real construction requirements and start only when ready. Return to the live build status before operating it.',movement:'Preview → build → verify live status → activate'}
+    return {eyebrow:'CLIENT · OPERATING INTRODUCTION',title:'Give the build time to take form.',body:'Preview your chosen system, check the real construction requirements and start only when ready. Return to the live build status before operating it.',movement:'Preview → build → verify live status → activate'}
   }
   if(role==='admin'&&/forensic|deposit|orders/.test(path)){
-    return {eyebrow:'ADMINISTRATION · OPERATING INTRODUCTION',title:'Verify before approving.',body:'Review the order or payment evidence, follow your authorized approval process and preserve a receipt before publishing the result.',movement:'Evidence → Forensics → approval → record'}
+    return {eyebrow:'ADMINISTRATIONS · OPERATING INTRODUCTION',title:'Verify before approving.',body:'Review the order or payment evidence, follow your authorized approval process and preserve a receipt before publishing the result.',movement:'Evidence → Forensics → approval → record'}
   }
   return null
 }

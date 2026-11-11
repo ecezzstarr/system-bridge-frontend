@@ -90,7 +90,9 @@ jobs:
         run: node tests/advanced-image-workshop.cjs
 
       - name: Smart WEAVE loading guidance regression
-        run: node tests/weave-loading-guidance-regression.cjs
+        run: |
+          node tests/weave-loading-guidance-regression.cjs
+          node tests/whole-weave-wording-regression.cjs
 
       - name: Offline branding business · real templates, adverts and role workflows
         run: node tests/branding-business-regression.cjs

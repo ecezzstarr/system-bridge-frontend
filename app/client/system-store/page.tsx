@@ -88,7 +88,7 @@ export default function ClientSystemStorePublisher(){
       })})
       const body=await response.json()
       if(!response.ok)throw new Error(body.error||'Unable to submit system version')
-      setMessage(body.message||'System submitted to Administration.')
+      setMessage(body.message||'System submitted to Administrations.')
       setFile(null)
       await load()
     }catch(error){setMessage(error instanceof Error?error.message:'Unable to submit system')}
@@ -108,7 +108,7 @@ export default function ClientSystemStorePublisher(){
   }
 
   return <main className="mx-auto max-w-7xl px-4 py-8 text-white md:px-7" data-client-system-store-publisher>
-    <header className="border-b border-white/10 pb-6"><p className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[.2em] text-cyan-300"><Boxes className="h-4 w-4"/>File Folder · System Publisher</p><h1 className="mt-2 text-4xl font-black">Publish what you have built.</h1><p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">Only active systems already formed in your File Folder can enter the WEAVE System Store. Every version is submitted to Administration before it becomes public.</p><div className="mt-4 flex gap-3 text-xs"><Link href="/system-store" className="text-cyan-300">Open public System Store</Link><Link href="/client/system-switch" className="text-slate-400">Return to File Folder</Link></div></header>
+    <header className="border-b border-white/10 pb-6"><p className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[.2em] text-cyan-300"><Boxes className="h-4 w-4"/>File Folder · System Publisher</p><h1 className="mt-2 text-4xl font-black">Publish what you have built.</h1><p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">Only active systems already formed in your File Folder can enter the WEAVE System Store. Every version is submitted to Administrations before it becomes public.</p><div className="mt-4 flex gap-3 text-xs"><Link href="/system-store" className="text-cyan-300">Open public System Store</Link><Link href="/client/system-switch" className="text-slate-400">Return to File Folder</Link></div></header>
 
     {message&&<div className="mt-5 rounded-xl border border-cyan-300/15 bg-cyan-300/[.04] p-4 text-sm text-cyan-100">{message}</div>}
 

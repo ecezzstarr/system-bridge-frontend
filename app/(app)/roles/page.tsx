@@ -21,7 +21,7 @@ import { ReferralCodePanel } from '@/components/referral-code-panel'
 
 const ROLE_SYSTEM: Record<string, { title: string; detail: string; operatingRoom: string; tone: string }> = {
   admin: {
-    title: 'Administration',
+    title: 'Administrations',
     detail: 'Institutional authority, verification, infrastructure and continuity.',
     operatingRoom: '/admin/dashboard',
     tone: 'border-violet-300/20 bg-violet-400/[0.05] text-violet-200',
@@ -117,7 +117,7 @@ export default function PositionIdentityPage() {
       <section className="weave-system-depth overflow-hidden rounded-[2rem] border border-sky-300/15 bg-[#030a15]/72">
         <header className="border-b border-white/10 bg-[radial-gradient(circle_at_12%_0%,rgba(56,189,248,.13),transparent_34%),radial-gradient(circle_at_88%_0%,rgba(139,92,246,.08),transparent_30%)] p-5 md:p-7">
           <p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.22em] text-sky-300">Settings · Position + Identity</p>
-          <h1 className="mt-2 text-2xl font-black text-white md:text-3xl">Who you are and what position is operating are separate records.</h1>
+          <h1 className="mt-2 text-2xl font-black text-white md:text-3xl">Your identity. Your responsibilities.</h1>
           <p className="mt-3 max-w-4xl text-sm leading-7 text-slate-300">
             Identity is your authenticated human account. Position is the function WEAVE currently recognizes you as performing. Changing your name or password does not silently change your institutional position.
           </p>

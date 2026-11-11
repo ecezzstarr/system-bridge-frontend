@@ -10,7 +10,7 @@ type Sale={
  payment_network:string|null;receiving_address:string|null;bank_instructions:string|null;receipt_number:string|null
 }
 const methods:{value:PaymentMethod;label:string;hint:string}[]=[
- {value:'bank',label:'Bank transfer',hint:'Administration provides verified bank instructions after an approved quote'},
+ {value:'bank',label:'Bank transfer',hint:'Administrations provides verified bank instructions after an approved quote'},
  {value:'card',label:'Card',hint:'An approved hosted card checkout link; no card details are entered into Weave'},
  {value:'trx',label:'TRX',hint:'TRON network transfer to the quoted Weave receiving address'},
  {value:'usdt',label:'USDT',hint:'TRC20 on the TRON network, using the specifically quoted address'},
@@ -65,7 +65,7 @@ export default function BuyWeaveFlameCoin(){
      <Link href="/system-switch/world#domains" className="text-xs font-bold text-sky-200">← Weave Open World · Customer Doors</Link>
      <div className="mt-7 flex items-center gap-3 text-amber-200"><Waves className="h-6 w-6"/><Coins className="h-6 w-6"/><span className="text-[10px] font-black uppercase tracking-[.2em]">Weave · Bridge of Radiance</span></div>
      <h1 className="mt-4 text-4xl font-black">Buy System Switch</h1>
-     <p className="mt-4 text-sm leading-7 text-slate-300">Choose how you want to pay. You receive System Switch inside your Weave Main Wallet, not TRX, USDT or BTC back. Administration manually quotes the price and independently verifies payment before any System Switch is credited.</p>
+     <p className="mt-4 text-sm leading-7 text-slate-300">Choose how you want to pay. You receive System Switch inside your Weave Main Wallet, not TRX, USDT or BTC back. Administrations manually quotes the price and independently verifies payment before any System Switch is credited.</p>
      <div className="mt-5 rounded-2xl border border-amber-300/20 bg-amber-200/[.045] p-4 text-xs leading-6 text-amber-100">
        Requesting a quote does not authorize payment. Each payment method becomes available for actual collection only after Weave has verified the required licensing and the receiving provider's permission. Do not send money or cryptocurrency before receiving an approved order-specific quote. Wise account transfers are not used for coin purchases.
      </div>

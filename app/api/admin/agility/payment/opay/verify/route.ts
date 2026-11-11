@@ -9,7 +9,7 @@ import type { PoolClient } from 'pg'
 export async function POST(request: NextRequest) {
   const admin = await getAuthUser(request)
   if (!admin || admin.role !== 'admin') {
-    return NextResponse.json({ success: false, error: 'Administration required' }, { status: 403 })
+    return NextResponse.json({ success: false, error: 'Administrations required' }, { status: 403 })
   }
 
   const body = await request.json()
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     }
     if (!order.opay_receipt_data || order.payment_status !== 'proof_submitted') {
       await db.query('ROLLBACK')
-      return NextResponse.json({ success: false, error: 'The Agent must submit OPay payment proof before Administration can verify this Agility order' }, { status: 409 })
+      return NextResponse.json({ success: false, error: 'The Agent must submit OPay payment proof before Administrations can verify this Agility order' }, { status: 409 })
     }
 
     if (status === 'rejected') {
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
         await db.query(
           `INSERT INTO notifications (user_id,type,title,content,from_user_name,link)
            VALUES ($1::uuid,'agility_stock','Agility OPay proof rejected',$2,'WEAVE','/agility')`,
-          [rejectedOrder.agent_id, 'Administration could not verify the submitted Agility OPay proof. Open Agility and submit the correct transaction reference or receipt.']
+          [rejectedOrder.agent_id, 'Administrations could not verify the submitted Agility OPay proof. Open Agility and submit the correct transaction reference or receipt.']
         )
       } catch (notificationError) {
         console.error('[admin/agility/opay] rejection notification failed', notificationError)
@@ -123,7 +123,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true, order: paidOrder, preparation, message: preparation.assigned
       ? 'OPay approved. Food Preparation Manager has the order, location and delivery instructions.'
-      : 'OPay approved. No available Food Preparation Manager was assigned; Administration must assign the paid order.' })
+      : 'OPay approved. No available Food Preparation Manager was assigned; Administrations must assign the paid order.' })
   } catch (error) {
     console.error('[admin/agility/opay] verification failed', error)
     if (db && !committed) await db.query('ROLLBACK').catch(() => {})

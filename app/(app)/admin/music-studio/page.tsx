@@ -39,7 +39,7 @@ export default function AdminMusicStudioPage(){
  const load=useCallback(async()=>{
   const res=await fetch('/api/admin/music-studio',{headers:authHeaders(),cache:'no-store'})
   const data=await res.json().catch(()=>({}))
-  if(!res.ok||!data.success)throw Error(data.error||'Administration Music Studio could not load.')
+  if(!res.ok||!data.success)throw Error(data.error||'Administrations Music Studio could not load.')
   setProjects(data.projects||[]);setAssets(data.assets||[]);setReleases(data.releases||[])
  },[])
  useEffect(()=>{
@@ -61,7 +61,7 @@ export default function AdminMusicStudioPage(){
   const data=await send('create',{title:name})
   setProjects(p=>[data.project,...p]);setSelected(data.project.id)
   if(!sections.length)setSections([{id:sectionId(),name:'Opening',projectId:data.project.id,repeats:2}])
-  setName('');setMessage('Administration composition created. Arrange its words and sounds.')
+  setName('');setMessage('Administrations composition created. Arrange its words and sounds.')
  })
  const onSaved=async(project:MusicProject)=>{
   const data=await send('save',{projectId:project.id,title:project.title,arrangement:project.arrangement})
@@ -72,7 +72,7 @@ export default function AdminMusicStudioPage(){
   const form=new FormData();form.append('file',file)
   const res=await fetch('/api/admin/music-studio/media',{method:'POST',headers:authHeaders(),body:form})
   const data=await res.json().catch(()=>({}))
-  if(!res.ok||!data.success)throw Error(data.error||'Cannot save this Administration recording.')
+  if(!res.ok||!data.success)throw Error(data.error||'Cannot save this Administrations recording.')
   setAssets(old=>[data.asset,...old])
   return data.asset as MusicAsset
  }
@@ -111,7 +111,7 @@ export default function AdminMusicStudioPage(){
  })
  const publish=()=>void execute('publish',async()=>{
   if(songTitle.trim().length<3)throw Error('Name the song before publishing.')
-  if(!window.confirm('Publish this WEAVE song to the DJ Library? It will not play for users until Administration places it into a playlist and starts broadcasting.'))return
+  if(!window.confirm('Publish this WEAVE song to the DJ Library? It will not play for users until Administrations places it into a playlist and starts broadcasting.'))return
   const wav=await createSong()
   const form=new FormData()
   form.append('title',songTitle.trim());form.append('artist',songArtist.trim())
@@ -132,12 +132,12 @@ export default function AdminMusicStudioPage(){
   setSections(s=>s.map(v=>v.id===id?{...v,...patch}:v))
   if(previewUrlRef.current){URL.revokeObjectURL(previewUrlRef.current);previewUrlRef.current=null;setPreviewUrl(null)}
  }
- if(user?.role!=='admin')return <main className="p-8 text-white"><h1>Administration Music Studio</h1><p className="mt-3 text-sm text-slate-300">Administration authentication is required.</p></main>
- if(initializing)return <main className="p-8 text-sm text-white">Opening the Administration Music Studio…</main>
+ if(user?.role!=='admin')return <main className="p-8 text-white"><h1>Administrations Music Studio</h1><p className="mt-3 text-sm text-slate-300">Administrations authentication is required.</p></main>
+ if(initializing)return <main className="p-8 text-sm text-white">Opening the Administrations Music Studio…</main>
  const chosen=projects.find(p=>p.id===selected)
  return <main className="mx-auto max-w-7xl space-y-6 p-3 pb-16 text-white sm:p-6" data-admin-music-studio="institutional-composition">
   <header className="relative overflow-hidden rounded-3xl border border-amber-200/20 bg-[linear-gradient(120deg,#071522,#113040_52%,#301e18)] p-5 sm:p-8">
-   <p className="text-[10px] font-bold uppercase tracking-[.22em] text-amber-200">The Company of Time · Administration Studio</p>
+   <p className="text-[10px] font-bold uppercase tracking-[.22em] text-amber-200">The Company of Time · Administrations Studio</p>
    <h1 className="mt-3 flex items-center gap-3 text-2xl font-black sm:text-4xl"><AudioLines className="h-8 w-8 text-amber-200"/> The Music of Presence</h1>
    <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-200">Form songs through the arrangement of words, sounds and repeated patterns. Compose the Self speaking and the Environment answering, then assemble complete songs for Weave's institutional DJ.</p>
    <Link href="/admin/dj-workshop" className={btn+' mt-5'}><Radio className="h-4 w-4"/> Enter the DJ Workshop</Link>

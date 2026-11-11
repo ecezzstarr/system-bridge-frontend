@@ -35,7 +35,7 @@ export default function AdminFoodPreparationManagerPage(){
         body:JSON.stringify(body),
       })
       const data=await res.json()
-      if(!res.ok)throw new Error(data.error||'Unable to complete Administration action')
+      if(!res.ok)throw new Error(data.error||'Unable to complete Administrations action')
       setMessage(success);await load()
     }catch(cause){setError(cause instanceof Error?cause.message:'Action failed')}
     finally{setBusy('')}
@@ -46,30 +46,30 @@ export default function AdminFoodPreparationManagerPage(){
     if(!id)return
     window.requestAnimationFrame(()=>document.getElementById('application-'+id)?.scrollIntoView({behavior:'smooth',block:'center'}))
   },[staff])
-  if(!isInitialized)return <main className="p-6 text-white">Opening Administration food desk…</main>
-  if(user?.role!=='admin')return <main className="p-6 text-white">Administration access required.</main>
+  if(!isInitialized)return <main className="p-6 text-white">Opening Administrations food desk…</main>
+  if(user?.role!=='admin')return <main className="p-6 text-white">Administrations access required.</main>
   const pending=staff.filter(person=>person.status==='pending')
   const approved=staff.filter(person=>person.status==='approved'&&person.is_active&&person.role==='agent')
   const approvedAssistants=staff.filter(person=>person.status==='approved'&&person.position==='assistant').length
   return <main className="mx-auto max-w-7xl space-y-8 px-4 pb-20 pt-6 text-white" data-admin-food-preparation="assignments">
     <header className="border-b border-white/10 pb-6">
-      <Link href="/admin/agility" className="inline-flex items-center gap-2 text-xs text-amber-200"><ArrowLeft className="h-4 w-4"/> Agility Administration</Link>
+      <Link href="/admin/agility" className="inline-flex items-center gap-2 text-xs text-amber-200"><ArrowLeft className="h-4 w-4"/> Agility Administrations</Link>
       <div className="mt-5 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[.2em] text-amber-200"><ShieldCheck className="h-4 w-4"/> Administration · Company Kitchen</p>
+          <p className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[.2em] text-amber-200"><ShieldCheck className="h-4 w-4"/> Administrations · Company Kitchen</p>
           <h1 className="mt-2 text-3xl font-black">Food Preparation Management Team</h1>
           <p className="mt-3 text-xl font-black text-emerald-200">1 Manager · ₦70,000/month | 2 Assistants · ₦40,000/month each</p>
           <p className="mt-2 text-xs text-amber-200">Approved: {approved.filter(person=>person.position==='manager').length}/1 Manager · {approvedAssistants}/2 Assistants</p>
-          <p className="mt-2 max-w-3xl text-xs leading-6 text-stone-400">Review Agent applications and appointments. The Food Preparation Manager is the Head of WEAVE Stability food operations and exclusively assigns approved assistants. Administration does not assign kitchen work. Payroll is not automatically disbursed.</p>
+          <p className="mt-2 max-w-3xl text-xs leading-6 text-stone-400">Review Agent applications and appointments. The Food Preparation Manager is the Head of WEAVE Stability food operations and exclusively assigns approved assistants. Administrations does not assign kitchen work. Payroll is not automatically disbursed.</p>
         </div>
         <button type="button" onClick={()=>void load()} className="inline-flex items-center gap-2 border border-white/10 px-4 py-2 text-xs"><RefreshCcw className="h-4 w-4"/> Refresh</button>
       </div>
     </header>
-    {approvedAssistants>2&&<p role="alert" className="border border-amber-300/30 bg-amber-300/5 px-4 py-3 text-xs text-amber-200" data-food-assistant-overcapacity="true">There are {approvedAssistants} previously approved Assistant Food Preparation Managers, above the limit of two. Existing appointments and assigned food orders have been preserved. Administration must review the surplus appointments and record any changes with reasons. New assistant approvals are blocked until staffing is within the limit.</p>}
+    {approvedAssistants>2&&<p role="alert" className="border border-amber-300/30 bg-amber-300/5 px-4 py-3 text-xs text-amber-200" data-food-assistant-overcapacity="true">There are {approvedAssistants} previously approved Assistant Food Preparation Managers, above the limit of two. Existing appointments and assigned food orders have been preserved. Administrations must review the surplus appointments and record any changes with reasons. New assistant approvals are blocked until staffing is within the limit.</p>}
     {error&&<p role="alert" className="border border-rose-300/20 px-4 py-3 text-xs text-rose-200">{error}</p>}
     {message&&<p role="status" className="border border-emerald-300/20 px-4 py-3 text-xs text-emerald-200">{message}</p>}
     <section className="border border-white/10 p-4" data-food-admin-allocation-summary>
-      <h2 className="font-black text-amber-200">Administration allocation · ₦800 per verified food bowl/package</h2>
+      <h2 className="font-black text-amber-200">Administrations allocation · ₦800 per verified food bowl/package</h2>
       <p className="mt-2 text-xs text-stone-400">Calculated per verified stock package. Forensics handles external bank transfer and independently records payment references. The amount shown is an allocation, not proof of bank settlement.</p>
       <p className="mt-3 text-xl font-black">{new Intl.NumberFormat('en-NG',{style:'currency',currency:'NGN',maximumFractionDigits:0}).format(Number(allocation?.allocated_ngn||0))} <span className="text-xs font-normal text-stone-400">allocated across {Number(allocation?.package_count||0)} packages in {Number(allocation?.order_count||0)} verified stock orders</span></p>
     </section>
@@ -89,7 +89,7 @@ export default function AdminFoodPreparationManagerPage(){
           </label>
           <div className="mt-3 flex flex-wrap gap-3">
             <button type="button" disabled={busy===person.id||!person.is_active||(person.position==='assistant'&&approvedAssistants>=2)||(notes[person.id]||'').trim().length<15}
-              onClick={()=>void update({action:'review',appointmentId:person.id,decision:'approved',reviewNote:notes[person.id]},person.id,'Administration approved this Food Preparation appointment. The Stability Lead directs daily work assignments.')}
+              onClick={()=>void update({action:'review',appointmentId:person.id,decision:'approved',reviewNote:notes[person.id]},person.id,'Administrations approved this Food Preparation appointment. The Stability Lead directs daily work assignments.')}
               className="border border-emerald-300/30 px-4 py-2 text-xs text-emerald-200 disabled:opacity-40">Approve appointment</button>
             <button type="button" disabled={busy===person.id||(notes[person.id]||'').trim().length<15}
               onClick={()=>void update({action:'review',appointmentId:person.id,decision:'rejected',reviewNote:notes[person.id]},person.id,'Application declined.')}
@@ -100,7 +100,7 @@ export default function AdminFoodPreparationManagerPage(){
       </div>
     </section>
     <section className="border-t border-white/10 pt-6">
-      <h2 className="text-xl font-black">Administration-approved Food Preparation staff · {approved.length}/3</h2>
+      <h2 className="text-xl font-black">Administrations-approved Food Preparation staff · {approved.length}/3</h2>
       <div className="mt-4 grid gap-4 md:grid-cols-2">
         {staff.filter(p=>p.status==='approved').map(person=><div key={person.id} className="border border-white/10 p-4">
           <p className="text-sm font-black">{person.name||person.username} · {person.position==='manager'?'Manager':'Assistant Manager'}</p>
@@ -111,7 +111,7 @@ export default function AdminFoodPreparationManagerPage(){
     </section>
     <section className="border-t border-white/10 pt-6" data-food-employment-history="private">
       <h2 className="text-xl font-black">Former staff and application correspondence</h2>
-      <p className="mt-2 text-xs leading-6 text-stone-400">Resignations, dismissals and declined applications remain visible to Administration. Replies stay available after a position ends, without restoring employment or kitchen access.</p>
+      <p className="mt-2 text-xs leading-6 text-stone-400">Resignations, dismissals and declined applications remain visible to Administrations. Replies stay available after a position ends, without restoring employment or kitchen access.</p>
       <div className="mt-4 grid gap-4 md:grid-cols-2">
         {staff.filter(person=>['revoked','rejected'].includes(person.status)).map(person=><article key={person.id} className="border border-white/10 p-4">
           <p className="text-sm font-black">{person.name||person.username} · {person.position==='manager'?'Manager':'Assistant'}</p>

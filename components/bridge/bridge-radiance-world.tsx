@@ -11,7 +11,7 @@ const positions = [
   { id: 'mandate', name: 'MANDATE', color: '#f59e0b', x: -4 },
   { id: 'attorney', name: 'ATTORNEY', color: '#38bdf8', x: 4 },
   { id: 'forensic', name: 'FORENSICS', color: '#a78bfa', x: -4 },
-  { id: 'administration', name: 'ADMINISTRATION', color: '#f472b6', x: 4 },
+  { id: 'administration', name: 'ADMINISTRATIONS', color: '#f472b6', x: 4 },
 ]
 
 function Core({ active }: { active: boolean }) {

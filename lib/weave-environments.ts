@@ -1,3 +1,5 @@
+import {weavePageCopyForPath} from '@/lib/weave-page-directory'
+
 export type WeaveEnvironmentCopy = {
   key: string
   title: string
@@ -17,7 +19,7 @@ const exact: Record<string, WeaveEnvironmentCopy> = {
     key: 'position-entry',
     title: 'WEAVE Position Gate',
     district: 'Presence',
-    purpose: 'Enter the WEAVE world through your issued position. Authentication opens continuity; it does not start a disconnected page session.',
+    purpose: 'Sign in to return to your department, responsibilities and ongoing work.',
     movement: 'Identify position → authenticate → enter role world',
     layer: 'interaction',
   },
@@ -73,8 +75,8 @@ const exact: Record<string, WeaveEnvironmentCopy> = {
     key: 'client-access-gate',
     title: 'Client Access Gate',
     district: 'Client World',
-    purpose: 'Authenticate with the issued File Number and secure passkey to reopen the same Client operating environment.',
-    movement: 'File Number → passkey → resume world',
+    purpose: 'Return to your business with your issued File Number and password.',
+    movement: 'File Number → password → return to your business',
     layer: 'interaction',
   },
   '/client/register': {
@@ -97,7 +99,7 @@ const exact: Record<string, WeaveEnvironmentCopy> = {
     key: 'client-home-world',
     title: 'Client World',
     district: 'Client World',
-    purpose: 'The Client arrival ground: one world connecting the File Folder, support, value, loops, enterprise and live systems.',
+    purpose: 'Your business continues here. Enter your File Folder, find support and guide the work taking shape.',
     movement: 'Arrive → choose district → move → return with changed state',
     layer: 'world',
   },
@@ -145,7 +147,7 @@ const exact: Record<string, WeaveEnvironmentCopy> = {
     key: 'value-vault',
     title: 'Value Vault',
     district: 'Presence',
-    purpose: 'The operating environment for balances, deposits, withdrawals and value movement connected to participation.',
+    purpose: 'Keep your balance, deposits, withdrawals and confirmed transactions together.',
     movement: 'Hold → move → confirm → record',
     layer: 'system',
   },
@@ -153,7 +155,7 @@ const exact: Record<string, WeaveEnvironmentCopy> = {
     key: 'movement-record',
     title: 'Movement Record',
     district: 'Presence',
-    purpose: 'The preserved record of payments, earnings and other confirmed value activity in WEAVE.',
+    purpose: 'Follow the payments, earnings and confirmed transactions that form your company record.',
     movement: 'Activity → confirmation → record',
     layer: 'system',
   },
@@ -185,7 +187,7 @@ const exact: Record<string, WeaveEnvironmentCopy> = {
     key: 'flame-event-loop-one',
     title: 'Flame Event · Loop 1',
     district: 'Presence',
-    purpose: 'The shared Burning River event ground for Agent, Bridger and Administration positions inside Company Loop 1.',
+    purpose: 'The shared Burning River event ground for Agent, Bridger and Administrations positions inside Company Loop 1.',
     movement: 'Arrive → recognize position → participate → continue',
     layer: 'district',
   },
@@ -249,7 +251,7 @@ const exact: Record<string, WeaveEnvironmentCopy> = {
     key: 'administration-visual-systems',
     title: 'Visual Systems Workshop',
     district: 'Institution',
-    purpose: 'The Administration runtime-design environment for registered WEAVE artifacts, live publication, placement control and rollback.',
+    purpose: 'The Administrations runtime-design environment for registered WEAVE artifacts, live publication, placement control and rollback.',
     movement: 'Draft → preview → publish → observe → roll back when needed',
     layer: 'system',
   },
@@ -257,14 +259,14 @@ const exact: Record<string, WeaveEnvironmentCopy> = {
     key: 'administration-loader-workshop',
     title: 'Loader Workshop',
     district: 'Institution',
-    purpose: 'Administration controls live automatic loader duration, three educational lessons per department, and transition guidance without a code deployment.',
+    purpose: 'Administrations controls live automatic loader duration, three educational lessons per department, and transition guidance without a code deployment.',
     movement: 'Select department → preview lessons → set pace → publish live',
     layer: 'system',
   },
   '/admin/release-workshop': {
     key: 'sovereign-release-workshop',
     title: 'Release Workshop',
-    district: 'Administration',
+    district: 'Administrations',
     purpose: 'Authorize verified production releases and previously healthy rollback versions, then inspect host execution and Sovereign + Flame evidence.',
     movement: 'Review → confirm → queue → verify → preserve record',
     layer: 'system',
@@ -273,7 +275,7 @@ const exact: Record<string, WeaveEnvironmentCopy> = {
     key: 'administration-environment-organizer',
     title: 'Environment Organizer',
     district: 'Institution',
-    purpose: 'Administration control for withdrawing, restoring and ordering registered pages and cards while preserving source and records.',
+    purpose: 'Administrations control for withdrawing, restoring and ordering registered pages and cards while preserving source and records.',
     movement: 'Inspect → withdraw or restore → reorder → observe',
     layer: 'system',
   },
@@ -291,17 +293,17 @@ const prefix: Array<[string, WeaveEnvironmentCopy]> = [
 
   ['/agent/bridge-radiance', {
     key: 'agent-radiance-station',
-    title: 'Bridge Radiance · Stability Station',
-    district: 'Bridge Radiance',
+    title: 'Bridge of Radiance · Stability Station',
+    district: 'Bridge of Radiance',
     purpose: 'The support station where an assigned Agent may participate with Prospects belonging to that Agent’s Bridgers.',
     movement: 'Observe assigned movement → support → clarify → return continuity',
     layer: 'interaction',
   }],
   ['/admin/bridge-radiance', {
     key: 'administration-radiance-station',
-    title: 'Bridge Radiance · Administration Station',
-    district: 'Bridge Radiance',
-    purpose: 'The institutional interaction station for authorized Administration participation in active Prospect movement.',
+    title: 'Bridge of Radiance · Administrations Station',
+    district: 'Bridge of Radiance',
+    purpose: 'The institutional interaction station for authorized Administrations participation in active Prospect movement.',
     movement: 'Observe → interact when required → preserve record → continue',
     layer: 'interaction',
   }],
@@ -318,7 +320,7 @@ const prefix: Array<[string, WeaveEnvironmentCopy]> = [
     key: 'public-enterprise-territory',
     title: 'WEAVE Enterprise Territory',
     district: 'Enterprise',
-    purpose: 'The public territory for Administration-approved Lord/Lady enterprises that have completed Enterprise Door construction.',
+    purpose: 'The public territory for Administrations-approved Lord/Lady enterprises that have completed Enterprise Door construction.',
     movement: 'Enter territory → inspect enterprise → enter systems, market or stream → participate',
     layer: 'world',
   }],
@@ -481,7 +483,7 @@ const prefix: Array<[string, WeaveEnvironmentCopy]> = [
   }],
   ['/admin/dashboard', {
     key: 'administration-world',
-    title: 'Administration World',
+    title: 'Administrations World',
     district: 'Institution',
     purpose: 'The institutional environment from which WEAVE authority, verification, infrastructure and company movement are coordinated.',
     movement: 'Observe → authorize → verify → keep the world moving',
@@ -490,9 +492,9 @@ const prefix: Array<[string, WeaveEnvironmentCopy]> = [
 
   ['/admin/', {
     key: 'administration-system',
-    title: 'Administration System',
+    title: 'Administrations System',
     district: 'Institution',
-    purpose: 'A live institutional system inside the Administration world. Changes here affect real WEAVE operations and participant movement.',
+    purpose: 'Review the work entrusted to this company workshop, make the authorized decision and confirm its result.',
     movement: 'Inspect → act → verify → preserve continuity',
     layer: 'system',
   }],
@@ -515,26 +517,33 @@ const prefix: Array<[string, WeaveEnvironmentCopy]> = [
   ['/admin/company-guidance', {
     key: 'administration-company-guidance',
     title: 'Company Guidance Inbox',
-    district: 'Administration',
-    purpose: 'The Administration endpoint for receiving and replying to Agent and Bridger guidance by company position.',
+    district: 'Administrations',
+    purpose: 'The Administrations endpoint for receiving and replying to Agent and Bridger guidance by company position.',
     movement: 'Receive → clarify → reply → continue',
     layer: 'interaction',
   }],
 ]
 
 export function resolveWeaveEnvironment(pathname: string): WeaveEnvironmentCopy {
+  pathname=pathname.split(/[?#]/)[0].replace(/\/+$/,'')||'/'
   if (exact[pathname]) return exact[pathname]
 
   const matched = prefix.find(([route]) =>
     route.endsWith('/') ? pathname.startsWith(route) : pathname === route || pathname.startsWith(route + '/')
   )
+  const page=weavePageCopyForPath(pathname)
+  if(page)return {
+    ...(matched?.[1]||{key:'weave-world',district:'Presence',layer:'system' as const}),
+    ...page,
+    movement:matched?.[1].movement||'Understand the place → choose your next step → act → confirm',
+  }
   if (matched) return matched[1]
 
   return {
     key: 'weave-world',
     title: 'WEAVE Operating Environment',
     district: 'Presence',
-    purpose: 'A working part of WEAVE. Enter the function available here and continue from the result.',
+    purpose: 'Find the work available here, review its requirements and take your next useful step.',
     movement: 'Notice → recognize → act → continue',
     layer: 'system',
   }

@@ -5,7 +5,7 @@ import {ensureLegionEmploymentSchema} from '@/lib/legion-employment'
 
 export async function GET(request:NextRequest){
   const admin=await getAuthUser(request)
-  if(!admin||admin.role!=='admin')return NextResponse.json({error:'Administration required'},{status:403})
+  if(!admin||admin.role!=='admin')return NextResponse.json({error:'Administrations required'},{status:403})
   try{
     await ensureLegionEmploymentSchema(sql)
     const releases=await sql`

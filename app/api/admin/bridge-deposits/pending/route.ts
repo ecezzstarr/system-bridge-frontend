@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
       ...purchases.map((purchase: any) => ({
         id: purchase.id,
         source: 'file_folder_purchase',
-        prospect_name: purchase.buyer_name || purchase.buyer_email || 'Bridge Radiance Prospect',
+        prospect_name: purchase.buyer_name || purchase.buyer_email || 'Bridge of Radiance Prospect',
         prospect_phone: purchase.buyer_phone || '',
         tier_trx: Number(purchase.amount_trx || 0),
         tx_hash: purchase.payment_reference,
@@ -75,7 +75,7 @@ export async function GET(request: NextRequest) {
         file_number: purchase.file_number,
         bridge_code: purchase.bridge_code,
         bridger_id: purchase.bridger_id || null,
-        bridger_name: purchase.public_bridger_name || purchase.provider_name || purchase.flame_name || 'Bridge Radiance',
+        bridger_name: purchase.public_bridger_name || purchase.provider_name || purchase.flame_name || 'Bridge of Radiance',
         movement_code: purchase.movement_code || null,
         provider_name: purchase.provider_name || null,
         flame_name: purchase.flame_name || null,

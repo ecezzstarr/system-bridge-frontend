@@ -76,7 +76,7 @@ export async function POST(request:NextRequest){
     RETURNING status,submitted_at,business_name`
   if(!record)return NextResponse.json({error:'An application is already pending or approved; refresh your application status.'},{status:409,headers})
   return NextResponse.json({success:true,positionType:'pro_regional_manager',application:record,
-    notice:'Application received for Administration review. No Pro File Folder, activation charge, salary payment or additional permissions have been granted.'},{status:201,headers})
+    notice:'Application received for Administrations review. No Pro File Folder, activation charge, salary payment or additional permissions have been granted.'},{status:201,headers})
  }catch(e){console.error('[Pro Regional Manager application submit]',e)
   return NextResponse.json({error:'Unable to submit the Pro Regional Manager application'},{status:503,headers})}
 }

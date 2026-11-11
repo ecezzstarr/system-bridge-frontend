@@ -17,7 +17,7 @@ async function notify(clientId:string,title:string,content:string){
 }
 export async function GET(request:NextRequest){
  const user=await reviewer(request)
- if(!user)return NextResponse.json({error:'Administration required'},{status:403,headers:publicHeaders})
+ if(!user)return NextResponse.json({error:'Administrations required'},{status:403,headers:publicHeaders})
  try{
   await ensureProActivationSchema()
   const rows=await sql`SELECT a.*,u.name AS client_name,u.email AS client_email
@@ -31,13 +31,13 @@ export async function GET(request:NextRequest){
 }
 export async function POST(request:NextRequest){
  const user=await reviewer(request)
- if(!user)return NextResponse.json({error:'Administration required'},{status:403,headers:publicHeaders})
+ if(!user)return NextResponse.json({error:'Administrations required'},{status:403,headers:publicHeaders})
  const body=await request.json().catch(()=>({}))
  const action=String(body.action||'')
  try{
   await ensureProActivationSchema()
   if(action==='configure_wallet')
-   return NextResponse.json({error:'Company wallet configuration has moved to the audited Administration Company Active Wallet workspace. Open /admin/company-active-wallet.'},
+   return NextResponse.json({error:'Company wallet configuration has moved to the audited Administrations Company Active Wallet workspace. Open /admin/company-active-wallet.'},
      {status:409,headers:publicHeaders})
   const fileNumber=String(body.fileNumber||'').trim().toUpperCase()
   if(!fileNumber||fileNumber.length>120)throw new Error('Provide the exact issued File Number.')
@@ -82,7 +82,7 @@ export async function POST(request:NextRequest){
      FROM pro_file_folder_activations WHERE client_id=${client.id}::uuid
       AND file_number=${fileNumber} AND status='awaiting_signature' LIMIT 1`
    if(!signed?.client_signature_name||!signed?.client_signature_at)
-    throw new Error('The Client must electronically sign the 680 USDT Pro agreement before Administration verification.')
+    throw new Error('The Client must electronically sign the 680 USDT Pro agreement before Administrations verification.')
    const [a]=await sql`UPDATE pro_file_folder_activations
       SET signed_agreement_reference=${reference},signed_agreement_verified_at=now(),
           signed_agreement_verified_by=${user.id}::uuid,

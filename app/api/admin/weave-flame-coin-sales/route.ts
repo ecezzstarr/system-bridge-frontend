@@ -30,7 +30,7 @@ export async function GET(request:NextRequest){
   )
   return NextResponse.json({sales:rows,enabledMethods:methods(),
     availableReserveFlameCoin:Number(reserve.rows[0]?.balance_trx||0),
-    rule:'Manual purchase review: approve quotes only for authorized payment rails, inspect actual bank/card settlement or blockchain transaction independently, then fund buyer System Switch from existing Administration reserve. Payment proof alone is never enough.'},
+    rule:'Manual purchase review: approve quotes only for authorized payment rails, inspect actual bank/card settlement or blockchain transaction independently, then fund buyer System Switch from existing Administrations reserve. Payment proof alone is never enough.'},
     {headers:{'Cache-Control':'private, no-store'}})
 }
 
@@ -51,7 +51,7 @@ export async function POST(request:NextRequest){
     if(!paid.alreadyCredited){
       try{await notifyAdminOrder({orderId:id,event:'paid',department:'visitor',
         subject:'System Switch purchase credited',
-        detail:`${paid.amountFlameCoin} System Switch transferred from funded Administration reserve to the matching buyer Main Wallet. Receipt ${paid.receiptNumber}.`,
+        detail:`${paid.amountFlameCoin} System Switch transferred from funded Administrations reserve to the matching buyer Main Wallet. Receipt ${paid.receiptNumber}.`,
         adminPath:'/admin/weave-flame-coin-sales',actorId:adminId,actorName:'Forensics'})}
       catch(e){console.error('[System Switch credit notification]',e)}
     }
@@ -117,7 +117,7 @@ export async function POST(request:NextRequest){
       // Crypto payment instructions are server-authored to prevent an
       // incorrect manual address appearing in an otherwise approved quote.
       const approvedInstructions=crypto
-        ? `Pay exactly ${quoted} ${quoteCurrency} using ${network} only. Send to WEAVE address ${address}. Verify network and token before sending. Keep your 64-character transaction hash for Administration Forensics. Payments on the wrong chain may be unrecoverable.`
+        ? `Pay exactly ${quoted} ${quoteCurrency} using ${network} only. Send to WEAVE address ${address}. Verify network and token before sending. Keep your 64-character transaction hash for Administrations Forensics. Payments on the wrong chain may be unrecoverable.`
         : instructions
       result=(await conn.query(`
         UPDATE weave_flame_coin_orders

@@ -1,11 +1,13 @@
 import {trainingBriefsForRole,type WeaveLoadingBrief,type WeaveLoadingRole} from '@/lib/weave-loading-guidance'
+import {LEGACY_LOADER_LESSONS} from '@/lib/weave-loader-copy-history'
+import {normalizeWeaveWording} from '@/lib/weave-wording'
 
 export const LOADER_COPY_ROLES=['visitor','agent','bridger','client','admin','flame-event'] as const
 export type LoaderCopyRole=typeof LOADER_COPY_ROLES[number]
 const flameLessons:WeaveLoadingBrief[]=[
-  {eyebrow:'FLAME EVENT · ARRIVAL',title:'The Burning River',body:'Flame Event is WEAVE’s shared world. Arrive through your actual position and discover the systems operating here.',movement:'Arrive → recognize → participate'},
-  {eyebrow:'FLAME EVENT · CUSTOMER DOORS',title:'Discover living Client work.',body:'Visit public Customer Doors to inspect published Client products and services. Clients control what they offer and publish.',movement:'Discover → inspect → enter'},
-  {eyebrow:'FLAME EVENT · REAL PARTICIPATION',title:'Continue into a working system.',body:'Orders, payments, applications and builds become verified only through their own operating systems. Choose one movement and confirm its real state.',movement:'Notice → recognize → solve → move'},
+  {eyebrow:'FLAME EVENT · THE COMPANY OF TIME',title:'Burning River. The River that Burns.',body:'A dream moves through time until it finds a life in which to exist. Enter the current company event through your position and discover the people, businesses and working systems that give participation its form.',movement:'Arrive → recognize your place → participate'},
+  {eyebrow:'FLAME EVENT · PEOPLE AND PLACES',title:'Discover the work taking shape.',body:'Visit published Customer Doors, explore Client offers and meet the work carried by the departments. Each Client chooses what to publish; private File Folder systems remain under their owner’s control.',movement:'Explore → understand the offer → enter an open Customer Door'},
+  {eyebrow:'FLAME EVENT · CONTINUATION',title:'Carry one useful step forward.',body:'Choose a service or working system, read its requirements and begin. Orders, payments and builds carry their own confirmation. Your next step continues from the work you have actually completed.',movement:'Choose → act → confirm → continue'},
 ]
 export const DEFAULT_LOADER_LESSONS=Object.fromEntries(
   LOADER_COPY_ROLES.map(role=>[role,(role==='flame-event'?flameLessons:trainingBriefsForRole(role as WeaveLoadingRole)).map(brief=>({...brief}))]),
@@ -69,10 +71,13 @@ const clamp=(value:unknown,min:number,max:number,fallback:number)=>{
   return Number.isFinite(n)?Math.min(max,Math.max(min,n)):fallback
 }
 
-function loaderText(value:unknown,fallback:string,limit:number){
+function loaderText(value:unknown,fallback:string,limit:number,legacy?:string){
   if(typeof value!=='string')return fallback
   const text=value.trim()
-  return text?text.slice(0,limit):fallback
+  // Upgrade only a field that still equals the shipped old default. Preserve
+  // authored lessons, partial edits, timings and stored profile versions.
+  const unchanged=legacy!==undefined&&normalizeWeaveWording(text)===normalizeWeaveWording(legacy.trim())
+  return text && !unchanged ? normalizeWeaveWording(text).slice(0,limit) : fallback
 }
 function normalizeLoaderLessons(value:unknown):Record<LoaderCopyRole,WeaveLoadingBrief[]>{
   const source=value&&typeof value==='object'?value as Record<string,unknown>:{}
@@ -80,12 +85,13 @@ function normalizeLoaderLessons(value:unknown):Record<LoaderCopyRole,WeaveLoadin
     const incoming=Array.isArray(source[role])?source[role]:[]
     const defaults=DEFAULT_LOADER_LESSONS[role]
     const lessons=defaults.map((fallback,index)=>{
+      const legacy=LEGACY_LOADER_LESSONS[role][index]
       const candidate=incoming[index]&&typeof incoming[index]==='object'?incoming[index] as Partial<WeaveLoadingBrief>:{}
       return {
-        eyebrow:loaderText(candidate.eyebrow,fallback.eyebrow,120),
-        title:loaderText(candidate.title,fallback.title,160),
-        body:loaderText(candidate.body,fallback.body,1200),
-        movement:loaderText(candidate.movement,fallback.movement,240),
+        eyebrow:loaderText(candidate.eyebrow,fallback.eyebrow,120,legacy.eyebrow),
+        title:loaderText(candidate.title,fallback.title,160,legacy.title),
+        body:loaderText(candidate.body,fallback.body,1200,legacy.body),
+        movement:loaderText(candidate.movement,fallback.movement,240,legacy.movement),
       }
     })
     return [role,lessons]
@@ -94,7 +100,7 @@ function normalizeLoaderLessons(value:unknown):Record<LoaderCopyRole,WeaveLoadin
 function normalizeTransitionNotes(value:unknown):Record<WeaveLoadingRole,string>{
   const source=value&&typeof value==='object'?value as Record<string,unknown>:{}
   return Object.fromEntries((['visitor','agent','bridger','client','admin'] as WeaveLoadingRole[]).map(role=>
-    [role,typeof source[role]==='string'?source[role].trim().slice(0,500):'']
+    [role,typeof source[role]==='string'?normalizeWeaveWording(source[role].trim()).slice(0,500):'']
   )) as Record<WeaveLoadingRole,string>
 }
 

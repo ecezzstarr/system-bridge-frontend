@@ -58,7 +58,7 @@ export default function ForgotPasswordPage() {
           }
           if (['denied', 'expired', 'used'].includes(result.status)) {
             sessionStorage.removeItem(REQUEST_KEY); setToken(''); setStage('request')
-            setError(result.status === 'denied' ? 'Administration could not approve this request. Contact your WEAVE administrator.' : 'This recovery request has ended. You can request a new passcode.'); return
+            setError(result.status === 'denied' ? 'Administrations could not approve this request. Contact your WEAVE administrator.' : 'This recovery request has ended. You can request a new passcode.'); return
           }
         }
       } catch (err) {
@@ -88,7 +88,7 @@ export default function ForgotPasswordPage() {
 
   const resetPassword = async (event: React.FormEvent) => {
     event.preventDefault(); setError('')
-    if (!/^\d{6}$/.test(code)) { setError('Enter your 6-digit Administration passcode.'); return }
+    if (!/^\d{6}$/.test(code)) { setError('Enter your 6-digit Administrations passcode.'); return }
     if (password.length < 8) { setError('Password must be at least 8 characters.'); return }
     if (password !== confirmPassword) { setError('Passwords do not match.'); return }
     setBusy(true)
@@ -114,16 +114,16 @@ export default function ForgotPasswordPage() {
       <Link href={loginHref} className="flex items-center gap-2 text-xs text-slate-400"><ArrowLeft className="h-4 w-4"/>Back to login</Link>
       <CardTitle className="pt-3 text-2xl font-black">{stage === 'done' ? 'Access restored' : 'Recovery Desk'}</CardTitle>
       <CardDescription className="text-slate-400">
-        {stage === 'request' ? 'Request a passcode from Administration to reset your password.' : stage === 'waiting' ? 'Your request is waiting for Administration.' : stage === 'verify' ? 'Use your Administration passcode and choose a new password.' : 'Your password has changed and previous sessions have closed.'}
+        {stage === 'request' ? 'Request a passcode from Administrations to reset your password.' : stage === 'waiting' ? 'Your request is waiting for Administrations.' : stage === 'verify' ? 'Use your Administrations passcode and choose a new password.' : 'Your password has changed and previous sessions have closed.'}
       </CardDescription>
     </CardHeader>
     <CardContent className="space-y-4">
       {error && <p role="alert" className="text-sm text-rose-300">{error}</p>}
       {stage === 'request' && <form onSubmit={requestPasscode} className="space-y-4">
         <Input aria-label="Registered email" type="email" placeholder="Registered email" value={email} onChange={e => setEmail(e.target.value)} autoComplete="email" required disabled={busy}/>
-        <textarea aria-label="Note for Administration" value={details} onChange={e => setDetails(e.target.value)} placeholder="Your name and registered phone or Client File Number" required minLength={6} maxLength={500} rows={3} disabled={busy} className="w-full rounded-md border border-slate-700 bg-slate-900/60 p-3 text-sm"/>
+        <textarea aria-label="Note for Administrations" value={details} onChange={e => setDetails(e.target.value)} placeholder="Your name and registered phone or Client File Number" required minLength={6} maxLength={500} rows={3} disabled={busy} className="w-full rounded-md border border-slate-700 bg-slate-900/60 p-3 text-sm"/>
         <Button type="submit" disabled={busy} className="w-full">{busy ? <Loader2 className="h-4 w-4 animate-spin"/> : 'Request recovery passcode'}</Button>
-        <button type="button" onClick={() => { setError(''); setStage('verify') }} className="w-full text-xs text-cyan-300">Use Administration recovery code</button>
+        <button type="button" onClick={() => { setError(''); setStage('verify') }} className="w-full text-xs text-cyan-300">Use Administrations recovery code</button>
       </form>}
       {stage === 'waiting' && <div className="space-y-4 text-center">
         <KeyRound className="mx-auto h-8 w-8 text-cyan-300"/>

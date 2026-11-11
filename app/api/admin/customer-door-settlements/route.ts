@@ -25,7 +25,7 @@ export async function GET(request:NextRequest){
     [auth.session.user.id]
   )
   return NextResponse.json({orders:rows.rows,availableReserveFlameCoin:Number(wallet.rows[0]?.balance||0),
-    rule:'External payment settles into a Client Main Wallet only after real WEAVE treasury receipt has been verified. The credited System Switch amount is taken from an already funded Administration Main Wallet. Never credit on customer/Client self-report alone.'},
+    rule:'External payment settles into a Client Main Wallet only after real WEAVE treasury receipt has been verified. The credited System Switch amount is taken from an already funded Administrations Main Wallet. Never credit on customer/Client self-report alone.'},
     {headers:{'Cache-Control':'private, no-store'}})
 }
 
@@ -40,7 +40,7 @@ export async function POST(request:NextRequest){
     return NextResponse.json({error:'Valid order, exact verified payment reference, and positive System Switch settlement amount required'},{status:400})
   }
   if(body.fundsReceivedByWeave!==true){
-    return NextResponse.json({error:'Administration must confirm the company treasury actually received this customer payment before funded settlement'},{status:400})
+    return NextResponse.json({error:'Administrations must confirm the company treasury actually received this customer payment before funded settlement'},{status:400})
   }
   const adminId=String(auth.session.user.id)
   const result=await settleCustomerDoorPayment({
@@ -52,8 +52,8 @@ export async function POST(request:NextRequest){
   if(!result.alreadyPaid){
     try{
       await notifyAdminOrder({orderId,event:'paid',department:'client',subject:'Customer Door external payment settled',
-        detail:`${flame} System Switch moved from the funded Administration account to the Client Main Wallet after external receipt verification; reference ${paymentReference}.`,
-        adminPath:'/admin/customer-door-settlements',actorId:adminId,actorName:'WEAVE Administration'})
+        detail:`${flame} System Switch moved from the funded Administrations account to the Client Main Wallet after external receipt verification; reference ${paymentReference}.`,
+        adminPath:'/admin/customer-door-settlements',actorId:adminId,actorName:'WEAVE Administrations'})
     }catch(e){console.error('[Customer Door administration notification]',e)}
   }
   return NextResponse.json(result,{headers:{'Cache-Control':'private, no-store'}})

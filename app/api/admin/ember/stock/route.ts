@@ -7,7 +7,7 @@ import { nextEmberAdminStage,emberMoneySplit } from '@/lib/ember-catalog'
 export async function GET(request: NextRequest) {
   const user = await getAuthUser(request)
   if (!user || user.role !== 'admin') {
-    return NextResponse.json({ success: false, error: 'Administration required' }, { status: 403 })
+    return NextResponse.json({ success: false, error: 'Administrations required' }, { status: 403 })
   }
 
   try {
@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   const user = await getAuthUser(request)
   if (!user || user.role !== 'admin') {
-    return NextResponse.json({ success: false, error: 'Administration required' }, { status: 403 })
+    return NextResponse.json({ success: false, error: 'Administrations required' }, { status: 403 })
   }
 
   try {
@@ -79,7 +79,7 @@ export async function PATCH(request: NextRequest) {
         success: false,
         error: expectedNext
           ? `Next Ember stage must be ${expectedNext}`
-          : 'This Ember order has completed Administration fulfillment',
+          : 'This Ember order has completed Administrations fulfillment',
       }, { status: 409 })
     }
 

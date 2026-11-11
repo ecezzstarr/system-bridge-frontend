@@ -8,7 +8,7 @@ import { ensureRegionalOperationsSchema } from '@/lib/regional-manager-operation
 export async function GET(request: NextRequest) {
   const admin = await getAuthUser(request)
   if (!admin || admin.role !== 'admin') {
-    return NextResponse.json({ error: 'Administration access required' }, { status: 403 })
+    return NextResponse.json({ error: 'Administrations access required' }, { status: 403 })
   }
   await ensureRegionalManagerCommissionSchema()
   const [appointments, assignments] = await Promise.all([
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const admin = await getAuthUser(request)
   if (!admin || admin.role !== 'admin') {
-    return NextResponse.json({ error: 'Administration access required' }, { status: 403 })
+    return NextResponse.json({ error: 'Administrations access required' }, { status: 403 })
   }
 
   const body = await request.json().catch(() => null)

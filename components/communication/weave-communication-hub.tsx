@@ -233,7 +233,7 @@ export default function WeaveCommunicationHub() {
     { id: 'clients', label: 'Clients', icon: UserCircle },
     { id: 'bridgers', label: 'Bridgers', icon: GitBranch },
     { id: 'agents', label: 'Agents', icon: Briefcase },
-    { id: 'administration', label: 'Administration', icon: ShieldCheck },
+    { id: 'administration', label: 'Administrations', icon: ShieldCheck },
   ]
   const TABS = isAdmin
     ? ALL_TABS.filter(t => t.id !== 'administration')
@@ -251,7 +251,7 @@ export default function WeaveCommunicationHub() {
         <header className="border-b border-white/10 bg-[radial-gradient(circle_at_14%_0%,rgba(34,211,238,.13),transparent_34%),radial-gradient(circle_at_88%_0%,rgba(139,92,246,.08),transparent_28%)] p-4 md:p-5">
           <div className="flex items-start gap-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-cyan-300/20 bg-cyan-400/10"><Activity className="h-5 w-5 text-cyan-200"/></div>
-            <div><p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.2em] text-cyan-300">{isAdmin ? 'Administration Direct Communication' : isBridger ? 'Bridger Direct Communication' : 'Agent Direct Communication'}</p><h1 className="mt-1 text-xl font-black text-white md:text-2xl">Every conversation stays attached to a person, position and movement state.</h1><p className="mt-2 max-w-4xl text-xs leading-5 text-slate-300">Agent and Bridger communicate directly through authorized private WEAVE rooms. Bridgers speak directly with their own Prospects and referred Clients. Administration can reach the active user roles from the same communication environment.</p></div>
+            <div><p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.2em] text-cyan-300">{isAdmin ? 'Administrations Direct Communication' : isBridger ? 'Bridger Direct Communication' : 'Agent Direct Communication'}</p><h1 className="mt-1 text-xl font-black text-white md:text-2xl">Every conversation stays attached to a person, position and movement state.</h1><p className="mt-2 max-w-4xl text-xs leading-5 text-slate-300">Agent and Bridger communicate directly through authorized private WEAVE rooms. Bridgers speak directly with their own Prospects and referred Clients. Administrations can reach the active user roles from the same communication environment.</p></div>
           </div>
         </header>
         <div className="flex min-h-[640px] flex-col overflow-hidden md:h-[calc(100vh-13rem)] md:flex-row">

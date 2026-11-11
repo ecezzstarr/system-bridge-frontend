@@ -60,7 +60,7 @@ export async function POST(request:NextRequest){
       [user.id,referralCode,publicToken,cakeType,occasion,sizeOption,flavor,inscription||null,designNote||null,eventDate,customerName,customerPhone,deliveryMode,deliveryLocation]
     )
     await notifyAdminOrder({orderId:String(result.rows[0].id),event:'placed',department:'agent',subject:'Daisy Pastries order',detail:`${customerName} ordered ${type.name} (${sizeOption}) from ${user.name||'Agent'} for ${eventDate}; awaiting quote`,adminPath:'/admin/cakes',actorId:user.id,actorName:user.name||'Agent'})
-    return NextResponse.json({success:true,order:result.rows[0],message:'Daisy Pastries order created. Set the official quote below, then move payment and Administration production through the same order.'},{status:201})
+    return NextResponse.json({success:true,order:result.rows[0],message:'Daisy Pastries order created. Set the official quote below, then move payment and Administrations production through the same order.'},{status:201})
   }catch(error){console.error('[agent/cakes] POST failed',error);return NextResponse.json({error:'Unable to create Daisy Pastries order'},{status:500})}
 }
 
@@ -113,7 +113,7 @@ export async function PATCH(request:NextRequest){
         [transactionReference,orderId,user.id]
       )
       if(!result.rows[0])return NextResponse.json({error:'This Daisy Pastries order is not waiting for a payment reference'},{status:409})
-      return NextResponse.json({success:true,order:result.rows[0],message:'Payment reference attached. Verify the payment before Administration production starts.'})
+      return NextResponse.json({success:true,order:result.rows[0],message:'Payment reference attached. Verify the payment before Administrations production starts.'})
     }
 
     if(action==='verify_payment'){
@@ -126,8 +126,8 @@ export async function PATCH(request:NextRequest){
           [orderId,user.id]
         )
         if(!result.rows[0])return NextResponse.json({error:'Daisy Pastries payment is not waiting for Agent verification'},{status:409})
-        await notifyAdminOrder({orderId:String(result.rows[0].id),event:'paid',department:'agent',subject:'Daisy Pastries payment verified',detail:`${result.rows[0].customer_name} cake order payment confirmed by Agent; Administration production required`,adminPath:'/admin/cakes',actorId:user.id,actorName:user.name||'Agent'})
-        return NextResponse.json({success:true,order:result.rows[0],message:'Customer payment verified. Administration can now prepare the Daisy Pastries order.'})
+        await notifyAdminOrder({orderId:String(result.rows[0].id),event:'paid',department:'agent',subject:'Daisy Pastries payment verified',detail:`${result.rows[0].customer_name} cake order payment confirmed by Agent; Administrations production required`,adminPath:'/admin/cakes',actorId:user.id,actorName:user.name||'Agent'})
+        return NextResponse.json({success:true,order:result.rows[0],message:'Customer payment verified. Administrations can now prepare the Daisy Pastries order.'})
       }
       const result=await getPool().query(
         `UPDATE carrier_cake_orders SET payment_status='awaiting_payment',status='quoted',payment_rejected_at=NOW(),payment_reference=NULL,updated_at=NOW()

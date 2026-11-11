@@ -58,14 +58,14 @@ assert.ok(configUi.includes('data-admin-company-active-wallet="true"')&&
  configUi.includes('Wallet change history')&&
  configUi.includes('controlVerified')&&
  configUi.includes('SET COMPANY PRO WALLET'),
- 'Administration has a usable explicit company active-wallet form, clear rail distinctions and history')
+ 'Administrations has a usable explicit company active-wallet form, clear rail distinctions and history')
 assert.ok(read('app/(app)/admin/control-center/page.tsx').includes('/admin/company-active-wallet')&&
  read('lib/admin-workplace-catalog.ts').includes('/admin/company-active-wallet')&&
  read('app/(app)/admin/pro-file-number-verifications/page.tsx').includes('/admin/company-active-wallet')&&
  read('app/(app)/admin/pro-regional-manager-activations/page.tsx').includes('/admin/company-active-wallet'),
  'Company wallet entry is linked from the Control Center, catalog and both Pro forensic queues')
 assert.ok(legacyApi.includes("action==='configure_wallet'")&&
- legacyApi.includes('audited Administration Company Active Wallet workspace')&&
+ legacyApi.includes('audited Administrations Company Active Wallet workspace')&&
  !legacyApi.includes('ON CONFLICT(id) DO UPDATE SET wallet_address=EXCLUDED.wallet_address'),
  'Previous Pro activation route cannot bypass new audited wallet configuration')
 assert.ok(legacyUi.includes('/admin/company-active-wallet')&&

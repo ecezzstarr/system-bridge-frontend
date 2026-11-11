@@ -4,13 +4,13 @@ import { useEffect,useMemo,useRef,useState,type ReactNode } from 'react'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/lib/auth-provider'
-import { trainingBriefsForRole, transitTrainingForPath, transitDirectionForPath, type WeaveLoadingRole, type WeaveLoadingBrief } from '@/lib/weave-loading-guidance'
+import { trainingBriefsForRole, loaderAudienceName, transitTrainingForPath, transitDirectionForPath, type WeaveLoadingRole, type WeaveLoadingBrief } from '@/lib/weave-loading-guidance'
 import { setRuntimeCovered } from './use-adaptive-runtime'
 import { ArrowRight,Flame,Orbit } from 'lucide-react'
 import { resolveWeaveEnvironment } from '@/lib/weave-environments'
 import { WEAVE_SYSTEM_MAP } from '@/lib/weave-system-map'
 import { useEnvironmentRuntimeConfig } from '@/components/world/use-environment-runtime-config'
-import type { EnvironmentRuntimeConfig } from '@/lib/weave-environment-runtime-profile'
+import {DEFAULT_LOADER_LESSONS,type EnvironmentRuntimeConfig} from '@/lib/weave-environment-runtime-profile'
 import { FLAME_EVENT, resolveEventStatus } from '@/lib/weave-event'
 import { visiblePoll } from '@/lib/visible-poll'
 import { isFlameEventVisualRoute } from '@/lib/weave-visual-theme'
@@ -122,26 +122,7 @@ const ADMIN_BRIEFS:LoadingBrief[]=[...trainingBriefsForRole('admin')]
 
 const FLAME_REENTRY_LAST_ACTIVE_KEY='weave:flame-event:last-active-at'
 
-const FLAME_EVENT_BRIEFS:LoadingBrief[]=[
-  {
-    eyebrow:'FLAME EVENT · HOW TO ENTER',
-    title:'Burning River · Company Loop 1',
-    body:'Flame Event is the shared arrival ground. Enter through your position; find real working systems and authorized Client Customer Doors instead of treating this as a static show.',
-    movement:'Enter Flame Event → recognize your position → find a function',
-  },
-  {
-    eyebrow:'THE RIVER THAT BURNS · CUSTOMER DOORS',
-    title:'Learn before you cross.',
-    body:'Staff and visitors can discover Client offerings through public Customer Doors. The Client controls their business, products and what has actually been published.',
-    movement:'Discover → inspect → enter an open Customer Door',
-  },
-  {
-    eyebrow:'FLAME EVENT · VERIFIED MOVEMENT',
-    title:'Continue into a working system.',
-    body:'Choose a visible function, check its requirements and operate it. A payment, order or build becomes real only after the relevant system confirms it.',
-    movement:'Notice → recognize → solve → move',
-  },
-]
+const FLAME_EVENT_BRIEFS:LoadingBrief[]=DEFAULT_LOADER_LESSONS['flame-event']
 
 export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
   const pathname=usePathname()||'/'
@@ -281,6 +262,7 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
   const canReturnClientWorld=role==='client'&&(
     user?.role==='client'||destinationPath.startsWith('/client/system-switch')||destinationPath==='/client/presence'
   )
+  const roleName=loaderAudienceName(role)
   const hopeDestination=destinationPath.startsWith('/bridger')||destinationPath==='/weave/market/prospects'
   const showHopeBriefing=booting&&(role==='bridger'||hopeDestination)
   const showAgentBriefing=booting&&role==='agent'
@@ -309,7 +291,7 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
     }
     if(returningToWorld) {
       return {
-        eyebrow:`${role==='visitor'?'WEAVE':role.toUpperCase()} · RETURNING TO OPEN WORLD`,
+        eyebrow:`${roleName} · RETURNING TO OPEN WORLD`,
         title:`Returning to ${destinationEnvironment.title}`,
         body:withNote(`Your current position and recorded work remain yours. ${destinationEnvironment.purpose}`),
         movement:'Return → recognize your work → continue',
@@ -321,14 +303,14 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
       eyebrow:guidance.eyebrow,
       // The named destination stays in focus. Its verified purpose remains the
       // opening lyric even when the position has more specific instructions.
-      body:withNote(`${destinationEnvironment.purpose} ${guidance.body}`),
+      body:withNote(guidance.body),
       movement:guidance.movement,
     }
     if(!hopeDestination)return {...baseBrief,body:withNote(baseBrief.body)}
     return {
       ...baseBrief,
       eyebrow:'Hope · Bridger Department',
-      body:withNote(`WEAVE builds systems across the world. Hope works through Prospect possibilities so those systems can reach Client ownership and use. ${destinationEnvironment.purpose}`),
+      body:withNote(`Begin with a useful conversation. Listen to what the person needs and guide their chosen next step. ${destinationEnvironment.purpose}`),
       movement:'Prospect tool → attempt → response → relationship → Client → ownership + use',
     }
   },[destinationEnvironment,hopeDestination,role,destinationPath,returningToWorld,config.loading.transitionNotes])
@@ -337,21 +319,21 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
   const activeBriefs:readonly LoadingBrief[]=booting?bootBriefs:[
     {
       eyebrow:`${destinationEnvironment.district} · PLACE 1 OF 3`,
-      title:returningToWorld?'Recognize the world you are returning to':`Recognize ${destinationEnvironment.title}`,
+      title:returningToWorld?'Your place. Your work. Your next step.':destinationEnvironment.title,
       body:destinationEnvironment.purpose,
-      movement:'Understand the place before operating its functions',
+      movement:'Understand the place → choose the work you want to continue',
     },
     {
       ...transitBrief,
-      eyebrow:`${role.toUpperCase()} · OPERATING LESSON 2 OF 3`,
+      eyebrow:`${roleName} · YOUR WORK 2 OF 3`,
       title:transitTrainingForPath(role,destinationPath)?.title||transitBrief.title,
     },
     {
-      eyebrow:`${role.toUpperCase()} · YOUR NEXT MOVEMENT 3 OF 3`,
-      title:returningToWorld?'Resume your existing position':'Operate and confirm real work',
+      eyebrow:`${roleName} · CONTINUATION 3 OF 3`,
+      title:returningToWorld?'Continue from where you are.':'Give the next step your attention.',
       body:returningToWorld
-        ?'Returning to the open world does not erase your saved position, activity or verified records. Select the next available system and continue from its actual state.'
-        :`The next movement in this place is: ${transitBrief.movement}. Read the requirements shown by the actual system. An application, order, payment or build is not completed until its status confirms it.`,
+        ?'Your position, work and records remain with you. Return to the system you need and continue from its latest confirmed result.'
+        :`Your next step: ${transitBrief.movement}. Review the requirements, carry out the work and check its confirmation before continuing.`,
       movement:transitBrief.movement,
     },
   ]
@@ -395,33 +377,33 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
   const openingLabel=returningToWorld
     ? `Returning to ${destinationEnvironment.title}`
     : showAgentBriefing
-    ? 'Agent training · Stability'
+    ? 'Stability · Your work begins here'
     : showClientBriefing
-      ? 'Client training · File Folder'
+      ? 'Dream Lovely · Your business continues'
       : showAdminBriefing
-        ? 'Administrations · Work Introduction'
+        ? 'A Time · The company in your care'
         : showHopeBriefing
-    ? 'Hope · forming the Bridger field'
+    ? 'Hope · A relationship begins here'
     : showFlameBriefing
       ? 'Flame Event · Burning River'
       : booting
-        ? 'Forming the living environment'
+        ? 'Welcome to The Company of Time'
         : `Opening ${destinationEnvironment.title}`
   const statusLabel=returningToWorld
-    ? 'RETURNING TO WEAVE OPEN WORLD · YOUR WORK REMAINS INTACT'
+    ? 'RETURNING TO YOUR WORK · YOUR RECORDS CONTINUE'
     : showAgentBriefing||(!booting&&role==='agent')
-    ? 'STABILITY · LEARN → OPERATE → VERIFY'
+    ? 'STABILITY · SERVE → DELIVER → CONFIRM'
     : showClientBriefing||(!booting&&role==='client')
-      ? 'CLIENT · PREVIEW → BUILD → ACTIVATE → OPERATE'
+      ? 'DREAM LOVELY · BUILD → OPERATE → SERVE'
       : showAdminBriefing||(!booting&&role==='admin')
-        ? 'ADMINISTRATIONS · EVIDENCE → APPROVAL → RECORD'
+        ? 'A TIME · DIRECT → SUPPORT → PRESERVE'
         : showHopeBriefing||(!booting&&hopeDestination)
-    ? 'HOPE · WEAVE BUILDS → PROSPECT → CLIENT → OWNERSHIP + USE'
+    ? 'HOPE · LISTEN → CONNECT → GUIDE'
     : showFlameBriefing
       ? 'FLAME EVENT · BURNING RIVER · THE RIVER THAT BURNS'
       : booting
-        ? 'Preparing WEAVE world · preserving continuity'
-        : `Moving through ${destinationEnvironment.district} · keeping your position intact`
+        ? 'THE COMPANY OF TIME · YOUR BEGINNING IN WEAVE'
+        : `Moving through ${destinationEnvironment.district} · your work continues`
 
   return <>
     <div
@@ -469,10 +451,10 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
           </div>
 
           <p className={'mt-3 text-[10px] font-black uppercase tracking-[.13em] '+(showFlameBriefing?'text-orange-200':'text-amber-200')}>
-            {showAgentBriefing?'AGENT · STABILITY':showClientBriefing?'CLIENT · FILE FOLDER':showAdminBriefing?'ADMINISTRATIONS':showHopeBriefing?'HOPE · BRIDGER DEPARTMENT':showFlameBriefing?'FLAME EVENT':'WEAVE of Presence'}
+            {showFlameBriefing&&!showAgentBriefing&&!showClientBriefing&&!showAdminBriefing&&!showHopeBriefing?'FLAME EVENT · THE COMPANY OF TIME':roleName}
           </p>
           <p className={'mt-1 text-[8px] font-bold uppercase tracking-[.18em] '+(showFlameBriefing?'text-rose-200/70':'text-stone-500')}>
-            {showAgentBriefing?'Learn WEAVE · operate one system · verify results':showClientBriefing?'Preview · build · activate · operate':showAdminBriefing?'Organize · verify · preserve records':showHopeBriefing?'WEAVE builds · Hope searches · Clients own and use':showFlameBriefing?'Burning River · The River that Burns':'System Switch — Bridge Radiance'}
+            {showAgentBriefing?'Know the product · serve the customer · confirm the work':showClientBriefing?'Build with purpose · welcome your customers':showAdminBriefing?'Give direction · support people · preserve the record':showHopeBriefing?'Listen · connect · guide an informed beginning':showFlameBriefing?'Burning River · The River that Burns':'System Switch — Bridge of Radiance'}
           </p>
           <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl">{openingLabel}</h1>
           {!flameVisual&&<p className="weave-loader-platform-caption">SYSTEMS · PEOPLE · OPERATIONS · EXPANSION</p>}
@@ -513,7 +495,7 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
           data-weave-loader-enter="automatic" aria-live="off">
           <span className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-amber-200"/>
           <p className="text-xs font-semibold leading-5 text-slate-100">
-            {environmentReady?'Environment ready · completing the three lessons before entering.':'Preparing the destination · confirming systems are ready.'}
+            {environmentReady?'Environment ready · completing your introduction.':'Preparing your destination · checking that it is ready.'}
           </p>
         </div>
 

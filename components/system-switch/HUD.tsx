@@ -151,7 +151,7 @@ export function HUD({
               </p>
 
               <h1 className="text-4xl md:text-6xl lg:text-7xl font-black tracking-[-0.04em] leading-[0.95]">
-                Bridge Radiance
+                Bridge of Radiance
               </h1>
 
               <p className="mt-5 text-sm md:text-base text-white/60 leading-relaxed max-w-2xl">
@@ -352,7 +352,7 @@ export function HUD({
                   },
                   {
                     id: 'admin',
-                    name: 'Administration',
+                    name: 'Administrations',
                     icon: UserCog,
                     description: 'Elevation',
                   },
@@ -514,7 +514,7 @@ export function HUD({
                     { id: 'mandate', name: 'Mandate', icon: ClipboardList },
                     { id: 'lawyer', name: 'Attorney', icon: Scale },
                     { id: 'forensic', name: 'Forensic', icon: Search },
-                    { id: 'admin', name: 'Administration', icon: UserCog },
+                    { id: 'admin', name: 'Administrations', icon: UserCog },
                   ].map((pos) => {
                     const Icon = pos.icon
 

@@ -11,7 +11,7 @@ const bridger=read('app/(app)/bridger/dashboard/page.tsx')
 const admin=read('app/(app)/admin/dashboard/page.tsx')
 const client=read('app/client/dashboard/page.tsx')
 const worlds=[
- {role:'admin',label:'Administration World',href:'/admin/dashboard',dept:'Administration · A Time'},
+ {role:'admin',label:'Administrations World',href:'/admin/dashboard',dept:'Administrations · A Time'},
  {role:'agent',label:'Agent World',href:'/agent/dashboard',dept:'Stability'},
  {role:'bridger',label:'Bridger World',href:'/bridger/dashboard',dept:'Hope'},
  {role:'client',label:'Client World',href:'/client/dashboard',dept:'Dream Lovely'},
@@ -31,7 +31,7 @@ assert.ok(staff.includes("['admin', 'agent', 'bridger'].includes(user.role)")&&s
 assert.ok(clientEvent.includes("user?.role !== 'client'")&&clientEvent.includes('role="client"'),'Client event remains authenticated')
 assert.ok(agent.includes("user.role!=='agent'")&&agent.includes("if(!user||user.role!=='agent')return null"),'Agent cannot render other role world')
 assert.ok(bridger.includes("user.role!=='bridger'")&&bridger.includes("user?.role!=='bridger')return null"),'Bridger cannot render other role world')
-assert.ok(admin.includes("user.role!=='admin'")&&admin.includes("user?.role!=='admin')return null"),'Administration cannot render other role world')
+assert.ok(admin.includes("user.role!=='admin'")&&admin.includes("user?.role!=='admin')return null"),'Administrations cannot render other role world')
 assert.ok(event.includes('<BurningRiverOfficialGateway staff staffHref={switchHref} />'),'Existing Flame Event entrance remains')
 assert.ok(event.includes('data-flame-event-system-switch-entry="true"'),'System Switch remains separate')
-console.log('PASS: Flame Event shows only the authenticated Agent, Bridger, Administration or Client World')
+console.log('PASS: Flame Event shows only the authenticated Agent, Bridger, Administrations or Client World')

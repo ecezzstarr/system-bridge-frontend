@@ -42,7 +42,7 @@ const POSITIONS = [
   },
   {
     id:'admin',
-    name:'Administration',
+    name:'Administrations',
     detail:'Resolve higher-order structure, authority and institutional continuity.',
     output:'Confirmed need → elevation',
     icon:Landmark,

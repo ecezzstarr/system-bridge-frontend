@@ -115,7 +115,7 @@ export async function POST(request: NextRequest) {
     client.release()
   }
 
-  if(withdrawalId&&['agent','bridger'].includes(authedUser.role))await notifyAdminOrder({orderId:withdrawalId,event:'placed',department:authedUser.role as 'agent'|'bridger',subject:'OPay withdrawal approval request',detail:`${authedUser.name||'WEAVE staff'} requested ${amountFlameCoin.toLocaleString()} System Switch withdrawal (estimated ₦${amountNgn.toLocaleString()}). Administration approval required`,adminPath:'/admin/control-center',actorId:authedUser.id,actorName:authedUser.name||authedUser.role})
+  if(withdrawalId&&['agent','bridger'].includes(authedUser.role))await notifyAdminOrder({orderId:withdrawalId,event:'placed',department:authedUser.role as 'agent'|'bridger',subject:'OPay withdrawal approval request',detail:`${authedUser.name||'WEAVE staff'} requested ${amountFlameCoin.toLocaleString()} System Switch withdrawal (estimated ₦${amountNgn.toLocaleString()}). Administrations approval required`,adminPath:'/admin/control-center',actorId:authedUser.id,actorName:authedUser.name||authedUser.role})
 
   let receipt = null
   try {

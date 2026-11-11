@@ -166,7 +166,7 @@ export async function getActiveFoodPreparationManager(user:{id:string;role:strin
     WHERE m.agent_id=$1::uuid AND m.status='approved' AND u.role='agent' AND u.is_active=true
     LIMIT 1
   `,[user.id])
-  if(!rows.length)throw new PreparationAccessError('Administration has not approved your Food Preparation Manager appointment.')
+  if(!rows.length)throw new PreparationAccessError('Administrations has not approved your Food Preparation Manager appointment.')
   return rows[0]
 }
 export async function getPreparationSourceOrder(product:PreparationProduct,id:string){
@@ -227,7 +227,7 @@ export async function moveAssignedPreparationStage(agentId:string,taskId:string,
     const next=preparationNextStage(task.product,oldStage)
     if(next!==stage){
       await client.query('ROLLBACK')
-      throw new PreparationAccessError(next?`The next permitted stage is ${next}.`:'This order requires Administration or recipient confirmation for its next step.',409)
+      throw new PreparationAccessError(next?`The next permitted stage is ${next}.`:'This order requires Administrations or recipient confirmation for its next step.',409)
     }
     let updated
     if(task.product==='agility'||task.product==='electrolyte'||task.product==='ember'){

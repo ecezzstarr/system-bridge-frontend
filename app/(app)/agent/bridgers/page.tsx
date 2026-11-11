@@ -31,7 +31,7 @@ export default function AgentBridgersPage() {
       </div>
       <section className="mb-6 border-y border-sky-300/15 py-4">
         <h2 className="font-semibold text-white">Recruitment & assignment</h2>
-        <p className="mt-2 text-sm text-slate-400">Bring prospective Bridgers to Weave. Contact Administration through Company Support to arrange their registration and assignment to your team.</p>
+        <p className="mt-2 text-sm text-slate-400">Bring prospective Bridgers to Weave. Contact Administrations through Company Support to arrange their registration and assignment to your team.</p>
         <a href="/company-chat" className="mt-3 inline-block text-sm font-semibold text-sky-300">Open Company Support</a>
       </section>
       <MyBridgers />

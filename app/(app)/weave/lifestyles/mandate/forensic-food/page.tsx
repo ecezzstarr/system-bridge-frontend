@@ -14,7 +14,7 @@ type Payout={
 }
 type Queue={payouts:Payout[];leadManager:{name:string;active:boolean}|null;note:string}
 const currency=(n:unknown)=>new Intl.NumberFormat('en-NG',{style:'currency',currency:'NGN',maximumFractionDigits:0}).format(Number(n||0))
-const labels={administration:'Administration',family_support:'Administration Child/Parents Support',lead_manager:'Stability Lead · Preparation'}
+const labels={administration:'Administrations',family_support:'Administrations Child/Parents Support',lead_manager:'Stability Lead · Preparation'}
 
 export default function FoodForensicsPage(){
   const {token,user,isInitialized}=useAuth()
@@ -59,7 +59,7 @@ export default function FoodForensicsPage(){
     <header className="border-b border-white/10 pb-5">
       <p className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-amber-200"><ShieldCheck className="h-4 w-4"/> WEAVE Forensics · Food</p>
       <h1 className="mt-2 text-3xl font-black">Stock payment distributions</h1>
-      <p className="mt-3 text-sm leading-6 text-stone-300">Agents pay Weave OPay for stock. For each verified bowl or package, Administration is allocated ₦800, Child/Parents Support ₦200, and the remaining WEAVE stock proceeds fund preparation through the Stability Lead. The selling Agent retains ₦1,000 gross margin on each later Customer Carrier Door sale.</p>
+      <p className="mt-3 text-sm leading-6 text-stone-300">Agents pay Weave OPay for stock. For each verified bowl or package, Administrations is allocated ₦800, Child/Parents Support ₦200, and the remaining WEAVE stock proceeds fund preparation through the Stability Lead. The selling Agent retains ₦1,000 gross margin on each later Customer Carrier Door sale.</p>
       <p className="mt-2 text-xs text-amber-100">Record only external transfers you have actually completed and independently verified in your bank. This desk does not send bank payments or prove that a transfer cleared.</p>
     </header>
     {error&&<p role="alert" className="border border-rose-300/30 p-3 text-sm text-rose-200">{error}</p>}

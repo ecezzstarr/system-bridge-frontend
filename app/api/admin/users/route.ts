@@ -61,7 +61,7 @@ export async function PUT(request:NextRequest) {
     if(!target.rows[0])return NextResponse.json(
       {success:false,error:'User not found'},{status:404,headers:privateHeaders})
     if(target.rows[0].role==='admin')return NextResponse.json(
-      {success:false,error:'Administration accounts cannot be changed here'},
+      {success:false,error:'Administrations accounts cannot be changed here'},
       {status:403,headers:privateHeaders})
     if(body.action==='set_active'){
       if(typeof body.active!=='boolean')return NextResponse.json(
@@ -123,7 +123,7 @@ export async function DELETE(request:NextRequest){
       [userId])
     if(target.rowCount!==1){
       await client.query('ROLLBACK')
-      return NextResponse.json({success:false,error:'User not found or Administration account is protected'},
+      return NextResponse.json({success:false,error:'User not found or Administrations account is protected'},
         {status:409,headers:privateHeaders})
     }
     await client.query('DELETE FROM sessions WHERE user_id=$1::uuid',[userId])

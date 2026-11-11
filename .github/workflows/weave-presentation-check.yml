@@ -5,9 +5,11 @@ on:
     paths:
       - 'app/**'
       - 'components/**'
-      - 'lib/weave-writing.ts'
+      - 'lib/weave-*.ts'
+      - 'lib/*workplace-catalog.ts'
       - 'public/fonts/**'
       - 'tests/weave-expression-browser.cjs'
+      - 'tests/helpers/**'
       - '.github/workflows/weave-presentation-check.yml'
 permissions:
   contents: read
@@ -23,7 +25,8 @@ jobs:
           cache: npm
       - run: npm ci --no-audit --no-fund
       - run: npm install --no-save --package-lock=false playwright@1.57.0
-      - run: npx playwright install --with-deps chromium
+      # ubuntu-latest includes browser system libraries; avoid apt mirror DNS as a release blocker.
+      - run: npx playwright install chromium
       - run: npm run build
       - name: Render and verify phone, tablet and desktop
         run: |

@@ -19,7 +19,7 @@ const POSITION_LABEL: Record<string, string> = {
   mandate: 'Mandate',
   lawyer: 'Attorney',
   forensic: 'Forensics',
-  admin: 'Administration',
+  admin: 'Administrations',
   bridger: 'Bridger',
 }
 
@@ -79,7 +79,7 @@ export default function ClientInteractionsPage() {
           <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
             <div>
               <p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.22em] text-cyan-300">Client Service Queue</p>
-              <h1 className="mt-2 text-2xl font-black text-white md:text-3xl">Conversation is part of the Client process.</h1>
+              <h1 className="mt-2 text-2xl font-black text-white md:text-3xl">Every conversation carries the work forward.</h1>
               <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-300">
                 A message is not isolated chat. It belongs to a Client, a company position, a recorded relationship and a next movement.
               </p>
@@ -151,7 +151,7 @@ export default function ClientInteractionsPage() {
                 <p>Clarity → action.</p>
                 <p>Action → execution.</p>
                 <p>Execution → confirmation.</p>
-                <p>Confirmation → Administration when needed.</p>
+                <p>Confirmation → Administrations when needed.</p>
               </div>
             </section>
             {user.role === 'agent' && <ClientBuildPull role="agent" />}

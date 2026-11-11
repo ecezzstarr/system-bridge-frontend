@@ -11,7 +11,7 @@ async function admin(request:NextRequest){
 }
 export async function GET(request:NextRequest){
   const user=await admin(request)
-  if(!user)return NextResponse.json({success:false,error:'Administration required'},{status:403})
+  if(!user)return NextResponse.json({success:false,error:'Administrations required'},{status:403})
   try{
     const [appointments,overview,teamTasks]=await Promise.all([
       listManagerEmploymentForAdmin(user.id),
@@ -25,7 +25,7 @@ export async function GET(request:NextRequest){
 }
 export async function POST(request:NextRequest){
   const user=await admin(request)
-  if(!user)return NextResponse.json({success:false,error:'Administration required'},{status:403})
+  if(!user)return NextResponse.json({success:false,error:'Administrations required'},{status:403})
   const body=await request.json().catch(()=>({}))
   const validDecision=body.position==='distribution_assistant'
     ?['verify','decline'].includes(body.action)
@@ -42,7 +42,7 @@ export async function POST(request:NextRequest){
       user.id,body.applicantId,body.action,body.note)
     if(!outcome.success)
       return NextResponse.json({success:false,error:outcome.reason==='not_pending'?
-        'Application is no longer awaiting Administration verification. Refresh the desk.':
+        'Application is no longer awaiting Administrations verification. Refresh the desk.':
         outcome.reason==='ineligible'?'Applicant does not currently meet position eligibility.':
         'Assistant application decision could not be recorded.'},{status:outcome.reason==='not_pending'?409:400})
     return NextResponse.json({success:true,verification:outcome.verification},

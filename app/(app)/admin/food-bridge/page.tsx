@@ -35,11 +35,11 @@ export default function AdministrationFoodBridge(){
     }catch(e){setError(e instanceof Error?e.message:'Verification failed')}finally{setBusy(false)}
   }
   if(!isInitialized)return <main className="p-8 text-white">Opening Food Bridge verification…</main>
-  if(user?.role!=='admin')return <main className="p-8 text-white">Administration required</main>
+  if(user?.role!=='admin')return <main className="p-8 text-white">Administrations required</main>
   return <main className="mx-auto max-w-6xl space-y-6 p-5 pb-16 text-white" data-food-admin-review>
     <FarmToFamilySettlementInfo audience="admin"/>
     <header className="border-b border-amber-300/20 pb-6">
-      <p className="flex items-center gap-2 text-xs text-amber-200"><ShieldCheck className="h-4 w-4"/> Administration · Flame Event</p>
+      <p className="flex items-center gap-2 text-xs text-amber-200"><ShieldCheck className="h-4 w-4"/> Administrations · Flame Event</p>
       <h1 className="mt-3 text-3xl font-black">Farmer Supply Verification</h1>
       <p className="mt-2 text-xs leading-6 text-stone-400">Agent farms require independent supplier review before their stock enters Lifestyle. Audit pending farms and see movement from origin state to receiving household. Never publish private contact data. This screen approves farms; the separate settlement desk verifies actual buyer bank payments, sends dispatch instructions and records the farmer payout minus one ₦1,000 seller fee per completed order.</p>
       <div className="mt-4 flex flex-wrap gap-4"><Link href="/admin/food-escrow" className="text-xs font-black text-emerald-200">Verify farm buyer payments & record seller payouts →</Link><Link href="/admin/flame-event" className="text-xs text-sky-200">Flame Event Command</Link><button onClick={()=>void load()} className="flex items-center gap-2 text-xs text-emerald-200"><RefreshCw className="h-4 w-4"/> Refresh</button></div>

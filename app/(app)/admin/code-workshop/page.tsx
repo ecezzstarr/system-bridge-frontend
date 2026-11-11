@@ -36,7 +36,7 @@ export default function CodeWorkshopPage(){
  const [error,setError]=useState('')
  const [writeConfigured,setWriteConfigured]=useState(false)
  const [output,setOutput]=useState<string[]>([
-  'WEAVE / ADMINISTRATION / A TIME',
+  'WEAVE / ADMINISTRATIONS / A TIME',
   'Safe source terminal · GitHub draft editing only',
   'Type help for supported commands. No shell commands run on the production host.',
  ])
@@ -173,32 +173,32 @@ export default function CodeWorkshopPage(){
   else print('Blocked: only source navigation commands are supported. Production shell and secrets are never available.')
  }
 
- if(!isInitialized)return <main className="p-6">Opening Administration…</main>
- if(user?.role!=='admin')return <main className="p-6">Administration access required.</main>
+ if(!isInitialized)return <main className="p-6">Opening Administrations…</main>
+ if(user?.role!=='admin')return <main className="p-6">Administrations access required.</main>
  const modified=source!==baseline
  return <main className="min-h-dvh bg-[#071625] px-3 py-7 text-slate-100 sm:px-6" data-admin-code-workshop="guarded" data-code-workshop-no-shell="true">
   <div className="mx-auto max-w-7xl space-y-6">
    <nav className="flex flex-wrap items-center gap-4 text-xs font-semibold text-sky-200">
-    <Link href="/admin/control-center" className="underline">Administration Control Center</Link>
+    <Link href="/admin/control-center" className="underline">Administrations Control Center</Link>
     <Link href="/admin/release-workshop" className="underline">GitHub merge & Oracle release</Link>
     <Link href="/admin/deployment-records" className="underline">Sovereign + Flame release records</Link>
     <Link href="/policies" className="underline">Company operating policies</Link>
    </nav>
    <header className="rounded-3xl border border-sky-300/25 bg-[radial-gradient(circle_at_78%_0%,rgba(101,194,248,.18),transparent_45%),linear-gradient(116deg,#092a4b,#0b1e31)] p-6 sm:p-9">
     <div className="flex items-center gap-3 text-sky-200"><TerminalSquare size={23}/>
-     <span className="text-xs font-bold uppercase tracking-[.19em]">Weave of Presence · Administration · A Time</span>
+     <span className="text-xs font-bold uppercase tracking-[.19em]">Weave of Presence · Administrations · A Time</span>
     </div>
     <h1 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">Company Code Workshop</h1>
     <p className="mt-3 max-w-4xl text-sm leading-7 text-slate-200">Write and inspect Weave source code inside the company. Changes enter a private GitHub draft, undergo independent review and testing, and can be merged through the existing Release Workshop. Only a verified main release can reach the production worker.</p>
     <div className="mt-5 flex flex-wrap gap-2 text-xs font-semibold">
-     {['GitHub source drafts','Versioned commits','Review & CI before main','Separate Oracle deployment','Audited Administration actions'].map(x=>
+     {['GitHub source drafts','Versioned commits','Review & CI before main','Separate Oracle deployment','Audited Administrations actions'].map(x=>
       <span key={x} className="rounded-full border border-sky-200/25 bg-sky-300/[.08] px-3 py-2 text-sky-100">{x}</span>)}
     </div>
    </header>
 
    {error&&<section role="alert" className="rounded-xl border border-rose-300/30 bg-rose-400/[.07] px-4 py-3 text-sm text-rose-100">
     {error}
-    {error.includes('Unauthorized')&&<p className="mt-2 text-xs">Source control requires a designated Administration operator. Configure WEAVE_WORKSHOP_ADMIN_IDS privately; ordinary admin membership alone cannot edit or merge company code.</p>}
+    {error.includes('Unauthorized')&&<p className="mt-2 text-xs">Source control requires a designated Administrations operator. Configure WEAVE_WORKSHOP_ADMIN_IDS privately; ordinary admin membership alone cannot edit or merge company code.</p>}
    </section>}
 
    <div className="grid gap-5 lg:grid-cols-[minmax(230px,.72fr)_minmax(0,2fr)]">
@@ -318,7 +318,7 @@ export default function CodeWorkshopPage(){
     </div>
    </div>
    <section className="rounded-2xl border border-white/10 bg-white/[.02] p-5">
-    <h2 className="flex items-center gap-2 text-lg font-bold"><BookOpen size={19} className="text-sky-200"/>Administration change records</h2>
+    <h2 className="flex items-center gap-2 text-lg font-bold"><BookOpen size={19} className="text-sky-200"/>Administrations change records</h2>
     <p className="mt-2 text-xs leading-6 text-slate-300">Each branch, commit and pull request is associated with its author. Activity is not a deployment record; Sovereign + Flame tracks verified production movement separately.</p>
     <button onClick={()=>void reloadActivity().catch(e=>setError(e.message))} className="mt-2 rounded-lg border border-white/15 px-3 py-2 text-xs text-sky-200">Refresh activity</button>
     <div className="mt-3 grid gap-2 sm:grid-cols-2">{activity.map((entry,index)=><article key={entry.created_at+index} className="rounded-xl border border-white/[.09] p-3">

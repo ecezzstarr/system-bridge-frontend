@@ -51,14 +51,14 @@ export default function ProFileNumberAdministration(){
   finally{setBusy(false)}
  }
  if(!isInitialized)return <main className="p-8 text-white">Loading…</main>
- if(user?.role!=='admin')return <main className="p-8 text-white">Administration authorization required.</main>
+ if(user?.role!=='admin')return <main className="p-8 text-white">Administrations authorization required.</main>
  const selected=applications.find(x=>x.id===selectedId)
  return <main className="mx-auto max-w-5xl space-y-6 px-4 py-8 text-white" data-admin-pro-number-verification="true">
   <header className="space-y-2">
    <Link href="/admin/pro-activations" className="text-xs text-cyan-200 underline">Pro activation control center</Link>
    <Link href="/admin/company-active-wallet" className="ml-4 text-xs text-cyan-200 underline">Company Active Wallet settings</Link>
    <h1 className="text-3xl font-bold">Pro File Number Verification</h1>
-   <p className="text-sm text-slate-300">Only approved WEAVE company staff are eligible for this Pro File Folder workspace. Recipients begin with an issued File Number, not a password. Administration independently verifies their position, signed business plans and identity before displaying payment instructions. Forensics approves real TRON receipts. No funds are credited automatically.</p>
+   <p className="text-sm text-slate-300">Only approved WEAVE company staff are eligible for this Pro File Folder workspace. Recipients begin with an issued File Number, not a password. Administrations independently verifies their position, signed business plans and identity before displaying payment instructions. Forensics approves real TRON receipts. No funds are credited automatically.</p>
    <p className="text-xs text-cyan-200">Public Client starting page: <Link href="/client/pro-verification" className="underline">/client/pro-verification</Link></p>
   </header>
   {error&&<p role="alert" className="rounded-xl border border-rose-300/25 p-4 text-rose-200">{error}</p>}
@@ -90,7 +90,7 @@ export default function ProFileNumberAdministration(){
        <p>Approved employee: <strong>{selected.staff_candidate_name||'Employee identity pending'}</strong></p>
        <p>Monthly salary: {Number(selected.staff_monthly_salary_usdt)>0
         ?Number(selected.staff_monthly_salary_usdt).toLocaleString()+' USDT in recorded offer'
-        :'To be confirmed by Administration payroll'}</p>
+        :'To be confirmed by Administrations payroll'}</p>
       </div>:<p className="mt-2 text-sm text-amber-200">No approved company staff offer for this File Number. Do not approve payment until employment records are reconciled.</p>}
       {selected.file_number==='WEAVE-2026-0907-0001'&&<p className="mt-2 text-xs text-cyan-200">CJ Dorado: Pro Regional Manager · Dream Lovely · Spain. This Pro File Folder appointment is distinct from the ordinary Bridger/Agent Regional Manager. Verify the approved employment and salary without adding Agent/Stability or Bridger/Hope duties.</p>}
      </div>

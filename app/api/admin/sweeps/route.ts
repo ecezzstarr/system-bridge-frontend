@@ -7,7 +7,7 @@ async function retired(request: NextRequest) {
 
   return NextResponse.json(
     {
-      error: 'The legacy in-memory sweep engine is retired. Use the Administration Infrastructure/EIGHT real sweep control.',
+      error: 'The legacy in-memory sweep engine is retired. Use the Administrations Infrastructure/EIGHT real sweep control.',
       retired: true,
     },
     { status: 410 },

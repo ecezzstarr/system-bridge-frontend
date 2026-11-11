@@ -82,7 +82,7 @@ const previewModules: Record<string, string[]> = {
   enterprise_operating_system: ['Functions', 'Participants', 'Approvals', 'Institutional records'],
 
   clinic_operations: ['Non-clinical request intake','Administrative schedule plans','Room and staff coordination','Action records'],
-  hospital_operations_hub: ['Administration departments','Maintenance work orders','Operational review','Institutional records'],
+  hospital_operations_hub: ['Administrations departments','Maintenance work orders','Operational review','Institutional records'],
   public_health_coordination: ['Program planning','Service demand summaries','Human approvals','Reporting drafts'],
   medicine_supply_planning: ['Supply inventory plans','Replenishment tasks','Supplier review','Approval records'],
   public_services_portal: ['Public service request plans','Casework queues','Review and response','Publication approval'],
@@ -162,7 +162,7 @@ function PreviewFrame({ blueprint, label = 'Design preview', onBuild }: { bluepr
         <p className="font-black">Acquire &amp; Build Price</p>
         {priceQuote.priceAvailable
           ? <p>Required materials: {priceQuote.materialRequired} × {priceQuote.materialName} · Total kit cost {priceQuote.requiredMaterialCost.toLocaleString()} System Switch</p>
-          : <p role="alert">Required kit price unavailable. Administration must publish the missing material.</p>}
+          : <p role="alert">Required kit price unavailable. Administrations must publish the missing material.</p>}
         <p>Starting the build has no separate System Switch fee after the required kit is acquired. Check your owned kit balance in Blueprint Foundry.</p>
       </div>}
       <div className="grid gap-3 p-5 sm:grid-cols-2 lg:grid-cols-4">

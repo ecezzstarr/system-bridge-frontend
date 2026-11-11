@@ -45,9 +45,9 @@ const COPY:Record<WorldRole,{
     centerHref:'/agent/presence',
   },
   admin:{
-    eyebrow:'A Time · Administration Department',
+    eyebrow:'A Time · Administrations Department',
     title:'The institution in one organized world.',
-    subtitle:'People, Finance, Operations, Workshops and Communication remain separate districts inside one Administration world.',
+    subtitle:'People, Finance, Operations, Workshops and Communication remain separate districts inside one Administrations world.',
     centerHref:'/admin/control-center',
   },
 }

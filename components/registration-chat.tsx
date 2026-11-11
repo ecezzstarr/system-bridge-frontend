@@ -106,7 +106,7 @@ export function RegistrationChat({ department, onCodeReceived }: { department: s
       <div className="bg-slate-800 px-4 py-3 border-b border-slate-700 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <MessageCircle className="h-4 w-4 text-cyan-400" />
-          <span className="text-sm font-bold text-white uppercase tracking-wider">Administration Chat</span>
+          <span className="text-sm font-bold text-white uppercase tracking-wider">Administrations Chat</span>
         </div>
         <span className="text-[10px] text-slate-500 font-bold uppercase">Department: {department}</span>
       </div>
@@ -115,7 +115,7 @@ export function RegistrationChat({ department, onCodeReceived }: { department: s
         {messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center p-6">
             <p className="text-xs text-slate-400 leading-relaxed">
-              Administration is standing by. <br />
+              Administrations is standing by. <br />
               Introduce yourself and request your <br />
               <span className="text-cyan-400 font-bold">{department}</span> departmental code.
             </p>

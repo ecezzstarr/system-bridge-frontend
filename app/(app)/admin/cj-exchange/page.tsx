@@ -32,8 +32,8 @@ export default function CjExchangeReviewPage(){
   }catch(e){setError(e instanceof Error?e.message:'Review unavailable')}
   finally{setBusy('')}
  }
- if(!isInitialized)return <main className="p-6 text-white">Loading Administration…</main>
- if(user?.role!=='admin')return <main className="p-6 text-white">Administration only.</main>
+ if(!isInitialized)return <main className="p-6 text-white">Loading Administrations…</main>
+ if(user?.role!=='admin')return <main className="p-6 text-white">Administrations only.</main>
  return <main className="mx-auto max-w-5xl space-y-5 p-5 text-white">
   <Link href="/admin/client-folder-upgrades" className="text-xs text-sky-200">CJ File Folder and loan verification</Link>
   <h1 className="text-3xl font-bold">CJ Dorado · Crypto Exchange Review</h1>

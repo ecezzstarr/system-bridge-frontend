@@ -47,7 +47,7 @@ export default function CompanyEmploymentApplications(){
               ' · Signature: '+String(a.accepted_name||'Not recorded'),
             status:String(a.status),submitted:String(a.document_accepted_at||''),
             reviewUrl:appUrl('/admin/distribution-employment',a.user_id),
-            detail:'Administration verifies the appointment; probation begins only after approval.'})
+            detail:'Administrations verifies the appointment; probation begins only after approval.'})
         }
         for(const a of response.overview?.assistants||[]){
           all.push({key:'distribution_assistant:'+a.user_id,id:a.user_id,
@@ -56,9 +56,9 @@ export default function CompanyEmploymentApplications(){
             statement:String(a.application_note||'No application statement'),
             status:a.status==='pending'&&a.administration_verification==='verified'?
               'verified · awaiting lead appointment':a.status==='pending'?
-              'awaiting Administration':String(a.status),
+              'awaiting Administrations':String(a.status),
             submitted:String(a.created_at||''),reviewUrl:appUrl('/admin/distribution-employment',a.user_id),
-            detail:'Administration verifies eligibility; the lead Distribution Manager selects and appoints assistants.'})
+            detail:'Administrations verifies eligibility; the lead Distribution Manager selects and appoints assistants.'})
         }
       }else if(index===1){
         for(const a of response.applications||[]){
@@ -68,7 +68,7 @@ export default function CompanyEmploymentApplications(){
             statement:String(a.application_note||'No application statement'),
             status:String(a.status),submitted:String(a.created_at||''),
             reviewUrl:appUrl('/admin/food-preparation-manager',a.id),
-            detail:'Administration approves employment; the approved Stability Lead assigns preparation work.'})
+            detail:'Administrations approves employment; the approved Stability Lead assigns preparation work.'})
         }
       }else{
         for(const a of response.applications||[]){
@@ -78,12 +78,12 @@ export default function CompanyEmploymentApplications(){
             role:String(a.source_role||''),statement:String(a.application_note||'No application statement'),
             status:String(a.status),submitted:String(a.created_at||''),
             reviewUrl:appUrl('/admin/guidance-staff',a.id),
-            detail:'Approval opens only the appointed department inbox, not Administration authority.'})
+            detail:'Approval opens only the appointed department inbox, not Administrations authority.'})
         }
       }
     })
     all.sort((a,b)=>{
-      const rank=(s:string)=>s==='pending_verification'||s==='pending'||s==='awaiting Administration'?0:
+      const rank=(s:string)=>s==='pending_verification'||s==='pending'||s==='awaiting Administrations'?0:
         s.startsWith('verified · awaiting')?1:2
       return rank(a.status)-rank(b.status)||timestamp(b.submitted)-timestamp(a.submitted)
     })
@@ -91,19 +91,19 @@ export default function CompanyEmploymentApplications(){
   },[token,user?.role])
   useEffect(()=>{void load()},[load])
   const waiting=useMemo(()=>applications.filter(a=>
-    ['pending','pending_verification','awaiting Administration'].includes(a.status)),[applications])
-  if(!isInitialized)return <main className="p-6 text-sm text-slate-300">Loading Administration…</main>
-  if(user?.role!=='admin')return <main className="p-6 text-sm text-rose-200">Administration only.</main>
+    ['pending','pending_verification','awaiting Administrations'].includes(a.status)),[applications])
+  if(!isInitialized)return <main className="p-6 text-sm text-slate-300">Loading Administrations…</main>
+  if(user?.role!=='admin')return <main className="p-6 text-sm text-rose-200">Administrations only.</main>
   return <main className="mx-auto max-w-7xl space-y-6 px-4 py-7 text-white" data-admin-company-employment-inbox="true">
     <header className="border-b border-white/10 pb-5">
-      <Link href="/admin/dashboard" className="text-xs text-cyan-200">← Administration</Link>
-      <p className="mt-5 text-[10px] font-black uppercase tracking-widest text-amber-200">Company positions · Administration</p>
+      <Link href="/admin/dashboard" className="text-xs text-cyan-200">← Administrations</Link>
+      <p className="mt-5 text-[10px] font-black uppercase tracking-widest text-amber-200">Company positions · Administrations</p>
       <h1 className="mt-2 text-3xl font-black">Employment applications</h1>
       <Link href="/admin/client-staff-offers" className="mt-4 inline-flex border border-cyan-200/30 px-4 py-3 text-sm font-bold text-cyan-200">Company Client staff offers & tickets →</Link>
-      <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">Read each applicant's statement, then open the correct verification desk to approve or decline. Lead Distribution Managers select their assistants only after Administration verifies eligibility. All decisions preserve their review records.</p>
+      <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">Read each applicant's statement, then open the correct verification desk to approve or decline. Lead Distribution Managers select their assistants only after Administrations verifies eligibility. All decisions preserve their review records.</p>
     </header>
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-      <Metric label="Awaiting Administration" value={String(waiting.length)}/>
+      <Metric label="Awaiting Administrations" value={String(waiting.length)}/>
       <Metric label="Applications and appointments" value={String(applications.length)}/>
       <Metric label="Review services available" value={String(state.loaded)+' / 3'}/>
     </div>

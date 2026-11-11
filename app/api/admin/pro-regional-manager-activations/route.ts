@@ -17,7 +17,7 @@ async function adminUser(request:NextRequest){
 
 export async function GET(request:NextRequest){
  const admin=await adminUser(request)
- if(!admin)return NextResponse.json({error:'Administration access required'},{status:403,headers})
+ if(!admin)return NextResponse.json({error:'Administrations access required'},{status:403,headers})
  try{
   await ensureProRegionalManagerActivationSchema()
   const rows=await sql`SELECT p.user_id,p.file_number,p.source_role,p.status,
@@ -41,7 +41,7 @@ export async function GET(request:NextRequest){
 
 export async function POST(request:NextRequest){
  const admin=await adminUser(request)
- if(!admin)return NextResponse.json({error:'Administration access required'},{status:403,headers})
+ if(!admin)return NextResponse.json({error:'Administrations access required'},{status:403,headers})
  try{
   const body=await request.json().catch(()=>null)
   const id=String(body?.userId||'').trim()

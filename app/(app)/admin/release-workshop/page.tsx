@@ -105,9 +105,9 @@ export default function SovereignReleaseWorkshop(){
   return <main className="mx-auto max-w-6xl px-4 py-8 text-white" data-sovereign-release-workshop="protected">
     <Link href="/admin/deployment-records" className="inline-flex items-center gap-2 text-xs text-sky-200"><ArrowLeft className="h-4 w-4"/>Sovereign + Flame Record</Link>
     <header className="mt-5 border-b border-white/10 pb-6">
-      <p className="text-[10px] font-black uppercase tracking-widest text-orange-200">Administration · Production Authority</p>
+      <p className="text-[10px] font-black uppercase tracking-widest text-orange-200">Administrations · Production Authority</p>
       <h1 className="mt-2 text-3xl font-black sm:text-4xl">WEAVE Release Workshop</h1>
-      <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">Administration authorizes releases and rollbacks; an independent WEAVE host worker performs them after verification. Neither source code nor host commands are accepted from this page. Execution requires the separately configured host worker.</p>
+      <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">Administrations authorizes releases and rollbacks; an independent WEAVE host worker performs them after verification. Neither source code nor host commands are accepted from this page. Execution requires the separately configured host worker.</p>
       <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-300">When company code changes, verify the work it supports. A Client must still reach their own systems, a worker must still carry out the right assignment, and customer and company records must carry through the release.</p>
       <Link href="/admin/code-workshop" className="mt-3 mr-3 inline-flex border border-sky-200/30 px-4 py-2 text-xs font-bold text-sky-200">Company Code Workshop · Write source →</Link>
       <Link href="/admin/file-folder-world-releases" className="mt-3 inline-flex border border-sky-200/30 px-4 py-2 text-xs font-bold text-sky-200">File Folder Update Engine · All four tiers →</Link>
@@ -146,7 +146,7 @@ export default function SovereignReleaseWorkshop(){
       <section className="mt-5 rounded-2xl border border-white/10 bg-black/25 p-5">
         <div className="flex items-center justify-between gap-3"><h2 className="text-lg font-black">Release operation history</h2><button onClick={()=>void refresh()} className="inline-flex items-center gap-2 rounded-lg border border-white/20 px-3 py-2 text-xs font-bold"><RefreshCw className="h-4 w-4"/>Refresh</button></div>
         <div className="mt-4 space-y-3">
-          {state.jobs.length===0?<p className="text-sm text-slate-400">No Administration deployment requests yet. Earlier host deployment events remain in Sovereign + Flame Record.</p>:state.jobs.map(job=><article key={job.id} className="rounded-xl border border-white/10 bg-white/[.025] p-4">
+          {state.jobs.length===0?<p className="text-sm text-slate-400">No Administrations deployment requests yet. Earlier host deployment events remain in Sovereign + Flame Record.</p>:state.jobs.map(job=><article key={job.id} className="rounded-xl border border-white/10 bg-white/[.025] p-4">
             <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-xs font-bold uppercase text-orange-200">{job.action==='rollback'?'Rollback':'Deploy'} · {job.status.replaceAll('_',' ')}</p><p className="text-xs text-slate-400">{date(job.requested_at)}</p></div>
             <p className="mt-2 break-all font-mono text-xs text-white">{job.resolved_sha||job.target_sha||'Exact GitHub commit pending'}</p>
             {job.previous_sha&&<p className="mt-1 break-all font-mono text-[10px] text-slate-400">Previous: {job.previous_sha}</p>}

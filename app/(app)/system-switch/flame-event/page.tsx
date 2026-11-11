@@ -12,7 +12,7 @@ export default function StaffFileFolderFlameEventPage() {
 
   const role = user.role as EventRole
   const context = [
-    { label: 'Position', value: role === 'admin' ? 'Administration' : role === 'agent' ? 'Agent' : 'Bridger' },
+    { label: 'Position', value: role === 'admin' ? 'Administrations' : role === 'agent' ? 'Agent' : 'Bridger' },
     { label: 'Department', value: user.departmental_code || '—' },
     { label: 'Boundary', value: 'File Folder · System Switch crossed' },
   ]

@@ -66,7 +66,7 @@ export const ELECTROLYTE_PROCESS = [
   { stage: 'Choose', detail: 'Choose Small Bowl or Medium Bowl and the carton quantity you want to add to your route.' },
   { stage: 'Order', detail: 'Create a new Electrolyte order even when you still have Electrolyte in inventory. Every paid order is an independent restock movement.' },
   { stage: 'Pay WEAVE', detail: `Send the exact order amount to WEAVE OPay ${ELECTROLYTE_OPAY_ACCOUNT_NUMBER} and submit the transaction reference or receipt.` },
-  { stage: 'Administration', detail: 'Administration verifies the Agent payment before fresh preparation begins.' },
+  { stage: 'Administrations', detail: 'Administrations verifies the Agent payment before fresh preparation begins.' },
   { stage: 'Prepare fresh', detail: 'WEAVE prepares the ordered Small or Medium bowls, seals the order and readies it for dispatch.' },
-  { stage: 'Receive', detail: 'Administration dispatches and marks delivery. The Agent confirms physical receipt before the new bowls become distributable inventory.' },
+  { stage: 'Receive', detail: 'Administrations dispatches and marks delivery. The Agent confirms physical receipt before the new bowls become distributable inventory.' },
 ] as const

@@ -5,7 +5,7 @@ import { sql } from '@/lib/db'
 export async function GET(request: NextRequest) {
   const admin = await getAuthUser(request)
   if (!admin || admin.role !== 'admin') {
-    return NextResponse.json({ error: 'Administration only' }, { status: 403 })
+    return NextResponse.json({ error: 'Administrations only' }, { status: 403 })
   }
 
   try {

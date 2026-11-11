@@ -31,7 +31,7 @@ WEAVE Agent food-distribution facts:
 - Pay-after-sale supply: if the outlet has customers but cannot fund cartons upfront, the Agent can place cartons with the outlet and collect the agreed amount as or after the outlet sells them.
 - Pay-after-sale stock must stay visible on the Agent distribution ledger: outlet, cartons placed, packages sold, agreed amount, amount collected and amount still outstanding.
 - Stock placed with an outlet is no longer free Agent stock and must not be allocated to another outlet at the same time.
-- Payment to WEAVE for Agent stock uses the existing OPay process. Administration verifies proof before preparation begins.
+- Payment to WEAVE for Agent stock uses the existing OPay process. Administrations verifies proof before preparation begins.
 - Company fulfillment moves sequentially: paid → preparation/heating → packed → boxed → dispatched → delivered.
 - The Agent confirms physical receipt after delivery before the cartons can enter the distribution route.
 - The Agent position grows by moving WEAVE products through more working outlets, collecting settlement and restocking; the Agent does not become the retailer.

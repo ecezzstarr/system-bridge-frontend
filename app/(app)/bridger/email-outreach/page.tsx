@@ -187,7 +187,7 @@ export default function BridgerEmailOutreachPage(){
             </div>
           </div>
           <button onClick={acquire} disabled={busy==='acquire'||!data.availableCount} className="mt-5 w-full border border-emerald-300/30 px-4 py-3 text-[10px] font-black uppercase tracking-[.14em] text-emerald-100 disabled:opacity-40">{busy==='acquire'?'Acquiring…':`Acquire Email Prospect · ${data.priceFlameCoin} System Switch`}</button>
-          <p className="mt-3 text-[10px] leading-5 text-slate-500">Prospects may be Administration-loaded addresses or generated guesses. The fee buys the candidate movement and WEAVE reference, not a verified person, working address, reply, interest or conversion. Verification begins through real outreach and response. Each acquisition is debited and receipted.</p>
+          <p className="mt-3 text-[10px] leading-5 text-slate-500">Prospects may be Administrations-loaded addresses or generated guesses. The fee buys the candidate movement and WEAVE reference, not a verified person, working address, reply, interest or conversion. Verification begins through real outreach and response. Each acquisition is debited and receipted.</p>
         </div>
       </section>
 

@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
       await notifyDepositSubmitted({
         depositorId:user.id,
         depositorName:user.name||user.username||user.email,
-        role:user.role==='admin'?'Administration':user.role==='client'?'Client':user.role==='bridger'?'Bridger':'Agent',
+        role:user.role==='admin'?'Administrations':user.role==='client'?'Client':user.role==='bridger'?'Bridger':'Agent',
         depositId:String(inserted.rows[0].id),
         rail:'PAYSTACK',
         amountLabel:'₦'+amountNgn.toLocaleString(),

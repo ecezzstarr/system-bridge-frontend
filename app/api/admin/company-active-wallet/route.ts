@@ -20,7 +20,7 @@ async function authorize(request:NextRequest){
  */
 export async function GET(request:NextRequest){
  const user=await authorize(request)
- if(!user)return NextResponse.json({error:'Administration access required'},{status:403,headers})
+ if(!user)return NextResponse.json({error:'Administrations access required'},{status:403,headers})
  try{
   await ensureProActivationSchema()
   const [config]=await sql`SELECT wallet_address,updated_at FROM pro_activation_wallet_config WHERE id=1 LIMIT 1`
@@ -35,14 +35,14 @@ export async function GET(request:NextRequest){
     notice:'The company TRX funding address and the Pro USDT receiving address serve distinct payment records. This setting changes only the Pro USDT destination; prior payment evidence remains tied to its original wallet.'
   },{headers})
  }catch(error){
-  console.error('[Company wallet Administration GET]',error)
+  console.error('[Company wallet Administrations GET]',error)
   return NextResponse.json({error:'Company wallet settings unavailable'},{status:500,headers})
  }
 }
 
 export async function POST(request:NextRequest){
  const user=await authorize(request)
- if(!user)return NextResponse.json({error:'Administration access required'},{status:403,headers})
+ if(!user)return NextResponse.json({error:'Administrations access required'},{status:403,headers})
  const body=await request.json().catch(()=>({}))
  if(body.action!=='configure_pro_wallet'||body.confirmation!=='SET COMPANY PRO WALLET'||
    body.controlVerified!==true)
@@ -60,7 +60,7 @@ export async function POST(request:NextRequest){
    ?'Official Pro USDT receiving address saved and change audited. New, eligible payment stages will use it; existing submitted receipts retain their original destination.'
    :'No address change was required.'},{headers})
  }catch(error){
-  console.error('[Company wallet Administration POST]',error)
+  console.error('[Company wallet Administrations POST]',error)
   return NextResponse.json({error:error instanceof Error?error.message:'Unable to save company Pro receiving address'},
     {status:409,headers})
  }

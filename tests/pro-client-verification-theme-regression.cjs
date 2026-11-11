@@ -23,7 +23,7 @@ assert.ok(page.includes("import './pro-verification.css'")&&
  css.includes('.pv-folder'), 'Dedicated Pro Folder identity and company-first hero render on the verification route')
 for(const text of ['System Switch · Bridge of Radiance','Company Staff Verification',
  'The Company of Time','Dream Lovely','One Pro standard. Your own business.',
- 'Your own business world','Administration + Forensics','pv-masthead',
+ 'Your own business world','Administrations + Forensics','pv-masthead',
  'pv-hero','pv-process','pv-side-panel','data-pro-stage="file-number"',
  'data-pro-stage="business-plan"','data-pro-stage="verification-status"'])
  assert.ok(page.includes(text),text+' must be present in the company verification presentation')

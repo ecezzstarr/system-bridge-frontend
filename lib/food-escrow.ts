@@ -7,7 +7,7 @@ import { FARM_TO_FAMILY_SELLER_FEE_NGN,calculateFarmSettlement } from '@/lib/far
 export const WEAVE_FARM_COMMISSION_NGN = FARM_TO_FAMILY_SELLER_FEE_NGN
 export const FARM_ESCROW_ACCOUNT_NUMBER = WEAVE_OPAY_ACCOUNT_NUMBER
 export const FARM_ESCROW_RULE =
-  'WEAVE charges sellers a single flat ₦1,000 service fee per successfully completed Farm-to-Family order, regardless of order quantity or value. The buyer pays only the accepted food and delivery quote to WEAVE. Administration verifies actual funds before dispatch. After receipt, seller payout equals buyer total minus ₦1,000, with no additional per-unit charge. This requires authorized escrow/payment operations, banking controls, refunds and reconciliation before real-money production use.'
+  'WEAVE charges sellers a single flat ₦1,000 service fee per successfully completed Farm-to-Family order, regardless of order quantity or value. The buyer pays only the accepted food and delivery quote to WEAVE. Administrations verifies actual funds before dispatch. After receipt, seller payout equals buyer total minus ₦1,000, with no additional per-unit charge. This requires authorized escrow/payment operations, banking controls, refunds and reconciliation before real-money production use.'
 
 export function farmPaymentReference(orderId:string) { return 'FARM-'+orderId.toUpperCase() }
 export type FarmEscrowState='awaiting_payment'|'proof_submitted'|'held'|'release_due'|'released'|'disputed'|'refund_due'|'refunded'

@@ -54,7 +54,7 @@ export const PRO_MANAGER_AGREEMENT_SECTIONS = [
   },
   {
     title:'5. Activation, identity and verified payments',
-    body:'The one-time Pro File Folder activation charge is 680 USDT on TRON (TRC-20), payable only to the official receiving address displayed after Administration authorizes the payment stage. It is a service activation fee, not a purchase of employment, a loan, a wallet credit, or a guarantee of remuneration or withdrawal. Administration verifies identity and employment; Forensics independently verifies the actual payment before access.'
+    body:'The one-time Pro File Folder activation charge is 680 USDT on TRON (TRC-20), payable only to the official receiving address displayed after Administrations authorizes the payment stage. It is a service activation fee, not a purchase of employment, a loan, a wallet credit, or a guarantee of remuneration or withdrawal. Administrations verifies identity and employment; Forensics independently verifies the actual payment before access.'
   },
   {
     title:'6. Truthful records and responsible operation',
