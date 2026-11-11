@@ -37,6 +37,10 @@ function editsFor(file) {
       let authored = false
       while (parent && !ts.isSourceFile(parent)) {
         if (ts.isTaggedTemplateExpression(parent)) sql = true
+        // SQL assembled from fragments is still SQL: never rename persisted
+        // currency or other database values inside query/execute arguments.
+        if (ts.isCallExpression(parent) && ts.isPropertyAccessExpression(parent.expression)
+          && ['query','execute'].includes(parent.expression.name.text)) sql = true
         if (ts.isVariableDeclaration(parent)&&parent.name.getText(tree)==='ONE_NIGERIAN_SCROLL_PASSAGES') authored = true
         if (ts.isImportDeclaration(parent) || ts.isExportDeclaration(parent)) return
         parent = parent.parent
@@ -45,7 +49,7 @@ function editsFor(file) {
       if (!sql && !authored && !propertyName && !/\b(?:SELECT\b[\s\S]*\bFROM|INSERT INTO|CREATE TABLE|ALTER TABLE)\b/i.test(original)) {
         // A bare historical currency value can be a ledger/storage key. Only
         // prose and JSX text are renamed; financial identifiers are retained.
-        const currency = ts.isJsxText(node) || !/^['"`]Flame Coins?['"`]$/.test(original)
+        const currency = ts.isJsxText(node) || !/^['"`]Flame Coins?['"`]$/i.test(original)
         const replacement = currentTerms(original, currency)
         if (original !== replacement) edits.push({ start, end: node.end, original, replacement })
       }
