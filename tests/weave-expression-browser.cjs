@@ -113,6 +113,33 @@ async function main() {
         assert.ok(state.loaded.some(font => font.includes('Weave Manrope')), 'Body font actually loaded')
         assert.ok(state.loaded.some(font => font.includes('Weave Cormorant')), 'Display font actually loaded')
         assert.deepEqual(errors, [], `${route} runtime errors`)
+        if (route === '/') {
+          // A scroll to the final station must never reveal dark/black surfaces
+          // under the otherwise porcelain public homepage.
+          await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight))
+          const lightSurfaces = await page.evaluate(() => {
+            const selectors = [
+              '.weave-home-nav',
+              '.weave-home-footer',
+              '[data-weave-reach-delivery] select',
+              '[data-weave-reach-delivery] input:not([type="checkbox"])',
+              '[data-weave-reach-delivery] textarea',
+              '[data-reach-request-tracker] input',
+            ]
+            return selectors.map(selector => {
+              const element = document.querySelector(selector)
+              if (!element) throw Error('Homepage surface missing: ' + selector)
+              const style = getComputedStyle(element)
+              const channels = style.backgroundColor.match(/[\d.]+/g)?.slice(0, 3).map(Number) || []
+              return { selector, channels, background: style.backgroundColor }
+            })
+          })
+          for (const surface of lightSurfaces) {
+            assert.equal(surface.channels.length, 3, 'Resolved surface colour: ' + surface.selector)
+            assert.ok(luminance(surface.channels) > .75,
+              surface.selector + ' must remain a light premium surface while scrolling; got ' + surface.background)
+          }
+        }
         for (const panel of state.panels) {
           assert.ok(contrast(panel.ink, panel.background) >= 4.5, `${panel.tier} body contrast`)
           assert.ok(contrast(panel.headingInk, panel.background) >= 4.5, `${panel.tier} heading contrast`)

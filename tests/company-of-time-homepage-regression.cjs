@@ -108,4 +108,19 @@ assert.ok(theme.includes('one-nigerian'),'Homepage must preserve the following c
 assert.ok(layout.includes("import './weave-home-burning-river.css'"),
   'Page-specific landscape CSS must load after the shared theme')
 
+// Scroll surfaces belong to Plus porcelain rather than old navy/black panels.
+// The correction is homepage-scoped; Flame Event keeps its own atmosphere.
+const finish=fs.readFileSync(path.join(__dirname,'../app/weave-expression.css'),'utf8')
+assert.ok(finish.includes('Homepage scroll continuity.'),'Keep the dedicated light scroll treatment')
+assert.ok(finish.includes(':has([data-public-weave-world]) body'),'Avoid navy overscroll behind home')
+assert.ok(finish.includes('[data-public-weave-world] .weave-home-nav'),'Navigation needs a light surface')
+assert.ok(finish.includes('[data-public-weave-world] .weave-home-footer'),'Footer needs a light surface')
+assert.ok(finish.includes('.weave-home-reach,.weave-home-reach-tracking'),
+  'The public Reach flow must keep matching light form controls')
+assert.ok(finish.includes('background: #fff;'),'Reach input fields need a white reading surface')
+assert.ok(!finish.includes('[data-flame-event-location] .weave-home-nav'),
+  'Never apply the homepage styling to the separate Flame Event')
+assert.ok(layout.includes("import './weave-expression.css'"),
+  'Premium home finishing rules must load after the original homepage skin')
+
 console.log('The Company of Time homepage source checks passed')
