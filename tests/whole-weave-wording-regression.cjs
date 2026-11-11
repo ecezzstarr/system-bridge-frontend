@@ -57,4 +57,17 @@ assert.deepEqual(findings.filter(item=>item.edits.length).map(item=>path.relativ
 const ledger=fs.readFileSync(path.join(root,'lib/ledger.ts'),'utf8')
 assert.ok(ledger.includes("data.currency || 'Flame Coin'"))
 assert.ok(ledger.includes("currency IN ('Flame Coin','TRX')"))
+// Public terminology must never silently rewrite persisted values or SQL.
+const adminDirectory=fs.readFileSync(path.join(root,'lib/admin-user-directory.ts'),'utf8')
+assert.ok(adminDirectory.includes("currency IN ('Flame Coin','System Switch','TRX')"),
+  'Administrations must include historical currency rows in escrow balances')
+const riverCalls=fs.readFileSync(path.join(root,'app/api/bridger/river-calls/route.ts'),'utf8')
+assert.ok(riverCalls.includes("'Flame Coin','River live outreach call'"),
+  'Call fees must retain their existing ledger currency even if the user-facing label changes')
+const ownerEarnings=fs.readFileSync(path.join(root,'lib/client-owner-earnings.ts'),'utf8')
+assert.ok(ownerEarnings.includes("OWNER_COST_CURRENCIES = ['FLAME COIN','NGN'"),
+  'File Folder expense validation must match its current SQL check and stored values')
+const customerDoor=fs.readFileSync(path.join(root,'lib/customer-door-settlement.ts'),'utf8')
+assert.ok(customerDoor.includes("'FLAME COIN','SYSTEM SWITCH','FLAME_COIN','FC'"),
+  'Existing Customer Door offers must remain purchasable through verified wallet settlement')
 console.log(`PASS: ${routes.length} named page entrances, ${findings.length} source files, 18 loader lessons, saved-default upgrade and authored-copy preservation`)
