@@ -20,8 +20,8 @@ const { resolveWeaveEnvironment } = load('lib/weave-environments.ts')
 const { transitTrainingForPath } = load('lib/weave-loading-guidance.ts')
 const copy = WEAVE_WRITING.systemSwitch
 
-assert.match(copy.introduction, /website becomes an interactive 3D world/)
-assert.match(copy.introduction, /instead of moving between ordinary website pages/)
+assert.match(copy.introduction, /website into the 3D File Folder Open World/)
+assert.match(copy.introduction, /public spaces and Customer Doors/)
 assert.equal(copy.stages.length, 3)
 assert.match(copy.preparation, /Before crossing/)
 assert.match(copy.staff, /private File Folder/)

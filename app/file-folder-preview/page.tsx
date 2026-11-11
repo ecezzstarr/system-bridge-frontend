@@ -11,7 +11,7 @@ const tiers = [
     tone: 'standard',
     image: '/weave/file-folder/assets/customer-door.svg',
     imageAlt: 'Customer Door system illustration for the Standard File Folder',
-    description: 'A landscape for forming a real business from its first operating structure.',
+    description: 'Begin with a place of your own. Shape your first business systems, publish your offers and welcome customers through your Customer Door.',
     systems: [
       ['Customer Door', 'Public entrance, published offers and customer requests.'],
       ['Food Business', 'Product offers connected to fulfilment and real orders.'],
@@ -30,7 +30,7 @@ const tiers = [
     tone: 'pro',
     image: '/weave/file-folder/assets/operations-module.svg',
     imageAlt: 'Operations module illustration for the Pro File Folder',
-    description: 'A negotiated company pathway for organizing a business and its day-to-day operating work.',
+    description: 'Give your business a clear operating structure. Bring offers, orders, people and records into a dedicated Pro environment under your verified company offer.',
     systems: [
       ['Customer Door', 'Bring the Client’s published business into one public entrance.'],
       ['Products & Services', 'Keep the offer connected to the system that delivers it.'],
@@ -47,7 +47,7 @@ const tiers = [
     tone: 'premium',
     image: '/weave/file-folder/assets/enterprise-expansion.svg',
     imageAlt: 'Enterprise expansion system illustration for the Premium File Folder',
-    description: 'A dedicated operating world with six distinct zones connected to the Client’s real records.',
+    description: 'Direct your enterprise from a private black-and-gold citadel. Six working districts bring construction, materials, commissioned systems and customer access into one estate.',
     systems: [
       ['Build Zone', 'Inspect blueprints and their acquisition requirements.'],
       ['Materials Depot', 'Acquire the exact kits required by a selected blueprint.'],
@@ -65,7 +65,7 @@ const tiers = [
     tone: 'plus',
     image: '/weave/plus-file-folder-white-official.webp',
     imageAlt: 'Approved white-and-gold Plus File Folder reference image',
-    description: 'The Plus environment uses its own approved white-and-gold design and six connected equipment zones.',
+    description: 'A luminous white-and-gold world for your enterprise. Bring systems, modules, tools, people and operations together, with room to extend through verified builds.',
     systems: [
       ['Systems', 'Enter the Client’s commissioned operating systems.'],
       ['Modules', 'Connect installed capabilities to their parent systems.'],
@@ -100,9 +100,9 @@ export default function FileFolderPreviewPage() {
 
         <header className="max-w-4xl">
           <p className="text-[10px] font-black uppercase tracking-[.24em] text-amber-200">The Weave of Presence · System Switch</p>
-          <h1 className="mt-3 text-3xl font-black tracking-tight sm:text-5xl">Four File Folders. Four operating environments.</h1>
+          <h1 className="mt-3 text-3xl font-black tracking-tight sm:text-5xl">A place for your business to become.</h1>
           <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-300">
-            Each File Folder type has its own visual language, districts and operating systems. These previews describe the actual routes and capabilities in the codebase. A preview does not invent live businesses, customer orders, completed builds or earnings; those appear only when supported by the Client’s records.
+            Standard. Pro. Premium. Plus. Each File Folder carries its own character, working districts and business capabilities. Explore the environment that fits your ambition; systems become operational as they are built and commissioned.
           </p>
         </header>
 
@@ -125,7 +125,7 @@ export default function FileFolderPreviewPage() {
                     )}
                     <span className={`absolute left-4 top-4 rounded-full border px-3 py-1 text-[9px] font-black uppercase tracking-[.16em] ${isPlus ? 'border-[#9b7a3c]/30 bg-white/75 text-[#6a5127]' : 'border-white/25 bg-black/25 text-white'}`}> {tier.name} File Folder </span>
                   </div>
-                  <div className="p-5 sm:p-6">
+                  <div className="weave-tier-content p-5 sm:p-6">
                     <div className="flex items-center gap-3">
                       <span className={`flex h-11 w-11 items-center justify-center rounded-xl border ${isPlus ? 'border-[#a9894e]/30 bg-white text-[#87652b]' : 'border-white/10 bg-white/[.04] text-amber-200'}`}><Icon className="h-5 w-5" /></span>
                       <div>
@@ -163,9 +163,9 @@ export default function FileFolderPreviewPage() {
         </section>
 
         <section className="mt-8 grid gap-3 rounded-2xl border border-white/10 bg-white/[.025] p-5 sm:grid-cols-3">
-          <div className="flex gap-3"><Hammer className="h-5 w-5 shrink-0 text-amber-200" /><div><h2 className="text-sm font-bold">Builds follow records</h2><p className="mt-1 text-xs leading-5 text-slate-400">Construction progress comes from saved build records and timestamps.</p></div></div>
-          <div className="flex gap-3"><Store className="h-5 w-5 shrink-0 text-amber-200" /><div><h2 className="text-sm font-bold">Systems remain connected</h2><p className="mt-1 text-xs leading-5 text-slate-400">Districts open the matching existing workshop or operating system.</p></div></div>
-          <div className="flex gap-3"><Users className="h-5 w-5 shrink-0 text-amber-200" /><div><h2 className="text-sm font-bold">People create the movement</h2><p className="mt-1 text-xs leading-5 text-slate-400">A visual preview is not a substitute for real participation or live business records.</p></div></div>
+          <div className="flex gap-3"><Hammer className="h-5 w-5 shrink-0 text-amber-200" /><div><h2 className="text-sm font-bold">Builds follow records</h2><p className="mt-1 text-xs leading-5 text-slate-400">Follow your construction from its recorded start through completion.</p></div></div>
+          <div className="flex gap-3"><Store className="h-5 w-5 shrink-0 text-amber-200" /><div><h2 className="text-sm font-bold">Systems remain connected</h2><p className="mt-1 text-xs leading-5 text-slate-400">Move from each district into the workshop or business system it serves.</p></div></div>
+          <div className="flex gap-3"><Users className="h-5 w-5 shrink-0 text-amber-200" /><div><h2 className="text-sm font-bold">People create the movement</h2><p className="mt-1 text-xs leading-5 text-slate-400">Your work, customers and completed orders create the value. This collection introduces the spaces; it does not promise earnings.</p></div></div>
         </section>
       </div>
     </main>

@@ -569,7 +569,7 @@ assert.ok(roleWorldSource.includes('data-role-world-beacon={district.name}')&&ro
 
 const departmentWorldSource = read('components/world/weave-dashboard-world.tsx')
 assert.ok(departmentWorldSource.includes('Stability · Agent Department')&&departmentWorldSource.includes('Hope · Bridger Department'),'Agent and Bridger worlds preserve Stability and Hope department identities')
-assert.ok(departmentWorldSource.includes('A Time · Administration Department')&&departmentWorldSource.includes('Lord/Lady · Client Department'),'Administration and Client worlds preserve A Time and Lord/Lady department identities')
+assert.ok(departmentWorldSource.includes('A Time · Administration Department')&&departmentWorldSource.includes('Dream Lovely · Client Department'),'Administration and Client worlds preserve A Time and Dream Lovely department identities')
 const agentPresenceEnvironmentSource=read('app/(app)/agent/presence/page.tsx')
 const bridgerPresenceEnvironmentSource=read('app/(app)/bridger/presence/page.tsx')
 const clientPresenceEnvironmentSource=read('app/client/presence/page.tsx')

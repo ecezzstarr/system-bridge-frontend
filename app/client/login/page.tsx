@@ -62,7 +62,7 @@ export default function ClientLoginPage() {
   }
 
   return (
-    <div className="min-h-dvh flex flex-col items-center justify-start sm:justify-center bg-transparent px-4 py-8 relative overflow-x-hidden overflow-y-auto">
+    <div className="weave-client-access min-h-dvh flex flex-col items-center justify-start sm:justify-center bg-transparent px-4 py-8 relative overflow-x-hidden overflow-y-auto">
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none opacity-20">
         <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-900 rounded-full blur-[120px]" />
         <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-950 rounded-full blur-[120px]" />
@@ -77,7 +77,7 @@ export default function ClientLoginPage() {
         <p className="mt-3 text-[10px] font-bold uppercase tracking-[0.28em] text-slate-500">Interaction in Motion</p>
       </div>
 
-      <Card className="w-full max-w-md border-slate-700 bg-slate-900/50 backdrop-blur-xl relative z-10 shadow-2xl">
+      <Card className="weave-access-panel w-full max-w-md border-slate-700 bg-slate-900/50 backdrop-blur-xl relative z-10 shadow-2xl">
         <CardHeader className="text-center pb-2">
           <CardTitle className="text-xl font-bold text-white uppercase tracking-tight flex items-center justify-center gap-2">
             <ShieldCheck className="h-5 w-5 text-blue-500" />

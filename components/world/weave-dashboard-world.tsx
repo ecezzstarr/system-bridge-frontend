@@ -27,9 +27,9 @@ const COPY:Record<WorldRole,{
   centerHref:string
 }> = {
   client:{
-    eyebrow:'Lord/Lady · Client Department',
-    title:'Your world. Your movement.',
-    subtitle:'Presence is the arrival point. Districts organize the File Folder, value and human support without scattering every function across the world.',
+    eyebrow:'Dream Lovely · Client Department',
+    title:'Your business. Your world.',
+    subtitle:'Return to your File Folder, welcome customers and guide the next part of your business. Your districts connect you to the systems and support you need.',
     centerHref:'/client/presence',
   },
   bridger:{
@@ -122,7 +122,7 @@ export function WeaveDashboardWorld({
     {role==='client'&&kingdom?.tier==='premium'&&<aside data-premium-client-account="verified-premium" className="relative z-30 mx-3 mt-3 rounded-3xl border border-[#d9ae69]/60 bg-[linear-gradient(130deg,rgba(8,8,11,.97),rgba(41,31,29,.95),rgba(10,10,14,.97))] p-5 text-[#f8ebd4] shadow-[0_25px_90px_rgba(0,0,0,.7)] sm:absolute sm:left-6 sm:top-32 sm:mx-0 sm:max-w-[26rem]">
       <p className="text-xs font-bold uppercase tracking-[.18em] text-[#edc985]">Verified Premium · Private Client Estate</p>
       <h2 className="mt-2 text-2xl font-black leading-tight">Your business citadel</h2>
-      <p className="mt-3 text-sm leading-6 text-[#e5d7c3]">Your Premium File Folder is an owned business environment, not a decorative membership card. Enter to direct the real build pipeline, material acquisition, commissioned systems, customer reception and your business records.</p>
+      <p className="mt-3 text-sm leading-6 text-[#e5d7c3]">A private estate for the enterprise you are building. Direct construction, acquire materials, operate commissioned systems and welcome customers through your Customer Door.</p>
       <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
         {['Private 3D Citadel','Blueprint & Materials','Systems & Operations','Customer Door'].map(label=><div key={label} className="rounded-xl border border-[#b9955c]/35 bg-[#d4a75e]/[.06] p-3 text-[#f2dfbd]">{label}</div>)}
       </div>

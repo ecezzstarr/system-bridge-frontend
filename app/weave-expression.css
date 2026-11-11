@@ -1,0 +1,296 @@
+/* Self-hosted type: no font service, API key or runtime provider request. */
+@font-face {
+  font-family: 'Weave Manrope';
+  src: url('/fonts/weave-manrope-latin.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Weave Cormorant';
+  src: url('/fonts/weave-cormorant-latin.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+}
+
+/* Finish the existing company identity. Worlds, artwork and loading scenes
+   retain their materials; the event keeps its own type and colour system. */
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) {
+  --weave-font-body: 'Weave Manrope', system-ui, sans-serif;
+  --weave-font-display: 'Weave Cormorant', Georgia, serif;
+}
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) body {
+  font-family: var(--weave-font-body);
+  font-weight: 450;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(h1,h2,[data-slot="card-title"]):not(:where(.weave-loader-stable *,[data-weave-loader-art] *,[data-file-folder-world] *,[data-plus-file-folder-world] *)) {
+  font-family: var(--weave-font-display);
+  font-weight: 600 !important;
+  letter-spacing: -.025em;
+  text-transform: none;
+  line-height: 1.12;
+  text-shadow: none !important;
+  text-wrap: balance;
+}
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control])) :is(main,section,article,aside,form) p:not(:where(.uppercase,.weave-loader-stable *,[data-weave-loader-art] *,[data-file-folder-world] *,[data-plus-file-folder-world] *)) {
+  font-weight: 450;
+  line-height: 1.75;
+  text-shadow: none;
+}
+
+/* Opaque, quiet reading surfaces; gold marks a boundary, rather than filling
+   every panel. Verified kingdom colours remain controlled by their tier. */
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control],[data-kingdom-active="true"])) body {
+  background: linear-gradient(135deg,#f5f7f8,#fffefa 56%,#f4efe5);
+}
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control],[data-kingdom-active="true"])) :is(.weave-reading-surface,.weave-environment-panel,[data-slot="card"]) {
+  border-color: #d8ccb6 !important;
+  background: linear-gradient(145deg,#ffffff,#fdfbf6) !important;
+  box-shadow: 0 10px 34px rgba(30,44,54,.055),inset 0 1px 0 #fff !important;
+}
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control],[data-kingdom-active="true"])) :is([data-agent-workplace],[data-bridger-workplace],[data-admin-workplace]) {
+  background: #f7f5ef;
+}
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-kingdom-active="true"])) :is([data-agent-workplace],[data-bridger-workplace],[data-admin-workplace]) header {
+  border-radius: 1rem;
+  background: linear-gradient(120deg,#fffefa,#f5f1e8);
+  box-shadow: 0 12px 36px rgba(55,44,26,.06);
+}
+html[data-weave-shell-theme="plus-white-gold"] :is([data-agent-workplace],[data-bridger-workplace],[data-admin-workplace]) header h1 {
+  font-size: clamp(2.2rem,5vw,3.4rem);
+}
+html[data-weave-shell-theme="plus-white-gold"] :is([data-agent-station],[data-bridger-place],[data-admin-station]) {
+  border-radius: .8rem;
+  box-shadow: 0 4px 18px rgba(40,39,29,.04);
+}
+
+/* Access remains the same form, with a composed, readable hierarchy. */
+html[data-weave-shell-theme="plus-white-gold"] .weave-access-panel {
+  border-radius: 1rem;
+  padding-block: .6rem;
+}
+html[data-weave-shell-theme="plus-white-gold"] .weave-access-panel [data-slot="card-title"] {
+  font-size: clamp(2rem,6vw,2.6rem);
+}
+html[data-weave-shell-theme="plus-white-gold"] .weave-access-panel [data-slot="card-description"] {
+  font-size: .9rem;
+  line-height: 1.7;
+}
+html[data-weave-shell-theme="plus-white-gold"] .weave-access-panel :is(button,a,label) {
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: 600;
+}
+html[data-weave-shell-theme="plus-white-gold"] .weave-access-panel input {
+  min-height: 3rem;
+  font-size: 1rem;
+}
+html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-kingdom-active="true"])) :is(
+  .weave-access-panel,.weave-client-access,
+  [data-agent-workplace] header,[data-bridger-workplace] header,[data-admin-workplace] header
+) .weave-logo-live {
+  padding: .65rem .85rem;
+  border: 1px solid #b79b68;
+  border-radius: .4rem;
+  background: #142b3b;
+}
+
+/* The public entrance stays a continuous landscape, with stronger rhythm. */
+html[data-weave-shell-theme="plus-white-gold"] [data-public-weave-world] {
+  --home-ink: #203747;
+  --home-muted: #4d626f;
+  --home-gold: #997039;
+  --home-deep-gold: #765321;
+  --home-gold-line: rgba(153,112,57,.26);
+  background: linear-gradient(155deg,#f3f7f9,#fffefa 28%,#f7f3e9 64%,#f5f8fa);
+}
+html[data-weave-shell-theme="plus-white-gold"] [data-public-weave-world]::before {
+  opacity: .16;
+}
+html[data-weave-shell-theme="plus-white-gold"] [data-public-weave-world]::after {
+  opacity: .35;
+}
+html[data-weave-shell-theme="plus-white-gold"] [data-public-weave-world] .weave-home-nav {
+  background: #142b3b;
+  box-shadow: none;
+}
+html[data-weave-shell-theme="plus-white-gold"] [data-public-weave-world] .weave-home-hero-light {
+  animation: none;
+  opacity: .4;
+}
+html[data-weave-shell-theme="plus-white-gold"] [data-public-weave-world] .weave-home-title {
+  font-size: clamp(3rem,7vw,5.7rem);
+  color: #765321;
+  font-weight: 500 !important;
+  letter-spacing: -.045em;
+  line-height: 1;
+}
+html[data-weave-shell-theme="plus-white-gold"] [data-public-weave-world] .weave-home-title::after {
+  content: '';
+  width: 3rem;
+  height: 1px;
+  margin-block: 1.5rem;
+  background: #b99861;
+}
+html[data-weave-shell-theme="plus-white-gold"] [data-public-weave-world] .weave-home-credit {
+  font-family: var(--weave-font-body);
+  font-size: .72rem;
+  font-weight: 600;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+html[data-weave-shell-theme="plus-white-gold"] [data-public-weave-world] .weave-home-subtitle {
+  font-size: clamp(2rem,4vw,3rem);
+  color: var(--home-ink);
+}
+.weave-home-subject {
+  display: block;
+  margin-top: .85rem;
+  font-family: var(--weave-font-body);
+  font-size: clamp(.78rem,1.5vw,.9rem);
+  font-weight: 500;
+  letter-spacing: .045em;
+  line-height: 1.7;
+}
+html[data-weave-shell-theme="plus-white-gold"] [data-public-weave-world] .weave-home-invitation {
+  margin: 2rem auto 0;
+  font-size: clamp(1.05rem,2vw,1.25rem);
+  color: #2e4a5c;
+}
+html[data-weave-shell-theme="plus-white-gold"] [data-public-weave-world] [data-home-system-switch-explanation] {
+  max-width: 40rem;
+  font-size: .92rem;
+  color: var(--home-muted);
+}
+.weave-home-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .85rem;
+  margin: 1.8rem auto 2.7rem;
+}
+html[data-weave-shell-theme="plus-white-gold"] [data-public-weave-world] .weave-home-hero-actions a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .8rem;
+  min-height: 3rem;
+  padding: .85rem 1.4rem;
+  border: 1px solid #b3a080;
+  border-radius: .35rem;
+  font-size: .85rem;
+  font-weight: 600;
+  color: #203747;
+}
+html[data-weave-shell-theme="plus-white-gold"] [data-public-weave-world] .weave-home-hero-actions .weave-action-primary {
+  background: #203747;
+  border-color: #203747;
+  color: #fffefa;
+}
+html[data-weave-shell-theme="plus-white-gold"] [data-public-weave-world] .weave-home-hero-actions a:hover {
+  box-shadow: 0 4px 12px rgba(32,55,71,.14);
+}
+html[data-weave-shell-theme="plus-white-gold"] [data-public-weave-world] .weave-home-department h3 {
+  font-family: var(--weave-font-display);
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #765321;
+}
+html[data-weave-shell-theme="plus-white-gold"] [data-public-weave-world] .weave-home-loop h3 {
+  font-family: var(--weave-font-display);
+  font-size: 1.65rem;
+  font-weight: 600;
+  margin-top: .5rem;
+}
+html[data-weave-shell-theme="plus-white-gold"] [data-public-weave-world] :is(.weave-home-loop-label,.weave-eyebrow) {
+  font-size: .7rem;
+  font-weight: 600;
+  letter-spacing: .09em;
+  line-height: 1.6;
+  color: #765321;
+}
+.weave-home-plus-introduction { margin-top: .7rem; }
+
+/* The following company loop retains its established green/white identity. */
+html[data-weave-shell-theme="plus-white-gold"][data-weave-loop-theme="one-nigerian"] [data-public-weave-world] {
+  --home-gold: #008751;
+  --home-deep-gold: #146944;
+  --home-gold-line: rgba(10,128,76,.27);
+  background: linear-gradient(90deg,#ecf7ef,#fff 40%,#fff 60%,#ecf7ef);
+}
+html[data-weave-shell-theme="plus-white-gold"][data-weave-loop-theme="one-nigerian"] [data-public-weave-world] :is(.weave-home-title,.weave-home-department h3,.weave-home-loop-label,.weave-eyebrow) {
+  color: #146944;
+}
+
+/* Tier collection: explicitly own the ink and surface together so generic
+   porcelain rules can never leave dark text on a dark Standard/Premium panel. */
+html[data-weave-shell-theme="plus-white-gold"] [data-file-folder-tier-preview] {
+  padding: clamp(1.25rem,4vw,3.5rem);
+  background: #f8f6f0 !important;
+}
+html[data-weave-shell-theme="plus-white-gold"] [data-file-folder-tier-preview] > div > header {
+  padding-block: 1.5rem;
+}
+html[data-weave-shell-theme="plus-white-gold"] [data-file-folder-tier-preview] > div > header h1 {
+  font-size: clamp(2.6rem,5vw,4rem);
+}
+html[data-weave-shell-theme="plus-white-gold"] [data-file-folder-tier-preview] [data-file-folder-tier] {
+  --tier-ink: #253f52;
+  --tier-muted: #4d626f;
+  --tier-accent: #765321;
+  border-radius: 1rem;
+  border-color: #d1c0a1;
+  background: #fffefa;
+  color: var(--tier-ink);
+  box-shadow: 0 12px 40px rgba(32,45,50,.06);
+}
+html[data-weave-shell-theme="plus-white-gold"] [data-file-folder-tier-preview] [data-file-folder-tier="standard"] {
+  --tier-ink: #f2f6ec;
+  --tier-muted: #c2d2c8;
+  --tier-accent: #e6c791;
+  background: #132b24;
+}
+html[data-weave-shell-theme="plus-white-gold"] [data-file-folder-tier-preview] [data-file-folder-tier="premium"] {
+  --tier-ink: #fff1d8;
+  --tier-muted: #d5c6af;
+  --tier-accent: #e4bf7b;
+  background: linear-gradient(145deg,#211c21,#100f13);
+}
+html[data-weave-shell-theme="plus-white-gold"] [data-file-folder-tier-preview] [data-file-folder-tier] .weave-tier-content :is(h2,h3,p,svg) {
+  color: var(--tier-ink) !important;
+  text-shadow: none !important;
+}
+html[data-weave-shell-theme="plus-white-gold"] [data-file-folder-tier-preview] [data-file-folder-tier] .weave-tier-content p {
+  color: var(--tier-muted) !important;
+  font-size: .82rem !important;
+  line-height: 1.7 !important;
+}
+html[data-weave-shell-theme="plus-white-gold"] [data-file-folder-tier-preview] [data-file-folder-tier] .weave-tier-content li p:first-child {
+  color: var(--tier-ink) !important;
+  font-weight: 650;
+}
+html[data-weave-shell-theme="plus-white-gold"] [data-file-folder-tier-preview] [data-file-folder-tier] .weave-tier-content h2 {
+  font-size: 2.5rem;
+}
+html[data-weave-shell-theme="plus-white-gold"] [data-file-folder-tier-preview] [data-file-folder-tier] .weave-tier-content h3 {
+  font-family: var(--weave-font-body);
+  font-size: .7rem !important;
+  color: var(--tier-accent) !important;
+}
+html[data-weave-shell-theme="plus-white-gold"] [data-file-folder-tier-preview] [data-file-folder-tier] .weave-tier-content a {
+  background: #f5ead4 !important;
+  color: #273c49 !important;
+  border-color: #bca06c;
+  font-weight: 600;
+  text-transform: none;
+}
+@media (max-width: 640px) {
+  html[data-weave-shell-theme="plus-white-gold"] [data-public-weave-world] .weave-home-hero { padding-top: 1.7rem; }
+  html[data-weave-shell-theme="plus-white-gold"] [data-public-weave-world] .weave-home-title { font-size: clamp(2.8rem,12vw,3.6rem); }
+  .weave-home-hero-actions { flex-direction: column; max-width: 24rem; }
+  html[data-weave-shell-theme="plus-white-gold"] [data-public-weave-world] .weave-home-nav > div { justify-content: center; }
+  html[data-weave-shell-theme="plus-white-gold"] [data-public-weave-world] .weave-home-nav a { font-size: .72rem; }
+}

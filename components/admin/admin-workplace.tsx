@@ -58,12 +58,12 @@ export function AdminWorkplace({userName,onOpenDistricts}:{userName?:string|null
        <div className="relative flex flex-wrap items-start justify-between gap-5">
          <div className="max-w-3xl">
            <WeaveLogo size="sm"/>
-           <p className="mt-4 text-xs font-semibold uppercase tracking-[.18em] text-[#97712f]">A Time · Administration Department</p>
-           <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">Institutional Workplace</h1>
+           <p className="mt-4 text-xs font-semibold uppercase tracking-[.18em] text-[#97712f]">A Time · Administrations</p>
+           <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">The company, in your care.</h1>
            {userName&&<p className="mt-1 text-base text-[#607077]">{userName}</p>}
            <p className="mt-3 max-w-2xl text-sm leading-6 text-[#4e6368] sm:text-base">
-             Administration organizes people, verifies money and work, maintains infrastructure,
-             and directs the company Loop without taking over the work that belongs to each position.
+             Give the company direction. Support its people, verify its money and work, care for its systems
+             and carry each company Loop forward through the departments.
            </p>
          </div>
          <div className="flex flex-wrap gap-2">
