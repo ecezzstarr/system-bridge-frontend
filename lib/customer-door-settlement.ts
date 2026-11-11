@@ -115,7 +115,7 @@ export async function settleCustomerDoorPayment(input:{
       return {success:false,error:'The Client offer needs a valid positive price',status:409}
     }
     const internal=input.source==='weave_wallet'
-    if(internal && !['SYSTEM SWITCH','FLAME_COIN','FC'].includes(currency)){
+    if(internal && !['FLAME COIN','SYSTEM SWITCH','FLAME_COIN','FC'].includes(currency)){
       await conn.query('ROLLBACK')
       return {success:false,error:'This offer is not priced in System Switch; select verified external payment instead',status:409}
     }
