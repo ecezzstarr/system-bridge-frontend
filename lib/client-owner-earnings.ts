@@ -11,7 +11,7 @@ export const OWNER_COST_CATEGORIES = [
   'production','fulfilment','staff_compensation','marketing','equipment','operations','other',
 ] as const
 export type OwnerCostCategory = typeof OWNER_COST_CATEGORIES[number]
-export const OWNER_COST_CURRENCIES = ['SYSTEM SWITCH','NGN','USD','EUR','GBP','USDT'] as const
+export const OWNER_COST_CURRENCIES = ['FLAME COIN','NGN','USD','EUR','GBP','USDT'] as const
 
 let ready:Promise<void>|null=null
 export function ensureOwnerEarningsSchema(){
