@@ -5,9 +5,11 @@ on:
     paths:
       - 'app/**'
       - 'components/**'
-      - 'lib/weave-writing.ts'
+      - 'lib/weave-*.ts'
+      - 'lib/*workplace-catalog.ts'
       - 'public/fonts/**'
       - 'tests/weave-expression-browser.cjs'
+      - 'tests/helpers/**'
       - '.github/workflows/weave-presentation-check.yml'
 permissions:
   contents: read

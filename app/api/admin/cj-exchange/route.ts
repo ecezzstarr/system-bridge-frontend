@@ -7,7 +7,7 @@ const headers={'Cache-Control':'private, no-store'}
 export async function GET(request:NextRequest){
  try{
   const actor=await getAuthUser(request)
-  if(actor?.role!=='admin')return NextResponse.json({error:'Administration required'},{status:403,headers})
+  if(actor?.role!=='admin')return NextResponse.json({error:'Administrations required'},{status:403,headers})
   const [table]=await sql`SELECT to_regclass('public.cj_crypto_exchange_orders') AS name`
   if(!table?.name)return NextResponse.json({success:true,orders:[]},{headers})
   const orders=await sql`SELECT o.id,o.pair,o.side,o.quantity,o.indicated_price_usdt,o.status,
@@ -22,7 +22,7 @@ export async function GET(request:NextRequest){
 export async function POST(request:NextRequest){
  try{
   const actor=await getAuthUser(request)
-  if(actor?.role!=='admin')return NextResponse.json({error:'Administration required'},{status:403,headers})
+  if(actor?.role!=='admin')return NextResponse.json({error:'Administrations required'},{status:403,headers})
   const body=await request.json().catch(()=>({}))
   const id=String(body.id||'')
   if(!/^[0-9a-f-]{36}$/i.test(id)||body.externalProofReviewed!==true)

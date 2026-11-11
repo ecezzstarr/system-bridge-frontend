@@ -456,10 +456,10 @@ export default function ClientCustomerDoorPanel({
     <section data-customer-section="hosting" className="rounded-[2rem] border border-emerald-300/15 bg-emerald-300/[.035] p-5 md:p-6" data-client-owner-world-hosting>
       <p className="text-[9px] font-black uppercase tracking-[.2em] text-emerald-200">Host your Customer Door · System Switch</p>
       <h3 className="mt-2 text-xl font-black text-white">Station your public File Folder world at System Switch.</h3>
-      <p className="mt-3 text-xs leading-6 text-slate-400">Agents, Bridgers and Administration enter from Flame Event as avatars. Visitors enter from Customer Market as avatars. Both arrive in the shared System Switch plaza before crossing your Customer Door. Other active participants are visible in the world, but only the Lord or Lady owns construction, workshop and finance permissions.</p>
+      <p className="mt-3 text-xs leading-6 text-slate-400">Agents, Bridgers and Administrations enter from Flame Event as avatars. Visitors enter from Customer Market as avatars. Both arrive in the shared System Switch plaza before crossing your Customer Door. Other active participants are visible in the world, but only the Lord or Lady owns construction, workshop and finance permissions.</p>
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
         {[
-          {id:'flame_event' as const,title:'Flame Event · Staff',checked:Boolean(data.store?.world_host_flame_event),detail:'Show your commissioned Customer Door to Agent, Bridger and Administration in the shared Weave Open World.'},
+          {id:'flame_event' as const,title:'Flame Event · Staff',checked:Boolean(data.store?.world_host_flame_event),detail:'Show your commissioned Customer Door to Agent, Bridger and Administrations in the shared Weave Open World.'},
           {id:'customer_market' as const,title:'Customer Market · Visitors',checked:Boolean(data.store?.world_host_customer_market),detail:'Allow visitors to enter your commissioned Customer Door from Weave Open World and buy published offers.'},
         ].map(item=><label key={item.id} className="flex cursor-pointer items-start gap-3 border border-white/10 bg-black/20 p-4">
           <input type="checkbox" checked={item.checked} disabled={busy==='world-hosting'||!hasDoor||data.store?.formation_status!=='selling'}

@@ -12,7 +12,7 @@ async function reviewer(request:NextRequest){
 }
 export async function GET(request:NextRequest){
  const user=await reviewer(request)
- if(!user)return NextResponse.json({error:'Administration required'},{status:403,headers:proVerificationPublicHeaders})
+ if(!user)return NextResponse.json({error:'Administrations required'},{status:403,headers:proVerificationPublicHeaders})
  try{
   await ensureProFileNumberVerificationSchema()
   await ensureCompanyClientStaffSchema()
@@ -35,7 +35,7 @@ export async function GET(request:NextRequest){
 }
 export async function POST(request:NextRequest){
  const user=await reviewer(request)
- if(!user)return NextResponse.json({error:'Administration required'},{status:403,headers:proVerificationPublicHeaders})
+ if(!user)return NextResponse.json({error:'Administrations required'},{status:403,headers:proVerificationPublicHeaders})
  const body=await request.json().catch(()=>({}))
  const action=String(body.action||'')
  const id=String(body.id||'')
@@ -51,7 +51,7 @@ export async function POST(request:NextRequest){
    if(current.status!=='pending_identity')throw new Error('This identity review has already advanced or closed.')
    if(body.independentlyVerified!==true)throw new Error('Independent File Number identity review required.')
    const ref=String(body.identityReference||'').trim()
-   if(ref.length<8||ref.length>255)throw new Error('Provide an identifiable Administration verification reference.')
+   if(ref.length<8||ref.length>255)throw new Error('Provide an identifiable Administrations verification reference.')
    if(!current.operating_country||!current.operating_region||!current.operating_city||
      !current.contact_address)throw new Error('The applicant must provide real operating location and contact address.')
    if(String(current.file_number)==='WEAVE-2026-0907-0001'&&

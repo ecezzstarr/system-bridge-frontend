@@ -5,7 +5,7 @@ import { getAuthUser } from '@/lib/auth-api'
 export async function POST(request: NextRequest) {
   const admin = await getAuthUser(request)
   if (!admin || admin.role !== 'admin') {
-    return NextResponse.json({ error: 'Administration only' }, { status: 403 })
+    return NextResponse.json({ error: 'Administrations only' }, { status: 403 })
   }
   return NextResponse.json({
     error: 'Manual OPay wallet deposit approval is retired. Paystack payments must be verified directly with Paystack, then settled atomically.',

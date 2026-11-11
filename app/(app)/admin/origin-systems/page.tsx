@@ -77,7 +77,7 @@ export default function OriginSystemsPanel() {
   return (
     <WeaveSystemRoom
       roomKey="administration-origin-systems"
-      eyebrow="Administration · Origin Systems"
+      eyebrow="Administrations · Origin Systems"
       title="Origin Systems Network"
       detail="Systems, AI agents and origin authority operate as one infrastructure environment connected to the SSBNOW.SHOP origin ledger."
       tone="cyan"
@@ -151,7 +151,7 @@ export default function OriginSystemsPanel() {
           <div className="mt-3 space-y-2 text-[10px] leading-5 text-slate-400">
             <p>All systems inherit from SSBNOW.SHOP origin authority.</p>
             <p>EIGHT manages cross-system operations.</p>
-            <p>Administration governs WEAVE rules and system authority.</p>
+            <p>Administrations governs WEAVE rules and system authority.</p>
             <p>No system disconnects from origin without recorded authority.</p>
           </div>
         </section>

@@ -56,7 +56,7 @@ export default function ManagerDashboardPage(){
 
   const acceptDocument=async()=>{
     if(!token||!user)return
-    if(!accepted){setError('Accept the Distribution Manager Lifestyle document for Administration verification.');return}
+    if(!accepted){setError('Accept the Distribution Manager Lifestyle document for Administrations verification.');return}
     if(signature.trim().toLowerCase()!==String(user.name||'').trim().toLowerCase()){setError('Type your full account name exactly as your signature.');return}
     setBusy(true);setError('')
     try{
@@ -118,23 +118,23 @@ export default function ManagerDashboardPage(){
         <div className="flex items-center gap-2 text-cyan-300"><FileSignature className="h-5 w-5"/><p className="text-[10px] font-black uppercase tracking-[.2em]">Distribution Manager Lifestyle Document</p></div>
         <h1 className="mt-3 text-3xl font-black text-white">{user?.name}</h1>
         {['ended','rejected'].includes(state?.employment?.status||'')&&<EmploymentActions position="distribution_manager" onStatusChange={()=>void load()}/>}
-        {state?.employment?.status==='rejected'&&<p className="mt-3 border border-rose-300/25 p-3 text-xs text-rose-200">Administration did not approve the previous application. {state.employment.verification_note||'You may sign a new application after reviewing the requirements.'}</p>}
+        {state?.employment?.status==='rejected'&&<p className="mt-3 border border-rose-300/25 p-3 text-xs text-rose-200">Administrations did not approve the previous application. {state.employment.verification_note||'You may sign a new application after reviewing the requirements.'}</p>}
         <p className="mt-2 text-sm text-slate-400">Your underlying WEAVE position remains {String(user?.role||'').toUpperCase()}. {agentFree?'As an Agent, Distribution Manager is carried through your active Agent position with no monthly subscription.':'Distribution Manager access is permanently available through your purchased Agentic-Bridger identity.'}</p>
         {error&&<p className="mt-4 rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-200">{error}</p>}
         <div className="mt-6 space-y-3 rounded-2xl border border-white/10 bg-black/20 p-5 text-sm leading-6 text-slate-300">
-          <p><strong className="text-white">Administration verification.</strong> Signing submits your application for review. One-month probation begins only when Administration verifies the appointment, not when you sign.</p>
-          <p><strong className="text-white">Core duty.</strong> Distribute WEAVE across public channels, carry verified Agent and Bridger acquisition, coordinate campaigns and return distribution records to Administration.</p>
+          <p><strong className="text-white">Administrations verification.</strong> Signing submits your application for review. One-month probation begins only when Administrations verifies the appointment, not when you sign.</p>
+          <p><strong className="text-white">Core duty.</strong> Distribute WEAVE across public channels, carry verified Agent and Bridger acquisition, coordinate campaigns and return distribution records to Administrations.</p>
           <p><strong className="text-white">Field organization.</strong> Help Bridgers carry Prospect-to-Client movement and help Agents carry WEAVE distribution through their existing positions.</p>
           <p><strong className="text-white">Team authority.</strong> After verification, you select up to two Assistant Distribution Managers. Coordinate plans, responsibilities and handoffs directly in the team communication workspace. Distribution Studio and existing WEAVE campaign tools perform the work.</p>
-          <p><strong className="text-white">Administration oversight.</strong> Administration reviews your signed appointment, verified referrals and team reports, but does not join or overwrite internal team messages. Normal institutional compliance and payment approvals remain in force.</p>
+          <p><strong className="text-white">Administrations oversight.</strong> Administrations reviews your signed appointment, verified referrals and team reports, but does not join or overwrite internal team messages. Normal institutional compliance and payment approvals remain in force.</p>
           <p><strong className="text-white">Monthly target.</strong> 300 verified Agent or Bridger referrals shared by the Manager and up to two appointed assistants in their first one-month probation period, then 500 each subsequent team employment month. No separate individual quota.</p>
           <p><strong className="text-white">Salary condition.</strong> ₦70,000 full monthly salary when the team reaches 300 verified referrals in the first probation month, or 500 in a later team employment month. Below the applicable target, receive only ₦500 for each qualifying referral you personally made; no full salary. Salary requires month-end payroll verification and referral bonuses are never paid twice.</p>
           <p><strong className="text-white">Lifestyle access.</strong> {agentFree?'Agent position access is free. Distribution Manager remains open while the Agent account is active.':'The one-time 11 System Switch payment attains Agentic-Bridger, which enables Lifestyle access permanently while your Bridger position remains eligible and active. Employment still requires approval.'}</p>
         </div>
-        <label className="mt-5 flex items-start gap-3 rounded-xl border border-white/10 p-3 text-xs text-slate-300"><input type="checkbox" checked={accepted} onChange={e=>setAccepted(e.target.checked)} className="mt-1"/><span>I accept the Distribution Manager Lifestyle document and understand that Administration must approve the signed application before probation begins.</span></label>
+        <label className="mt-5 flex items-start gap-3 rounded-xl border border-white/10 p-3 text-xs text-slate-300"><input type="checkbox" checked={accepted} onChange={e=>setAccepted(e.target.checked)} className="mt-1"/><span>I accept the Distribution Manager Lifestyle document and understand that Administrations must approve the signed application before probation begins.</span></label>
         <label htmlFor="distribution-manager-signature" className="mt-4 block text-sm font-semibold text-white">Sign with your full account name</label>
         <Input id="distribution-manager-signature" name="signature" type="text" autoComplete="name" aria-label="Distribution Manager document signature" className="mt-2 min-h-12 w-full border-slate-700 bg-slate-900/50 text-white" value={signature} onChange={e=>setSignature(e.target.value)} placeholder={user?.name||'Full account name'}/>
-        <Button onClick={acceptDocument} disabled={busy||!accepted} className="mt-4 w-full bg-cyan-700 font-black uppercase tracking-wider hover:bg-cyan-600">{busy?'Recording…':<><CheckCircle2 className="mr-2 h-4 w-4"/>Accept · Request Administration Verification</>}</Button>
+        <Button onClick={acceptDocument} disabled={busy||!accepted} className="mt-4 w-full bg-cyan-700 font-black uppercase tracking-wider hover:bg-cyan-600">{busy?'Recording…':<><CheckCircle2 className="mr-2 h-4 w-4"/>Accept · Request Administrations Verification</>}</Button>
       </section>
     </main>
   }
@@ -142,9 +142,9 @@ export default function ManagerDashboardPage(){
   if(state.employment.status==='pending_verification') {
     return <main className="mx-auto max-w-3xl px-4 py-10" data-distribution-manager-awaiting-administration="true">
       <section className="border border-amber-300/25 bg-amber-300/[.04] p-6">
-        <p className="text-[10px] font-black uppercase tracking-widest text-amber-200">Awaiting Administration verification</p>
+        <p className="text-[10px] font-black uppercase tracking-widest text-amber-200">Awaiting Administrations verification</p>
         <h1 className="mt-3 text-2xl font-black text-white">Signed Distribution Manager application received</h1>
-        <p className="mt-3 text-sm leading-6 text-slate-300">Administration must verify your appointment before probation, Manager pay qualification, and team-assistant hiring can begin. Your signed application is saved; your original Agent or Bridger work remains available.</p>
+        <p className="mt-3 text-sm leading-6 text-slate-300">Administrations must verify your appointment before probation, Manager pay qualification, and team-assistant hiring can begin. Your signed application is saved; your original Agent or Bridger work remains available.</p>
         <p className="mt-3 text-xs text-slate-400">Signed: {new Date(state.employment.document_accepted_at).toLocaleString('en-NG')} · Probation has not started · No Manager team actions are authorized yet.</p>
         <Button type="button" onClick={()=>load().catch(err=>setError(err.message))} className="mt-5 bg-amber-700 text-white">Refresh verification status</Button>
         {error&&<p role="alert" className="mt-3 text-xs text-rose-200">{error}</p>}

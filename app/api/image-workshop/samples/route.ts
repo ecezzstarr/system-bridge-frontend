@@ -56,7 +56,7 @@ export async function POST(req:NextRequest){
       return response({success:true,profile:updated})
     }
     if(action==='request_status'){
-      if(user.role==='admin')return response({success:false,error:'Administration has no outside-client order queue.'},403)
+      if(user.role==='admin')return response({success:false,error:'Administrations has no outside-client order queue.'},403)
       const id=clean(body.id,80)
       const transition=clean(body.transition,30)
       if(!validUuid(id)||!['accept','reject','payment_reported','complete'].includes(transition))

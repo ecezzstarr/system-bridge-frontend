@@ -161,7 +161,7 @@ export default function ClientLoginPage() {
 
       <div className="mt-12 flex items-center gap-6 opacity-30 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-700">
         <div className="h-[1px] w-12 bg-slate-700" />
-        <p className="text-[9px] text-slate-500 font-black uppercase tracking-[0.5em]">WEAVE of Presence · System Switch · Bridge Radiance</p>
+        <p className="text-[9px] text-slate-500 font-black uppercase tracking-[0.5em]">WEAVE of Presence · System Switch · Bridge of Radiance</p>
         <div className="h-[1px] w-12 bg-slate-700" />
       </div>
     </div>

@@ -55,17 +55,17 @@ export default function AdminProRegionalManagerForensics(){
   }catch(e){setError(e instanceof Error?e.message:'Forensics decision failed')}
   finally{setWorking('')}
  }
- if(!isInitialized)return <main className="p-6">Opening Administration Forensics…</main>
- if(user?.role!=='admin')return <main className="p-6">Administration only.</main>
+ if(!isInitialized)return <main className="p-6">Opening Administrations Forensics…</main>
+ if(user?.role!=='admin')return <main className="p-6">Administrations only.</main>
  return <main className="mx-auto max-w-6xl space-y-6 p-5 text-white" data-admin-pro-regional-manager-forensics="true">
   <nav className="flex flex-wrap gap-4 text-xs text-sky-200">
-   <Link href="/admin/control-center">Administration Control Center</Link>
+   <Link href="/admin/control-center">Administrations Control Center</Link>
    <Link href="/admin/pro-regional-manager-applications">Pro Manager applications</Link>
    <Link href="/admin/pro-file-number-verifications">External Client Pro verifications</Link>
    <Link href="/admin/company-active-wallet">Company Active Wallet settings</Link>
   </nav>
   <header className="space-y-2">
-   <p className="text-xs uppercase tracking-widest text-sky-200">Administration · A Time · Forensics</p>
+   <p className="text-xs uppercase tracking-widest text-sky-200">Administrations · A Time · Forensics</p>
    <h1 className="text-3xl font-semibold">Pro Regional Manager · Activation Forensics</h1>
    <p className="text-sm leading-6 text-slate-300">Review signed Agent/Bridger Pro File Folder activation against independently verified 680 USDT on TRON (TRC-20). Never credit wallets or approve solely because an applicant entered a transaction hash. Company salary is an independently agreed payroll term.</p>
   </header>

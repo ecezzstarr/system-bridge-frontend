@@ -106,13 +106,13 @@ export default function ClientBuildCatalogAdminPage() {
   }
 
   if (!isInitialized) return <main className="p-8 text-base text-slate-300">Opening Client Build Catalog...</main>
-  if (user?.role !== 'admin') return <main className="p-8 text-base text-red-300">Administration access required.</main>
+  if (user?.role !== 'admin') return <main className="p-8 text-base text-red-300">Administrations access required.</main>
 
   return (
     <main className="mx-auto max-w-7xl space-y-8 p-5 text-white md:p-8">
       <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
-          <p className="text-sm font-black uppercase tracking-[0.18em] text-cyan-300">Administration · Client Building</p>
+          <p className="text-sm font-black uppercase tracking-[0.18em] text-cyan-300">Administrations · Client Building</p>
           <h1 className="mt-2 text-3xl font-black md:text-5xl">Client Build Catalog</h1>
           <p className="mt-3 max-w-3xl text-base leading-7 text-slate-300">
             Control what Clients can buy and build inside their File Folders. Component prices are in System Switch. Blueprint build time and visibility can be changed here without redeploying WEAVE.

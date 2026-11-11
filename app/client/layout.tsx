@@ -14,7 +14,7 @@ import {KingdomThemeFrame} from '@/components/world/kingdom-theme-frame'
 
 export const metadata: Metadata = {
   title: 'WEAVE of Presence — Client Services',
-  description: 'WEAVE of Presence · System Switch · Bridge Radiance — Client Services',
+  description: 'WEAVE of Presence · System Switch · Bridge of Radiance — Client Services',
   icons: {
     icon: [{ url: '/icon.svg?v=3', type: 'image/svg+xml' }],
     shortcut: '/icon.svg?v=3',

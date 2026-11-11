@@ -25,7 +25,7 @@ export async function POST(request:NextRequest){
   if(!user)return NextResponse.json({error:'Client account required'},{status:401,headers:publicHeaders})
   const activation=await getProActivationState(user.id,user.file_number!)
   if(!activation||activation.status==='awaiting_preparation')
-    return NextResponse.json({error:'Administration must first prepare the signed Pro entitlement.'},{status:409,headers:publicHeaders})
+    return NextResponse.json({error:'Administrations must first prepare the signed Pro entitlement.'},{status:409,headers:publicHeaders})
   const body=await request.json().catch(()=>({}))
   try{
     let response

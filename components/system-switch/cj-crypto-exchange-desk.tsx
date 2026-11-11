@@ -37,7 +37,7 @@ export default function CjCryptoExchangeDesk({view}:{view:View}){
    const data=await response.json()
    if(!response.ok)throw new Error(data.error||'Record unavailable')
    await load()
-   setMessage(method==='POST'?'Order intent recorded. No live exchange order was placed.':'External evidence recorded for Administration review.')
+   setMessage(method==='POST'?'Order intent recorded. No live exchange order was placed.':'External evidence recorded for Administrations review.')
    setReportingId('');setQuantity('');setPrice('');setReference('');setVenue('')
   }catch(e){setError(e instanceof Error?e.message:'Unable to save record')}
   finally{setBusy(false)}
@@ -80,7 +80,7 @@ export default function CjCryptoExchangeDesk({view}:{view:View}){
      {reportingId===o.id&&<div className="grid gap-2 sm:grid-cols-2">
       <input placeholder="External exchange / venue" value={venue} onChange={e=>setVenue(e.target.value)} className="rounded-lg bg-slate-950 p-3 text-white"/>
       <input placeholder="Actual external order reference" value={reference} onChange={e=>setReference(e.target.value)} className="rounded-lg bg-slate-950 p-3 text-white"/>
-      <button type="button" disabled={busy} onClick={()=>void act({id:o.id,action:'report_external',externalVenue:venue,externalReference:reference},'PATCH')} className="rounded-lg bg-sky-300 px-4 py-2 text-slate-950 disabled:opacity-50 sm:col-span-2">Submit for Administration review</button>
+      <button type="button" disabled={busy} onClick={()=>void act({id:o.id,action:'report_external',externalVenue:venue,externalReference:reference},'PATCH')} className="rounded-lg bg-sky-300 px-4 py-2 text-slate-950 disabled:opacity-50 sm:col-span-2">Submit for Administrations review</button>
      </div>}
     </div>}
    </div>)}

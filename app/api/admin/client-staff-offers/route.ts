@@ -16,7 +16,7 @@ async function requireAdmin(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   const admin = await requireAdmin(request)
-  if (!admin) return NextResponse.json({ error: 'Administration access required' }, { status: 403 })
+  if (!admin) return NextResponse.json({ error: 'Administrations access required' }, { status: 403 })
   try {
     await ensureCompanyClientStaffSchema()
     const workFor=request.nextUrl.searchParams.get('offerId')
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const admin = await requireAdmin(request)
-  if (!admin) return NextResponse.json({ error: 'Administration access required' }, { status: 403 })
+  if (!admin) return NextResponse.json({ error: 'Administrations access required' }, { status: 403 })
   try {
     const body = await request.json()
     const candidateName = String(body.candidateName || '').trim()
@@ -112,7 +112,7 @@ export async function POST(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   const admin = await requireAdmin(request)
-  if (!admin) return NextResponse.json({ error: 'Administration access required' }, { status: 403 })
+  if (!admin) return NextResponse.json({ error: 'Administrations access required' }, { status: 403 })
   const body = await request.json().catch(() => ({}))
   const offerId = String(body.offerId || '')
   const action = String(body.action || '')

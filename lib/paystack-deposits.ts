@@ -80,7 +80,7 @@ export async function settlePaystackDeposit(reference: string, signedEvent?: Pay
     }
     if (credits > 0 || refunds > 0) {
       await client.query('COMMIT')
-      return { settled: false, reason: 'A previous credit or refund event exists for this deposit. Administration must reconcile the ledger before further wallet changes.' }
+      return { settled: false, reason: 'A previous credit or refund event exists for this deposit. Administrations must reconcile the ledger before further wallet changes.' }
     }
     const wallet = await client.query(
       "UPDATE wallets SET balance_trx=balance_trx+$2,updated_at=NOW() WHERE user_id=$1::uuid AND is_primary=true RETURNING balance_trx",
@@ -115,7 +115,7 @@ export async function settlePaystackDeposit(reference: string, signedEvent?: Pay
           title:'Paystack confirmed · '+notification.role+' wallet credited',
           content:notification.name+' paid ₦'+notification.amountNgn.toLocaleString()
             +' via Paystack. '+notification.flameCoin.toLocaleString()
-            +' System Switch has been credited automatically (no Administration approval). '
+            +' System Switch has been credited automatically (no Administrations approval). '
             +'Reference: '+notification.reference+'. Deposit: '+notification.depositId+'.',
           link:'/admin/control-center#deposits',
           fromUserName:'WEAVE Paystack',

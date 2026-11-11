@@ -26,7 +26,7 @@ export async function passwordRecoveryEmailProvider(): Promise<'gmail' | 'resend
   try {
     if (await getAdministrationGoogleMailboxCredential()) return 'gmail'
   } catch (error) {
-    console.error('[password-recovery] Administration Google mailbox lookup failed', error)
+    console.error('[password-recovery] Administrations Google mailbox lookup failed', error)
   }
   if (process.env.RESEND_API_KEY && process.env.PASSWORD_RECOVERY_EMAIL_FROM) return 'resend'
   return 'none'
@@ -125,7 +125,7 @@ Your WEAVE access recovery code is ${input.code}.
 
 It expires in ${PASSWORD_RECOVERY_CODE_TTL_MINUTES} minutes and can be used once. If you did not request this code, ignore this email.
 
-WEAVE of Presence · System Switch · Bridge Radiance`
+WEAVE of Presence · System Switch · Bridge of Radiance`
   const html = `<div style="font-family:Arial,sans-serif;background:#050b12;color:#e5edf7;padding:28px">
         <div style="max-width:520px;margin:0 auto;border-top:1px solid #294353;border-bottom:1px solid #294353;padding:28px 0">
           <div style="font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#8fdcf8">WEAVE Access Recovery</div>
@@ -133,7 +133,7 @@ WEAVE of Presence · System Switch · Bridge Radiance`
           <p style="color:#a8b4c3;line-height:1.7">Hello ${safeName}. Use this one-time code to reset the password attached to your WEAVE account.</p>
           <div style="font-size:32px;font-weight:800;letter-spacing:.28em;margin:26px 0;color:#ffffff">${safeCode}</div>
           <p style="color:#8090a1;line-height:1.6;font-size:13px">This code expires in ${PASSWORD_RECOVERY_CODE_TTL_MINUTES} minutes. If you did not request it, no action is required.</p>
-          <div style="margin-top:28px;font-size:11px;color:#657585">WEAVE of Presence · System Switch · Bridge Radiance</div>
+          <div style="margin-top:28px;font-size:11px;color:#657585">WEAVE of Presence · System Switch · Bridge of Radiance</div>
         </div>
       </div>`
 

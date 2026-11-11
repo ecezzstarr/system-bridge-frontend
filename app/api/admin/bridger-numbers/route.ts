@@ -216,7 +216,7 @@ export async function PATCH(request:NextRequest){
         RETURNING *
       `,[
         orderId,
-        String(body.message||'Administration is acquiring and preparing your number.').trim().slice(0,1000),
+        String(body.message||'Administrations is acquiring and preparing your number.').trim().slice(0,1000),
       ])).rows[0]
       await client.query('COMMIT')
       await notifyUser(String(order.bridger_id),{
@@ -225,7 +225,7 @@ export async function PATCH(request:NextRequest){
         content:updated.admin_message,
         link:'/bridger/numbers',
         fromUserId:user.id,
-        fromUserName:'WEAVE Administration',
+        fromUserName:'WEAVE Administrations',
       })
       return NextResponse.json({success:true,order:updated})
     }
@@ -254,7 +254,7 @@ export async function PATCH(request:NextRequest){
         after,
       ])
 
-      const message=String(body.message||'Administration cancelled this number order and returned the System Switch to your wallet.').trim().slice(0,1000)
+      const message=String(body.message||'Administrations cancelled this number order and returned the System Switch to your wallet.').trim().slice(0,1000)
       const updated=(await client.query(`
         UPDATE bridger_number_orders
         SET status='cancelled',admin_message=$2,cancelled_at=NOW(),updated_at=NOW()
@@ -269,7 +269,7 @@ export async function PATCH(request:NextRequest){
         content:`${message} ${refund.toLocaleString()} System Switch was returned.`,
         link:'/bridger/numbers',
         fromUserId:user.id,
-        fromUserName:'WEAVE Administration',
+        fromUserName:'WEAVE Administrations',
       })
       return NextResponse.json({success:true,order:updated,refund,newBalance:after})
     }
@@ -358,7 +358,7 @@ export async function PATCH(request:NextRequest){
       }
     }
 
-    const message=String(body.message||'Administration delivered your ordered WEAVE WhatsApp number. It is now in My Numbers and ready for verification movement.').trim().slice(0,1000)
+    const message=String(body.message||'Administrations delivered your ordered WEAVE WhatsApp number. It is now in My Numbers and ready for verification movement.').trim().slice(0,1000)
     const updated=(await client.query(`
       UPDATE bridger_number_orders
       SET
@@ -379,7 +379,7 @@ export async function PATCH(request:NextRequest){
       content:message,
       link:'/bridger/numbers',
       fromUserId:user.id,
-      fromUserName:'WEAVE Administration',
+      fromUserName:'WEAVE Administrations',
     })
 
     return NextResponse.json({

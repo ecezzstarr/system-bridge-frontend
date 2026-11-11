@@ -102,7 +102,7 @@ export default function AnimationWorkshopPage(){
     </div>
     <aside className="rounded-2xl border border-white/10 bg-[#0b1420] p-5">
      <h2 className="text-lg font-bold">Production rights</h2>
-     <p className="mt-2 text-xs leading-5 text-slate-400">Client ownership is permanent. Hired Legions work under their active appointment. Other Agents, Bridgers and Administration staff need a Client invitation. Public visitors have no access.</p>
+     <p className="mt-2 text-xs leading-5 text-slate-400">Client ownership is permanent. Hired Legions work under their active appointment. Other Agents, Bridgers and Administrations staff need a Client invitation. Public visitors have no access.</p>
      {access.isOwner&&<>
       <button onClick={()=>void copyDoor()} className={classes+' mt-4 w-full'}>Copy private workshop entrance</button>
       <label className="mt-5 block text-xs text-slate-300">Invite staff by exact username

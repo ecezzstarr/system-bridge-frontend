@@ -21,7 +21,7 @@ import { visiblePoll } from '@/lib/visible-poll'
 
 function deadlineLabel(deadline:string,now:number){
  const ms=new Date(deadline).getTime()-now
- if(ms<=0)return '30-minute target passed · Administration still owes delivery'
+ if(ms<=0)return '30-minute target passed · Administrations still owes delivery'
  const mins=Math.max(1,Math.ceil(ms/60000))
  return `Due within ${mins} min`
 }
@@ -136,7 +136,7 @@ export default function BridgerNumbersPage(){
    const d=await r.json()
    if(!r.ok)throw new Error(d.error||'Order failed')
    emitWeaveMotion({kind:'value',label:`${country} Number Bay order opened`,intensity:1,confirmed:true,source:'number-bay'})
-   toast.success(`${country} number ordered · Administration delivery target is 30 minutes`)
+   toast.success(`${country} number ordered · Administrations delivery target is 30 minutes`)
    await load()
   }catch(e:any){
    emitWeaveMotion({kind:'interruption',label:e?.message||'Number order failed',intensity:.6,confirmed:true,source:'number-bay'})
@@ -182,7 +182,7 @@ export default function BridgerNumbersPage(){
   <section className="rounded-3xl border border-cyan-300/15 bg-cyan-400/[.035] p-4">
    <Globe2 className="h-5 w-5 text-cyan-300"/>
    <p className="mt-3 text-sm font-black text-white">Worldwide Number Bay</p>
-   <p className="mt-2 text-xs leading-5 text-slate-400">Choose the country first. If WEAVE has stock, assignment is immediate. If stock is empty, place a country order and Administration delivers the number through this system with a 30-minute target.</p>
+   <p className="mt-2 text-xs leading-5 text-slate-400">Choose the country first. If WEAVE has stock, assignment is immediate. If stock is empty, place a country order and Administrations delivers the number through this system with a 30-minute target.</p>
   </section>
   <section className="rounded-3xl border border-white/10 bg-black/20 p-4">
    <p className="text-[9px] font-black uppercase text-slate-500">Bay state</p>
@@ -200,7 +200,7 @@ export default function BridgerNumbersPage(){
    <div>
     <p className="text-[9px] font-black uppercase tracking-[.2em] text-cyan-300">Country selection</p>
     <h2 className="mt-1 text-xl font-black text-white">Choose country → buy or order</h2>
-    <p className="mt-2 text-xs text-slate-400">You always see the country and System Switch price before spending. The exact phone number is revealed only after assignment or Administration delivery.</p>
+    <p className="mt-2 text-xs text-slate-400">You always see the country and System Switch price before spending. The exact phone number is revealed only after assignment or Administrations delivery.</p>
    </div>
    <button onClick={()=>void load()} aria-label="Refresh Number Bay" className="rounded-xl border border-white/10 p-2"><RefreshCw className={`h-4 w-4 text-slate-400 ${loading?'animate-spin':''}`}/></button>
   </div>
@@ -222,7 +222,7 @@ export default function BridgerNumbersPage(){
       <p className="mt-4 text-2xl font-black text-white">{price.toLocaleString()} <span className="text-xs text-slate-500">System Switch</span></p>
       {stock>0?
        <p className="mt-2 text-[10px] leading-5 text-slate-500">{stock} in WEAVE stock · immediate assignment after successful purchase.</p>
-       :<p className="mt-2 text-[10px] leading-5 text-slate-400">Out of stock · Administration can acquire and deliver this country through WEAVE within the {Number(offer.delivery_minutes)||30}-minute target.</p>}
+       :<p className="mt-2 text-[10px] leading-5 text-slate-400">Out of stock · Administrations can acquire and deliver this country through WEAVE within the {Number(offer.delivery_minutes)||30}-minute target.</p>}
       {stock>0?
        <button
         data-presence-output={`Buy ${offer.country} WEAVE number for ${price.toLocaleString()} System Switch`}
@@ -230,14 +230,14 @@ export default function BridgerNumbersPage(){
         disabled={buying===offer.country}
         className="mt-4 w-full rounded-xl bg-cyan-300 p-2.5 text-xs font-black text-slate-950 disabled:opacity-40"
        ><ShoppingCart className="mr-2 inline h-4 w-4"/>{buying===offer.country?'Assigning…':'Buy '+offer.country+' number'}</button>
-       :<button data-presence-output={`Order ${offer.country} WEAVE number for Administration delivery`} onClick={()=>void orderCountry(offer.country)} disabled={ordering===offer.country||activeOrders.some(o=>String(o.country).toLowerCase()===String(offer.country).toLowerCase())} className="mt-4 w-full rounded-xl bg-amber-300 p-2.5 text-xs font-black text-slate-950 disabled:opacity-40"><Timer className="mr-2 inline h-4 w-4"/>{ordering===offer.country?'Ordering…':activeOrders.some(o=>String(o.country).toLowerCase()===String(offer.country).toLowerCase())?'Order active':'Order · '+(Number(offer.delivery_minutes)||30)+' min delivery'}</button>}
+       :<button data-presence-output={`Order ${offer.country} WEAVE number for Administrations delivery`} onClick={()=>void orderCountry(offer.country)} disabled={ordering===offer.country||activeOrders.some(o=>String(o.country).toLowerCase()===String(offer.country).toLowerCase())} className="mt-4 w-full rounded-xl bg-amber-300 p-2.5 text-xs font-black text-slate-950 disabled:opacity-40"><Timer className="mr-2 inline h-4 w-4"/>{ordering===offer.country?'Ordering…':activeOrders.some(o=>String(o.country).toLowerCase()===String(offer.country).toLowerCase())?'Order active':'Order · '+(Number(offer.delivery_minutes)||30)+' min delivery'}</button>}
      </article>
     })
    }
   </div>
 
   <div className="mt-6 border-t border-white/10 pt-5">
-   <p className="text-[9px] font-black uppercase tracking-[.2em] text-amber-300">Administration fulfillment</p>
+   <p className="text-[9px] font-black uppercase tracking-[.2em] text-amber-300">Administrations fulfillment</p>
    <h2 className="mt-1 text-xl font-black text-white">My country orders</h2>
   </div>
   <div className="mt-4 space-y-3">
@@ -255,7 +255,7 @@ export default function BridgerNumbersPage(){
       </div>
       {o.admin_message&&<p className="mt-3 text-xs leading-5 text-slate-300">{o.admin_message}</p>}
       {o.status==='delivered'&&o.phone_e164&&<p className="mt-3 font-mono text-lg font-black text-emerald-200">{o.phone_e164}</p>}
-      {o.status==='cancelled'&&<p className="mt-3 text-xs text-slate-500">Order cancelled. The charged System Switch was returned by Administration.</p>}
+      {o.status==='cancelled'&&<p className="mt-3 text-xs text-slate-500">Order cancelled. The charged System Switch was returned by Administrations.</p>}
      </article>
     })
    }
@@ -277,7 +277,7 @@ export default function BridgerNumbersPage(){
       </div>
       {!r?
        <div className="mt-3 flex flex-wrap gap-2"><button onClick={()=>void requestCode(n.id,'sms')} className="rounded-xl border border-white/10 bg-white/[.03] px-3 py-2 text-[10px] font-black text-white">Request SMS</button><button onClick={()=>void requestCode(n.id,'call')} className="rounded-xl border border-white/10 bg-white/[.03] px-3 py-2 text-[10px] font-black text-white">Request Call</button></div>
-       :<div className="mt-3 rounded-xl border border-amber-300/10 bg-amber-300/[.025] p-3"><p className="flex items-center gap-1 text-[9px] font-black uppercase text-amber-300"><Clock3 className="h-3 w-3"/>{r.status} · {r.method}</p>{r.status==='requested'&&<p className="mt-2 text-xs text-slate-400">Administration is processing verification. Window ends {new Date(r.deadline_at).toLocaleTimeString()}.</p>}{r.status==='pending'&&<p className="mt-2 text-xs text-slate-300">{r.admin_message||'Verification remains pending. The number stays reserved to you.'}</p>}{r.status==='code_ready'&&<><p className="mt-2 text-[9px] uppercase text-slate-500">Verification code</p><p className="mt-1 font-mono text-2xl font-black tracking-widest text-white">{r.verification_code}</p><button onClick={()=>void verify(r.id)} className="mt-3 rounded-xl bg-emerald-300 px-3 py-2 text-[10px] font-black text-slate-950">I verified WhatsApp</button></>}</div>}
+       :<div className="mt-3 rounded-xl border border-amber-300/10 bg-amber-300/[.025] p-3"><p className="flex items-center gap-1 text-[9px] font-black uppercase text-amber-300"><Clock3 className="h-3 w-3"/>{r.status} · {r.method}</p>{r.status==='requested'&&<p className="mt-2 text-xs text-slate-400">Administrations is processing verification. Window ends {new Date(r.deadline_at).toLocaleTimeString()}.</p>}{r.status==='pending'&&<p className="mt-2 text-xs text-slate-300">{r.admin_message||'Verification remains pending. The number stays reserved to you.'}</p>}{r.status==='code_ready'&&<><p className="mt-2 text-[9px] uppercase text-slate-500">Verification code</p><p className="mt-1 font-mono text-2xl font-black tracking-widest text-white">{r.verification_code}</p><button onClick={()=>void verify(r.id)} className="mt-3 rounded-xl bg-emerald-300 px-3 py-2 text-[10px] font-black text-slate-950">I verified WhatsApp</button></>}</div>}
      </article>
     })
    }
@@ -285,8 +285,8 @@ export default function BridgerNumbersPage(){
  </>
 
  const right=<>
-  <section className="rounded-3xl border border-amber-300/15 bg-amber-400/[.035] p-4"><ShieldCheck className="h-5 w-5 text-amber-300"/><p className="mt-3 text-sm font-black text-white">WEAVE wrapper</p><p className="mt-2 text-xs leading-5 text-slate-400">Provider acquisition details remain Administration-only. You see the country, System Switch price, stock state, delivery deadline, assigned number and verification movement.</p></section>
-  <section className="rounded-3xl border border-white/10 bg-black/20 p-4"><Phone className="h-5 w-5 text-emerald-300"/><p className="mt-3 text-sm font-black text-white">30-minute order path</p><p className="mt-2 text-xs leading-5 text-slate-400">When a published country is out of stock: order → System Switch reserved as purchase → Administration acquires number → delivery enters My Numbers → request SMS/call verification.</p></section>
+  <section className="rounded-3xl border border-amber-300/15 bg-amber-400/[.035] p-4"><ShieldCheck className="h-5 w-5 text-amber-300"/><p className="mt-3 text-sm font-black text-white">WEAVE wrapper</p><p className="mt-2 text-xs leading-5 text-slate-400">Provider acquisition details remain Administrations-only. You see the country, System Switch price, stock state, delivery deadline, assigned number and verification movement.</p></section>
+  <section className="rounded-3xl border border-white/10 bg-black/20 p-4"><Phone className="h-5 w-5 text-emerald-300"/><p className="mt-3 text-sm font-black text-white">30-minute order path</p><p className="mt-2 text-xs leading-5 text-slate-400">When a published country is out of stock: order → System Switch reserved as purchase → Administrations acquires number → delivery enters My Numbers → request SMS/call verification.</p></section>
   <Link href="/bridger/dashboard" className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[.025] px-4 py-3 text-xs font-black text-white">Bridger Operating Room <span className="text-cyan-300">→</span></Link>
  </>
 
@@ -294,7 +294,7 @@ export default function BridgerNumbersPage(){
   roomKey="bridger-number-bay"
   eyebrow="Bridge · Worldwide Number Access"
   title="Number Bay"
-  detail="Choose a country, buy live stock immediately, or place a 30-minute Administration delivery order when stock is empty. Assignment and verification remain one continuous Bridger movement."
+  detail="Choose a country, buy live stock immediately, or place a 30-minute Administrations delivery order when stock is empty. Assignment and verification remain one continuous Bridger movement."
   tone="cyan"
   left={left}
   center={center}

@@ -41,7 +41,7 @@ export async function settleFileFolderPaystackPurchase(reference: string) {
       event: 'placed',
       department: purchase.bridger_id ? 'bridger' : 'client',
       subject: 'File Folder Paystack payment verified',
-      detail: `Paystack verified ₦${Number(purchase.amount_ngn).toLocaleString()} for ${purchase.file_folder_tier || 'File Folder'} purchase ${purchase.id}. Administration approval is still required before issuing the File Number.`,
+      detail: `Paystack verified ₦${Number(purchase.amount_ngn).toLocaleString()} for ${purchase.file_folder_tier || 'File Folder'} purchase ${purchase.id}. Administrations approval is still required before issuing the File Number.`,
       adminPath: '/admin/file-folder-sales-manager',
       actorId: purchase.bridger_id || purchase.client_id || null,
       actorName: 'WEAVE Paystack',

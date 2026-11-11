@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
       success: true,
       order,
       peg: '1 System Switch = 1 TRX',
-      message: 'Enterprise acquisition request recorded. GBP remains the contract denomination; the System Switch amount is a rate-time reference. Administration can now structure scope, commercial terms, hardware requirements and delivery movement.',
+      message: 'Enterprise acquisition request recorded. GBP remains the contract denomination; the System Switch amount is a rate-time reference. Administrations can now structure scope, commercial terms, hardware requirements and delivery movement.',
     }, { status: 201 })
   } catch (error) {
     console.error('[enterprise-systems POST]', error)

@@ -483,7 +483,7 @@ export async function POST(request: NextRequest) {
         `
         if(application?.status!=='approved'){
           return NextResponse.json({
-            error:`Administration must approve Lord/Lady enterprise elevation before ${blueprint.name} can begin.`,
+            error:`Administrations must approve Lord/Lady enterprise elevation before ${blueprint.name} can begin.`,
             gate:'enterprise_approval',
           },{status:409})
         }

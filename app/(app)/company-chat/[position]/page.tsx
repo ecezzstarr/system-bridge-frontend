@@ -14,7 +14,7 @@ const POSITION_NAMES:Record<string,string>={
   mandate:'Mandate',
   lawyer:'Attorney',
   forensic:'Forensics',
-  admin:'Administration',
+  admin:'Administrations',
 }
 
 type Message={
@@ -101,7 +101,7 @@ export default function CompanyGuidancePositionPage(){
             <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-amber-300/20 bg-amber-400/10"><Landmark className="h-5 w-5 text-amber-200"/></div>
             <div>
               <p className="text-[9px] font-black uppercase tracking-[0.2em] text-cyan-300">{positionName} · Company Guidance</p>
-              <h1 className="mt-1 text-2xl font-black text-white">Ask the company position. Administration can answer from its guidance inbox.</h1>
+              <h1 className="mt-1 text-2xl font-black text-white">Ask the company position. Administrations can answer from its guidance inbox.</h1>
               <p className="mt-2 max-w-3xl text-xs leading-5 text-slate-300">This thread stays attached to your signed-in {user.role} identity and the selected company position.</p>
             </div>
           </div>

@@ -210,7 +210,7 @@ export default function AceCarrierConsolePage() {
 
         {access?.active && (
           <div className="mt-5 border-y border-yellow-300/10 bg-yellow-300/[0.025] px-4 py-3 text-xs leading-5 text-slate-400">
-            Entrance carried by <strong className="text-yellow-200">{access.gate === 'administration' ? 'Administration' : access.gate === 'agent_position' ? 'Agent position · no subscription' : access.gate === 'agentic_bridger_one_time' ? 'Agentic-Bridger · Permanent' : 'Lord / Lady elevation'}</strong>. Position inside Carrier: <strong className="text-white">ACE</strong>.
+            Entrance carried by <strong className="text-yellow-200">{access.gate === 'administration' ? 'Administrations' : access.gate === 'agent_position' ? 'Agent position · no subscription' : access.gate === 'agentic_bridger_one_time' ? 'Agentic-Bridger · Permanent' : 'Lord / Lady elevation'}</strong>. Position inside Carrier: <strong className="text-white">ACE</strong>.
           </div>
         )}
 

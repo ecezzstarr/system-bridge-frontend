@@ -231,7 +231,7 @@ export default function DJWorkshopPage() {
       <section className="rounded-2xl border border-amber-200/25 bg-[linear-gradient(120deg,rgba(20,45,53,.65),rgba(62,43,24,.48))] p-5">
         <h2 className="text-lg font-bold text-amber-100">WEAVE Music Studio · Form original songs</h2>
         <p className="mt-2 max-w-2xl text-xs leading-5 text-slate-200">Create music from words, recorded voices, instrumental tracks and the environment's answering sound. Assemble verses and responses, preview the actual mix, then publish your master to this DJ Library for broadcast to Weave users.</p>
-        <Link href="/admin/music-studio" className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl border border-amber-200/35 bg-amber-200/10 px-4 py-2 text-sm font-bold text-amber-100 hover:bg-amber-200/20"><Music className="h-4 w-4"/> Open the Administration Music Studio</Link>
+        <Link href="/admin/music-studio" className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl border border-amber-200/35 bg-amber-200/10 px-4 py-2 text-sm font-bold text-amber-100 hover:bg-amber-200/20"><Music className="h-4 w-4"/> Open the Administrations Music Studio</Link>
       </section>
 
       {error && <div className="text-sm text-red-400">{error}</div>}

@@ -22,7 +22,7 @@ export function FlameEventRoleAtmosphere({
   const [loopThree,setLoopThree]=useState(false)
 
   const roleLabel = userRole === 'admin'
-    ? 'ADMINISTRATION'
+    ? 'ADMINISTRATIONS'
     : userRole === 'agent'
       ? 'AGENT'
       : userRole === 'bridger'

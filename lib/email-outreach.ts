@@ -185,8 +185,8 @@ export async function deliverOutreachEmail(input: {
 
   const subject = mergeTemplate(input.subject, { name: input.lead.name, leadCode: input.lead.lead_code })
   const message = mergeTemplate(input.message, { name: input.lead.name, leadCode: input.lead.lead_code })
-  const text = `${message}\n\nLead reference: ${input.lead.lead_code}\nWEAVE of Presence · System Switch · Bridge Radiance`
-  const html = `<div style="font-family:Arial,sans-serif;background:#04101a;color:#e7f5ff;padding:28px"><div style="max-width:560px;margin:auto;border-top:1px solid #27485a;border-bottom:1px solid #27485a;padding:28px 0"><div style="font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#8edffc">WEAVE · Bridge Radiance</div><p style="line-height:1.8;color:#d9e7f0">${escapeHtml(message)}</p><div style="margin-top:24px;font-size:11px;color:#7890a0">Reference ${escapeHtml(input.lead.lead_code)}</div></div></div>`
+  const text = `${message}\n\nLead reference: ${input.lead.lead_code}\nWEAVE of Presence · System Switch · Bridge of Radiance`
+  const html = `<div style="font-family:Arial,sans-serif;background:#04101a;color:#e7f5ff;padding:28px"><div style="max-width:560px;margin:auto;border-top:1px solid #27485a;border-bottom:1px solid #27485a;padding:28px 0"><div style="font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#8edffc">WEAVE · Bridge of Radiance</div><p style="line-height:1.8;color:#d9e7f0">${escapeHtml(message)}</p><div style="margin-top:24px;font-size:11px;color:#7890a0">Reference ${escapeHtml(input.lead.lead_code)}</div></div></div>`
 
   const outreachId = crypto.randomUUID()
   // Reserve under the same row lock used by acquisition. Recheck ownership and

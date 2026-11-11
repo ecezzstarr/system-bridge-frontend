@@ -228,7 +228,7 @@ export function DepartmentEntryTicketGate({
             {department === 'AGENT' ? 'Agent' : 'Bridger'} Department Entry
           </h3>
           <p className="mt-2 text-sm leading-6 text-slate-400">
-            Department Entry begins with sound. Once the music starts, your ticket is presented and Administration is notified of your arrival.
+            Department Entry begins with sound. Once the music starts, your ticket is presented and Administrations is notified of your arrival.
           </p>
         </div>
 
@@ -348,9 +348,9 @@ export function DepartmentEntryTicketGate({
       {awaitingVerification && (
         <div className="rounded-2xl border border-purple-400/20 bg-purple-400/5 p-6 text-center">
           <Loader2 className="mx-auto h-7 w-7 animate-spin text-purple-300" />
-          <p className="mt-3 text-sm font-black uppercase tracking-widest text-white">Administration Verification</p>
+          <p className="mt-3 text-sm font-black uppercase tracking-widest text-white">Administrations Verification</p>
           <p className="mt-2 text-xs leading-5 text-slate-400">
-            Administration has been notified. This page checks automatically; your departmental code will appear here after the payment is approved.
+            Administrations has been notified. This page checks automatically; your departmental code will appear here after the payment is approved.
           </p>
           <Button type="button" variant="ghost" onClick={refreshTicket} className="mt-3 text-xs text-purple-300">
             Check now
@@ -383,7 +383,7 @@ export function DepartmentEntryTicketGate({
       {ticket.status === 'REJECTED' && (
         <div className="rounded-2xl border border-red-400/20 bg-red-400/5 p-5 text-center">
           <p className="text-sm font-black uppercase tracking-widest text-red-300">Payment Not Verified</p>
-          <p className="mt-2 text-xs text-slate-400">{ticket.rejectedReason || 'Administration could not verify this payment.'}</p>
+          <p className="mt-2 text-xs text-slate-400">{ticket.rejectedReason || 'Administrations could not verify this payment.'}</p>
           <Button type="button" onClick={resetTicket} className="mt-4 bg-slate-700 hover:bg-slate-600">Present a New Ticket</Button>
         </div>
       )}

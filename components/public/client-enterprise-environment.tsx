@@ -25,7 +25,7 @@ export function ClientEnterpriseEnvironment({
           <div>
             <p className="text-[10px] font-black uppercase tracking-[0.25em] text-amber-300">Enterprise Door · Open</p>
             <h1 data-weave-live-word="title" className="mt-3 max-w-4xl text-4xl font-black tracking-[-0.045em] sm:text-6xl">{enterprise.enterprise_name}</h1>
-            <p className="mt-5 max-w-3xl text-base leading-7 text-slate-300">An Administration-approved Client enterprise carried through a constructed public Enterprise Door. This territory reflects systems, participants and business movement actually present in the File Folder.</p>
+            <p className="mt-5 max-w-3xl text-base leading-7 text-slate-300">An Administrations-approved Client enterprise carried through a constructed public Enterprise Door. This territory reflects systems, participants and business movement actually present in the File Folder.</p>
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div className="rounded-2xl border border-amber-300/15 bg-amber-400/[0.05] p-4 text-center"><p className="text-[8px] font-black uppercase tracking-wider text-amber-300">Business Vitality</p><p className="mt-2 text-3xl font-black">{growth.vitality.score}</p><p className="text-[8px] text-slate-500">30-day activity index</p></div>

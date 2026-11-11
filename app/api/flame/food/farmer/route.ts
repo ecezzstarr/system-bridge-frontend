@@ -54,7 +54,7 @@ export async function PATCH(request:NextRequest) {
       SELECT id FROM weave_food_farmers WHERE agent_id=$1::uuid AND status='approved' LIMIT 1
     `,[user.id])
     const farmer=farmers[0]
-    if(!farmer)return NextResponse.json({error:'Your Agent farm needs Administration approval'},{status:403})
+    if(!farmer)return NextResponse.json({error:'Your Agent farm needs Administrations approval'},{status:403})
     if(['pause_offer','resume_offer'].includes(action)) {
       if(!uuidPattern.test(body.offerId||''))return NextResponse.json({error:'Invalid offer'},{status:400})
       const status=action==='pause_offer'?'paused':'active'

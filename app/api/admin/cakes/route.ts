@@ -7,7 +7,7 @@ import { assignPaidOrderToPreparationManager } from '@/lib/food-preparation-rout
 
 export async function GET(request:NextRequest){
   const user=await getAuthUser(request)
-  if(!user||user.role!=='admin')return NextResponse.json({error:'Administration required'},{status:403})
+  if(!user||user.role!=='admin')return NextResponse.json({error:'Administrations required'},{status:403})
   try{
     await ensureCarrierCakeSchema()
     const result=await getPool().query(`
@@ -31,7 +31,7 @@ export async function GET(request:NextRequest){
 
 export async function PATCH(request:NextRequest){
   const user=await getAuthUser(request)
-  if(!user||user.role!=='admin')return NextResponse.json({error:'Administration required'},{status:403})
+  if(!user||user.role!=='admin')return NextResponse.json({error:'Administrations required'},{status:403})
   try{
     await ensureCarrierCakeSchema()
     const body=await request.json().catch(()=>({}))
@@ -41,7 +41,7 @@ export async function PATCH(request:NextRequest){
     if(!orderId)return NextResponse.json({error:'Cake order is required'},{status:400})
     if(body.action==='confirm_payment_for_preparation'){
       const confirmationNote=String(body.adminNote||'').trim().slice(0,800)
-      if(confirmationNote.length<12)return NextResponse.json({error:'Document the Administration payment confirmation before preparing Daisy Pastries (12+ characters).'},{status:400})
+      if(confirmationNote.length<12)return NextResponse.json({error:'Document the Administrations payment confirmation before preparing Daisy Pastries (12+ characters).'},{status:400})
       await ensureFoodPreparationManagerSchema()
       const client=await getPool().connect()
       let committed=false
@@ -51,7 +51,7 @@ export async function PATCH(request:NextRequest){
         const paid=result.rows[0]
         if(!paid||paid.payment_status!=='paid'||paid.status!=='paid'||paid.preparation_released_at){
           await client.query('ROLLBACK')
-          return NextResponse.json({error:'An Agent-confirmed paid cake order awaiting Administration release is required.'},{status:409})
+          return NextResponse.json({error:'An Agent-confirmed paid cake order awaiting Administrations release is required.'},{status:409})
         }
         // Agent verifies the customer transfer. Administration explicitly
         // reviews that recorded verification and releases the kitchen order.
@@ -67,8 +67,8 @@ export async function PATCH(request:NextRequest){
         committed=true
         return NextResponse.json({success:true,order:release.rows[0],preparation,
           message:preparation.assigned
-            ? 'Administration released the paid Daisy Pastries order. Food Preparation Manager notified with the customer location and event details.'
-            : 'Daisy Pastries released for preparation, but no approved Food Preparation Manager was available. Assign it from Administration.'})
+            ? 'Administrations released the paid Daisy Pastries order. Food Preparation Manager notified with the customer location and event details.'
+            : 'Daisy Pastries released for preparation, but no approved Food Preparation Manager was available. Assign it from Administrations.'})
       }catch(error){
         if(!committed)await client.query('ROLLBACK').catch(()=>{})
         console.error('[admin/cakes] release failed',error)
@@ -79,8 +79,8 @@ export async function PATCH(request:NextRequest){
     const current=currentResult.rows[0]
     if(!current)return NextResponse.json({error:'Cake order not found'},{status:404})
     const expected=nextCakeAdministrationStatus(current.status)
-    if(!expected||requestedStatus!==expected)return NextResponse.json({error:expected?`Next cake stage must be ${expected}`:'This cake order is not in an Administration production stage'},{status:409})
-    if(current.payment_status!=='paid')return NextResponse.json({error:'Administration cannot prepare a cake before the Agent verifies customer payment'},{status:409})
+    if(!expected||requestedStatus!==expected)return NextResponse.json({error:expected?`Next cake stage must be ${expected}`:'This cake order is not in an Administrations production stage'},{status:409})
+    if(current.payment_status!=='paid')return NextResponse.json({error:'Administrations cannot prepare a cake before the Agent verifies customer payment'},{status:409})
     if(!current.preparation_released_at)return NextResponse.json({error:'Confirm the paid cake order for preparation before moving kitchen stages.'},{status:409})
     const result=await getPool().query(
       `UPDATE carrier_cake_orders SET status=$1,admin_note=$2,

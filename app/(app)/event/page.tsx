@@ -21,8 +21,8 @@ export default function StaffFlameEventPage() {
 
   const role = user.role as EventRole
   const context = [
-    { label: 'Position', value: role === 'admin' ? 'Administration' : role === 'agent' ? 'Agent' : 'Bridger' },
-    { label: 'Department', value: user.departmental_code || (role === 'admin' ? 'Administration' : role === 'agent' ? 'Stability' : 'Hope') },
+    { label: 'Position', value: role === 'admin' ? 'Administrations' : role === 'agent' ? 'Agent' : 'Bridger' },
+    { label: 'Department', value: user.departmental_code || (role === 'admin' ? 'Administrations' : role === 'agent' ? 'Stability' : 'Hope') },
     { label: 'Movement', value: 'Burning River · Event ground' },
   ]
 

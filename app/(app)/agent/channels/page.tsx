@@ -64,7 +64,7 @@ export default function AgentChannelsPage() {
       })
       const data = await res.json()
       if (data.success) {
-        toast.success('Channel movement submitted for Administration review.')
+        toast.success('Channel movement submitted for Administrations review.')
         await fetchApplications()
       } else {
         toast.error(data.error || 'Failed to apply')
@@ -92,7 +92,7 @@ export default function AgentChannelsPage() {
             <div>
               <p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.22em] text-sky-300">Agent Channel Engine</p>
               <h1 className="mt-2 text-2xl font-black text-white md:text-3xl">A channel is an operating responsibility.</h1>
-              <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-300">Apply → Administration reviews → approval unlocks a Client-support function → real Client movement enters your work queue.</p>
+              <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-300">Apply → Administrations reviews → approval unlocks a Client-support function → real Client movement enters your work queue.</p>
             </div>
             <div className="grid grid-cols-2 gap-2 text-center">
               <div className="rounded-xl border border-emerald-300/15 bg-emerald-400/[0.05] px-4 py-3"><p className="text-[8px] font-black uppercase tracking-wider text-emerald-300">Operating</p><p className="mt-1 text-2xl font-black text-white">{approved}</p></div>
@@ -136,7 +136,7 @@ export default function AgentChannelsPage() {
                     {state === 'approved' ? (
                       <div className="inline-flex items-center gap-2 rounded-xl border border-emerald-300/15 bg-emerald-400/[0.06] px-3 py-2 text-[10px] font-black uppercase tracking-[0.1em] text-emerald-200"><CheckCircle2 className="h-4 w-4"/>Active</div>
                     ) : state === 'pending' ? (
-                      <div className="inline-flex items-center gap-2 rounded-xl border border-amber-300/15 bg-amber-400/[0.06] px-3 py-2 text-[10px] font-black uppercase tracking-[0.1em] text-amber-200"><Clock3 className="h-4 w-4"/>Administration review</div>
+                      <div className="inline-flex items-center gap-2 rounded-xl border border-amber-300/15 bg-amber-400/[0.06] px-3 py-2 text-[10px] font-black uppercase tracking-[0.1em] text-amber-200"><Clock3 className="h-4 w-4"/>Administrations review</div>
                     ) : (
                       <button onClick={() => void handleApply(channel.id)} disabled={applyingId === channel.id} className="inline-flex items-center justify-center gap-2 rounded-xl bg-sky-300 px-4 py-2.5 text-[10px] font-black uppercase tracking-[0.1em] text-slate-950 disabled:opacity-50">
                         {applyingId === channel.id ? <Loader2 className="h-4 w-4 animate-spin"/> : <ArrowRight className="h-4 w-4"/>}

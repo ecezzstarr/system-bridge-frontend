@@ -227,11 +227,11 @@ export default function AdminAgilityPage() {
     <div className="mx-auto max-w-7xl space-y-7">
       <AgentFoodPricingInfo product="agility"/>
       <div>
-        <p className="text-[10px] font-black uppercase tracking-[0.25em] text-orange-300">Administration · Agility</p>
+        <p className="text-[10px] font-black uppercase tracking-[0.25em] text-orange-300">Administrations · Agility</p>
         <h1 className="mt-2 text-3xl font-black text-white">Morning Food Company Fulfillment</h1>
         <Link href="/admin/food-preparation-manager" className="mt-3 inline-flex border border-amber-300/25 px-4 py-2 text-xs font-black text-amber-200">Food Preparation Manager · Employment & Orders</Link>
         <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">
-          Agility uses the same manual OPay method already used by Agents and Bridgers. Administration verifies
+          Agility uses the same manual OPay method already used by Agents and Bridgers. Administrations verifies
           the OPay proof, then controls company economics and physical fulfillment before stock reaches the Agent Store.
         </p>
       </div>
@@ -377,7 +377,7 @@ export default function AdminAgilityPage() {
                     <textarea
                       className="mt-4 min-h-20 w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-xs text-white outline-none focus:border-orange-300/40"
                       value={order.admin_note || ''}
-                      placeholder="Administration payment / sourcing / dispatch note"
+                      placeholder="Administrations payment / sourcing / dispatch note"
                       onChange={(event) => setOrders((current) =>
                         current.map((item) => item.id === order.id ? { ...item, admin_note: event.target.value } : item)
                       )}
@@ -452,7 +452,7 @@ export default function AdminAgilityPage() {
                           {order.payment_status === 'rejected' ? 'Waiting for corrected OPay proof' : 'Waiting for Agent OPay proof'}
                         </p>
                         <p className="mt-2 text-xs leading-5 text-slate-500">
-                          Food preparation is locked until Administration approves the Agent payment.
+                          Food preparation is locked until Administrations approves the Agent payment.
                         </p>
                       </>
                     ) : movement ? (
@@ -524,7 +524,7 @@ export default function AdminAgilityPage() {
                         <Truck className="mt-4 h-7 w-7 text-violet-300" />
                         <p className="mt-3 text-sm font-bold text-white">Waiting for Agent receipt</p>
                         <p className="mt-2 text-xs leading-5 text-slate-500">
-                          Administration has marked the stock delivered. The Agent must confirm physical receipt before consumer sales open.
+                          Administrations has marked the stock delivered. The Agent must confirm physical receipt before consumer sales open.
                         </p>
                       </>
                     ) : (

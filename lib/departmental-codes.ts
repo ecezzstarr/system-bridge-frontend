@@ -100,7 +100,7 @@ export async function validateDepartmentalCode(
   }
 
   if (data.status === 'REVOKED') {
-    return { valid: false, error: 'Code has been revoked by Administration.' }
+    return { valid: false, error: 'Code has been revoked by Administrations.' }
   }
 
   if (data.status !== 'ACTIVE') {

@@ -6,7 +6,7 @@ import { ensureWeaveSystemStoreSchema } from '@/lib/weave-system-store'
 async function requireAdmin(request:NextRequest){
   const user=await getAuthUser(request)
   if(!user)return {user:null,error:NextResponse.json({error:'Unauthorized'},{status:401})}
-  if(user.role!=='admin')return {user:null,error:NextResponse.json({error:'Administration access required'},{status:403})}
+  if(user.role!=='admin')return {user:null,error:NextResponse.json({error:'Administrations access required'},{status:403})}
   return {user,error:null}
 }
 

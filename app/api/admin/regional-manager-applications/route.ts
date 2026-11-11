@@ -6,7 +6,7 @@ import { ensureRegionalManagerCommissionSchema } from '@/lib/regional-manager-co
 export async function GET(request: NextRequest) {
   const admin = await getAuthUser(request)
   if (!admin || admin.role !== 'admin') {
-    return NextResponse.json({ success: false, error: 'Administration access required' }, { status: 403 })
+    return NextResponse.json({ success: false, error: 'Administrations access required' }, { status: 403 })
   }
   await ensureRegionalManagerCommissionSchema()
   const params = request.nextUrl.searchParams
@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const admin = await getAuthUser(request)
   if (!admin || admin.role !== 'admin') {
-    return NextResponse.json({ success: false, error: 'Administration access required' }, { status: 403 })
+    return NextResponse.json({ success: false, error: 'Administrations access required' }, { status: 403 })
   }
   const body = await request.json().catch(() => null)
   const userId = typeof body?.userId === 'string' ? body.userId : ''

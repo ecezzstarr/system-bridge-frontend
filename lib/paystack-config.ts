@@ -105,7 +105,7 @@ export async function savePaystackConfig(input: { secretKey: string; webhookSign
 }
 export async function getPaystackSecretKey() {
   const config = await getPaystackConfig()
-  if (!config.configured || !config.secretKey) throw new Error('Paystack is not configured. Administration must complete the Paystack Integration Workshop.')
+  if (!config.configured || !config.secretKey) throw new Error('Paystack is not configured. Administrations must complete the Paystack Integration Workshop.')
   return config.secretKey
 }
 

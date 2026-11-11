@@ -29,7 +29,7 @@ const refuse = (message: string, httpStatus: 400 | 409 = 409): never => {
  */
 export async function manualCreditStuckPaystack(input: ManualPaystackInput) {
   if (!uuid.test(input.depositId) || !uuid.test(input.adminId)) {
-    refuse('Invalid Administration or deposit identity.', 400)
+    refuse('Invalid Administrations or deposit identity.', 400)
   }
   if (input.confirmedInPaystackDashboard !== true) {
     refuse('Confirm that you personally checked the successful payment in the original Paystack merchant dashboard.', 400)
@@ -160,10 +160,10 @@ export async function manualCreditStuckPaystack(input: ManualPaystackInput) {
       await Promise.allSettled([
         notifyUser(n.userId,{
           type:'deposit_approved',
-          title:'Administration confirmed your Paystack payment',
+          title:'Administrations confirmed your Paystack payment',
           content:'Your ₦'+n.amountNgn.toLocaleString()+' payment was manually confirmed and '
             +n.flameCoin.toLocaleString()+' System Switch credited to your Weave wallet.',
-          link:'/wallet/deposit-withdraw',fromUserName:'WEAVE Administration',
+          link:'/wallet/deposit-withdraw',fromUserName:'WEAVE Administrations',
         }),
         notifyAdministrators({
           type:'paystack_manual_credit_audit',
@@ -171,7 +171,7 @@ export async function manualCreditStuckPaystack(input: ManualPaystackInput) {
           content:n.ownerName+' · ₦'+n.amountNgn.toLocaleString()
             +' · '+n.flameCoin.toLocaleString()+' System Switch. '
             +'Reference '+n.reference+'. Deposit '+n.depositId
-            +'. Approved by Administration '+input.adminId+'.',
+            +'. Approved by Administrations '+input.adminId+'.',
           link:'/admin/control-center#deposits',fromUserName:'WEAVE Finance',
         }),
       ])

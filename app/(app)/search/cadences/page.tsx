@@ -98,7 +98,7 @@ export default function HumanCadenceEnginePage() {
           <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
             <div>
               <p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.22em] text-sky-300">Human Cadence Engine</p>
-              <h1 className="mt-2 text-2xl font-black text-white md:text-3xl">Human experience remains attributed, searchable and reusable as institutional knowledge.</h1>
+              <h1 className="mt-2 text-2xl font-black text-white md:text-3xl">Discover experience, knowledge and the people who shared it.</h1>
               <p className="mt-3 max-w-4xl text-sm leading-7 text-slate-300">
                 Search what people have actually recorded in WEAVE. Results are human cadences, not generated answers. Adding a cadence creates a new attributed record in the same stream.
               </p>

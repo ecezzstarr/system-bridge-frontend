@@ -25,7 +25,7 @@ export async function getCarrierAccess(user: CarrierAccessUser): Promise<Carrier
       active: true,
       role,
       gate: 'administration',
-      reason: 'Administration may enter Ace directly. Carrier is Ace’s outward distribution instrument.',
+      reason: 'Administrations may enter Ace directly. Carrier is Ace’s outward distribution instrument.',
       position: 'Ace',
       qualifyingState: 'administration',
     }

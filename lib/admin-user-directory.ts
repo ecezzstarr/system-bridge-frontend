@@ -71,7 +71,7 @@ export async function getAdminUserDirectory(options:AdminDirectoryOptions) {
       const escrow=await pool.query(
         "SELECT user_id,COALESCE(SUM(amount),0) AS total FROM escrow "+
         "WHERE user_id=ANY($1::uuid[]) AND status='locked' "+
-        "AND currency IN ('Flame Coin','TRX') GROUP BY user_id",
+        "AND currency IN ('System Switch','TRX') GROUP BY user_id",
         [ids])
       const byUser=new Map(escrow.rows.map(row=>[String(row.user_id),Number(row.total)]))
       for(const user of users) {

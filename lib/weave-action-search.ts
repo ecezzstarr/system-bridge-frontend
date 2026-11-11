@@ -25,7 +25,7 @@ type SearchEntry={title:string;href:string;description:string;department:string;
 
 const roleLabels:Record<WeaveSearchRole,string>={
   agent:'Stability · Agent',bridger:'Hope · Bridger',client:'Dream Lovely · Client',
-  admin:'A Time · Administration',legion:'Client Legion · Assigned Employment',
+  admin:'A Time · Administrations',legion:'Client Legion · Assigned Employment',
 }
 
 /** Exact route notes apply in addition to the original company catalog. */
@@ -68,7 +68,7 @@ const TASKS:Record<string,{keywords:string;requirements:string;nextStep:string}>
   '/agent/cakes':{
     keywords:'cake bakery pastry pastries daisy quote customer order sell',
     requirements:'A real customer request; production and payment must be confirmed.',
-    nextStep:'Record the order, inspect the quote and follow Administration fulfilment.',
+    nextStep:'Record the order, inspect the quote and follow Administrations fulfilment.',
   },
   '/agent/commissions':{
     keywords:'my money earning commission referral paid profits bonus income',
@@ -132,7 +132,7 @@ const TASKS:Record<string,{keywords:string;requirements:string;nextStep:string}>
   },
   '/client/staff-workspace':{
     keywords:'cj dorado client pro regional manager my company salary appointment business expansion',
-    requirements:'Administration-approved Client staff appointment; salary is separate from File Folder earnings.',
+    requirements:'Administrations-approved Client staff appointment; salary is separate from File Folder earnings.',
     nextStep:'Open the official workspace and inspect current duties, verified salary terms and business links.',
   },
   '/client/pro-activation':{
@@ -162,7 +162,7 @@ const TASKS:Record<string,{keywords:string;requirements:string;nextStep:string}>
   },
   '/admin/control-center':{
     keywords:'administration company control users approvals agents bridgers clients manage',
-    requirements:'Administration role with authorization for the requested control.',
+    requirements:'Administrations role with authorization for the requested control.',
     nextStep:'Select the relevant company unit and inspect actual state before making a decision.',
   },
   '/admin/orders':{
@@ -172,7 +172,7 @@ const TASKS:Record<string,{keywords:string;requirements:string;nextStep:string}>
   },
   '/admin/customer-door-settlements':{
     keywords:'verify customer store payment deposit transfer settle forensics',
-    requirements:'Administration permission and confirmed funds; never manually invent a wallet credit.',
+    requirements:'Administrations permission and confirmed funds; never manually invent a wallet credit.',
     nextStep:'Inspect the transaction, source of funds and matching settlement record.',
   },
   '/admin/employment-applications':{
@@ -182,12 +182,12 @@ const TASKS:Record<string,{keywords:string;requirements:string;nextStep:string}>
   },
   '/admin/release-workshop':{
     keywords:'website not working deploy update git fix production release rollback',
-    requirements:'Authorized Administration release controls and a checked production candidate.',
+    requirements:'Authorized Administrations release controls and a checked production candidate.',
     nextStep:'Review release checks and deployment state before acting.',
   },
   '/admin/environment-organizer':{
     keywords:'hide show pages role navigation sections menu organize app',
-    requirements:'Administration permission; protected company surfaces cannot be removed.',
+    requirements:'Administrations permission; protected company surfaces cannot be removed.',
     nextStep:'Review visibility and ordering of the existing operating routes.',
   },
   '/search/cadences':{
@@ -253,14 +253,14 @@ function entriesFor(role:WeaveSearchRole):SearchEntry[]{
       (surface.scope==='agent-bridger'&&(role==='agent'||role==='bridger'))
     if(!permitted)continue
     entries.push({title:surface.label,href:surface.route,
-      description:'Open the existing '+surface.label+' operating environment.',
+      description:'Open the '+surface.label+' workplace.',
       department:surface.area,
     })
   }
   entries.push(...sharedPaths)
   if(role==='client')entries.push(
     {title:'My Company Position',href:'/client/staff-workspace',description:'Review an independently approved Client staff appointment and salary terms.',department:'Dream Lovely · Client employment',access:'approval'},
-    {title:'Pro File Folder Activation',href:'/client/pro-activation',description:'Verify Pro appointment, agreement and payment under Administration controls.',department:'Dream Lovely · Pro activation',access:'approval'},
+    {title:'Pro File Folder Activation',href:'/client/pro-activation',description:'Verify Pro appointment, agreement and payment under Administrations controls.',department:'Dream Lovely · Pro activation',access:'approval'},
     {title:'Customer Market',href:'/market',description:'See published Client businesses and Customer Doors.',department:'Dream Lovely · Commerce'},
   )
   if(role==='agent'||role==='bridger')entries.push(

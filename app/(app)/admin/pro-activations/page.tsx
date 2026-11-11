@@ -45,11 +45,11 @@ export default function ProActivationsAdmin(){
   }catch(e){setError(e instanceof Error?e.message:'Action unavailable')}
   finally{setBusy(false)}
  }
- if(!isInitialized)return <main className="p-8 text-white">Loading Administration…</main>
- if(user?.role!=='admin')return <main className="p-8 text-white">Administration only.</main>
+ if(!isInitialized)return <main className="p-8 text-white">Loading Administrations…</main>
+ if(user?.role!=='admin')return <main className="p-8 text-white">Administrations only.</main>
  const selected=state?.activations.find(a=>a.file_number===fileNumber)
  return <main className="mx-auto max-w-5xl space-y-6 px-4 py-8 text-white" data-admin-pro-activation="true">
-  <Link href="/admin/dashboard" className="text-xs text-cyan-200">Administration</Link>
+  <Link href="/admin/dashboard" className="text-xs text-cyan-200">Administrations</Link>
   <Link href="/admin/pro-file-number-verifications" className="inline-block rounded-lg border border-cyan-300/30 px-4 py-2 text-sm text-cyan-200">
    Open File Number verification register (no Client password)
   </Link>
@@ -61,7 +61,7 @@ export default function ProActivationsAdmin(){
   {message&&<p role="status" className="rounded-lg border border-cyan-300/30 p-4 text-cyan-200">{message}</p>}
   <section className="space-y-3 rounded-2xl border border-sky-300/25 bg-sky-300/[.06] p-5" data-admin-pro-active-wallet-link="true">
    <h2 className="text-lg font-semibold">Company Active Wallet · Pro USDT (TRC-20)</h2>
-   <p className="text-sm leading-6 text-slate-200">The official Pro activation receiving address is managed in one separate Administration wallet control. Every actual change is recorded with its reason. This same Pro wallet is used by Client, Agent and Bridger Pro activation, but historical payment evidence is never rewritten.</p>
+   <p className="text-sm leading-6 text-slate-200">The official Pro activation receiving address is managed in one separate Administrations wallet control. Every actual change is recorded with its reason. This same Pro wallet is used by Client, Agent and Bridger Pro activation, but historical payment evidence is never rewritten.</p>
    <p className="break-all font-mono text-xs text-sky-100">Current receiving address: {state?.wallet||'Not configured'}</p>
    <Link href="/admin/company-active-wallet" className="inline-flex min-h-11 items-center rounded-xl border border-sky-300/35 bg-sky-300/10 px-5 py-3 text-sm font-semibold text-sky-100">
     Configure company active wallet

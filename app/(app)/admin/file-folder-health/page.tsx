@@ -48,7 +48,7 @@ export default function AdministrationFileFolderHealth(){
   const status=state?.health==='schema_review_required'?'Database schema requires review':healthy?'Ownership records aligned':'Owner records require review'
   return <main className="mx-auto min-h-screen max-w-6xl space-y-5 px-4 py-7 text-white" data-admin-file-folder-health="owner-diagnostics">
     <Link href="/admin/dashboard" className="inline-flex min-h-11 items-center gap-2 text-sm text-amber-200">
-      <ArrowLeft className="h-4 w-4"/> Administration World
+      <ArrowLeft className="h-4 w-4"/> Administrations World
     </Link>
     <section className="rounded-2xl border border-amber-200/25 bg-[#101925] p-5 sm:p-7">
       <p className="text-sm font-semibold text-amber-200">A Time · Private File Folder integrity</p>

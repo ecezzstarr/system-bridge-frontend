@@ -42,7 +42,7 @@ export default function DeploymentRecordsPage() {
     <main className="mx-auto w-full max-w-6xl px-3 pb-14 pt-20 sm:px-5" data-deployment-records="sovereign-flame">
       <header className="border-b border-white/10 pb-5">
         <div className="flex flex-wrap items-center gap-2 text-[9px] font-black uppercase tracking-[.18em] text-orange-200">
-          <ShieldCheck className="h-4 w-4" /> Administration · Production Authority
+          <ShieldCheck className="h-4 w-4" /> Administrations · Production Authority
         </div>
         <h1 className="mt-3 text-3xl font-black tracking-tight text-white sm:text-4xl">Sovereign + Flame Record</h1>
         <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">

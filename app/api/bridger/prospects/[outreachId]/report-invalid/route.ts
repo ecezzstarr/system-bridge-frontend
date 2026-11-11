@@ -154,7 +154,7 @@ export async function POST(
         ? `Reported. One replacement candidate assigned (${usedToday + 1} of ${DAILY_WHATSAPP_REPLACEMENT_LIMIT} today). WhatsApp availability is not yet verified.`
         : remainingToday === 0
           ? `Reported. The daily limit of ${DAILY_WHATSAPP_REPLACEMENT_LIMIT} WhatsApp replacements has been reached. No more replacement candidates today.`
-          : 'Reported. No unused candidate is available for replacement. Administration must replenish the prospect pool.',
+          : 'Reported. No unused candidate is available for replacement. Administrations must replenish the prospect pool.',
     })
   } catch (error) {
     await client.query('ROLLBACK')

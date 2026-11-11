@@ -37,7 +37,7 @@ const categories=[
   ['operations','Business operations'],
   ['other','Other recorded cost'],
 ] as const
-const currencies=['FLAME COIN','NGN','USD','EUR','GBP','USDT']
+const currencies=['SYSTEM SWITCH','NGN','USD','EUR','GBP','USDT']
 const fmt=(value:number|string)=>Number(value||0).toLocaleString(undefined,{maximumFractionDigits:8})
 const date=(value:string)=>new Date(value).toLocaleDateString()
 
@@ -53,7 +53,7 @@ export default function ClientOwnerEarningsPanel({storeApiPath,systems=[]}:{
   const [error,setError]=useState('')
   const [message,setMessage]=useState('')
   const [category,setCategory]=useState<string>('production')
-  const [currency,setCurrency]=useState('FLAME COIN')
+  const [currency,setCurrency]=useState('SYSTEM SWITCH')
   const [amount,setAmount]=useState('')
   const [description,setDescription]=useState('')
   const [evidence,setEvidence]=useState('')
@@ -124,8 +124,8 @@ export default function ClientOwnerEarningsPanel({storeApiPath,systems=[]}:{
       <div className="rounded-xl border border-amber-300/20 bg-amber-300/[.04] p-3 text-xs leading-5 text-amber-100">
         {report.accountingNote}
       </div>
-      {report.costTotals.filter(row=>row.currency!=='FLAME COIN').length>0&&
-        <p className="text-xs text-slate-300">Other-currency reported costs (not converted): {report.costTotals.filter(row=>row.currency!=='FLAME COIN').map(row=>fmt(row.amount)+' '+displayCurrencyName(row.currency)).join(' · ')}</p>}
+      {report.costTotals.filter(row=>row.currency!=='SYSTEM SWITCH').length>0&&
+        <p className="text-xs text-slate-300">Other-currency reported costs (not converted): {report.costTotals.filter(row=>row.currency!=='SYSTEM SWITCH').map(row=>fmt(row.amount)+' '+displayCurrencyName(row.currency)).join(' · ')}</p>}
       <div className="grid gap-5 lg:grid-cols-2">
         <div>
           <h4 className="text-sm font-bold">Verified Customer Door receipts</h4>

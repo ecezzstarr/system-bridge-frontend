@@ -121,7 +121,7 @@ export const BRIDGER_CROSSING_STEPS: BridgerCrossingStep[] = [
     say: [
       'The next crossing is the File Folder.',
       'It establishes your Client position and gives your movement a persistent operating environment inside System Switch.',
-      'After payment is verified, Administration issues your File Number and the included Customer Door construction begins.',
+      'After payment is verified, Administrations issues your File Number and the included Customer Door construction begins.',
     ],
     doNotSay: [
       'Do not describe the File Folder as a passive membership.',
@@ -151,10 +151,10 @@ export const BRIDGER_CROSSING_STEPS: BridgerCrossingStep[] = [
     key: 'pro',
     phase: 'Value',
     title: 'Explain Pro Properly',
-    meaning: `Pro is the File Folder WEAVE sells to prospects. Its normal starting value is ${PRO_START.toLocaleString()} System Switch. Administration may negotiate an external Pro sale down to ${PRO_NEGOTIATED_MIN.toLocaleString()} System Switch.`,
+    meaning: `Pro is the File Folder WEAVE sells to prospects. Its normal starting value is ${PRO_START.toLocaleString()} System Switch. Administrations may negotiate an external Pro sale down to ${PRO_NEGOTIATED_MIN.toLocaleString()} System Switch.`,
     say: [
       `Pro normally starts at ${PRO_START.toLocaleString()} System Switch.`,
-      `If there is a real negotiation, Administration can approve Pro as low as ${PRO_NEGOTIATED_MIN.toLocaleString()} System Switch.`,
+      `If there is a real negotiation, Administrations can approve Pro as low as ${PRO_NEGOTIATED_MIN.toLocaleString()} System Switch.`,
       'A negotiated Pro sale remains Pro even when its amount overlaps the 3,000 System Switch Standard maximum.',
     ],
     doNotSay: [
@@ -219,7 +219,7 @@ export const BRIDGER_CROSSING_STEPS: BridgerCrossingStep[] = [
     key: 'establish',
     phase: 'Crossing',
     title: 'Establish the File Folder',
-    meaning: 'When the prospect chooses to continue, guide them through the actual Company payment movement. The Bridger does not replace the WEAVE payment and Administration verification system.',
+    meaning: 'When the prospect chooses to continue, guide them through the actual Company payment movement. The Bridger does not replace the WEAVE payment and Administrations verification system.',
     say: [
       'Choose the File Folder position you genuinely want to establish.',
       'WEAVE will show the movement amount, Company TRX wallet and where to submit the transaction hash.',
@@ -228,7 +228,7 @@ export const BRIDGER_CROSSING_STEPS: BridgerCrossingStep[] = [
     doNotSay: [
       'Do not substitute a personal wallet for the Company wallet shown by WEAVE.',
       'Do not alter the agreed Pro or fixed Premium value after the payment movement begins.',
-      'Do not claim payment is approved before Administration verifies it.',
+      'Do not claim payment is approved before Administrations verifies it.',
     ],
     moveWhen: 'The prospect deliberately chooses the File Folder sale and submits the actual payment movement through WEAVE.',
   },
@@ -236,7 +236,7 @@ export const BRIDGER_CROSSING_STEPS: BridgerCrossingStep[] = [
     key: 'file-number',
     phase: 'Client',
     title: 'File Number Issued',
-    meaning: 'After Administration verifies the File Folder, the File Number carries the person from Prospect into Client establishment.',
+    meaning: 'After Administrations verifies the File Folder, the File Number carries the person from Prospect into Client establishment.',
     say: [
       'Your File Folder has been verified and your File Number has been issued.',
       'That File Number now carries this movement into your Client position.',
@@ -261,7 +261,7 @@ export const BRIDGER_CROSSING_STEPS: BridgerCrossingStep[] = [
     ],
     doNotSay: [
       'Do not create dependency on the Bridger.',
-      'Do not claim authority belonging to Administration, Forensics, Mandate or Attorney.',
+      'Do not claim authority belonging to Administrations, Forensics, Mandate or Attorney.',
       'Do not treat the Client relationship as finished after commission is earned.',
     ],
     moveWhen: 'The relationship has moved from conversion into truthful Client continuity.',

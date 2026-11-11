@@ -79,7 +79,7 @@ export async function GET(request: NextRequest) {
       // back to purchase: request an ownership reconciliation instead.
       return NextResponse.json(
         {
-          error: 'Your File Number is recorded, but the private File Folder ownership record needs Administration reconciliation. No second purchase is required.',
+          error: 'Your File Number is recorded, but the private File Folder ownership record needs Administrations reconciliation. No second purchase is required.',
           gate: 'administration',
           recovery: 'file_folder_ownership_review',
         },

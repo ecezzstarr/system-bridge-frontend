@@ -110,7 +110,7 @@ export default function DistributionStudioPage() {
         <div className="flex flex-wrap items-start justify-between gap-5">
           <div className="max-w-4xl">
             <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.28em] text-cyan-300">
-              <Share2 className="h-4 w-4" /> Administration · Company Movement
+              <Share2 className="h-4 w-4" /> Administrations · Company Movement
             </div>
             <h1 className="mt-3 text-3xl font-black tracking-tight sm:text-5xl">WEAVE DISTRIBUTION STUDIO</h1>
             <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">

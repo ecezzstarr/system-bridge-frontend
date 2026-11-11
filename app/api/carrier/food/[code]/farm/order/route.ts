@@ -91,7 +91,7 @@ export async function PATCH(request:NextRequest,{params}:{params:Promise<{code:s
       const proof=await submitFarmEscrowProof(client,order.id,String(body.transactionReference||''))
       await client.query('COMMIT')
       return NextResponse.json({success:true,payment:proof,
-        message:'Bank reference sent to WEAVE Administration. The seller will not dispatch until the transfer is independently verified.'})
+        message:'Bank reference sent to WEAVE Administrations. The seller will not dispatch until the transfer is independently verified.'})
     }
     if(action==='confirm_delivery'||action==='dispute'){
       const {rows:payments}=await client.query(`SELECT status FROM weave_food_escrow WHERE order_id=$1::uuid FOR UPDATE`,[order.id])
@@ -108,7 +108,7 @@ export async function PATCH(request:NextRequest,{params}:{params:Promise<{code:s
         `,['Carrier farm order '+order.id+' was received. Pay farmer the quoted total less one ₦1,000 WEAVE seller service fee.'])
         await client.query('COMMIT')
         return NextResponse.json({success:true,order:{id:order.id,status:'delivered'},escrowStatus:'release_due',
-          message:'Receipt recorded. WEAVE Administration will arrange the farmer payout, then record the actual transfer.'})
+          message:'Receipt recorded. WEAVE Administrations will arrange the farmer payout, then record the actual transfer.'})
       }
       const note=typeof body.disputeNote==='string'?body.disputeNote.trim().slice(0,500):''
       if(note.length<15){await client.query('ROLLBACK');return NextResponse.json({error:'Explain why delivery is disputed (15+ characters)'},{status:400})}
@@ -120,14 +120,14 @@ export async function PATCH(request:NextRequest,{params}:{params:Promise<{code:s
         FROM users WHERE role='admin' AND is_active=true
       `,['Carrier farm order '+order.id+' needs dispute review; seller payout remains blocked.'])
       await client.query('COMMIT')
-      return NextResponse.json({success:true,order:{id:order.id,status:'disputed'},message:'Delivery dispute recorded. Funds remain held for Administration review.'})
+      return NextResponse.json({success:true,order:{id:order.id,status:'disputed'},message:'Delivery dispute recorded. Funds remain held for Administrations review.'})
     }
     if(!['requested','farmer_confirmed','quoted','accepted'].includes(order.status)){
       await client.query('ROLLBACK');return NextResponse.json({error:'Paid or dispatched orders must follow dispute/refund review.'},{status:409})
     }
     const {rows:payments}=await client.query(`SELECT status FROM weave_food_escrow WHERE order_id=$1::uuid FOR UPDATE`,[order.id])
     if(payments.length && payments[0].status!=='awaiting_payment'){
-      await client.query('ROLLBACK');return NextResponse.json({error:'Payment proof under review; contact WEAVE Administration before cancelling.'},{status:409})
+      await client.query('ROLLBACK');return NextResponse.json({error:'Payment proof under review; contact WEAVE Administrations before cancelling.'},{status:409})
     }
     await client.query(`UPDATE weave_food_direct_orders SET status='cancelled',updated_at=NOW() WHERE id=$1::uuid`,[order.id])
     await client.query(`

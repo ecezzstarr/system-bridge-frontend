@@ -1,7 +1,7 @@
 export const WEAVE_SYSTEM_MAP = {
   identity: {
     company: 'WEAVE',
-    subject: 'The Weave of Presence: System Switch — Bridge Radiance',
+    subject: 'The Weave of Presence: System Switch — Bridge of Radiance',
     movement: 'Interaction in Motion',
     publicDescription:
       'An interactional company where human participation can become organized work, value, systems and opportunity.',
@@ -51,9 +51,9 @@ export const WEAVE_SYSTEM_MAP = {
       description: 'Stability: the Agent sells and distributes WEAVE products to Nigerians, manages customers and shop supply, and participates in attached Bridger programs with qualifying commissions.',
     },
     admin: {
-      name: 'Administration',
+      name: 'Administrations',
       kind: 'institutional authority',
-      description: 'Administration governs recognition, approval, infrastructure, company controls and continuity.',
+      description: 'Administrations governs recognition, approval, infrastructure, company controls and continuity.',
     },
   },
   layers: [
@@ -84,7 +84,7 @@ export const WEAVE_SYSTEM_MAP = {
     },
     {
       key: 'administration',
-      name: 'Administration',
+      name: 'Administrations',
       description: 'Company authority, controls, verification, infrastructure and system management.',
     },
   ],
@@ -102,7 +102,7 @@ export const WEAVE_SYSTEM_MAP = {
     'Continuation',
   ],
   companyMovement: [
-    'Administration',
+    'Administrations',
     'Agent',
     'Bridger',
     'Client',

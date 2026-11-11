@@ -106,7 +106,7 @@ export async function GET(request: NextRequest) {
     if (!position) return NextResponse.json({ success: false, error: 'A valid company position is required' }, { status: 400 })
 
     const admin = await firstAdmin(client)
-    if (!admin) return NextResponse.json({ success: false, error: 'Administration is unavailable' }, { status: 503 })
+    if (!admin) return NextResponse.json({ success: false, error: 'Administrations is unavailable' }, { status: 503 })
 
     const roomId = privateRoom(user.id, String(admin.id))
     await client.query(
@@ -156,12 +156,12 @@ export async function POST(request: NextRequest) {
       if (!other) return NextResponse.json({ success: false, error: 'Requester not found' }, { status: 404 })
     } else {
       other = await firstAdmin(client)
-      if (!other) return NextResponse.json({ success: false, error: 'Administration is unavailable' }, { status: 503 })
+      if (!other) return NextResponse.json({ success: false, error: 'Administrations is unavailable' }, { status: 503 })
     }
 
     const avatar = await client.query('SELECT avatar_url FROM users WHERE id=$1::uuid LIMIT 1', [user.id])
     const senderAvatar = avatar.rows[0]?.avatar_url || '👤'
-    const senderName = user.name || user.username || (user.role === 'admin' ? 'Administration' : 'WEAVE User')
+    const senderName = user.name || user.username || (user.role === 'admin' ? 'Administrations' : 'WEAVE User')
     const roomId = privateRoom(user.id, String(other.id))
 
     const result = await client.query(
@@ -184,7 +184,7 @@ export async function POST(request: NextRequest) {
        VALUES ($1::uuid,'company_guidance',$2,$3,$4::uuid,$5,$6)`,
       [
         targetId,
-        user.role === 'admin' ? `Administration replied · ${position}` : `Company Guidance · ${position}`,
+        user.role === 'admin' ? `Administrations replied · ${position}` : `Company Guidance · ${position}`,
         content.slice(0, 140),
         user.id,
         senderName,

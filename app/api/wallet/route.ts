@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'External transfer request submitted for Administration approval.',
+      message: 'External transfer request submitted for Administrations approval.',
       transactionId: tx.id,
     })
   } catch (error) {

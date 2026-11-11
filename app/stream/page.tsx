@@ -39,7 +39,7 @@ export default async function PublicStreamNetwork(){
     <header className="border-b border-white/10 bg-[radial-gradient(circle_at_20%_0%,rgba(244,63,94,.18),transparent_34%),radial-gradient(circle_at_80%_10%,rgba(139,92,246,.14),transparent_28%),linear-gradient(180deg,#100510,#030611)] px-5 py-12 md:px-8 md:py-16">
       <div className="mx-auto max-w-7xl">
         <p className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.25em] text-rose-300"><TowerControl className="h-4 w-4"/>WEAVE Stream Network</p>
-        <h1 data-weave-live-word="title" className="mt-4 max-w-4xl text-4xl font-black tracking-[-0.04em] sm:text-6xl">Public channels built inside Client File Folders.</h1>
+        <h1 data-weave-live-word="title" className="mt-4 max-w-4xl text-4xl font-black tracking-[-0.04em] sm:text-6xl">A window into Client worlds.</h1>
         <p className="mt-5 max-w-3xl text-base leading-7 text-slate-300">A channel appears here only after its Client finishes Creator Booth, Broadcast Studio and Streaming Open Gate construction. Visitors do not need a WEAVE account.</p>
       </div>
     </header>

@@ -242,7 +242,7 @@ export async function listUserDistributionChannels(userId: string, roleInput: un
 export async function getOrCreateDistributionProfile(userId: string, roleInput: unknown) {
   await ensureWeaveDistributionSchema()
   const role = normalizeRole(roleInput)
-  if (!role) throw new Error('Distribution Studio is available to Administration, Agent, Bridger and Client positions')
+  if (!role) throw new Error('Distribution Studio is available to Administrations, Agent, Bridger and Client positions')
 
   await sql`
     INSERT INTO weave_distribution_profiles (user_id,role)

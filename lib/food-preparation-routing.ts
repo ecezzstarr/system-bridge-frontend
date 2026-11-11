@@ -18,8 +18,8 @@ function notificationDetails(product:PreparationProduct,order:PaidOrder) {
   const item=product==='daisy'?String(order.cake_type||'Cake')+' · '+String(order.size_option||'')
     :String(order.variant_id||name)
   const amount=product==='daisy'?'1 cake':String(order.package_count||'')+' packages ('+String(order.box_count||'')+' cartons)'
-  const destination=String((product==='daisy'?order.delivery_location:order.delivery_address)||'Address pending Administration verification')
-  const phone=String((product==='daisy'?order.customer_phone:order.delivery_phone)||'Contact through Administration')
+  const destination=String((product==='daisy'?order.delivery_location:order.delivery_address)||'Address pending Administrations verification')
+  const phone=String((product==='daisy'?order.customer_phone:order.delivery_phone)||'Contact through Administrations')
   const receivingName=product==='daisy'?String(order.customer_name||'Customer'):'Receiving Agent'
   return [
     name+' · '+item,
@@ -28,7 +28,7 @@ function notificationDetails(product:PreparationProduct,order:PaidOrder) {
     'Recipient: '+receivingName,
     'Delivery: '+destination,
     'Phone: '+phone,
-    product==='daisy'?'Event date: '+String(order.event_date||'Confirm with Administration'):'',
+    product==='daisy'?'Event date: '+String(order.event_date||'Confirm with Administrations'):'',
     'Open your WEAVE Food Preparation Manager desk to begin and record each handoff.',
   ].filter(Boolean).join('\n').slice(0,1800)
 }

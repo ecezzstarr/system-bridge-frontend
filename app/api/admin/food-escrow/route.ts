@@ -9,7 +9,7 @@ const bankRefValid=(v:unknown)=>typeof v==='string'&&v.trim().length>=8&&v.trim(
 
 export async function GET(request:NextRequest){
   const admin=await getAuthUser(request)
-  if(!admin||admin.role!=='admin')return invalid('Administration only',403)
+  if(!admin||admin.role!=='admin')return invalid('Administrations only',403)
   try{
     await ensureFoodBridgeSchema()
     const {rows}=await getPool().query(`
@@ -40,7 +40,7 @@ export async function GET(request:NextRequest){
 
 export async function PATCH(request:NextRequest){
   const admin=await getAuthUser(request)
-  if(!admin||admin.role!=='admin')return invalid('Administration only',403)
+  if(!admin||admin.role!=='admin')return invalid('Administrations only',403)
   const body=await request.json().catch(()=>({}))
   const orderId=body.orderId
   const decision=body.action
@@ -86,7 +86,7 @@ export async function PATCH(request:NextRequest){
         String(order.produce)+' · '+String(order.quantity)+' '+String(order.unit),
         'Order '+orderId,
         'Deliver to '+String(order.destination_area)+', '+String(order.destination_state),
-        order.share_buyer_contact?'Buyer '+String(order.buyer_name)+' · '+String(order.buyer_phone_private):'Buyer contact not released; coordinate through WEAVE Administration.',
+        order.share_buyer_contact?'Buyer '+String(order.buyer_name)+' · '+String(order.buyer_phone_private):'Buyer contact not released; coordinate through WEAVE Administrations.',
         'Buyer paid: ₦'+Number(order.buyer_total_ngn).toLocaleString('en-NG'),
         'WEAVE seller fee: ₦1,000 (once per completed order).',
         'Farmer payout due after confirmed receipt: ₦'+Number(order.seller_payout_ngn).toLocaleString('en-NG'),
@@ -135,7 +135,7 @@ export async function PATCH(request:NextRequest){
       `,[order.seller_agent_id,'Farm order '+orderId+' seller payout recorded (₦'+Number(order.seller_payout_ngn).toLocaleString('en-NG')+'). WEAVE deducted its single ₦1,000 seller fee. Bank transfer reference: '+transfer+'.',admin.id])
       await client.query('COMMIT')
       return NextResponse.json({success:true,orderId,escrowStatus:'released',
-        message:'Administration recorded a completed external bank payout and notified the seller.'})
+        message:'Administrations recorded a completed external bank payout and notified the seller.'})
     }
     if(decision==='hold_dispute'){
       if(order.status!=='release_due'||order.order_status!=='delivered'){

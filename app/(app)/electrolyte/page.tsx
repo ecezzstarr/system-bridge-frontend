@@ -102,7 +102,7 @@ export default function ElectrolyteHomePage(){
         amount:Number(body.payment?.amountNgn||0),accountNumber:String(body.payment?.accountNumber||''),reference:String(body.payment?.reference||''),
       }
       setLastOrder(next)
-      setMessage(`${next.productName} restock created. Existing inventory does not block this order. Pay WEAVE, then send the payment proof for Administration verification.`)
+      setMessage(`${next.productName} restock created. Existing inventory does not block this order. Pay WEAVE, then send the payment proof for Administrations verification.`)
       await load()
     }catch(error){setMessage(error instanceof Error?error.message:'Unable to create Electrolyte order')}
     finally{setWorking(null)}
@@ -117,7 +117,7 @@ export default function ElectrolyteHomePage(){
       const response=await fetch('/api/electrolyte/payment/opay/receipt',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({orderId:order.id,receipt})})
       const body=await response.json().catch(()=>({}))
       if(!response.ok||!body.success)throw new Error(body.error||'Unable to send proof')
-      setProof(current=>({...current,[order.id]:''}));setMessage(body.message||'Payment proof sent to Administration.');await load()
+      setProof(current=>({...current,[order.id]:''}));setMessage(body.message||'Payment proof sent to Administrations.');await load()
     }catch(error){setMessage(error instanceof Error?error.message:'Unable to send proof')}
     finally{setWorking(null)}
   }
@@ -141,7 +141,7 @@ export default function ElectrolyteHomePage(){
     <AgentFoodPricingInfo product="electrolyte"/>
     <section className="overflow-hidden rounded-[2rem] border border-emerald-300/20 bg-gradient-to-br from-emerald-500/10 via-slate-950 to-lime-500/5">
       <div className="grid gap-0 lg:grid-cols-[1fr_430px]">
-        <div className="p-6 md:p-9"><p className="text-[10px] font-black uppercase tracking-[.3em] text-emerald-300">Agent Department · Electrolyte</p><h1 className="mt-2 text-5xl font-black md:text-7xl">ELECTROLYTE</h1><p className="mt-4 max-w-3xl text-sm leading-7 text-slate-300 md:text-base">Electrolyte is its own WEAVE food ground. Order Small Bowl or Medium Bowl stock, pay WEAVE, move through Administration fresh preparation, receive it, then distribute through your local route or Carrier.</p><div className="mt-5 rounded-2xl border border-emerald-300/20 bg-emerald-300/[.05] p-4 text-sm text-emerald-50"><strong>Restock is always open.</strong> Having Electrolyte already in inventory does not stop an Agent from ordering more.</div><div className="mt-5 flex flex-wrap gap-2"><Link href="/agent/work"><Button variant="outline" className="border-white/15 text-white">AGENT WORK</Button></Link><Link href="/agent/distribution"><Button variant="outline" className="border-white/15 text-white"><Truck className="mr-2 h-4 w-4"/>DISTRIBUTION ROUTE</Button></Link><Link href="/weave/carrier/food"><Button variant="outline" className="border-white/15 text-white">CARRIER</Button></Link><Button variant="outline" className="border-white/15 text-white" onClick={()=>void load()}><RefreshCcw className="mr-2 h-4 w-4"/>REFRESH</Button></div></div>
+        <div className="p-6 md:p-9"><p className="text-[10px] font-black uppercase tracking-[.3em] text-emerald-300">Agent Department · Electrolyte</p><h1 className="mt-2 text-5xl font-black md:text-7xl">ELECTROLYTE</h1><p className="mt-4 max-w-3xl text-sm leading-7 text-slate-300 md:text-base">Electrolyte is its own WEAVE food ground. Order Small Bowl or Medium Bowl stock, pay WEAVE, move through Administrations fresh preparation, receive it, then distribute through your local route or Carrier.</p><div className="mt-5 rounded-2xl border border-emerald-300/20 bg-emerald-300/[.05] p-4 text-sm text-emerald-50"><strong>Restock is always open.</strong> Having Electrolyte already in inventory does not stop an Agent from ordering more.</div><div className="mt-5 flex flex-wrap gap-2"><Link href="/agent/work"><Button variant="outline" className="border-white/15 text-white">AGENT WORK</Button></Link><Link href="/agent/distribution"><Button variant="outline" className="border-white/15 text-white"><Truck className="mr-2 h-4 w-4"/>DISTRIBUTION ROUTE</Button></Link><Link href="/weave/carrier/food"><Button variant="outline" className="border-white/15 text-white">CARRIER</Button></Link><Button variant="outline" className="border-white/15 text-white" onClick={()=>void load()}><RefreshCcw className="mr-2 h-4 w-4"/>REFRESH</Button></div></div>
         <img src="/weave-food/electrolyte.jpeg" alt="WEAVE Electrolyte" className="h-full min-h-[320px] w-full bg-[#fffaf0] object-contain"/>
       </div>
     </section>

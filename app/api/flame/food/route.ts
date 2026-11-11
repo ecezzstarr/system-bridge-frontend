@@ -60,7 +60,7 @@ export async function POST(request:NextRequest) {
         WHERE weave_food_farmers.status='rejected'
         RETURNING id,status,farm_name,state,community
       `,[user.id,name,phone,body.state,community,body.shareFarmerContact===true])
-      return rows.length ? NextResponse.json({success:true,farmer:rows[0],message:'Farm registered under your Agent account for Administration verification.'},{status:201})
+      return rows.length ? NextResponse.json({success:true,farmer:rows[0],message:'Farm registered under your Agent account for Administrations verification.'},{status:201})
         : NextResponse.json({error:'Your Agent account already has a registered farm.'},{status:409})
     }
     if(body.action==='set_payout_account'){
@@ -74,8 +74,8 @@ export async function POST(request:NextRequest) {
         SET payout_bank_name=$2,payout_account_number=$3,payout_account_name=$4,updated_at=NOW()
         WHERE agent_id=$1::uuid AND status='approved' RETURNING id
       `,[user.id,bank,account,name])
-      return rows.length?NextResponse.json({success:true,message:'Seller payout details saved privately for Administration; bank ownership must be checked before money is sent.'})
-        :NextResponse.json({error:'Administration must approve your farm first.'},{status:403})
+      return rows.length?NextResponse.json({success:true,message:'Seller payout details saved privately for Administrations; bank ownership must be checked before money is sent.'})
+        :NextResponse.json({error:'Administrations must approve your farm first.'},{status:403})
     }
     if(body.action==='household_bundle'){
       // A discount is shown only when this same approved supplier has real
@@ -159,7 +159,7 @@ export async function POST(request:NextRequest) {
         RETURNING id,produce,unit,available_quantity,unit_price_ngn,status
       `,[user.id,name,body.unit,qty,min,price,details])
       return rows.length ? NextResponse.json({success:true,offer:rows[0]},{status:201})
-        : NextResponse.json({error:'Administration must verify this Agent farm before its offers can go live.'},{status:403})
+        : NextResponse.json({error:'Administrations must verify this Agent farm before its offers can go live.'},{status:403})
     }
     return NextResponse.json({error:'Unknown food action'},{status:400})
   } catch(error) {

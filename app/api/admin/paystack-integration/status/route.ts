@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
   const admin = await getAuthUser(request)
-  if (!admin || admin.role !== 'admin') return NextResponse.json({ error: 'Administration access required.' }, { status: 403 })
+  if (!admin || admin.role !== 'admin') return NextResponse.json({ error: 'Administrations access required.' }, { status: 403 })
   try {
     const config = await getPaystackConfig()
     const originValid = /^https:\/\//i.test(config.publicOrigin) && !config.publicOrigin.endsWith('/')

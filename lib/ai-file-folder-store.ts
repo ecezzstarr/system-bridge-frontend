@@ -619,7 +619,7 @@ export async function purchaseAiProductFromWallet(sql:any,input:{
 export async function adminCreditAiOperatingFlameCoin(sql:any,input:{aiId:string;amountFlameCoin:number;adminReference:string;description?:string}){
   await ensureAiFileFolderStore(sql)
   const amount=Math.max(0,Number(input.amountFlameCoin)||0)
-  if(amount<=0)throw new Error('Administration credit must be greater than zero.')
+  if(amount<=0)throw new Error('Administrations credit must be greater than zero.')
   const rows=await sql`
     WITH credited AS (
       UPDATE weave_ai_file_folders

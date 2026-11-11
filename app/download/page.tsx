@@ -14,7 +14,7 @@ const steps = [
   },
   {
     title: 'Sign in and work',
-    copy: 'Sign in with your WEAVE account. Agents, Bridgers, Clients and Administration continue into their existing role environment.',
+    copy: 'Sign in with your WEAVE account. Agents, Bridgers, Clients and Administrations continue into their existing role environment.',
   },
 ]
 
@@ -36,7 +36,7 @@ export default function DownloadWeavePage() {
               <Download className="h-6 w-6" />
             </div>
             <p className="mt-5 text-[9px] font-black uppercase tracking-[.2em] text-cyan-200">Official WEAVE Application</p>
-            <h1 className="mt-2 max-w-3xl text-3xl font-black tracking-tight sm:text-5xl">Download WEAVE and begin work from your device.</h1>
+            <h1 className="mt-2 max-w-3xl text-3xl font-black tracking-tight sm:text-5xl">Your company workplace, close at hand.</h1>
             <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">
               This is the official installable WEAVE web application. It uses the live WEAVE release, so users continue receiving the current system without downloading a new APK after every deployment.
             </p>

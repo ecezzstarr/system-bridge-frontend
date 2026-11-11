@@ -11,7 +11,7 @@ export const dynamic='force-dynamic'
 
 export async function GET(request:NextRequest){
   const admin=await getAuthUser(request)
-  if(!admin||admin.role!=='admin')return NextResponse.json({success:false,error:'Administration only'},{status:403})
+  if(!admin||admin.role!=='admin')return NextResponse.json({success:false,error:'Administrations only'},{status:403})
   try{
     await ensureFoodPreparationManagerSchema()
     const [staff,allocations]=await Promise.all([
@@ -45,7 +45,7 @@ export async function GET(request:NextRequest){
 
 export async function PATCH(request:NextRequest){
   const admin=await getAuthUser(request)
-  if(!admin||admin.role!=='admin')return NextResponse.json({success:false,error:'Administration only'},{status:403})
+  if(!admin||admin.role!=='admin')return NextResponse.json({success:false,error:'Administrations only'},{status:403})
   try{
     const body=await request.json().catch(()=>({}))
     const action=body.action
@@ -109,8 +109,8 @@ export async function PATCH(request:NextRequest){
             VALUES ($1::uuid,'food_preparation_decision',$2,$3,
               'WEAVE Administration','/weave/lifestyles/food-preparation')`,
             [person.agent_id,decision==='approved'?'Food Preparation appointment approved':'Food Preparation application declined',
-              decision==='approved'?'Administration approved your employment application. Open your approved Food Preparation workspace to receive actual team tasks.':
-                'Administration declined your Food Preparation application. Open the employment record to read the decision and respond.'])
+              decision==='approved'?'Administrations approved your employment application. Open your approved Food Preparation workspace to receive actual team tasks.':
+                'Administrations declined your Food Preparation application. Open the employment record to read the decision and respond.'])
         }catch(error){console.error('[food preparation] employee decision notification failed',error)}
         return NextResponse.json({success:true,appointment:rows[0]})
       }catch(error){

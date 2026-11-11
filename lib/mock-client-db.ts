@@ -43,7 +43,7 @@ const ADMIN_CLIENT: ClientUser = {
   phone: '+1234567890',
   name: 'Platform Admin',
   password: 'PlatformAdmin@2026',
-  business_name: 'System Administration',
+  business_name: 'System Administrations',
   role: 'admin',
   company_wallet: 'THGBvmPt3XEb8mbSRXViA93GkW3PpCanJk', // Company wallet address
   created_at: new Date().toISOString(),

@@ -168,8 +168,8 @@ export function normalizeFlameArtifactConfig(input:unknown):FlameArtifactVisualC
 
 export const FLAME_ARTIFACT_SURFACE_LABELS:Record<FlameArtifactSurface,string>={
   'weave-hero':'Public WEAVE · 3D hero',
-  'bridge-radiance-core':'Bridge Radiance · center artifact',
-  'bridge-radiance-portals':'Bridge Radiance · position portals',
+  'bridge-radiance-core':'Bridge of Radiance · center artifact',
+  'bridge-radiance-portals':'Bridge of Radiance · position portals',
   'event-atmosphere':'Flame Event · global atmosphere',
   'client-event':'Client Flame Event · center artifact',
 }

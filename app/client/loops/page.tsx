@@ -71,7 +71,7 @@ export default function ClientLoopsPage(){
  const center=loading?<div className="flex min-h-[420px] items-center justify-center"><RefreshCw className="h-7 w-7 animate-spin text-sky-300"/></div>:<>
   {message&&<div className="mb-4 rounded-xl border border-sky-300/10 bg-sky-400/[.035] px-4 py-3 text-xs text-slate-300">{message}</div>}
   <div className="flex flex-wrap items-end justify-between gap-3 border-b border-white/10 pb-4">
-   <div><p className="text-[9px] font-black uppercase tracking-[.2em] text-sky-300">Live loop ground</p><h2 className="mt-1 text-xl font-black text-white">Published movement</h2><p className="mt-2 text-xs leading-5 text-slate-400">{client?.business_name||client?.name} · movement that Administration has opened to the Client position.</p></div>
+   <div><p className="text-[9px] font-black uppercase tracking-[.2em] text-sky-300">Live loop ground</p><h2 className="mt-1 text-xl font-black text-white">Published movement</h2><p className="mt-2 text-xs leading-5 text-slate-400">{client?.business_name||client?.name} · movement that Administrations has opened to the Client position.</p></div>
    <GitBranch className="h-6 w-6 text-sky-300"/>
   </div>
   <div className="mt-4 space-y-3">

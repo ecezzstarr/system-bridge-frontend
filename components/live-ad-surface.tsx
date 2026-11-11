@@ -163,7 +163,7 @@ export function LiveAdSurface() {
         <div className="p-4 sm:p-5">
           <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.22em] text-cyan-300">
             <Megaphone className="h-3.5 w-3.5" />
-            WEAVE · Administration
+            WEAVE · Administrations
           </div>
           <h2 className="pr-10 text-lg font-black tracking-tight text-white sm:text-2xl">{activeAd.title}</h2>
           {activeAd.body && (

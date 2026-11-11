@@ -76,7 +76,7 @@ export function AdminWorkplace({userName,onOpenDistricts}:{userName?:string|null
          </div>
        </div>
      </header>
-     <nav className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5" aria-label="Administration working destinations">
+     <nav className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5" aria-label="Administrations working destinations">
        {ADMIN_SPACES.map(x=>{
          const Icon=ICONS[x.id],selected=x.id===active&&!q
          return <button key={x.id} type="button" aria-pressed={selected} onClick={()=>{setActive(x.id);setSearch('')}}
@@ -94,7 +94,7 @@ export function AdminWorkplace({userName,onOpenDistricts}:{userName?:string|null
          </div>
          <label className="flex min-h-11 w-full items-center gap-2 rounded-xl border border-[#d4c199] bg-[#fffefa] px-3 sm:w-72">
            <Search className="h-4 w-4 text-[#987233]"/>
-           <span className="sr-only">Search Administration workshops</span>
+           <span className="sr-only">Search Administrations workshops</span>
            <input type="search" placeholder="Example: approve staff or verify deposits" value={search} onChange={e=>setSearch(e.target.value)} className="w-full bg-transparent py-3 text-sm outline-none placeholder:text-[#74818a]"/>
          </label>
        </div>

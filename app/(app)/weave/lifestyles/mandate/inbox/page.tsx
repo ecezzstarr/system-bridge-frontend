@@ -81,14 +81,14 @@ export default function MandateGuidanceInbox(){
 
   if(!isInitialized||loading)return <main className="p-6 text-sm text-white">Opening Mandate Guidance Inbox…</main>
   if(!user||!['agent','bridger'].includes(user.role||'')||departments.length===0)
-    return <main className="p-6 text-white"><p>Administration approval and active Agent/Bridger standing are required.</p><Link href="/weave/lifestyles/mandate" className="mt-4 inline-flex text-sky-200">Return to applications</Link></main>
+    return <main className="p-6 text-white"><p>Administrations approval and active Agent/Bridger standing are required.</p><Link href="/weave/lifestyles/mandate" className="mt-4 inline-flex text-sky-200">Return to applications</Link></main>
 
   return <main className="mx-auto max-w-7xl px-4 pb-16 pt-5 text-white" data-mandate-staff-inbox="approved-only">
     <Link href="/weave/lifestyles/mandate" className="flex items-center gap-2 text-xs text-sky-200"><ArrowLeft className="h-4 w-4"/>WEAVE Mandate Lifestyle</Link>
     <div className="mt-5 flex flex-wrap items-end justify-between gap-3 border-b border-white/10 pb-5">
       <div><p className="flex items-center gap-2 text-[10px] font-black uppercase text-amber-200"><ShieldCheck className="h-4 w-4"/>Approved Company Support</p>
         <h1 className="mt-2 text-2xl font-black">Company Guidance · Department Inbox</h1>
-        <p className="mt-2 max-w-2xl text-xs leading-5 text-stone-400">Replies are sent from your named Agent or Bridger identity with its department attached. Administration still oversees each conversation.</p>
+        <p className="mt-2 max-w-2xl text-xs leading-5 text-stone-400">Replies are sent from your named Agent or Bridger identity with its department attached. Administrations still oversees each conversation.</p>
       </div>
       <div className="flex flex-wrap gap-2">{departments.map(d=><button key={d} type="button" onClick={()=>setDepartment(d)} aria-pressed={department===d}
         className={`border px-3 py-2 text-xs font-bold ${department===d?'border-amber-300/50 text-amber-100':'border-white/10 text-stone-400'}`}>{names[d]}</button>)}</div>
@@ -129,6 +129,6 @@ export default function MandateGuidanceInbox(){
         </>}
       </section>
     </div>
-    <p className="mt-3 text-xs leading-5 text-stone-500">Do not export private conversations or promise actions beyond your authorized department. Escalate safety, finance, legal and unresolved verification decisions to Administration.</p>
+    <p className="mt-3 text-xs leading-5 text-stone-500">Do not export private conversations or promise actions beyond your authorized department. Escalate safety, finance, legal and unresolved verification decisions to Administrations.</p>
   </main>
 }

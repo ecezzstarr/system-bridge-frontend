@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
   try {
     const user = await requireApiUser(request)
     if (!user || user.role !== 'admin') {
-      return NextResponse.json({ error: 'Administration access required' }, { status: 403 })
+      return NextResponse.json({ error: 'Administrations access required' }, { status: 403 })
     }
 
     const limit = Number(new URL(request.url).searchParams.get('limit') || 50)

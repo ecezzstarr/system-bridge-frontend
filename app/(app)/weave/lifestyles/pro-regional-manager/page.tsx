@@ -51,7 +51,7 @@ export default function ProRegionalManagerLifestyleApplication(){
     body:JSON.stringify({...values,businessPlan:plan,termsAccepted:accepted})})
    const data=await response.json()
    if(!response.ok)throw new Error(data.error||'Application not submitted')
-   setNotice(data.notice||'Application recorded for Administration review')
+   setNotice(data.notice||'Application recorded for Administrations review')
    await load()
   }catch(e){setError(e instanceof Error?e.message:'Application not submitted')}
   finally{setBusy(false)}
@@ -68,7 +68,7 @@ export default function ProRegionalManagerLifestyleApplication(){
     <p className="text-sm leading-7 text-slate-200">This is a distinct WEAVE company appointment, not the ordinary Regional Manager position. Every approved Pro Regional Manager operates a Pro-tier File Folder; the business inside it comes from the person's own work in life. Your original department determines your company work, while your business plan determines what your File Folder will become.</p>
     <p className="text-sm leading-7 text-slate-200">{PRO_MANAGER_COMPANY_PURPOSE}</p>
     <p className="text-sm text-sky-100">Your department: <strong>{department?.department||'Not eligible through Lifestyle'}</strong>{department?' · '+department.dailyWork:''}</p>
-    <p className="text-xs text-slate-300">Administration must approve your application, written salary agreement and File Folder identity before any activation payment is requested. Applying or paying does not by itself create a company appointment or a File Folder. Do not send funds using application details.</p>
+    <p className="text-xs text-slate-300">Administrations must approve your application, written salary agreement and File Folder identity before any activation payment is requested. Applying or paying does not by itself create a company appointment or a File Folder. Do not send funds using application details.</p>
    </header>
    {!eligible&&<section className="rounded-xl border border-amber-300/25 p-5 text-sm">
     Bridgers and Agents apply through Lifestyle. External Clients with an issued Pro File Number use the
@@ -88,10 +88,10 @@ export default function ProRegionalManagerLifestyleApplication(){
       <Link href="/weave/lifestyles/pro-regional-manager/workspace"
        className="rounded-lg border border-sky-300/35 px-4 py-3 text-sm font-semibold text-sky-100">My Pro Regional Manager workspace</Link>
      </div>
-     <p className="text-sm">Agreed monthly salary in Administration record: {Number(application.agreed_monthly_salary_usdt)>0?Number(application.agreed_monthly_salary_usdt).toLocaleString()+' USDT':'Company record needs reconciliation'}</p>
-     <p className="text-xs text-sky-100">Administration reviewed your application and employment terms. Your Pro File Folder, secure account ownership, business-plan verification, activation and departmental workspace must still be completed. Do not assume active Pro status or send an unsolicited activation payment.</p>
+     <p className="text-sm">Agreed monthly salary in Administrations record: {Number(application.agreed_monthly_salary_usdt)>0?Number(application.agreed_monthly_salary_usdt).toLocaleString()+' USDT':'Company record needs reconciliation'}</p>
+     <p className="text-xs text-sky-100">Administrations reviewed your application and employment terms. Your Pro File Folder, secure account ownership, business-plan verification, activation and departmental workspace must still be completed. Do not assume active Pro status or send an unsolicited activation payment.</p>
     </>}
-    {application.review_note&&<p className="text-xs text-amber-100">Administration review: {application.review_note}</p>}
+    {application.review_note&&<p className="text-xs text-amber-100">Administrations review: {application.review_note}</p>}
    </section>}
    {eligible&&canReapply&&<section className="space-y-5 rounded-2xl border border-white/15 p-5">
     <h2 className="text-xl font-semibold">{application?'Submit a revised application':'Apply for Pro Regional Manager'}</h2>
@@ -108,7 +108,7 @@ export default function ProRegionalManagerLifestyleApplication(){
     <div className="space-y-2 rounded-xl border border-sky-300/30 bg-sky-300/[.06] p-4" data-pro-own-business-plan="true">
      <h3 className="text-lg font-semibold">Business plan · The work that will grow through your File Folder</h3>
      <p className="text-sm leading-7 text-slate-200">{PRO_MANAGER_FILE_FOLDER_DISTINCTION}</p>
-     <p className="text-xs leading-6 text-slate-300">Describe real services, people, obligations and measurable outcomes. Administration evaluates whether the plan can operate, how employees will contribute and how value will be recorded. A projection is not evidence of income.</p>
+     <p className="text-xs leading-6 text-slate-300">Describe real services, people, obligations and measurable outcomes. Administrations evaluates whether the plan can operate, how employees will contribute and how value will be recorded. A projection is not evidence of income.</p>
     </div>
     {fields.map(({key,title,guidance})=><label key={key} className="block text-sm">{title}
       <span className="mt-2 block text-xs leading-6 text-slate-300">{guidance}</span>
@@ -123,7 +123,7 @@ export default function ProRegionalManagerLifestyleApplication(){
     </label>
     <label className="flex items-start gap-3 text-sm leading-6 text-slate-300">
      <input type="checkbox" checked={accepted} onChange={e=>setAccepted(e.target.checked)} className="mt-1"/>
-     I understand that my Pro File Folder will operate my own approved business, that Weave grows through real verified work and my enterprise's success, and that employee assignments, customer obligations and commercial income require proper records. Pro employment, salary, ownership and activation require separate Administration verification and signed terms. No payment is due when submitting this application.
+     I understand that my Pro File Folder will operate my own approved business, that Weave grows through real verified work and my enterprise's success, and that employee assignments, customer obligations and commercial income require proper records. Pro employment, salary, ownership and activation require separate Administrations verification and signed terms. No payment is due when submitting this application.
     </label>
     <button type="button" disabled={busy||!accepted} onClick={()=>void submit()}
      className="min-h-11 rounded-xl bg-sky-300 px-5 py-3 font-bold text-slate-950 disabled:opacity-40">

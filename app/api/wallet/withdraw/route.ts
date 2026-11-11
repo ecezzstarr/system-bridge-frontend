@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
       RETURNING id
     `
 
-    await notifyAdminOrder({orderId:String(withdrawal.id),event:'placed',department:user.role==='agent'?'agent':user.role==='bridger'?'bridger':'client',subject:'External System Switch withdrawal request',detail:`${user.name||user.username||user.role} requested withdrawal of ${amountFlameCoin.toLocaleString()} System Switch. Administration approval required`,adminPath:'/admin/control-center',actorId:user.id,actorName:user.name||user.role})
+    await notifyAdminOrder({orderId:String(withdrawal.id),event:'placed',department:user.role==='agent'?'agent':user.role==='bridger'?'bridger':'client',subject:'External System Switch withdrawal request',detail:`${user.name||user.username||user.role} requested withdrawal of ${amountFlameCoin.toLocaleString()} System Switch. Administrations approval required`,adminPath:'/admin/control-center',actorId:user.id,actorName:user.name||user.role})
 
     const receipt = await issueWeaveReceipt({
       userId: user.id,

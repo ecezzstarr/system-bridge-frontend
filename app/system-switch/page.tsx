@@ -36,7 +36,7 @@ export default function SystemSwitchEntryPage() {
 
   const role = user.role as 'admin' | 'agent' | 'bridger'
   const backHref = '/event'
-  const position = role === 'admin' ? 'Administration' : role === 'agent' ? 'Agent · Stability' : 'Bridger · Hope'
+  const position = role === 'admin' ? 'Administrations' : role === 'agent' ? 'Agent · Stability' : 'Bridger · Hope'
   const crossing = WEAVE_WRITING.systemSwitch
 
   return (

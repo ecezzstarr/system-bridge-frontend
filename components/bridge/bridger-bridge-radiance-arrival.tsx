@@ -33,7 +33,7 @@ export default function BridgerBridgeRadianceArrival({
       <p className="text-[9px] font-black uppercase tracking-[.23em] text-cyan-200">Bridge AI · {bridgerName}</p>
       <h2 className="mt-2 text-xl font-black">Recognize what you want to build</h2>
       <p className="mt-2 text-sm leading-6 text-slate-300">
-        Talk with the Bridger's Bridge AI about your idea, compare the four File Folder types, or continue to purchase. Checkout supports Paystack in Naira and the existing TRX method. Your purchase remains attached to this specific Bridger path for Administration verification.
+        Talk with the Bridger's Bridge AI about your idea, compare the four File Folder types, or continue to purchase. Checkout supports Paystack in Naira and the existing TRX method. Your purchase remains attached to this specific Bridger path for Administrations verification.
       </p>
       <div className="mt-4 flex flex-wrap gap-3">
         <Link href={`/bridge/${encodeURIComponent(code)}?chat=1`}

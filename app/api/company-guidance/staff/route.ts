@@ -45,7 +45,7 @@ export async function GET(request:NextRequest){
     const client=await getPool().connect()
     try{
       const admin=await companyAdmin(client)
-      if(!admin)return NextResponse.json({success:false,error:'Administration currently unavailable.'},{status:503})
+      if(!admin)return NextResponse.json({success:false,error:'Administrations currently unavailable.'},{status:503})
       const requesterId=request.nextUrl.searchParams.get('requesterId')
       if(requesterId){
         const person=await checkThread(client,String(admin.id),requesterId,department)
@@ -120,7 +120,7 @@ export async function POST(request:NextRequest){
       `,[user.id,department,user.role])
       if(!appointment.rows.length){await client.query('ROLLBACK');return NextResponse.json({success:false,error:'Your department appointment is no longer active.'},{status:403})}
       const admin=await companyAdmin(client)
-      if(!admin){await client.query('ROLLBACK');return NextResponse.json({success:false,error:'Administration currently unavailable.'},{status:503})}
+      if(!admin){await client.query('ROLLBACK');return NextResponse.json({success:false,error:'Administrations currently unavailable.'},{status:503})}
       const person=await checkThread(client,String(admin.id),requesterId,department)
       if(!person){await client.query('ROLLBACK');return NextResponse.json({success:false,error:'No authorized requester thread found.'},{status:404})}
       const roomId=privateRoom(String(admin.id),requesterId)

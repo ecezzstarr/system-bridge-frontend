@@ -78,13 +78,13 @@ export default function AdminClientDepositsPage() {
   }
 
   if (!isInitialized) return <main className="p-8 text-base text-slate-300">Opening Client deposits...</main>
-  if (user?.role !== 'admin') return <main className="p-8 text-base text-red-300">Administration access required.</main>
+  if (user?.role !== 'admin') return <main className="p-8 text-base text-red-300">Administrations access required.</main>
 
   return (
     <main className="mx-auto max-w-7xl space-y-8 p-5 text-white md:p-8">
       <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
-          <p className="text-sm font-black uppercase tracking-[0.18em] text-emerald-300">Administration · Client Funding</p>
+          <p className="text-sm font-black uppercase tracking-[0.18em] text-emerald-300">Administrations · Client Funding</p>
           <h1 className="mt-2 text-3xl font-black md:text-5xl">Client Deposit Requests</h1>
           <p className="mt-3 max-w-3xl text-base leading-7 text-slate-300">
             Clients fund System Switch by sending TRX to the Company wallet. Review the Client, File Number, amount and transaction hash here before approving or rejecting the request.
