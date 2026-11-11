@@ -63,6 +63,9 @@ async function main(){
     await local.query(
       "INSERT INTO escrow(user_id,amount,status,currency) VALUES($1,1.5,'locked','Flame Coin')",
       [agent])
+    await local.query(
+      "INSERT INTO escrow(user_id,amount,status,currency) VALUES($1,0.75,'locked','System Switch')",
+      [bridger])
 
     const options={filter:'all' as const,search:'',offset:0,limit:100}
     const full=await getAdminUserDirectory(options)
@@ -77,6 +80,7 @@ async function main(){
     assert.equal(agentRecord.escrow_balance,1.5)
     const legacy=full.users.find(u=>u.id===bridger)!
     assert.equal(legacy.wallet_status,'legacy')
+    assert.equal(legacy.escrow_balance,0.75,'New display-name currency remains readable alongside historical values')
     assert.equal(legacy.platform_wallet_balance,7.654321)
     const ambiguous=full.users.find(u=>u.id===client)!
     assert.equal(ambiguous.wallet_status,'ambiguous')
