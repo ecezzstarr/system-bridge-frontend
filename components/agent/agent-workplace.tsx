@@ -60,11 +60,11 @@ export function AgentWorkplace({userName,onOpenDistricts}:{userName?:string|null
           <div className="max-w-3xl">
             <WeaveLogo size="sm"/>
             <p className="mt-4 text-xs font-semibold uppercase tracking-[.2em] text-[#99712c]">Stability · Agent Department</p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">Your company workplace</h1>
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">The work of Stability.</h1>
             {userName&&<p className="mt-1 text-base font-medium text-[#65716c]">{userName}</p>}
             <p className="mt-3 max-w-2xl text-sm leading-6 text-[#4e6168] sm:text-base">
-              Stability moves WEAVE products into daily life. Order company stock, supply real outlets and customers,
-              support assigned Bridgers, and record verified payments and returns.
+              Bring Weave into everyday life. Order company stock, supply your customers and outlets,
+              support assigned Bridgers and keep your sales, payments and returns in view.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -80,7 +80,7 @@ export function AgentWorkplace({userName,onOpenDistricts}:{userName?:string|null
       </header>
 
       <section data-agent-daily-job-guide="learn-order-supply-settle" className="mt-5 rounded-2xl border border-[#d6bf8e] bg-white/90 p-5 shadow-sm sm:p-6">
-        <h2 className="text-xl font-bold text-[#293b42]">Your Stability job, from start to payment</h2>
+        <h2 className="text-xl font-bold text-[#293b42]">Your work, from product to payment.</h2>
         <p className="mt-2 text-sm leading-6 text-[#52636b]">Weave supplies the product and commercial systems. Your role is to perform real distribution or an approved digital service, serve people, and keep honest stock and financial records.</p>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {[
@@ -127,7 +127,7 @@ export function AgentWorkplace({userName,onOpenDistricts}:{userName?:string|null
 
         {active==='desk'&&!query&&<div className="mt-6 rounded-xl border border-[#e0d2b8] bg-[#f5f0e5] p-4 sm:p-5">
           <div className="flex items-center gap-2"><ClipboardList className="h-5 w-5 text-[#957329]"/><h3 className="text-base font-semibold">How Stability work moves</h3></div>
-          <p className="mt-1 text-sm leading-6 text-[#57656a]">These are operating steps, not invented targets or confirmed transactions.</p>
+          <p className="mt-1 text-sm leading-6 text-[#57656a]">Choose your product, receive your stock, serve your customers and settle your records.</p>
           <div className="mt-4 grid gap-2 md:grid-cols-4">
             {[
               ['1 · Choose product','/agent/work','Check the correct stock and product price.'],
@@ -147,8 +147,8 @@ export function AgentWorkplace({userName,onOpenDistricts}:{userName?:string|null
       </section>
 
       <footer className="mt-5 grid gap-3 rounded-xl border border-[#dac7a2] bg-[#fffbf3] p-5 text-sm text-[#506269] sm:grid-cols-2">
-        <div className="flex items-start gap-2"><Package className="mt-0.5 h-5 w-5 shrink-0 text-[#99732f]"/><p><strong className="text-[#293b43]">Real product imagery.</strong> Agility, Electrolyte, Ember and Daisy Pastries are shown using their existing WEAVE repository photographs and promotional artwork, not generic replacements.</p></div>
-        <div className="flex items-start gap-2"><ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#99732f]"/><p><strong className="text-[#293b43]">Verified work only.</strong> Orders, wages, outlet collections and commissions remain recorded in their original services; no payment or employment is presumed complete.</p></div>
+        <div className="flex items-start gap-2"><Package className="mt-0.5 h-5 w-5 shrink-0 text-[#99732f]"/><p><strong className="text-[#293b43]">Know what you sell.</strong> Explore Agility, Electrolyte, Ember and Daisy Pastries. Check each product’s current stock, pricing and selling guidance before you order.</p></div>
+        <div className="flex items-start gap-2"><ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#99732f]"/><p><strong className="text-[#293b43]">Keep your work in view.</strong> Follow your orders, outlet collections and approved commissions. Your records show what has been received, sold and paid.</p></div>
       </footer>
     </div>
   </main>

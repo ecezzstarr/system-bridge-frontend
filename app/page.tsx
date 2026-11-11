@@ -24,33 +24,33 @@ import { ReachRequestTracker } from '@/components/reach-delivery/request-tracker
 const departments = [
   { name: 'Stability', people: 'Agents' },
   { name: 'Hope', people: 'Bridgers' },
-  { name: 'A Time', people: 'Administration' },
-  { name: 'Dream', people: 'Clients' },
+  { name: 'A Time', people: 'Administrations' },
+  { name: 'Dream Lovely', people: 'Clients' },
 ] as const
 
 const systems = [
   {
     icon: Workflow,
     title: 'Services',
-    copy: 'Functions people can enter, use and participate in as real work moves through WEAVE.',
+    copy: 'Serve customers, fulfil requests and carry useful work into daily life.',
   },
   {
     icon: Orbit,
     title: 'Instruments',
-    copy: 'Practical tools that recognize movement, record participation and help people act from where they already are.',
+    copy: 'Create, communicate and organize your work with the tools available to your position.',
   },
   {
     icon: Network,
     title: 'Systems',
-    copy: 'Organized structures that connect people, roles, work, value and opportunity without separating them from real life.',
+    copy: 'Bring your people, operations and records together around a business you can build.',
   },
 ] as const
 
 const staffEntrances = [
   { name: 'Agent', department: 'Stability', enter: '/login', registration: '/register?role=agent', registrationLabel: 'Join as an Agent' },
   { name: 'Bridger', department: 'Hope', enter: '/login', registration: '/register?role=bridger', registrationLabel: 'Join as a Bridger' },
-  { name: 'Client', department: 'Dream', enter: '/client/login', registration: '/client/register', registrationLabel: 'Register with File Number' },
-  { name: 'Administration', department: 'A Time', enter: '/login?portal=admin', registration: null, registrationLabel: null },
+  { name: 'Client', department: 'Dream Lovely', enter: '/client/login', registration: '/client/register', registrationLabel: 'Register with File Number' },
+  { name: 'Administrations', department: 'A Time', enter: '/login?portal=admin', registration: null, registrationLabel: null },
 ] as const
 
 export default function Home() {
@@ -88,11 +88,17 @@ export default function Home() {
               <h1 className="weave-home-title text-4xl font-black leading-tight tracking-tight sm:text-6xl md:text-7xl">The Company of Time</h1>
               <p className="weave-home-credit mt-5 text-base font-semibold tracking-wide sm:text-lg">Interaction in Motion presents</p>
               <h2 className="weave-home-subtitle mx-auto mt-5 max-w-4xl text-2xl font-black leading-snug tracking-tight sm:text-4xl">
-                The Weave of Presence: System Switch — Bridge of Radiance
+                The Weave of Presence
+                <span className="weave-home-subject">System Switch — Bridge of Radiance</span>
               </h2>
+              <p className="weave-home-invitation">Give your work a place. Give your dreams a living form.</p>
               <p className="mx-auto mt-5 max-w-3xl text-base font-medium leading-7 text-slate-100" data-home-system-switch-explanation="website-to-3d">
-                System Switch is the gate from this website into the 3D File Folder Open World. Before crossing, people learn what lies beyond the gate and which places they may enter as Clients, staff or public visitors.
+                System Switch opens the 3D File Folder Open World: a shared landscape of Client businesses and Customer Doors. Enter through your position, explore public places and return to the private systems that belong to you.
               </p>
+              <div className="weave-home-hero-actions">
+                <Link href="/file-folder-preview" className="weave-action-primary">Discover File Folders <ArrowRight className="h-4 w-4" /></Link>
+                <Link href="/login" className="weave-action-secondary">Enter WEAVE <ArrowRight className="h-4 w-4" /></Link>
+              </div>
               <div className="weave-home-departments mx-auto mt-9 grid max-w-4xl grid-cols-2 gap-3 sm:grid-cols-4" data-company-time-departments>
                 {departments.map(department => (
                   <div key={department.name} className="weave-home-department px-3 py-4">
@@ -101,22 +107,25 @@ export default function Home() {
                   </div>
                 ))}
               </div>
-              <p className="weave-home-department-summary mt-6 text-base font-medium leading-relaxed sm:text-lg">The company through the people of its departments</p>
-              <p className="mx-auto mt-3 max-w-3xl text-sm font-medium leading-6 text-slate-200 sm:text-base" data-home-company-worldwide="true">WEAVE brings people, departments and working systems into one institution across borders. Every participant enters through an appropriate position, with access to the activities and services available to them.</p>
+              <p className="weave-home-department-summary mt-6 text-base font-medium leading-relaxed sm:text-lg">One company. Many people. Work moving through time.</p>
+              <p className="mx-auto mt-3 max-w-3xl text-sm font-medium leading-6 text-slate-200 sm:text-base" data-home-company-worldwide="true">Across borders, Agents distribute, Bridgers connect and Clients build. Administrations gives the work direction, support and a lasting record.</p>
               <div className="weave-home-loops mx-auto mt-9 grid max-w-4xl gap-3 text-left sm:grid-cols-3" data-company-time-loops>
                 <div className="weave-home-loop weave-home-loop-flame p-5">
-                  <p className="text-base font-black text-white sm:text-lg">Company Loop 1 — Flame Event: Burning River</p>
+                  <p className="weave-home-loop-label">Company Loop 1 · Flame Event</p>
+                  <h3>Burning River</h3>
                   <Link href="/flame-event" className="mt-3 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-orange-100 hover:text-white">
                     Explore Burning River <ArrowRight className="h-4 w-4" />
                   </Link>
                 </div>
                 <div className="weave-home-loop weave-home-loop-country p-5">
-                  <p className="text-base font-black text-white sm:text-lg">Company Loop 2 — Country Event: Country Formation</p>
-                  <p className="mt-3 text-sm leading-6 text-slate-300">The next company movement, carried by the same departments and their people.</p>
+                  <p className="weave-home-loop-label">Company Loop 2 · Country Event</p>
+                  <h3>Country Formation</h3>
+                  <p className="mt-3 text-sm leading-6 text-slate-300">Many potentials, moving together through the work of the departments.</p>
                 </div>
                 <div className="weave-home-loop weave-home-loop-time p-5">
-                  <p className="text-base font-black text-white sm:text-lg">Company Loop 3 — Individual Event: Self Upliftment</p>
-                  <p className="mt-3 text-sm leading-6 text-slate-300">A new individual event carried by the Company of Time.</p>
+                  <p className="weave-home-loop-label">Company Loop 3 · Individual Event</p>
+                  <h3>Self Upliftment</h3>
+                  <p className="mt-3 text-sm leading-6 text-slate-300">Return to yourself with the experience and records of your participation.</p>
                 </div>
               </div>
             </div>
@@ -124,7 +133,9 @@ export default function Home() {
 
           <section className="weave-home-plus-world relative" data-home-plus-file-folder="official-picture">
             <div className="weave-home-plus-heading px-5 pb-3 pt-5 text-center sm:px-8">
+              <p className="weave-eyebrow">Dream Lovely · The Plus File Folder</p>
               <h2 className="text-2xl font-black sm:text-3xl">Plus File Folder</h2>
+              <p className="weave-home-plus-introduction">Your enterprise, given room to become.</p>
             </div>
             {!posterMissing ? (
               <img
@@ -160,8 +171,8 @@ export default function Home() {
           <section className="weave-home-work-section grid gap-5 lg:grid-cols-[1.15fr_.85fr]" data-home-what-weave-builds>
             <div className="weave-home-work-copy p-5 sm:p-7">
               <p className="text-sm font-bold text-sky-200">What WEAVE Builds</p>
-              <h2 className="mt-3 text-2xl font-black leading-tight sm:text-3xl">Technology and systems formed around movement already present in human life.</h2>
-              <p className="mt-4 text-base leading-7 text-slate-200">Weave of Presence develops systems, services and instruments around human participation wherever people live and work. The company connects what people already know, make and carry with organized functions, practical work and value. Each service operates within its actual availability and authorized company systems.</p>
+              <h2 className="mt-3 text-2xl font-black leading-tight sm:text-3xl">From the work you know to the business you envision.</h2>
+              <p className="mt-4 text-base leading-7 text-slate-200">Bring what you know, make or care for. Weave connects your participation with company services, creative instruments and business systems—giving your work structure, customers a way to reach you and your progress a record.</p>
               <div className="mt-6 grid gap-3 sm:grid-cols-3">
                 {systems.map(({ icon: Icon, title, copy }) => (
                   <article key={title} className="weave-home-system p-4">
@@ -176,7 +187,7 @@ export default function Home() {
             <aside className="weave-home-client-entry p-5 sm:p-7" data-home-client-access>
               <p className="text-sm font-bold text-amber-200">Client Access Point</p>
               <h2 className="mt-3 text-2xl font-black sm:text-3xl">Already a WEAVE Client?</h2>
-              <p className="mt-4 text-base leading-7 text-slate-200">Enter your Client Portal with your issued WEAVE File Number and secure passkey. Your File Folder, System Switch and Client movement continue from there.</p>
+              <p className="mt-4 text-base leading-7 text-slate-200">Your business continues here. Sign in with your issued File Number and password to return to your File Folder, customers and ongoing work.</p>
               <p className="mt-7 text-sm font-bold text-amber-200">Authorized Access</p>
               <Link href="/client/login" className="mt-2 inline-flex min-h-12 w-full items-center justify-between gap-3 rounded-lg border border-amber-200/35 bg-amber-200/10 px-4 py-3 text-base font-bold text-white hover:bg-amber-200/15">
                 Open Client Portal <DoorOpen className="h-5 w-5" />
@@ -211,8 +222,8 @@ export default function Home() {
 
           <section className="weave-home-staff p-5 sm:p-7" data-home-staff-entry>
             <p className="text-sm font-bold text-sky-200">The Company of Time · Department Entrances</p>
-            <h2 className="mt-2 text-2xl font-black sm:text-3xl">Enter WEAVE as staff</h2>
-            <p className="mt-3 text-base leading-7 text-slate-200">Agent, Bridger, Client and Administration. Enter through your existing position, or establish a position through the appropriate company route.</p>
+            <h2 className="mt-2 text-2xl font-black sm:text-3xl">Find your place in the company.</h2>
+            <p className="mt-3 text-base leading-7 text-slate-200">Distribute as an Agent. Connect as a Bridger. Build as a Client. Enter your existing position or begin through the department that carries your work.</p>
             <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {staffEntrances.map(entrance => (
                 <div key={entrance.name} className="weave-home-staff-position flex flex-col p-4">
@@ -236,8 +247,8 @@ export default function Home() {
 
           <section className="weave-home-participation p-5 sm:p-7" data-home-farm-to-family>
             <p className="text-sm font-bold text-emerald-200">WEAVE · Stability and Lifestyle</p>
-            <h2 className="mt-2 text-xl font-black sm:text-2xl">Continue into real company activity</h2>
-            <p className="mt-3 text-sm leading-6 text-slate-200">Browse WEAVE Family Food, explore Farm to Family and find available ways to participate. Published products and actual recorded orders remain distinct from artwork or estimates.</p>
+            <h2 className="mt-2 text-xl font-black sm:text-2xl">The company, in everyday life.</h2>
+            <p className="mt-3 text-sm leading-6 text-slate-200">Discover Weave Family Food, explore Farm to Family and find the services, people and opportunities you can participate in today.</p>
             <Link href="/food-store" className="weave-home-food-picture mt-5 block w-full max-w-md overflow-hidden" aria-label="Browse WEAVE Family Food products">
               <img src="/weave-food/weave-family-products.avif" alt="WEAVE Family Food collection — the company's food products, with stock and pricing verified inside the Family Food Store" width={1200} height={700} loading="lazy" className="h-auto w-full object-cover"/>
             </Link>
@@ -256,7 +267,7 @@ export default function Home() {
               <Bot className="mt-1 h-6 w-6 shrink-0 text-violet-200" />
               <div>
                 <h2 className="text-lg font-bold">AI has a place inside participation</h2>
-                <p className="mt-2 text-sm leading-6 text-slate-200">AI participates where human movement is happening: recognizing authorized context, preparing work, guiding routes and extending capability. People remain the source of authority, ownership, approval and value movement.</p>
+                <p className="mt-2 text-sm leading-6 text-slate-200">AI helps you understand, prepare and carry your work forward. Your decisions, your ownership and the value you create remain at the centre.</p>
               </div>
             </div>
           </section>

@@ -50,10 +50,10 @@ export function PublicReachRequestForm() {
   return (
     <section className="weave-home-reach p-5 sm:p-7" data-weave-reach-delivery>
       <div className="mx-auto max-w-5xl">
-        <p className="text-sm font-bold text-sky-200">A new service from The Company of Time</p>
+        <p className="text-sm font-bold text-sky-200">Weave Reach · Personal services</p>
         <h2 className="mt-2 text-2xl font-black sm:text-3xl">Reach Someone Through Weave</h2>
         <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-200">
-          When a phone call costs too much, ask Weave to carry a message. You may also request an item purchase and delivery, or another lawful task. Forensics must calculate the cost and Company profit before the Mandate sends you an approval ticket and quote. No Agent begins until you accept and required funding is confirmed.
+          A message to deliver. An item to collect. A task that needs someone there. Tell Weave what you need; Forensics prepares the cost and the Mandate presents your quote. An Agent begins after you accept and the required funding is confirmed.
         </p>
 
         {trackingCode ? (

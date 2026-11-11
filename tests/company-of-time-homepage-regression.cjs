@@ -6,24 +6,28 @@ const source=fs.readFileSync(path.join(__dirname,'../app/page.tsx'),'utf8')
 const required=[
   'The Company of Time',
   'Interaction in Motion presents',
-  'The Weave of Presence: System Switch — Bridge of Radiance',
+  'The Weave of Presence',
+  'System Switch — Bridge of Radiance',
   'Stability',
   'Hope',
   'A Time',
   'Dream',
-  'The company through the people of its departments',
-  'Company Loop 1 — Flame Event: Burning River',
-  'Company Loop 2 — Country Event: Country Formation',
-  'Company Loop 3 — Individual Event: Self Upliftment',
+  'One company. Many people. Work moving through time.',
+  'Company Loop 1 · Flame Event',
+  'Burning River',
+  'Company Loop 2 · Country Event',
+  'Country Formation',
+  'Company Loop 3 · Individual Event',
+  'Self Upliftment',
   'data-home-plus-file-folder="official-picture"',
   'plus-file-folder-white-official.webp',
   'What WEAVE Builds',
-  'Technology and systems formed around movement already present in human life.',
+  'From the work you know to the business you envision.',
   'Client Access Point',
   'Already a WEAVE Client?',
   'href="/client/login"',
   'href="/client/register"',
-  'Enter WEAVE as staff',
+  'Find your place in the company.',
   "registration: '/register?role=agent'",
   "registration: '/register?role=bridger'",
   "enter: '/login?portal=admin'",
@@ -33,7 +37,7 @@ const required=[
 ]
 for(const phrase of required)assert.ok(source.includes(phrase),'Homepage missing: '+phrase)
 assert.ok(source.includes('data-home-company-worldwide="true"'),'Homepage must explain WEAVE across borders')
-assert.ok(source.includes('wherever people live and work'),'Homepage must present WEAVE as globally oriented')
+assert.ok(source.includes('Across borders'),'Homepage must present WEAVE as globally oriented')
 
 // The Country Formation heading belongs exclusively to Loop 2. Keep its
 // identity separate from Loop 3 and preserve country-neutral homepage copy.

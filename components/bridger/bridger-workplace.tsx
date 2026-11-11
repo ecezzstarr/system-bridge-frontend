@@ -114,9 +114,9 @@ export function BridgerWorkplace({
           <div className="flex flex-wrap items-start justify-between gap-5">
             <div className="max-w-3xl">
               <WeaveLogo size="sm"/>
-              <p className="mt-4 text-xs font-semibold uppercase tracking-[.16em] text-[#916a25]">Hope Department · Bridger Presence</p>
+              <p className="mt-4 text-xs font-semibold uppercase tracking-[.16em] text-[#916a25]">Hope · Bridger Department</p>
               <h1 className="mt-2 text-2xl font-semibold leading-tight tracking-tight sm:text-4xl">
-                Your company workplace{userName ? <span className="block mt-1 text-lg font-normal text-[#576872] sm:text-xl">{userName}</span> : null}
+                The work of Hope.{userName ? <span className="block mt-1 text-lg font-normal text-[#576872] sm:text-xl">{userName}</span> : null}
               </h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-[#4c5a61] sm:text-base">
                 Introduce people to what Weave makes possible. Understand their existing work,
@@ -138,7 +138,7 @@ export function BridgerWorkplace({
         </header>
 
         <section data-bridger-daily-job-guide="find-contact-confirm-serve-earn" className="mt-5 rounded-2xl border border-[#d6bf8e] bg-white/90 p-5 shadow-sm sm:p-6">
-          <h2 className="text-xl font-bold text-[#293b42]">Your outreach job, one step at a time</h2>
+          <h2 className="text-xl font-bold text-[#293b42]">A conversation. A connection. A beginning.</h2>
           <p className="mt-2 text-sm leading-6 text-[#52636b]">Hope brings real people into useful conversations. The company expects two genuine outreach contacts each working hour. Prospects are candidates, not promised customers.</p>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {[
@@ -191,7 +191,7 @@ export function BridgerWorkplace({
           {selected === 'desk' && !trimmedSearch && (
             <section className="mt-6 rounded-2xl bg-[#f2f3f0] p-4 sm:p-5" aria-label="How to begin working">
               <div className="flex items-center gap-2 text-[#70551e]"><BookOpen className="h-5 w-5"/><h3 className="text-base font-semibold">How to begin your day</h3></div>
-              <p className="mt-1 text-sm leading-6 text-[#53646a]">These are learning steps, not artificial daily targets. Your actual work stays in the corresponding system.</p>
+              <p className="mt-1 text-sm leading-6 text-[#53646a]">Begin with your guidance, choose a prospect and make room for a useful conversation.</p>
               <div className="mt-4 grid gap-3 md:grid-cols-3">
                 {BEGIN.filter(item => isVisible(item.href)).map((item,index) => {
                   const StepIcon = item.icon
@@ -226,7 +226,7 @@ export function BridgerWorkplace({
           </div>
           <div className="flex items-start gap-3">
             <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#94712f]"/>
-            <p><strong className="text-[#263943]">Nothing has been moved out of its original system.</strong> Prospect records, Client assistance, job records and payments remain with the existing Weave pages and APIs.</p>
+            <p><strong className="text-[#263943]">Carry the conversation forward.</strong> Return to your prospects, support a Client’s next step and follow your work and payments through their records.</p>
           </div>
         </footer>
         <div className="mt-5 flex items-center gap-2 text-xs text-[#65717a]">

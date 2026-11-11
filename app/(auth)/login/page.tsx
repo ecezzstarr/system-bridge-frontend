@@ -77,11 +77,14 @@ export default function LoginPage() {
   }
 
   return (
-    <Card className="border-slate-700 bg-slate-800/50 backdrop-blur max-w-md w-full">
+    <Card className="weave-access-panel border-slate-700 bg-slate-800/50 backdrop-blur max-w-md w-full">
       <CardHeader className="text-center flex flex-col items-center">
         <WeaveLogo size="md" className="mb-2" />
-        <CardDescription className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">
-          {administrationPortal ? WEAVE_WRITING.positionAccess.administrationAccess : WEAVE_WRITING.positionAccess.access}
+        <CardTitle className="mt-3">
+          <h1>{administrationPortal ? WEAVE_WRITING.positionAccess.administrationAccess : WEAVE_WRITING.positionAccess.access}</h1>
+        </CardTitle>
+        <CardDescription className="text-sm text-slate-500 mt-1">
+          Sign in to return to your department and continue your work.
         </CardDescription>
       </CardHeader>
       <CardContent>
