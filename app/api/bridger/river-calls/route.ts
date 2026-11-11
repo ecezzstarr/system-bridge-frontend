@@ -86,7 +86,7 @@ export async function POST(request:NextRequest) {
     id=String(created.rows[0].id)
     await client.query(
       "INSERT INTO ledger_entries(id,user_id,entry_type,amount,currency,description,balance_before,balance_after,metadata,created_at) "+
-      "VALUES(gen_random_uuid(),$1::uuid,'fee',$2,'System Switch','River live outreach call',$3,$4,$5::jsonb,NOW())",
+      "VALUES(gen_random_uuid(),$1::uuid,'fee',$2,'Flame Coin','River live outreach call',$3,$4,$5::jsonb,NOW())",
       [user.id,fee,before,balanceAfter,JSON.stringify({commerce_type:'river_voice_call',call_id:id,phone_masked:phone.slice(0,4)+'****'})]
     )
     await client.query('COMMIT')
