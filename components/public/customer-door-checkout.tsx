@@ -1,13 +1,14 @@
 'use client'
 import {useState} from 'react'
 import Link from 'next/link'
+import {displayCurrencyName} from '@/lib/flame-coin'
 
 export default function CustomerDoorCheckout({orderId,amount,currency,offerType='product'}:{orderId:string;amount:number;currency:string;offerType?:string}){
   const [busy,setBusy]=useState(false)
   const [outcome,setOutcome]=useState('')
   const [receipt,setReceipt]=useState('')
   const exchangeInquiry=offerType==='crypto'
-  const walletPayable=!exchangeInquiry && ['SYSTEM SWITCH','FLAME_COIN','FC'].includes(currency.toUpperCase()) && amount>0
+  const walletPayable=!exchangeInquiry && ['FLAME COIN','SYSTEM SWITCH','FLAME_COIN','FC'].includes(currency.toUpperCase()) && amount>0
   const pay=async()=>{
     const token=localStorage.getItem('ssb_auth_token')||localStorage.getItem('token')||''
     if(!token){setOutcome('Sign in to a WEAVE account with sufficient System Switch to pay. Visitors can use the Client’s published external payment option.');return}
@@ -21,7 +22,7 @@ export default function CustomerDoorCheckout({orderId,amount,currency,offerType=
     }catch(e){setOutcome(e instanceof Error?e.message:'Payment did not complete')}finally{setBusy(false)}
   }
   return <section className="mt-4 rounded-xl border border-amber-200/20 bg-amber-100/[.04] p-4 text-xs text-slate-200" data-customer-door-payment>
-    <p className="font-black text-amber-200">Customer Door payment · {amount.toLocaleString()} {currency}</p>
+    <p className="font-black text-amber-200">Customer Door payment · {amount.toLocaleString()} {displayCurrencyName(currency)}</p>
     {exchangeInquiry&&<p className="mt-3 text-amber-200">This is an exchange enquiry, not a completed trade or licensed custody service. No generic Customer Door payment is enabled for crypto asset exchange requests.</p>}
     {walletPayable?<button onClick={()=>void pay()} disabled={busy||!!receipt} className="mt-3 min-h-11 rounded-xl bg-amber-200 px-5 py-3 font-black text-slate-900 disabled:opacity-50">
       {busy?'Confirming payment…':receipt?'Payment recorded':'Pay from WEAVE Main Wallet'}
