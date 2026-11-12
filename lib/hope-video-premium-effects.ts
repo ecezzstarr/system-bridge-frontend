@@ -209,12 +209,7 @@ export function paintHopePremiumFrame(
   if(source.readyState<2)return
   if(filter.effectKind==='face'){
     ctx.drawImage(source,0,0,w,h)
-    if(stage.face && time-stage.lastFaceAt>=140){
-      stage.lastFaceAt=time
-      const detected=stage.face.detectForVideo(source,time)
-      stage.faceLandmarks=detected.faceLandmarks[0]||null
-    }
-    if(stage.faceLandmarks)drawSyntheticFace(ctx,stage.faceLandmarks,w,h,filter.faceStyle||'anonymous')
+    paintHopeFaceOverlay(stage,source,ctx,w,h,time)
     return
   }
   if(filter.effectKind!=='scene'&&filter.effectKind!=='remove')return
@@ -239,4 +234,22 @@ export function paintHopePremiumFrame(
   layer.filter='none'
   layer.globalCompositeOperation='source-over'
   ctx.drawImage(person,0,0,w,h)
+}
+
+/**
+ * Face masks are an independent optional layer above any purchased background.
+ * Only the video canvas is modified; microphone audio is never processed here.
+ */
+export function paintHopeFaceOverlay(
+ stage:PreparedHopeEffect,source:HTMLVideoElement,ctx:CanvasRenderingContext2D,
+ w:number,h:number,time:number
+):void {
+ if(stage.filter.effectKind!=='face'||!stage.face||source.readyState<2)return
+ if(time-stage.lastFaceAt>=140){
+   stage.lastFaceAt=time
+   const detected=stage.face.detectForVideo(source,time)
+   // Never retain stale face positions after the person moves out of frame.
+   stage.faceLandmarks=detected.faceLandmarks[0]||null
+ }
+ if(stage.faceLandmarks)drawSyntheticFace(ctx,stage.faceLandmarks,w,h,stage.filter.faceStyle||'anonymous')
 }
