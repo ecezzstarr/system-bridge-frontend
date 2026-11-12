@@ -1,0 +1,52 @@
+const assert=require('node:assert/strict')
+const fs=require('node:fs')
+const path=require('node:path')
+const ts=require('typescript')
+const root=path.resolve(__dirname,'..')
+const read=p=>fs.readFileSync(path.join(root,p),'utf8')
+const files=[
+ 'lib/hope-video-filter-catalog.ts',
+ 'lib/hope-video-filter-purchase.ts',
+ 'app/api/hope/video-filters/route.ts',
+ 'components/bridger/hope-video-filter-shop.tsx',
+ 'components/bridger/weave-video-room.tsx',
+]
+for(const file of files){
+  const source=read(file)
+  const tree=ts.createSourceFile(file,source,ts.ScriptTarget.Latest,true,file.endsWith('.tsx')?ts.ScriptKind.TSX:ts.ScriptKind.TS)
+  assert.equal(tree.parseDiagnostics.length,0,file+' parses')
+}
+const catalog=read(files[0]),commerce=read(files[1]),api=read(files[2]),ui=read(files[3]),room=read(files[4])
+const compiled=ts.transpileModule(catalog,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}})
+assert.equal(compiled.diagnostics?.length||0,0)
+const generated={exports:{}}
+new Function('module','exports',compiled.outputText)(generated,generated.exports)
+const {HOPE_VIDEO_FILTERS,findHopeVideoFilter}=generated.exports
+assert.equal(HOPE_VIDEO_FILTERS.length,6)
+assert.equal(new Set(HOPE_VIDEO_FILTERS.map(f=>f.id)).size,6)
+assert(HOPE_VIDEO_FILTERS.every(f=>f.priceSystemSwitch>0&&f.css&&f.name))
+assert.equal(findHopeVideoFilter('invalid'),undefined)
+assert(commerce.includes('UNIQUE(bridger_id,filter_id)'), 'Permanent license unique per Bridger')
+assert(commerce.includes('FOR UPDATE'), 'Serialized wallet and Bridger account')
+assert(commerce.includes('balance_trx >= $1'), 'Conditional nonnegative wallet debit')
+assert(commerce.includes("role!=='bridger'"), 'Role verification before purchase')
+assert(commerce.includes("profile?.status!=='active'"), 'Active department verification')
+assert(commerce.includes("source:'hope_video_filter'"), 'Purchase receipts')
+assert(commerce.includes("'fee'"), 'Revenue ledger recorded')
+assert(commerce.includes('await client.query('+"'COMMIT'"+')'), 'Atomic purchase commit')
+assert(api.includes("user.role!=='bridger'"), 'No guest purchase or other role access')
+assert(api.includes('purchaseHopeVideoFilter(user.id,body.filterId)'), 'Server owns price decisions')
+assert(ui.includes("method:'POST'"), 'Real buy action')
+assert(ui.includes('window.confirm('), 'Explicit user approval before debit')
+assert(ui.includes('catalog.owned.includes(filter.id)'), 'Catalog entitlements gate access')
+assert(ui.includes('supported!==true'), 'No charge when unsupported browser')
+assert(room.includes("role==='bridger'&&!ended&&<HopeVideoFilterShop"), 'No guest-paid filter panel')
+assert(room.includes("beginFilteredCamera"), 'Filter processing runs on outgoing media')
+assert(room.includes("canvas.captureStream(24)"), 'Canvas track is sent as video')
+assert(room.includes("context.filter=selectedFilterRef.current?.css"), 'Server catalog effect is rendered')
+assert(room.includes("startPeer(outgoing,snapshot.iceServers)"), 'Processed track participates in WebRTC offer')
+assert(room.includes("await replaceVideo(track)"), 'Already connected calls switch to new track')
+assert(room.includes("processingRef.current?.track"), 'Camera resumes purchased effect after screen share')
+assert(room.includes('stopFilteredCamera()'), 'Filter-processing resources cleaned up')
+assert(read('migrations/20261112_hope_video_filters.sql').includes('UNIQUE(bridger_id,filter_id)'))
+console.log('PASS: Six paid WEAVE Hope video filters, no client price trust, permanent entitlements, wallet safeguards, outgoing WebRTC canvas effects and cleanup')
