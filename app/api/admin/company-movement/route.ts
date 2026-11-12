@@ -26,7 +26,7 @@ export async function GET(request:NextRequest) {
     const names=['market_prospect_packages','market_prospect_contacts','market_prospect_outreach',
       'agility_agent_sales','agility_stock_orders','carrier_food_orders','carrier_cake_orders',
       'file_folder_purchases','bridge_deposits','deposits','ledger_entries',
-      'weave_regional_daily_checkins','client_file_folders']
+      'weave_regional_daily_checkins','client_file_folders','weave_hope_video_filter_purchases']
     const available=await pool.query(
       "SELECT "+names.map((_,i)=>"to_regclass('public."+names[i]+"') IS NOT NULL AS t"+i).join(", ")
     )
@@ -157,6 +157,17 @@ export async function GET(request:NextRequest) {
       "COUNT(*) FILTER (WHERE status='pending')::int AS pending_deposits, "+
       "COUNT(*) FILTER (WHERE status='rejected')::int AS rejected_deposits "+
       "FROM deposits")
+    // Settled System Switch wallet purchases for permanent Hope video filters.
+    // This is earned platform credit, not independently reconciled NGN cash.
+    const videoFilters=await read('videoFilters',['weave_hope_video_filter_purchases'],
+      "SELECT COUNT(*)::int AS licenses,COUNT(DISTINCT bridger_id)::int AS paying_bridgers, "+
+      "COALESCE(SUM(price_system_switch),0)::numeric AS earned_system_switch "+
+      "FROM weave_hope_video_filter_purchases WHERE purchased_at >= "+since)
+    const videoFilterBreakdown=await read('videoFilterBreakdown',['weave_hope_video_filter_purchases'],
+      "SELECT filter_id,COUNT(*)::int AS licenses, "+
+      "COALESCE(SUM(price_system_switch),0)::numeric AS earned_system_switch "+
+      "FROM weave_hope_video_filter_purchases WHERE purchased_at >= "+since+
+      " GROUP BY filter_id ORDER BY licenses DESC,filter_id LIMIT 20")
     const ledger=await read('ledger',['ledger_entries'],
       "SELECT entry_type, currency, COUNT(*)::int AS events "+
       "FROM ledger_entries WHERE created_at >= "+since+
@@ -167,7 +178,7 @@ export async function GET(request:NextRequest) {
       " ORDER BY created_at DESC LIMIT 15")
     const sections={prospects,bridgerLeaders,prospectContacts,outreach,agility,agentLeaders,
       food,cakes,foodQueue,cakeQueue,stock,agentFoodLeaders,paidFoodProducts,recordedStockProducts,
-      folders,folderQueue,folderActivation,regionalSupport,wallet,ledger,recent}
+      folders,folderQueue,folderActivation,regionalSupport,wallet,videoFilters,videoFilterBreakdown,ledger,recent}
     return NextResponse.json({
       success:true,days,generatedAt:new Date().toISOString(),sources,missing,
       companyTime:{
@@ -182,7 +193,8 @@ export async function GET(request:NextRequest) {
         fulfilled:'Agent-confirmed paid status plus completed orders only; values exclude delivery fees and are not independently bank reconciled by this report',
         folders:'Confirmed unique File Folder sale keys across current and historical rails',
         wallet:'Approved deposits with verified_at in selected period; pending is the current all-time queue',
-        ledger:'Entry counts by type and currency, not revenue or cash balances'
+        ledger:'Entry counts by type and currency, not revenue or cash balances',
+        videoFilters:'Settled permanent Hope video-filter wallet purchases denominated in System Switch; not cash reconciliation'
       }
     },{headers})
   }catch(error){
