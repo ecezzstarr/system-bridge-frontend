@@ -12,9 +12,9 @@ type CatalogState={
   owned:string[]
   balanceSystemSwitch:number
 }
-type Props={activeFilter:FilterInfo|null;onFilterSelect:(filter:FilterInfo|null)=>Promise<void>}
+type Props={activeFilter:FilterInfo|null;activeFace:FilterInfo|null;onFilterSelect:(filter:FilterInfo|null,layer?:'scene'|'face')=>Promise<void>}
 
-export default function HopeVideoFilterShop({activeFilter,onFilterSelect}:Props){
+export default function HopeVideoFilterShop({activeFilter,activeFace,onFilterSelect}:Props){
   const [catalog,setCatalog]=useState<CatalogState|null>(null)
   const [loading,setLoading]=useState(true)
   const [supported,setSupported]=useState<boolean|null>(null)
@@ -48,9 +48,9 @@ export default function HopeVideoFilterShop({activeFilter,onFilterSelect}:Props)
     return ()=>{live=false}
   },[refresh])
 
-  const select=async(filter:FilterInfo|null)=>{
+  const select=async(filter:FilterInfo|null,layer:'scene'|'face'='scene')=>{
     setError('');setNotice('');setApplying(true)
-    try{await onFilterSelect(filter)}
+    try{await onFilterSelect(filter,layer)}
     catch(e:any){setError(e?.message||'Could not apply that effect to your video')}
     finally{setApplying(false)}
   }
@@ -98,7 +98,7 @@ export default function HopeVideoFilterShop({activeFilter,onFilterSelect}:Props)
         <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#8e692f]"><Palette size={16}/> Hope · Live Filter Shop</p>
         <h3 className="mt-1 text-lg font-semibold">Style your video, not just your preview</h3>
         <p className="mt-1 max-w-2xl text-xs leading-5 text-[#667275]">
-          Choose from 18 original company and scenic backgrounds, real-time background removal, color looks and synthetic face masks. Each purchase is permanent, and the selected effect reaches your guest through WebRTC. Original video remains free.
+          Choose from 18 original company and scenic backgrounds, real-time background removal, color looks and synthetic face masks. Each purchase is permanent, and the selected effect reaches your guest through WebRTC. Original video remains free. Backgrounds and owned face masks can now be combined, without changing speech.
         </p>
       </div>
       <div className="inline-flex items-center gap-2 rounded-xl border border-[#ddc9a2] bg-white px-3 py-2 text-xs font-semibold">
@@ -118,15 +118,21 @@ export default function HopeVideoFilterShop({activeFilter,onFilterSelect}:Props)
         className={'min-h-10 rounded-full border px-4 text-xs font-semibold '+(category===kind?'border-[#9e7738] bg-[#ebdcc0]':'border-[#d8c6a8] bg-white')}>{label}</button>)}
     </div>}
     {catalog&&<div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
-      <button type="button" disabled={applying||Boolean(buying)} onClick={()=>void select(null)}
+      <button type="button" disabled={applying||Boolean(buying)} onClick={()=>void select(null,'scene')}
         className={'min-h-[112px] rounded-xl border p-3 text-left transition '+(!activeFilter?'border-[#a6803e] bg-[#f4e5c7]':'border-[#e2d6c2] bg-white')+(applying?' opacity-60':'')}>
         <span className="text-sm font-bold">Original</span>
-        <span className="mt-1 block text-xs leading-5">Natural camera picture</span>
+        <span className="mt-1 block text-xs leading-5">Original camera scene; an active face mask remains in place</span>
         <span className="mt-2 block text-xs font-bold text-emerald-700">Included · No filter</span>
       </button>
+      {category==='face'&&<button type="button" disabled={applying||Boolean(buying)} onClick={()=>void select(null,'face')}
+        className={'min-h-[112px] rounded-xl border p-3 text-left '+(!activeFace?'border-[#a6803e] bg-[#f4e5c7]':'border-[#e2d6c2] bg-white')}>
+        <span className="text-sm font-bold">Natural Face</span>
+        <span className="mt-1 block text-xs leading-5">Remove your face mask without changing your background</span>
+        <span className="mt-2 block text-xs font-bold text-emerald-700">No face mask</span>
+      </button>}
       {catalog.filters.filter(filter=>category==='background'?filter.effectKind==='scene'||filter.effectKind==='remove':filter.effectKind===category).map(filter=>{
         const owned=catalog.owned.includes(filter.id)
-        const selected=activeFilter?.id===filter.id
+        const selected=(filter.effectKind==='face'?activeFace:activeFilter)?.id===filter.id
         return <div key={filter.id} className={'flex min-h-[112px] flex-col rounded-xl border p-3 '+(selected?'border-[#a6803e] bg-[#f4e5c7]':'border-[#e2d6c2] bg-white')}>
           <div className="flex items-start justify-between gap-1">
             <span className="text-sm font-bold">{filter.name}</span>
@@ -136,7 +142,7 @@ export default function HopeVideoFilterShop({activeFilter,onFilterSelect}:Props)
             ?<div className="my-2 h-20 overflow-hidden rounded-lg bg-[#d0d5da]" aria-hidden="true"><img src={filter.sceneSrc} alt="" loading="lazy" className="h-full w-full object-cover"/></div>
             :<div className="my-2 flex h-16 items-center justify-center rounded-lg bg-gradient-to-r from-[#9d7040] via-[#b3bac1] to-[#75548a]" style={{filter:filter.css}} aria-hidden="true"><span className="text-[10px] font-bold tracking-widest text-white/90">{filter.effectKind==='face'?'FACE MASK':filter.effectKind==='remove'?'BACKGROUND HIDE':'COLOR LOOK'}</span></div>}
           <span className="flex-1 text-xs leading-4 text-[#5b6b70]">{filter.detail}</span>
-          {owned?<button type="button" disabled={applying||Boolean(buying)} onClick={()=>void select(filter)}
+          {owned?<button type="button" disabled={applying||Boolean(buying)} onClick={()=>void select(filter,filter.effectKind==='face'?'face':'scene')}
             className="mt-3 min-h-10 rounded-lg bg-[#275464] px-2 text-xs font-semibold text-white disabled:opacity-50">{selected?'Applied to video':'Apply owned filter'}</button>
           :<button type="button" disabled={applying||Boolean(buying)||supported!==true} onClick={()=>void buy(filter)}
             className="mt-3 min-h-10 rounded-lg border border-[#bc985a] px-2 text-xs font-bold text-[#76531b] disabled:opacity-50">
