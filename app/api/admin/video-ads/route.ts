@@ -78,6 +78,7 @@ function sanitizeStoryboard(value: unknown): VideoAdScene[] | null {
     voiceover: String(scene?.voiceover || '').slice(0, 700),
     assetUrl: scene?.assetUrl ? String(scene.assetUrl).slice(0, 2048) : null,
     assetType: scene?.assetType === 'video' ? 'video' : scene?.assetType === 'image' ? 'image' : null,
+    visualStyle: scene?.visualStyle==='cinematic'?'cinematic':scene?.visualStyle==='documentary'?'documentary':'natural',
   }))
 }
 
@@ -112,10 +113,10 @@ export async function PATCH(request: NextRequest) {
     }
     const result = await pool.query(
       `UPDATE admin_video_ad_projects
-       SET storyboard=$2::jsonb,soundtrack_url=$3,narration_url=$4,status=CASE WHEN status='ready' THEN 'planned' ELSE status END,output_url=CASE WHEN status='ready' THEN NULL ELSE output_url END,error_message=NULL,updated_at=NOW()
+       SET storyboard=$2::jsonb,soundtrack_url=$3,narration_url=$4,demo_mode=CASE WHEN $5::boolean THEN true ELSE demo_mode END,status=CASE WHEN status='ready' THEN 'planned' ELSE status END,output_url=CASE WHEN status='ready' THEN NULL ELSE output_url END,error_message=NULL,updated_at=NOW()
        WHERE id=$1::uuid
        RETURNING *`,
-      [id, JSON.stringify(storyboard), soundtrackUrl, narrationUrl]
+      [id, JSON.stringify(storyboard), soundtrackUrl, narrationUrl, body.demoMode===true]
     )
     return NextResponse.json({ success: true, project: mapVideoAdProject(result.rows[0]) })
   } catch (error: any) {
