@@ -1,36 +1,8 @@
 import {getPool} from '@/lib/db'
 import {issueWeaveReceipt} from '@/lib/weave-receipts'
-import {ensureHopeVideoFilterSchema,ownedHopeVideoFilters} from '@/lib/hope-video-filter-purchase'
+import {ensureHopeVideoFilterSchema} from '@/lib/hope-video-filter-purchase'
+import {ensureHopeStudioBundleSchema} from '@/lib/hope-video-studio-schema'
 import {getHopeStudioBundle,quoteHopeStudioBundle} from '@/lib/hope-video-studio-bundles'
-
-let ensured:Promise<void>|null=null
-export function ensureHopeStudioBundleSchema():Promise<void>{
-  if(!ensured)ensured=(async()=>{
-    await ensureHopeVideoFilterSchema()
-    const db=getPool()
-    await db.query(`
-      CREATE TABLE IF NOT EXISTS weave_hope_video_bundle_purchases(
-        id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-        bridger_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-        bundle_id varchar(40) NOT NULL,
-        price_system_switch numeric(20,8) NOT NULL CHECK(price_system_switch>=0),
-        purchased_at timestamptz NOT NULL DEFAULT now(),
-        UNIQUE(bridger_id,bundle_id)
-      )
-    `)
-    await db.query(`
-      CREATE TABLE IF NOT EXISTS weave_hope_video_bundle_grants(
-        bridger_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-        filter_id varchar(40) NOT NULL,
-        bundle_purchase_id uuid NOT NULL REFERENCES weave_hope_video_bundle_purchases(id),
-        granted_at timestamptz NOT NULL DEFAULT now(),
-        PRIMARY KEY(bridger_id,filter_id)
-      )
-    `)
-    await db.query('CREATE INDEX IF NOT EXISTS idx_hope_bundle_sales_date ON weave_hope_video_bundle_purchases(purchased_at DESC)')
-  })().catch(error=>{ensured=null;throw error})
-  return ensured
-}
 
 export async function ownedHopeStudioBundles(userId:string){
   await ensureHopeStudioBundleSchema()
@@ -44,7 +16,7 @@ export async function ownedHopeStudioBundles(userId:string){
 export async function purchaseHopeStudioBundle(userId:string,bundleId:unknown){
   const bundle=getHopeStudioBundle(bundleId)
   if(!bundle)return {success:false as const,reason:'invalid_bundle' as const}
-  await ensureHopeStudioBundleSchema()
+  await Promise.all([ensureHopeVideoFilterSchema(),ensureHopeStudioBundleSchema()])
   const client=await getPool().connect()
   let record:any=null
   let balanceAfter=0
