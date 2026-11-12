@@ -72,7 +72,7 @@ export async function activatePurchasedFileFolderForClient(params: {
   if (!client) throw new Error('File Folder can only be activated for an active Client account')
 
   const [targetFolder] = await sql`
-    SELECT id,client_id,file_number
+    SELECT id,client_id,file_number,workshop_type
     FROM client_file_folders
     WHERE file_number=${fileNumber}
     LIMIT 1
@@ -106,6 +106,15 @@ export async function activatePurchasedFileFolderForClient(params: {
   }
 
   const clientName = String(params.clientName || client.name || 'Client').trim().slice(0, 255) || 'Client'
+  // An Administrations-issued Pro Folder may already have a business-specific
+  // workshop (for example, an exchange). Registration claims its original
+  // configuration; it must never downgrade it to a generic formation workshop.
+  const existingWorkshopType=String(targetFolder?.workshop_type||'').trim()
+  const workshopType=existingWorkshopType&&!['formation','pending_personalization','waiting_for_login'].includes(existingWorkshopType)
+    ?existingWorkshopType:'system_formation'
+  const workshopTitle=workshopType==='system_formation'
+    ?'System Formation Workshop'
+    :workshopType.split('_').map(part=>part.charAt(0).toUpperCase()+part.slice(1)).join(' ')+' Workshop'
 
   // A verified purchase opens the Client's File Folder at System Switch. The
   // first persistent place is the System Formation Workshop; it is not a
@@ -122,8 +131,8 @@ export async function activatePurchasedFileFolderForClient(params: {
     VALUES (
       ${clientId}::uuid,
       ${fileNumber},
-      'system_formation',
-      'System Formation Workshop',
+      ${workshopType},
+      ${workshopTitle},
       ${`${clientName}'s first File Folder workshop for recognizing, forming, building and activating the systems they choose to operate.`}
     )
     ON CONFLICT (client_id) DO UPDATE SET
