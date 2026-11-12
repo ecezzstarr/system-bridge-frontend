@@ -10,6 +10,7 @@ const files=[
  'app/api/hope/video-filters/route.ts',
  'components/bridger/hope-video-filter-shop.tsx',
  'components/bridger/weave-video-room.tsx',
+ 'lib/hope-video-premium-effects.ts',
 ]
 for(const file of files){
   const source=read(file)
@@ -22,10 +23,22 @@ assert.equal(compiled.diagnostics?.length||0,0)
 const generated={exports:{}}
 new Function('module','exports',compiled.outputText)(generated,generated.exports)
 const {HOPE_VIDEO_FILTERS,findHopeVideoFilter}=generated.exports
-assert.equal(HOPE_VIDEO_FILTERS.length,6)
+assert.equal(HOPE_VIDEO_FILTERS.length,28)
 assert.equal(new Set(HOPE_VIDEO_FILTERS.map(f=>f.id)).size,6)
 assert(HOPE_VIDEO_FILTERS.every(f=>f.priceSystemSwitch>0&&f.css&&f.name))
 assert.equal(findHopeVideoFilter('invalid'),undefined)
+const background=HOPE_VIDEO_FILTERS.filter(f=>f.effectKind==='scene')
+const faces=HOPE_VIDEO_FILTERS.filter(f=>f.effectKind==='face')
+const removal=HOPE_VIDEO_FILTERS.find(f=>f.effectKind==='remove')
+assert.equal(background.length,18,'18 premium background choices')
+assert.equal(faces.length,3,'three synthetic live face changes')
+assert.equal(HOPE_VIDEO_FILTERS.filter(f=>f.effectKind==='color').length,6,'original color looks preserved')
+assert(background.every(f=>f.priceSystemSwitch>=12&&f.sceneSrc?.startsWith('/weave/')),'high-value virtual backgrounds')
+assert(faces.every(f=>f.priceSystemSwitch>=20&&f.faceStyle),'higher-priced face options')
+assert(removal&&removal.priceSystemSwitch>=15,'background removal is a paid premium feature')
+for(const item of background){
+ assert(fs.existsSync(path.join(root,'public',item.sceneSrc.slice(1))),item.id+' asset exists')
+}
 assert(commerce.includes('UNIQUE(bridger_id,filter_id)'), 'Permanent license unique per Bridger')
 assert(commerce.includes('FOR UPDATE'), 'Serialized wallet and Bridger account')
 assert(commerce.includes('balance_trx >= $1'), 'Conditional nonnegative wallet debit')
@@ -48,10 +61,23 @@ assert(room.includes("startPeer(outgoing,snapshot.iceServers)"), 'Processed trac
 assert(room.includes("await replaceVideo(track)"), 'Already connected calls switch to new track')
 assert(room.includes("processingRef.current?.track"), 'Camera resumes purchased effect after screen share')
 assert(room.includes('stopFilteredCamera()'), 'Filter-processing resources cleaned up')
+assert(room.includes('paintHopePremiumFrame(prepared,source,context'), 'Premium scenes and masks are drawn on transmitted WebRTC canvas')
+assert(room.includes('prepareHopeVideoEffect(currentEffect)'), 'Premium effect prepared when camera starts')
+assert(room.includes('new MediaStream([outgoingVideo])'), 'Local preview displays outgoing processed track')
+const premium=read('lib/hope-video-premium-effects.ts')
+assert(premium.includes("segmenter.segmentForVideo(source,time)"),'On-device real person segmentation')
+assert(premium.includes("bytes[i]===1?255:0"),'Category 1 isolates people; background is masked')
+assert(premium.includes("layer.globalCompositeOperation='destination-in'"),'Video person foreground is composited')
+assert(premium.includes('drawCover(ctx,stage.background'),'Purchased scene is drawn on outgoing video')
+assert(premium.includes('detectForVideo(source,time)'), 'Face mask tracks actual head landmarks')
+assert(premium.includes('drawSyntheticFace('), 'Synthetic non-impersonating face transform is drawn on outgoing video')
+assert(premium.includes("SDK_VERSION='1.2.2'"), 'Version-pinned on-device model runtime')
+assert(ui.includes("await prepareHopeVideoEffect(filter)"), 'Compatibility and model availability checked before premium charge')
+assert(ui.includes("category==='background'"), 'Background scene gallery has its own selection tab')
 assert(read('migrations/20261112_hope_video_filters.sql').includes('UNIQUE(bridger_id,filter_id)'))
 const adminApi=read('app/api/admin/company-movement/route.ts')
 const adminPage=read('app/(app)/admin/company-movement/page.tsx')
 assert(adminApi.includes("const videoFilters=await read("), 'Administrations sees settled filter licenses and revenue')
 assert(adminApi.includes('SUM(price_system_switch)'), 'Recorded System Switch earnings are summed')
 assert(adminPage.includes("money('videoFilters','earned_system_switch')"), 'Company movement displays Hope filter earnings')
-console.log('PASS: Six paid WEAVE Hope video filters, no client price trust, permanent entitlements, wallet safeguards, outgoing WebRTC canvas effects and cleanup')
+console.log('PASS: 28 paid WEAVE Hope video effects, no client price trust, permanent entitlements, wallet safeguards, outgoing WebRTC canvas effects and cleanup')
