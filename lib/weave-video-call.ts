@@ -17,7 +17,9 @@ export function sameVideoHash(a: string, b: string) {
   return timingSafeEqual(Buffer.from(a, 'hex'), Buffer.from(b, 'hex'))
 }
 
-export async function ensureVideoCallSchema() {
+let schemaReady: Promise<void> | null = null
+
+async function initializeVideoCallSchema() {
   const db = getPool()
   await db.query(`
     CREATE TABLE IF NOT EXISTS weave_hope_video_calls (
@@ -45,6 +47,14 @@ export async function ensureVideoCallSchema() {
   `)
   await db.query('CREATE INDEX IF NOT EXISTS idx_weave_hope_video_signals_call_id ON weave_hope_video_signals(call_id,id)')
   await db.query('CREATE INDEX IF NOT EXISTS idx_weave_hope_video_calls_owner ON weave_hope_video_calls(bridger_id,created_at DESC)')
+}
+
+export function ensureVideoCallSchema(): Promise<void> {
+  if (!schemaReady) schemaReady = initializeVideoCallSchema().catch(error => {
+    schemaReady = null
+    throw error
+  })
+  return schemaReady
 }
 
 export async function videoCallAccess(request: NextRequest, id: string): Promise<CallAccess | null> {
