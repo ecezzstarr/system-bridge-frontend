@@ -37,6 +37,16 @@ class ReleaseFailureEvidence(unittest.TestCase):
         self.assertIn("[redacted]", tail)
         self.assertNotIn(token, tail)
 
+    def test_disk_preflight_reports_explicit_operator_action(self):
+        output = (
+            "[WEAVE deploy] STAGE=disk_preflight\\n"
+            "[WEAVE storage] INSUFFICIENT_DISK: need at least 16 GiB; deployment NOT started\\n"
+        )
+        message = worker.summarize_executor_failure(output, 12, {})
+        self.assertIn("stage=disk_preflight", message)
+        self.assertIn("insufficient_disk", message.lower())
+        self.assertIn("recovery=not_confirmed", message)
+
     def test_failing_public_health_and_unverified_recovery(self):
         output = (
             "[WEAVE deploy] STAGE=public_health\n"
