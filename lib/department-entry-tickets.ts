@@ -1,9 +1,11 @@
 import { createHash, randomBytes } from 'node:crypto'
-import { sql } from './db'
+import { sql, getPool } from './db'
 import { getTrxPaymentNgnRate } from './trx-payment'
 import { WEAVE_OPAY_ACCOUNT_NUMBER } from './opay-config'
-import { issueDepartmentalCode, type Department } from './departmental-codes'
+import { issueDepartmentalCode, generateCode, type Department } from './departmental-codes'
 import { departmentEntryTicketPrice } from './department-entry-pricing'
+import { isFlameSaturdayFreeEntry } from './flame-saturday-free-entry'
+import { getFlameEvent } from './weave-event-store'
 
 export const DEPARTMENT_ENTRY_TICKET_VALID_HOURS = 24
 
@@ -80,8 +82,75 @@ async function notifyAdmins(title: string, content: string) {
   }
 }
 
+
+/** Grant a one-use departmental code without creating a Paystack obligation.
+ * Ticket, code, and issuance audit are committed as one transaction.
+ * A claimed code survives the 10:00 cutoff so a visitor can finish the form.
+ */
+async function createFreeSaturdayEntryTicket(department: Department) {
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    const accessToken = randomBytes(32).toString('hex')
+    const ticketNumber = `FREE-${department === 'AGENT' ? 'A' : 'B'}-${randomBytes(6).toString('hex').toUpperCase()}`
+    const code = generateCode(department)
+    const connection = await getPool().connect()
+    try {
+      await connection.query('BEGIN')
+      const created = await connection.query(
+        `INSERT INTO departmental_entry_tickets (
+          ticket_number, access_token_hash, department, status,
+          price_flame_coin, trx_ngn_rate, amount_ngn, opay_account_number,
+          verified_at, expires_at
+        ) VALUES ($1, $2, $3, 'CODE_ISSUED', 0, 0, 0, $4,
+                  NOW(), NOW() + INTERVAL '7 days') RETURNING *`,
+        [ticketNumber, hashAccessToken(accessToken), department, WEAVE_OPAY_ACCOUNT_NUMBER]
+      )
+      const ticket = created.rows[0]
+      const issued = await connection.query(
+        `INSERT INTO departmental_codes
+          (code, department, status, issued_by, expires_at, registration_request_id)
+         VALUES ($1, $2, 'ACTIVE', NULL, NOW() + INTERVAL '7 days', $3::uuid)
+         RETURNING id`,
+        [code, department, ticket.id]
+      )
+      await connection.query(
+        `INSERT INTO departmental_audit_log (event, department, code_id, result, metadata)
+         VALUES ('SATURDAY_FREE_ENTRY', $1, $2::uuid, 'SUCCESS', $3::jsonb)`,
+        [department, issued.rows[0].id, JSON.stringify({
+          ticketNumber, promotion: 'burning-river-saturday-08-10-wat',
+          priceSystemSwitch: 0, paymentRequired: false,
+        })]
+      )
+      await connection.query('COMMIT')
+      await notifyAdmins(
+        `Free Saturday ${department} entry issued`,
+        `Burning River Saturday free-entry ticket ${ticketNumber} was issued at 0 System Switch. Registration code remains one-use; no payment is due.`
+      )
+      return {
+        ticket: { ...ticket, departmental_code: code },
+        accessToken,
+        rateSource: 'flame-saturday-free-entry',
+      }
+    } catch (error: any) {
+      await connection.query('ROLLBACK').catch(() => {})
+      if (error?.code !== '23505') throw error
+    } finally {
+      connection.release()
+    }
+  }
+  throw new Error('Unable to issue a Saturday free-entry ticket. Please retry.')
+}
+
 export async function createDepartmentEntryTicket(department: Department) {
   await ensureDepartmentEntryTicketSchema()
+
+  // Both the event lifecycle and the 08:00–10:00 West Africa Time window
+  // are checked on the server. Outside the window all ticket pricing remains.
+  if (isFlameSaturdayFreeEntry()) {
+    const event = await getFlameEvent()
+    if (event.effectiveStatus === 'active') {
+      return createFreeSaturdayEntryTicket(department)
+    }
+  }
 
   const accessToken = randomBytes(32).toString('hex')
   const accessTokenHash = hashAccessToken(accessToken)
