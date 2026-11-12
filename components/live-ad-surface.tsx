@@ -75,6 +75,10 @@ export function LiveAdSurface() {
   const pathname = usePathname()
   const { user } = useAuth()
   const placement = useMemo(() => placementFromPath(pathname || '/'), [pathname])
+  // Stability is an operating workspace, not an automatic advertising placement.
+  // Agents also enter the shared event immediately after login.
+  const suppressAgentArrivalAds = user?.role === 'agent' &&
+    (pathname === '/event' || pathname === '/agent' || pathname?.startsWith('/agent/'))
   const [ads, setAds] = useState<LiveAd[]>([])
   const [adsPlacement, setAdsPlacement] = useState<string | null>(null)
   const [dismissed, setDismissed] = useState<string[]>([])
@@ -102,13 +106,14 @@ export function LiveAdSurface() {
     setDismissed([])
     setAdsPlacement(null)
     setAds([])
+    if (suppressAgentArrivalAds) return
     const refresh = visiblePoll(loadAds, 20000)
     return () => {
       refresh()
     }
-  }, [loadAds])
+  }, [loadAds, suppressAgentArrivalAds])
 
-  const activeAd = adsPlacement === placement
+  const activeAd = !suppressAgentArrivalAds && adsPlacement === placement
     ? ads.find(ad => !dismissed.includes(ad.id) && !hasBeenSeen(ad))
     : undefined
   if (!activeAd) return null
