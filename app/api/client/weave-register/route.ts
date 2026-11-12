@@ -76,6 +76,25 @@ export async function POST(request: NextRequest) {
         (!staffGrant || !/\bcj\s+dorado\b/i.test(String(folder.identity_data?.name||'')))) {
       return NextResponse.json({ error: 'CJ Dorado registration requires the existing approved employee invitation and verified File Number identity.' }, { status: 403 })
     }
+    // Preserve the business identity accepted in the independently verified
+    // external Pro plan; registration must not silently rename that business.
+    let verifiedProBusinessName=''
+    if(staffGrant?.folder_tier==='pro'){
+      const [table]=await sql`SELECT to_regclass('public.pro_file_number_verifications') AS name`
+      if(table?.name){
+        const [verified]=await sql`
+          SELECT business_name FROM pro_file_number_verifications
+          WHERE file_number=${fileNumber}
+            AND lower(trim(signed_name))=lower(trim(${staffGrant.candidate_name}))
+            AND status IN ('paid_pending_account','active')
+            AND identity_verified_at IS NOT NULL AND payment_verified_at IS NOT NULL
+            AND payment_verified_amount_usdt=680
+          ORDER BY payment_verified_at DESC LIMIT 1
+        `
+        verifiedProBusinessName=String(verified?.business_name||'').trim()
+      }
+    }
+    const registeredBusinessName=verifiedProBusinessName||String(businessName||'').trim()||null
     const existing = await sql`SELECT id FROM users WHERE email = ${email}`
     if (existing.length > 0) {
       return NextResponse.json(
@@ -123,7 +142,7 @@ export async function POST(request: NextRequest) {
         'client',
         ${fileNumber},
         ${phone},
-        ${businessName || null},
+        ${registeredBusinessName},
         ${gender},
         'due',
         ${referralCode},
