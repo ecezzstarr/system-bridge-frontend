@@ -16,6 +16,7 @@ type Props={activeFilter:FilterInfo|null;onFilterSelect:(filter:FilterInfo|null)
 export default function HopeVideoFilterShop({activeFilter,onFilterSelect}:Props){
   const [catalog,setCatalog]=useState<CatalogState|null>(null)
   const [loading,setLoading]=useState(true)
+  const [supported,setSupported]=useState<boolean|null>(null)
   const [buying,setBuying]=useState<string|null>(null)
   const [applying,setApplying]=useState(false)
   const [error,setError]=useState('')
@@ -33,6 +34,12 @@ export default function HopeVideoFilterShop({activeFilter,onFilterSelect}:Props)
   },[])
 
   useEffect(()=>{
+    const canvas=document.createElement('canvas')
+    const context=canvas.getContext('2d')
+    setSupported(Boolean(typeof window.RTCPeerConnection!=='undefined' && typeof canvas.captureStream==='function' && context && 'filter' in context))
+  },[])
+
+  useEffect(()=>{
     let live=true
     void refresh().catch(e=>{if(live)setError(e?.message||'Unable to open the filter shop')})
       .finally(()=>{if(live)setLoading(false)})
@@ -47,7 +54,7 @@ export default function HopeVideoFilterShop({activeFilter,onFilterSelect}:Props)
   }
 
   const buy=async(filter:FilterInfo)=>{
-    if(buying||applying||!catalog)return
+    if(buying||applying||!catalog||supported!==true)return
     // No browser-provided prices or discounts are accepted by the server.
     if(!window.confirm('Purchase '+filter.name+' permanently for '+filter.priceSystemSwitch+' System Switch?')){
       return
@@ -85,6 +92,7 @@ export default function HopeVideoFilterShop({activeFilter,onFilterSelect}:Props)
       </div>
     </div>
 
+    {supported===false&&<p role="alert" className="mt-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900">This device cannot transmit live canvas filters. Purchases are disabled here; try a supported browser before spending System Switch.</p>}
     {loading&&<p role="status" className="mt-3 text-sm">Loading prices and your saved licenses…</p>}
     {!loading&&!catalog&&<button className="mt-3 rounded-lg border px-4 py-2 text-sm" onClick={()=>void refresh().catch(e=>setError(e?.message))}>Retry filter shop</button>}
     {catalog&&<div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
@@ -106,7 +114,7 @@ export default function HopeVideoFilterShop({activeFilter,onFilterSelect}:Props)
           <span className="flex-1 text-xs leading-4 text-[#5b6b70]">{filter.detail}</span>
           {owned?<button type="button" disabled={applying||Boolean(buying)} onClick={()=>void select(filter)}
             className="mt-3 min-h-10 rounded-lg bg-[#275464] px-2 text-xs font-semibold text-white disabled:opacity-50">{selected?'Applied to video':'Apply owned filter'}</button>
-          :<button type="button" disabled={applying||Boolean(buying)} onClick={()=>void buy(filter)}
+          :<button type="button" disabled={applying||Boolean(buying)||supported!==true} onClick={()=>void buy(filter)}
             className="mt-3 min-h-10 rounded-lg border border-[#bc985a] px-2 text-xs font-bold text-[#76531b] disabled:opacity-50">
               {buying===filter.id?'Purchasing…':'Buy · '+filter.priceSystemSwitch+' System Switch'}
             </button>}
