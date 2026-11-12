@@ -11,6 +11,7 @@ import path from 'node:path'
 import { Readable } from 'node:stream'
 import { pipeline } from 'node:stream/promises'
 import { mediaObjectNameFromUrl, mediaObjectPath, saveMediaFile } from '@/lib/weave-media-storage'
+import { weaveRealTextureFilter } from '@/lib/weave-video-real-texture'
 
 export const runtime = 'nodejs'
 export const maxDuration = 900
@@ -145,15 +146,14 @@ export async function POST(request: NextRequest) {
       await writeFile(textPath, readableCaption(scene.text), 'utf8')
 
       const duration = Math.max(1, Number(scene.durationSeconds || 1))
-      const visualFilter = [
-        'scale=720:1280:force_original_aspect_ratio=increase',
-        'crop=720:1280',
-        'setsar=1',
-        'drawbox=x=0:y=ih*0.79:w=iw:h=ih*0.21:color=black@0.39:t=fill',
-        `drawtext=fontfile=${FONT_PATH}:textfile=${textPath}:fontcolor=white:fontsize=36:line_spacing=10:x=(w-text_w)/2:y=h*0.855:box=1:boxcolor=black@0.08:boxborderw=16`,
-        'fade=t=in:st=0:d=0.25',
-        `fade=t=out:st=${Math.max(0, duration - 0.25)}:d=0.25`,
-      ].join(',')
+      const visualFilter = weaveRealTextureFilter({
+        assetType: scene.assetType === 'image' ? 'image' : 'video',
+        visualStyle: scene.visualStyle,
+        durationSeconds: duration,
+        fontPath: FONT_PATH,
+        textPath,
+        demoMode: Boolean(row.demo_mode),
+      })
       const inputArgs = scene.assetType === 'image'
         ? ['-loop', '1', '-framerate', '30', '-i', inputPath]
         : ['-stream_loop', '-1', '-i', inputPath]
