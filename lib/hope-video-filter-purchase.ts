@@ -1,6 +1,7 @@
 import { getPool } from '@/lib/db'
 import { issueWeaveReceipt } from '@/lib/weave-receipts'
 import { findHopeVideoFilter } from '@/lib/hope-video-filter-catalog'
+import { ensureHopeStudioBundleSchema } from '@/lib/hope-video-studio-schema'
 
 let ensured:Promise<void>|null=null
 export function ensureHopeVideoFilterSchema():Promise<void> {
@@ -16,9 +17,13 @@ export function ensureHopeVideoFilterSchema():Promise<void> {
   return ensured
 }
 export async function ownedHopeVideoFilters(bridgerId:string) {
-  await ensureHopeVideoFilterSchema()
+  await Promise.all([ensureHopeVideoFilterSchema(),ensureHopeStudioBundleSchema()])
   const rows=await getPool().query(
-    'SELECT filter_id,purchased_at,price_system_switch FROM weave_hope_video_filter_purchases WHERE bridger_id=$1::uuid ORDER BY purchased_at DESC',
+    `SELECT filter_id,MAX(purchased_at) AS purchased_at,MIN(price_system_switch) AS price_system_switch FROM (
+       SELECT filter_id,purchased_at,price_system_switch FROM weave_hope_video_filter_purchases WHERE bridger_id=$1::uuid
+       UNION ALL
+       SELECT filter_id,granted_at AS purchased_at,0::numeric AS price_system_switch FROM weave_hope_video_bundle_grants WHERE bridger_id=$1::uuid
+     ) licenses GROUP BY filter_id ORDER BY purchased_at DESC`,
     [bridgerId],
   )
   return rows.rows
@@ -31,7 +36,7 @@ export async function ownedHopeVideoFilters(bridgerId:string) {
 export async function purchaseHopeVideoFilter(userId:string,filterId:unknown) {
   const filter=findHopeVideoFilter(filterId)
   if(!filter)return {success:false as const,reason:'invalid_filter' as const}
-  await ensureHopeVideoFilterSchema()
+  await Promise.all([ensureHopeVideoFilterSchema(),ensureHopeStudioBundleSchema()])
   const db=getPool()
   const client=await db.connect()
   let purchaseId:string|null=null
@@ -49,7 +54,8 @@ export async function purchaseHopeVideoFilter(userId:string,filterId:unknown) {
       return {success:false as const,reason:'bridger_unavailable' as const}
     }
     const existing=(await client.query(
-      'SELECT id FROM weave_hope_video_filter_purchases WHERE bridger_id=$1::uuid AND filter_id=$2',
+      `SELECT filter_id FROM weave_hope_video_filter_purchases WHERE bridger_id=$1::uuid AND filter_id=$2
+       UNION SELECT filter_id FROM weave_hope_video_bundle_grants WHERE bridger_id=$1::uuid AND filter_id=$2`,
       [userId,filter.id],
     )).rows[0]
     if(existing){
