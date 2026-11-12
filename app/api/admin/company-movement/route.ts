@@ -26,7 +26,7 @@ export async function GET(request:NextRequest) {
     const names=['market_prospect_packages','market_prospect_contacts','market_prospect_outreach',
       'agility_agent_sales','agility_stock_orders','carrier_food_orders','carrier_cake_orders',
       'file_folder_purchases','bridge_deposits','deposits','ledger_entries',
-      'weave_regional_daily_checkins','client_file_folders','weave_hope_video_filter_purchases']
+      'weave_regional_daily_checkins','client_file_folders','weave_hope_video_filter_purchases','weave_hope_video_bundle_purchases']
     const available=await pool.query(
       "SELECT "+names.map((_,i)=>"to_regclass('public."+names[i]+"') IS NOT NULL AS t"+i).join(", ")
     )
@@ -168,6 +168,15 @@ export async function GET(request:NextRequest) {
       "COALESCE(SUM(price_system_switch),0)::numeric AS earned_system_switch "+
       "FROM weave_hope_video_filter_purchases WHERE purchased_at >= "+since+
       " GROUP BY filter_id ORDER BY licenses DESC,filter_id LIMIT 20")
+    const videoBundles=await read('videoBundles',['weave_hope_video_bundle_purchases'],
+      "SELECT COUNT(*)::int AS packages,COUNT(DISTINCT bridger_id)::int AS paying_bridgers, "+
+      "COALESCE(SUM(price_system_switch),0)::numeric AS earned_system_switch "+
+      "FROM weave_hope_video_bundle_purchases WHERE purchased_at >= "+since)
+    const videoBundleBreakdown=await read('videoBundleBreakdown',['weave_hope_video_bundle_purchases'],
+      "SELECT bundle_id,COUNT(*)::int AS packages, "+
+      "COALESCE(SUM(price_system_switch),0)::numeric AS earned_system_switch "+
+      "FROM weave_hope_video_bundle_purchases WHERE purchased_at >= "+since+
+      " GROUP BY bundle_id ORDER BY packages DESC,bundle_id LIMIT 10")
     const ledger=await read('ledger',['ledger_entries'],
       "SELECT entry_type, currency, COUNT(*)::int AS events "+
       "FROM ledger_entries WHERE created_at >= "+since+
@@ -178,7 +187,7 @@ export async function GET(request:NextRequest) {
       " ORDER BY created_at DESC LIMIT 15")
     const sections={prospects,bridgerLeaders,prospectContacts,outreach,agility,agentLeaders,
       food,cakes,foodQueue,cakeQueue,stock,agentFoodLeaders,paidFoodProducts,recordedStockProducts,
-      folders,folderQueue,folderActivation,regionalSupport,wallet,videoFilters,videoFilterBreakdown,ledger,recent}
+      folders,folderQueue,folderActivation,regionalSupport,wallet,videoFilters,videoFilterBreakdown,videoBundles,videoBundleBreakdown,ledger,recent}
     return NextResponse.json({
       success:true,days,generatedAt:new Date().toISOString(),sources,missing,
       companyTime:{
@@ -194,7 +203,8 @@ export async function GET(request:NextRequest) {
         folders:'Confirmed unique File Folder sale keys across current and historical rails',
         wallet:'Approved deposits with verified_at in selected period; pending is the current all-time queue',
         ledger:'Entry counts by type and currency, not revenue or cash balances',
-        videoFilters:'Settled permanent Hope video-filter wallet purchases denominated in System Switch; not cash reconciliation'
+        videoFilters:'Settled individual Hope video-filter wallet purchases denominated in System Switch; not cash reconciliation',
+        videoBundles:'Settled Hope Studio bundle purchases denominated in System Switch, with permanent grants; not bank-cash reconciliation'
       }
     },{headers})
   }catch(error){
