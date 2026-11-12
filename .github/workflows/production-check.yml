@@ -178,6 +178,7 @@ jobs:
           node tests/premium-private-file-folder-recovery-regression.cjs
           node tests/cj-dorado-employee-login-exchange-regression.cjs
           node tests/pro-file-number-passwordless-regression.cjs
+          node tests/pro-file-number-onboarding-regression.cjs
           node tests/pro-company-staff-regional-manager-regression.cjs
           node tests/pro-client-verification-theme-regression.cjs
           node tests/pro-manager-role-first-entrance-regression.cjs
