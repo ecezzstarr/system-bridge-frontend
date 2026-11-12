@@ -55,6 +55,7 @@ jobs:
           node tests/mandate-guidance-postgres.cjs
           node tests/today-food-postgres.cjs
           node tests/phone-push-postgres.cjs
+          node tests/pro-reserved-file-number-postgres.cjs
 
       - name: Core recent-feature regression
         run: node tests/recent-features.cjs
