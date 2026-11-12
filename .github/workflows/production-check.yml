@@ -63,6 +63,7 @@ jobs:
         run: |
           node tests/department-entry-role-pricing-regression.cjs
           node tests/system-switch-currency-display.cjs
+          npx tsx --test tests/saturday-free-entry.test.ts
 
       - name: Administrations company movement and regional System Switch contracts
         run: |
