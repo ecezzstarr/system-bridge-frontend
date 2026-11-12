@@ -68,7 +68,8 @@ export async function POST(request: NextRequest) {
     }
     if (!folder) return NextResponse.json(
       {error:'Invalid or already registered File Number'},{status:400})
-    if (staffGrant && String(folder.identity_data?.name||'').trim().toLowerCase() !==
+    if (staffGrant && folder.identity_data?.name &&
+      String(folder.identity_data.name).trim().toLowerCase() !==
       String(staffGrant.candidate_name||'').trim().toLowerCase()) {
       return NextResponse.json({error:'Issued File Number identity does not match the approved company employee. Contact Administrations.'},{status:409})
     }
@@ -105,8 +106,8 @@ export async function POST(request: NextRequest) {
 
     const hashedPassword = await bcrypt.hash(password, 10)
     const identityData = folder.identity_data as any
-    const name = identityData?.name || 'Client'
-    const phone = identityData?.phone || ''
+    const name = staffGrant?.candidate_name || identityData?.name || 'Client'
+    const phone = staffGrant?.candidate_phone || identityData?.phone || ''
     const bridgerId = folder.bridger_id || null
     const referralInput = String(referredBy || '').trim()
     const referralOwner = referralInput ? await resolveReferralOwnerByCode(referralInput) : null
