@@ -25,6 +25,7 @@ type EntryTicket = {
   department: Department
   status: 'PRESENTED' | 'PAYMENT_PENDING' | 'VERIFYING' | 'CODE_ISSUED' | 'REJECTED' | 'EXPIRED'
   priceFlameCoin: number
+  saturdayFreeEntry?: boolean
   trxNgnRate: number
   amountNgn: number
   opayAccountNumber: string
@@ -51,6 +52,7 @@ export function DepartmentEntryTicketGate({
   const [musicTitle, setMusicTitle] = useState('WEAVE Live Broadcast')
   const [musicPlaying, setMusicPlaying] = useState(false)
   const [ticket, setTicket] = useState<EntryTicket | null>(null)
+  const [promotionActive, setPromotionActive] = useState(false)
   const [accessToken, setAccessToken] = useState('')
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -62,6 +64,26 @@ export function DepartmentEntryTicketGate({
   })
 
   const storageKey = `weave_department_entry_${department}`
+
+  const refreshPromotion = async () => {
+    try {
+      const response = await fetch('/api/department-entry/saturday-free', { cache: 'no-store' })
+      if (!response.ok) return false
+      const data = await response.json()
+      setPromotionActive(Boolean(data.active))
+      return Boolean(data.active)
+    } catch {
+      return false
+    }
+  }
+
+  useEffect(() => {
+    void refreshPromotion()
+    const interval = window.setInterval(() => { void refreshPromotion() }, 60_000)
+    return () => window.clearInterval(interval)
+  // Only the server determines whether a free ticket can be issued.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     const onDjState = (event: Event) => {
@@ -147,10 +169,15 @@ export function DepartmentEntryTicketGate({
       }
 
       setEntered(true)
+      const offerActive = await refreshPromotion()
       const saved = sessionStorage.getItem(storageKey)
       if (saved) {
         const existing = await loadTicket(saved)
-        if (existing && !['EXPIRED'].includes(existing.status)) return
+        if (existing && existing.status !== 'EXPIRED') {
+          // A previously presented, unpaid ticket must not hide the Saturday offer.
+          // Never replace a ticket with payment already submitted or verified.
+          if (!offerActive || existing.status !== 'PRESENTED' || existing.priceFlameCoin === 0) return
+        }
         sessionStorage.removeItem(storageKey)
       }
       await createTicket()
@@ -232,6 +259,9 @@ export function DepartmentEntryTicketGate({
           </p>
         </div>
 
+        <p className="rounded-xl border border-amber-300/25 bg-amber-300/10 p-3 text-xs leading-5 text-amber-100">
+          Burning River Saturday offer: Agent and Bridger entry is free from 8:00 to 10:00 a.m. (Africa/Lagos). {promotionActive ? 'Free entry is open now.' : 'Outside the window, normal entry tickets apply.'}
+        </p>
         {error && <p className="rounded-lg border border-red-500/20 bg-red-500/10 p-3 text-xs font-bold text-red-300">{error}</p>}
 
         <Button
@@ -260,6 +290,7 @@ export function DepartmentEntryTicketGate({
 
   const awaitingVerification = ['PAYMENT_PENDING', 'VERIFYING'].includes(ticket.status)
   const codeIssued = ticket.status === 'CODE_ISSUED' && Boolean(ticket.departmentalCode)
+  const freeTicket = ticket.priceFlameCoin === 0
 
   return (
     <div className="space-y-5">
@@ -286,6 +317,15 @@ export function DepartmentEntryTicketGate({
           <Ticket className="h-7 w-7 text-amber-300" />
         </div>
 
+        {freeTicket ? (
+          <div className="mt-5 rounded-xl border border-green-400/30 bg-green-400/10 p-4">
+            <p className="text-base font-black text-green-200">Free Saturday Entry · 0 System Switch</p>
+            <p className="mt-2 text-xs leading-5 text-slate-200">
+              No payment is required. Your one-use registration code is ready. Complete registration before 10:00 a.m. West Africa Time.
+            </p>
+          </div>
+        ) : (
+          <>
         <div className="mt-5 grid grid-cols-2 gap-3">
           <div className="rounded-xl border border-white/10 bg-black/25 p-3">
             <p className="text-[9px] uppercase tracking-widest text-slate-500">Ticket Price</p>
@@ -308,9 +348,11 @@ export function DepartmentEntryTicketGate({
             Pay securely through Paystack checkout. The amount is for this {ticket.department === 'AGENT' ? 'Agent' : 'Bridger'} Department Entry Ticket ({ticket.priceFlameCoin} System Switch), not a wallet top-up.
           </p>
         </div>
+          </>
+        )}
       </div>
 
-      {ticket.status === 'PRESENTED' && (
+      {ticket.status === 'PRESENTED' && !freeTicket && (
         <div className="space-y-3 rounded-2xl border border-white/10 bg-slate-950/60 p-5">
           <p className="text-xs font-black uppercase tracking-widest text-slate-300">Submit Payment for Verification</p>
           <Input
@@ -361,7 +403,7 @@ export function DepartmentEntryTicketGate({
       {codeIssued && (
         <div className="rounded-2xl border border-green-400/30 bg-green-400/10 p-6 text-center">
           <CheckCircle2 className="mx-auto h-9 w-9 text-green-400" />
-          <p className="mt-3 text-[10px] font-black uppercase tracking-[0.22em] text-green-300">Payment Verified · Code Released</p>
+          <p className="mt-3 text-[10px] font-black uppercase tracking-[0.22em] text-green-300">{freeTicket ? 'Saturday Free Entry · Code Released' : 'Payment Verified · Code Released'}</p>
           <div className="mt-4 flex items-center justify-center gap-2 rounded-xl border border-green-400/20 bg-black/30 p-4">
             <KeyRound className="h-4 w-4 text-green-400" />
             <code className="break-all font-mono text-sm font-black tracking-wider text-white">{ticket.departmentalCode}</code>
@@ -369,13 +411,13 @@ export function DepartmentEntryTicketGate({
               <Copy className="h-4 w-4" />
             </button>
           </div>
-          <p className="mt-3 text-xs text-slate-400">This code is one-use and belongs to the {department} department.</p>
+          <p className="mt-3 text-xs text-slate-400">This code is one-use and belongs to the {department} department.{freeTicket ? ' Free Saturday codes expire at 10:00 a.m. WAT.' : ''}</p>
           <Button
             type="button"
             onClick={() => onCodeReady(ticket.departmentalCode!)}
             className="mt-5 h-11 w-full bg-green-600 font-black uppercase tracking-widest hover:bg-green-500"
           >
-            <ShieldCheck className="mr-2 h-4 w-4" /> Use Code & Continue Registration
+            <ShieldCheck className="mr-2 h-4 w-4" /> {freeTicket ? 'Continue Free Registration' : 'Use Code & Continue Registration'}
           </Button>
         </div>
       )}
