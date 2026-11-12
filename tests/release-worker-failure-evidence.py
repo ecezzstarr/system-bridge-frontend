@@ -55,10 +55,10 @@ class ReleaseFailureEvidence(unittest.TestCase):
             root = Path(directory)
             guard = root / "selfhost" / "docker-storage-guard.sh"
             guard.parent.mkdir()
-            guard.write_text("#!/usr/bin/env bash\\nexit 12\\n")
+            guard.write_text("#!/usr/bin/env bash\nexit 12\n")
             result = worker.subprocess.CompletedProcess(
                 ["bash", str(guard)], 12,
-                f"[WEAVE storage] INSUFFICIENT_DISK: disk full {token}\\n",
+                f"[WEAVE storage] INSUFFICIENT_DISK: disk full {token}\n",
             )
             with patch.object(worker, "ROOT", root), \
                     patch.object(worker.subprocess, "run", return_value=result) as runner, \
