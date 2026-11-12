@@ -1,5 +1,6 @@
 import {NextRequest,NextResponse} from 'next/server'
 import {sendVerifiedProClientRegistrationInvite} from '@/lib/pro-client-registration-invitation'
+import {notifyAdministrationsActivity} from '@/lib/administrations-activity-notifications'
 import {
  submitProFileNumberPlan,readProFileNumberVerification,submitProFileNumberPayment,
  proVerificationPublicHeaders
@@ -32,6 +33,13 @@ export async function POST(request:NextRequest){
     operatingCity:body.operatingCity,contactAddress:body.contactAddress,
     postalCode:body.postalCode,
    })
+   await notifyAdministrationsActivity({
+    event:'pro_staff_verification_submitted',eventId:result.reference,
+    title:'Pro File Number verification awaits Administrations',
+    content:'A new signed Pro File Folder business application was submitted for review. Confirm the original File Number, business plan, identity and approved staff appointment before authorizing payment.',
+    adminPath:'/admin/pro-file-number-verifications',
+    actorName:'WEAVE Pro Verification',
+   })
    return NextResponse.json(result,{status:201,headers:proVerificationPublicHeaders})
   }
   if(body.action==='send_registration_invite'){
@@ -42,6 +50,13 @@ export async function POST(request:NextRequest){
   if(body.action==='submit_payment'){
    const result=await submitProFileNumberPayment(
     String(body.ticket||''),String(body.txHash||''),String(body.expectedWallet||''))
+   await notifyAdministrationsActivity({
+    event:'pro_staff_payment_evidence',eventId:result.reference,
+    title:'Pro File Folder payment evidence needs Forensics',
+    content:'A Pro employee submitted blockchain payment evidence. Independently check network, exact receiving wallet, amount and transaction hash; this is not yet verified income.',
+    adminPath:'/admin/pro-file-number-verifications',
+    actorName:'WEAVE Pro Verification',
+   })
    return NextResponse.json(result,{headers:proVerificationPublicHeaders})
   }
   return NextResponse.json({error:'Unknown verification action.'},{status:400,headers:proVerificationPublicHeaders})
