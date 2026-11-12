@@ -19,7 +19,8 @@ export async function POST(request: NextRequest) {
     const shield=await getDivineShieldState()
     if(shield.active) return NextResponse.json({error:'WEAVE is under maintenance. Divine Shield is active.'},{status:423})
 
-    const { fileNumber, staffOffer, email, password, businessName, gender: rawGender, referredBy } = await request.json()
+    const { fileNumber: rawFileNumber, staffOffer, email, password, businessName, gender: rawGender, referredBy } = await request.json()
+    const fileNumber=String(rawFileNumber||'').trim().toUpperCase()
     const gender=normalizeRegisteredGender(rawGender)
     if(!gender)return NextResponse.json({error:'Choose Male or Female at registration.'},{status:400})
     await ensureClientMonthlySchema()
@@ -31,22 +32,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const folder = await validateFileNumber(fileNumber)
-    if (!folder) {
-      return NextResponse.json(
-        { error: 'Invalid or already registered file number' },
-        { status: 400 }
-      )
-    }
-
-    // A company-granted File Number requires the private offer link and
-    // exact intended recipient email; retail registration is unaffected.
+    // Only approved company invitations may claim a staff File Number.
+    // Check the private token before looking up or rebuilding a reserved Folder.
     await ensureCompanyClientStaffSchema()
     const [staffGrant] = await sql`
-      SELECT id,token_hash,candidate_email,status,client_id,ticket_amount_usdt,applicant_contribution_usdt,proposed_personal_loan_usdt,folder_tier,receipt_number
-      FROM company_client_staff_offers
-      WHERE file_number=${fileNumber}
-      LIMIT 1
+      SELECT id,token_hash,candidate_name,candidate_phone,candidate_email,status,client_id,
+       ticket_amount_usdt,applicant_contribution_usdt,proposed_personal_loan_usdt,
+       folder_tier,receipt_number
+      FROM company_client_staff_offers WHERE file_number=${fileNumber} LIMIT 1
     `
     if (staffGrant && (
       staffGrant.status !== 'approved' || staffGrant.client_id ||
@@ -55,6 +48,29 @@ export async function POST(request: NextRequest) {
       staffGrant.token_hash !== staffOfferTokenHash(String(staffOffer))
     )) {
       return NextResponse.json({error:'This staff File Folder requires its private company invitation and named email'},{status:403})
+    }
+    let folder = await validateFileNumber(fileNumber)
+    if (!folder && staffGrant) {
+      // Some issued Pro numbers have an approved offer and independently
+      // verified activation but no legacy FNE record. Do not invalidate the
+      // company-issued number or ask the recipient to purchase another Folder.
+      const [owner] = await sql`SELECT id FROM users WHERE file_number=${fileNumber} LIMIT 1`
+      if (owner) return NextResponse.json({error:'This File Number belongs to an existing Client. Contact Administrations for account recovery.'},{status:409})
+      await sql`
+        INSERT INTO file_folders(file_number,bridger_id,identity_data,status)
+        VALUES(${fileNumber},NULL,${JSON.stringify({
+          name:staffGrant.candidate_name,phone:staffGrant.candidate_phone||'',
+          origin:'approved_company_pro_registration',
+        })}::jsonb,'pending')
+        ON CONFLICT(file_number) DO NOTHING
+      `
+      folder = await validateFileNumber(fileNumber)
+    }
+    if (!folder) return NextResponse.json(
+      {error:'Invalid or already registered File Number'},{status:400})
+    if (staffGrant && String(folder.identity_data?.name||'').trim().toLowerCase() !==
+      String(staffGrant.candidate_name||'').trim().toLowerCase()) {
+      return NextResponse.json({error:'Issued File Number identity does not match the approved company employee. Contact Administrations.'},{status:409})
     }
     if (fileNumber === CJ_DORADO_FILE_NUMBER &&
         (!staffGrant || !/\bcj\s+dorado\b/i.test(String(folder.identity_data?.name||'')))) {
