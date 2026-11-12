@@ -13,6 +13,7 @@ const paths=[
  'lib/pro-client-registration-invitation.ts',
  'app/api/client/pro-activation/route.ts',
  'app/client/pro-activation/page.tsx',
+ 'lib/file-folder-purchase-activation.ts',
 ]
 for(const file of paths){
  const parsed=ts.transpileModule(read(file),{fileName:file,reportDiagnostics:true,
@@ -28,6 +29,7 @@ const verification=read(paths[3])
 const invite=read(paths[4])
 const activation=read(paths[5])
 const activationPage=read(paths[6])
+const folderClaim=read(paths[7])
 const admin=read('app/api/admin/pro-file-number-verifications/route.ts')
 const systemSwitch=read('app/api/client/system-switch/route.ts')
 
@@ -46,6 +48,14 @@ assert(registration.includes('ON CONFLICT(file_number) DO NOTHING')&&
  registration.includes("status")&&
  registration.includes("await activatePurchasedFileFolderForClient({"),
  'Missing legacy FNE rows must be safely reconciled to the existing issued File Folder')
+assert(registration.includes('verifiedProBusinessName')&&
+ registration.includes('registeredBusinessName')&&
+ registration.includes("payment_verified_amount_usdt=680"),
+ 'Invited Client registration must preserve the approved externally verified business name')
+assert(folderClaim.includes('existingWorkshopType')&&
+ folderClaim.includes('workshopType=existingWorkshopType')&&
+ folderClaim.includes('${workshopTitle}'),
+ 'Claiming an issued Pro File Number cannot erase its existing private business workshop')
 assert(verification.includes('getPaidExternalProClientVerification')&&
  verification.includes("AND o.client_id=${clientId}::uuid")&&
  verification.includes("v.payment_verified_amount_usdt=${PRO_ACTIVATION_FEE_USDT}")&&
