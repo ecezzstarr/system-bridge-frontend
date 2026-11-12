@@ -12,6 +12,9 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const unreadOnly = searchParams.get('unreadOnly') === 'true'
     const notificationId=searchParams.get('id')
+    const page=Math.min(100,Math.max(0,Number.parseInt(searchParams.get('page')||'0',10)||0))
+    const limit=user.role==='admin'?100:50
+    const offset=page*limit
     if(notificationId){
       if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(notificationId))
         return NextResponse.json({success:false,error:'Invalid notification ID'},{status:400})
@@ -23,23 +26,29 @@ export async function GET(request: NextRequest) {
         {headers:{'Cache-Control':'private, no-store'}})
     }
 
-    const notifications = unreadOnly
-      ? await sql`
-          SELECT id, type, title, content, from_user_id, from_user_name, link, is_read, created_at
-          FROM notifications
-          WHERE user_id = ${user.id}::uuid AND is_read = false
-          ORDER BY created_at DESC
-          LIMIT 50
+    const [notifications,counts]=await Promise.all([
+      unreadOnly
+        ?sql`
+          SELECT id,type,title,content,from_user_id,from_user_name,link,is_read,created_at
+          FROM notifications WHERE user_id=${user.id}::uuid AND is_read=false
+          ORDER BY created_at DESC,id DESC LIMIT ${limit} OFFSET ${offset}
         `
-      : await sql`
-          SELECT id, type, title, content, from_user_id, from_user_name, link, is_read, created_at
-          FROM notifications
-          WHERE user_id = ${user.id}::uuid
-          ORDER BY created_at DESC
-          LIMIT 50
-        `
-
-    return NextResponse.json({ success: true, notifications })
+        :sql`
+          SELECT id,type,title,content,from_user_id,from_user_name,link,is_read,created_at
+          FROM notifications WHERE user_id=${user.id}::uuid
+          ORDER BY created_at DESC,id DESC LIMIT ${limit} OFFSET ${offset}
+        `,
+      sql`
+        SELECT COUNT(*)::int AS total,
+          COUNT(*) FILTER(WHERE is_read=false)::int AS unread
+        FROM notifications WHERE user_id=${user.id}::uuid
+      `,
+    ])
+    const total=Number(counts[0]?.total||0)
+    const unread=Number(counts[0]?.unread||0)
+    return NextResponse.json({success:true,notifications,total,unread,page,
+      hasMore:(page+1)*limit<(unreadOnly?unread:total)},
+      {headers:{'Cache-Control':'private, no-store'}})
   } catch (error) {
     console.error('Notifications fetch error:', error)
     return NextResponse.json({ success: false, error: 'Failed to fetch notifications' }, { status: 500 })

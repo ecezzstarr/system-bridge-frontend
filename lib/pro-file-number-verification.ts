@@ -208,5 +208,5 @@ export async function submitProFileNumberPayment(ticket:string,txHash:string,exp
    AND status='payment_required' AND payment_tx_hash IS NULL AND identity_verified_at IS NOT NULL
   RETURNING id`
  if(!row)throw new Error('Identity verification and an approved business plan are required before payment evidence.')
- return {success:true,status:'pending_forensics'}
+ return {success:true,status:'pending_forensics',reference:String(row.id)}
 }

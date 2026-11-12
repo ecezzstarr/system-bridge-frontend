@@ -30,6 +30,11 @@ export const ADMIN_SPACES:readonly AdminSpace[]=[
     "description": "Inspect recorded order alerts and payment exceptions."
   },
   {
+    "title": "Administrations Notification Health",
+    "href": "/admin/notification-health",
+    "description": "Inspect all staff activity alerts, device subscriptions, queued push deliveries and test this Administrations account."
+  },
+  {
     "title": "Employment Applications",
     "href": "/admin/employment-applications",
     "description": "Review applications across supported company employment tracks."

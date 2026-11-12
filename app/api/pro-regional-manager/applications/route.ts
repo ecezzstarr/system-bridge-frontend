@@ -3,6 +3,7 @@ import {getAuthUser} from '@/lib/auth-api'
 import {sql} from '@/lib/db'
 import {ensureProRegionalManagerApplicationsSchema} from '@/lib/pro-regional-manager-applications'
 import {proRegionalManagerDepartment} from '@/lib/pro-regional-manager-policy'
+import {notifyAdministrationsActivity} from '@/lib/administrations-activity-notifications'
 
 export const dynamic='force-dynamic'
 const headers={'Cache-Control':'private, no-store'}
@@ -75,6 +76,15 @@ export async function POST(request:NextRequest){
     WHERE weave_pro_regional_manager_applications.status IN ('rejected','withdrawn')
     RETURNING status,submitted_at,business_name`
   if(!record)return NextResponse.json({error:'An application is already pending or approved; refresh your application status.'},{status:409,headers})
+  await notifyAdministrationsActivity({
+    event:'pro_regional_manager_application',
+    eventId:String(user.id)+':'+new Date(record.submitted_at).toISOString(),
+    title:'Pro Regional Manager application needs review',
+    content:String(user.name||user.role)+' ('+user.role+') submitted a Pro business plan for '+businessName+
+      ' in '+city+', '+country+'. Review the actual appointment and business plan.',
+    adminPath:'/admin/pro-regional-manager-applications',
+    actorId:String(user.id),actorName:String(user.name||user.role),
+  })
   return NextResponse.json({success:true,positionType:'pro_regional_manager',application:record,
     notice:'Application received for Administrations review. No Pro File Folder, activation charge, salary payment or additional permissions have been granted.'},{status:201,headers})
  }catch(e){console.error('[Pro Regional Manager application submit]',e)
