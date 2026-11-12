@@ -489,7 +489,13 @@ export default function WeaveVideoRoom({callId,role,guestAccess,inviteLink,onClo
         <p className="absolute bottom-2 left-2 rounded bg-black/60 px-2 py-1 text-xs text-white">{role==='bridger'?call?.guestName||'Guest':'WEAVE Bridger'}</p>
       </div>
     </div>
-    {role==='bridger'&&!ended&&<HopeVideoFilterShop activeFilter={selectedFilter} activeFace={selectedFace} onFilterSelect={applyVideoFilter}/>}
+    {role==='bridger'&&!ended&&<details className="rounded-2xl border border-[#d9c59d] bg-[#fffdf7] p-3 shadow-sm sm:p-4">
+      <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 rounded-xl px-2 text-sm font-bold text-[#234854]">
+        <span>Live Video Studio · backgrounds, face masks and packages</span>
+        <span className="rounded-lg bg-[#e9d7b1] px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-[#69502b]">Open studio</span>
+      </summary>
+      <div className="mt-3"><HopeVideoFilterShop activeFilter={selectedFilter} activeFace={selectedFace} onFilterSelect={applyVideoFilter}/></div>
+    </details>}
     {soundBlocked&&<button onClick={()=>{void remoteVideo.current?.play().then(()=>setSoundBlocked(false)).catch(()=>{})}} className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-amber-100 px-4 text-sm"><Volume2 className="h-4 w-4"/> Tap to enable call audio</button>}
     {!mediaReady&&!ended?<button type="button" onClick={enableMedia} disabled={mediaBusy} className="min-h-12 w-full rounded-xl bg-[#235968] px-4 text-sm font-bold text-white disabled:opacity-50">
       {mediaBusy?'Requesting camera and microphone…':'Enable camera & microphone'}
@@ -504,6 +510,6 @@ export default function WeaveVideoRoom({callId,role,guestAccess,inviteLink,onClo
     {!ended&&<button onClick={()=>void endCall()} className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#9a3232] px-4 font-semibold text-white"><PhoneOff className="h-5 w-5"/> End call</button>}
     {error&&<p role="alert" className="rounded-lg border border-rose-300 bg-rose-50 p-3 text-sm text-rose-800">{error}</p>}
     {relayReady===false&&<p className="text-xs leading-5 text-[#76582d]">Network limitation: WEAVE TURN relay is not configured. Some mobile networks will not connect until Administrations adds TURN service.</p>}
-    <p className="flex items-start gap-2 text-xs leading-5 text-[#5d6a6e]"><ShieldCheck size={16} className="mt-0.5 shrink-0"/> Call media is encrypted by WebRTC and is not recorded by this feature. The link is private, but anyone holding an unused invitation can join. AI is not part of this video call. No System Switch is charged.</p>
+    <p className="flex items-start gap-2 text-xs leading-5 text-[#5d6a6e]"><ShieldCheck size={16} className="mt-0.5 shrink-0"/> Call media is encrypted by WebRTC and is not recorded by this feature. The link is private, but anyone holding an unused invitation can join. AI is not part of this video call. Basic calling is free; optional Studio effects and packages require a separately confirmed System Switch purchase.</p>
   </section>
 }
