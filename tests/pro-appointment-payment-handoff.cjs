@@ -19,12 +19,19 @@ const policy=load('lib/pro-regional-manager-policy.ts',{})
 const activationHelper=load('lib/pro-file-number-activation.ts',{'@/lib/pro-regional-manager-policy':policy})
 async function run(){
  let statements=[]
+ let issuedRows=[{id:'original'}],reservedRows=[]
  const db={query:async(q,args)=>{statements.push({q,args});
   if(q.startsWith('SELECT id,file_number,signed_name'))return {rows:[application]}
-  if(q.startsWith('SELECT id FROM file_folders'))return {rows:[{id:'original'}]}
+  if(q.includes('FROM file_folders WHERE file_number='))return {rows:issuedRows}
+  if(q.includes('FROM client_file_folders WHERE file_number='))return {rows:reservedRows}
   return {rows:[]}},release(){}}
  const schema={ensureCompanyClientStaffSchema:async()=>{},staffOfferTokenHash:()=> 'private-hash'}
+ const folderSchemas={
+  '@/lib/client-file-folder':{CJ_DORADO_FILE_NUMBER:fileNumber,ensureClientFileFolderSchema:async()=>{},ensureCjDoradoFolder:async()=>{}},
+  '@/lib/fne':{ensureFneTables:async()=>true}
+ }
  const appointment=load('lib/pro-staff-appointment.ts',{
+  ...folderSchemas,
   '@/lib/db':{getPool:()=>({connect:async()=>db})},'@/lib/company-client-staff':schema,
   '@/lib/pro-file-number-verification':{ensureProFileNumberVerificationSchema:async()=>{}}})
  const input={candidateEmail:'employee@example.com',monthlySalaryUSDT:1000,appointmentReference:'APPROVED-TEST-RECORD',independentlyVerified:true}
@@ -35,9 +42,24 @@ async function run(){
  assert.ok(inserted.q.includes("'pro','accepted'"),'Employment approval does not approve payment or registration')
  assert.equal(inserted.args[1],application.signed_name,'Preserve verified legal identity')
  assert.ok(statements.some(x=>x.q==='COMMIT'))
+ issuedRows=[];reservedRows=[{id:'original-reserved-pro-folder',client_id:null}];statements=[]
+ await appointment.reconcileProStaffAppointment(application.id,'admin',input)
+ const restored=statements.find(x=>x.q.startsWith('INSERT INTO file_folders('))
+ assert.equal(restored.args[0],fileNumber,'Restore the same reserved number, never issue a replacement')
+ assert.equal(restored.args[3],'pending','Reconciliation does not register the account or verify payment')
+ assert.equal(JSON.parse(restored.args[2]).name,application.signed_name)
+ assert.equal(JSON.parse(restored.args[2]).originalFolderId,reservedRows[0].id)
+ reservedRows=[{id:'other-folder',client_id:'another-client'}];statements=[]
+ await assert.rejects(()=>appointment.reconcileProStaffAppointment(application.id,'admin',input),/another Client/)
+ assert.ok(!statements.some(x=>x.q.startsWith('INSERT')))
+ reservedRows=[];statements=[]
+ const originalNumber=application.file_number;application.file_number='WEAVE-UNKNOWN-123456'
+ await assert.rejects(()=>appointment.reconcileProStaffAppointment(application.id,'admin',input),/No issued or company-reserved/)
+ assert.ok(!statements.some(x=>x.q.startsWith('INSERT')))
+ application.file_number=originalNumber;issuedRows=[{id:'original'}]
  statements=[]
  const conflicting={...db,query:async(q,args)=>q.startsWith('SELECT id FROM company_client_staff_offers')?{rows:[{id:'existing'}]}:db.query(q,args)}
- const duplicate=load('lib/pro-staff-appointment.ts',{'@/lib/db':{getPool:()=>({connect:async()=>conflicting})},'@/lib/company-client-staff':schema,
+ const duplicate=load('lib/pro-staff-appointment.ts',{...folderSchemas,'@/lib/db':{getPool:()=>({connect:async()=>conflicting})},'@/lib/company-client-staff':schema,
   '@/lib/pro-file-number-verification':{ensureProFileNumberVerificationSchema:async()=>{}}})
  await assert.rejects(()=>duplicate.reconcileProStaffAppointment(application.id,'admin',input),/original offer/)
  assert.ok(statements.some(x=>x.q==='ROLLBACK'))
