@@ -63,7 +63,7 @@
 }
 #weave-pro-verification .pv-hero h1 span{display:block;color:#b6eaff !important;font-weight:570;}
 #weave-pro-verification .pv-hero-description{
-  max-width:620px;margin:21px 0 0;font-size:13px;line-height:1.75 !important;
+  max-width:620px;margin:21px 0 0;font-size:15px;line-height:1.75 !important;
   color:#d2eafa !important;
 }
 #weave-pro-verification .pv-hero-signals{display:flex;flex-wrap:wrap;gap:9px;margin-top:23px;}
@@ -146,9 +146,11 @@
 }
 #weave-pro-verification .pv-panel h3{color:#244a65 !important;}
 #weave-pro-verification .pv-panel :is(label,p,details,summary){color:#3b596c !important;}
-#weave-pro-verification .pv-panel label{font-weight:620;}
+#weave-pro-verification .pv-panel label{font-weight:620;font-size:15px;line-height:1.55;}
+#weave-pro-verification .pv-panel p{font-size:14px;line-height:1.65 !important;}
+#weave-pro-verification .pv-panel summary{font-size:15px;}
 #weave-pro-verification .pv-panel :is(input:not([type="checkbox"]),textarea,select){
-  display:block;width:100%;min-height:46px;
+  display:block;width:100%;min-height:48px;font-size:16px;
   background:#fafdff !important;color:#1b3d56 !important;border:1px solid #b7d0e0 !important;
   border-radius:11px !important;padding:12px 14px !important;
   box-shadow:inset 0 1px 3px rgba(40,90,120,.04) !important;
@@ -164,7 +166,7 @@
 #weave-pro-verification .pv-panel button{
   min-height:43px;padding:11px 19px;border-radius:11px !important;
   background:#1b638f !important;color:#fff !important;border:1px solid #1b638f !important;
-  font-size:13px;font-weight:800;line-height:1.35;
+  font-size:15px;font-weight:800;line-height:1.4;
   box-shadow:0 8px 18px rgba(25,94,137,.13);
   transition:background-color .18s ease,transform .18s ease;
 }
@@ -187,15 +189,15 @@
 }
 #weave-pro-verification .pv-side-kicker{font-size:10px;letter-spacing:.14em;font-weight:850;color:#296d91 !important;text-transform:uppercase;}
 #weave-pro-verification .pv-side-panel h2{font-size:21px;font-weight:850;color:#193d58 !important;line-height:1.25 !important;}
-#weave-pro-verification .pv-side-panel p{font-size:12px;line-height:1.75 !important;color:#4c6a7e !important;}
+#weave-pro-verification .pv-side-panel p{font-size:14px;line-height:1.75 !important;color:#4c6a7e !important;}
 #weave-pro-verification .pv-side-flow{display:flex;flex-direction:column;gap:14px;margin:0;padding:0;list-style:none;}
 #weave-pro-verification .pv-side-flow li{display:flex;gap:11px;align-items:flex-start;}
 #weave-pro-verification .pv-side-number{
   display:grid;place-items:center;width:27px;height:27px;flex-shrink:0;border-radius:10px;
   background:#d3ecfa;color:#245979 !important;font-size:11px;font-weight:850;
 }
-#weave-pro-verification .pv-side-flow strong{display:block;color:#24455d !important;font-size:12px;font-weight:800;}
-#weave-pro-verification .pv-side-flow small{display:block;color:#5c7386 !important;font-size:11px;line-height:1.55;}
+#weave-pro-verification .pv-side-flow strong{display:block;color:#24455d !important;font-size:14px;font-weight:800;}
+#weave-pro-verification .pv-side-flow small{display:block;color:#5c7386 !important;font-size:13px;line-height:1.55;}
 #weave-pro-verification .pv-fee{
   padding:17px 18px;background:#163c5f !important;color:#effaff !important;border-radius:16px;
 }
@@ -221,7 +223,7 @@
   #weave-pro-verification .pv-masthead{padding-bottom:14px;}
   #weave-pro-verification .pv-hero{grid-template-columns:1fr;padding:28px 23px 19px;border-radius:22px;gap:4px;}
   #weave-pro-verification .pv-hero h1{font-size:clamp(30px,7vw,40px);}
-  #weave-pro-verification .pv-hero-description{font-size:12px;}
+  #weave-pro-verification .pv-hero-description{font-size:15px;}
   #weave-pro-verification .pv-hero-visual{height:175px;transform:scale(.73);margin:-8px auto -13px;width:290px;max-width:100%;}
   #weave-pro-verification .pv-process{align-items:flex-start;padding:20px 0 14px;}
   #weave-pro-verification .pv-steps{width:100%;}
