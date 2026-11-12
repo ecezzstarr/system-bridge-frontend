@@ -103,7 +103,7 @@ def summarize_executor_failure(output, returncode, values):
     excerpt = safe_executor_excerpt(output, values)
     diagnostic = "inspect the private host executor failure log and journal"
     for line in reversed(excerpt.splitlines()):
-        if re.search(r"(?i)\b(no space left on device|out of memory|cannot connect to the docker daemon|"
+        if re.search(r"(?i)\b(insufficient_disk|no space left on device|out of memory|cannot connect to the docker daemon|"
                      r"permission denied|failed to solve|did not become healthy|build failed|"
                      r"uncommitted source changes|missing selfhost/.env|holds the host checkout lock|"
                      r"safe rollback could not be established|superseded by canonical main)\b", line):
