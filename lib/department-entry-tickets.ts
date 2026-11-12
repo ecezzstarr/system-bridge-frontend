@@ -1,8 +1,9 @@
 import { createHash, randomBytes } from 'node:crypto'
-import { sql } from './db'
+import { sql, getPool } from './db'
 import { getTrxPaymentNgnRate } from './trx-payment'
 import { WEAVE_OPAY_ACCOUNT_NUMBER } from './opay-config'
-import { issueDepartmentalCode, type Department } from './departmental-codes'
+import { generateCode, issueDepartmentalCode, type Department } from './departmental-codes'
+import { saturdayFreeEntryWindow } from './saturday-free-entry'
 import { departmentEntryTicketPrice } from './department-entry-pricing'
 
 export const DEPARTMENT_ENTRY_TICKET_VALID_HOURS = 24
@@ -80,8 +81,71 @@ async function notifyAdmins(title: string, content: string) {
   }
 }
 
+
+/**
+ * Issue a zero-cost Saturday entry and one-use departmental code atomically.
+ * No payment record is invented and no Paystack checkout is opened.
+ * Codes expire at 10:00 WAT on the same Saturday.
+ */
+async function createSaturdayFreeEntryTicket(department: Department, closesAt: string) {
+  const accessToken = randomBytes(32).toString('hex')
+  const accessTokenHash = hashAccessToken(accessToken)
+
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    const ticketNumber = createTicketNumber(department)
+    const code = generateCode(department)
+    const connection = await getPool().connect()
+    try {
+      await connection.query('BEGIN')
+      const inserted = await connection.query(
+        `INSERT INTO departmental_entry_tickets
+           (ticket_number, access_token_hash, department, status, price_flame_coin,
+            trx_ngn_rate, amount_ngn, opay_account_number, verified_at, expires_at)
+         VALUES ($1,$2,$3,'CODE_ISSUED',0,0,0,$4,NOW(),$5::timestamptz)
+         RETURNING *`,
+        [ticketNumber, accessTokenHash, department, WEAVE_OPAY_ACCOUNT_NUMBER, closesAt],
+      )
+      const ticket = inserted.rows[0]
+      const issued = await connection.query(
+        `INSERT INTO departmental_codes
+           (code, department, issued_by, expires_at, status, registration_request_id)
+         VALUES ($1,$2,NULL,$3::timestamptz,'ACTIVE',$4::uuid)
+         RETURNING id`,
+        [code, department, closesAt, ticket.id],
+      )
+      await connection.query(
+        `INSERT INTO departmental_audit_log
+           (event, department, code_id, result, metadata)
+         VALUES ('ISSUE_CODE',$1,$2::uuid,'SUCCESS',$3::jsonb)`,
+        [department, issued.rows[0].id, JSON.stringify({
+          source: 'flame_event_saturday_free_entry', ticketNumber, priceSystemSwitch: 0, closesAt,
+        })],
+      )
+      await connection.query('COMMIT')
+
+      await notifyAdmins(
+        `Saturday free ${department} entry`,
+        `A visitor received free entry ticket ${ticketNumber} and a one-use ${department} registration code. Offer: Saturday 08:00–10:00 WAT, Burning River. Ticket value: 0 System Switch.`,
+      )
+      return { ticket: { ...ticket, departmental_code: code, departmental_code_status: 'ACTIVE' }, accessToken, rateSource: 'saturday_free_entry' }
+    } catch (error: any) {
+      await connection.query('ROLLBACK').catch(() => {})
+      if (error?.code === '23505') continue
+      throw error
+    } finally {
+      connection.release()
+    }
+  }
+
+  throw new Error('Unable to create free Saturday Department Entry Ticket')
+}
+
 export async function createDepartmentEntryTicket(department: Department) {
   await ensureDepartmentEntryTicketSchema()
+  const saturdayOffer = saturdayFreeEntryWindow()
+  if (saturdayOffer.active && saturdayOffer.closesAt) {
+    return createSaturdayFreeEntryTicket(department, saturdayOffer.closesAt)
+  }
 
   const accessToken = randomBytes(32).toString('hex')
   const accessTokenHash = hashAccessToken(accessToken)

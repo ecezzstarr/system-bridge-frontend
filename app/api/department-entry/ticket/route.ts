@@ -6,11 +6,14 @@ import {
 import type { Department } from '@/lib/departmental-codes'
 
 function safeTicket(ticket: any) {
+  const freeEntry = Number(ticket.price_flame_coin) === 0
+  const codeExpired = freeEntry && new Date(ticket.expires_at).getTime() <= Date.now()
   return {
     id: ticket.id,
     ticketNumber: ticket.ticket_number,
     department: ticket.department,
-    status: ticket.status,
+    status: codeExpired && ticket.departmental_code_status !== 'USED' ? 'EXPIRED' : ticket.status,
+    saturdayFreeEntry: freeEntry,
     priceFlameCoin: Number(ticket.price_flame_coin),
     trxNgnRate: Number(ticket.trx_ngn_rate),
     amountNgn: Number(ticket.amount_ngn),
@@ -24,7 +27,7 @@ function safeTicket(ticket: any) {
     rejectedReason: ticket.rejected_reason || null,
     expiresAt: ticket.expires_at,
     departmentalCode:
-      ticket.status === 'CODE_ISSUED' ? ticket.departmental_code || null : null,
+      ticket.status === 'CODE_ISSUED' && !codeExpired && ticket.departmental_code_status === 'ACTIVE' ? ticket.departmental_code || null : null,
   }
 }
 

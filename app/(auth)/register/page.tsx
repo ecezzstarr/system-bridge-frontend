@@ -25,6 +25,7 @@ function RegisterContent() {
   const { register, isLoading } = useAuth()
 
   const [step, setStep] = useState<Step>('role')
+  const [saturdayFreeOpen, setSaturdayFreeOpen] = useState(false)
   const [referredBy, setReferredBy] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     email: '',
@@ -45,6 +46,21 @@ function RegisterContent() {
   const [fullNameConfirm, setFullNameConfirm] = useState('')
   const [draftReady, setDraftReady] = useState(false)
   const submissionLock = useRef(false)
+
+  useEffect(() => {
+    let mounted = true
+    const check = async () => {
+      try {
+        const response = await fetch('/api/department-entry/saturday-free', { cache: 'no-store' })
+        if (!response.ok) return
+        const data = await response.json()
+        if (mounted) setSaturdayFreeOpen(Boolean(data.active))
+      } catch {}
+    }
+    void check()
+    const interval = window.setInterval(() => { void check() }, 60_000)
+    return () => { mounted = false; window.clearInterval(interval) }
+  }, [])
 
   // Retain the applicant's non-secret details within this tab. Never put
   // passwords or the typed Terms confirmation into browser storage.
@@ -231,7 +247,7 @@ function RegisterContent() {
             <p className="text-xs font-bold text-slate-200">{FLAME_EVENT_INTRO.period} · Same event for both departments</p>
             <p className="text-xs leading-5 text-slate-300">{FLAME_EVENT_INTRO.summary}</p>
             <p className="text-xs leading-5 text-slate-400">{FLAME_EVENT_INTRO.next}</p>
-            <p className="text-[11px] font-semibold text-amber-100">Agent entry: 5 System Switch · Bridger entry: 8 System Switch. Their daily work differs. Entry alone does not create earnings.</p>
+            <p className="text-[11px] font-semibold text-amber-100">Agent entry: 5 System Switch · Bridger entry: 8 System Switch outside the offer. Every Saturday during Burning River, both are FREE from 8:00–10:00 a.m. WAT. Their daily work differs. Entry alone does not create earnings.</p>
           </section>
           <div className="text-center text-sm pt-2">
             <span className="text-slate-500">{WEAVE_WRITING.positionAccess.existing} </span>
@@ -250,7 +266,9 @@ function RegisterContent() {
           <ShieldAlert className="h-10 w-10 text-amber-500 mb-2" />
           <CardTitle className="text-xl sm:text-2xl uppercase tracking-tighter">Department Entry Ticket</CardTitle>
           <CardDescription>
-            {formData.role === 'agent' ? 'Agent' : 'Bridger'} entry is released through a verified {departmentEntryTicketPrice(formData.role === 'agent' ? 'AGENT' : 'BRIDGER')} System Switch ticket.
+            {saturdayFreeOpen
+              ? 'Saturday free entry is open now (8:00–10:00 a.m. WAT). No entry payment is required.'
+              : <>{formData.role === 'agent' ? 'Agent' : 'Bridger'} entry is released through a verified {departmentEntryTicketPrice(formData.role === 'agent' ? 'AGENT' : 'BRIDGER')} System Switch ticket. Saturday entry is free from 8:00–10:00 a.m. WAT during Burning River.</>}
           </CardDescription>
         </CardHeader>
         <CardContent>
