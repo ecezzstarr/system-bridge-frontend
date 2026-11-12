@@ -29,6 +29,7 @@ const entrances:readonly (readonly [string,string,string])[]=[
   ['/bridger/bridge-radiance','Bridge of Radiance · Hope','Help an interested person understand Weave and choose their next step.'],
   ['/bridger/clients','Client Relationships','Return to the people you have introduced and the Client relationships you support.'],
   ['/bridger/dashboard','Hope · Your Workplace','Find a prospect, open a useful conversation and guide an informed crossing into Weave.'],
+  ['/bridger/video-studio','Hope · Video Studio','Build your permanent collection of paid live backgrounds and face looks before entering a private video conversation.'],
   ['/bridger/functions','Hope · Outreach Instruments','Choose the outreach instrument, conversation or support record your work needs.'],
   ['/bridger/subscription','Bridger Participation','Continue your core Bridger work and review the separate terms of optional instruments.'],
   ['/casino','Pattern Ground','Review the participation rules, eligibility and stakes before entering a game.'],
