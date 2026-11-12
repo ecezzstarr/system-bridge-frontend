@@ -173,6 +173,22 @@ release or choose a historically healthy rollback release without using SSH.
 See [full setup, rollback and server-move playbook](../docs/sovereign-release-workshop.md).
 Application rollback is not a PostgreSQL rollback; preserve database and media backups.
 
+## Oracle / Docker disk exhaustion recovery
+
+If the Release Workshop reports `ResourceExhausted: no space left on device`, do not repeatedly build the same release. The Docker host has insufficient free space, even if GitHub Production Check passed. The active database and media live outside disposable Docker build cache.
+
+The verified-release deploy script now runs `selfhost/docker-storage-guard.sh` before changing the live checkout or building. The guard:
+- Prunes unused Docker builder/buildx cache, not containers or volumes.
+- Removes surplus historical `weave-release:<sha>` image tags, retaining the active container image, current requested SHA, previous release SHA and one extra fallback.
+- Requires at least 16 GiB free on both the Docker and checkout file systems (override on the **host only** with `WEAVE_MIN_BUILD_FREE_GIB`); records a clear `INSUFFICIENT_DISK` error instead of risking a failed rollout.
+- Performs maintenance again after the release reaches healthy local and public status when storage is running low.
+
+**Recovery if the server has an older checkout:** In GitHub Actions, open **WEAVE Self-Host Manual Recovery Deploy**, run it with the exact current `main` SHA whose Production Check passed. This workflow reads the latest storage guard directly from that verified Git commit and reclaims space *before* invoking the host's existing deployment script. The self-hosted runner must be online and have Docker access.
+
+**If the runner cannot start or there is too little space even after cleanup**, use an authorized Oracle SSH/Cloud Shell session to inspect `df -h` and `docker system df` first. From the WEAVE checkout, after fetching the latest verified main release, run `bash selfhost/docker-storage-guard.sh preflight <verified-main-sha>`. Do **not** run `docker volume prune`, `docker system prune --volumes`, delete `/var/lib/docker`, or remove `weave-media` and `weave-caddy-*` volumes. If the guard still reports insufficient disk, expand the Oracle boot volume/filesystem before rebuilding.
+
+This repository update does not itself free disk on Oracle; a host-side guard execution is required. As with every deployment, verify both local and public `/api/health` report the intended Git SHA after recovery.
+
 ## PowerShell host operations inside Administration
 
 The optional PowerShell 7 sentinel runs **outside the public app** on the same Linux server and sends sanitized Docker/health/disk snapshots to the Infrastructure Workshop. The independent Release Workshop already performs verified self-host deployment and rollback; no arbitrary web terminal is exposed. Install and secure the host service following [PowerShell Host Security](../docs/powershell-host-security.md). The service is not active just because its source exists in GitHub.

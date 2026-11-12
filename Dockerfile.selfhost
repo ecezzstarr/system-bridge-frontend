@@ -20,7 +20,7 @@ if (pkg.dependencies) delete pkg.dependencies['@next/swc-linux-x64-gnu']
 fs.writeFileSync(path, JSON.stringify(pkg, null, 2) + '\n')
 NODE
 RUN npm install --package-lock-only --ignore-scripts --no-audit --no-fund
-RUN npm ci --no-audit --no-fund
+RUN npm ci --no-audit --no-fund && npm cache clean --force
 
 FROM base AS builder
 WORKDIR /app

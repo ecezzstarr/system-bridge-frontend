@@ -4,3 +4,16 @@ node_modules
 *.log
 .env
 .env.local
+
+# Keep private host runtime data and disposable caches out of Docker build copies.
+selfhost/.env
+selfhost/*.log
+**/__pycache__
+**/*.pyc
+.cache
+.turbo
+coverage
+playwright-report
+test-results
+.tmp
+tmp

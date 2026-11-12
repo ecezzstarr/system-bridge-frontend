@@ -37,6 +37,38 @@ class ReleaseFailureEvidence(unittest.TestCase):
         self.assertIn("[redacted]", tail)
         self.assertNotIn(token, tail)
 
+    def test_disk_preflight_reports_explicit_operator_action(self):
+        output = (
+            "[WEAVE deploy] STAGE=disk_preflight\n"
+            "[WEAVE storage] INSUFFICIENT_DISK: need at least 16 GiB; deployment NOT started\n"
+        )
+        message = worker.summarize_executor_failure(output, 12, {})
+        self.assertIn("stage=disk_preflight", message)
+        self.assertIn("insufficient_disk", message.lower())
+        self.assertIn("recovery=not_confirmed", message)
+
+    def test_worker_disk_guard_failure_stops_before_executor(self):
+        sha = "a" * 40
+        previous = "b" * 40
+        token = "private_worker_token_123456789"
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            guard = root / "selfhost" / "docker-storage-guard.sh"
+            guard.parent.mkdir()
+            guard.write_text("#!/usr/bin/env bash\nexit 12\n")
+            result = worker.subprocess.CompletedProcess(
+                ["bash", str(guard)], 12,
+                f"[WEAVE storage] INSUFFICIENT_DISK: disk full {token}\n",
+            )
+            with patch.object(worker, "ROOT", root), \
+                    patch.object(worker.subprocess, "run", return_value=result) as runner, \
+                    patch.object(worker, "journal_executor_failure") as journal:
+                with self.assertRaisesRegex(RuntimeError, "INSUFFICIENT_DISK") as raised:
+                    worker.preflight_storage_for_deploy(sha, previous, {"WEAVE_RELEASE_CONTROL_TOKEN": token})
+                self.assertNotIn(token, str(raised.exception))
+                self.assertEqual(runner.call_args.args[0][-3:], ["preflight", sha, previous])
+                self.assertIn("disk_preflight", journal.call_args.args[0])
+
     def test_failing_public_health_and_unverified_recovery(self):
         output = (
             "[WEAVE deploy] STAGE=public_health\n"
@@ -73,9 +105,11 @@ class ReleaseFailureEvidence(unittest.TestCase):
                     patch.object(worker, "cmd", return_value=sha), \
                     patch.object(worker, "is_good_ci", return_value=True), \
                     patch.object(worker, "get_local_release", return_value="b" * 40), \
+                    patch.object(worker, "preflight_storage_for_deploy") as preflight, \
                     patch.object(worker, "journal_executor_failure") as journal:
                 with self.assertRaisesRegex(RuntimeError, "uncommitted source changes") as raised:
                     worker.execute(job, values)
+                preflight.assert_called_once_with(sha, "b" * 40, values)
                 self.assertNotIn(token, str(raised.exception))
                 output, settings, _ = journal.call_args.args
                 self.assertIn("uncommitted source changes", output)
@@ -111,10 +145,12 @@ class ReleaseFailureEvidence(unittest.TestCase):
                 patch.object(worker, "cmd", return_value=sha), \
                 patch.object(worker, "is_good_ci", return_value=True), \
                 patch.object(worker, "get_local_release", return_value=sha), \
+                patch.object(worker, "preflight_storage_for_deploy") as preflight, \
                 patch.object(worker, "get_healthy_release", return_value="b" * 40) as public, \
                 patch.object(worker.subprocess, "run", return_value=worker.subprocess.CompletedProcess([], 0)) as executor:
             with self.assertRaisesRegex(RuntimeError, "Local and public health"):
                 worker.execute(job, {})
+            preflight.assert_called_once_with(sha, sha, {})
             executor.assert_called_once()
             public.assert_called_once_with("https://weavingsystem.online/api/health")
 

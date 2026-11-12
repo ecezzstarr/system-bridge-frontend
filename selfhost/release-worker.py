@@ -103,7 +103,7 @@ def summarize_executor_failure(output, returncode, values):
     excerpt = safe_executor_excerpt(output, values)
     diagnostic = "inspect the private host executor failure log and journal"
     for line in reversed(excerpt.splitlines()):
-        if re.search(r"(?i)\b(no space left on device|out of memory|cannot connect to the docker daemon|"
+        if re.search(r"(?i)\b(insufficient_disk|no space left on device|out of memory|cannot connect to the docker daemon|"
                      r"permission denied|failed to solve|did not become healthy|build failed|"
                      r"uncommitted source changes|missing selfhost/.env|holds the host checkout lock|"
                      r"safe rollback could not be established|superseded by canonical main)\b", line):
@@ -172,6 +172,31 @@ def validate_origin():
         raise RuntimeError("Host checkout does not point to the canonical WEAVE repository")
 
 
+def preflight_storage_for_deploy(target, previous, values):
+    """Require recoverable Docker space before calling any fixed host executor.
+
+    Some authorized Oracle hosts use a custom private release executor instead
+    of selfhost/deploy-production.sh. The guard must cover both paths.
+    """
+    guard = ROOT / "selfhost" / "docker-storage-guard.sh"
+    if not guard.is_file():
+        raise RuntimeError("WEAVE Docker storage preflight script is missing from the host checkout")
+    env = os.environ.copy()
+    result = subprocess.run(
+        ["bash", str(guard), "preflight", target, previous or ""],
+        cwd=ROOT, env=env, text=True, stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT, timeout=300,
+    )
+    if result.returncode:
+        evidence = "[WEAVE deploy] STAGE=disk_preflight\n" + (result.stdout or "")
+        summary = summarize_executor_failure(evidence, result.returncode, values)
+        try:
+            journal_executor_failure(evidence, values, summary)
+        except OSError:
+            print("[WEAVE Release] Could not journal disk preflight failure", file=sys.stderr, flush=True)
+        raise RuntimeError(summary)
+
+
 def execute(job, values):
     target = job.get("target_sha")
     action = job["action"]
@@ -199,6 +224,8 @@ def execute(job, values):
         raise RuntimeError("Release action not allowed")
 
     previous = get_local_release()
+    if action == "deploy_latest":
+        preflight_storage_for_deploy(target, previous, values)
 
     process_env = os.environ.copy()
     process_env.update({

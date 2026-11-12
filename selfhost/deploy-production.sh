@@ -307,6 +307,15 @@ if [[ -z "$ROLLBACK_TARGET" && "$TARGET_SHA" == "$PREVIOUS_SHA" ]] &&
   exit 0
 fi
 
+# Reclaim unused build layers and superseded WEAVE images BEFORE checkout,
+# env mutation or image build. If still full, stop without touching the live app.
+# An already-present rollback image can be restored without build free space.
+DEPLOY_STAGE="disk_preflight"
+log "STAGE=$DEPLOY_STAGE"
+if [[ -z "$ROLLBACK_TARGET" ]] || ! docker image inspect "weave-release:$TARGET_SHA" >/dev/null 2>&1; then
+  WEAVE_ROOT="$ROOT" bash "$ROOT/selfhost/docker-storage-guard.sh" preflight "$TARGET_SHA" "$PREVIOUS_SHA"
+fi
+
 trap 'rollback $? $LINENO' ERR
 
 # Every movement is attempted against the current WEAVE runtime. On the first
@@ -366,5 +375,6 @@ log "STAGE=$DEPLOY_STAGE"
 "${COMPOSE[@]}" logs --tail=80 weave || true
 "${COMPOSE[@]}" logs --tail=80 caddy || true
 docker image prune -f >/dev/null || true
+WEAVE_ROOT="$ROOT" bash "$ROOT/selfhost/docker-storage-guard.sh" postdeploy "$TARGET_SHA" "$PREVIOUS_SHA" || log "Post-deploy Docker cache maintenance requires operator review"
 
 log "LIVE VERIFIED: $TARGET_SHA at https://${DOMAIN}"
