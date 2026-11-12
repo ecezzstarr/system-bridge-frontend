@@ -188,7 +188,7 @@ def preflight_storage_for_deploy(target, previous, values):
         stderr=subprocess.STDOUT, timeout=300,
     )
     if result.returncode:
-        evidence = "[WEAVE deploy] STAGE=disk_preflight\\n" + (result.stdout or "")
+        evidence = "[WEAVE deploy] STAGE=disk_preflight\n" + (result.stdout or "")
         summary = summarize_executor_failure(evidence, result.returncode, values)
         try:
             journal_executor_failure(evidence, values, summary)
