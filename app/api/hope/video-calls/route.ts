@@ -31,6 +31,8 @@ export async function POST(request: NextRequest) {
   try {
     await ensureVideoCallSchema()
     const db = getPool()
+    const profile = await db.query("SELECT status FROM bridger_profiles WHERE user_id=$1::uuid LIMIT 1",[auth.id])
+    if(profile.rows[0]?.status!=='active')return NextResponse.json({error:'An active Hope Bridger position is required'},{status:403})
     const client = await db.connect()
     const invite = newVideoSecret()
     let room: any
