@@ -83,6 +83,13 @@ export function NotificationBell({position='phone'}:{position?:'phone'|'desktop'
     }
   }
 
+  useEffect(()=>{
+    knownIds.current.clear()
+    isFirstLoad.current=true
+    setNotifications([])
+    setUnreadCount(0)
+  },[user?.id])
+
   useEffect(() => {
     if (!user?.id||!deviceVisible) return
 
@@ -112,7 +119,7 @@ export function NotificationBell({position='phone'}:{position?:'phone'|'desktop'
 
             knownIds.current=new Set(list.map(n=>n.id))
             setNotifications(current=>JSON.stringify(current)===JSON.stringify(list)?current:list)
-            setUnreadCount(list.filter((n: Notification) => !n.is_read).length)
+            setUnreadCount(Number.isFinite(Number(data.unread))?Number(data.unread):list.filter((n: Notification) => !n.is_read).length)
           }
         }
       } catch (error) {
