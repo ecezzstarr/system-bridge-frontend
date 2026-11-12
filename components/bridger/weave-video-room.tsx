@@ -147,7 +147,7 @@ export default function WeaveVideoRoom({callId,role,guestAccess,inviteLink,onClo
       }
       stage.frame=window.requestAnimationFrame(draw)
     }
-    draw()
+    stage.frame=window.requestAnimationFrame(draw)
     return track
   },[])
 
