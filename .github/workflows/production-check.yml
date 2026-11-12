@@ -110,8 +110,14 @@ jobs:
         run: |
           node tests/bridger-agent-daily-work-integrity.cjs
           node tests/hope-video-call-regression.cjs
+          node tests/hope-video-filter-regression.cjs
           node tests/prospect-whatsapp-handoff-regression.cjs
           node tests/agent-outlet-price-policy-regression.cjs
+
+      - name: Hope live filter purchase PostgreSQL concurrency and receipts
+        env:
+          WEAVE_SYSTEM_SWITCH_TEST_DATABASE_URL: postgres://weave_qa:weave_qa_only@127.0.0.1:5432/weave_switch_test
+        run: npx tsx tests/hope-video-filter-postgres.test.ts
 
       - name: Agent outlet stock race and settlement PostgreSQL check
         env:
