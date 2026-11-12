@@ -25,6 +25,7 @@ const response=(body,opts={})=>({status:opts.status||200,body,async json(){retur
 const validId='12345678-1234-4234-9234-123456789abc'
 async function runSignup({role='bridger',fail='',codeUsed=false,duplicate=false,recover=false}={}){
   const commands=[]
+  const adminAlerts=[]
   let released=0
   const client={
     async query(query,params=[]){
@@ -62,6 +63,7 @@ async function runSignup({role='bridger',fail='',codeUsed=false,duplicate=false,
     '@/lib/referral-bonus':{queueReferralSignupBonus:async()=>{}},
     '@/lib/client-monthly-subscription':{normalizeRegisteredGender:value=>['male','female'].includes(value)?value:null,ensureClientMonthlySchema:async()=>{}},
     '@/lib/public-flame-movement':{publicFlameMovementCodeFromRequest:()=>null,recordPublicFlameMovementEvent:async()=>{}},
+    '@/lib/administrations-activity-notifications':{notifyAdministrationsActivity:async activity=>{adminAlerts.push(activity);return true}},
   }
   const module={exports:{}}
   const sandbox={module,exports:module.exports,require:key=>{
@@ -75,13 +77,15 @@ async function runSignup({role='bridger',fail='',codeUsed=false,duplicate=false,
     termsAccepted:true,fullNameConfirmed:'New Member',
     departmentalCode:'BRIDGER-AAAA-BBBB-CCCC',
   })})
-  return {result,commands,released}
+  return {result,commands,released,adminAlerts}
 }
 (async()=>{
   const normal=await runSignup()
   assert.equal(normal.result.status,200)
   assert.equal(normal.result.body.user.role,'bridger')
   assert.equal(normal.released,1)
+  assert.equal(normal.adminAlerts.length,1,'Successful signup emits exactly one Administrations activity notice')
+  assert.equal(normal.adminAlerts[0].event,'staff_registration')
   const userIndex=normal.commands.findIndex(v=>v.startsWith('INSERT INTO users'))
   const codeIndex=normal.commands.findIndex(v=>v.startsWith('UPDATE departmental_codes'))
   const profileIndex=normal.commands.findIndex(v=>v.startsWith('INSERT INTO bridger_profiles'))
@@ -97,6 +101,7 @@ async function runSignup({role='bridger',fail='',codeUsed=false,duplicate=false,
     assert(attempt.commands.includes('ROLLBACK'),'Must roll back '+fail+' failure')
     assert(!attempt.commands.includes('COMMIT'),'Must not consume paid code after '+fail+' failure')
     assert.equal(attempt.released,1)
+    assert.equal(attempt.adminAlerts.length,0,'Rolled-back signup must not notify Administrations')
   }
   const used=await runSignup({codeUsed:true})
   assert.equal(used.result.status,409)
@@ -116,10 +121,13 @@ async function runSignup({role='bridger',fail='',codeUsed=false,duplicate=false,
   assert.equal(recovered.result.body.user.role,'bridger')
   assert(!recovered.commands.some(x=>x.startsWith('UPDATE departmental_codes')),'Recovery must never consume or reassign the ticket')
   assert(!recovered.commands.some(x=>x.startsWith('INSERT INTO users')),'Recovery must not create a second account')
+  assert.equal(recovered.adminAlerts.length,0,'Mobile response recovery must not repeat the registration alert')
 
   const agent=await runSignup({role:'agent'})
   assert.equal(agent.result.status,200)
   assert(agent.commands.some(x=>x.startsWith('INSERT INTO agent_profiles')))
   assert(!agent.commands.some(x=>x.startsWith('INSERT INTO bridger_profiles')))
+  assert.equal(agent.adminAlerts.length,1)
+  assert.equal(agent.adminAlerts[0].title,'New Agent registered')
   console.log('Bridger/Agent paid registration: atomic commit, rollback, code retry and phone resume passed')
 })().catch(err=>{console.error(err);process.exitCode=1})
