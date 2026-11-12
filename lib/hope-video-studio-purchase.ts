@@ -26,7 +26,7 @@ export async function purchaseHopeStudioBundle(userId:string,bundleId:unknown){
     // Same per-user row lock as the individual effect checkout. No overlapping
     // individual/bundle checkout can charge twice for a license.
     const user=(await client.query('SELECT id,role,is_active FROM users WHERE id=$1::uuid FOR UPDATE',[userId])).rows[0]
-    if(!user||user.role!=='bridger'||user.is_active===false){
+    if(!user||user.role!=='bridger'||!user.is_active){
       await client.query('ROLLBACK')
       return {success:false as const,reason:'bridger_unavailable' as const}
     }
