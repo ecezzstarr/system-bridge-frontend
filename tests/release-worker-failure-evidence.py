@@ -39,8 +39,8 @@ class ReleaseFailureEvidence(unittest.TestCase):
 
     def test_disk_preflight_reports_explicit_operator_action(self):
         output = (
-            "[WEAVE deploy] STAGE=disk_preflight\\n"
-            "[WEAVE storage] INSUFFICIENT_DISK: need at least 16 GiB; deployment NOT started\\n"
+            "[WEAVE deploy] STAGE=disk_preflight\n"
+            "[WEAVE storage] INSUFFICIENT_DISK: need at least 16 GiB; deployment NOT started\n"
         )
         message = worker.summarize_executor_failure(output, 12, {})
         self.assertIn("stage=disk_preflight", message)
