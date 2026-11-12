@@ -8,7 +8,7 @@ import {
 import { getAuthHeaders } from '@/lib/auth-client'
 import HopeVideoFilterShop from '@/components/bridger/hope-video-filter-shop'
 import type { HopeVideoFilter } from '@/lib/hope-video-filter-catalog'
-import { prepareHopeVideoEffect, paintHopePremiumFrame, type PreparedHopeEffect } from '@/lib/hope-video-premium-effects'
+import { prepareHopeVideoEffect, paintHopePremiumFrame, paintHopeFaceOverlay, type PreparedHopeEffect } from '@/lib/hope-video-premium-effects'
 
 type Role='bridger'|'guest'
 type CallInfo={id:string;status:string;guestName:string|null;expiresAt:string}
@@ -30,6 +30,9 @@ export default function WeaveVideoRoom({callId,role,guestAccess,inviteLink,onClo
   const screenTrack=useRef<MediaStreamTrack|null>(null)
   const selectedFilterRef=useRef<HopeVideoFilter|null>(null)
   const premiumEffectRef=useRef<PreparedHopeEffect|null>(null)
+  const selectedFaceRef=useRef<HopeVideoFilter|null>(null)
+  const faceEffectRef=useRef<PreparedHopeEffect|null>(null)
+  const [selectedFace,setSelectedFace]=useState<HopeVideoFilter|null>(null)
   const processingRef=useRef<{video:HTMLVideoElement;canvas:HTMLCanvasElement;stream:MediaStream;track:MediaStreamTrack;frame:number}|null>(null)
   const [selectedFilter,setSelectedFilter]=useState<HopeVideoFilter|null>(null)
   const [call,setCall]=useState<CallInfo|null>(null)
@@ -64,6 +67,7 @@ export default function WeaveVideoRoom({callId,role,guestAccess,inviteLink,onClo
     const stage=processingRef.current
     processingRef.current=null
     premiumEffectRef.current=null
+    faceEffectRef.current=null
     if(!stage)return
     window.cancelAnimationFrame(stage.frame)
     stage.stream.getTracks().forEach(track=>track.stop())
@@ -94,30 +98,52 @@ export default function WeaveVideoRoom({callId,role,guestAccess,inviteLink,onClo
     }
     const stage={video:source,canvas,stream:filtered,track,frame:0}
     processingRef.current=stage
-    const draw=()=>{
+    let lastFrame=0
+    const draw=(timestamp:number)=>{
       if(processingRef.current!==stage)return
+      // Limit expensive foreground and face inference so it does not monopolize
+      // the phone's main thread. Microphone audio stays on its own media track.
+      if(timestamp-lastFrame<1000/24){
+        stage.frame=window.requestAnimationFrame(draw)
+        return
+      }
+      lastFrame=timestamp
       const camera=local.current?.getVideoTracks()[0]
-      if(!camera?.enabled||source.readyState<2){
-        context.filter='none'
-        context.fillStyle='#000000'
-        context.fillRect(0,0,canvas.width,canvas.height)
-      }else{
-        const active=selectedFilterRef.current
-        if(active?.effectKind==='scene'||active?.effectKind==='remove'||active?.effectKind==='face'){
-          const prepared=premiumEffectRef.current
-          if(prepared && prepared.filter.id===active.id){
-            context.filter='none'
-            paintHopePremiumFrame(prepared,source,context,canvas.width,canvas.height,performance.now())
-          }else{
-            // Fail closed: do not transmit the real surroundings before a paid effect is prepared.
-            context.fillStyle='#263641'
-            context.fillRect(0,0,canvas.width,canvas.height)
-          }
-        }else{
-          context.filter=active?.css||'none'
-          context.drawImage(source,0,0,canvas.width,canvas.height)
+      try{
+        if(!camera?.enabled||source.readyState<2){
           context.filter='none'
+          context.fillStyle='#000000'
+          context.fillRect(0,0,canvas.width,canvas.height)
+        }else{
+          const active=selectedFilterRef.current
+          if(active?.effectKind==='scene'||active?.effectKind==='remove'){
+            const prepared=premiumEffectRef.current
+            if(prepared && prepared.filter.id===active.id){
+              context.filter='none'
+              paintHopePremiumFrame(prepared,source,context,canvas.width,canvas.height,performance.now())
+            }else{
+              context.fillStyle='#263641'
+              context.fillRect(0,0,canvas.width,canvas.height)
+            }
+          }else{
+            context.filter=active?.css||'none'
+            context.drawImage(source,0,0,canvas.width,canvas.height)
+            context.filter='none'
+          }
+          // Apply a separately owned face treatment above the selected background.
+          // The unmodified microphone track is not included in this processing.
+          const mask=selectedFaceRef.current
+          const preparedFace=faceEffectRef.current
+          if(mask && preparedFace?.filter.id===mask.id){
+            paintHopeFaceOverlay(preparedFace,source,context,canvas.width,canvas.height,performance.now())
+          }
         }
+      }catch(error){
+        console.warn('[Hope video] visual effect could not process the current frame',error)
+        // Never reveal private surroundings after a segmentation/face failure.
+        context.filter='none'
+        context.fillStyle='#263641'
+        context.fillRect(0,0,canvas.width,canvas.height)
       }
       stage.frame=window.requestAnimationFrame(draw)
     }
@@ -269,10 +295,14 @@ export default function WeaveVideoRoom({callId,role,guestAccess,inviteLink,onClo
       const snapshot:CallSnapshot=await request('GET')
       // Filtered video is the track sent through WebRTC, not merely a local CSS preview.
       const currentEffect=selectedFilterRef.current
+      const currentFace=selectedFaceRef.current
       if(currentEffect&&currentEffect.effectKind!=='color' && premiumEffectRef.current?.filter.id!==currentEffect.id){
         premiumEffectRef.current=await prepareHopeVideoEffect(currentEffect)
       }
-      const outgoingVideo=currentEffect?await beginFilteredCamera(stream):stream.getVideoTracks()[0]
+      if(currentFace&&faceEffectRef.current?.filter.id!==currentFace.id){
+        faceEffectRef.current=await prepareHopeVideoEffect(currentFace)
+      }
+      const outgoingVideo=(currentEffect||currentFace)?await beginFilteredCamera(stream):stream.getVideoTracks()[0]
       if(currentEffect&&localVideo.current)localVideo.current.srcObject=new MediaStream([outgoingVideo])
       const outgoing=new MediaStream([...stream.getAudioTracks(),outgoingVideo].filter(Boolean))
       startPeer(outgoing,snapshot.iceServers)
@@ -360,11 +390,13 @@ export default function WeaveVideoRoom({callId,role,guestAccess,inviteLink,onClo
     else setConnection('Waiting for Bridger to reconnect')
   }
 
-  const applyVideoFilter=async(filter:HopeVideoFilter|null)=>{
+  const applyVideoFilter=async(filter:HopeVideoFilter|null,layer:'scene'|'face'='scene')=>{
     if(role!=='bridger'||ended)return
     if(filter){
-      // Every application rechecks a persisted purchase; shop state alone
-      // cannot grant access to an unpaid premium effect.
+      if((layer==='face')!==(filter.effectKind==='face')){
+        throw new Error('That effect cannot be applied to this video layer.')
+      }
+      // Recheck saved ownership before every use of a paid feature.
       const response=await fetch('/api/hope/video-filters',{cache:'no-store',headers:getAuthHeaders()})
       const data=await response.json().catch(()=>({}))
       if(!response.ok||!Array.isArray(data.owned)||!data.owned.includes(filter.id)){
@@ -373,29 +405,40 @@ export default function WeaveVideoRoom({callId,role,guestAccess,inviteLink,onClo
     }
     const previous=selectedFilterRef.current
     const previousPrepared=premiumEffectRef.current
-    if(previous?.id===filter?.id)return
+    const previousFace=selectedFaceRef.current
+    const previousFacePrepared=faceEffectRef.current
+    if((layer==='scene'?previous:previousFace)?.id===(filter?.id||undefined))return
     const source=local.current
     try{
       const prepared=filter&&filter.effectKind!=='color'?await prepareHopeVideoEffect(filter):null
-      premiumEffectRef.current=prepared
-      // Updates only the camera media; screen-sharing remains separate.
-      if(filter && source){
+      if(layer==='face'){
+        selectedFaceRef.current=filter
+        faceEffectRef.current=prepared
+        setSelectedFace(filter)
+      }else{
         selectedFilterRef.current=filter
+        premiumEffectRef.current=prepared
+        setSelectedFilter(filter)
+      }
+      const anyEffect=Boolean(selectedFilterRef.current||selectedFaceRef.current)
+      if(source&&anyEffect){
         const track=await beginFilteredCamera(source)
         if(!screenTrack.current)await replaceVideo(track)
         if(localVideo.current)localVideo.current.srcObject=new MediaStream([track])
-      }else if(!filter && source){
+      }else if(source){
         const raw=source.getVideoTracks()[0]
         if(raw&&!screenTrack.current)await replaceVideo(raw)
         stopFilteredCamera()
         if(localVideo.current)localVideo.current.srcObject=source
       }
-      selectedFilterRef.current=filter
-      setSelectedFilter(filter)
     }catch(error){
       selectedFilterRef.current=previous
       premiumEffectRef.current=previousPrepared
-      if(!previous)stopFilteredCamera()
+      selectedFaceRef.current=previousFace
+      faceEffectRef.current=previousFacePrepared
+      setSelectedFilter(previous)
+      setSelectedFace(previousFace)
+      if(!previous&&!previousFace)stopFilteredCamera()
       throw error
     }
   }
@@ -446,7 +489,7 @@ export default function WeaveVideoRoom({callId,role,guestAccess,inviteLink,onClo
         <p className="absolute bottom-2 left-2 rounded bg-black/60 px-2 py-1 text-xs text-white">{role==='bridger'?call?.guestName||'Guest':'WEAVE Bridger'}</p>
       </div>
     </div>
-    {role==='bridger'&&!ended&&<HopeVideoFilterShop activeFilter={selectedFilter} onFilterSelect={applyVideoFilter}/>}
+    {role==='bridger'&&!ended&&<HopeVideoFilterShop activeFilter={selectedFilter} activeFace={selectedFace} onFilterSelect={applyVideoFilter}/>}
     {soundBlocked&&<button onClick={()=>{void remoteVideo.current?.play().then(()=>setSoundBlocked(false)).catch(()=>{})}} className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-amber-100 px-4 text-sm"><Volume2 className="h-4 w-4"/> Tap to enable call audio</button>}
     {!mediaReady&&!ended?<button type="button" onClick={enableMedia} disabled={mediaBusy} className="min-h-12 w-full rounded-xl bg-[#235968] px-4 text-sm font-bold text-white disabled:opacity-50">
       {mediaBusy?'Requesting camera and microphone…':'Enable camera & microphone'}
