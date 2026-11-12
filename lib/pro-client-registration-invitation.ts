@@ -118,12 +118,14 @@ export async function sendVerifiedProClientRegistrationInvite(ticket:string,requ
      last_sent_at=now(),updated_at=now()`,[row.id,Boolean(inWindow)])
   delivery={email:String(row.candidate_email),name:String(row.candidate_name),
    fileNumber:String(row.file_number),token}
+  const link=origin+'/client/register?fileNumber='+encodeURIComponent(delivery.fileNumber)+
+   '&staffOffer='+encodeURIComponent(delivery.token)
+  // Do not commit a replacement invite token or consume a resend allowance
+  // unless company email delivery actually succeeds.
+  await deliverProClientInvitation(delivery.email,delivery.name,link)
   await db.query('COMMIT')
  }catch(e){await db.query('ROLLBACK').catch(()=>{});throw e}
  finally{db.release()}
  if(!delivery)throw new Error('Unable to prepare registration invitation')
- const link=origin+'/client/register?fileNumber='+encodeURIComponent(delivery.fileNumber)+
-  '&staffOffer='+encodeURIComponent(delivery.token)
- await deliverProClientInvitation(delivery.email,delivery.name,link)
  return {success:true,message:'A private account registration link has been sent to the company-approved email address. Check your inbox. Never share the link. No new activation payment is required.'}
 }
