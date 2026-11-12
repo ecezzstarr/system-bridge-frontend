@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { sql } from '@/lib/db'
 import { ensureRegionalManagerCommissionSchema } from '@/lib/regional-manager-commission'
+import { notifyAdministrationsActivity } from '@/lib/administrations-activity-notifications'
 
 // Ordinary Regional Manager is a Bridger/Agent appointment without a File Folder.
 // Pro Regional Manager is a separate company position with Pro Folder activation.
@@ -73,5 +74,13 @@ export async function POST(request: NextRequest) {
     RETURNING user_id, source_role, region, experience, motivation, status, submitted_at
   `
   if (!application) return NextResponse.json({ success: false, error: 'An application already exists and cannot be replaced.' }, { status: 409 })
+  await notifyAdministrationsActivity({
+    event:'regional_manager_application',
+    eventId:String(user.id)+':'+new Date(application.submitted_at).toISOString(),
+    title:'Regional Manager application needs review',
+    content:String(user.name||user.role)+' ('+user.role+') applied to manage '+region+'. Review the application and appointment criteria.',
+    adminPath:'/admin/regional-manager-applications',
+    actorId:String(user.id),actorName:String(user.name||user.role),
+  })
   return NextResponse.json({ success: true, application }, { status: 201 })
 }
