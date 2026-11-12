@@ -53,11 +53,14 @@ assert.ok(exists('app/(app)/distribution-studio/page.tsx'),
 assert.ok(exists('app/(app)/weave/market/prospects/page.tsx'),
   'Original prospect market is preserved')
 
-// New video room must not pretend to initiate a live session.
-assert.ok(videoRoom.includes('data-bridger-ai-video-call="not-live"'))
-assert.ok(videoRoom.includes('no call will be started or charged'))
-assert.ok(!videoRoom.includes('getUserMedia(') && !videoRoom.includes('RTCPeerConnection('),
-  'No unapproved camera or signaling behavior is introduced')
+// Video room now implements a real, invitation-gated peer call. AI and charges stay separate.
+assert.ok(videoRoom.includes('data-bridger-ai-video-call="peer-to-peer"'))
+assert.ok(videoRoom.includes('Create WEAVE Video Call'))
+assert.ok(videoRoom.includes('<WeaveVideoRoom'))
+assert.ok(exists('components/bridger/weave-video-room.tsx'))
+assert.ok(exists('app/video-call/[id]/page.tsx'))
+assert.ok(catalog.includes("label: 'WEAVE Video Call'"))
+assert.ok(videoRoom.includes('does not record, use AI participants, or charge System Switch'))
 
-console.log('Bridger workplace route-preservation and honest-status checks passed: ' +
+console.log('Bridger workplace route-preservation and video-call integration checks passed: ' +
   new Set(links).size + ' unique existing destinations.')
