@@ -103,7 +103,13 @@ export default function ProActivationPage(){
    </section>}
    <section className="rounded-2xl border border-sky-200 bg-white/95 p-6 shadow-sm" data-pro-current-progress="true">
     <h2 className="text-lg font-bold text-slate-900">Verification progress</h2>
-    <p className="mt-2 text-sm capitalize text-slate-300">{status.replaceAll('_',' ')}</p>
+    <p className="mt-2 text-sm capitalize text-slate-800">{status.replaceAll('_',' ')}</p>
+    {status==='company_finalization_pending'&&<div className="mt-3 space-y-3" data-pro-external-verified-payment="true">
+      <p className="text-sm leading-7 text-slate-800">Your identity, signed business plan and 680 USDT activation payment have already been independently verified through the external Pro File Number workspace. Your Client account is registered. Administrations is completing ownership and Pro File Folder finalization. Do not pay or sign a second activation agreement.</p>
+      <button type="button" disabled={busy} onClick={()=>void reload().catch(e=>setError(e.message))}
+       className="rounded-lg bg-sky-800 px-4 py-3 text-sm font-bold text-white">Refresh company finalization status</button>
+      <Link href="/client/staff-workspace" className="ml-3 inline-block text-sm font-semibold text-sky-900 underline">View approved company position</Link>
+     </div>}
     {status==='awaiting_preparation'&&<p className="mt-3 text-sm text-amber-200">Administrations must reconcile your existing File Number and prepare this Pro activation. No payment is requested yet.</p>}
     {status==='awaiting_signature'&&<p className="mt-3 text-sm text-amber-200">{activation?.client_signature_at
      ? 'Your electronic signature was received. Administrations is reviewing the signed agreement before business planning.'
