@@ -110,7 +110,7 @@ export async function activatePurchasedFileFolderForClient(params: {
   // workshop (for example, an exchange). Registration claims its original
   // configuration; it must never downgrade it to a generic formation workshop.
   const existingWorkshopType=String(targetFolder?.workshop_type||'').trim()
-  const workshopType=existingWorkshopType&&!['formation','pending_personalization','waiting_for_login'].includes(existingWorkshopType)
+  const workshopType=existingWorkshopType&&!['formation','waiting_for_login'].includes(existingWorkshopType)&&!existingWorkshopType.startsWith('pending_')
     ?existingWorkshopType:'system_formation'
   const workshopTitle=workshopType==='system_formation'
     ?'System Formation Workshop'
