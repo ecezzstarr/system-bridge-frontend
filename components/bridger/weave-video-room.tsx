@@ -8,6 +8,7 @@ import {
 import { getAuthHeaders } from '@/lib/auth-client'
 import HopeVideoFilterShop from '@/components/bridger/hope-video-filter-shop'
 import type { HopeVideoFilter } from '@/lib/hope-video-filter-catalog'
+import { prepareHopeVideoEffect, paintHopePremiumFrame, type PreparedHopeEffect } from '@/lib/hope-video-premium-effects'
 
 type Role='bridger'|'guest'
 type CallInfo={id:string;status:string;guestName:string|null;expiresAt:string}
@@ -28,6 +29,7 @@ export default function WeaveVideoRoom({callId,role,guestAccess,inviteLink,onClo
   const disposed=useRef(false)
   const screenTrack=useRef<MediaStreamTrack|null>(null)
   const selectedFilterRef=useRef<HopeVideoFilter|null>(null)
+  const premiumEffectRef=useRef<PreparedHopeEffect|null>(null)
   const processingRef=useRef<{video:HTMLVideoElement;canvas:HTMLCanvasElement;stream:MediaStream;track:MediaStreamTrack;frame:number}|null>(null)
   const [selectedFilter,setSelectedFilter]=useState<HopeVideoFilter|null>(null)
   const [call,setCall]=useState<CallInfo|null>(null)
@@ -61,6 +63,7 @@ export default function WeaveVideoRoom({callId,role,guestAccess,inviteLink,onClo
   const stopFilteredCamera=useCallback(()=>{
     const stage=processingRef.current
     processingRef.current=null
+    premiumEffectRef.current=null
     if(!stage)return
     window.cancelAnimationFrame(stage.frame)
     stage.stream.getTracks().forEach(track=>track.stop())
@@ -99,9 +102,22 @@ export default function WeaveVideoRoom({callId,role,guestAccess,inviteLink,onClo
         context.fillStyle='#000000'
         context.fillRect(0,0,canvas.width,canvas.height)
       }else{
-        context.filter=selectedFilterRef.current?.css||'none'
-        context.drawImage(source,0,0,canvas.width,canvas.height)
-        context.filter='none'
+        const active=selectedFilterRef.current
+        if(active?.effectKind==='scene'||active?.effectKind==='remove'||active?.effectKind==='face'){
+          const prepared=premiumEffectRef.current
+          if(prepared && prepared.filter.id===active.id){
+            context.filter='none'
+            paintHopePremiumFrame(prepared,source,context,canvas.width,canvas.height,performance.now())
+          }else{
+            // Fail closed: do not transmit the real surroundings before a paid effect is prepared.
+            context.fillStyle='#263641'
+            context.fillRect(0,0,canvas.width,canvas.height)
+          }
+        }else{
+          context.filter=active?.css||'none'
+          context.drawImage(source,0,0,canvas.width,canvas.height)
+          context.filter='none'
+        }
       }
       stage.frame=window.requestAnimationFrame(draw)
     }
@@ -252,7 +268,12 @@ export default function WeaveVideoRoom({callId,role,guestAccess,inviteLink,onClo
       if(localVideo.current)localVideo.current.srcObject=stream
       const snapshot:CallSnapshot=await request('GET')
       // Filtered video is the track sent through WebRTC, not merely a local CSS preview.
-      const outgoingVideo=selectedFilterRef.current?await beginFilteredCamera(stream):stream.getVideoTracks()[0]
+      const currentEffect=selectedFilterRef.current
+      if(currentEffect&&currentEffect.effectKind!=='color' && premiumEffectRef.current?.filter.id!==currentEffect.id){
+        premiumEffectRef.current=await prepareHopeVideoEffect(currentEffect)
+      }
+      const outgoingVideo=currentEffect?await beginFilteredCamera(stream):stream.getVideoTracks()[0]
+      if(currentEffect&&localVideo.current)localVideo.current.srcObject=new MediaStream([outgoingVideo])
       const outgoing=new MediaStream([...stream.getAudioTracks(),outgoingVideo].filter(Boolean))
       startPeer(outgoing,snapshot.iceServers)
       setMediaReady(true);setMuted(false);setCameraOff(false)
@@ -292,7 +313,8 @@ export default function WeaveVideoRoom({callId,role,guestAccess,inviteLink,onClo
       current?.stop()
       local.current.addTrack(next)
       next.enabled=!cameraOff
-      if(localVideo.current)localVideo.current.srcObject=local.current
+      if(localVideo.current)localVideo.current.srcObject=processingRef.current?
+        new MediaStream([processingRef.current.track]):local.current
       if(processingRef.current){
         processingRef.current.video.srcObject=null
         processingRef.current.video.srcObject=local.current
@@ -341,23 +363,29 @@ export default function WeaveVideoRoom({callId,role,guestAccess,inviteLink,onClo
   const applyVideoFilter=async(filter:HopeVideoFilter|null)=>{
     if(role!=='bridger'||ended)return
     const previous=selectedFilterRef.current
+    const previousPrepared=premiumEffectRef.current
     if(previous?.id===filter?.id)return
     const source=local.current
     try{
+      const prepared=filter&&filter.effectKind!=='color'?await prepareHopeVideoEffect(filter):null
+      premiumEffectRef.current=prepared
       // Updates only the camera media; screen-sharing remains separate.
       if(filter && source){
         selectedFilterRef.current=filter
         const track=await beginFilteredCamera(source)
         if(!screenTrack.current)await replaceVideo(track)
+        if(localVideo.current)localVideo.current.srcObject=new MediaStream([track])
       }else if(!filter && source){
         const raw=source.getVideoTracks()[0]
         if(raw&&!screenTrack.current)await replaceVideo(raw)
         stopFilteredCamera()
+        if(localVideo.current)localVideo.current.srcObject=source
       }
       selectedFilterRef.current=filter
       setSelectedFilter(filter)
     }catch(error){
       selectedFilterRef.current=previous
+      premiumEffectRef.current=previousPrepared
       if(!previous)stopFilteredCamera()
       throw error
     }
