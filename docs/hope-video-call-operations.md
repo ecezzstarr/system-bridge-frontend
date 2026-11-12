@@ -55,3 +55,11 @@ Each purchase is authorized against the active Bridger position and primary Syst
 **Quality/limitations:** segmentation may misclassify hair, hand movements and clothing; face masks track one face and may fail if turned away. Older phones may drop frames or heat up. The rendering loop limits analysis frequency; production should test across Android, iPhone and desktop. Modern HTTPS browsers and deployed TURN relay are still prerequisites for dependable cross-network calling. No live-device test is proven merely by CI. Camera and audio are not recorded by this system.
 
 Before releasing, verify actual paid purchase, repeated purchase, wallet balance, returns from screen share, switching backgrounds mid-call, non-matching user access, no charges on model failure, and two-way audio/video with two phones on separate networks.
+
+### Speech and facial appearance safeguards
+
+Paid effects **never process or replace the microphone track**: original microphone audio is sent as a distinct WebRTC sender with browser echo cancellation and noise suppression. Switching the background or face layer replaces or renders video only; mute remains the only user-facing audio toggle. Actual sound quality still depends on network conditions, device CPU and the microphone, so two-device listening tests remain mandatory.
+
+**Virtual backgrounds retain the real camera face and person** above a removed/replaced setting; the ML segmentation can make temporary edge errors around hair, glasses, hands and faces. The premium **face layer** is separate and optional: an independently purchased synthetic mask may be used together with a purchased background or removed without changing it. This face treatment intentionally covers the original face; it is not a photorealistic replacement, guaranteed anonymization or speech modification.
+
+The outgoing canvas is capped at 24 frames per second and expensive segmentation and face-tracking inference is throttled separately to avoid unnecessarily blocking mobile devices. On rendering exceptions the outgoing video frame becomes neutral instead of exposing the original surroundings. Test low-end Android phones and mobile-carrier networks; do not assert perfect face contours, synchronized lips or uninterrupted speech without live tests.
