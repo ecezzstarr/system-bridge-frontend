@@ -9,6 +9,7 @@ import { getDivineShieldState } from '@/lib/weave-infrastructure'
 import { buildUserReferralCode, resolveReferralOwnerByCode } from '@/lib/user-referral'
 import { queueReferralSignupBonus } from '@/lib/referral-bonus'
 import { publicFlameMovementCodeFromRequest, recordPublicFlameMovementEvent } from '@/lib/public-flame-movement'
+import { notifyAdministrationsActivity } from '@/lib/administrations-activity-notifications'
 
 // A client may lose the HTTP response after a successful DB commit on mobile.
 // Reusing the paid ticket is safe only when the original owner's password and
@@ -287,6 +288,15 @@ export async function POST(request: NextRequest) {
     } catch (movementError) {
       console.error('[Public Flame Movement] Staff registration attribution failed:', movementError)
     }
+
+    // Registration is committed; publish exactly one notification per active
+    // Administrations account, never one more for a recovered mobile response.
+    await notifyAdministrationsActivity({
+      event:'staff_registration',eventId:userId,
+      title:role==='agent'?'New Agent registered':'New Bridger registered',
+      content:name+' entered WEAVE as '+role+' using a verified Entry Ticket. Open the company movement register for this new position.',
+      adminPath:'/admin/company-movement',actorId:userId,actorName:name,
+    })
 
     return NextResponse.json({
       token,
