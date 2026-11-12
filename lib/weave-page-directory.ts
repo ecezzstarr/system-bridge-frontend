@@ -46,6 +46,7 @@ const entrances:readonly (readonly [string,string,string])[]=[
   ['/search/cadences','Human Cadences','Discover attributed thoughts, experiences and lessons shared by their human authors.'],
   ['/system-switch/flame-event','Flame Event · Burning River','Enter the shared company event and continue through your own position.'],
   ['/video-feed','Weave Video Feed','Explore published videos and the people, services and businesses behind them.'],
+  ['/video-call/[id]','WEAVE Private Video Invitation','Accept a private invitation from a Bridger, grant camera and microphone permission, and speak securely face to face. No AI or charges are involved.'],
   ['/weave/file-folder/[fileNumber]','Client File Folder','Open the File Folder linked to this File Number through the access available to your position.'],
   ['/weave/lifestyles/pro-regional-manager','Pro Regional Manager','Review the separate company appointment, Pro File Folder and business-plan requirements before applying.'],
   ['/weave/lifestyles/pro-regional-manager/activation','Pro Regional Manager Activation','Follow the approval, agreement and payment verification required to open your approved Pro workspace.'],
