@@ -11,16 +11,18 @@ export default function NotificationInbox(){
   const [items,setItems]=useState<Notice[]>([])
   const [selectedId,setSelectedId]=useState('')
   const [loading,setLoading]=useState(true)
+  const [nextPage,setNextPage]=useState(1)
+  const [hasMore,setHasMore]=useState(false)
   const [error,setError]=useState('')
-  const load=useCallback(async()=>{
+  const load=useCallback(async(page=0)=>{
     if(!token)return
     try{
-      const response=await fetch('/api/notifications',{headers:{Authorization:`Bearer ${token}`},cache:'no-store'})
+      const response=await fetch('/api/notifications?page='+page,{headers:{Authorization:`Bearer ${token}`},cache:'no-store'})
       const data=await response.json()
       if(!response.ok)throw new Error(data.error||'Unable to load notifications')
       const list:Notice[]=data.notifications||[]
       const requested=new URLSearchParams(window.location.search).get('open')
-      if(requested&&!list.some(item=>item.id===requested)){
+      if(page===0&&requested&&!list.some(item=>item.id===requested)){
         const detail=await fetch('/api/notifications?id='+encodeURIComponent(requested),
           {headers:{Authorization:`Bearer ${token}`},cache:'no-store'})
         if(detail.ok){
@@ -28,7 +30,9 @@ export default function NotificationInbox(){
           if(selected.notification)list.unshift(selected.notification)
         }
       }
-      setItems(list)
+      setItems(previous=>page===0?list:[...previous,...list.filter(item=>!previous.some(old=>old.id===item.id))])
+      setHasMore(Boolean(data.hasMore))
+      setNextPage(page+1)
       setError('')
     }catch(e){setError(e instanceof Error?e.message:'Unable to load notifications')}
     finally{setLoading(false)}
@@ -88,6 +92,7 @@ export default function NotificationInbox(){
             <p className="mt-2 text-[11px] font-bold text-cyan-200">View message →</p>
           </button>)}
           {!items.length&&<div className="p-10 text-center text-sm text-slate-400"><Bell className="mx-auto mb-3 h-8 w-8"/> {loading?'Loading notifications…':'No messages yet'}</div>}
+          {hasMore&&<button type="button" onClick={()=>void load(nextPage)} className="w-full border-t border-white/10 px-4 py-4 text-sm font-bold text-cyan-200">Load older company notifications</button>}
         </div>
       </section>
       <section className="min-w-0 rounded-2xl border border-cyan-200/15 bg-slate-950/75 p-5 sm:p-7" aria-live="polite" aria-label="Full notification message">
