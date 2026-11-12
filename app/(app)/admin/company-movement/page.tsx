@@ -135,6 +135,8 @@ export default function CompanyMovementPage(){
             ['Bridgers purchasing',value('prospects','purchasing_bridgers')],
             ['Video filter licenses sold',value('videoFilters','licenses')],
             ['Video filters earned · System Switch',money('videoFilters','earned_system_switch')],
+            ['Video Studio packages sold',value('videoBundles','packages')],
+            ['Studio packages earned · System Switch',money('videoBundles','earned_system_switch')],
             ['System Switch spent',money('prospects','spent_flame_coin')],
             ['Candidates in sold packages',value('prospectContacts','candidates_in_sold_packages')],
             ['Prospect contacts attempted',value('outreach','attempted')],
