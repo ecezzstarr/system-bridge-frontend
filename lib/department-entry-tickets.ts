@@ -127,7 +127,7 @@ async function createSaturdayFreeEntryTicket(department: Department, closesAt: s
         `Saturday free ${department} entry`,
         `A visitor received free entry ticket ${ticketNumber} and a one-use ${department} registration code. Offer: Saturday 08:00–10:00 WAT, Burning River. Ticket value: 0 System Switch.`,
       )
-      return { ticket, accessToken, rateSource: 'saturday_free_entry' }
+      return { ticket: { ...ticket, departmental_code: code, departmental_code_status: 'ACTIVE' }, accessToken, rateSource: 'saturday_free_entry' }
     } catch (error: any) {
       await connection.query('ROLLBACK').catch(() => {})
       if (error?.code === '23505') continue
