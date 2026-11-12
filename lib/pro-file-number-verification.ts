@@ -1,6 +1,7 @@
 import {createHash,randomBytes} from 'node:crypto'
 import {isProRegionalManagerPosition} from '@/lib/pro-regional-manager-policy'
 import {sql} from '@/lib/db'
+import {ensureCompanyClientStaffSchema} from '@/lib/company-client-staff'
 import {ensureClientFileFolderSchema,ensureCjDoradoFolder,CJ_DORADO_FILE_NUMBER} from '@/lib/client-file-folder'
 import {ensureProActivationSchema,getReceivingWallet,PRO_ACTIVATION_FEE_USDT} from '@/lib/pro-file-folder-activation'
 
@@ -57,20 +58,23 @@ export async function ensureProFileNumberVerificationSchema(){
  */
 export async function getApprovedProStaffOffer(fileNumber:string) {
  if(!proNumberPattern.test(fileNumber))return null
+ await ensureCompanyClientStaffSchema()
  const [table]=await sql`SELECT to_regclass('public.company_client_staff_offers') AS name`
  if(!table?.name)return null
  const [offer]=await sql`SELECT id,file_number,candidate_name,position_title,
    monthly_salary_usdt,client_id,folder_tier,status,verified_at
   FROM company_client_staff_offers WHERE file_number=${fileNumber}
-   AND status='approved' AND folder_tier='pro' LIMIT 1`
+   AND ((status='approved' AND folder_tier='pro') OR
+    (status='accepted' AND folder_tier='pro' AND appointment_approved_at IS NOT NULL)) LIMIT 1`
  if(!offer||!offer.position_title||!offer.candidate_name)return null
  // Approved Pro company staff terms include an agreed monthly salary.
  // Do not present a blank/zero salary as a Lifestyle-based entitlement.
  const agreedSalary=Number(offer.monthly_salary_usdt)
  if(!Number.isFinite(agreedSalary)||agreedSalary<=0)return null
  if(fileNumber===CJ_DORADO_FILE_NUMBER){
-  if(!/\bcj\s+dorado\b/i.test(String(offer.candidate_name))||
-     !isProRegionalManagerPosition(offer.position_title,fileNumber))return null
+  // The registered legal name is checked against the signed application by
+  // Administrations; a display-name alias must not reject that legal identity.
+  if(!isProRegionalManagerPosition(offer.position_title,fileNumber))return null
  }
  return offer
 }
@@ -132,7 +136,7 @@ export async function readProFileNumberVerification(ticket:string){
  await ensureProFileNumberVerificationSchema()
  const [row]=await sql`SELECT id,file_number,business_name,status,identity_verified_at,
   operating_country,operating_region,operating_city,
-  payment_submitted_at,payment_verified_at,rejection_reason FROM pro_file_number_verifications
+  payment_tx_hash,payment_submitted_at,payment_verified_at,rejection_reason FROM pro_file_number_verifications
   WHERE access_token_hash=${hashTicket(ticket.toLowerCase())} LIMIT 1`
  if(!row)return null
  // Reported CJ event funds are visible only after independently verified identity,
@@ -166,6 +170,14 @@ export async function readProFileNumberVerification(ticket:string){
   }
  }
  const paymentReady=String(row.status)==='payment_required'
+ let folderActivated=false
+ if(row.payment_verified_at){
+  await ensureProActivationSchema()
+  const [activation]=await sql`SELECT id FROM pro_file_folder_activations
+   WHERE file_number=${row.file_number} AND status='active'
+    AND payment_tx_hash=${row.payment_tx_hash} AND activated_at IS NOT NULL LIMIT 1`
+  folderActivated=Boolean(activation)
+ }
  let receivingWallet:string|null=null
  if(paymentReady){
   await ensureProActivationSchema()
@@ -178,7 +190,7 @@ export async function readProFileNumberVerification(ticket:string){
   }:null,
   status:String(row.status),feeUSDT:PRO_ACTIVATION_FEE_USDT,network:'USDT TRON (TRC-20)',
   walletAddress:receivingWallet,
-  paymentVerified:Boolean(row.payment_verified_at),siblingsEvent,companyPosition,
+  paymentVerified:Boolean(row.payment_verified_at),folderActivated,siblingsEvent,companyPosition,
   rejectionReason:row.rejection_reason||null,
  }
 }

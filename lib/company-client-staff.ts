@@ -57,6 +57,11 @@ export async function ensureCompanyClientStaffSchema() {
   await sql`ALTER TABLE company_client_staff_offers ADD COLUMN IF NOT EXISTS personal_loan_accepted_at timestamptz`
   await sql`ALTER TABLE company_client_staff_offers ADD COLUMN IF NOT EXISTS loan_funding_reference varchar(255)`
   await sql`ALTER TABLE company_client_staff_offers ADD COLUMN IF NOT EXISTS loan_funding_network varchar(80)`
+  // An appointment can be approved before its separate Pro activation payment.
+  await sql`ALTER TABLE company_client_staff_offers ADD COLUMN IF NOT EXISTS appointment_approved_at timestamptz`
+  await sql`ALTER TABLE company_client_staff_offers ADD COLUMN IF NOT EXISTS appointment_approved_by uuid`
+  await sql`ALTER TABLE company_client_staff_offers ADD COLUMN IF NOT EXISTS appointment_reference varchar(255)`
+  await sql`ALTER TABLE company_client_staff_offers ADD COLUMN IF NOT EXISTS previous_candidate_name varchar(255)`
   await sql`CREATE INDEX IF NOT EXISTS company_staff_offers_email_idx ON company_client_staff_offers(lower(candidate_email))`
   await sql`CREATE INDEX IF NOT EXISTS company_staff_offers_status_idx ON company_client_staff_offers(status,created_at DESC)`
   await sql`

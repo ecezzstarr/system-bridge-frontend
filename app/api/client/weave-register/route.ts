@@ -12,7 +12,7 @@ import { ensureClientMonthlySchema, normalizeRegisteredGender } from '@/lib/clie
 import { ensureCompanyClientStaffSchema, staffOfferTokenHash } from '@/lib/company-client-staff'
 import { issueWeaveReceipt } from '@/lib/weave-receipts'
 import { CJ_DORADO_FILE_NUMBER } from '@/lib/client-file-folder'
-import { ensureProActivationForNewClient } from '@/lib/pro-file-folder-activation'
+import { ensureProActivationForNewClient,getProActivationState,ensureProActivationSchema } from '@/lib/pro-file-folder-activation'
 
 export async function POST(request: NextRequest) {
   try {
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     // exact intended recipient email; retail registration is unaffected.
     await ensureCompanyClientStaffSchema()
     const [staffGrant] = await sql`
-      SELECT id,token_hash,candidate_email,status,client_id,ticket_amount_usdt,applicant_contribution_usdt,proposed_personal_loan_usdt,folder_tier,receipt_number
+      SELECT id,token_hash,candidate_name,candidate_email,status,client_id,ticket_amount_usdt,applicant_contribution_usdt,proposed_personal_loan_usdt,folder_tier,receipt_number,appointment_approved_at
       FROM company_client_staff_offers
       WHERE file_number=${fileNumber}
       LIMIT 1
@@ -56,8 +56,15 @@ export async function POST(request: NextRequest) {
     )) {
       return NextResponse.json({error:'This staff File Folder requires its private company invitation and named email'},{status:403})
     }
+    if(staffGrant?.folder_tier==='pro')await ensureProActivationSchema()
+    const [preActivatedPro]=staffGrant?.folder_tier==='pro'
+      ?await sql`SELECT client_signature_name,business_plan FROM pro_file_folder_activations
+        WHERE file_number=${fileNumber} AND status='active' AND client_id IS NULL
+          AND verified_amount_usdt=680 AND activated_at IS NOT NULL
+          AND lower(btrim(client_signature_name))=lower(btrim(${staffGrant.candidate_name})) LIMIT 1`
+      :[]
     if (fileNumber === CJ_DORADO_FILE_NUMBER &&
-        (!staffGrant || !/\bcj\s+dorado\b/i.test(String(folder.identity_data?.name||'')))) {
+        (!staffGrant || (!preActivatedPro && !staffGrant.appointment_approved_at && !/\bcj\s+dorado\b/i.test(String(folder.identity_data?.name||''))))) {
       return NextResponse.json({ error: 'CJ Dorado registration requires the existing approved employee invitation and verified File Number identity.' }, { status: 403 })
     }
     const existing = await sql`SELECT id FROM users WHERE email = ${email}`
@@ -70,7 +77,7 @@ export async function POST(request: NextRequest) {
 
     const hashedPassword = await bcrypt.hash(password, 10)
     const identityData = folder.identity_data as any
-    const name = identityData?.name || 'Client'
+    const name = preActivatedPro?.client_signature_name || (staffGrant?.appointment_approved_at ? String(staffGrant.candidate_name) : identityData?.name || 'Client')
     const phone = identityData?.phone || ''
     const bridgerId = folder.bridger_id || null
     const referralInput = String(referredBy || '').trim()
@@ -107,7 +114,7 @@ export async function POST(request: NextRequest) {
         'client',
         ${fileNumber},
         ${phone},
-        ${businessName || null},
+        ${preActivatedPro?.business_plan?.businessName || businessName || null},
         ${gender},
         'due',
         ${referralCode},
@@ -192,6 +199,8 @@ export async function POST(request: NextRequest) {
       }
     }
     await ensureProActivationForNewClient(String(user.id),String(fileNumber),activationTier)
+    const proActivation=activationTier==='pro'
+      ?await getProActivationState(String(user.id),String(fileNumber)):null
 
     const token = `ssb_${randomBytes(32).toString('base64url')}`
     await sql`
@@ -214,7 +223,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       token,
-      activationRequired: activationTier==='pro'||fileNumber===CJ_DORADO_FILE_NUMBER,
+      activationRequired: (activationTier==='pro'||fileNumber===CJ_DORADO_FILE_NUMBER)&&proActivation?.status!=='active',
       customerDoor: activation.customerDoor,
       user: {
         id: user.id,

@@ -16,7 +16,7 @@ const publicHeaders = { 'Cache-Control': 'private, no-store' }
 export async function ensureProActivationSchema() {
   await sql`CREATE TABLE IF NOT EXISTS pro_file_folder_activations (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    client_id uuid NOT NULL UNIQUE REFERENCES users(id),
+    client_id uuid UNIQUE REFERENCES users(id),
     file_number varchar(120) NOT NULL UNIQUE,
     status varchar(36) NOT NULL DEFAULT 'awaiting_signature'
       CHECK (status IN ('awaiting_signature','business_plan_required','payment_required',
@@ -37,6 +37,8 @@ export async function ensureProActivationSchema() {
     activated_at timestamptz,
     updated_at timestamptz NOT NULL DEFAULT now()
   )`
+  // A verified File Number can be activated before its owner registers.
+  await sql`ALTER TABLE pro_file_folder_activations ALTER COLUMN client_id DROP NOT NULL`
   await sql`ALTER TABLE pro_file_folder_activations
     ADD COLUMN IF NOT EXISTS client_signature_name varchar(255)`
   await sql`ALTER TABLE pro_file_folder_activations
@@ -139,6 +141,23 @@ export async function ensureProActivationForNewClient(clientId:string,fileNumber
   const [owner] = await sql`SELECT id FROM users WHERE id=${clientId}::uuid AND role='client'
     AND is_active=true AND file_number=${fileNumber} LIMIT 1`
   if(!owner)throw new Error('Pro activation owner and File Number mismatch')
+  // Claim the already activated File Number; never restart its paid workflow.
+  const [reserved]=await sql`SELECT id,status,client_id,client_signature_name FROM pro_file_folder_activations
+    WHERE file_number=${fileNumber} LIMIT 1`
+  if(reserved?.status==='active'){
+    const [identity]=await sql`SELECT name FROM users WHERE id=${clientId}::uuid LIMIT 1`
+    if((reserved.client_id&&String(reserved.client_id)!==clientId)||
+      String(identity?.name||'').trim().toLowerCase()!==String(reserved.client_signature_name||'').trim().toLowerCase())
+      throw new Error('Activated Pro File Folder must match its verified owner and name')
+    const [claimed]=await sql`UPDATE pro_file_folder_activations SET client_id=${clientId}::uuid,updated_at=now()
+      WHERE id=${reserved.id}::uuid AND (client_id IS NULL OR client_id=${clientId}::uuid) RETURNING id`
+    if(!claimed)throw new Error('Pro File Folder ownership changed during registration')
+    const [verificationTable]=await sql`SELECT to_regclass('public.pro_file_number_verifications') AS name`
+    if(verificationTable?.name)await sql`UPDATE pro_file_number_verifications SET status='active',updated_at=now()
+      WHERE file_number=${fileNumber} AND status='paid_pending_account' AND payment_verified_at IS NOT NULL
+       AND payment_tx_hash=(SELECT payment_tx_hash FROM pro_file_folder_activations WHERE id=${reserved.id}::uuid)`
+    return
+  }
   await sql`INSERT INTO pro_file_folder_activations(client_id,file_number)
     VALUES(${clientId}::uuid,${fileNumber}) ON CONFLICT DO NOTHING`
 }
