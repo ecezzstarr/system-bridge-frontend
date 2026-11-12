@@ -128,6 +128,15 @@ export default function Home() {
                   <p className="mt-3 text-sm leading-6 text-slate-300">Return to yourself with the experience and records of your participation.</p>
                 </div>
               </div>
+              <section data-burning-river-saturday-entry="true" className="mx-auto mt-6 max-w-4xl rounded-2xl border border-amber-300/35 bg-slate-950/80 p-5 text-left shadow-xl sm:p-6">
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-200">Burning River · Every Saturday</p>
+                <h3 className="mt-2 text-xl font-black leading-snug text-white sm:text-2xl">Free Agent and Bridger entry · 8:00–10:00 a.m. WAT</h3>
+                <p className="mt-2 text-sm leading-6 text-slate-200">During the Flame Event, new visitors can open a Stability (Agent) or Hope (Bridger) account without the entry-ticket payment. Registration must be completed within the Saturday window. Standard prices apply at other times.</p>
+                <div className="mt-4 flex flex-wrap gap-3">
+                  <Link href="/register?role=agent" className="inline-flex min-h-11 items-center rounded-lg bg-amber-200 px-4 py-2.5 text-sm font-bold text-slate-950 hover:bg-amber-100">Join as Agent</Link>
+                  <Link href="/register?role=bridger" className="inline-flex min-h-11 items-center rounded-lg border border-amber-200/50 px-4 py-2.5 text-sm font-bold text-amber-100 hover:bg-white/10">Join as Bridger</Link>
+                </div>
+              </section>
             </div>
           </section>
 
