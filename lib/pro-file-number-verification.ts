@@ -79,8 +79,9 @@ export async function getApprovedProStaffOffer(fileNumber:string) {
  */
 export async function getPaidExternalProClientVerification(clientId:string,fileNumber:string){
  if(!clientId||!proNumberPattern.test(fileNumber))return null
- const [table]=await sql`SELECT to_regclass('public.pro_file_number_verifications') AS name`
- if(!table?.name)return null
+ const [table]=await sql`SELECT to_regclass('public.pro_file_number_verifications') AS name,
+  to_regclass('public.company_client_staff_offers') AS offers`
+ if(!table?.name||!table?.offers)return null
  const [row]=await sql`
   SELECT v.id,v.status FROM pro_file_number_verifications v
   JOIN company_client_staff_offers o ON o.file_number=v.file_number
