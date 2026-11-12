@@ -78,6 +78,19 @@ jobs:
               raise SystemExit("Successful Production Check required for exact main SHA")
           '
 
+      - name: Reclaim safe Docker build space before deployment
+        shell: bash
+        env:
+          WEAVE_ROOT: ${{ steps.locate.outputs.root }}
+          VERIFIED_SHA: ${{ inputs.release_sha }}
+        run: |
+          set -euo pipefail
+          cd "$WEAVE_ROOT"
+          # The host checkout may still contain an older deployment script.
+          # Run the storage guard from the exact verified GitHub commit instead.
+          git show "$VERIFIED_SHA:selfhost/docker-storage-guard.sh" \
+            | WEAVE_ROOT="$WEAVE_ROOT" bash -s -- preflight "$VERIFIED_SHA"
+
       - name: Deploy verified canonical main
         shell: bash
         env:
