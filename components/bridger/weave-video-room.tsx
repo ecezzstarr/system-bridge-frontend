@@ -436,7 +436,7 @@ export default function WeaveVideoRoom({callId,role,guestAccess,inviteLink,onClo
 
     <div className="relative grid gap-3 rounded-2xl bg-[#162632] p-3 sm:grid-cols-2">
       <div className="relative min-h-48 overflow-hidden rounded-xl bg-[#283d47]">
-        <video ref={localVideo} autoPlay muted playsInline className="h-full min-h-48 w-full object-cover" style={{filter:selectedFilter?.css||"none"}} />
+        <video ref={localVideo} autoPlay muted playsInline className="h-full min-h-48 w-full object-cover"  />
         {!mediaReady&&<div className="absolute inset-0 flex items-center justify-center text-sm text-white">Camera not enabled</div>}
         <p className="absolute bottom-2 left-2 rounded bg-black/60 px-2 py-1 text-xs text-white">You {muted?'· muted':''}</p>
       </div>
