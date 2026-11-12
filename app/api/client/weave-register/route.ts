@@ -12,6 +12,7 @@ import { ensureClientMonthlySchema, normalizeRegisteredGender } from '@/lib/clie
 import { ensureCompanyClientStaffSchema, staffOfferTokenHash } from '@/lib/company-client-staff'
 import { issueWeaveReceipt } from '@/lib/weave-receipts'
 import { CJ_DORADO_FILE_NUMBER } from '@/lib/client-file-folder'
+import { notifyAdministrationsActivity } from '@/lib/administrations-activity-notifications'
 import { ensureProActivationForNewClient,getProActivationState,ensureProActivationSchema } from '@/lib/pro-file-folder-activation'
 
 export async function POST(request: NextRequest) {
@@ -219,6 +220,15 @@ export async function POST(request: NextRequest) {
     } catch (movementError) {
       console.error('[Public Flame Movement] Client registration attribution failed:', movementError)
     }
+
+    await notifyAdministrationsActivity({
+      event:'client_registration',eventId:String(user.id),
+      title:staffGrant?'Company Client staff account registered':'New Client registered',
+      content:String(user.name)+' registered the original File Folder '+String(fileNumber)+
+        (staffGrant?' under a verified company staff offer.':' with the WEAVE Client entrance.')+
+        ' Review their business movement in Administrations.',
+      adminPath:'/admin/company-movement',actorId:String(user.id),actorName:String(user.name),
+    })
 
     return NextResponse.json({
       success: true,
