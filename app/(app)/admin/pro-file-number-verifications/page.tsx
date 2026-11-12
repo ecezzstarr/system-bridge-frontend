@@ -11,13 +11,16 @@ type Application={
  contact_address?:string|null;postal_code?:string|null;
  payment_wallet?:string|null;payment_tx_hash?:string|null;payment_submitted_at?:string|null;
  payment_verified_at?:string|null;payment_verified_amount_usdt?:number|null;
- status:string;rejection_reason?:string|null;created_at:string
+ status:string;folder_activated?:boolean;rejection_reason?:string|null;created_at:string
 }
 export default function ProFileNumberAdministration(){
  const {token,user,isInitialized}=useAuth()
  const [applications,setApplications]=useState<Application[]>([])
  const [selectedId,setSelectedId]=useState('')
  const [identityReference,setIdentityReference]=useState('')
+ const [candidateEmail,setCandidateEmail]=useState('')
+ const [monthlySalary,setMonthlySalary]=useState('')
+ const [appointmentReference,setAppointmentReference]=useState('')
  const [hash,setHash]=useState('')
  const [amount,setAmount]=useState('680')
  const [reason,setReason]=useState('')
@@ -44,7 +47,11 @@ export default function ProFileNumberAdministration(){
     body:JSON.stringify({action,id:selectedId,...extra})})
    const data=await response.json()
    if(!response.ok)throw new Error(data.error||'Forensics action unavailable')
-   setNotice('Forensics action recorded: '+data.status)
+   setNotice(data.status==='payment_required'
+    ?'Application approved. The Client staff verification page now shows the payment instructions.'
+    :data.status==='appointment_approved'
+     ?'Company appointment recorded. Complete the identity review below to move the applicant to payment.'
+     :'Forensics action recorded: '+data.status)
    setChecked(false);setConfirmation('')
    await load()
   }catch(e){setError(e instanceof Error?e.message:'Verification failed')}
@@ -70,6 +77,7 @@ export default function ProFileNumberAdministration(){
     {!applications.length&&<p className="text-sm text-slate-400">No submitted Pro verification plans.</p>}
     {applications.map(item=><button key={item.id} onClick={()=>{
      setSelectedId(item.id);setChecked(false);setConfirmation('');setHash('');setIdentityReference('')
+     setCandidateEmail('');setMonthlySalary('');setAppointmentReference('')
     }} className={'block w-full space-y-1 rounded-lg border p-3 text-left text-sm '+
       (selectedId===item.id?'border-cyan-200/60 bg-cyan-300/10':'border-white/10')}>
      <p className="font-mono text-xs text-cyan-200">{item.file_number}</p>
@@ -91,7 +99,30 @@ export default function ProFileNumberAdministration(){
        <p>Monthly salary: {Number(selected.staff_monthly_salary_usdt)>0
         ?Number(selected.staff_monthly_salary_usdt).toLocaleString()+' USDT in recorded offer'
         :'To be confirmed by Administrations payroll'}</p>
-      </div>:<p className="mt-2 text-sm text-amber-200">No approved company staff offer for this File Number. Do not approve payment until employment records are reconciled.</p>}
+      </div>:<div className="mt-2 space-y-3">
+       <p className="text-sm text-amber-200">No approved appointment is linked to this File Number. Record the independently approved employment terms here before the identity review. This records an appointment; it does not mark an activation payment as received.</p>
+       {selected.status==='pending_identity'&&<>
+        <p className="text-sm">Employee: <strong>{selected.signed_name}</strong> · Pro Regional Manager · Dream Lovely</p>
+        <label className="block text-sm">Verified company staff email
+         <input type="email" maxLength={255} value={candidateEmail} onChange={e=>setCandidateEmail(e.target.value)}
+          className="mt-2 w-full rounded-lg border border-white/20 bg-slate-900 p-3"/>
+        </label>
+        <label className="block text-sm">Agreed monthly salary · USDT
+         <input type="number" min="0.01" max="100000" step="0.01" value={monthlySalary} onChange={e=>setMonthlySalary(e.target.value)}
+          className="mt-2 w-full rounded-lg border border-white/20 bg-slate-900 p-3"/>
+        </label>
+        <label className="block text-sm">Approved appointment / agreement reference
+         <input maxLength={255} value={appointmentReference} onChange={e=>setAppointmentReference(e.target.value)}
+          className="mt-2 w-full rounded-lg border border-white/20 bg-slate-900 p-3"/>
+        </label>
+        <label className="flex gap-2 text-sm"><input type="checkbox" checked={checked}
+         onChange={e=>setChecked(e.target.checked)}/> I verified this employee's appointment, email and agreed salary against the company agreement.</label>
+        <button disabled={busy||!checked||!candidateEmail.includes('@')||Number(monthlySalary)<=0||!monthlySalary||appointmentReference.trim().length<8}
+         onClick={()=>void act('reconcile_appointment',{candidateEmail,monthlySalaryUSDT:Number(monthlySalary),appointmentReference,independentlyVerified:checked})}
+         className="rounded-lg border border-cyan-300/40 px-4 py-3 text-sm disabled:opacity-40">Record approved Pro appointment</button>
+        <Link href="/admin/client-staff-offers" className="block text-sm text-cyan-200 underline">Review existing company staff offers</Link>
+       </>}
+      </div>}
       {selected.file_number==='WEAVE-2026-0907-0001'&&<p className="mt-2 text-xs text-cyan-200">CJ Dorado: Pro Regional Manager · Dream Lovely · Spain. This Pro File Folder appointment is distinct from the ordinary Bridger/Agent Regional Manager. Verify the approved employment and salary without adding Agent/Stability or Bridger/Hope duties.</p>}
      </div>
      <div className="space-y-2 rounded-lg border border-white/15 bg-slate-950/40 p-4"
@@ -114,6 +145,7 @@ export default function ProFileNumberAdministration(){
      </details>
      {selected.status==='pending_identity'&&<div className="space-y-3 border-t border-white/15 pt-4">
       <h3 className="font-semibold">Verify File Number and applicant identity</h3>
+      <p className="text-sm text-cyan-200">Approval carries the Client's present submitted name, business plan and operating details into payment and Pro activation. The earlier appointment name is retained in the company record.</p>
       <p className="text-xs text-amber-200">File Number possession is not proof of ownership. Verify original entitlement, registered identity or reliable supporting documents independently before approval.</p>
       <label className="block text-sm">Actual identity verification reference
        <input value={identityReference} onChange={e=>setIdentityReference(e.target.value)} placeholder="Approved document or identity record reference"
@@ -121,7 +153,7 @@ export default function ProFileNumberAdministration(){
       </label>
       <label className="flex gap-2 text-sm"><input type="checkbox" checked={checked}
        onChange={e=>setChecked(e.target.checked)}/> I independently verified the Client staff employee identity, approved Pro appointment, business plan, and submitted operating location. For CJ, this is Dream Lovely business expansion in Spain, not Agent or Bridger regional management.</label>
-      <button disabled={busy||!checked||identityReference.trim().length<8}
+      <button disabled={busy||!selected.staff_position_title||!checked||identityReference.trim().length<8}
        onClick={()=>void act('verify_identity',{identityReference,independentlyVerified:checked})}
        className="rounded-lg bg-cyan-300 px-4 py-3 font-semibold text-slate-950 disabled:opacity-40">Approve verified application for payment</button>
      </div>}
@@ -152,8 +184,11 @@ export default function ProFileNumberAdministration(){
        className="rounded-lg border border-rose-300/40 px-4 py-2 text-sm text-rose-200 disabled:opacity-40">Reject unverified payment</button>
      </div>}
      {selected.status==='paid_pending_account'&&<div className="space-y-3 border-t border-white/15 pt-4">
-      <h3 className="font-semibold">Payment verified · finalize correct File Folder owner</h3>
-      <p className="text-xs text-slate-300">Finalization opens the actual Pro File Folder only when an active registered Client account owns this same original File Number and File Folder. A new account is never silently created.</p>
+      <h3 className="font-semibold">{selected.folder_activated?'Pro File Folder activated · registration is open':'Payment verified · activate Pro File Folder'}</h3>
+      <p className="text-xs text-slate-300">The order is verification, payment, Pro File Folder activation, then Client account registration. Registration connects the account to the already activated Folder using the verified present name and details.</p>
+      {!selected.folder_activated&&<button disabled={busy} onClick={()=>void act('activate_folder')}
+       className="rounded-lg bg-cyan-300 px-4 py-3 font-semibold text-slate-950 disabled:opacity-40">Activate verified Pro File Folder before registration</button>}
+      <p className="text-xs text-slate-300">After registration the verified owner is attached automatically. Use finalization below only to reconcile an existing registered account.</p>
       <label className="block text-sm">Finalization confirmation
        <input value={confirmation} onChange={e=>setConfirmation(e.target.value)}
         placeholder="Type FINALIZE VERIFIED PRO" className="mt-2 w-full rounded-lg border border-white/20 bg-slate-900 p-3"/>

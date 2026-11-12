@@ -1,6 +1,7 @@
 import {randomBytes,createHash} from 'node:crypto'
 import {sql,getPool} from '@/lib/db'
 import {ensureProFileNumberVerificationSchema} from '@/lib/pro-file-number-verification'
+import {ensureProActivationSchema} from '@/lib/pro-file-folder-activation'
 import {staffOfferTokenHash,ensureCompanyClientStaffSchema} from '@/lib/company-client-staff'
 import {passwordRecoveryEmailProvider} from '@/lib/password-recovery'
 import {sendAuthenticatedGoogleMail,systemGoogleMailbox} from '@/lib/weave-mail'
@@ -15,6 +16,7 @@ import {getAdministrationGoogleMailboxCredential} from '@/lib/weave-mailbox'
 export async function ensureProClientRegistrationInvitationSchema(){
  await ensureProFileNumberVerificationSchema()
  await ensureCompanyClientStaffSchema()
+ await ensureProActivationSchema()
  await sql`CREATE TABLE IF NOT EXISTS pro_client_registration_invitation_delivery (
    verification_id uuid PRIMARY KEY REFERENCES pro_file_number_verifications(id) ON DELETE CASCADE,
    window_started_at timestamptz NOT NULL DEFAULT now(),
@@ -49,7 +51,7 @@ ${link}
 
 This invitation is private and meant only for your approved company email. You must create your own password. Do not share this link or any payment information.
 
-After registration, Administrations finalizes your existing verified Pro File Folder. There is no second activation charge.
+Your Pro File Folder is already activated. Registration connects your account to that same Folder. There is no second activation charge.
 
 WEAVE of Presence · Pro Staff Verification`
  if(provider==='gmail'){
@@ -79,14 +81,16 @@ export async function sendVerifiedProClientRegistrationInvite(ticket:string,requ
  try{
   await db.query('BEGIN')
   const rows=await db.query(`SELECT v.id,v.file_number,v.status,v.signed_name,v.identity_verified_at,
-     v.payment_verified_at,v.payment_verified_amount_usdt,
+     v.payment_verified_at,v.payment_verified_amount_usdt,a.activated_at,
      o.id AS offer_id,o.candidate_name,o.candidate_email,o.status AS offer_status,
      o.folder_tier,o.client_id,o.monthly_salary_usdt
     FROM pro_file_number_verifications v
     JOIN company_client_staff_offers o ON o.file_number=v.file_number
+    JOIN pro_file_folder_activations a ON a.file_number=v.file_number
+      AND a.status='active' AND a.payment_tx_hash=v.payment_tx_hash
     WHERE v.access_token_hash=$1 FOR UPDATE OF v,o`,[hash])
   const row=rows.rows[0]
-  if(!row||row.status!=='paid_pending_account'||!row.identity_verified_at||
+  if(!row||row.status!=='paid_pending_account'||!row.identity_verified_at||!row.activated_at||
    !row.payment_verified_at||Number(row.payment_verified_amount_usdt)!==680||
    row.offer_status!=='approved'||row.folder_tier!=='pro'||row.client_id||
    Number(row.monthly_salary_usdt)<=0||

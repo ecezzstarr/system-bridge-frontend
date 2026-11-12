@@ -3,6 +3,8 @@ import {getAuthUser} from '@/lib/auth-api'
 import {sql,getPool} from '@/lib/db'
 import {isProRegionalManagerPosition} from '@/lib/pro-regional-manager-policy'
 import {ensureCompanyClientStaffSchema} from '@/lib/company-client-staff'
+import {reconcileProStaffAppointment} from '@/lib/pro-staff-appointment'
+import {activateVerifiedProFileNumber} from '@/lib/pro-file-number-activation'
 import {ensureProFileNumberVerificationSchema,getApprovedProStaffOffer,proVerificationPublicHeaders} from '@/lib/pro-file-number-verification'
 import {ensureProActivationSchema,isTronAddress,PRO_ACTIVATION_FEE_USDT} from '@/lib/pro-file-folder-activation'
 export const dynamic='force-dynamic'
@@ -16,16 +18,20 @@ export async function GET(request:NextRequest){
  try{
   await ensureProFileNumberVerificationSchema()
   await ensureCompanyClientStaffSchema()
+  await ensureProActivationSchema()
   const rows=await sql`SELECT v.id,v.file_number,v.business_name,v.business_plan,v.signed_name,
    v.terms_accepted_at,v.identity_reference,v.identity_verified_at,
    v.operating_country,v.operating_region,v.operating_city,v.contact_address,v.postal_code,
    v.payment_wallet,v.payment_tx_hash,v.payment_submitted_at,v.payment_verified_at,
    v.payment_verified_amount_usdt,v.rejection_reason,v.status,v.created_at,
    offer.position_title AS staff_position_title,offer.monthly_salary_usdt AS staff_monthly_salary_usdt,
-   offer.candidate_name AS staff_candidate_name
+   offer.candidate_name AS staff_candidate_name,
+   EXISTS(SELECT 1 FROM pro_file_folder_activations a WHERE a.file_number=v.file_number
+    AND a.status='active' AND a.payment_tx_hash=v.payment_tx_hash AND a.activated_at IS NOT NULL) AS folder_activated
    FROM pro_file_number_verifications v
    LEFT JOIN company_client_staff_offers offer
-    ON offer.file_number=v.file_number AND offer.status='approved' AND offer.folder_tier='pro'
+    ON offer.file_number=v.file_number AND ((offer.status='approved' AND offer.folder_tier='pro') OR
+     (offer.status='accepted' AND offer.folder_tier='pro' AND offer.appointment_approved_at IS NOT NULL))
    ORDER BY CASE v.status WHEN 'pending_forensics' THEN 0 WHEN 'pending_identity' THEN 1
       WHEN 'paid_pending_account' THEN 2 ELSE 3 END,v.created_at DESC LIMIT 100`
   return NextResponse.json({success:true,applications:rows},{headers:proVerificationPublicHeaders})
@@ -42,7 +48,12 @@ export async function POST(request:NextRequest){
  if(!/^[0-9a-f-]{36}$/i.test(id))
   return NextResponse.json({error:'Select a valid Pro verification record.'},{status:400,headers:proVerificationPublicHeaders})
  try{
+  if(action==='reconcile_appointment'){
+   const result=await reconcileProStaffAppointment(id,String(user.id),body)
+   return NextResponse.json(result,{headers:proVerificationPublicHeaders})
+  }
   await ensureProFileNumberVerificationSchema()
+  await ensureCompanyClientStaffSchema()
   const [current]=await sql`SELECT id,file_number,business_name,signed_name,status,operating_country,operating_region,
    operating_city,contact_address,postal_code
    FROM pro_file_number_verifications WHERE id=${id}::uuid LIMIT 1`
@@ -59,9 +70,8 @@ export async function POST(request:NextRequest){
       throw new Error('CJ is assigned to Spain. Verify the country and territory before approval.')
    const offer=await getApprovedProStaffOffer(String(current.file_number))
    if(!offer)throw new Error('An approved Pro company staff appointment is required. CJ Dorado must have an approved Pro Regional Manager offer.')
-   const applicant=String(current.signed_name||'').trim().toLowerCase()
-   if(String(offer.candidate_name||'').trim().toLowerCase()!==applicant)
-    throw new Error('The signed applicant must match the approved company employee.')
+   // Administrations verifies the submitted current name; a historical display
+   // alias in the appointment must not force the Client to change their name.
    if(!Number.isFinite(Number(offer.monthly_salary_usdt))||Number(offer.monthly_salary_usdt)<=0)
     throw new Error('The agreed Pro Client staff monthly salary must be recorded before activation approval; Agent/Bridger Lifestyle salary does not apply.')
    const [owner]=await sql`SELECT name FROM users WHERE file_number=${current.file_number}
@@ -71,6 +81,11 @@ export async function POST(request:NextRequest){
    if(owner&&String(owner.name||'').trim().toLowerCase()!==
       String(current.signed_name||'').trim().toLowerCase())
     throw new Error('The signed name does not match the registered Client. Resolve identity manually.')
+   // Preserve the prior offer name alongside the independently reviewed name.
+   await sql`UPDATE company_client_staff_offers SET
+    previous_candidate_name=COALESCE(previous_candidate_name,candidate_name),
+    candidate_name=${String(current.signed_name).trim()},updated_at=now()
+    WHERE id=${offer.id}::uuid AND file_number=${current.file_number}`
    const [row]=await sql`UPDATE pro_file_number_verifications
     SET status='payment_required',identity_reference=${ref},
      identity_verified_by=${user.id}::uuid,identity_verified_at=now(),updated_at=now()
@@ -78,6 +93,22 @@ export async function POST(request:NextRequest){
     RETURNING id`
    if(!row)throw new Error('Identity verification was already updated.')
    return NextResponse.json({success:true,status:'payment_required'},{headers:proVerificationPublicHeaders})
+  }
+  if(action==='activate_folder'){
+   await ensureProActivationSchema()
+   const db=await getPool().connect()
+   try{
+    await db.query('BEGIN')
+    const {rows}=await db.query('SELECT * FROM pro_file_number_verifications WHERE id=$1::uuid FOR UPDATE',[id])
+    const row=rows[0]
+    if(!row||row.status!=='paid_pending_account'||!row.identity_verified_at||!row.payment_verified_at||
+      Number(row.payment_verified_amount_usdt)!==PRO_ACTIVATION_FEE_USDT||!row.payment_tx_hash||!row.payment_wallet)
+     throw new Error('Independently verified identity and payment are required before Pro activation.')
+    await activateVerifiedProFileNumber(db,row,String(row.payment_verified_by))
+    await db.query('COMMIT')
+    return NextResponse.json({success:true,status:'paid_pending_account'},{headers:proVerificationPublicHeaders})
+   }catch(e){await db.query('ROLLBACK').catch(()=>{});throw e}
+   finally{db.release()}
   }
   if(action==='approve_payment'||action==='reject_payment'){
    const db=await getPool().connect()
@@ -108,6 +139,14 @@ export async function POST(request:NextRequest){
      }
      const duplicate=await db.query('SELECT id FROM pro_file_folder_activations WHERE payment_tx_hash=$1 LIMIT 1',[hash])
      if(duplicate.rows.length)throw new Error('This blockchain receipt was already assigned to another Pro activation.')
+     // The pre-payment appointment becomes a registrable staff offer only
+     // after Forensics confirms this exact activation receipt.
+     await db.query(`UPDATE company_client_staff_offers SET status='approved',
+      payment_reference=$1,payment_network='TRC20_USDT',verified_by=$2::uuid,
+      verified_at=now(),updated_at=now()
+      WHERE file_number=$3 AND status='accepted' AND folder_tier='pro'
+       AND appointment_approved_at IS NOT NULL`,[hash,user.id,row.file_number])
+     await activateVerifiedProFileNumber(db,row,String(user.id))
      await db.query(`UPDATE pro_file_number_verifications
       SET status='paid_pending_account',payment_verified_by=$1::uuid,
        payment_verified_at=now(),payment_verified_amount_usdt=$2,updated_at=now()
@@ -166,8 +205,17 @@ export async function POST(request:NextRequest){
     if(folder.rows.length!==1||String(folder.rows[0].client_id)!==String(clientId)||
        folder.rows[0].status!=='active')
      throw new Error('The original File Folder must be active and owned by this Client.')
-    const existingRows=await db.query(`SELECT id,status,file_number FROM pro_file_folder_activations
+    const existingRows=await db.query(`SELECT id,status,file_number,payment_tx_hash,client_id FROM pro_file_folder_activations
      WHERE client_id=$1::uuid OR file_number=$2 FOR UPDATE`,[clientId,row.file_number])
+    if(existingRows.rows.length===1&&existingRows.rows[0].status==='active'&&
+      String(existingRows.rows[0].client_id)===String(clientId)&&
+      existingRows.rows[0].file_number===row.file_number&&
+      String(existingRows.rows[0].payment_tx_hash).trim()===String(row.payment_tx_hash).trim()){
+     await db.query(`UPDATE pro_file_number_verifications SET status='active',updated_at=now()
+      WHERE id=$1::uuid AND status='paid_pending_account'`,[id])
+     await db.query('COMMIT')
+     return NextResponse.json({success:true,status:'active'},{headers:proVerificationPublicHeaders})
+    }
     if(existingRows.rows.length>1||existingRows.rows[0]&&
       (existingRows.rows[0].file_number!==row.file_number||existingRows.rows[0].status==='active'))
      throw new Error('An active or mismatched Pro activation already exists; reconcile without overwriting.')

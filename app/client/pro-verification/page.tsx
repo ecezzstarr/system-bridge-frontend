@@ -7,7 +7,7 @@ import {PRO_MANAGER_COMPANY_PURPOSE,PRO_MANAGER_FILE_FOLDER_DISTINCTION,
  PRO_MANAGER_PLAN_QUESTIONS,PRO_MANAGER_AGREEMENT_SECTIONS} from '@/lib/pro-regional-manager-language'
 type Verification={reference:string;fileNumber:string;businessName:string;
  status:string;feeUSDT:number;network:string;walletAddress:string|null;
- paymentVerified:boolean;rejectionReason?:string|null;
+ paymentVerified:boolean;folderActivated?:boolean;rejectionReason?:string|null;
  companyPosition?:{title:string;monthlySalaryUSDT:number|null;salaryStatus:string}|null;
  operatingLocation?:{country:string;region:string;city:string}|null;
  siblingsEvent?:{reportedAmountUSDT:number;verifiedAmountUSDT:number;status:string;availableForWithdrawal:boolean}|null}
@@ -35,12 +35,28 @@ export default function ProFileNumberVerification(){
   const response=await fetch('/api/public/pro-file-number-verification?ticket='+encodeURIComponent(secret),{cache:'no-store'})
   const json=await response.json()
   if(!response.ok)throw new Error(json.error||'Verification status unavailable')
+  sessionStorage.setItem(SESSION_KEY,secret)
   setTicket(secret);setVerification(json.verification);setStep('status')
  },[])
  useEffect(()=>{
   const secret=sessionStorage.getItem(SESSION_KEY)
   if(secret)void refresh(secret).catch(()=>sessionStorage.removeItem(SESSION_KEY))
  },[refresh])
+ useEffect(()=>{
+  if(!ticket||step!=='status'||!verification||['active','rejected','payment_rejected'].includes(verification.status))return
+  let stopped=false
+  let refreshing=false
+  const update=async()=>{
+   if(stopped||refreshing||document.visibilityState==='hidden')return
+   refreshing=true
+   try{await refresh(ticket)}catch{/* Keep the last status; manual refresh reports errors. */}
+   finally{refreshing=false}
+  }
+  const timer=window.setInterval(()=>void update(),20000)
+  window.addEventListener('focus',update)
+  document.addEventListener('visibilitychange',update)
+  return ()=>{stopped=true;window.clearInterval(timer);window.removeEventListener('focus',update);document.removeEventListener('visibilitychange',update)}
+ },[ticket,step,verification?.status,refresh])
  async function submitPlan(){
   setBusy(true);setError('');setMessage('')
   try{
@@ -280,7 +296,7 @@ export default function ProFileNumberVerification(){
      <p className="mt-2 break-all font-mono">{ticket}</p>
      <p className="mt-2">Keep this code private. It is needed if you resume the verification on another device. Do not post it publicly.</p>
     </details>
-    {verification.status==='pending_identity'&&<p className="rounded-lg border border-amber-300/20 p-4 text-sm text-slate-200">Administrations is reviewing your File Number, identity, electronic signature, business name and business plan. Payment instructions are not available until that review is complete.</p>}
+    {verification.status==='pending_identity'&&<p className="rounded-lg border border-amber-300/20 p-4 text-sm text-slate-200">Administrations is reviewing your File Number, identity, electronic signature, business name and business plan. Once approved, this workspace automatically moves to payment instructions. Your status refreshes every 20 seconds while this page is open.</p>}
     {verification.status==='payment_rejected'&&<div className="space-y-3 rounded-lg border border-rose-300/30 p-4">
      <h3 className="font-semibold text-rose-200">Payment evidence needs a new review</h3>
      <p className="text-sm text-slate-200">Forensics finding: {verification.rejectionReason||'Receipt not independently confirmed.'} The original evidence is retained for audit. Do not send another payment without reconciling with Administrations.</p>
@@ -310,9 +326,12 @@ export default function ProFileNumberVerification(){
     </div>}
     {verification.status==='pending_forensics'&&<p className="text-sm text-slate-200">Your transaction hash was received. Forensics is checking the actual blockchain receipt, amount and receiving address. Do not send a duplicate payment.</p>}
     {verification.status==='paid_pending_account'&&<section className="space-y-3 rounded-xl border border-cyan-300/25 p-5">
-      <h3 className="text-lg font-semibold">6. Secure Client account registration</h3>
-      <p className="text-sm text-slate-200">Forensics has independently verified your Pro activation. Request a private account-registration link to the email address already recorded in your approved company employment offer. Your File Number is not a login or a password. Create your own secure Client account using the link; Administrations then verifies account ownership and finalizes the existing Pro File Folder. Do not make another activation payment.</p>
-      <button type="button" disabled={busy} onClick={()=>void requestRegistrationInvite()}
+      <h3 className="text-lg font-semibold">6. Pro File Folder activation → account registration</h3>
+      <p className="text-sm text-slate-200">{verification.folderActivated
+       ?'Your payment is verified and your Pro File Folder is activated under your verified File Number and current details. Now register your Client account to access that same activated Folder. No second activation payment is required.'
+       :'Your payment is verified. Administrations must complete Pro File Folder activation before account registration opens.'}</p>
+      <p className="text-sm text-slate-200">Request a private registration link to your company-approved email. Create your own password using that link; registration connects your account to your activated Pro File Folder.</p>
+      <button type="button" disabled={busy||!verification.folderActivated} onClick={()=>void requestRegistrationInvite()}
        className="rounded-lg bg-cyan-300 px-5 py-3 text-sm font-semibold text-slate-950 disabled:opacity-40">Email me my verified company registration link</button>
       <p className="text-xs text-slate-400">If you already received an approved private company invitation, you may use that invitation instead. No registration token is displayed in this public workspace.</p>
      </section>}
