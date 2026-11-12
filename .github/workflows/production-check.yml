@@ -109,6 +109,7 @@ jobs:
       - name: Bridger outreach and Agent daily work integrity
         run: |
           node tests/bridger-agent-daily-work-integrity.cjs
+          node tests/hope-video-call-regression.cjs
           node tests/prospect-whatsapp-handoff-regression.cjs
           node tests/agent-outlet-price-policy-regression.cjs
 

@@ -49,7 +49,7 @@ const checks=[
  [read('app/api/bridger/email-outreach/route.ts'),"status='acquired'",'Email lead persistent acquisition'],
  [read('app/api/bridger/river-calls/route.ts'),'confirmedRequestedCall','River explicit consent'],
  [read('app/api/bridger/river-calls/route.ts'),'balance_trx','River primary wallet charge'],
- [read('app/(app)/bridger/ai-video-call/page.tsx'),'data-bridger-ai-video-call="not-live"','Unavailable video clearly labeled'],
+ [read('app/(app)/bridger/ai-video-call/page.tsx'),'data-bridger-ai-video-call="peer-to-peer"','Private WEAVE video room connected to Hope'],
  [read('app/(app)/bridger/bridge-ai/page.tsx'),'BRIDGE_AI_TEMPLATE_PRICE','Bridge AI real price'],
  [read('app/api/distribution-studio/route.ts'),"action === 'request_connection'",'Social channel provider authorization'],
  [read('app/api/market/prospects/purchase/route.ts'),'finalizeProspectPurchase','Prospect commission reconciliation'],

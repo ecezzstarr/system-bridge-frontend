@@ -1,0 +1,63 @@
+const assert=require('node:assert/strict')
+const fs=require('node:fs')
+const path=require('node:path')
+const ts=require('typescript')
+const root=path.resolve(__dirname,'..')
+const read=file=>fs.readFileSync(path.join(root,file),'utf8')
+const files=[
+ 'lib/weave-video-call.ts',
+ 'app/api/hope/video-calls/route.ts',
+ 'app/api/hope/video-calls/[id]/join/route.ts',
+ 'app/api/hope/video-calls/[id]/route.ts',
+ 'components/bridger/weave-video-room.tsx',
+ 'app/(app)/bridger/ai-video-call/page.tsx',
+ 'app/video-call/[id]/page.tsx',
+]
+for(const file of files){
+ const text=read(file)
+ const jsx=file.endsWith('.tsx')
+ const tree=ts.createSourceFile(file,text,ts.ScriptTarget.Latest,true,jsx?ts.ScriptKind.TSX:ts.ScriptKind.TS)
+ assert.equal(tree.parseDiagnostics.length,0,file+' must parse')
+}
+const shared=read(files[0])
+const create=read(files[1])
+const join=read(files[2])
+const room=read(files[3])
+const ui=read(files[4])
+const host=read(files[5])
+const guest=read(files[6])
+const catalog=read('lib/bridger-workplace-catalog.ts')
+assert(shared.includes('expires_at'), 'Calls expire server-side')
+assert(shared.includes('createHash'), 'Invitation and guest access are stored hashed')
+assert(shared.includes('timingSafeEqual'), 'Guest access uses timing-safe validation')
+assert(shared.includes('use-auth-secret'), 'TURN relay uses time-limited credentials')
+assert(shared.includes('guest_hash'), 'Room stores only guest token hash')
+assert(shared.includes('signal'), 'Signaling data is a separate table')
+assert(create.includes("auth.role !== 'bridger'"), 'Only an authenticated Bridger creates a call')
+assert(create.includes('pg_advisory_xact_lock'), 'Concurrent calls are serialized')
+assert(create.includes('#invite='), 'Invite credential is in URL fragment, not a query parameter')
+assert(create.includes('videoCallSummary'), 'Calls are written to history')
+assert(join.includes('guest_hash IS NULL'), 'First guest atomically claims room')
+assert(join.includes("status='inviting' AND expires_at>now()"), 'Guests cannot reuse expired links')
+assert(join.includes('guestAccess:guestSecret'), 'Guest receives separate session token')
+assert(room.includes('videoCallAccess(request,id)'), 'All media signals require room authorization')
+assert(room.includes("from_role<>$2"), 'Signaling is delivered only to the other participant')
+assert(room.includes("kind==='offer' && caller.role!=='bridger'"), 'Only host can send offers')
+assert(room.includes("kind==='answer' && caller.role!=='guest'"), 'Only guest can answer')
+assert(room.includes('DELETE FROM weave_hope_video_signals'), 'Hangup clears signaling')
+assert(room.includes('expires_at>now()'), 'Expired room cannot accept signals')
+assert(ui.includes('getUserMedia'), 'Camera and microphone are actually captured on permission')
+assert(ui.includes('new RTCPeerConnection'), 'Real browser peer connection exists')
+assert(ui.includes('createOffer')&&ui.includes('createAnswer'), 'Negotiation has both offer and answer')
+assert(ui.includes('addIceCandidate'), 'ICE exchange supported')
+assert(ui.includes('replaceTrack'), 'Mobile camera flip and screen share replace track')
+assert(ui.includes('screenTrack.current'), 'Screen sharing is reversible')
+assert(ui.includes('getDisplayMedia'), 'Screensharing uses native secure API')
+assert(ui.includes("setConnected(state==='connected')"), 'Connection status follows media transport')
+assert(ui.includes('track.stop()'), 'Media tracks are stopped on leaving')
+assert(!ui.includes('MediaRecorder'), 'No covert recording')
+assert(host.includes('Create WEAVE Video Call'), 'Bridger can create an invite')
+assert(guest.includes('Accept invitation'), 'Invited person explicitly accepts')
+assert(guest.includes('sessionStorage'), 'Guest can refresh their tab without re-claiming invite')
+assert(catalog.includes("label: 'WEAVE Video Call'"), 'Hope workplace links to new system')
+console.log('PASS: Hope video call signaling, one-use invitations, private sessions, media, and safety invariants')
