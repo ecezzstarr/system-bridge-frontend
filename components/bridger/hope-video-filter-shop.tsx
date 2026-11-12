@@ -1,10 +1,12 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import Link from 'next/link'
 import { CheckCircle2, LockKeyhole, Palette, Sparkles, Wallet } from 'lucide-react'
 import { getAuthHeaders } from '@/lib/auth-client'
 import type { HopeVideoFilter } from '@/lib/hope-video-filter-catalog'
 import { prepareHopeVideoEffect } from '@/lib/hope-video-premium-effects'
+import HopeVideoStudioPackages from '@/components/bridger/hope-video-studio-packages'
 
 type FilterInfo=HopeVideoFilter
 type CatalogState={
@@ -12,7 +14,7 @@ type CatalogState={
   owned:string[]
   balanceSystemSwitch:number
 }
-type Props={activeFilter:FilterInfo|null;activeFace:FilterInfo|null;onFilterSelect:(filter:FilterInfo|null,layer?:'scene'|'face')=>Promise<void>}
+type Props={activeFilter?:FilterInfo|null;activeFace?:FilterInfo|null;onFilterSelect?:(filter:FilterInfo|null,layer?:'scene'|'face')=>Promise<void>}
 
 export default function HopeVideoFilterShop({activeFilter,activeFace,onFilterSelect}:Props){
   const [catalog,setCatalog]=useState<CatalogState|null>(null)
@@ -50,7 +52,10 @@ export default function HopeVideoFilterShop({activeFilter,activeFace,onFilterSel
 
   const select=async(filter:FilterInfo|null,layer:'scene'|'face'='scene')=>{
     setError('');setNotice('');setApplying(true)
-    try{await onFilterSelect(filter,layer)}
+    try{
+      if(!onFilterSelect)throw new Error('Open a video call to apply this owned effect.')
+      await onFilterSelect(filter,layer)
+    }
     catch(e:any){setError(e?.message||'Could not apply that effect to your video')}
     finally{setApplying(false)}
   }
@@ -96,7 +101,7 @@ export default function HopeVideoFilterShop({activeFilter,activeFace,onFilterSel
     <div className="flex flex-wrap items-start justify-between gap-3">
       <div>
         <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#8e692f]"><Palette size={16}/> Hope · Live Filter Shop</p>
-        <h3 className="mt-1 text-lg font-semibold">Style your video, not just your preview</h3>
+        <h3 className="mt-1 text-xl font-semibold">WEAVE Video Studio</h3>
         <p className="mt-1 max-w-2xl text-xs leading-5 text-[#667275]">
           Choose from 18 original company and scenic backgrounds, real-time background removal, color looks and synthetic face masks. Each purchase is permanent, and the selected effect reaches your guest through WebRTC. Original video remains free. Backgrounds and owned face masks can now be combined, without changing speech.
         </p>
@@ -109,7 +114,8 @@ export default function HopeVideoFilterShop({activeFilter,activeFace,onFilterSel
     {supported===false&&<p role="alert" className="mt-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900">This device cannot transmit live canvas filters. Purchases are disabled here; try a supported browser before spending System Switch.</p>}
     {loading&&<p role="status" className="mt-3 text-sm">Loading prices and your saved licenses…</p>}
     {!loading&&!catalog&&<button className="mt-3 rounded-lg border px-4 py-2 text-sm" onClick={()=>void refresh().catch(e=>setError(e?.message))}>Retry filter shop</button>}
-    {catalog&&<div className="mt-4 flex flex-wrap gap-2" role="group" aria-label="Live effect categories">
+    <div className="mt-4"><HopeVideoStudioPackages onPurchase={refresh}/></div>
+    {catalog&&<div className="mt-5 flex flex-wrap gap-2" role="group" aria-label="Live effect categories">
       {([
         ['background','Backgrounds · '+catalog.filters.filter(f=>f.effectKind==='scene'||f.effectKind==='remove').length],
         ['color','Color looks · '+catalog.filters.filter(f=>f.effectKind==='color').length],
@@ -142,10 +148,12 @@ export default function HopeVideoFilterShop({activeFilter,activeFace,onFilterSel
             ?<div className="my-2 h-20 overflow-hidden rounded-lg bg-[#d0d5da]" aria-hidden="true"><img src={filter.sceneSrc} alt="" loading="lazy" className="h-full w-full object-cover"/></div>
             :<div className="my-2 flex h-16 items-center justify-center rounded-lg bg-gradient-to-r from-[#9d7040] via-[#b3bac1] to-[#75548a]" style={{filter:filter.css}} aria-hidden="true"><span className="text-[10px] font-bold tracking-widest text-white/90">{filter.effectKind==='face'?'FACE MASK':filter.effectKind==='remove'?'BACKGROUND HIDE':'COLOR LOOK'}</span></div>}
           <span className="flex-1 text-xs leading-4 text-[#5b6b70]">{filter.detail}</span>
-          {owned?<button type="button" disabled={applying||Boolean(buying)} onClick={()=>void select(filter,filter.effectKind==='face'?'face':'scene')}
-            className="mt-3 min-h-10 rounded-lg bg-[#275464] px-2 text-xs font-semibold text-white disabled:opacity-50">{selected?'Applied to video':'Apply owned filter'}</button>
+          {owned?(onFilterSelect?
+            <button type="button" disabled={applying||Boolean(buying)} onClick={()=>void select(filter,filter.effectKind==='face'?'face':'scene')}
+              className="mt-3 min-h-11 rounded-lg bg-[#275464] px-2 text-xs font-semibold text-white disabled:opacity-50">{selected?'Applied to video':'Apply owned effect'}</button>
+            :<Link href="/bridger/ai-video-call" className="mt-3 flex min-h-11 items-center justify-center rounded-lg bg-[#275464] px-2 text-center text-xs font-semibold text-white">Use in a video call</Link>)
           :<button type="button" disabled={applying||Boolean(buying)||supported!==true} onClick={()=>void buy(filter)}
-            className="mt-3 min-h-10 rounded-lg border border-[#bc985a] px-2 text-xs font-bold text-[#76531b] disabled:opacity-50">
+            className="mt-3 min-h-11 rounded-lg border border-[#bc985a] px-2 text-xs font-bold text-[#76531b] disabled:opacity-50">
               {buying===filter.id?'Purchasing…':'Buy · '+filter.priceSystemSwitch+' System Switch'}
             </button>}
         </div>
