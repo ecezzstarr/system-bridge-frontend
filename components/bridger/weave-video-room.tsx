@@ -362,6 +362,15 @@ export default function WeaveVideoRoom({callId,role,guestAccess,inviteLink,onClo
 
   const applyVideoFilter=async(filter:HopeVideoFilter|null)=>{
     if(role!=='bridger'||ended)return
+    if(filter){
+      // Every application rechecks a persisted purchase; shop state alone
+      // cannot grant access to an unpaid premium effect.
+      const response=await fetch('/api/hope/video-filters',{cache:'no-store',headers:getAuthHeaders()})
+      const data=await response.json().catch(()=>({}))
+      if(!response.ok||!Array.isArray(data.owned)||!data.owned.includes(filter.id)){
+        throw new Error('Purchase this System Switch effect before applying it to a call.')
+      }
+    }
     const previous=selectedFilterRef.current
     const previousPrepared=premiumEffectRef.current
     if(previous?.id===filter?.id)return
