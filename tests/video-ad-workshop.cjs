@@ -28,7 +28,7 @@ assert.ok(projectApi.includes('Administrations access required'),'Institutional 
 assert.ok(videoEngine.includes('VIDEO_AD_MIN_SECONDS = 30')&&videoEngine.includes('VIDEO_AD_MAX_SECONDS = 360'),'Server clamps video duration')
 assert.ok(videoEngine.includes('It must not feel like an advertisement at the beginning.'),'Storyboard engine carries the approved content-first grammar')
 assert.ok(videoEngine.includes('fallbackStoryboard'),'Storyboard still forms when Gemini is unavailable')
-assert.ok(render.includes('720:1280'),'Renderer produces 9:16 mobile video')
+assert.ok(render.includes('weaveRealTextureFilter({')&&read('lib/weave-video-real-texture.ts').includes('crop=720:1280')&&read('lib/weave-video-real-texture.ts').includes('s=720x1280:fps=30'),'Renderer produces 9:16 mobile video through its real-texture filter')
 assert.ok(render.includes("video-ads/customer-assets/"),'Renderer can use paid customer business media')
 assert.ok(render.includes("status='ready',output_url=$2"),'Finished paid videos are returned to Studio orders')
 assert.ok(render.includes('You can render only your own paid Video Studio production'),'Agent Bridger Client rendering is owner-scoped to a paid project')

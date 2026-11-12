@@ -193,6 +193,7 @@ jobs:
           node tests/company-of-time-homepage-regression.cjs
           node tests/file-folder-standard-official-world-regression.cjs
           node tests/weave-narration-studio.cjs
+          node tests/weave-real-work-video.cjs
           node tests/prospect-whatsapp-handoff-regression.cjs
           node tests/bridger-whatsapp-replacement-limit.cjs
           node tests/file-folder-sales-manager-regression.cjs

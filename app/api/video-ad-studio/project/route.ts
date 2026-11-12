@@ -49,11 +49,12 @@ export async function PATCH(request: NextRequest) {
       if(!Number.isFinite(durationSeconds)||durationSeconds<1||durationSeconds>90)throw new Error('Scene duration must be 1–90 seconds')
       return {
         id: original.id,order:original.order,durationSeconds,
-        beat:String(original.beat||'').slice(0,64),
+        beat:String(edit.beat||original.beat||'').slice(0,64),
         text:String(edit.text||'').slice(0,160),
         visualDirection:String(edit.visualDirection||'').slice(0,700),
         voiceover:String(edit.voiceover||'').slice(0,700),
         assetUrl,assetType,
+        visualStyle:edit.visualStyle==='cinematic'?'cinematic':edit.visualStyle==='documentary'?'documentary':'natural',
       }
     })
     if(storyboard.reduce((sum,scene)=>sum+scene.durationSeconds,0)!==Number(row.duration_seconds))
@@ -66,9 +67,9 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({success:false,error:'Upload your own narration'},{status:400})
 
     const result=await pool.query(
-      `UPDATE admin_video_ad_projects SET storyboard=$3::jsonb,soundtrack_url=$4,narration_url=$5,status='planned',output_url=NULL,error_message=NULL,updated_at=NOW()
+      `UPDATE admin_video_ad_projects SET storyboard=$3::jsonb,soundtrack_url=$4,narration_url=$5,demo_mode=CASE WHEN $6::boolean THEN true ELSE demo_mode END,status='planned',output_url=NULL,error_message=NULL,updated_at=NOW()
        WHERE id=$1::uuid AND created_by=$2::uuid AND status<>'rendering' RETURNING *`,
-      [id,user.id,JSON.stringify(storyboard),soundtrackUrl,narrationUrl])
+      [id,user.id,JSON.stringify(storyboard),soundtrackUrl,narrationUrl,body.demoMode===true])
     if(!result.rows[0])return NextResponse.json({success:false,error:'Production changed; refresh and try again'},{status:409})
     await pool.query("UPDATE video_ad_studio_orders SET status='in_production',output_url=NULL,updated_at=NOW() WHERE project_id=$1::uuid AND user_id=$2::uuid",[id,user.id])
     await pool.query("UPDATE video_ad_service_orders SET status='in_production',output_url=NULL,updated_at=NOW() WHERE project_id=$1::uuid AND provider_user_id=$2::uuid AND status<>'delivered'",[id,user.id])

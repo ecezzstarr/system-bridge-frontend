@@ -15,6 +15,7 @@ export type VideoAdScene = {
   voiceover: string
   assetUrl: string | null
   assetType: 'image' | 'video' | null
+  visualStyle?: 'natural' | 'documentary' | 'cinematic'
 }
 
 export type VideoAdProject = {
@@ -33,6 +34,7 @@ export type VideoAdProject = {
   narrationScript: string
   outputUrl: string | null
   errorMessage: string | null
+  demoMode: boolean
   createdAt: string
   updatedAt: string
 }
@@ -113,6 +115,7 @@ export async function ensureVideoAdWorkshopSchema() {
       soundtrack_url text,
       narration_url text,
       narration_script text NOT NULL DEFAULT '',
+      demo_mode boolean NOT NULL DEFAULT false,
       output_url text,
       error_message text,
       created_at timestamptz NOT NULL DEFAULT NOW(),
@@ -122,6 +125,7 @@ export async function ensureVideoAdWorkshopSchema() {
   await pool.query('ALTER TABLE admin_video_ad_projects ADD COLUMN IF NOT EXISTS order_id uuid')
   await pool.query("ALTER TABLE admin_video_ad_projects ADD COLUMN IF NOT EXISTS narration_url text")
   await pool.query("ALTER TABLE admin_video_ad_projects ADD COLUMN IF NOT EXISTS narration_script text NOT NULL DEFAULT ''")
+  await pool.query("ALTER TABLE admin_video_ad_projects ADD COLUMN IF NOT EXISTS demo_mode boolean NOT NULL DEFAULT false")
   await pool.query('CREATE UNIQUE INDEX IF NOT EXISTS admin_video_ad_projects_order_idx ON admin_video_ad_projects(order_id) WHERE order_id IS NOT NULL')
   await pool.query('CREATE INDEX IF NOT EXISTS admin_video_ad_projects_created_idx ON admin_video_ad_projects(created_at DESC)')
 }
@@ -207,6 +211,7 @@ export function mapVideoAdProject(row: any): VideoAdProject {
     narrationScript: String(row.narration_script || ''),
     outputUrl: row.output_url || null,
     errorMessage: row.error_message || null,
+    demoMode: Boolean(row.demo_mode),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   }
