@@ -3,7 +3,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { getPool } from '@/lib/db'
 import { getFlameEvent } from '@/lib/weave-event-store'
-import { ensureMarketTables } from '@/lib/market'
 import { ensureReferralBonusTable } from '@/lib/referral-bonus'
 import { recoverSupportAdvanceFromEarning } from '@/lib/company-support'
 
@@ -25,12 +24,10 @@ async function eventOpen() {
     now >= Date.parse(event.startsAt) && now <= Date.parse(event.endsAt)
 }
 async function qualifyingActivity(client: {query: (sql: string, values?: any[]) => Promise<any>}, bridgerId: string) {
-  // Opening a prospect, purchasing a candidate or pressing Send is NOT verified work.
-  // One documented response or a settled company earning is required.
+  // Only server-settled economic activity qualifies. Prospect responses are not independently verified yet.
   const result = await client.query(
     "SELECT kind,source_id FROM (" +
-    "SELECT 'prospect_response' AS kind,o.id::text AS source_id,1 AS priority FROM market_prospect_outreach o WHERE o.bridger_id=$1::uuid AND o.status='responded' AND (o.last_activity_at AT TIME ZONE 'Africa/Lagos')::date="+daySql+" " +
-    "UNION ALL SELECT 'client_crossing',COALESCE(l.metadata->>'source_id',l.id::text),2 FROM ledger_entries l WHERE l.user_id=$1::uuid AND l.metadata->>'commerce_type'='bridger_commission' AND (l.created_at AT TIME ZONE 'Africa/Lagos')::date="+daySql+" " +
+    "SELECT 'client_crossing',COALESCE(l.metadata->>'source_id',l.id::text),2 FROM ledger_entries l WHERE l.user_id=$1::uuid AND l.metadata->>'commerce_type'='bridger_commission' AND (l.created_at AT TIME ZONE 'Africa/Lagos')::date="+daySql+" " +
     "UNION ALL SELECT 'verified_referral',r.id::text,3 FROM referral_bonus_awards r WHERE r.referrer_user_id=$1::uuid AND r.status='paid' AND (r.paid_at AT TIME ZONE 'Africa/Lagos')::date="+daySql+" " +
     ") qualified ORDER BY priority DESC LIMIT 1",
     [bridgerId],
@@ -61,7 +58,6 @@ export async function GET(request: NextRequest) {
     const pool = getPool()
     const claim = await currentClaim(pool,user.id)
     if (!open || claim) return NextResponse.json({success:true,open,claimed:!!claim,claim,eligible:false,available:false,minReward:1,maxReward:8},{headers:{'Cache-Control':'no-store'}})
-    await ensureMarketTables()
     await ensureReferralBonusTable()
     const [qualified,backing] = await Promise.all([qualifyingActivity(pool,user.id),funding(pool)])
     return NextResponse.json({success:true,open,claimed:false,claim:null,eligible:!!qualified,activity:qualified?.kind||null,available:backing.ready,minReward:1,maxReward:8},{headers:{'Cache-Control':'no-store'}})
@@ -78,7 +74,6 @@ export async function POST(request: NextRequest) {
   const sponsor = treasuryId()
   if (!isUuid(sponsor) || sponsor === user.id) return NextResponse.json({success:false,error:'Administrations has not activated the funded Flame of Hope reward pool'},{status:503})
   await ensureSchema()
-  await ensureMarketTables()
   await ensureReferralBonusTable()
   const client = await getPool().connect()
   try {
@@ -96,7 +91,7 @@ export async function POST(request: NextRequest) {
     const qualified = await qualifyingActivity(client,user.id)
     if (!qualified) {
       await client.query('ROLLBACK')
-      return NextResponse.json({success:false,error:'Complete a qualifying prospect response, verified referral or Client crossing today before claiming'},{status:409})
+      return NextResponse.json({success:false,error:'Complete a verified referral or settled Client File Folder crossing today before claiming'},{status:409})
     }
     // Lock the funded Administrations balance first; concurrent claims serialize here.
     const source = await client.query("SELECT w.id,w.balance_trx FROM wallets w JOIN users u ON u.id=w.user_id WHERE u.id=$1::uuid AND u.role='admin' AND u.is_active=true AND w.is_primary=true ORDER BY w.created_at ASC LIMIT 1 FOR UPDATE OF w",[sponsor])
