@@ -27,7 +27,7 @@ async function qualifyingActivity(client: {query: (sql: string, values?: any[]) 
   // Only server-settled economic activity qualifies. Prospect responses are not independently verified yet.
   const result = await client.query(
     "SELECT kind,source_id FROM (" +
-    "SELECT 'client_crossing',COALESCE(l.metadata->>'source_id',l.id::text),2 FROM ledger_entries l WHERE l.user_id=$1::uuid AND l.metadata->>'commerce_type'='bridger_commission' AND (l.created_at AT TIME ZONE 'Africa/Lagos')::date="+daySql+" " +
+    "SELECT 'client_crossing' AS kind,COALESCE(l.metadata->>'source_id',l.id::text) AS source_id,2 AS priority FROM ledger_entries l WHERE l.user_id=$1::uuid AND l.metadata->>'commerce_type'='bridger_commission' AND (l.created_at AT TIME ZONE 'Africa/Lagos')::date="+daySql+" " +
     "UNION ALL SELECT 'verified_referral',r.id::text,3 FROM referral_bonus_awards r WHERE r.referrer_user_id=$1::uuid AND r.status='paid' AND (r.paid_at AT TIME ZONE 'Africa/Lagos')::date="+daySql+" " +
     ") qualified ORDER BY priority DESC LIMIT 1",
     [bridgerId],
