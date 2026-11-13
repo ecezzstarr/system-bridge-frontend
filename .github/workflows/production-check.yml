@@ -91,6 +91,9 @@ jobs:
       - name: Provider-free Image House and protected historical image gallery
         run: node tests/advanced-image-workshop.cjs
 
+      - name: Public homepage Plus depth and reading integrity
+        run: node tests/homepage-plus-depth-regression.cjs
+
       - name: Smart WEAVE loading guidance regression
         run: |
           node tests/weave-loading-guidance-regression.cjs

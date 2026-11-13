@@ -139,6 +139,52 @@ async function main() {
             assert.ok(luminance(surface.channels) > .75,
               surface.selector + ' must remain a light premium surface while scrolling; got ' + surface.background)
           }
+          // The whole scroll must be readable without relying on tiny words
+          // embedded in the Plus poster, including on narrow phones.
+          const readability = await page.evaluate(() => {
+            const samples = [
+              ['Company introduction','[data-home-system-switch-explanation]'],
+              ['Department purpose','.weave-home-department .weave-home-role-purpose'],
+              ['Plus File Folder','[data-home-plus-readable-explanation] > p'],
+              ['Business systems','[data-home-what-weave-builds] .weave-home-work-copy > p.mt-4'],
+              ['Client access','[data-home-client-access] > p.mt-4'],
+              ['Reach service','[data-weave-reach-delivery] > div > p.mt-3'],
+              ['Reach tracking','[data-reach-request-tracker] > p.mt-2'],
+              ['Agent service','[data-reach-agent-application] > div > p.mt-3'],
+              ['Department entrances','[data-home-staff-entry] > p.mt-3'],
+              ['Family Food','[data-home-farm-to-family] > p.mt-3'],
+              ['AI participation','[data-ai-participation] p'],
+            ]
+            return samples.map(([name,selector]) => {
+              const node = document.querySelector(selector)
+              if (!node) throw Error('Missing Plus homepage reading passage: ' + name)
+              const style = getComputedStyle(node)
+              return {
+                name, colour: style.color, fontSize: Number.parseFloat(style.fontSize),
+                visibility: style.visibility, display: style.display,
+              }
+            })
+          })
+          for (const passage of readability) {
+            const ink = passage.colour.match(/[\d.]+/g)?.slice(0,3).map(Number) || []
+            assert.equal(ink.length,3,passage.name+' has a resolved ink colour')
+            assert.ok(contrast(ink,[247,249,247]) >= 4.5,
+              passage.name+' must use deep ink against the light Plus ground: '+passage.colour)
+            assert.ok(passage.fontSize >= 14,
+              passage.name+' must remain readable on phones: '+passage.fontSize+'px')
+            assert.notEqual(passage.display,'none',passage.name+' is displayed')
+            assert.notEqual(passage.visibility,'hidden',passage.name+' is visible')
+          }
+          const homeMaterials = await page.evaluate(() => ({
+            main: getComputedStyle(document.querySelector('[data-public-weave-world]')).backgroundImage,
+            section: getComputedStyle(document.querySelector('[data-home-what-weave-builds]')).backgroundImage,
+            poster: document.querySelector('[data-plus-file-folder-official-image]')
+              ? getComputedStyle(document.querySelector('[data-plus-file-folder-official-image]')).filter
+              : null,
+          }))
+          assert.match(homeMaterials.main,/linear-gradient/, 'Plus has its own grounded world paint')
+          assert.match(homeMaterials.section,/linear-gradient/, 'Every work station has a reading surface')
+          if(homeMaterials.poster)assert.equal(homeMaterials.poster,'none','Official Plus poster is never recoloured')
         }
         for (const panel of state.panels) {
           assert.ok(contrast(panel.ink, panel.background) >= 4.5, `${panel.tier} body contrast`)
