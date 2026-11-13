@@ -60,7 +60,7 @@ assert.ok(videoRoom.includes('<WeaveVideoRoom'))
 assert.ok(exists('components/bridger/weave-video-room.tsx'))
 assert.ok(exists('app/video-call/[id]/page.tsx'))
 assert.ok(catalog.includes("label: 'WEAVE Video Call'"))
-assert.ok(videoRoom.includes('does not record, use AI participants, or charge System Switch'))
+assert.ok(videoRoom.includes('Basic calling is free; optional Studio effects and packages require a separately confirmed System Switch purchase.')&&videoRoom.includes('is not recorded by this feature')&&videoRoom.includes('AI is not part of this video call.'),'Basic calls remain free and private while optional premium video effects require explicit purchases')
 
 console.log('Bridger workplace route-preservation and video-call integration checks passed: ' +
   new Set(links).size + ' unique existing destinations.')
