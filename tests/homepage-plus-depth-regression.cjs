@@ -12,7 +12,7 @@ const expressionIndex = layout.indexOf("import './weave-expression.css'")
 const depthIndex = layout.indexOf("import './weave-home-plus-depth.css'")
 assert(expressionIndex !== -1 && depthIndex > expressionIndex,
   'The home-only Plus depth stylesheet must load after old homepage overrides.')
-assert(styles.includes('html[data-weave-shell-theme="plus-white-gold"] [data-public-weave-world]'),
+assert(styles.includes('html[data-weave-shell-theme="plus-white-gold"]:not([data-weave-loop-theme="one-nigerian"]) [data-public-weave-world]'),
   'The new theme must be scoped to the Plus homepage.')
 assert(!styles.includes('[data-flame-event-location] '),
   'Home decoration must not paint over the standalone Flame Event.')
