@@ -166,7 +166,7 @@ async function main() {
             })
           })
           for (const passage of readability) {
-            const ink = passage.colour.match(/[\\d.]+/g)?.slice(0,3).map(Number) || []
+            const ink = passage.colour.match(/[\d.]+/g)?.slice(0,3).map(Number) || []
             assert.equal(ink.length,3,passage.name+' has a resolved ink colour')
             assert.ok(contrast(ink,[247,249,247]) >= 4.5,
               passage.name+' must use deep ink against the light Plus ground: '+passage.colour)
