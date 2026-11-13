@@ -127,6 +127,7 @@ export async function POST(request: NextRequest) {
     await client.query("UPDATE bridger_profiles SET total_earnings=COALESCE(total_earnings,0)+$1,updated_at=NOW() WHERE user_id=$2::uuid",[reward,user.id])
     await recoverSupportAdvanceFromEarning(client,user.id,reward,'flame_of_hope:'+String(insert.rows[0].id))
     await client.query("INSERT INTO notifications(user_id,type,title,content,from_user_name,link) VALUES($1::uuid,'commission','Flame of Hope opened',$2,'WEAVE · Hope','/bridger/flame-of-hope')",[user.id,'Your mystery box contained '+reward+' System Switch. This company-funded reward recognizes your recorded activity during Burning River.'])
+    await client.query("INSERT INTO notifications(user_id,type,title,content,from_user_name,link) VALUES($1::uuid,'commission','Flame of Hope treasury debit',$2,'WEAVE · Hope','/admin/company-movement')",[sponsor,'A funded Flame of Hope claim transferred '+reward+' System Switch to a verified Bridger; claim '+String(insert.rows[0].id)+'.'])
     await client.query('COMMIT')
     return NextResponse.json({success:true,alreadyClaimed:false,claim:insert.rows[0]})
   } catch(error) {
