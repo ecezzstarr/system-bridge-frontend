@@ -81,7 +81,7 @@ assert(room.includes("const currentFace=selectedFaceRef.current"),'Face mask per
 assert(room.includes("paintHopeFaceOverlay(preparedFace,source,context"),'Face mask is composed on top of scene')
 assert(room.includes("selectedFaceRef.current=filter"),'Face layer can be changed independently')
 assert(room.includes("selectedFilterRef.current=filter"),'Background layer can be changed independently')
-assert(ui.includes("activeFace:FilterInfo|null"),'Gallery tracks purchased face layer independently')
+assert(ui.includes("activeFace?:FilterInfo|null")&&ui.includes("activeFace={selectedFace}")===false&&room.includes("activeFace={selectedFace}"),'Gallery tracks purchased face layer independently and the video room supplies its selection')
 assert(ui.includes("select(null,'face')"),'Removing a face mask does not remove the background')
 assert(ui.includes("select(null,'scene')"),'Removing a background does not remove the face mask')
 assert(premium.includes('export function paintHopeFaceOverlay('),'Dedicated face overlay preserves backdrop underneath')
