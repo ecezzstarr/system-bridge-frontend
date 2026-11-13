@@ -43,6 +43,7 @@ export const BRIDGER_WORKPLACE_SPACES: readonly BridgerWorkplaceSpace[] = [
     shortName: 'Outreach',
     description: 'Choose how to reach people. Keep acquired prospects separate from social publications and their responses.',
     places: [
+      { label: 'Flame of Hope · Mystery Box', href: '/bridger/flame-of-hope', detail: 'Claim a free 1–8 System Switch mystery reward once daily during Burning River after genuine recorded activity.' },
       { label: 'Prospect Market', href: '/weave/market/prospects', detail: 'Claim your daily free candidate or acquire unverified prospect packages.' },
       { label: 'My Prospects', href: '/weave/market/prospects', detail: 'Return to your acquired prospects, previous contacts and the responses you need to follow.' },
       { label: 'Crossing Notebook', href: '/bridger/crossing-notebook', detail: 'Follow the human-first conversation and crossing sequence.' },
