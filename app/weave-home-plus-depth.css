@@ -131,7 +131,7 @@ html[data-weave-shell-theme="plus-white-gold"] [data-public-weave-world] .weave-
   font-size: .9rem;
 }
 html[data-weave-shell-theme="plus-white-gold"] [data-public-weave-world] .weave-home-department .weave-home-role-purpose {
-  font-size: .83rem;
+  font-size: .9rem;
   color: #405669;
   font-weight: 500;
   line-height: 1.55;
@@ -274,7 +274,7 @@ html[data-weave-shell-theme="plus-white-gold"] [data-public-weave-world] :is(
   .weave-home-ai p,.weave-home-presence-signature p
 ) {
   color: #3c5265;
-  font-size: .965rem;
+  font-size: 1rem;
   line-height: 1.75;
 }
 html[data-weave-shell-theme="plus-white-gold"] [data-public-weave-world] .weave-home-client-entry {
