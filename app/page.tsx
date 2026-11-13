@@ -109,7 +109,7 @@ export default function Home() {
                 ))}
               </div>
               <p className="weave-home-department-summary mt-6 text-base font-medium leading-relaxed sm:text-lg">One company. Many people. Work moving through time.</p>
-              <p className="mx-auto mt-3 max-w-3xl text-sm font-medium leading-6 text-slate-200 sm:text-base" data-home-company-worldwide="true">Across regions, Agents serve customers, Bridgers connect people to opportunities, and Clients build businesses. Administrations coordinates and verifies the work so responsibilities, payments and progress can be recorded.</p>
+              <p className="mx-auto mt-3 max-w-3xl text-sm font-medium leading-6 text-slate-200 sm:text-base" data-home-company-worldwide="true">Across borders, Agents serve customers, Bridgers connect people to opportunities, and Clients build businesses. Administrations coordinates and verifies the work so responsibilities, payments and progress can be recorded.</p>
               <div className="weave-home-loops mx-auto mt-9 grid max-w-4xl gap-3 text-left sm:grid-cols-3" data-company-time-loops>
                 <div className="weave-home-loop weave-home-loop-flame p-5">
                   <p className="weave-home-loop-label">Company Loop 1 · Flame Event</p>
@@ -194,7 +194,7 @@ export default function Home() {
           <section className="weave-home-work-section grid gap-5 lg:grid-cols-[1.15fr_.85fr]" data-home-what-weave-builds>
             <div className="weave-home-work-copy p-5 sm:p-7">
               <p className="text-sm font-bold text-sky-200">What WEAVE Builds</p>
-              <h2 className="mt-3 text-2xl font-black leading-tight sm:text-3xl">From the work you know to a business you can operate.</h2>
+              <h2 className="mt-3 text-2xl font-black leading-tight sm:text-3xl">From the work you know to the business you envision.</h2>
               <p className="mt-4 text-base leading-7 text-slate-200">Start with the work you already know. Weave offers distinct positions, company tools and business systems for carrying out tasks, reaching customers and keeping records. Each person remains responsible for the work they accept; Administrations supports and verifies company activity.</p>
               <div className="mt-6 grid gap-3 sm:grid-cols-3">
                 {systems.map(({ icon: Icon, title, copy }) => (
