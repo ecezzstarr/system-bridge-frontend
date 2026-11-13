@@ -29,7 +29,8 @@ export default function StaffFlameEventPage() {
 
   return (
     <main data-flame-event-location="burning-river" data-system-switch-crossed="false" data-weave-world="flame-event">
-      {role === 'bridger' && <div className="mx-auto max-w-5xl px-4 pt-4"><Link href="/bridger/flame-of-hope" className="flex min-h-12 items-center justify-center rounded-xl border border-amber-300/40 bg-amber-500/10 px-4 text-sm font-bold text-amber-100">Flame of Hope · Claim your activity mystery box (1–8 System Switch)</Link></div>}
+      {role === 'bridger' && <div className="mx-auto max-w-5xl px-4 pt-4"><Link href="/bridger/flame-of-hope" className="flex min-h-12 items-center justify-center rounded-xl border border-amber-300/40 bg-amber-500/10 px-4 text-sm font-bold text-amber-100">Flame of Hope · Weekly Electrolyte or Ember food mystery box</Link></div>}
+      {role === 'admin' && <div className="mx-auto max-w-5xl px-4 pt-4"><Link href="/admin/flame-of-hope" className="flex min-h-12 items-center justify-center rounded-xl border border-amber-300/40 bg-amber-500/10 px-4 text-sm font-bold text-amber-100">Administrations · Flame of Hope food fulfilment queue</Link></div>}
       <PositionEventWorld role={role} context={context} />
     </main>
   )
