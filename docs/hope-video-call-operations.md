@@ -36,3 +36,30 @@ Current features: guest invitation without account creation, single-claim expiri
 7. Confirm no audio/video recording exists and AI participation remains unavailable.
 
 An automated production build or source-level test is not proof of a completed live phone-to-phone call. Release requires device-level validation.
+
+
+## Paid premium background and face effects
+
+Hope adds a System Switch-licensed on-device picture-processing shop. The six original color looks cost 2–3 System Switch. Higher-priced services are:
+
+- **18 virtual backgrounds:** 12 System Switch each; individual permanent licenses. Fifteen custom original SVG scenes are shipped in \`public/weave/video-backgrounds/\` and three reuse original WEAVE world artwork. Categories include company offices, white/black-gold halls, professional studios, skyline, gardens, ocean, forest and more.
+- **Background Hide:** 15 System Switch; replaces the surroundings with a plain neutral backdrop, while retaining the detected person.
+- **Face changes:** Cyber Visage and Golden Visage: 20 System Switch each; Anonymous Visage: 25 System Switch. These are head-tracked synthetic theatrical face masks, **not** real-person face swaps or guaranteed anonymity. If tracking is lost the original face may appear.
+
+Each purchase is authorized against the active Bridger position and primary System Switch wallet. One row per filter per Bridger, serial user and wallet row locking, permanent entitlements, debit + ledger in the same transaction, and supplementary purchase receipts. Repeated/concurrent purchases of an owned effect are never charged again. Company Movement reports settled license purchases as platform-credit earnings, **not** bank cash.
+
+**Video stream behavior:** A canvas-composited \`MediaStreamTrack\` replaces the outgoing WebRTC video track. A guest sees the actual applied scene or synthetic face treatment, not only a local CSS preview. The local preview displays that outgoing track. When sharing the screen, screen content is sent temporarily; returning to the camera restores the selected effect.
+
+**How rendering works:** The 1.2.2 MediaPipe Vision ESM/WASM runtime loads as static client code from jsDelivr; the Selfie Segmenter and Face Landmarker models are downloaded from their documented static Google model URLs. Model inference operates on the user's device. No camera frames are sent to an image-generation API; the MediaPipe SDK itself may send usage/performance metrics as documented by its provider. A compatible browser, media permissions and access to these static resources are required. Model loading or background-image failures must block that purchase and show an explanation **before** deducting System Switch.
+
+**Quality/limitations:** segmentation may misclassify hair, hand movements and clothing; face masks track one face and may fail if turned away. Older phones may drop frames or heat up. The rendering loop limits analysis frequency; production should test across Android, iPhone and desktop. Modern HTTPS browsers and deployed TURN relay are still prerequisites for dependable cross-network calling. No live-device test is proven merely by CI. Camera and audio are not recorded by this system.
+
+Before releasing, verify actual paid purchase, repeated purchase, wallet balance, returns from screen share, switching backgrounds mid-call, non-matching user access, no charges on model failure, and two-way audio/video with two phones on separate networks.
+
+### Speech and facial appearance safeguards
+
+Paid effects **never process or replace the microphone track**: original microphone audio is sent as a distinct WebRTC sender with browser echo cancellation and noise suppression. Switching the background or face layer replaces or renders video only; mute remains the only user-facing audio toggle. Actual sound quality still depends on network conditions, device CPU and the microphone, so two-device listening tests remain mandatory.
+
+**Virtual backgrounds retain the real camera face and person** above a removed/replaced setting; the ML segmentation can make temporary edge errors around hair, glasses, hands and faces. The premium **face layer** is separate and optional: an independently purchased synthetic mask may be used together with a purchased background or removed without changing it. This face treatment intentionally covers the original face; it is not a photorealistic replacement, guaranteed anonymization or speech modification.
+
+The outgoing canvas is capped at 24 frames per second and expensive segmentation and face-tracking inference is throttled separately to avoid unnecessarily blocking mobile devices. On rendering exceptions the outgoing video frame becomes neutral instead of exposing the original surroundings. Test low-end Android phones and mobile-carrier networks; do not assert perfect face contours, synchronized lips or uninterrupted speech without live tests.

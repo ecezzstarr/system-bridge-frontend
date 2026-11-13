@@ -126,6 +126,42 @@ export default function CompanyMovementPage(){
       </article>)}
     </div>
 
+    <section data-hope-video-studio-revenue="settled-credits" className="rounded-2xl border border-amber-300/25 bg-[#112630] p-5 sm:p-6">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-widest text-amber-200">Hope · Studio Commerce</p>
+          <h2 className="mt-2 text-xl font-bold text-white">Video Studio · Company System Switch Sales</h2>
+          <p className="mt-2 text-sm text-slate-300">Only completed wallet purchases are counted here. Company credits are not independently reconciled cash or NGN profit.</p>
+        </div>
+        <div className="min-w-[160px] rounded-xl border border-amber-200/30 bg-[#0b1921] p-4">
+          <p className="text-xs text-slate-300">Total earned · System Switch</p>
+          <p className="mt-2 text-2xl font-bold tabular-nums text-amber-100">
+            {sec('videoFilters')?.available&&sec('videoBundles')?.available
+              ?formatMoney(Number(sec('videoFilters')?.rows[0]?.earned_system_switch||0)+
+                Number(sec('videoBundles')?.rows[0]?.earned_system_switch||0))
+              :'Unavailable'}
+          </p>
+        </div>
+      </div>
+      <div className="mt-4 grid gap-3 sm:grid-cols-3">
+        {[
+          ['Individual effects sold',value('videoFilters','licenses')],
+          ['Studio collections sold',value('videoBundles','packages')],
+          ['Purchasing Bridgers · individual',value('videoFilters','paying_bridgers')],
+        ].map(([name,result])=><div key={name} className="rounded-xl border border-white/15 bg-[#0b1921] p-3">
+          <p className="text-xs text-slate-300">{name}</p>
+          <p className="mt-2 text-xl font-bold tabular-nums text-white">{report?result:'—'}</p>
+        </div>)}
+      </div>
+      {sec('videoBundleBreakdown')?.available&&Number(sec('videoBundleBreakdown')?.rows.length)>0&&
+        <div className="mt-4">
+          <h3 className="text-sm font-semibold text-amber-100">Package performance</h3>
+          <div className="mt-2 flex flex-wrap gap-2">{sec('videoBundleBreakdown')?.rows.map((item,i)=>
+            <p key={i} className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-slate-200">
+              {String(item.bundle_id||'Unknown')} · {formatNumber(item.packages)} purchases · {formatMoney(item.earned_system_switch)} System Switch
+            </p>)}</div>
+        </div>}
+    </section>
     <div className="grid gap-4 lg:grid-cols-2">
       <section className="space-y-3 rounded-xl border border-cyan-300/20 bg-slate-950/65 p-5">
         <h2 className="text-xl font-black">Hope · Prospect Movement</h2>
@@ -133,6 +169,10 @@ export default function CompanyMovementPage(){
         <dl className="grid grid-cols-2 gap-3">
           {[
             ['Bridgers purchasing',value('prospects','purchasing_bridgers')],
+            ['Video filter licenses sold',value('videoFilters','licenses')],
+            ['Video filters earned · System Switch',money('videoFilters','earned_system_switch')],
+            ['Video Studio packages sold',value('videoBundles','packages')],
+            ['Studio packages earned · System Switch',money('videoBundles','earned_system_switch')],
             ['System Switch spent',money('prospects','spent_flame_coin')],
             ['Candidates in sold packages',value('prospectContacts','candidates_in_sold_packages')],
             ['Prospect contacts attempted',value('outreach','attempted')],

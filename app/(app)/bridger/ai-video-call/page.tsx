@@ -71,7 +71,8 @@ export default function BridgerAiVideoCallPage(){
         <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#8c6828]">Hope · WEAVE Communications</p>
         <h1 className="mt-2 text-3xl font-semibold sm:text-5xl">WEAVE Video Call</h1>
         <p className="mt-4 max-w-3xl text-base leading-7 text-[#536267]">Speak face to face with a person who has agreed to meet. Create one private invitation, share it directly, and let the invited person join from their phone or browser. Camera and microphone access require each person's permission.</p>
-        <p className="mt-3 text-sm font-medium text-[#536267]">Human video calling is separate from River AI telephone calls. This video feature does not record, use AI participants, or charge System Switch.</p>
+        <p className="mt-3 text-sm font-medium text-[#536267]">Human video calling is separate from River AI telephone calls. Basic conversations remain free; optional Studio effects are purchased individually or in permanent packages using System Switch. Calls are not recorded by WEAVE.</p>
+        <Link href="/bridger/video-studio" className="mt-5 inline-flex min-h-12 items-center gap-2 rounded-xl border border-[#cbb27f] bg-white/80 px-5 text-sm font-bold text-[#6b4d22]">Explore paid Video Studio backgrounds and packages</Link>
       </div>
       {call ? <div className="mt-7"><WeaveVideoRoom key={call.id} callId={call.id} role="bridger" inviteLink={link} onClose={finished}/></div> :
       <div className="mt-7 rounded-2xl border border-[#d7c59f] bg-white p-5">

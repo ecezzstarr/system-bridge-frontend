@@ -10,6 +10,7 @@ const workplace = read('components/bridger/bridger-workplace.tsx')
 const dashboard = read('app/(app)/bridger/dashboard/page.tsx')
 const atmosphere = read('components/world/normal-weave-role-atmosphere.tsx')
 const videoRoom = read('app/(app)/bridger/ai-video-call/page.tsx')
+const liveRoom = read('components/bridger/weave-video-room.tsx')
 
 // No route is replaced by a shallow copy of its original system.
 // The workplace is navigation across the source pages and their existing APIs.
@@ -60,7 +61,7 @@ assert.ok(videoRoom.includes('<WeaveVideoRoom'))
 assert.ok(exists('components/bridger/weave-video-room.tsx'))
 assert.ok(exists('app/video-call/[id]/page.tsx'))
 assert.ok(catalog.includes("label: 'WEAVE Video Call'"))
-assert.ok(videoRoom.includes('does not record, use AI participants, or charge System Switch'))
+assert.ok(liveRoom.includes('Basic calling is free; optional Studio effects and packages require a separately confirmed System Switch purchase.')&&liveRoom.includes('is not recorded by this feature')&&liveRoom.includes('AI is not part of this video call.'),'Basic calls remain free and private while optional premium video effects require explicit purchases')
 
 console.log('Bridger workplace route-preservation and video-call integration checks passed: ' +
   new Set(links).size + ' unique existing destinations.')

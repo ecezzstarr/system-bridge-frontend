@@ -6,6 +6,9 @@ import {
   RefreshCw, ShieldCheck, SwitchCamera, Volume2,
 } from 'lucide-react'
 import { getAuthHeaders } from '@/lib/auth-client'
+import HopeVideoFilterShop from '@/components/bridger/hope-video-filter-shop'
+import type { HopeVideoFilter } from '@/lib/hope-video-filter-catalog'
+import { prepareHopeVideoEffect, paintHopePremiumFrame, paintHopeFaceOverlay, type PreparedHopeEffect } from '@/lib/hope-video-premium-effects'
 
 type Role='bridger'|'guest'
 type CallInfo={id:string;status:string;guestName:string|null;expiresAt:string}
@@ -25,6 +28,13 @@ export default function WeaveVideoRoom({callId,role,guestAccess,inviteLink,onClo
   const offerMade=useRef(false)
   const disposed=useRef(false)
   const screenTrack=useRef<MediaStreamTrack|null>(null)
+  const selectedFilterRef=useRef<HopeVideoFilter|null>(null)
+  const premiumEffectRef=useRef<PreparedHopeEffect|null>(null)
+  const selectedFaceRef=useRef<HopeVideoFilter|null>(null)
+  const faceEffectRef=useRef<PreparedHopeEffect|null>(null)
+  const [selectedFace,setSelectedFace]=useState<HopeVideoFilter|null>(null)
+  const processingRef=useRef<{video:HTMLVideoElement;canvas:HTMLCanvasElement;stream:MediaStream;track:MediaStreamTrack;frame:number}|null>(null)
+  const [selectedFilter,setSelectedFilter]=useState<HopeVideoFilter|null>(null)
   const [call,setCall]=useState<CallInfo|null>(null)
   const [mediaReady,setMediaReady]=useState(false)
   const [mediaBusy,setMediaBusy]=useState(false)
@@ -53,7 +63,100 @@ export default function WeaveVideoRoom({callId,role,guestAccess,inviteLink,onClo
     return result
   },[callId,authHeaders])
 
+  const stopFilteredCamera=useCallback(()=>{
+    const stage=processingRef.current
+    processingRef.current=null
+    premiumEffectRef.current=null
+    faceEffectRef.current=null
+    if(!stage)return
+    window.cancelAnimationFrame(stage.frame)
+    stage.stream.getTracks().forEach(track=>track.stop())
+    stage.video.pause()
+    stage.video.srcObject=null
+  },[])
+
+  const beginFilteredCamera=useCallback(async(stream:MediaStream)=>{
+    const existing=processingRef.current
+    if(existing)return existing.track
+    const canvas=document.createElement('canvas')
+    if(typeof canvas.captureStream!=='function')throw new Error('This browser cannot transmit video filters. Try an up-to-date browser before purchasing filters.')
+    canvas.width=640;canvas.height=480
+    const context=canvas.getContext('2d',{alpha:false})
+    if(!context)throw new Error('Live camera effects are unavailable on this device.')
+    const source=document.createElement('video')
+    source.muted=true;source.autoplay=true;source.playsInline=true
+    source.srcObject=stream
+    try{await source.play()}catch(error){
+      source.srcObject=null
+      throw new Error('Camera effect could not start; check browser media permissions.')
+    }
+    const filtered=canvas.captureStream(24)
+    const track=filtered.getVideoTracks()[0]
+    if(!track){
+      source.pause();source.srcObject=null;filtered.getTracks().forEach(t=>t.stop())
+      throw new Error('This browser cannot provide a filtered video track.')
+    }
+    const stage={video:source,canvas,stream:filtered,track,frame:0}
+    processingRef.current=stage
+    let lastFrame=0
+    const draw=(timestamp:number)=>{
+      if(processingRef.current!==stage)return
+      // Limit expensive foreground and face inference so it does not monopolize
+      // the phone's main thread. Microphone audio stays on its own media track.
+      if(timestamp-lastFrame<1000/24){
+        stage.frame=window.requestAnimationFrame(draw)
+        return
+      }
+      lastFrame=timestamp
+      const camera=local.current?.getVideoTracks()[0]
+      try{
+        if(!camera?.enabled||source.readyState<2){
+          context.filter='none'
+          context.fillStyle='#000000'
+          context.fillRect(0,0,canvas.width,canvas.height)
+        }else{
+          const active=selectedFilterRef.current
+          if(active?.effectKind==='scene'||active?.effectKind==='remove'){
+            const prepared=premiumEffectRef.current
+            if(prepared && prepared.filter.id===active.id){
+              context.filter='none'
+              paintHopePremiumFrame(prepared,source,context,canvas.width,canvas.height,performance.now())
+            }else{
+              context.fillStyle='#263641'
+              context.fillRect(0,0,canvas.width,canvas.height)
+            }
+          }else{
+            context.filter=active?.css||'none'
+            context.drawImage(source,0,0,canvas.width,canvas.height)
+            context.filter='none'
+          }
+          // Apply a separately owned face treatment above the selected background.
+          // The unmodified microphone track is not included in this processing.
+          const mask=selectedFaceRef.current
+          const preparedFace=faceEffectRef.current
+          if(mask && preparedFace?.filter.id===mask.id){
+            paintHopeFaceOverlay(preparedFace,source,context,canvas.width,canvas.height,performance.now())
+          }
+        }
+      }catch(error){
+        console.warn('[Hope video] visual effect could not process the current frame',error)
+        // Never reveal private surroundings after a segmentation/face failure.
+        context.filter='none'
+        context.fillStyle='#263641'
+        context.fillRect(0,0,canvas.width,canvas.height)
+      }
+      stage.frame=window.requestAnimationFrame(draw)
+    }
+    stage.frame=window.requestAnimationFrame(draw)
+    return track
+  },[])
+
+  const effectiveCameraTrack=()=>{
+    return processingRef.current?.track || local.current?.getVideoTracks()[0] || null
+  }
+
   const stopMedia=useCallback(()=>{
+    stopFilteredCamera()
     screenTrack.current?.stop()
     screenTrack.current=null
     local.current?.getTracks().forEach(track=>track.stop())
@@ -62,7 +165,7 @@ export default function WeaveVideoRoom({callId,role,guestAccess,inviteLink,onClo
     if(remoteVideo.current)remoteVideo.current.srcObject=null
     peer.current?.close()
     peer.current=null
-  },[])
+  },[stopFilteredCamera])
 
   const sendSignal=useCallback(async(kind:'offer'|'answer'|'ice',payload:unknown)=>{
     return request('POST',{kind,payload})
@@ -190,7 +293,19 @@ export default function WeaveVideoRoom({callId,role,guestAccess,inviteLink,onClo
       local.current=stream
       if(localVideo.current)localVideo.current.srcObject=stream
       const snapshot:CallSnapshot=await request('GET')
-      startPeer(stream,snapshot.iceServers)
+      // Filtered video is the track sent through WebRTC, not merely a local CSS preview.
+      const currentEffect=selectedFilterRef.current
+      const currentFace=selectedFaceRef.current
+      if(currentEffect&&currentEffect.effectKind!=='color' && premiumEffectRef.current?.filter.id!==currentEffect.id){
+        premiumEffectRef.current=await prepareHopeVideoEffect(currentEffect)
+      }
+      if(currentFace&&faceEffectRef.current?.filter.id!==currentFace.id){
+        faceEffectRef.current=await prepareHopeVideoEffect(currentFace)
+      }
+      const outgoingVideo=(currentEffect||currentFace)?await beginFilteredCamera(stream):stream.getVideoTracks()[0]
+      if(currentEffect&&localVideo.current)localVideo.current.srcObject=new MediaStream([outgoingVideo])
+      const outgoing=new MediaStream([...stream.getAudioTracks(),outgoingVideo].filter(Boolean))
+      startPeer(outgoing,snapshot.iceServers)
       setMediaReady(true);setMuted(false);setCameraOff(false)
       // A guest can join before enabling camera: messages remain in the room.
       void poll()
@@ -223,18 +338,24 @@ export default function WeaveVideoRoom({callId,role,guestAccess,inviteLink,onClo
       const facing=current?.getSettings().facingMode==='environment'?'user':'environment'
       const replacement=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:facing}}})
       const next=replacement.getVideoTracks()[0]
-      await replaceVideo(next)
+      if(!processingRef.current)await replaceVideo(next)
       local.current.removeTrack(current)
       current?.stop()
       local.current.addTrack(next)
       next.enabled=!cameraOff
-      if(localVideo.current)localVideo.current.srcObject=local.current
+      if(localVideo.current)localVideo.current.srcObject=processingRef.current?
+        new MediaStream([processingRef.current.track]):local.current
+      if(processingRef.current){
+        processingRef.current.video.srcObject=null
+        processingRef.current.video.srcObject=local.current
+        await processingRef.current.video.play()
+      }
     }catch(e:any){setError(e?.message||'Could not switch camera')}
   }
   const shareScreen=async()=>{
     if(!local.current)return
     if(screenTrack.current){
-      const camera=local.current.getVideoTracks()[0]
+      const camera=effectiveCameraTrack()
       if(camera)await replaceVideo(camera)
       screenTrack.current.stop();screenTrack.current=null
       setSharing(false)
@@ -250,7 +371,7 @@ export default function WeaveVideoRoom({callId,role,guestAccess,inviteLink,onClo
       setSharing(true)
       track.onended=()=>{
         void (async()=>{
-          const camera=local.current?.getVideoTracks()[0]
+          const camera=effectiveCameraTrack()
           if(camera)await replaceVideo(camera)
           screenTrack.current=null
           setSharing(false)
@@ -262,9 +383,64 @@ export default function WeaveVideoRoom({callId,role,guestAccess,inviteLink,onClo
     if(!local.current || !call || call.status!=='joined')return
     setError('')
     const snapshot:CallSnapshot=await request('GET')
-    startPeer(local.current,snapshot.iceServers)
+    const video=effectiveCameraTrack()
+    const outgoing=new MediaStream([...local.current.getAudioTracks(),...(video?[video]:[])])
+    startPeer(outgoing,snapshot.iceServers)
     if(role==='bridger')await makeOffer()
     else setConnection('Waiting for Bridger to reconnect')
+  }
+
+  const applyVideoFilter=async(filter:HopeVideoFilter|null,layer:'scene'|'face'='scene')=>{
+    if(role!=='bridger'||ended)return
+    if(filter){
+      if((layer==='face')!==(filter.effectKind==='face')){
+        throw new Error('That effect cannot be applied to this video layer.')
+      }
+      // Recheck saved ownership before every use of a paid feature.
+      const response=await fetch('/api/hope/video-filters',{cache:'no-store',headers:getAuthHeaders()})
+      const data=await response.json().catch(()=>({}))
+      if(!response.ok||!Array.isArray(data.owned)||!data.owned.includes(filter.id)){
+        throw new Error('Purchase this System Switch effect before applying it to a call.')
+      }
+    }
+    const previous=selectedFilterRef.current
+    const previousPrepared=premiumEffectRef.current
+    const previousFace=selectedFaceRef.current
+    const previousFacePrepared=faceEffectRef.current
+    if((layer==='scene'?previous:previousFace)?.id===(filter?.id||undefined))return
+    const source=local.current
+    try{
+      const prepared=filter&&filter.effectKind!=='color'?await prepareHopeVideoEffect(filter):null
+      if(layer==='face'){
+        selectedFaceRef.current=filter
+        faceEffectRef.current=prepared
+        setSelectedFace(filter)
+      }else{
+        selectedFilterRef.current=filter
+        premiumEffectRef.current=prepared
+        setSelectedFilter(filter)
+      }
+      const anyEffect=Boolean(selectedFilterRef.current||selectedFaceRef.current)
+      if(source&&anyEffect){
+        const track=await beginFilteredCamera(source)
+        if(!screenTrack.current)await replaceVideo(track)
+        if(localVideo.current)localVideo.current.srcObject=new MediaStream([track])
+      }else if(source){
+        const raw=source.getVideoTracks()[0]
+        if(raw&&!screenTrack.current)await replaceVideo(raw)
+        stopFilteredCamera()
+        if(localVideo.current)localVideo.current.srcObject=source
+      }
+    }catch(error){
+      selectedFilterRef.current=previous
+      premiumEffectRef.current=previousPrepared
+      selectedFaceRef.current=previousFace
+      faceEffectRef.current=previousFacePrepared
+      setSelectedFilter(previous)
+      setSelectedFace(previousFace)
+      if(!previous&&!previousFace)stopFilteredCamera()
+      throw error
+    }
   }
 
   const endCall=async()=>{
@@ -303,7 +479,7 @@ export default function WeaveVideoRoom({callId,role,guestAccess,inviteLink,onClo
 
     <div className="relative grid gap-3 rounded-2xl bg-[#162632] p-3 sm:grid-cols-2">
       <div className="relative min-h-48 overflow-hidden rounded-xl bg-[#283d47]">
-        <video ref={localVideo} autoPlay muted playsInline className="h-full min-h-48 w-full object-cover" />
+        <video ref={localVideo} autoPlay muted playsInline className="h-full min-h-48 w-full object-cover"  />
         {!mediaReady&&<div className="absolute inset-0 flex items-center justify-center text-sm text-white">Camera not enabled</div>}
         <p className="absolute bottom-2 left-2 rounded bg-black/60 px-2 py-1 text-xs text-white">You {muted?'· muted':''}</p>
       </div>
@@ -313,6 +489,13 @@ export default function WeaveVideoRoom({callId,role,guestAccess,inviteLink,onClo
         <p className="absolute bottom-2 left-2 rounded bg-black/60 px-2 py-1 text-xs text-white">{role==='bridger'?call?.guestName||'Guest':'WEAVE Bridger'}</p>
       </div>
     </div>
+    {role==='bridger'&&!ended&&<details className="rounded-2xl border border-[#d9c59d] bg-[#fffdf7] p-3 shadow-sm sm:p-4">
+      <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 rounded-xl px-2 text-sm font-bold text-[#234854]">
+        <span>Live Video Studio · backgrounds, face masks and packages</span>
+        <span className="rounded-lg bg-[#e9d7b1] px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-[#69502b]">Open studio</span>
+      </summary>
+      <div className="mt-3"><HopeVideoFilterShop activeFilter={selectedFilter} activeFace={selectedFace} onFilterSelect={applyVideoFilter}/></div>
+    </details>}
     {soundBlocked&&<button onClick={()=>{void remoteVideo.current?.play().then(()=>setSoundBlocked(false)).catch(()=>{})}} className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-amber-100 px-4 text-sm"><Volume2 className="h-4 w-4"/> Tap to enable call audio</button>}
     {!mediaReady&&!ended?<button type="button" onClick={enableMedia} disabled={mediaBusy} className="min-h-12 w-full rounded-xl bg-[#235968] px-4 text-sm font-bold text-white disabled:opacity-50">
       {mediaBusy?'Requesting camera and microphone…':'Enable camera & microphone'}
@@ -327,6 +510,6 @@ export default function WeaveVideoRoom({callId,role,guestAccess,inviteLink,onClo
     {!ended&&<button onClick={()=>void endCall()} className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#9a3232] px-4 font-semibold text-white"><PhoneOff className="h-5 w-5"/> End call</button>}
     {error&&<p role="alert" className="rounded-lg border border-rose-300 bg-rose-50 p-3 text-sm text-rose-800">{error}</p>}
     {relayReady===false&&<p className="text-xs leading-5 text-[#76582d]">Network limitation: WEAVE TURN relay is not configured. Some mobile networks will not connect until Administrations adds TURN service.</p>}
-    <p className="flex items-start gap-2 text-xs leading-5 text-[#5d6a6e]"><ShieldCheck size={16} className="mt-0.5 shrink-0"/> Call media is encrypted by WebRTC and is not recorded by this feature. The link is private, but anyone holding an unused invitation can join. AI is not part of this video call. No System Switch is charged.</p>
+    <p className="flex items-start gap-2 text-xs leading-5 text-[#5d6a6e]"><ShieldCheck size={16} className="mt-0.5 shrink-0"/> Call media is encrypted by WebRTC and is not recorded by this feature. The link is private, but anyone holding an unused invitation can join. AI is not part of this video call. Basic calling is free; optional Studio effects and packages require a separately confirmed System Switch purchase.</p>
   </section>
 }
