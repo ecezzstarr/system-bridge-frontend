@@ -290,6 +290,11 @@ export const ADMIN_SPACES:readonly AdminSpace[]=[
     "description": "Coordinate the existing food supply and support movement."
   },
   {
+    "title": "Flame of Hope · Food Fulfillment",
+    "href": "/admin/flame-of-hope",
+    "description": "Review eligible weekly Bridger food claims, confirm physical stock and record real fulfilment handoffs."
+  },
+  {
     "title": "Food Preparation Management",
     "href": "/admin/food-preparation-manager",
     "description": "Assign real food-preparation orders and staff handoffs."
