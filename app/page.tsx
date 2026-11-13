@@ -31,17 +31,17 @@ const departments = [
 const systems = [
   {
     icon: Workflow,
-    title: 'Work & services',
+    title: 'Services',
     copy: 'Agents fulfil verified requests, coordinate deliveries and earn through completed, recorded work.',
   },
   {
     icon: Orbit,
-    title: 'Company tools',
+    title: 'Instruments',
     copy: 'Bridgers use outreach, communication and creative tools to introduce people to useful company services.',
   },
   {
     icon: Network,
-    title: 'Business systems',
+    title: 'Systems',
     copy: 'Clients form their File Folder, open Customer Doors, coordinate employees and follow real business records.',
   },
 ] as const
@@ -108,7 +108,7 @@ export default function Home() {
                   </div>
                 ))}
               </div>
-              <p className="weave-home-department-summary mt-6 text-base font-medium leading-relaxed sm:text-lg">One company. Many people. Each person carrying work through time.</p>
+              <p className="weave-home-department-summary mt-6 text-base font-medium leading-relaxed sm:text-lg">One company. Many people. Work moving through time.</p>
               <p className="mx-auto mt-3 max-w-3xl text-sm font-medium leading-6 text-slate-200 sm:text-base" data-home-company-worldwide="true">Across regions, Agents serve customers, Bridgers connect people to opportunities, and Clients build businesses. Administrations coordinates and verifies the work so responsibilities, payments and progress can be recorded.</p>
               <div className="weave-home-loops mx-auto mt-9 grid max-w-4xl gap-3 text-left sm:grid-cols-3" data-company-time-loops>
                 <div className="weave-home-loop weave-home-loop-flame p-5">
