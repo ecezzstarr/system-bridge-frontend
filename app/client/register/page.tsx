@@ -44,7 +44,10 @@ function ClientRegisterContent() {
     if (!fn) return
     setIsLoading(true)
     try {
-      const valRes = await fetchWithTimeout(`/api/client/weave-validate?fileNumber=${fn}`)
+      const params = new URLSearchParams({fileNumber:fn.trim().toUpperCase()})
+      const privateOffer=searchParams.get('staffOffer')
+      if(privateOffer)params.set('staffOffer',privateOffer)
+      const valRes = await fetchWithTimeout(`/api/client/weave-validate?${params.toString()}`)
       const result = await valRes.json()
 
       if (result.success) {
