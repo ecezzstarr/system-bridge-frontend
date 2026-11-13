@@ -43,7 +43,7 @@ async function main(){
     assert.equal((await pool.query('SELECT COUNT(*)::int AS total FROM weave_hope_video_bundle_grants WHERE bridger_id=$1::uuid',[bridger])).rows[0].total,4,'One preowned item is not redundantly granted')
     assert.equal((await ownedHopeVideoFilters(bridger)).length,5,'Bundle entitlements appear in the original gallery')
     const alreadySingle=await purchaseHopeVideoFilter(bridger,'background-hide')
-    assert(alreadySingle.success&&alreadySingle.alreadyOwned&&alreadySingle.chargedFlameCoin===0,'Bundle-owned item cannot be charged again')
+    assert(alreadySingle.success&&alreadySingle.alreadyOwned&&alreadySingle.chargedSystemSwitch===0,'Bundle-owned item cannot be charged again')
     const fullBundle=await purchaseHopeStudioBundle(bridger,'full-studio')
     assert(fullBundle.success&&!fullBundle.alreadyOwned,'Bridger can upgrade collection')
     const all=await ownedHopeVideoFilters(bridger)
