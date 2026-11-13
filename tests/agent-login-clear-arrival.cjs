@@ -30,14 +30,21 @@ for (const role of ['admin','agent','bridger','client']) {
 
 // Announcements are informative, never a fullscreen dimming or blur at the event.
 assert.ok(ads.includes("pathname === '/event' || pathname === '/client/event'"))
-assert.ok(ads.includes("user?.role === 'agent' && pathname === '/agent/dashboard'"))
+assert.ok(ads.includes("user?.role === 'agent' &&"))
+assert.ok(ads.includes("pathname === '/event' || pathname === '/agent' || pathname?.startsWith('/agent/')"))
+assert.ok(ads.includes('if (suppressAgentArrivalAds) return'))
+assert.ok(ads.includes('!suppressAgentArrivalAds && adsPlacement === placement'),
+  'Daily live advertisements cannot automatically enter the Agent event or Stability workspace')
 assert.ok(ads.includes("data-company-arrival-ad={companyArrivalNotice?'non-blocking':undefined}"))
 assert.ok(ads.includes('pointer-events-none fixed bottom-3'),
   'Agent event advertisement is a small pointer-transparent surface')
 assert.ok(ads.includes('adsPlacement === placement'),
   'Stale ad content cannot remain over another route')
-assert.ok(dashboard.includes('data-agent-login-notice="non-blocking"'),
-  'Agent dashboard notices are optional and nonblocking')
+assert.ok(!dashboard.includes('data-agent-login-notice'),
+  'Agent dashboard does not automatically show the Administrations update')
+assert.ok(!login.includes('sessionStorage.setItem(AGILITY_AGENT_LOGIN_AD_KEY'))
+assert.ok(!login.includes('sessionStorage.setItem(LOOP1_AGENT_LOGIN_AD_KEY'),
+  'Agent login no longer queues daily arrival advertisements')
 assert.ok(!dashboard.includes('if(loop){setShowLoop1Ad(true)'),
   'No automatically opened Agent commission modal')
 assert.ok(!dashboard.includes('else if(agility)setShowAgilityAd(true)'),

@@ -51,7 +51,7 @@ assert.ok(foodOrderPage.includes('/weave-food/agility.jpeg'),'Agility home visib
 assert.ok(electrolytePage.includes('ELECTROLYTE_VARIANTS')&&electrolytePage.includes("fetch('/api/electrolyte/stock'")&&electrolytePage.includes('ORDER / RESTOCK'),'Electrolyte owns an independent repeat-restock home')
 assert.ok(electrolytePage.includes('/weave-food/electrolyte.jpeg'),'Electrolyte home visibly previews Electrolyte before buying stock')
 assert.ok(agentDashboard.includes('href="/agility"')&&agentDashboard.includes('href="/electrolyte"'),'Agent dashboard exposes Agility and Electrolyte as separate homes')
-assert.ok(agentDashboard.includes("router.push('/agility')"),'Agent login Agility movement opens the Agility home')
+assert.ok(agentDashboard.includes('href="/agility"')&&!agentDashboard.includes('AgilityAgentLoginAd'),'Agent can open Agility directly without an automatic login advertisement')
 
 assert.ok(schema.includes('carrier_food_agent_payment_accounts'),'Carrier stores Agent customer receiving accounts')
 assert.ok(schema.includes('carrier_food_agent_prices'),'Carrier keeps configurable Agent prices for products not price-locked')

@@ -9,8 +9,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Eye, EyeOff, Lock, Mail, KeyRound, Loader2 } from 'lucide-react'
 import { WeaveLogo } from '@/components/weave-logo'
-import { AGILITY_AGENT_LOGIN_AD_KEY } from '@/components/agility-agent-login-ad'
-import { LOOP1_AGENT_LOGIN_AD_KEY } from '@/components/agent/loop1-agent-login-ad'
 import { WEAVE_WRITING } from '@/lib/weave-writing'
 import { isFlameEventActive } from '@/lib/flame-event-landing'
 
@@ -53,8 +51,6 @@ export default function LoginPage() {
         return
       }
       if (loggedInUser?.role === 'agent') {
-        sessionStorage.setItem(AGILITY_AGENT_LOGIN_AD_KEY, '1')
-        if (eventLive) sessionStorage.setItem(LOOP1_AGENT_LOGIN_AD_KEY, '1')
         router.replace(eventLive ? '/event' : '/agent/dashboard')
       } else if (loggedInUser?.role === 'bridger') {
         router.replace(eventLive ? '/event' : '/bridger/dashboard')
