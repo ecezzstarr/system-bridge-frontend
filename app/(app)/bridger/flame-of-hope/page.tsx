@@ -72,7 +72,7 @@ export default function FlameOfHopePage() {
         {notice && <p role="alert" className="mt-4 text-sm text-red-200">{notice}</p>}
         {!state?.claimed && !loading && <p className="relative mt-3 text-xs leading-5 text-amber-100/70">
           {!state?.open?'This reward is available only while Flame Event · Burning River is active.':
-          !state?.eligible?'Complete a genuine prospect response, verified referral, or Client File Folder crossing today to become eligible.':
+          !state?.eligible?'Complete a verified registration referral or settled Client File Folder crossing today to become eligible.':
           !state?.available?'Your activity qualifies. Administrations must fund the reward pool before it can be claimed.':
           'A verified activity is ready. Open your mystery box.'}
         </p>}
@@ -81,7 +81,7 @@ export default function FlameOfHopePage() {
       <section className="mt-5 rounded-2xl border border-white/10 bg-white/[.03] p-5">
         <div className="flex items-start gap-3"><ShieldCheck className="mt-1 h-5 w-5 shrink-0 text-emerald-200"/><div>
           <h2 className="font-bold">Hope is recognized through genuine participation</h2>
-          <p className="mt-2 text-sm leading-6 text-slate-300">The box is not sold. Buying prospects or simply clicking Send does not qualify. Weave checks a recorded response, a settled referral, or a verified Client crossing. Each claim is company-funded and recorded once.</p>
+          <p className="mt-2 text-sm leading-6 text-slate-300">The box is not sold. Buying prospects or simply clicking Send does not qualify. Weave checks a settled referral or verified Client File Folder crossing. Outreach alone is not sufficient until independently verified. Each claim is company-funded and recorded once.</p>
         </div></div>
         <div className="mt-5 grid grid-cols-2 gap-3 text-xs">
           <Link href="/weave/market/prospects" className="flex min-h-11 items-center justify-center rounded-xl border border-white/20 p-3 text-center font-bold text-white">My Prospects</Link>
