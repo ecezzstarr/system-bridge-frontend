@@ -20,7 +20,8 @@ export async function POST(request: NextRequest) {
     const shield=await getDivineShieldState()
     if(shield.active) return NextResponse.json({error:'WEAVE is under maintenance. Divine Shield is active.'},{status:423})
 
-    const { fileNumber, staffOffer, email, password, businessName, gender: rawGender, referredBy } = await request.json()
+    const { fileNumber: rawFileNumber, staffOffer, email, password, businessName, gender: rawGender, referredBy } = await request.json()
+    const fileNumber=String(rawFileNumber||'').trim().toUpperCase()
     const gender=normalizeRegisteredGender(rawGender)
     if(!gender)return NextResponse.json({error:'Choose Male or Female at registration.'},{status:400})
     await ensureClientMonthlySchema()
@@ -32,19 +33,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const folder = await validateFileNumber(fileNumber)
-    if (!folder) {
-      return NextResponse.json(
-        { error: 'Invalid or already registered file number' },
-        { status: 400 }
-      )
-    }
-
-    // A company-granted File Number requires the private offer link and
-    // exact intended recipient email; retail registration is unaffected.
+    // Require the private approved staff token before looking up or
+    // repairing a reserved File Number. Retail registration is unaffected.
     await ensureCompanyClientStaffSchema()
     const [staffGrant] = await sql`
-      SELECT id,token_hash,candidate_name,candidate_email,status,client_id,ticket_amount_usdt,applicant_contribution_usdt,proposed_personal_loan_usdt,folder_tier,receipt_number,appointment_approved_at
+      SELECT id,token_hash,candidate_name,candidate_phone,candidate_email,status,client_id,ticket_amount_usdt,applicant_contribution_usdt,proposed_personal_loan_usdt,folder_tier,receipt_number,appointment_approved_at
       FROM company_client_staff_offers
       WHERE file_number=${fileNumber}
       LIMIT 1
@@ -57,6 +50,27 @@ export async function POST(request: NextRequest) {
     )) {
       return NextResponse.json({error:'This staff File Folder requires its private company invitation and named email'},{status:403})
     }
+    let folder=await validateFileNumber(fileNumber)
+    if(!folder && staffGrant?.folder_tier==='pro'){
+      // Issued and approved Pro File Numbers may predate their legacy FNE row.
+      // Never transfer an existing owner's account or bypass the private offer.
+      const [existingOwner]=await sql`SELECT id FROM users WHERE file_number=${fileNumber} LIMIT 1`
+      if(existingOwner)return NextResponse.json({error:'This File Number already belongs to a Client. Contact Administrations for account recovery.'},{status:409})
+      await sql`
+        INSERT INTO file_folders(file_number,bridger_id,identity_data,status)
+        VALUES(${fileNumber},NULL,${JSON.stringify({
+          name:staffGrant.candidate_name,phone:staffGrant.candidate_phone||'',
+          origin:'approved_company_pro_registration',
+        })}::jsonb,'pending')
+        ON CONFLICT(file_number) DO NOTHING
+      `
+      folder=await validateFileNumber(fileNumber)
+    }
+    if(!folder)return NextResponse.json({error:'Invalid or already registered File Number'},{status:400})
+    if(staffGrant&&folder.identity_data?.name&&
+      String(folder.identity_data.name).trim().toLowerCase()!==String(staffGrant.candidate_name||'').trim().toLowerCase()){
+      return NextResponse.json({error:'Issued File Number identity does not match the approved employee. Contact Administrations.'},{status:409})
+    }
     if(staffGrant?.folder_tier==='pro')await ensureProActivationSchema()
     const [preActivatedPro]=staffGrant?.folder_tier==='pro'
       ?await sql`SELECT client_signature_name,business_plan FROM pro_file_folder_activations
@@ -68,6 +82,24 @@ export async function POST(request: NextRequest) {
         (!staffGrant || (!preActivatedPro && !staffGrant.appointment_approved_at && !/\bcj\s+dorado\b/i.test(String(folder.identity_data?.name||''))))) {
       return NextResponse.json({ error: 'CJ Dorado registration requires the existing approved employee invitation and verified File Number identity.' }, { status: 403 })
     }
+    // Keep the business name signed and independently payment-verified before registration.
+    let verifiedProBusinessName=''
+    if(staffGrant?.folder_tier==='pro'){
+      const [table]=await sql`SELECT to_regclass('public.pro_file_number_verifications') AS name`
+      if(table?.name){
+        const [verified]=await sql`
+          SELECT business_name FROM pro_file_number_verifications
+          WHERE file_number=${fileNumber}
+            AND lower(trim(signed_name))=lower(trim(${staffGrant.candidate_name}))
+            AND status IN ('paid_pending_account','active')
+            AND identity_verified_at IS NOT NULL AND payment_verified_at IS NOT NULL
+            AND payment_verified_amount_usdt=680
+          ORDER BY payment_verified_at DESC LIMIT 1
+        `
+        verifiedProBusinessName=String(verified?.business_name||'').trim()
+      }
+    }
+    const registeredBusinessName=preActivatedPro?.business_plan?.businessName||verifiedProBusinessName||String(businessName||'').trim()||null
     const existing = await sql`SELECT id FROM users WHERE email = ${email}`
     if (existing.length > 0) {
       return NextResponse.json(
@@ -79,7 +111,7 @@ export async function POST(request: NextRequest) {
     const hashedPassword = await bcrypt.hash(password, 10)
     const identityData = folder.identity_data as any
     const name = preActivatedPro?.client_signature_name || (staffGrant?.appointment_approved_at ? String(staffGrant.candidate_name) : identityData?.name || 'Client')
-    const phone = identityData?.phone || ''
+    const phone = staffGrant?.candidate_phone || identityData?.phone || ''
     const bridgerId = folder.bridger_id || null
     const referralInput = String(referredBy || '').trim()
     const referralOwner = referralInput ? await resolveReferralOwnerByCode(referralInput) : null
@@ -115,7 +147,7 @@ export async function POST(request: NextRequest) {
         'client',
         ${fileNumber},
         ${phone},
-        ${preActivatedPro?.business_plan?.businessName || businessName || null},
+        ${registeredBusinessName},
         ${gender},
         'due',
         ${referralCode},

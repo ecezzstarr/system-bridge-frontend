@@ -78,6 +78,26 @@ export async function getApprovedProStaffOffer(fileNumber:string) {
  }
  return offer
 }
+/** Only the authenticated owner can inherit a paid, verified external Pro intake.
+ * A File Number, ticket, or offer alone is not enough to bypass activation.
+ */
+export async function getPaidExternalProClientVerification(clientId:string,fileNumber:string){
+ if(!clientId||!proNumberPattern.test(fileNumber))return null
+ const [table]=await sql`SELECT to_regclass('public.pro_file_number_verifications') AS name,
+  to_regclass('public.company_client_staff_offers') AS offers`
+ if(!table?.name||!table?.offers)return null
+ const [row]=await sql`
+  SELECT v.id,v.status FROM pro_file_number_verifications v
+  JOIN company_client_staff_offers o ON o.file_number=v.file_number
+   AND o.client_id=${clientId}::uuid AND o.status='approved' AND o.folder_tier='pro'
+  WHERE v.file_number=${fileNumber} AND v.status IN ('paid_pending_account','active')
+   AND v.identity_verified_at IS NOT NULL AND v.payment_verified_at IS NOT NULL
+   AND v.payment_verified_amount_usdt=${PRO_ACTIVATION_FEE_USDT}
+  ORDER BY v.payment_verified_at DESC LIMIT 1
+ `
+ return row?{id:String(row.id),status:String(row.status)}:null
+}
+
 export async function eligibleProNumber(fileNumber:string){
  return Boolean(await getApprovedProStaffOffer(fileNumber))
 }
