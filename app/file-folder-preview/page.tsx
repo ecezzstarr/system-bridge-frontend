@@ -28,8 +28,8 @@ const tiers = [
     name: 'Pro',
     subtitle: 'Business operations',
     tone: 'pro',
-    image: '/weave/file-folder/assets/operations-module.svg',
-    imageAlt: 'Operations module illustration for the Pro File Folder',
+    image: '/weave/file-folder/official/weave-pro-file-folder-official.webp',
+    imageAlt: 'Official Pro File Folder textured blue-and-gold business campus with an owner business headquarters, App and Platform Workshop, Customer Door and connected development districts',
     description: 'Give your business a clear operating structure. Bring offers, orders, people and records into a dedicated Pro environment under your verified company offer.',
     systems: [
       ['Customer Door', 'Bring the Client’s published business into one public entrance.'],
@@ -110,12 +110,13 @@ export default function FileFolderPreviewPage() {
           {tiers.map(tier => {
             const Icon = iconByTier[tier.id]
             const isPlus = tier.id === 'plus'
+            const isOfficialPoster = tier.id === 'plus' || tier.id === 'pro'
             return (
               <article key={tier.id} className={`overflow-hidden rounded-3xl border ${tier.tone === 'standard' ? 'border-emerald-200/20 bg-[#101b16]' : tier.tone === 'pro' ? 'border-sky-200/20 bg-[#0b1724]' : tier.tone === 'premium' ? 'border-amber-200/20 bg-[#17120e]' : 'border-yellow-100/35 bg-[#f7f4ec] text-[#28251f]'}`} data-file-folder-tier={tier.id}>
                 <div className="grid sm:grid-cols-[.88fr_1.12fr]">
                   <div className={`relative flex min-h-64 items-center justify-center overflow-hidden p-5 ${tier.tone === 'standard' ? 'bg-gradient-to-br from-sky-200 via-emerald-800 to-[#12291e]' : tier.tone === 'pro' ? 'bg-gradient-to-br from-sky-100 via-blue-900 to-[#07111d]' : tier.tone === 'premium' ? 'bg-gradient-to-br from-[#5a4128] via-[#151218] to-black' : 'bg-gradient-to-br from-white via-[#eee6d5] to-[#c6a96e]'}`}>
-                    {isPlus ? (
-                      <img src={tier.image} alt={tier.imageAlt} className="max-h-[340px] w-full object-contain" loading="lazy" />
+                    {isOfficialPoster ? (
+                      <img src={tier.image} alt={tier.imageAlt} width={tier.id==='pro'?768:1229} height={tier.id==='pro'?960:1536} className="max-h-[380px] w-full object-contain" loading="lazy" decoding="async" />
                     ) : (
                       <div className="relative flex h-52 w-full max-w-xs items-center justify-center rounded-2xl border border-white/20 bg-black/10 p-7 shadow-2xl backdrop-blur-sm">
                         <div aria-hidden="true" className={`absolute inset-x-8 bottom-7 h-14 rounded-[50%] blur-xl ${tier.tone === 'standard' ? 'bg-emerald-200/30' : tier.tone === 'pro' ? 'bg-sky-200/30' : 'bg-amber-200/25'}`} />
