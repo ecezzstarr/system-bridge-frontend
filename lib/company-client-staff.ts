@@ -1,6 +1,9 @@
 import { createHash } from 'node:crypto'
 import { sql } from '@/lib/db'
 
+export const PRO_DIRECT_REGISTRATION_COOKIE='weave_pro_direct_registration'
+export const PRO_DIRECT_REGISTRATION_TTL_SECONDS=15*60
+
 export type CompanyStaffTier = 'standard' | 'pro' | 'premium' | 'plus'
 
 /** Employee invitation tickets are USDT company-entry records, never retail File Folder purchases. */
@@ -62,6 +65,7 @@ export async function ensureCompanyClientStaffSchema() {
   await sql`ALTER TABLE company_client_staff_offers ADD COLUMN IF NOT EXISTS appointment_approved_by uuid`
   await sql`ALTER TABLE company_client_staff_offers ADD COLUMN IF NOT EXISTS appointment_reference varchar(255)`
   await sql`ALTER TABLE company_client_staff_offers ADD COLUMN IF NOT EXISTS previous_candidate_name varchar(255)`
+  await sql`ALTER TABLE company_client_staff_offers ADD COLUMN IF NOT EXISTS registration_token_expires_at timestamptz`
   await sql`CREATE INDEX IF NOT EXISTS company_staff_offers_email_idx ON company_client_staff_offers(lower(candidate_email))`
   await sql`CREATE INDEX IF NOT EXISTS company_staff_offers_status_idx ON company_client_staff_offers(status,created_at DESC)`
   await sql`
@@ -90,6 +94,7 @@ export async function getCompanyStaffOfferByToken(token: string) {
       personal_loan_terms,personal_loan_accepted_at,folder_tier,status,file_number,client_id,receipt_number,rejection_reason,created_at
     FROM company_client_staff_offers
     WHERE token_hash=${staffOfferTokenHash(token)}
+      AND (registration_token_expires_at IS NULL OR registration_token_expires_at>now())
     LIMIT 1
   `
   return rows[0] || null
