@@ -116,3 +116,72 @@ export async function reviewDoorDemand(input: {
   if (!result.rows[0]) throw new Error('Request not found or already moved to a different stage.')
   return result.rows[0]
 }
+
+export async function ensureDoorInterestsSchema() {
+  await ensureUnbuiltDoorSchema()
+  await getPool().query(`
+    CREATE TABLE IF NOT EXISTS weave_unbuilt_door_interests (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      demand_id uuid NOT NULL REFERENCES weave_unbuilt_door_demands(id),
+      business_name varchar(140) NOT NULL,
+      contact_email varchar(255) NOT NULL,
+      proposed_service varchar(600) NOT NULL,
+      movement_code varchar(40),
+      consent_at timestamptz NOT NULL DEFAULT now(),
+      status varchar(20) NOT NULL DEFAULT 'requested'
+        CHECK (status IN ('requested','contacted','qualified','converted','closed')),
+      created_at timestamptz NOT NULL DEFAULT now()
+    )
+  `)
+  await getPool().query(`
+    CREATE INDEX IF NOT EXISTS idx_unbuilt_door_interests_time
+    ON weave_unbuilt_door_interests(created_at DESC)
+  `)
+}
+export async function submitDoorInterest(input: {
+  demandId: unknown; businessName: unknown; email: unknown
+  service: unknown; movement: unknown; consent: unknown
+}) {
+  const demandId = cleanDoorText(input.demandId, 60)
+  const businessName = cleanDoorText(input.businessName, 140)
+  const email = cleanDoorText(input.email, 255).toLowerCase()
+  const service = cleanDoorText(input.service, 600)
+  const movement = cleanDoorText(input.movement, 40).toUpperCase()
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(demandId) ||
+      businessName.length < 2 || service.length < 20 ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || input.consent !== true ||
+      (movement && !/^[A-Z0-9-]+$/.test(movement))) {
+    throw new Error('Provide your business, proposal, valid contact email and permission for Weave to respond.')
+  }
+  await ensureDoorInterestsSchema()
+  const pool = getPool()
+  const verified = await pool.query(
+    `SELECT id FROM weave_unbuilt_door_demands WHERE id=$1::uuid AND status='verified'`,
+    [demandId],
+  )
+  if (!verified.rows[0]) throw new Error('This opportunity is no longer publicly available.')
+  const prior = await pool.query(
+    `SELECT COUNT(*)::int AS n FROM weave_unbuilt_door_interests
+     WHERE lower(contact_email)=$1 AND created_at >= now()-interval '7 days'`,
+    [email],
+  )
+  if (Number(prior.rows[0]?.n || 0) >= 3) throw new Error('This address has reached its weekly interest limit.')
+  const result = await pool.query(
+    `INSERT INTO weave_unbuilt_door_interests
+        (demand_id,business_name,contact_email,proposed_service,movement_code)
+     VALUES ($1::uuid,$2,$3,$4,$5) RETURNING id,status,created_at`,
+    [demandId, businessName, email, service, movement || null],
+  )
+  return result.rows[0]
+}
+export async function getAdminDoorInterests() {
+  await ensureDoorInterestsSchema()
+  const result = await getPool().query(
+    `SELECT i.id,i.demand_id,i.business_name,i.contact_email,i.proposed_service,
+            i.movement_code,i.status,i.created_at,d.title AS demand_title,d.category
+     FROM weave_unbuilt_door_interests i
+     JOIN weave_unbuilt_door_demands d ON d.id=i.demand_id
+     ORDER BY i.created_at DESC LIMIT 120`,
+  )
+  return result.rows
+}
