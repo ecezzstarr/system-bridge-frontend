@@ -251,6 +251,16 @@ export async function submitProFileNumberPayment(ticket:string,txHash:string,exp
    throw new Error('The original company payment destination is unavailable or changed. Do not transfer again; contact Forensics for reconciliation.')
   const corrected=row.status==='payment_rejected'
   const proof=txHash.trim().toLowerCase()
+  // Preserve legacy rejected receipts written before the audit table existed.
+  // New rejections already have a Forensics audit event and are not duplicated.
+  if(corrected&&row.payment_tx_hash){
+   await db.query(`INSERT INTO pro_file_number_payment_evidence_history
+     (verification_id,tx_hash,wallet_address,event,reason)
+     SELECT $1::uuid,$2,$3,'rejected',$4
+     WHERE NOT EXISTS (SELECT 1 FROM pro_file_number_payment_evidence_history
+       WHERE verification_id=$1::uuid AND tx_hash=$2 AND event='rejected')`,
+     [row.id,String(row.payment_tx_hash).trim(),wallet,row.rejection_reason])
+  }
   await db.query(`INSERT INTO pro_file_number_payment_evidence_history
     (verification_id,tx_hash,wallet_address,event,reason)
     VALUES($1::uuid,$2,$3,$4,$5)`,
