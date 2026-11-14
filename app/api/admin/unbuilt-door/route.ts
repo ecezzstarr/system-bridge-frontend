@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
-import { getAdminDoorDemands, reviewDoorDemand } from '@/lib/unbuilt-door'
+import { getAdminDoorDemands, getAdminDoorInterests, reviewDoorDemand } from '@/lib/unbuilt-door'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -13,8 +13,8 @@ export async function GET(request: NextRequest) {
   const user = await requireAdmin(request)
   if (!user) return NextResponse.json({ error: 'Administrations access required.' }, { status: 403 })
   try {
-    const demands = await getAdminDoorDemands()
-    return NextResponse.json({ demands }, { headers: { 'Cache-Control': 'private, no-store' } })
+    const [demands, interests] = await Promise.all([getAdminDoorDemands(), getAdminDoorInterests()])
+    return NextResponse.json({ demands, interests }, { headers: { 'Cache-Control': 'private, no-store' } })
   } catch (error) {
     console.error('[unbuilt-door] admin list failed', error)
     return NextResponse.json({ error: 'Unable to load reviews.' }, { status: 503 })
