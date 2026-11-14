@@ -13,8 +13,39 @@ type Verification={reference:string;fileNumber:string;businessName:string;
  siblingsEvent?:{reportedAmountUSDT:number;verifiedAmountUSDT:number;status:string;availableForWithdrawal:boolean}|null}
 const PLAN_FIELDS=PRO_MANAGER_PLAN_QUESTIONS
 const SESSION_KEY='weave-pro-number-verification-secret'
+const STAGE_COPY:Record<string,{title:string;detail:string}>={
+ pending_identity:{
+  title:'Awaiting Administrations verification',
+  detail:'Your business plan and signed agreement are saved. Administrations is reviewing your identity and appointment. No payment is required yet.',
+ },
+ payment_required:{
+  title:'Awaiting your activation payment',
+  detail:'Administrations has approved the payment stage. Review the official 680 USDT TRC-20 wallet below, then submit your transaction ID for independent Forensics verification.',
+ },
+ pending_forensics:{
+  title:'Payment evidence received · Forensics reviewing',
+  detail:'Your payment reference is saved. Forensics must confirm the actual blockchain receipt before your verification advances. Do not transfer a second payment.',
+ },
+ payment_rejected:{
+  title:'Payment evidence needs reconciliation',
+  detail:'Your application remains saved, but Forensics needs to resolve the payment evidence. Read the finding below and contact Administrations before taking further action.',
+ },
+ paid_pending_account:{
+  title:'Payment verified · account activation in progress',
+  detail:'Forensics has verified the activation payment. Continue only when the Pro File Folder and company registration are authorized.',
+ },
+ active:{
+  title:'Pro File Folder activated',
+  detail:'Your company verification is complete. Sign in through your approved Client account to access your File Folder.',
+ },
+ rejected:{
+  title:'Verification requires Administrations attention',
+  detail:'Your application record remains saved. Contact Administrations using your application reference.',
+ },
+}
 export default function ProFileNumberVerification(){
  const [step,setStep]=useState<'file'|'plan'|'status'>('file')
+ const [restoring,setRestoring]=useState(true)
  const [fileNumber,setFileNumber]=useState('')
  const [businessName,setBusinessName]=useState('')
  const [signedName,setSignedName]=useState('')
@@ -31,32 +62,49 @@ export default function ProFileNumberVerification(){
  const [busy,setBusy]=useState(false)
  const [error,setError]=useState('')
  const [message,setMessage]=useState('')
- const refresh=useCallback(async(secret:string)=>{
-  const response=await fetch('/api/public/pro-file-number-verification?ticket='+encodeURIComponent(secret),{cache:'no-store'})
+ const refresh=useCallback(async(secret?:string)=>{
+  const url='/api/public/pro-file-number-verification'+(secret?'?ticket='+encodeURIComponent(secret):'')
+  const response=await fetch(url,{cache:'no-store'})
   const json=await response.json()
   if(!response.ok)throw new Error(json.error||'Verification status unavailable')
-  sessionStorage.setItem(SESSION_KEY,secret)
-  setTicket(secret);setVerification(json.verification);setStep('status')
+  // The server keeps a persistent HttpOnly private session. Older sessions
+  // can still be restored with their original sessionStorage reference.
+  if(secret){sessionStorage.setItem(SESSION_KEY,secret);setTicket(secret)}
+  setVerification(json.verification);setStep('status')
  },[])
  useEffect(()=>{
-  const secret=sessionStorage.getItem(SESSION_KEY)
-  if(secret)void refresh(secret).catch(()=>sessionStorage.removeItem(SESSION_KEY))
+  let cancelled=false
+  const restore=async()=>{
+   const oldSecret=sessionStorage.getItem(SESSION_KEY)
+   try{
+    await refresh()
+   }catch(e){
+    if(oldSecret){
+     try{await refresh(oldSecret)}
+     catch{sessionStorage.removeItem(SESSION_KEY);if(!cancelled)setError('Your saved verification could not be restored. Use your private verification code or contact Administrations; do not submit a duplicate application.')}
+    }else if(e instanceof Error&&!e.message.includes('Verification reference unavailable')){
+     if(!cancelled)setError('Unable to check your saved verification. Refresh the page before submitting a new application.')
+    }
+   }finally{if(!cancelled)setRestoring(false)}
+  }
+  void restore()
+  return ()=>{cancelled=true}
  },[refresh])
  useEffect(()=>{
-  if(!ticket||step!=='status'||!verification||['active','rejected','payment_rejected'].includes(verification.status))return
+  if(restoring||step!=='status'||!verification||['active','rejected','payment_rejected'].includes(verification.status))return
   let stopped=false
   let refreshing=false
   const update=async()=>{
    if(stopped||refreshing||document.visibilityState==='hidden')return
    refreshing=true
-   try{await refresh(ticket)}catch{/* Keep the last status; manual refresh reports errors. */}
+   try{await refresh()}catch{/* Keep the last verified stage; manual refresh reports errors. */}
    finally{refreshing=false}
   }
   const timer=window.setInterval(()=>void update(),20000)
   window.addEventListener('focus',update)
   document.addEventListener('visibilitychange',update)
   return ()=>{stopped=true;window.clearInterval(timer);window.removeEventListener('focus',update);document.removeEventListener('visibilitychange',update)}
- },[ticket,step,verification?.status,refresh])
+ },[restoring,step,verification?.status,refresh])
  async function submitPlan(){
   setBusy(true);setError('');setMessage('')
   try{
@@ -69,12 +117,14 @@ export default function ProFileNumberVerification(){
    if(!response.ok)throw new Error(json.error||'Unable to submit business plan')
    sessionStorage.setItem(SESSION_KEY,json.ticket)
    await refresh(json.ticket)
-   setMessage('Business plan and electronic agreement recorded. Administrations must confirm your File Number and identity before payment instructions become available.')
+   setMessage(json.resumed
+    ?'Your existing verification has been restored. Continue from the saved stage below.'
+    :'Business plan and electronic agreement recorded. Administrations must confirm your File Number and identity before payment instructions become available.')
   }catch(e){setError(e instanceof Error?e.message:'Verification unavailable')}
   finally{setBusy(false)}
  }
  async function submitPayment(){
-  if(!ticket||!verification?.walletAddress)return
+  if(!verification?.walletAddress)return
   setBusy(true);setError('');setMessage('')
   try{
    const response=await fetch('/api/public/pro-file-number-verification',{
@@ -83,18 +133,28 @@ export default function ProFileNumberVerification(){
    })
    const json=await response.json()
    if(!response.ok)throw new Error(json.error||'Unable to submit payment evidence')
-   await refresh(ticket)
+   await refresh()
    setMessage('Payment reference received. Forensics must independently verify the TRC-20 transaction. Do not send a duplicate transfer.')
   }catch(e){setError(e instanceof Error?e.message:'Payment review unavailable')}
   finally{setBusy(false)}
  }
+ async function clearSavedVerification(){
+  setBusy(true);setError('');setMessage('')
+  try{
+   const response=await fetch('/api/public/pro-file-number-verification',{method:'DELETE'})
+   if(!response.ok)throw new Error('Could not clear the saved browser access.')
+   sessionStorage.removeItem(SESSION_KEY)
+   setTicket('');setVerification(null);setFileNumber('');setStep('file');setTxHash('')
+  }catch(e){setError(e instanceof Error?e.message:'Unable to change File Number')}
+  finally{setBusy(false)}
+ }
  async function requestRegistrationInvite(){
-  if(!ticket)return
+  if(!verification)return
   setBusy(true);setError('');setMessage('')
   try{
    const response=await fetch('/api/public/pro-file-number-verification',{
     method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({action:'send_registration_invite',ticket}),
+    body:JSON.stringify({action:'send_registration_invite',ticket:ticket||undefined}),
    })
    const body=await response.json()
    if(!response.ok)throw new Error(body.error||'Secure invitation could not be sent')
@@ -113,6 +173,26 @@ export default function ProFileNumberVerification(){
     <span className="pv-company-caption">System Switch · Bridge of Radiance</span>
     <span className="pv-role-pill">Dream Lovely · Pro Staff</span>
    </nav>
+   {restoring&&<section role="status" aria-live="polite" data-pro-stage="restoring"
+    className="mb-6 rounded-xl border border-cyan-300/25 bg-slate-950/70 p-5 text-sm text-cyan-100">
+    Checking your saved Pro staff verification stage…
+   </section>}
+   {!restoring&&verification&&<section role="status" aria-live="polite" data-pro-persistent-status={verification.status}
+    className="mb-6 space-y-3 rounded-2xl border border-cyan-300/35 bg-slate-950/95 p-5 text-white shadow-lg sm:p-7">
+    <p className="text-xs font-bold uppercase tracking-widest text-cyan-200">Your saved company verification · {verification.fileNumber}</p>
+    <h2 className="text-xl font-bold leading-snug sm:text-2xl">{STAGE_COPY[verification.status]?.title||'Verification under review'}</h2>
+    <p className="text-sm leading-7 text-slate-200">{STAGE_COPY[verification.status]?.detail||'Your submitted verification record remains available.'}</p>
+    <p className="text-xs text-slate-400">File Folder: {verification.businessName} · This stage is retrieved from your private company record, not a new application.</p>
+    <div className="flex flex-wrap gap-3">
+     <a href="#pro-verification-workspace" className="inline-flex min-h-11 items-center rounded-lg bg-cyan-300 px-4 py-3 text-sm font-semibold text-slate-950">
+      {verification.status==='payment_required'?'View official payment instructions':'Continue my saved verification'}
+     </a>
+     <button type="button" disabled={busy} onClick={()=>void clearSavedVerification()}
+      className="rounded-lg border border-white/30 px-4 py-3 text-xs font-semibold text-slate-200 disabled:opacity-40">
+      This is not my File Number
+     </button>
+    </div>
+   </section>}
    <header className="pv-hero">
     <div className="pv-hero-copy">
      <p className="pv-eyebrow">WEAVE of Presence · The Company of Time · Company Staff Verification</p>
@@ -164,7 +244,7 @@ export default function ProFileNumberVerification(){
      <span>Build real systems, serve real customers and organize reliable work. Your enterprise develops through its results, and Weave grows through the value created by participation.</span>
     </div>
    </section>
-   <div className="pv-process" aria-label="Verification progress">
+   <div id="pro-verification-workspace" className="pv-process" aria-label="Verification progress">
     <span className="pv-process-label">Your company entry path</span>
     <ol className="pv-steps">
      {['File Number','Business & agreement','Verification status'].map((label,index)=>{
@@ -180,7 +260,7 @@ export default function ProFileNumberVerification(){
     <div className="pv-main-column">
    {error&&<p role="alert" className="rounded-xl border border-rose-300/30 p-4 text-sm text-rose-200">{error}</p>}
    {message&&<p role="status" className="rounded-xl border border-cyan-300/30 p-4 text-sm text-cyan-100">{message}</p>}
-   {step==='file'&&<section className="pv-panel space-y-4" data-pro-stage="file-number">
+   {!restoring&&step==='file'&&<section className="pv-panel space-y-4" data-pro-stage="file-number">
     <h2 className="text-xl font-bold">01 · Identify your company File Folder</h2>
     <p className="text-sm text-slate-600">Use only the File Number formally issued to you by Weave Administrations. You do not need a password or a new account to begin. No payment is required at this stage.</p>
     <label className="block text-sm text-slate-200">Client File Number
@@ -200,7 +280,7 @@ export default function ProFileNumberVerification(){
       className="pv-secondary mt-3 rounded-lg border border-white/30 px-3 py-2">Resume</button>
     </details>
    </section>}
-   {step==='plan'&&<section className="pv-panel space-y-4" data-pro-stage="business-plan">
+   {!restoring&&step==='plan'&&<section className="pv-panel space-y-4" data-pro-stage="business-plan">
     <h2 className="text-xl font-bold">02 · Your Pro File Folder business</h2>
     <p className="text-sm text-slate-600">{PRO_MANAGER_FILE_FOLDER_DISTINCTION}</p>
     <div className="rounded-xl border border-sky-200 bg-sky-50 p-4" data-pro-reciprocal-company-purpose="true">
@@ -268,7 +348,7 @@ export default function ProFileNumberVerification(){
       {busy?'Submitting…':'Submit business plan and signed agreement'}
     </button>
    </section>}
-   {step==='status'&&verification&&<section className="pv-panel space-y-4" data-pro-stage="verification-status">
+   {!restoring&&step==='status'&&verification&&<section className="pv-panel space-y-4" data-pro-stage="verification-status">
     <h2 className="text-xl font-bold">03 · Your private verification workspace</h2>
     <p className="font-mono text-xs text-cyan-200">{verification.fileNumber}</p>
     <p className="text-sm">File Folder business: <strong>{verification.businessName}</strong></p>
@@ -283,7 +363,9 @@ export default function ProFileNumberVerification(){
        :'Pending confirmation in the company salary record'}</p>
       <p className="mt-1 text-xs text-slate-400">Position and payroll are verified independently from the Pro File Folder activation fee. Salary is not automatically credited by activating the Folder.</p>
      </div>:<p className="text-sm text-amber-200">Company employment status and salary: awaiting Administrations verification of an approved Pro staff appointment.</p>}
-    <p className="text-sm capitalize text-amber-200">Status: {verification.status.replaceAll('_',' ')}</p>
+    <p className="text-base font-bold text-amber-200" data-pro-current-stage={verification.status}>
+     {STAGE_COPY[verification.status]?.title||verification.status.replaceAll('_',' ')}
+    </p>
     <p className="text-xs text-slate-400">Application reference: {verification.reference}</p>
     {verification.siblingsEvent&&<div className="rounded-xl border border-violet-300/25 bg-violet-300/[.05] p-4" data-verified-cj-siblings-event="true">
      <p className="text-xs uppercase tracking-widest text-violet-200">Siblings Event · Mandate business earnings</p>
@@ -292,21 +374,18 @@ export default function ProFileNumberVerification(){
      <p className="mt-2 text-xs text-slate-300">Reconciled earnings recorded: {verification.siblingsEvent.verifiedAmountUSDT.toLocaleString()} USDT · No withdrawable amount established. Other types of funds: Pending verification.</p>
      <p className="mt-2 text-xs text-slate-400">Your Siblings Event information is separate from the one-time Pro service fee. Paying 680 USDT does not establish or automatically release these funds.</p>
     </div>}
-    <details className="text-xs text-slate-300"><summary className="cursor-pointer">Save private verification code</summary>
+    {ticket?<details className="text-xs text-slate-300"><summary className="cursor-pointer">Save private verification code</summary>
      <p className="mt-2 break-all font-mono">{ticket}</p>
      <p className="mt-2">Keep this code private. It is needed if you resume the verification on another device. Do not post it publicly.</p>
-    </details>
+    </details>:<p className="text-xs text-slate-400">Your private verification is saved on this browser. Use the private code you previously saved to continue on a different device.</p>}
     {verification.status==='pending_identity'&&<p className="rounded-lg border border-amber-300/20 p-4 text-sm text-slate-200">Administrations is reviewing your File Number, identity, electronic signature, business name and business plan. Once approved, this workspace automatically moves to payment instructions. Your status refreshes every 20 seconds while this page is open.</p>}
     {verification.status==='payment_rejected'&&<div className="space-y-3 rounded-lg border border-rose-300/30 p-4">
      <h3 className="font-semibold text-rose-200">Payment evidence needs a new review</h3>
      <p className="text-sm text-slate-200">Forensics finding: {verification.rejectionReason||'Receipt not independently confirmed.'} The original evidence is retained for audit. Do not send another payment without reconciling with Administrations.</p>
-     <button type="button" onClick={()=>{
-      sessionStorage.removeItem(SESSION_KEY);setTicket('');setVerification(null);
-      setStep('file');setError('');setMessage('');setTxHash('')
-     }} className="rounded-lg border border-white/30 px-4 py-2 text-sm">Start a new verification request</button>
+     <p className="text-xs text-slate-300">Your existing plan and payment review remain recorded. Do not submit another form for the same application.</p>
     </div>}
     {verification.status==='payment_required'&&<div className="space-y-4 rounded-lg border border-cyan-300/20 p-4">
-     <h3 className="text-lg font-bold">5. Activate your Pro File Folder · 680 USDT</h3>
+     <h3 className="text-lg font-bold">Awaiting activation payment · 680 USDT</h3>
      {verification.rejectionReason&&<p className="text-sm text-rose-200">Forensics finding: {verification.rejectionReason}</p>}
      {verification.walletAddress?<div className="space-y-2">
       <p className="text-xs text-slate-300">Official receiving wallet · USDT TRC-20</p>
@@ -337,7 +416,7 @@ export default function ProFileNumberVerification(){
      </section>}
     {verification.status==='active'&&<p className="text-sm text-emerald-200">Pro File Folder activated. Sign in with the secure Client account you registered through the approved company email invitation, then open your private File Folder and company workspace. This verification code is not a login.</p>}
     {verification.status==='rejected'&&<p className="text-sm text-rose-200">Verification requires Administrations attention. Contact the company using your application reference.</p>}
-    <button type="button" disabled={busy} onClick={()=>void refresh(ticket).catch(e=>setError(e.message))}
+    <button type="button" disabled={busy} onClick={()=>void refresh().catch(e=>setError(e.message))}
      className="pv-secondary rounded-lg border border-cyan-300/30 px-4 py-2 text-sm">Refresh verification status</button>
    </section>}
     </div>
