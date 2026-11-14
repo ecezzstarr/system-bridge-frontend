@@ -39,7 +39,7 @@ assert(consoleSource.includes('isBuildPartCompatible(')&&
  consoleSource.includes('(owned.get(item.item_key)||0)<1'),
  'Part installation requires compatible builds and an actually owned part')
 assert(consoleSource.includes("view==='speed'")&&consoleSource.includes("item.build_effect==='speed_boost'")&&
- consoleSource.includes('selectedBuild.speed_multiplier')===false?consoleSource.includes('selectedBuild?.speed_multiplier'):true,
+ consoleSource.includes('selectedBuild?.speed_multiplier'),
  'Speed Bay must display the actual recorded speed and available boosters')
 assert(consoleSource.includes("buildFormationProgress(selectedBuild,now)")&&
  consoleSource.includes('selectedBuild.completes_at'),
