@@ -14,7 +14,7 @@ function validFingerprint(value: unknown): value is string {
 function trustedHistory(value: unknown): BridgeMessage[] {
   return Array.isArray(value) ? value.filter((m): m is BridgeMessage =>
     Boolean(m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string' && m.content.length <= 4000)
-  ).slice(-38) : []
+  ).slice(-40) : []
 }
 
 async function activeBridge(code: string) {
