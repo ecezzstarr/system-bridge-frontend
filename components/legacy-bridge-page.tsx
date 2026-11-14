@@ -112,12 +112,12 @@ export default function BridgePage() {
             encodeURIComponent(savedSession)+'&visitorFingerprint='+
             encodeURIComponent(getFingerprint(code))
           void fetch(url,{cache:'no-store'})
-            .then(async response=>({ok:response.ok,body:await response.json()}))
-            .then(({ok,body})=>{
+            .then(async response=>({ok:response.ok,status:response.status,body:await response.json()}))
+            .then(({ok,status,body})=>{
               if(ok && body.success && Array.isArray(body.messages)){
                 setSessionId(savedSession)
                 if(body.messages.length)setMessages(body.messages)
-              }else if(!ok && [400,404].includes(Number(body?.status||404))){
+              }else if(!ok && [400,404].includes(status)){
                 localStorage.removeItem('weave_bridge_conversation_'+code)
               }
             }).catch(()=>{/* Keep the greeting during temporary failures. */})
@@ -260,6 +260,7 @@ export default function BridgePage() {
       const data = await res.json()
       if (data.success && data.sessionId) {
         setSessionId(data.sessionId)
+        storeBridgeSession(code,String(data.sessionId))
         return data.sessionId
       }
     } catch {}
@@ -285,7 +286,7 @@ export default function BridgePage() {
       const res = await fetch(`/api/bridge/${code}/support`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId: sid, position: supportPosition, content }),
+        body: JSON.stringify({ sessionId: sid, position: supportPosition, content, visitorFingerprint:getFingerprint(code) }),
       })
       const data = await res.json()
       if (data.success) setSupportMessages(prev => [...prev, data.message])
