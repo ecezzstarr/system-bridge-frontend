@@ -12,13 +12,13 @@ type Checkin={member_user_id:string;member_name:string;work_date:string;work_sta
 type SupportRecord={id:string;worker_id:string;worker_name:string;purpose:string;status:string;
   task_reference:string|null;requested_amount:number;offered_amount:number|null;currency:string|null;
   outstanding:number;unused:number;updated_at:string}
-type Value={available:boolean;packages?:number;folders?:number;orders?:number;units?:number}
+type Value={available:boolean;packages?:number;contacts?:number;conversations?:number;folders?:number;orders?:number;units?:number}
 type Data={mode:'manager'|'member';managerId:string;team:Member[];membership:Member|null;
   tasks:Task[];checkins:Checkin[];supportAvailable:boolean;supportQueue:SupportRecord[];
   summary:{teamMembers:number;directReports:number;assistantReports:number;
     todayCheckins:number;needsHelp:number;tasksOpen:number;tasksCompleted:number;
     awaitingTaskReviews:number;supportCasesPending:number|null;outstandingSystemSwitchSupport:number|null;outstandingNgnSupport:number|null}|null;
-  metrics:{prospectPurchases:Value;confirmedFileFolders:Value;fulfilledFood:Value}|null}
+  metrics:{prospectPurchases:Value;confirmedOutreach:Value;bridgeConversations:Value;confirmedFileFolders:Value;fulfilledFood:Value}|null}
 const format=(n:unknown)=>Number(n||0).toLocaleString('en-NG')
 const date=(s:string)=>String(s||'').slice(0,10)
 const label=(s:string)=>s.replaceAll('_',' ')
@@ -138,10 +138,12 @@ export default function RegionalDailyWorkspace(){
       </section>
       <section className="rounded-xl border border-white/15 bg-slate-950/70 p-4">
         <h2 className="text-xl font-black">Today's recorded company movement</h2>
-        <p className="mt-2 text-xs text-slate-400">Only staff formally assigned to this Regional Manager count here. Activity is not company profit.</p>
-        <div className="mt-3 grid gap-3 sm:grid-cols-3">
+        <p className="mt-2 text-xs text-slate-400">Only staff formally assigned to this Regional Manager count here. Confirmed sends are self-reported; Bridge sessions are recorded visits, not guaranteed interested buyers. Activity is not company profit.</p>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           {[
             {label:'Prospect packages purchased',key:'prospectPurchases',field:'packages'},
+            {label:'Bridger-confirmed message sends',key:'confirmedOutreach',field:'contacts'},
+            {label:'Bridge AI conversations',key:'bridgeConversations',field:'conversations'},
             {label:'Confirmed Client File Folders',key:'confirmedFileFolders',field:'folders'},
             {label:'Paid and fulfilled food orders',key:'fulfilledFood',field:'orders'},
           ].map(x=>{
