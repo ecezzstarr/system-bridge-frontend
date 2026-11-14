@@ -28,7 +28,7 @@ for(const text of ['System Switch · Bridge of Radiance','Company Staff Verifica
  'data-pro-stage="business-plan"','data-pro-stage="verification-status"'])
  assert.ok(page.includes(text),text+' must be present in the company verification presentation')
 for(const text of ["action:'submit_plan'","action:'submit_payment'",
- "action:'send_registration_invite'",'await refresh(ticket)',"sessionStorage.setItem(SESSION_KEY,json.ticket)",
+ "action:'send_registration_invite'",'await refresh(json.ticket)',"sessionStorage.setItem(SESSION_KEY,json.ticket)",
  'companyPosition','Monthly salary:','680 USDT','payment_required',
  'pending_forensics','paid_pending_account','signedName','termsAccepted:accepted',
  'operatingCountry','operatingRegion','operatingCity','contactAddress'])
