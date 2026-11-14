@@ -95,7 +95,7 @@ export default function BridgePage() {
   useEffect(() => {
     fetch(`/api/bridge/${code}`)
       .then(r => r.json())
-      .then(data => {
+      .then(async data => {
         if (!data.success) {
           setNotFound(true)
           return
@@ -111,16 +111,16 @@ export default function BridgePage() {
           const url='/api/bridge/'+encodeURIComponent(code)+'/chat?sessionId='+
             encodeURIComponent(savedSession)+'&visitorFingerprint='+
             encodeURIComponent(getFingerprint(code))
-          void fetch(url,{cache:'no-store'})
-            .then(async response=>({ok:response.ok,status:response.status,body:await response.json()}))
-            .then(({ok,status,body})=>{
-              if(ok && body.success && Array.isArray(body.messages)){
-                setSessionId(savedSession)
-                if(body.messages.length)setMessages(body.messages)
-              }else if(!ok && [400,404].includes(status)){
-                localStorage.removeItem('weave_bridge_conversation_'+code)
-              }
-            }).catch(()=>{/* Keep the greeting during temporary failures. */})
+          try {
+            const response=await fetch(url,{cache:'no-store'})
+            const body=await response.json()
+            if(response.ok && body.success && Array.isArray(body.messages)){
+              setSessionId(savedSession)
+              if(body.messages.length)setMessages(body.messages)
+            }else if([400,404].includes(response.status)){
+              localStorage.removeItem('weave_bridge_conversation_'+code)
+            }
+          }catch{/* Keep the greeting during temporary network failures. */}
         }
 
         const storedDepositId = getStoredDepositId(code)
