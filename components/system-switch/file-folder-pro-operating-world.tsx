@@ -4,11 +4,13 @@ import {Canvas} from '@react-three/fiber'
 import {OrbitControls,Text} from '@react-three/drei'
 import {CityMaterial} from './file-folder-city-material'
 import {buildFormationProgress} from '@/lib/file-folder-world-runtime'
+import {FILE_FOLDER_EQUIPMENT,resolveFileFolderAppearance,type FileFolderWorldAppearance} from '@/lib/file-folder-world-presets'
 
 type RecordItem={id?:string;title?:string;status?:string;started_at?:string;completes_at?:string}
 type District={key:string;label:string}
 type Props={
  businessName:string;businessPurpose?:string|null;districts:District[];active:string
+ appearance?:FileFolderWorldAppearance
  onEnter:(district:string)=>void;onOpenCustomerDoor?:()=>void
  builds:RecordItem[];systemRecords:RecordItem[];platformProjects?:Array<{id?:string}>
  customerDoor?:{public_slug?:string|null;formation_status?:string|null}|null;now:number
@@ -185,7 +187,7 @@ function Scene({name,selected,onSelect,builds,systems,now,onEnter}:{
 /** The central landmark belongs to this Pro staff member's approved business.
  * It never defaults to another owner's profession or claims unverified earnings. */
 export default function FileFolderProOperatingWorld({
- businessName,businessPurpose,districts,active,onEnter,onOpenCustomerDoor,
+ businessName,businessPurpose,districts,active,appearance=resolveFileFolderAppearance('pro'),onEnter,onOpenCustomerDoor,
  builds,systemRecords,platformProjects=[],customerDoor,now,
 }:Props){
  const [selected,setSelected]=useState<StationId>('business')
@@ -203,6 +205,7 @@ export default function FileFolderProOperatingWorld({
  }
  const focus=STATIONS.find(s=>s.id===selected)||STATIONS[7]
  return <section data-pro-file-folder-world="textured-owner-business-3d"
+  data-tier-theme={appearance.theme} data-tier-realness={appearance.realness}
   className="overflow-hidden border-y border-sky-300/20 bg-[#081b33] text-white">
   <header className="border-b border-sky-200/15 px-4 py-4 sm:px-6">
    <p className="text-[10px] font-bold uppercase tracking-wider text-sky-200">Pro File Folder · Working business world</p>
@@ -238,6 +241,17 @@ export default function FileFolderProOperatingWorld({
      className={'min-h-11 shrink-0 rounded-lg border px-3 py-2 text-xs font-bold '+(selected===s.id?'border-sky-200 bg-sky-200/15':'border-sky-300/25')}>
      {s.label}</button>)}
    </nav>
+   <div className="mt-3 flex flex-wrap gap-2" data-file-folder-live-equipment={appearance.equipmentPack}>
+    {appearance.equipmentZones.map(zone=>{
+     const item=FILE_FOLDER_EQUIPMENT[zone]
+     const enabled=districts.some(d=>d.key===item.district)
+     return <button key={zone} type="button" disabled={!enabled}
+      onClick={()=>onEnter(item.district)}
+      className="min-h-11 rounded-lg border border-cyan-200/25 px-3 py-2 text-xs text-cyan-100 disabled:opacity-40">
+      {item.name} · {item.equipment}
+     </button>
+    })}
+   </div>
    <div data-pro-world-records="verified-server-state"
     className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-xs text-slate-300">
     <span>{building.length} active builds</span>
