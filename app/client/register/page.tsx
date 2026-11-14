@@ -106,7 +106,7 @@ function ClientRegisterContent() {
       if (result.success) {
         toast.success('Welcome into WEAVE.')
         setSession(result.token, result.user)
-        router.replace(result.activationRequired ? '/client/pro-activation' : (await isFlameEventActive() ? '/client/event' : '/client/system-switch'))
+        router.replace(result.activationRequired ? '/client/pro-activation' : (result.proWorkspaceReady ? '/client/system-switch' : (await isFlameEventActive() ? '/client/event' : '/client/system-switch')))
       } else {
         toast.error(result.error || "That didn't complete. Try again.")
       }
