@@ -82,7 +82,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       if(!rows.length)return NextResponse.json({error:'Conversation not found'},{status:404,headers:privateHeaders})
       prior=trustedHistory(rows[0].messages)
     }
-    const conversation:BridgeMessage[]=[...prior,{role:'user',content:last.content.trim()}].slice(-39)
+    const latestMessage:BridgeMessage={role:'user',content:last.content.trim()}
+    const conversation:BridgeMessage[]=[...prior,latestMessage].slice(-39)
 
     // Personal expression is only descriptive data. The original Bridge AI
     // mandate, authorization and company sales rules remain authoritative.
