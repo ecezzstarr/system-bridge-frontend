@@ -1,42 +1,36 @@
-# The Unbuilt Door · Verified Demand-to-File Folder Outreach
+# The Unbuilt Door · Bridger-owned verified demand outreach
 
-## Purpose
+## Principle
+File Folders are sold through Hope Bridgers' activities. The Unbuilt Door is **not** a separate File Folder storefront, transaction path or company-led direct sales bypass. It supplies real, independently verified market demand to Bridgers, who accompany the human crossing, the sale, and Client continuity.
 
-This is a new WEAVE outreach path, not an alteration to existing tickets, File Folder prices, referral bonuses, or company verification. A prospect is invited to consider a **specific independently verified market need** before deciding whether to build a business in a File Folder. A submitted need is not an order. A submitted business proposal is not an allocated customer. A File Folder purchase is not automatic.
+## Routes
+- `/unbuilt-door`: public read-only verified opportunity board plus private customer-request intake
+- `/bridger/unbuilt-door`: Bridger outreach workshop; selects a real active Bridge AI from the logged-in Bridger's own paths, then creates an invite URL tied to that Bridge
+- `/admin/unbuilt-door`: Administrations confirmation of authentic demand and view of proposals grouped by responsible Bridger
+- `/bridge/[code]`: existing official Bridger Bridge AI path for conversation, File Folder payment crossing, confirmation and continuity
 
-## Workspaces
+## Work cycle
+1. A requester voluntarily states a need. Until verified independently by Administrations, it remains private; no invented opportunities are published.
+2. Administrations verifies a real request and records the basis. A redacted, non-identifying summary appears publicly. This is a confirmed **inquiry**, not an order.
+3. A Bridger selects an opportunity and an **already-issued active Bridge AI path** they own. The new outreach invitation is associated with that path and must be shared with the prospect only by consent.
+4. The prospect opens the Unbuilt Door from that invitation. The server validates that the Bridger's Bridge is active and owned by an active Hope Bridger. The prospect may explore genuine needs and submit a private business response.
+5. The server writes the response with **bridger_id and bridge_code from the trusted database**, never from an unverified user-supplied Bridger ID. Business responses cannot be submitted without a valid Bridge.
+6. The prospect continues into `/bridge/[code]`. The **Bridger** explains File Folder value, conducts the sale through the existing official path, and accompanies the Client crossing.
+7. Administrations independently verifies payment, issues the File Number, and releases Client activation. Only the original verified sale/commission ledger may recognize company earnings or Bridger commission; an outreach response creates neither.
+8. The Bridger maintains authorized Client continuity after activation. Administrations closes old needs.
 
-- Public: `/unbuilt-door`
-- Hope Bridger: `/bridger/unbuilt-door`, linked from Bridger Outreach & Crossing
-- Administrations: `/admin/unbuilt-door`, linked from the Administrations command desk
-- File Folder preview and purchase: existing `/file-folder-preview` and `/file-folder`; payment and activation are unchanged
+## Guardrails
+- No direct File Folder purchase link or generic checkout inside the Unbuilt Door funnel.
+- No fabricated buyers, paid orders, price promises or investment-return claims.
+- No anonymous outbound messaging. Bridgers only copy invitations to people who agree to receive them.
+- A typed code never changes owner attribution. The backend checks `bridge_ais` and `users` to establish real Bridger ownership.
+- Private requester and prospect contact details stay inside the admin-authenticated review register; public listings redact email/phone/links. Administrations must still inspect each record for inadvertent personal identifiers.
+- Existing File Folder tiers, pricing, commission calculations, and authorized payment verification are unchanged.
+- This pilot does not automatically match proposals to paid sales for a sales dashboard. Conversion must use verified Bridge-linked payments from existing company ledgers.
+- Add platform-level bot protection and audit/reporting before scaling this public intake.
 
-## Controlled cycle
+## Hypothetical example
+A real customer requests recurring office pastry delivery. Administrations speaks to the requester and independently confirms the inquiry. A Hope Bridger recognizes an interested bakery entrepreneur, asks permission to share an invitation linked to the Bridger's active Bridge AI, and discusses whether a File Folder operating environment is useful. The entrepreneur's proposal is recorded against the verified Bridger; the sale, if elected, takes place only through that Bridger's actual Bridge. No income, customer assignment or payment is presumed.
 
-1. An external visitor **voluntarily** submits an actual need, a location, a description, and private contact email. They consent to verification and publication of a non-identifying summary. No promotional messages are sent.
-2. Request enters **pending**, privately in Administrations. It cannot appear in public search before verification.
-3. Administrations independently confirms the requester and the request, records a verification basis, and **verifies** or **rejects** it. Published fields have contact details automatically redacted as an additional boundary; Administrations must still inspect for names or identifying descriptions before approval.
-4. Bridger sees verified opportunities, selects one, and copies a truthful outreach invitation. Send only to a prospect who agrees to receive it. The workshop does not send messages or buy leads. Existing issued public movement codes may be added to URLs; a typed code is not proof of attribution.
-5. An interested entrepreneur can submit a private business response linked to the verified request, consent to further contact, and explore the official File Folder entrance. No requester's email is displayed or delivered to the entrepreneur automatically.
-6. Administrations reviews the opt-in proposals and chooses whether to contact the parties. Only official, independently verified File Folder purchases count as company sales or commission events.
-7. Administrations closes a demand when it is no longer current, removing it from public display.
-
-## Truth and privacy controls
-
-- No invented customers, orders, inventory, income projections, or artificial scarcity.
-- No automatic solicitation, mass sending, or undisclosed customer assignments.
-- Requests require actual contact details but those are accessible only through the admin-authenticated API.
-- Business responses require explicit consent. Email and business proposal are private; prospects never receive another person's contact details via the page.
-- Submission limits per email are applied; production should add infrastructure-level bot and traffic controls before a high-volume campaign.
-- Only confirmed status is published. Verified means Administrations confirmed a genuine inquiry, **not** a payment or a binding order.
-- An official File Folder purchase must follow the current purchase, deposit, verification, and activation pathways. Existing referral attribution and revenue ledgers remain authoritative.
-
-## Example (hypothetical; not a live customer)
-
-A person submits a genuine request for recurring office pastries. Administrations speaks with the person to confirm it is real. Only then does the request appear as a verified public need. A Bridger approaches a willing baker with the public invitation. The baker proposes how they could supply it and explores a File Folder to operate their business. Administrations privately reviews the response. **No paid order or earning is presumed.**
-
-## How to evaluate the pilot
-
-Track: submitted needs, independently verified needs, proposals submitted, contacted prospects, qualified applicants, and **separately verified** File Folder purchases. Attribute a sale to this feature only after matching approved purchase/activation records; current MVP does not automatically establish closed-loop attribution from a proposal to a payment.
-
-Launch should start with a small, hand-verified demand supply. Do not seed the database with fictional customers to make the public world look populated.
+## Pilot metrics
+Count genuine submitted customer needs; administrator-verified needs; Bridger-generated invitations and manual consented contacts; private business responses per Bridge; and independently verified File Folder purchases matched through the existing sales and commissions ledger. Do not conflate offers and actual paid orders.
