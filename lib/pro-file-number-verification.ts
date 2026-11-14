@@ -1,9 +1,9 @@
 import {createHash,randomBytes} from 'node:crypto'
 import {isProRegionalManagerPosition} from '@/lib/pro-regional-manager-policy'
-import {sql} from '@/lib/db'
+import {sql,getPool} from '@/lib/db'
 import {ensureCompanyClientStaffSchema} from '@/lib/company-client-staff'
 import {ensureClientFileFolderSchema,ensureCjDoradoFolder,CJ_DORADO_FILE_NUMBER} from '@/lib/client-file-folder'
-import {ensureProActivationSchema,getReceivingWallet,PRO_ACTIVATION_FEE_USDT} from '@/lib/pro-file-folder-activation'
+import {ensureProActivationSchema,getReceivingWallet,isTronAddress,PRO_ACTIVATION_FEE_USDT} from '@/lib/pro-file-folder-activation'
 
 export const PRO_FILE_NUMBER_VERIFICATION_PATH='/client/pro-verification'
 export const proNumberPattern=/^WEAVE-[A-Z0-9-]{6,110}$/
@@ -48,6 +48,18 @@ export async function ensureProFileNumberVerificationSchema(){
  await sql`ALTER TABLE pro_file_number_verifications ADD COLUMN IF NOT EXISTS operating_city varchar(150)`
  await sql`ALTER TABLE pro_file_number_verifications ADD COLUMN IF NOT EXISTS contact_address text`
  await sql`ALTER TABLE pro_file_number_verifications ADD COLUMN IF NOT EXISTS postal_code varchar(30)`
+ await sql`CREATE TABLE IF NOT EXISTS pro_file_number_payment_evidence_history (
+   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+   verification_id uuid NOT NULL REFERENCES pro_file_number_verifications(id),
+   tx_hash char(64) NOT NULL,
+   wallet_address varchar(64) NOT NULL,
+   event varchar(24) NOT NULL CHECK(event IN ('submitted','corrected','verified','rejected')),
+   reason text,
+   reviewed_by uuid REFERENCES users(id),
+   created_at timestamptz NOT NULL DEFAULT now()
+ )`
+ await sql`CREATE INDEX IF NOT EXISTS pro_payment_history_verification_idx
+   ON pro_file_number_payment_evidence_history(verification_id,created_at DESC)`
  await sql`CREATE INDEX IF NOT EXISTS pro_file_number_verifications_file_status
   ON pro_file_number_verifications(file_number,status,created_at DESC)`
 }
@@ -156,7 +168,7 @@ export async function readProFileNumberVerification(ticket:string){
  await ensureProFileNumberVerificationSchema()
  const [row]=await sql`SELECT id,file_number,business_name,status,identity_verified_at,
   operating_country,operating_region,operating_city,
-  payment_tx_hash,payment_submitted_at,payment_verified_at,rejection_reason FROM pro_file_number_verifications
+  payment_tx_hash,payment_wallet,payment_submitted_at,payment_verified_at,payment_verified_amount_usdt,rejection_reason FROM pro_file_number_verifications
   WHERE access_token_hash=${hashTicket(ticket.toLowerCase())} LIMIT 1`
  if(!row)return null
  // Reported CJ event funds are visible only after independently verified identity,
@@ -202,6 +214,9 @@ export async function readProFileNumberVerification(ticket:string){
  if(paymentReady){
   await ensureProActivationSchema()
   receivingWallet=await getReceivingWallet()
+ }else if(row.status==='payment_rejected'&&isTronAddress(String(row.payment_wallet||''))){
+  // Preserve the recorded original receiving wallet, even after a wallet rotation.
+  receivingWallet=String(row.payment_wallet)
  }
  return {
   reference:String(row.id),fileNumber:String(row.file_number),businessName:String(row.business_name),
@@ -210,23 +225,42 @@ export async function readProFileNumberVerification(ticket:string){
   }:null,
   status:String(row.status),feeUSDT:PRO_ACTIVATION_FEE_USDT,network:'USDT TRON (TRC-20)',
   walletAddress:receivingWallet,
-  paymentVerified:Boolean(row.payment_verified_at),folderActivated,siblingsEvent,companyPosition,
+  paymentVerified:Boolean(row.payment_verified_at),
+  paymentVerifiedAmountUSDT:row.payment_verified_at?Number(row.payment_verified_amount_usdt||0):null,
+  paymentTransactionId:row.payment_tx_hash?String(row.payment_tx_hash).trim():null,
+  folderActivated,siblingsEvent,companyPosition,
   rejectionReason:row.rejection_reason||null,
  }
 }
 export async function submitProFileNumberPayment(ticket:string,txHash:string,expectedWallet:string){
  if(!/^[a-f0-9]{64}$/i.test(ticket)||!/^[a-f0-9]{64}$/i.test(txHash))
-  throw new Error('A valid private verification reference and TRON transaction hash are required.')
+  throw new Error('A private verification session and 64-character TRON transaction ID are required.')
  await ensureProFileNumberVerificationSchema()
- const wallet=await getReceivingWallet()
- if(!wallet||wallet!==expectedWallet)throw new Error('The official receiving wallet is unavailable or changed. Do not transfer again; contact Forensics.')
- const [row]=await sql`UPDATE pro_file_number_verifications
-  SET payment_tx_hash=${txHash.toLowerCase()},payment_wallet=${wallet},
-   payment_submitted_at=now(),status='pending_forensics',updated_at=now(),
-   rejection_reason=NULL
-  WHERE access_token_hash=${hashTicket(ticket.toLowerCase())}
-   AND status='payment_required' AND payment_tx_hash IS NULL AND identity_verified_at IS NOT NULL
-  RETURNING id`
- if(!row)throw new Error('Identity verification and an approved business plan are required before payment evidence.')
- return {success:true,status:'pending_forensics',reference:String(row.id)}
+ const db=await getPool().connect()
+ try{
+  await db.query('BEGIN')
+  const {rows}=await db.query(`SELECT id,status,identity_verified_at,payment_wallet,
+    payment_tx_hash,rejection_reason FROM pro_file_number_verifications
+    WHERE access_token_hash=$1 FOR UPDATE`,[hashTicket(ticket.toLowerCase())])
+  const row=rows[0]
+  if(!row||!row.identity_verified_at||!['payment_required','payment_rejected'].includes(row.status))
+   throw new Error('Payment evidence is accepted only after approval or a recorded Forensics rejection.')
+  const wallet=row.status==='payment_rejected'
+    ?String(row.payment_wallet||'') :String(await getReceivingWallet()||'')
+  if(!isTronAddress(wallet)||wallet!==expectedWallet)
+   throw new Error('The original company payment destination is unavailable or changed. Do not transfer again; contact Forensics for reconciliation.')
+  const corrected=row.status==='payment_rejected'
+  const proof=txHash.trim().toLowerCase()
+  await db.query(`INSERT INTO pro_file_number_payment_evidence_history
+    (verification_id,tx_hash,wallet_address,event,reason)
+    VALUES($1::uuid,$2,$3,$4,$5)`,
+    [row.id,proof,wallet,corrected?'corrected':'submitted',corrected?row.rejection_reason:null])
+  await db.query(`UPDATE pro_file_number_verifications
+   SET payment_tx_hash=$2,payment_wallet=$3,payment_submitted_at=now(),
+    status='pending_forensics',rejection_reason=NULL,updated_at=now()
+   WHERE id=$1::uuid AND status IN ('payment_required','payment_rejected')`,[row.id,proof,wallet])
+  await db.query('COMMIT')
+  return {success:true,status:'pending_forensics',reference:String(row.id),corrected}
+ }catch(e){await db.query('ROLLBACK').catch(()=>{});throw e}
+ finally{db.release()}
 }
