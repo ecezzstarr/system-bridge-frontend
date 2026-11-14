@@ -119,7 +119,7 @@ export default function FileFolderPreviewPage() {
                       <img src={tier.image} alt={tier.imageAlt} width={tier.id==='pro'?768:1229} height={tier.id==='pro'?960:1536} className="max-h-[380px] w-full object-contain" loading="lazy" decoding="async" />
                     ) : (
                       <div className="relative flex h-52 w-full max-w-xs items-center justify-center rounded-2xl border border-white/20 bg-black/10 p-7 shadow-2xl backdrop-blur-sm">
-                        <div aria-hidden="true" className={`absolute inset-x-8 bottom-7 h-14 rounded-[50%] blur-xl ${tier.tone === 'standard' ? 'bg-emerald-200/30' : tier.tone === 'pro' ? 'bg-sky-200/30' : 'bg-amber-200/25'}`} />
+                        <div aria-hidden="true" className={`absolute inset-x-8 bottom-7 h-14 rounded-[50%] blur-xl ${tier.tone === 'standard' ? 'bg-emerald-200/30' : 'bg-amber-200/25'}`} />
                         <img src={tier.image} alt={tier.imageAlt} className="relative z-10 max-h-36 w-full object-contain drop-shadow-2xl" />
                         <p className="absolute bottom-3 left-0 right-0 text-center text-[9px] font-black uppercase tracking-[.18em] text-white/75">{tier.subtitle}</p>
                       </div>
