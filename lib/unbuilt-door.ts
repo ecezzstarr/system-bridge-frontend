@@ -223,3 +223,37 @@ export async function getAdminDoorInterests() {
   )
   return result.rows
 }
+
+/** A Bridger may only read prospects tied to that Bridger's verified Bridge. */
+export async function getBridgerDoorInterests(bridgerId: string) {
+  await ensureDoorInterestsSchema()
+  const result = await getPool().query(
+    `SELECT i.id,i.demand_id,i.business_name,i.contact_email,i.proposed_service,
+            i.bridge_code,i.status,i.created_at,d.title AS demand_title,d.category
+     FROM weave_unbuilt_door_interests i
+     JOIN weave_unbuilt_door_demands d ON d.id=i.demand_id
+     WHERE i.bridger_id=$1::uuid
+     ORDER BY i.created_at DESC LIMIT 120`,
+    [bridgerId],
+  )
+  return result.rows
+}
+
+/** These are outreach stages, NEVER verified purchase/commission statuses. */
+export async function updateBridgerDoorInterest(input: {
+  bridgerId: string; interestId: string; status: 'contacted' | 'qualified' | 'closed'
+}) {
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(input.interestId)) {
+    throw new Error('Invalid opportunity reference.')
+  }
+  await ensureDoorInterestsSchema()
+  const result = await getPool().query(
+    `UPDATE weave_unbuilt_door_interests SET status=$1
+     WHERE id=$2::uuid AND bridger_id=$3::uuid
+       AND status IN ('requested','contacted','qualified')
+     RETURNING id,status`,
+    [input.status, input.interestId, input.bridgerId],
+  )
+  if (!result.rows[0]) throw new Error('Prospect not found or already closed.')
+  return result.rows[0]
+}
