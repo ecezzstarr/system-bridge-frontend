@@ -87,7 +87,7 @@ export default function HopeWhatsappWorkboard(){
 
  const finishMeta=useCallback(async()=>{
   const {code,wabaId,phoneNumberId}=pending.current
-  if(!code||!wabaId||!phoneNumberId||connecting.current)return
+  if(!code||!wabaId||connecting.current)return
   connecting.current=true;setBusy(true);setError('');setNotice('')
   try{
    const response=await fetch(URL,{method:'POST',headers:{'Content-Type':'application/json'},
