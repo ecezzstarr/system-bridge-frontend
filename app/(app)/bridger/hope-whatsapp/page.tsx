@@ -169,7 +169,7 @@ export default function HopeWhatsappWorkboard(){
  return <main data-hope-whatsapp-workboard="true" className="min-h-screen bg-[#f7f4ed] px-4 pb-20 pt-7 text-[#253442] sm:px-8">
   <div className="mx-auto max-w-6xl space-y-6">
    <header className="rounded-3xl border border-[#d8c69f] bg-gradient-to-br from-[#fffcf6] via-[#f5ecd7] to-[#dcebec] p-6 shadow-sm sm:p-9">
-    <Link href="/bridger" className="inline-flex items-center gap-2 text-sm font-semibold text-[#785c28]"><ArrowLeft size={17}/> Hope workplace</Link>
+    <Link href="/bridger/presence" className="inline-flex items-center gap-2 text-sm font-semibold text-[#785c28]"><ArrowLeft size={17}/> Hope workplace</Link>
     <p className="mt-5 text-xs font-bold uppercase tracking-[.2em] text-[#927135]">Hope · Personal specialized workshop</p>
     <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">WhatsApp Workboard</h1>
     <p className="mt-3 max-w-3xl text-sm leading-7 text-[#52626a]">Connect your authorized WhatsApp Business number through Meta, receive replies and continue genuine prospect conversations inside Weave without opening a WhatsApp app for supported messages.</p>
