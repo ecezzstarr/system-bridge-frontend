@@ -252,7 +252,8 @@ export default function FileFolderProOperatingWorld({
   const station=STATIONS.find(s=>s.id===id)
   if(!station)return
   setSelected(id)
-  if(id==='plans'||id==='app'||id==='parts'||id==='speed'){
+  if(id==='app'){onEnter('blueprint_foundry');return}
+  if(id==='plans'||id==='parts'||id==='speed'){
    setConsoleView(id==='parts'?'parts':id==='speed'?'speed':'plans')
    window.requestAnimationFrame(()=>document.getElementById('pro-file-folder-operations')?.scrollIntoView({behavior:'smooth',block:'start'}))
    return
@@ -260,7 +261,7 @@ export default function FileFolderProOperatingWorld({
   if(id==='door'&&doorReady&&onOpenCustomerDoor){onOpenCustomerDoor();return}
   onEnter(station.district)
  }
- const focus=STATIONS.find(s=>s.id===selected)||STATIONS[7]
+ const focus=STATIONS.find(s=>s.id===selected)||STATIONS.find(s=>s.id==='business')!
  return <section data-pro-file-folder-world="textured-owner-business-3d"
   data-tier-theme={appearance.theme} data-tier-realness={appearance.realness}
   className="overflow-hidden border-y border-sky-300/20 bg-[#081b33] text-white">
