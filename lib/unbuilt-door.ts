@@ -127,6 +127,20 @@ export async function reviewDoorDemand(input: {
   return result.rows[0]
 }
 
+export async function getUnbuiltDoorBridger(input: unknown) {
+  const code = cleanDoorText(input, 32)
+  if (!/^[A-Za-z0-9_-]{6,32}$/.test(code)) return null
+  const result = await getPool().query(
+    `SELECT b.id AS bridge_id, b.bridge_code, b.bridger_id,
+            COALESCE(u.name, 'Bridger') AS bridger_name
+     FROM bridge_ais b JOIN users u ON u.id=b.bridger_id
+     WHERE b.bridge_code=$1 AND b.status='active'
+       AND u.role='bridger' AND u.is_active=true LIMIT 1`,
+    [code],
+  )
+  return result.rows[0] || null
+}
+
 export async function ensureDoorInterestsSchema() {
   await ensureUnbuiltDoorSchema()
   await getPool().query(`
@@ -137,11 +151,21 @@ export async function ensureDoorInterestsSchema() {
       contact_email varchar(255) NOT NULL,
       proposed_service varchar(600) NOT NULL,
       movement_code varchar(40),
+      bridger_id uuid NOT NULL REFERENCES users(id),
+      bridge_code varchar(32) NOT NULL,
       consent_at timestamptz NOT NULL DEFAULT now(),
       status varchar(20) NOT NULL DEFAULT 'requested'
         CHECK (status IN ('requested','contacted','qualified','converted','closed')),
       created_at timestamptz NOT NULL DEFAULT now()
     )
+  `)
+  await getPool().query(`
+    ALTER TABLE weave_unbuilt_door_interests
+    ADD COLUMN IF NOT EXISTS bridger_id uuid
+  `)
+  await getPool().query(`
+    ALTER TABLE weave_unbuilt_door_interests
+    ADD COLUMN IF NOT EXISTS bridge_code varchar(32)
   `)
   await getPool().query(`
     CREATE INDEX IF NOT EXISTS idx_unbuilt_door_interests_time
@@ -150,20 +174,22 @@ export async function ensureDoorInterestsSchema() {
 }
 export async function submitDoorInterest(input: {
   demandId: unknown; businessName: unknown; email: unknown
-  service: unknown; movement: unknown; consent: unknown
+  service: unknown; bridgeCode: unknown; consent: unknown
 }) {
   const demandId = cleanDoorText(input.demandId, 60)
   const businessName = cleanDoorText(input.businessName, 140)
   const email = cleanDoorText(input.email, 255).toLowerCase()
   const service = cleanDoorText(input.service, 600)
-  const movement = cleanDoorText(input.movement, 40).toUpperCase()
+  const bridgeCode = cleanDoorText(input.bridgeCode, 32)
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(demandId) ||
       businessName.length < 2 || service.length < 20 ||
       !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || input.consent !== true ||
-      (movement && !/^[A-Z0-9-]+$/.test(movement))) {
+      !bridgeCode) {
     throw new Error('Provide your business, proposal, valid contact email and permission for Weave to respond.')
   }
   await ensureDoorInterestsSchema()
+  const bridger = await getUnbuiltDoorBridger(bridgeCode)
+  if (!bridger) throw new Error('A currently active Bridger Bridge is required to continue.')
   const pool = getPool()
   const verified = await pool.query(
     `SELECT id FROM weave_unbuilt_door_demands WHERE id=$1::uuid AND status='verified'`,
@@ -178,9 +204,9 @@ export async function submitDoorInterest(input: {
   if (Number(prior.rows[0]?.n || 0) >= 3) throw new Error('This address has reached its weekly interest limit.')
   const result = await pool.query(
     `INSERT INTO weave_unbuilt_door_interests
-        (demand_id,business_name,contact_email,proposed_service,movement_code)
-     VALUES ($1::uuid,$2,$3,$4,$5) RETURNING id,status,created_at`,
-    [demandId, businessName, email, service, movement || null],
+        (demand_id,business_name,contact_email,proposed_service,bridger_id,bridge_code)
+     VALUES ($1::uuid,$2,$3,$4,$5::uuid,$6) RETURNING id,status,created_at,bridger_id,bridge_code`,
+    [demandId, businessName, email, service, bridger.bridger_id, bridger.bridge_code],
   )
   return result.rows[0]
 }
@@ -188,9 +214,11 @@ export async function getAdminDoorInterests() {
   await ensureDoorInterestsSchema()
   const result = await getPool().query(
     `SELECT i.id,i.demand_id,i.business_name,i.contact_email,i.proposed_service,
-            i.movement_code,i.status,i.created_at,d.title AS demand_title,d.category
+            i.movement_code,i.bridger_id,i.bridge_code,
+            u.name AS bridger_name,i.status,i.created_at,d.title AS demand_title,d.category
      FROM weave_unbuilt_door_interests i
      JOIN weave_unbuilt_door_demands d ON d.id=i.demand_id
+     JOIN users u ON u.id=i.bridger_id
      ORDER BY i.created_at DESC LIMIT 120`,
   )
   return result.rows
