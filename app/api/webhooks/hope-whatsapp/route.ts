@@ -59,7 +59,7 @@ export async function POST(request:NextRequest){
       ?new Date(seconds*1000):new Date()
      const type=String(m.type||'unknown').slice(0,40)
      const body=type==='text'?String(m.text?.body||'').slice(0,4096):
-      '[Non-text WhatsApp message: '+type+'. Open the WhatsApp Business app for unsupported media.]'
+      '[WhatsApp '+type+' message. Media preview is not yet available in this Weave workboard.]'
      const {rows}=await db.query(
       "INSERT INTO hope_whatsapp_threads (channel_id,remote_wa_id,display_name,last_inbound_at,last_message_at) "+
       "VALUES ($1::uuid,$2,$3,$4,$4) ON CONFLICT(channel_id,remote_wa_id) DO UPDATE SET "+
