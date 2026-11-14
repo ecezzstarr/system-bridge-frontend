@@ -26,8 +26,10 @@ export default function BridgerUnbuiltDoorPage() {
   if (!isInitialized) return <main className="p-6 text-sm">Opening outreach workshop…</main>
   if (user?.role!=='bridger') return <main className="p-6 text-sm">Hope Bridger access required.</main>
   const code= /^[A-Z0-9-]{1,40}$/.test(movement.toUpperCase()) ? movement.toUpperCase() : ''
-  const url='https://weavingsystem.online/unbuilt-door' +
-    (selected||code ? '?' + new URLSearchParams({...selected?{need:selected}:{},...code?{movement:code}:{}}).toString() : '')
+  const params = new URLSearchParams()
+  if (selected) params.set('need',selected)
+  if (code) params.set('movement',code)
+  const url = 'https://weavingsystem.online/unbuilt-door' + (params.toString() ? '?' + params.toString() : '')
   const chosen=needs.find(x=>x.id===selected)
   const message=chosen
     ? 'A real business need has been reviewed through Weave: ' + chosen.title + ' (' + chosen.location + '). Explore this verified inquiry and consider whether your business can respond. This is not an order or a promise of earnings. ' + url
