@@ -109,7 +109,7 @@ async function run(){
  assert.equal((await inbox.POST(request)).status,200,'Valid recent inbound permits a real response')
  assert.equal(sent,1,'Meta API is invoked for a real outgoing WhatsApp message')
  const hook=load(files[3],{
-  'next/server':{NextResponse:{},NextRequest:{}},
+  'next/server':{NextResponse:class {constructor(body,opts){this.body=body;this.status=opts?.status||200}},NextRequest:{}},
   '@/lib/db':{getPool:()=>({})},
   '@/lib/hope-whatsapp':{whatsappMetaSettings:()=>({
    appSecret:process.env.WEAVE_META_APP_SECRET,verifyToken:process.env.WEAVE_META_WEBHOOK_VERIFY_TOKEN
