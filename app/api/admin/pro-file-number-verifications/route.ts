@@ -158,6 +158,12 @@ export async function POST(request:NextRequest){
       SET status='payment_rejected',rejection_reason=$1,updated_at=now()
       WHERE id=$2::uuid`,[reason,id])
     }
+    await db.query(`INSERT INTO pro_file_number_payment_evidence_history
+      (verification_id,tx_hash,wallet_address,event,reason,reviewed_by)
+      VALUES($1::uuid,$2,$3,$4,$5,$6::uuid)`,
+      [row.id,String(row.payment_tx_hash).trim(),String(row.payment_wallet),
+       action==='approve_payment'?'verified':'rejected',
+       action==='approve_payment'?'Forensics confirmed 680 USDT TRC-20 received.':String(body.reason||'').trim(),user.id])
     await db.query('COMMIT')
     return NextResponse.json({success:true,status:action==='approve_payment'?'paid_pending_account':'payment_rejected'},
       {headers:proVerificationPublicHeaders})
