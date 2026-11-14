@@ -4,6 +4,7 @@ import {Canvas} from '@react-three/fiber'
 import {OrbitControls,Text} from '@react-three/drei'
 import {CityMaterial} from './file-folder-city-material'
 import {buildFormationProgress} from '@/lib/file-folder-world-runtime'
+import FileFolderProBuildConsole,{type ProWorkshopView,type ProBlueprint,type ProCatalogItem,type ProInventoryItem,type ProBuild} from './file-folder-pro-build-console'
 import {FILE_FOLDER_EQUIPMENT,resolveFileFolderAppearance,type FileFolderWorldAppearance} from '@/lib/file-folder-world-presets'
 
 type RecordItem={id?:string;title?:string;status?:string;started_at?:string;completes_at?:string}
@@ -12,17 +13,22 @@ type Props={
  businessName:string;businessPurpose?:string|null;districts:District[];active:string
  appearance?:FileFolderWorldAppearance
  onEnter:(district:string)=>void;onOpenCustomerDoor?:()=>void
- builds:RecordItem[];systemRecords:RecordItem[];platformProjects?:Array<{id?:string}>
+ onAction:(payload:Record<string,unknown>,key:string)=>Promise<boolean>;busy:boolean
+ blueprints:ProBlueprint[];items:ProCatalogItem[];inventory:ProInventoryItem[]
+ buildFunding?:{publicDoorUnlocked?:boolean;buildSpeedMultiplier?:number|string|null}|null
+ builds:ProBuild[];systemRecords:RecordItem[];platformProjects?:Array<{id?:string}>
  customerDoor?:{public_slug?:string|null;formation_status?:string|null}|null;now:number
 }
 const STATIONS=[
  {id:'app',label:'App & Platform',district:'blueprint_foundry',detail:'Create your project and build published blueprints.',x:-11,z:-9},
+ {id:'plans',label:'Building Plans',district:'blueprint_foundry',detail:'Inspect the plan, actual required kits, prices and formation time before starting.',x:-4,z:-17},
  {id:'materials',label:'Materials Depot',district:'build_market',detail:'Acquire actual construction kits with recorded transactions.',x:-13,z:3},
  {id:'parts',label:'Parts Workshop',district:'parts_workshop',detail:'Purchase and install compatible capability parts.',x:-8,z:12},
  {id:'build',label:'Formation Yard',district:'formation_yard',detail:'Monitor construction timestamps and installed boosts.',x:0,z:14},
  {id:'systems',label:'Operating Systems',district:'active_systems',detail:'Operate commissioned systems and record actual work.',x:9,z:12},
  {id:'records',label:'Development Records',district:'library_district',detail:'Review recorded development and system intelligence.',x:13,z:3},
  {id:'door',label:'Customer Door',district:'workshop_core',detail:'Open your commissioned public Customer Door.',x:11,z:-9},
+ {id:'speed',label:'Speed Bay',district:'boost_bay',detail:'Purchase and install approved acceleration on an active recorded build.',x:4,z:-17},
  {id:'business',label:'My Business',district:'workshop_core',detail:'Organize your approved individual enterprise.',x:0,z:0},
 ] as const
 type Station=typeof STATIONS[number]
@@ -67,7 +73,9 @@ function WorldFloor(){
 function WorkshopBuilding({station,selected,onSelect}:{station:Station;selected:boolean;onSelect:()=>void}){
  const tall=station.id==='app'
  const building=station.id==='build'
- const height=tall?5.2:building?3.3:4
+ const planner=station.id==='plans'
+ const acceleration=station.id==='speed'
+ const height=tall?5.2:building?3.3:acceleration?4.7:4
  return <group position={[station.x,0,station.z]} onClick={event=>{event.stopPropagation();onSelect()}}>
   <mesh castShadow receiveShadow position={[0,.65,0]}>
    <cylinderGeometry args={[2.65,3,.95,12]}/><CityMaterial kind="metal" tileX={3} tileY={2}/>
@@ -88,6 +96,27 @@ function WorkshopBuilding({station,selected,onSelect}:{station:Station;selected:
   {building&&[-2,2].map(x=><mesh key={x} position={[x,3,0]}>
     <boxGeometry args={[.1,5,.1]}/><CityMaterial kind="warm" tileY={4}/>
    </mesh>)}
+  {planner&&<group position={[0,2.9,2.18]}>
+    <mesh><boxGeometry args={[2.6,1.6,.09]}/>
+      <meshPhysicalMaterial color="#9bdeff" transparent opacity={.5} metalness={.25} roughness={.12}/>
+    </mesh>
+    {[-.8,0,.8].map(x=><mesh key={x} position={[x,0,.065]}>
+      <boxGeometry args={[.06,1.4,.065]}/>
+      <meshStandardMaterial color="#dff7ff" emissive="#81ceff" emissiveIntensity={.42}/>
+    </mesh>)}
+    {[-.5,0,.5].map(y=><mesh key={y} position={[0,y,.068]}>
+      <boxGeometry args={[2.45,.05,.065]}/>
+      <meshStandardMaterial color="#dff7ff" emissive="#81ceff" emissiveIntensity={.42}/>
+    </mesh>)}
+  </group>}
+  {acceleration&&<group position={[0,3.2,2.25]}>
+    {[.6,1,1.45].map(r=><mesh key={r} rotation={[0,0,r]}>
+      <torusGeometry args={[r,.07,8,36]}/>
+      <meshStandardMaterial color="#ffe4a6" emissive="#f5ae42" emissiveIntensity={.6}/>
+    </mesh>)}
+    <mesh><cylinderGeometry args={[.32,.32,.8,10]}/>
+      <CityMaterial kind="metal"/></mesh>
+  </group>}
   <Text position={[0,height+2.35,0]} fontSize={.34} maxWidth={5.5}
    anchorX="center" outlineColor="#0a2139" outlineWidth={.02} color="#ffffff">
    {station.label.toUpperCase()}
@@ -128,7 +157,7 @@ function CentralBusiness({name,selected,onSelect}:{name:string;selected:boolean;
  </group>
 }
 function RecordedStructures({builds,systems,now,onEnter}:{
- builds:RecordItem[];systems:RecordItem[];now:number;onEnter:(district:string)=>void
+ builds:ProBuild[];systems:RecordItem[];now:number;onEnter:(district:string)=>void
 }){
  return <group>
   {builds.filter(b=>b.status==='building').slice(0,4).map((b,index)=>{
@@ -141,6 +170,11 @@ function RecordedStructures({builds,systems,now,onEnter}:{
     </mesh>
     {[-1.2,1.2].map(x=><mesh key={x} position={[x,2.2,0]}>
       <boxGeometry args={[.1,4.4,.1]}/><CityMaterial kind="warm" tileY={4}/>
+    </mesh>)}
+    {(b.applied_parts||[]).slice(0,4).map((part,i)=><mesh key={part.id||part.item_key||i}
+      position={[-.75+(i%2)*1.5,Math.min(3.4,1.1+height*.5),1.16]}>
+      <boxGeometry args={[.48,.48,.22]}/>
+      <meshStandardMaterial color="#9de7ff" emissive="#3574aa" emissiveIntensity={.45}/>
     </mesh>)}
     <Text position={[0,5.1,0]} fontSize={.25} maxWidth={3.5}
      anchorX="center" outlineColor="#07172a" outlineWidth={.02} color="#fff0c9">
@@ -166,7 +200,7 @@ function RecordedStructures({builds,systems,now,onEnter}:{
 }
 function Scene({name,selected,onSelect,builds,systems,now,onEnter}:{
  name:string;selected:StationId;onSelect:(id:StationId)=>void
- builds:RecordItem[];systems:RecordItem[];now:number;onEnter:(district:string)=>void
+ builds:ProBuild[];systems:RecordItem[];now:number;onEnter:(district:string)=>void
 }){
  return <>
   <color attach="background" args={['#99bfdc']}/>
@@ -188,11 +222,19 @@ function Scene({name,selected,onSelect,builds,systems,now,onEnter}:{
  * It never defaults to another owner's profession or claims unverified earnings. */
 export default function FileFolderProOperatingWorld({
  businessName,businessPurpose,districts,active,appearance=resolveFileFolderAppearance('pro'),onEnter,onOpenCustomerDoor,
+ onAction,busy,blueprints,items,inventory,buildFunding,
  builds,systemRecords,platformProjects=[],customerDoor,now,
 }:Props){
  const [selected,setSelected]=useState<StationId>('business')
+ const [consoleView,setConsoleView]=useState<ProWorkshopView>('plans')
  const available=useMemo(()=>STATIONS.filter(s=>districts.some(d=>d.key===s.district)),[districts])
- useEffect(()=>{const station=STATIONS.find(s=>s.district===active);if(station)setSelected(station.id)},[active])
+ useEffect(()=>{
+  const station=STATIONS.find(s=>s.district===active)
+  if(station)setSelected(station.id)
+  if(active==='boost_bay')setConsoleView('speed')
+  if(active==='parts_workshop')setConsoleView('parts')
+  if(active==='blueprint_foundry')setConsoleView('plans')
+ },[active])
  const building=builds.filter(b=>b.status==='building')
  const live=systemRecords.filter(s=>s.status==='active')
  const doorReady=Boolean(customerDoor?.public_slug&&customerDoor.formation_status==='selling')
@@ -200,6 +242,11 @@ export default function FileFolderProOperatingWorld({
   const station=STATIONS.find(s=>s.id===id)
   if(!station)return
   setSelected(id)
+  if(id==='plans'||id==='app'||id==='parts'||id==='speed'){
+   setConsoleView(id==='parts'?'parts':id==='speed'?'speed':'plans')
+   window.requestAnimationFrame(()=>document.getElementById('pro-file-folder-operations')?.scrollIntoView({behavior:'smooth',block:'start'}))
+   return
+  }
   if(id==='door'&&doorReady&&onOpenCustomerDoor){onOpenCustomerDoor();return}
   onEnter(station.district)
  }
@@ -252,6 +299,13 @@ export default function FileFolderProOperatingWorld({
      </button>
     })}
    </div>
+  <div id="pro-file-folder-operations" className="scroll-mt-20">
+   <FileFolderProBuildConsole view={consoleView} onViewChange={setConsoleView}
+    businessName={businessName||'My Pro Business'}
+    blueprints={blueprints} items={items} inventory={inventory} builds={builds}
+    buildFunding={buildFunding} doorStatus={customerDoor?.formation_status}
+    now={now} busy={busy} onAction={onAction} onEnterDistrict={onEnter}/>
+  </div>
    <div data-pro-world-records="verified-server-state"
     className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-xs text-slate-300">
     <span>{building.length} active builds</span>
