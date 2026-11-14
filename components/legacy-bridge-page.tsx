@@ -28,6 +28,16 @@ function getFingerprint(code: string) {
   return fp
 }
 
+function getStoredBridgeSession(code: string): string | null {
+  if(typeof window==='undefined')return null
+  const value=localStorage.getItem('weave_bridge_conversation_'+code)
+  return value && /^[0-9a-f-]{36}$/i.test(value) ? value : null
+}
+
+function storeBridgeSession(code:string,sessionId:string) {
+  if(typeof window!=='undefined')localStorage.setItem('weave_bridge_conversation_'+code,sessionId)
+}
+
 function getStoredDepositId(code: string): string | null {
   if (typeof window === 'undefined') return null
   return localStorage.getItem(`bridge_ss_session_${code}`)
@@ -94,6 +104,25 @@ export default function BridgePage() {
         setMessages([{ role: 'assistant', content: data.welcomeMessage }])
         setBridger(data.bridger || null)
 
+        // Restore only a conversation authenticated by this visitor's local,
+        // high-entropy fingerprint. The Bridge and its owner remain fixed.
+        const savedSession=getStoredBridgeSession(code)
+        if(savedSession){
+          const url='/api/bridge/'+encodeURIComponent(code)+'/chat?sessionId='+
+            encodeURIComponent(savedSession)+'&visitorFingerprint='+
+            encodeURIComponent(getFingerprint(code))
+          void fetch(url,{cache:'no-store'})
+            .then(async response=>({ok:response.ok,body:await response.json()}))
+            .then(({ok,body})=>{
+              if(ok && body.success && Array.isArray(body.messages)){
+                setSessionId(savedSession)
+                if(body.messages.length)setMessages(body.messages)
+              }else if(!ok && [400,404].includes(Number(body?.status||404))){
+                localStorage.removeItem('weave_bridge_conversation_'+code)
+              }
+            }).catch(()=>{/* Keep the greeting during temporary failures. */})
+        }
+
         const storedDepositId = getStoredDepositId(code)
         if (storedDepositId) {
           setDepositId(storedDepositId)
@@ -151,7 +180,12 @@ export default function BridgePage() {
       const data = await res.json()
       if (data.success) {
         setMessages(prev => [...prev, { role: 'assistant', content: data.response }])
-        if (!sessionId) setSessionId(data.sessionId)
+        if (data.sessionId) {
+          setSessionId(data.sessionId)
+          storeBridgeSession(code,String(data.sessionId))
+        }
+      } else {
+        setMessages(prev => [...prev, { role: 'assistant', content: data.error||'Unable to complete the conversation. Please retry.' }])
       }
     } catch {
       setMessages(prev => [...prev, { role: 'assistant', content: 'Connection hiccup — try again?' }])
@@ -201,7 +235,7 @@ export default function BridgePage() {
     if (!activeSessionId) return
     setSupportLoading(true)
     try {
-      const res = await fetch(`/api/bridge/${code}/support?sessionId=${activeSessionId}&position=${position}`)
+      const res = await fetch(`/api/bridge/${code}/support?sessionId=${activeSessionId}&position=${position}&visitorFingerprint=${encodeURIComponent(getFingerprint(code))}`)
       const data = await res.json()
       if (data.success) setSupportMessages(data.messages)
     } catch {} finally {
