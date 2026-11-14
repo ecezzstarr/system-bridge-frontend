@@ -13,8 +13,8 @@ type MetaSdk={init:(args:Record<string,unknown>)=>void;
  login:(callback:(result:{authResponse?:{code?:string}})=>void,args:Record<string,unknown>)=>void}
 type MetaWindow=Window&{FB?:MetaSdk}
 type PendingMeta={code?:string;wabaId?:string;phoneNumberId?:string}
-const URL='/api/bridger/hope-whatsapp'
-const INBOX=URL+'/messages'
+const CHANNEL_API='/api/bridger/hope-whatsapp'
+const INBOX=CHANNEL_API+'/messages'
 
 export default function HopeWhatsappWorkboard(){
  const [channel,setChannel]=useState<Channel|null>(null)
@@ -34,7 +34,7 @@ export default function HopeWhatsappWorkboard(){
  const pending=useRef<PendingMeta>({})
  const connecting=useRef(false)
  const refreshSettings=useCallback(async()=>{
-  const response=await fetch(URL,{cache:'no-store'})
+  const response=await fetch(CHANNEL_API,{cache:'no-store'})
   const body=await response.json()
   if(!response.ok)throw new Error(body.error||'Unable to read WhatsApp connection status.')
   setChannel(body.channel);setConfigured(Boolean(body.configured))
@@ -90,7 +90,7 @@ export default function HopeWhatsappWorkboard(){
   if(!code||!wabaId||connecting.current)return
   connecting.current=true;setBusy(true);setError('');setNotice('')
   try{
-   const response=await fetch(URL,{method:'POST',headers:{'Content-Type':'application/json'},
+   const response=await fetch(CHANNEL_API,{method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({action:'connect',code,wabaId,phoneNumberId})})
    const body=await response.json()
    if(!response.ok)throw new Error(body.error||'Meta did not authorize this number.')
@@ -136,7 +136,7 @@ export default function HopeWhatsappWorkboard(){
  async function act(action:'register'|'disconnect'|'refresh_registration'){
   setBusy(true);setError('');setNotice('')
   try{
-   const response=await fetch(URL,{method:'POST',headers:{'Content-Type':'application/json'},
+   const response=await fetch(CHANNEL_API,{method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({action,pin:action==='register'?pin:undefined})})
    const body=await response.json()
    if(!response.ok)throw new Error(body.error||'Action failed')
