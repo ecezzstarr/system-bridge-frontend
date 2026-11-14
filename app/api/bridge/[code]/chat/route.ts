@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 import { chatWithBridge, type BridgeMessage } from '@/lib/bridge-ai-engine'
+import { getBridgerBridgeExpression, bridgeExpressionContext } from '@/lib/bridger-expression'
+import { getVerifiedDoorOpportunity } from '@/lib/unbuilt-door'
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ code: string }> }) {
   try {
     const { code } = await params
-    const { sessionId, visitorFingerprint, messages, prospectId } = await request.json()
+    const { sessionId, visitorFingerprint, messages, prospectId, needId } = await request.json()
 
     if (!Array.isArray(messages) || messages.length === 0) {
       return NextResponse.json({ error: 'messages required' }, { status: 400 })
@@ -15,7 +17,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       SELECT b.id, t.system_prompt
       FROM bridge_ais b
       JOIN bridge_templates t ON t.id = b.template_id
+      JOIN users u ON u.id = b.bridger_id
       WHERE b.bridge_code = ${code} AND b.status = 'active'
+        AND u.is_active = true AND u.role IN ('bridger','admin')
     `
     if (bridges.length === 0) {
       return NextResponse.json({ error: 'Bridge not found or inactive' }, { status: 404 })
@@ -34,7 +38,28 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       `
     }
 
-    const rawResponse = await chatWithBridge(messages as BridgeMessage[], bridge.system_prompt)
+    // Personal expression is only descriptive data. The original Bridge AI
+    // mandate, authorization and company sales rules remain authoritative.
+    let personalContext = ''
+    try {
+      const profile = await getBridgerBridgeExpression(code)
+      if(profile) personalContext = '\n\n' + bridgeExpressionContext(profile)
+    } catch(error) {
+      console.error('[bridge chat] personal expression lookup failed',error)
+    }
+    let opportunityContext = ''
+    if(typeof needId === 'string') {
+      try {
+        const need = await getVerifiedDoorOpportunity(needId)
+        if(need) opportunityContext = '\n\nContext for this conversation: Administrations independently verified a customer inquiry in ' +
+          need.location + ' concerning ' + need.title +
+          '. This is not a paid order, a reserved customer, or an income guarantee. Ask what the visitor wishes to do about it.'
+      } catch(error) {
+        console.error('[bridge chat] verified need lookup failed',error)
+      }
+    }
+    const rawResponse = await chatWithBridge(messages as BridgeMessage[],
+      String(bridge.system_prompt||'') + personalContext + opportunityContext)
       const match = rawResponse.match(/<<BUSINESS_CONCEPT:({[\s\S]*?})>>/)
       let businessConcept: { summary: string } | null = null
       let response = rawResponse
