@@ -45,7 +45,7 @@ export async function POST(request:NextRequest){
    const code=String(body.code||'')
    const wabaId=String(body.wabaId||'')
    const phoneNumberId=String(body.phoneNumberId||'')
-   if(!validId(wabaId)||!validId(phoneNumberId)||code.length<12||code.length>2500)
+   if(!validId(wabaId)||(phoneNumberId&&!validId(phoneNumberId))||code.length<12||code.length>2500)
     return reply({error:'Complete Meta Embedded Signup and its phone verification first.'},400)
    const endpoint='https://graph.facebook.com/'+s.version+'/oauth/access_token?'+
     new URLSearchParams({client_id:s.appId,client_secret:s.appSecret,code})
@@ -70,7 +70,8 @@ export async function POST(request:NextRequest){
    if(managed?.target_ids?.length&&!managed.target_ids.includes(wabaId))
     return reply({error:'Selected WhatsApp Business Account is not authorized for this Bridger.'},403)
    const numbers=await metaGraph('/'+wabaId+'/phone_numbers?fields=id,display_phone_number,verified_name,status&limit=100',token)
-   const phone=(numbers.data||[]).find((p:any)=>String(p.id)===phoneNumberId)
+   const phone=phoneNumberId?(numbers.data||[]).find((p:any)=>String(p.id)===phoneNumberId):
+    ((numbers.data||[]).length===1?numbers.data[0]:null)
    if(!phone||!phone.display_phone_number)
     return reply({error:'Meta did not confirm this phone number belongs to the selected business.'},403)
    const subscribe=await metaGraph('/'+wabaId+'/subscribed_apps',token,{method:'POST'})
@@ -87,7 +88,7 @@ export async function POST(request:NextRequest){
     "display_phone_number=excluded.display_phone_number,verified_name=excluded.verified_name,"+
     "token_ciphertext=excluded.token_ciphertext,status=excluded.status,updated_at=now() "+
     "RETURNING id,bridger_id,display_phone_number,verified_name,status",
-    [user.id,wabaId,phoneNumberId,String(phone.display_phone_number),
+    [user.id,wabaId,String(phone.id),String(phone.display_phone_number),
      String(phone.verified_name||''),encrypted,state])
    return reply({success:true,channel:publicChannel(rows[0])})
   }
