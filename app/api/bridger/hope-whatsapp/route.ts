@@ -92,6 +92,22 @@ export async function POST(request:NextRequest){
      String(phone.verified_name||''),encrypted,state])
    return reply({success:true,channel:publicChannel(rows[0])})
   }
+  if(body.action==='refresh_registration'){
+   const channel=await ownerChannel(user.id)
+   if(!channel||channel.status==='disconnected')
+    return reply({error:'Connect your number through Meta first.'},409)
+   const {decryptWhatsAppToken}=await import('@/lib/hope-whatsapp')
+   const latest=await metaGraph('/'+channel.phone_number_id+'?fields=id,status,display_phone_number',
+    decryptWhatsAppToken(channel.token_ciphertext))
+   const status=String(latest.status||'').toUpperCase()
+   if(status==='CONNECTED'&&channel.status!=='connected'){
+    await getPool().query(
+     "UPDATE hope_whatsapp_channels SET status='connected',updated_at=now() "+
+     "WHERE bridger_id=$1::uuid AND id=$2::uuid",[user.id,channel.id])
+   }
+   const stored=await ownerChannel(user.id)
+   return reply({success:true,channel:publicChannel(stored),providerStatus:status||'UNKNOWN'})
+  }
   if(body.action==='register'){
    const pin=String(body.pin||'')
    if(!/^[0-9]{6}$/.test(pin))return reply({error:'Use a six-digit Meta WhatsApp Business two-step registration PIN.'},400)
