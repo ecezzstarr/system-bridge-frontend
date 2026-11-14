@@ -77,7 +77,7 @@ export function digits(value:unknown){
 }
 export function graphUrl(path:string){
  const s=whatsappMetaSettings()
- if(!/^\/[0-9A-Za-z_/-]+$/.test(path))throw new Error('Unsafe Meta Graph path')
+ if(!/^\/[0-9A-Za-z_/?=&,%.-]+$/.test(path))throw new Error('Unsafe Meta Graph path')
  return 'https://graph.facebook.com/'+s.version+path
 }
 export async function metaGraph(path:string,token:string,options?:{method?:'GET'|'POST';body?:unknown}){
