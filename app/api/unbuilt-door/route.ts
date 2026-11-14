@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getPublicDoorDemands, submitDoorDemand } from '@/lib/unbuilt-door'
+import { getPublicDoorDemands, submitDoorDemand, submitDoorInterest } from '@/lib/unbuilt-door'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -29,6 +29,10 @@ export async function POST(request: NextRequest) {
     if (!body || typeof body !== 'object' || typeof body.website === 'string' && body.website.trim()) {
       return NextResponse.json({ error: 'Unable to accept this request.' }, { status: 400 })
     }
+    if (body.action === 'interest') { 
+      const interest = await submitDoorInterest(body)
+      return NextResponse.json({ success: true, id: interest.id, status: 'requested', message: 'Your business proposal is privately recorded. Administrations can review it; no customer allocation or revenue is guaranteed.' }, { status: 201, headers: { 'Cache-Control': 'no-store' } })
+    }
     const item = await submitDoorDemand(body)
     return NextResponse.json({
       success: true, id: item.id, status: 'pending',
@@ -36,7 +40,7 @@ export async function POST(request: NextRequest) {
     }, { status: 201, headers: { 'Cache-Control': 'no-store' } })
   } catch (error) {
     if (error instanceof SyntaxError) return NextResponse.json({ error: 'Invalid request.' }, { status: 400 })
-    if (error instanceof Error && /Provide your|already submitted/.test(error.message)) {
+    if (error instanceof Error && /Provide your|already submitted|opportunity is no longer|weekly interest limit/.test(error.message)) {
       return NextResponse.json({ error: error.message }, { status: 400 })
     }
     console.error('[unbuilt-door] submission failed', error)
