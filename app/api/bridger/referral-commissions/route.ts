@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { sql } from '@/lib/db'
 import { ensureBridgerReferralColumns } from '@/lib/bridger-referral-commission'
+import { getAgenticBridgerState } from '@/lib/weave-lifestyle'
 
 export async function GET(request: NextRequest) {
   const authUser = await getAuthUser(request)
@@ -20,6 +21,7 @@ export async function GET(request: NextRequest) {
       FROM bridger_profiles
       WHERE user_id = ${authUser.id}::uuid
     `
+    const referralStanding=await getAgenticBridgerState(authUser.id)
     const referralEarnings = Number(profiles[0]?.referral_earnings) || 0
     const referralCount = Number(profiles[0]?.bridger_referral_count) || 0
 
@@ -35,7 +37,7 @@ export async function GET(request: NextRequest) {
       success: true,
       referralEarnings,
       referralCount,
-      commissionRate: 0.20,
+      commissionRate: referralStanding.earningRate,
       referralLink: `/register?ref=${authUser.id}&role=bridger`,
       recentCommissions: recent.map(r => ({
         amount: Number(r.amount),
