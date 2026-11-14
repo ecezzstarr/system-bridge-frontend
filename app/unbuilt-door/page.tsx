@@ -18,7 +18,8 @@ export default function UnbuiltDoorPage() {
   const [needs,setNeeds] = useState<Need[]>([])
   const [loading,setLoading] = useState(true)
   const [listError,setListError] = useState('')
-  const [movement,setMovement] = useState('')
+  const [bridgeCode,setBridgeCode] = useState('')
+  const [bridgerName,setBridgerName] = useState('')
   const [selected,setSelected] = useState<Need | null>(null)
   const [needForm,setNeedForm] = useState(blankNeed)
   const [interest,setInterest] = useState(blankInterest)
@@ -28,20 +29,22 @@ export default function UnbuiltDoorPage() {
   const [error,setError] = useState('')
 
   useEffect(()=>{
-    const candidate = new URLSearchParams(window.location.search).get('movement') || ''
-    if (/^[a-z0-9-]{1,40}$/i.test(candidate)) setMovement(candidate.toUpperCase())
-    fetch('/api/unbuilt-door',{cache:'no-store'}).then(async response=>{
+    const candidate = new URLSearchParams(window.location.search).get('bridge') || ''
+    const bridgeParam = /^[a-zA-Z0-9_-]{6,32}$/.test(candidate) ? candidate : ''
+    fetch('/api/unbuilt-door' + (bridgeParam ? '?bridge=' + encodeURIComponent(bridgeParam) : ''),{cache:'no-store'}).then(async response=>{
       const data = await response.json()
       if (!response.ok) throw new Error(data.error || 'Unable to load')
       const published: Need[] = Array.isArray(data.demands) ? data.demands : []
       setNeeds(published)
+      setBridgeCode(data.bridger?.bridgeCode || '')
+      setBridgerName(data.bridger?.name || '')
       const requestedId = new URLSearchParams(window.location.search).get('need')
       if (requestedId) setSelected(published.find(item=>item.id===requestedId) || null)
     }).catch(err=>setListError(err?.message || 'Unable to load confirmed requests'))
       .finally(()=>setLoading(false))
   },[])
 
-  const purchaseHref = '/file-folder' + (movement ? '?movement=' + encodeURIComponent(movement) : '')
+  const crossingHref = bridgeCode ? '/bridge/' + encodeURIComponent(bridgeCode) : ''
 
   async function sendDemand(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -66,11 +69,11 @@ export default function UnbuiltDoorPage() {
     try {
       const response = await fetch('/api/unbuilt-door',{
         method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({action:'interest',demandId:selected.id,...interest,movement}),
+        body:JSON.stringify({action:'interest',demandId:selected.id,...interest,bridgeCode}),
       })
       const data = await response.json()
       if (!response.ok) throw new Error(data.error || 'Unable to record interest')
-      setInterestStatus('Your proposal is recorded privately for Administrations. You may now explore the File Folder purchase pathway.')
+      setInterestStatus('Your proposal is recorded with your Bridger for Administrations review. Continue with your Bridger through the official Bridge to discuss a File Folder.')
       setInterest(blankInterest)
     } catch (err:any) { setError(err.message || 'Submission failed') }
     finally { setBusy(false) }
@@ -99,8 +102,9 @@ export default function UnbuiltDoorPage() {
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <a href="#opportunities" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#1e2428] px-5 py-3 text-sm font-bold text-white">Explore verified needs <ArrowRight className="h-4 w-4"/></a>
-            <Link href={purchaseHref} className="inline-flex min-h-12 items-center justify-center rounded-full border border-[#aa9366] px-5 py-3 text-sm font-bold text-[#4c412d]">Explore File Folders</Link>
+            {crossingHref && <Link href={crossingHref} className="inline-flex min-h-12 items-center justify-center rounded-full border border-[#aa9366] px-5 py-3 text-sm font-bold text-[#4c412d]">Enter your Bridger's Bridge</Link>}
           </div>
+          {bridgerName && <p className="mt-4 text-sm font-semibold text-[#5e5036]">Your assigned outreach guide: {bridgerName} · Hope Bridger</p>}
         </div>
         <div className="relative overflow-hidden rounded-3xl border border-[#e5d9c4] bg-gradient-to-b from-white via-[#f1e8d6] to-[#e3d0a8] p-5">
           <img src="/weave/plus-file-folder-white-official.webp" alt="Weave official white-and-gold Plus File Folder" className="mx-auto h-64 w-full object-contain sm:h-80" />
@@ -134,16 +138,17 @@ export default function UnbuiltDoorPage() {
               <h3 className="mt-3 text-xl font-semibold">{need.title}</h3>
               <p className="mt-3 text-sm leading-6 text-[#504f4a]">{need.description}</p>
               <p className="mt-4 text-xs text-[#77736d]">A verified inquiry, not a paid order, allocated customer, or promised earning.</p>
-              <button type="button" onClick={()=>{setSelected(need);setInterestStatus('');setError('');document.getElementById('propose')?.scrollIntoView({behavior:'smooth'})}} className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-full bg-[#222a2b] px-5 py-2 text-sm font-bold text-white">Propose a business response <ArrowRight className="h-4 w-4"/></button>
+              {bridgeCode ? <button type="button" onClick={()=>{setSelected(need);setInterestStatus('');setError('');document.getElementById('propose')?.scrollIntoView({behavior:'smooth'})}} className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-full bg-[#222a2b] px-5 py-2 text-sm font-bold text-white">Respond through your Bridger <ArrowRight className="h-4 w-4"/></button> :
+                <p className="mt-4 text-sm font-semibold text-[#745c36]">A Bridger must invite you through an active WEAVE Bridge to begin a File Folder sales conversation.</p>}
             </article>)}
           </div>}
       </section>
 
-      {selected && <section id="propose" className="mt-8 scroll-mt-6">
+      {selected && bridgeCode && <section id="propose" className="mt-8 scroll-mt-6">
         <div className={panel}>
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.14em] text-[#8f764d]"><Handshake className="h-5 w-5"/> Business response · private</div>
           <h2 className="mt-3 text-2xl font-semibold">{selected.title}</h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-[#55534e]">Tell Administrations how your business could meet this need. A proposal is not a customer assignment. A purchased File Folder is a separate, verified transaction.</p>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-[#55534e]">Tell your Bridger and Administrations how your business could meet this need. Your proposal is assigned to the owner of the verified Bridge through which you arrived. The Bridger handles the sales crossing; Administrations verifies payment and activation. This is not a customer assignment.</p>
           <form onSubmit={sendInterest} className="mt-5 grid gap-4 sm:grid-cols-2">
             <label className={label}>Your business or proposed name<input required minLength={2} maxLength={140} className={input} value={interest.businessName} onChange={e=>setInterest({...interest,businessName:e.target.value})}/></label>
             <label className={label}>Contact email<input required type="email" maxLength={255} className={input} value={interest.email} onChange={e=>setInterest({...interest,email:e.target.value})}/></label>
@@ -151,7 +156,7 @@ export default function UnbuiltDoorPage() {
             <label className="flex items-start gap-3 text-sm leading-6 text-[#504e49] sm:col-span-2"><input required type="checkbox" checked={interest.consent} onChange={e=>setInterest({...interest,consent:e.target.checked})} className="mt-1 h-5 w-5"/><span>I consent to Weave storing this proposal and contacting me about it. No message is sent to the requester automatically.</span></label>
             <button disabled={busy} className="min-h-12 rounded-full bg-[#222a2b] px-6 text-sm font-bold text-white disabled:opacity-50">{busy?'Recording…':'Submit business response'}</button>
           </form>
-          {interestStatus && <div role="status" className="mt-4 rounded-xl border border-[#a6baa1] p-4 text-sm">{interestStatus} <Link className="font-bold underline" href={purchaseHref}>Explore File Folders</Link></div>}
+          {interestStatus && <div role="status" className="mt-4 rounded-xl border border-[#a6baa1] p-4 text-sm">{interestStatus} <Link className="font-bold underline" href={crossingHref}>Continue with your Bridger</Link></div>}
         </div>
       </section>}
 
@@ -179,9 +184,10 @@ export default function UnbuiltDoorPage() {
 
       <section className="mt-10 rounded-3xl border border-[#ddcfb6] bg-[#f0e8d8] p-6 sm:p-9">
         <p className="text-xs font-bold uppercase tracking-[.16em] text-[#8c713e]">The business entrance</p>
-        <h2 className="mt-2 text-3xl font-semibold">Your File Folder is the workplace. Demand is only the beginning.</h2>
-        <p className="mt-3 max-w-3xl text-sm leading-7 text-[#4e4a43]">See the official Standard, Pro, Premium and Plus environments. No preview, inquiry, or proposal guarantees customers, income or a business appointment. All purchases and activations remain subject to Weave's official terms and verification.</p>
-        <Link href={purchaseHref} className="mt-5 inline-flex min-h-12 items-center gap-2 rounded-full bg-[#20272b] px-6 py-3 text-sm font-bold text-white">Explore the File Folder entrance <ArrowRight className="h-4 w-4"/></Link>
+        <h2 className="mt-2 text-3xl font-semibold">Your Bridger connects the opportunity to your File Folder.</h2>
+        <p className="mt-3 max-w-3xl text-sm leading-7 text-[#4e4a43]">Hope Bridgers carry prospect outreach, explain the File Folder, and accompany the official Bridge crossing. Administrations independently verifies purchase and activation. No inquiry, proposal, preview or purchase guarantees customers, income or a business appointment.</p>
+        {crossingHref ? <Link href={crossingHref} className="mt-5 inline-flex min-h-12 items-center gap-2 rounded-full bg-[#20272b] px-6 py-3 text-sm font-bold text-white">Continue to {bridgerName || 'your Bridger'}'s Bridge <ArrowRight className="h-4 w-4"/></Link> :
+          <p className="mt-4 text-sm font-semibold text-[#665535]">This public discovery page does not sell File Folders directly. Ask a WEAVE Bridger for an active Bridge invitation.</p>}
       </section>
     </div>
   </main>
