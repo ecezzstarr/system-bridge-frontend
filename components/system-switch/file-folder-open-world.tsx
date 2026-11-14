@@ -469,6 +469,7 @@ export default function FileFolderOpenWorld({
               inventory={Array.isArray(world?.inventory)?world.inventory:[]}
               customerDoor={world?.customerDoor} now={now}/>
           : <FileFolderProOperatingWorld
+              appearance={worldAppearance||resolveFileFolderAppearance('pro')}
               businessName={world?.businessFormation?.business_name||workshopTitle}
               businessPurpose={world?.businessFormation?.purpose||workshopPurpose}
               districts={visibleDistricts} active={district} onEnter={enterDistrict}
