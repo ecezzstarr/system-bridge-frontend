@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { validateFileNumber } from '@/lib/fne'
 import { sql } from '@/lib/db'
-import { ensureCompanyClientStaffSchema, staffOfferTokenHash } from '@/lib/company-client-staff'
+import { ensureCompanyClientStaffSchema, staffOfferTokenHash, PRO_DIRECT_REGISTRATION_COOKIE } from '@/lib/company-client-staff'
 
 export async function GET(request: NextRequest) {
   try {
@@ -16,14 +16,15 @@ export async function GET(request: NextRequest) {
     // private, approved offer invitation is required for staff validation.
     await ensureCompanyClientStaffSchema()
     const [offer] = await sql`
-      SELECT token_hash,candidate_name,candidate_phone,status,client_id
+      SELECT token_hash,candidate_name,candidate_phone,status,client_id,registration_token_expires_at
       FROM company_client_staff_offers WHERE file_number=${fileNumber} LIMIT 1
     `
-    const staffOffer=request.nextUrl.searchParams.get('staffOffer')||''
+    const staffOffer=request.nextUrl.searchParams.get('staffOffer')||request.cookies.get(PRO_DIRECT_REGISTRATION_COOKIE)?.value||''
     if (offer && (
       offer.status!=='approved' || offer.client_id ||
       !/^[a-f0-9]{64}$/i.test(staffOffer) ||
-      offer.token_hash!==staffOfferTokenHash(staffOffer)
+      offer.token_hash!==staffOfferTokenHash(staffOffer) ||
+      (offer.registration_token_expires_at&&new Date(offer.registration_token_expires_at).getTime()<=Date.now())
     )) {
       return NextResponse.json({error:'A valid private company registration invitation is required.'},
         {status:403,headers:{'Cache-Control':'private, no-store'}})
