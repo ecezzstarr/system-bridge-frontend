@@ -418,7 +418,7 @@ export default function FileFolderOpenWorld({
       </header>
       </details>
 
-      <section data-file-folder-career-journey="choose-acquire-build-parts-boost-operate-earn" className="border-b border-amber-300/25 bg-[radial-gradient(ellipse_at_top_left,rgba(183,134,65,.16),transparent_72%)] p-4 text-white sm:p-6">
+      {fileFolderTier!=='pro'&&<section data-file-folder-career-journey="choose-acquire-build-parts-boost-operate-earn" className="border-b border-amber-300/25 bg-[radial-gradient(ellipse_at_top_left,rgba(183,134,65,.16),transparent_72%)] p-4 text-white sm:p-6">
         <p className="text-xs font-bold uppercase tracking-wider text-amber-200">Build your online career · Company of Time</p>
         <h2 className="mt-2 text-2xl font-black leading-tight sm:text-3xl">Choose a job. Build its system. Start serving customers.</h2>
         <p className="mt-3 max-w-3xl text-sm leading-7 text-stone-200">Every blueprint is a working capability you can turn into a paid service. See the exact material price and build time before buying. The system builds over real time; Boost Bay is optional. Customers pay for work only after you offer and deliver a real service.</p>
@@ -438,7 +438,7 @@ export default function FileFolderOpenWorld({
           </button>)}
         </div>
         <p className="mt-4 text-xs leading-6 text-stone-300">The company supplies buildable systems and charges only displayed fees. Actual earnings depend on verified customer jobs, agreed prices and genuine operating costs, not on purchasing a blueprint.</p>
-      </section>
+      </section>}
 
       <div className="min-h-[520px] sm:min-h-[650px]">
         {fileFolderTier==='standard'
