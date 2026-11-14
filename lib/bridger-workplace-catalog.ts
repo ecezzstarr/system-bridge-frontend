@@ -44,6 +44,7 @@ export const BRIDGER_WORKPLACE_SPACES: readonly BridgerWorkplaceSpace[] = [
     description: 'Choose how to reach people. Keep acquired prospects separate from social publications and their responses.',
     places: [
       { label: 'Flame of Hope · Mystery Box', href: '/bridger/flame-of-hope', detail: 'Unlock one weekly Electrolyte or Ember food mystery box during Burning River after verified System Switch spending equal to five times the food price.' },
+      { label: 'The Unbuilt Door', href: '/bridger/unbuilt-door', detail: 'Create a consent-led outreach invitation around independently verified customer demand, then record business proposals through Administrations.' },
       { label: 'Prospect Market', href: '/weave/market/prospects', detail: 'Claim your daily free candidate or acquire unverified prospect packages.' },
       { label: 'My Prospects', href: '/weave/market/prospects', detail: 'Return to your acquired prospects, previous contacts and the responses you need to follow.' },
       { label: 'Crossing Notebook', href: '/bridger/crossing-notebook', detail: 'Follow the human-first conversation and crossing sequence.' },
