@@ -4,39 +4,85 @@ import { chatWithBridge, type BridgeMessage } from '@/lib/bridge-ai-engine'
 import { getBridgerBridgeExpression, bridgeExpressionContext } from '@/lib/bridger-expression'
 import { getVerifiedDoorOpportunity } from '@/lib/unbuilt-door'
 
+const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+const privateHeaders = {'Cache-Control':'private, no-store'}
+
+function validFingerprint(value: unknown): value is string {
+  return typeof value === 'string' && uuid.test(value)
+}
+
+function trustedHistory(value: unknown): BridgeMessage[] {
+  return Array.isArray(value) ? value.filter((m): m is BridgeMessage =>
+    Boolean(m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string' && m.content.length <= 4000)
+  ).slice(-38) : []
+}
+
+async function activeBridge(code: string) {
+  const bridges = await sql`
+    SELECT b.id, t.system_prompt FROM bridge_ais b
+    JOIN bridge_templates t ON t.id = b.template_id
+    JOIN users u ON u.id = b.bridger_id
+    WHERE b.bridge_code=${code} AND b.status='active'
+      AND u.is_active=true AND u.role IN ('bridger','admin')
+    LIMIT 1
+  `
+  return bridges[0] || null
+}
+
+/** Only the visitor holding both the opaque session ID and local fingerprint may restore a conversation. */
+export async function GET(request: NextRequest, {params}:{params:Promise<{code:string}>}) {
+  const {code}=await params
+  const url=new URL(request.url)
+  const sessionId=url.searchParams.get('sessionId')
+  const fingerprint=url.searchParams.get('visitorFingerprint')
+  if(!sessionId || !uuid.test(sessionId) || !validFingerprint(fingerprint))
+    return NextResponse.json({error:'Valid session credentials required'},{status:400,headers:privateHeaders})
+  try {
+    const bridge=await activeBridge(code)
+    if(!bridge)return NextResponse.json({error:'Bridge not found or inactive'},{status:404,headers:privateHeaders})
+    const rows=await sql`SELECT messages FROM bridge_sessions
+      WHERE id=${sessionId}::uuid AND bridge_id=${bridge.id}::uuid
+        AND visitor_fingerprint=${fingerprint} LIMIT 1`
+    if(!rows.length)return NextResponse.json({error:'Conversation not found'},{status:404,headers:privateHeaders})
+    return NextResponse.json({success:true,sessionId,messages:trustedHistory(rows[0].messages)},{headers:privateHeaders})
+  }catch(error){
+    console.error('[bridge chat GET] failed',error)
+    return NextResponse.json({error:'Conversation unavailable'},{status:503,headers:privateHeaders})
+  }
+}
+
 export async function POST(request: NextRequest, { params }: { params: Promise<{ code: string }> }) {
   try {
     const { code } = await params
-    const { sessionId, visitorFingerprint, messages, prospectId, needId } = await request.json()
-
-    if (!Array.isArray(messages) || messages.length === 0) {
-      return NextResponse.json({ error: 'messages required' }, { status: 400 })
+    const body=await request.json().catch(()=>null)
+    if(!body || JSON.stringify(body).length>30000)
+      return NextResponse.json({error:'Conversation request is too large'},{status:413,headers:privateHeaders})
+    const {sessionId,visitorFingerprint,messages,needId}=body
+    if(!validFingerprint(visitorFingerprint) || (sessionId && (typeof sessionId!=='string'||!uuid.test(sessionId))))
+      return NextResponse.json({error:'Valid visitor session required'},{status:400,headers:privateHeaders})
+    if(!Array.isArray(messages) || messages.length===0 || messages.length>60) {
+      return NextResponse.json({error:'Provide a recent message'},{status:400,headers:privateHeaders})
+    }
+    const last=messages[messages.length-1]
+    if(!last || last.role!=='user' || typeof last.content!=='string' ||
+      last.content.trim().length<1 || last.content.length>2000) {
+      return NextResponse.json({error:'Write a message up to 2,000 characters'},{status:400,headers:privateHeaders})
     }
 
-    const bridges = await sql`
-      SELECT b.id, t.system_prompt
-      FROM bridge_ais b
-      JOIN bridge_templates t ON t.id = b.template_id
-      JOIN users u ON u.id = b.bridger_id
-      WHERE b.bridge_code = ${code} AND b.status = 'active'
-        AND u.is_active = true AND u.role IN ('bridger','admin')
-    `
-    if (bridges.length === 0) {
-      return NextResponse.json({ error: 'Bridge not found or inactive' }, { status: 404 })
-    }
-    const bridge = bridges[0]
+    const bridge=await activeBridge(code)
+    if(!bridge)return NextResponse.json({error:'Bridge not found or inactive'},{status:404,headers:privateHeaders})
 
-    if (sessionId) {
-      const sessions = await sql`SELECT id FROM bridge_sessions WHERE id=${sessionId}::uuid AND bridge_id=${bridge.id}::uuid LIMIT 1`
-      if (!sessions.length) return NextResponse.json({error:'Bridge session not found'}, {status:404})
+    // Do not accept visitor-written assistant turns or an unverified prospect ID
+    // as proof of outreach. Status is updated only by its owning verified flow.
+    let prior:BridgeMessage[]=[]
+    if(sessionId){
+      const rows=await sql`SELECT messages FROM bridge_sessions
+        WHERE id=${sessionId}::uuid AND bridge_id=${bridge.id}::uuid
+          AND visitor_fingerprint=${visitorFingerprint} LIMIT 1`
+      if(!rows.length)return NextResponse.json({error:'Conversation not found'},{status:404,headers:privateHeaders})
+      prior=trustedHistory(rows[0].messages)
     }
-    if (prospectId) {
-      await sql`
-        UPDATE market_prospect_outreach
-        SET status='responded',last_activity_at=NOW()
-        WHERE id=${prospectId}::uuid AND bridge_ai_id=${bridge.id}::uuid AND status IN ('sent','opened')
-      `
-    }
+    const conversation:BridgeMessage[]=[...prior,{role:'user',content:last.content.trim()}].slice(-39)
 
     // Personal expression is only descriptive data. The original Bridge AI
     // mandate, authorization and company sales rules remain authoritative.
@@ -58,7 +104,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         console.error('[bridge chat] verified need lookup failed',error)
       }
     }
-    const rawResponse = await chatWithBridge(messages as BridgeMessage[],
+    const rawResponse = await chatWithBridge(conversation as BridgeMessage[],
       String(bridge.system_prompt||'') + personalContext + opportunityContext)
       const match = rawResponse.match(/<<BUSINESS_CONCEPT:({[\s\S]*?})>>/)
       let businessConcept: { summary: string } | null = null
@@ -72,27 +118,31 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         }
         response = rawResponse.replace(match[0], '').trim()
       }
-      const updatedMessages = [...messages, { role: 'assistant', content: response }]
+      const updatedMessages:BridgeMessage[] = [...conversation, { role: 'assistant', content: response }]
 
     let currentSessionId = sessionId
       if (currentSessionId) {
-        await sql`
+        const changed=await sql`
           UPDATE bridge_sessions
           SET messages = ${JSON.stringify(updatedMessages)}::jsonb,
               business_concept = COALESCE(${businessConcept ? JSON.stringify(businessConcept) : null}::jsonb, business_concept),
               last_active_at = NOW()
           WHERE id = ${currentSessionId}::uuid AND bridge_id = ${bridge.id}::uuid
+            AND visitor_fingerprint=${visitorFingerprint}
+            AND messages=${JSON.stringify(prior)}::jsonb
+          RETURNING id
         `
+        if(!changed.length)return NextResponse.json({error:'Conversation changed in another tab. Reload before replying.'},{status:409,headers:privateHeaders})
       } else {
         const created = await sql`
           INSERT INTO bridge_sessions (bridge_id, visitor_fingerprint, messages, business_concept)
-          VALUES (${bridge.id}::uuid, ${visitorFingerprint || 'unknown'}, ${JSON.stringify(updatedMessages)}::jsonb, ${businessConcept ? JSON.stringify(businessConcept) : null}::jsonb)
+          VALUES (${bridge.id}::uuid, ${visitorFingerprint}, ${JSON.stringify(updatedMessages)}::jsonb, ${businessConcept ? JSON.stringify(businessConcept) : null}::jsonb)
           RETURNING id
         `
         currentSessionId = created[0].id
       }
 
-    return NextResponse.json({ success: true, response, sessionId: currentSessionId })
+    return NextResponse.json({ success: true, response, sessionId: currentSessionId },{headers:privateHeaders})
   } catch (error: any) {
     console.error('[bridge chat] error:', error)
     return NextResponse.json({ error: 'Failed to process message' }, { status: 500 })
