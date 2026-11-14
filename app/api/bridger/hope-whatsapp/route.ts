@@ -38,7 +38,7 @@ export async function POST(request:NextRequest){
  const body=await request.json().catch(()=>null)
  if(!body||typeof body!=='object')return reply({error:'Invalid request'},400)
  const s=whatsappMetaSettings()
- if(!s.configured)return reply({error:'Administrations must configure and approve the Meta WhatsApp Business integration first.'},503)
+ if(!s.configured&&body.action!=='disconnect')return reply({error:'Administrations must configure and approve the Meta WhatsApp Business integration first.'},503)
  try{
   await ensureHopeWhatsappSchema()
   if(body.action==='connect'){
