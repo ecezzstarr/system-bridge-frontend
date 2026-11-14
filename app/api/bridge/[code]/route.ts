@@ -12,8 +12,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
              u.id as bridger_id, u.name as bridger_name, u.username as bridger_username
       FROM bridge_ais b
       JOIN bridge_templates t ON t.id = b.template_id
-      LEFT JOIN users u ON u.id = b.bridger_id
+      JOIN users u ON u.id = b.bridger_id
       WHERE b.bridge_code = ${code} AND b.status = 'active'
+        AND u.is_active = true AND u.role IN ('bridger','admin')
     `
     if (bridges.length === 0) {
       return NextResponse.json({ error: 'Bridge not found or inactive' }, { status: 404 })
