@@ -75,12 +75,14 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     // Do not accept visitor-written assistant turns or an unverified prospect ID
     // as proof of outreach. Status is updated only by its owning verified flow.
     let prior:BridgeMessage[]=[]
+    let rawHistory:unknown=[]
     if(sessionId){
       const rows=await sql`SELECT messages FROM bridge_sessions
         WHERE id=${sessionId}::uuid AND bridge_id=${bridge.id}::uuid
           AND visitor_fingerprint=${visitorFingerprint} LIMIT 1`
       if(!rows.length)return NextResponse.json({error:'Conversation not found'},{status:404,headers:privateHeaders})
-      prior=trustedHistory(rows[0].messages)
+      rawHistory=rows[0].messages
+      prior=trustedHistory(rawHistory)
     }
     const latestMessage:BridgeMessage={role:'user',content:last.content.trim()}
     const conversation:BridgeMessage[]=[...prior,latestMessage].slice(-39)
@@ -130,7 +132,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
               last_active_at = NOW()
           WHERE id = ${currentSessionId}::uuid AND bridge_id = ${bridge.id}::uuid
             AND visitor_fingerprint=${visitorFingerprint}
-            AND messages=${JSON.stringify(prior)}::jsonb
+            AND messages=${JSON.stringify(rawHistory)}::jsonb
           RETURNING id
         `
         if(!changed.length)return NextResponse.json({error:'Conversation changed in another tab. Reload before replying.'},{status:409,headers:privateHeaders})
