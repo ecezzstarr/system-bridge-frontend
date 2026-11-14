@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
+import { getBridgerBridgeExpression } from '@/lib/bridger-expression'
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ code: string }> }) {
   try {
@@ -18,6 +19,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json({ error: 'Bridge not found or inactive' }, { status: 404 })
     }
     const bridge = bridges[0]
+    const expression = await getBridgerBridgeExpression(code).catch(()=>null)
 
     // Template publication controls creation of new Bridge AI paths. Once a
     // Bridger has created an active path, that visitor link remains live until
@@ -29,7 +31,11 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json({
       success: true,
       bridgeId: bridge.id,
-      welcomeMessage: bridge.custom_welcome_message || bridge.template_welcome_message,
+      welcomeMessage: expression?.invitation || bridge.custom_welcome_message || bridge.template_welcome_message,
+      weaveExpression: expression ? {
+        title:expression.public_title,specialty:expression.specialty,
+        purpose:expression.purpose,
+      } : null,
       experienceType: bridge.experience_type || 'chat_only',
       bridger: bridge.bridger_id
         ? {
