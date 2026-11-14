@@ -18,7 +18,7 @@ assert.ok(chat.includes('export async function GET('),'A returning visitor can r
 assert.ok(chat.includes('validFingerprint(visitorFingerprint)'),'The visitor must present a random local secret')
 assert.ok(chat.includes('visitor_fingerprint=${fingerprint}'),'Chat restoration is bound to the visitor')
 assert.ok(chat.includes('visitor_fingerprint=${visitorFingerprint}'),'Chat updates are bound to that visitor')
-assert.ok(chat.includes('AND messages=${JSON.stringify(prior)}::jsonb'),'Concurrent tabs cannot silently overwrite chat history')
+assert.ok(chat.includes('AND messages=${JSON.stringify(rawHistory)}::jsonb'),'Concurrent tabs cannot silently overwrite chat history')
 assert.ok(chat.includes('trustedHistory(rows[0].messages)'),'Replies use recorded history, not forged client role turns')
 assert.ok(chat.includes("last.role!=='user'"),'Public caller must submit its own real message')
 assert.ok(!chat.includes('UPDATE market_prospect_outreach'),'A URL prospect reference cannot falsely mark a human reply')
