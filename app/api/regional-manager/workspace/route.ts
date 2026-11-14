@@ -57,6 +57,16 @@ async function metrics(team:RegionalTeamMember[]){
       `SELECT COUNT(*)::int AS packages FROM market_prospect_packages
         WHERE purchased_by=ANY($1::uuid[]) AND status='sold'
           AND (purchased_at AT TIME ZONE 'Africa/Lagos')::date=((NOW() AT TIME ZONE 'Africa/Lagos')::date)`,bridgers),
+    confirmedOutreach:await count('market_prospect_outreach',
+      `SELECT COUNT(*)::int AS contacts FROM market_prospect_outreach
+        WHERE bridger_id=ANY($1::uuid[]) AND sent_at IS NOT NULL
+          AND status IN ('sent','opened','responded','converted')
+          AND (sent_at AT TIME ZONE 'Africa/Lagos')::date=((NOW() AT TIME ZONE 'Africa/Lagos')::date)`,bridgers),
+    bridgeConversations:await count('bridge_sessions',
+      `SELECT COUNT(*)::int AS conversations FROM bridge_sessions s
+        JOIN bridge_ais b ON b.id=s.bridge_id
+        WHERE b.bridger_id=ANY($1::uuid[])
+          AND (s.created_at AT TIME ZONE 'Africa/Lagos')::date=((NOW() AT TIME ZONE 'Africa/Lagos')::date)`,bridgers),
     confirmedFileFolders:await count('file_folder_purchases',
       `SELECT COUNT(DISTINCT COALESCE(NULLIF(file_number,''),id::text))::int AS folders
         FROM file_folder_purchases WHERE bridger_id=ANY($1::uuid[])
