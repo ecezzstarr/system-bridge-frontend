@@ -8,6 +8,7 @@ import { getAuthHeaders } from '@/lib/auth-client'
 
 type Demand = { id:string;category:string;location:string;title:string;description:string }
 type Bridge = { id:string; bridge_code:string; status:string; template_name:string; public_url:string }
+type Interest = { id:string; business_name:string; contact_email:string; proposed_service:string; bridge_code:string; status:string; demand_title:string; created_at:string }
 export default function BridgerUnbuiltDoorPage() {
   const { user, isInitialized } = useAuth()
   const [needs,setNeeds] = useState<Demand[]>([])
@@ -17,6 +18,9 @@ export default function BridgerUnbuiltDoorPage() {
   const [bridgeCode,setBridgeCode] = useState('')
   const [selected,setSelected] = useState('')
   const [copied,setCopied] = useState(false)
+  const [interests,setInterests] = useState<Interest[]>([])
+  const [stageBusy,setStageBusy] = useState('')
+  const [stageNotice,setStageNotice] = useState('')
   useEffect(()=>{
     if (!isInitialized || user?.role!=='bridger') return
     Promise.all([
@@ -32,6 +36,30 @@ export default function BridgerUnbuiltDoorPage() {
       setBridgeCode(previous=>active.some((item:Bridge)=>item.bridge_code===previous) ? previous : active[0]?.bridge_code||'')
     }).catch(err=>setError(err.message)).finally(()=>setLoading(false))
   },[isInitialized,user?.role])
+
+  useEffect(()=>{
+    if (!isInitialized || user?.role!=='bridger') return
+    fetch('/api/bridger/unbuilt-door',{headers:getAuthHeaders(),cache:'no-store'})
+      .then(async response=>{
+        const result=await response.json()
+        if(!response.ok) throw new Error(result.error||'Unable to load prospects')
+        setInterests(result.interests||[])
+      }).catch(err=>setError(err?.message||'Unable to read your prospects'))
+  },[isInitialized,user?.role])
+
+  async function updateStage(id:string,status:'contacted'|'qualified'|'closed') {
+    setStageBusy(id);setStageNotice('');setError('')
+    try {
+      const response=await fetch('/api/bridger/unbuilt-door',{
+        method:'PATCH',headers:getAuthHeaders(),body:JSON.stringify({id,status}),
+      })
+      const result=await response.json()
+      if(!response.ok)throw new Error(result.error||'Unable to update stage')
+      setInterests(previous=>previous.map(item=>item.id===id?{...item,status}:item))
+      setStageNotice('Your prospect outreach stage has been recorded. This is not a paid File Folder sale.')
+    }catch(err:any){setError(err?.message||'Unable to update stage')}
+    finally{setStageBusy('')}
+  }
 
   if (!isInitialized) return <main className="p-6 text-sm">Opening outreach workshop…</main>
   if (user?.role!=='bridger') return <main className="p-6 text-sm">Hope Bridger access required.</main>
@@ -77,6 +105,27 @@ export default function BridgerUnbuiltDoorPage() {
           {code&&<Link href={'/bridge/'+encodeURIComponent(code)} className="inline-flex min-h-12 items-center gap-2 rounded-full border border-[#c5b08b] px-5 text-sm font-semibold">Open your Bridger sales Bridge <ArrowRight className="h-4 w-4"/></Link>}
         </div>
       </div>
+      <section className="mt-7 rounded-3xl border border-[#e0d3bb] bg-white p-5 sm:p-7">
+        <h2 className="text-2xl font-semibold">My Unbuilt Door prospects</h2>
+        <p className="mt-3 text-sm leading-6 text-[#5c5850]">These people voluntarily responded through your verified Bridge AI. You are their responsible Hope Bridger. Follow up only on their proposed business, explain the official File Folder options, and conduct the actual sale through your own Bridge. Outreach stages are not paid sales or commissions.</p>
+        {stageNotice&&<p role="status" className="mt-3 rounded-xl border border-[#b6bea8] p-3 text-sm">{stageNotice}</p>}
+        {interests.length===0 && <p className="mt-4 rounded-xl border border-[#e6d8bd] bg-[#faf7ef] p-4 text-sm">No business responses have been received through your Bridges yet.</p>}
+        <div className="mt-4 grid gap-4">
+          {interests.map(item=><article key={item.id} className="rounded-2xl border border-[#e0d5c1] p-4">
+            <p className="text-xs font-bold uppercase tracking-wide text-[#8b6e3f]">{item.status} · {item.demand_title}</p>
+            <h3 className="mt-2 text-lg font-semibold">{item.business_name}</h3>
+            <p className="mt-2 text-sm leading-6">{item.proposed_service}</p>
+            <p className="mt-2 break-all text-sm"><strong>Consented contact:</strong> {item.contact_email}</p>
+            <p className="mt-2 text-xs text-[#756e60]">Verified Bridge AI · {item.bridge_code}</p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {item.status!=='closed'&&<button type="button" disabled={!!stageBusy} onClick={()=>void updateStage(item.id,'contacted')} className="min-h-11 rounded-full border border-[#ad9568] px-4 text-sm font-semibold disabled:opacity-40">Mark contacted</button>}
+              {item.status!=='closed'&&<button type="button" disabled={!!stageBusy} onClick={()=>void updateStage(item.id,'qualified')} className="min-h-11 rounded-full border border-[#ad9568] px-4 text-sm font-semibold disabled:opacity-40">Mark qualified interest</button>}
+              {item.status!=='closed'&&<button type="button" disabled={!!stageBusy} onClick={()=>void updateStage(item.id,'closed')} className="min-h-11 rounded-full border border-[#aa9189] px-4 text-sm font-semibold disabled:opacity-40">Close outreach</button>}
+              <Link href={'/bridge/'+encodeURIComponent(item.bridge_code)} className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[#263332] px-4 text-sm font-semibold text-white">Open my sales Bridge <ArrowRight className="h-4 w-4"/></Link>
+            </div>
+          </article>)}
+        </div>
+      </section>
       <div className="mt-7 rounded-3xl border border-[#e1d4bc] bg-[#ede5d4] p-5 sm:p-7">
         <p className="flex items-center gap-2 text-sm font-bold"><DoorOpen className="h-5 w-5"/>One verified movement at a time</p>
         <p className="mt-3 text-sm leading-6">You own the sales relationship for a prospect entering through your active Bridge AI. Their consented business response is tagged to your verified Bridger identity. Continue the actual File Folder sales conversation through your own Bridge; Administrations verifies payment before any activation or commission. This workshop never sends unsolicited messages or charges anyone.</p>
