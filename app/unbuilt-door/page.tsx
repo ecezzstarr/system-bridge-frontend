@@ -33,7 +33,10 @@ export default function UnbuiltDoorPage() {
     fetch('/api/unbuilt-door',{cache:'no-store'}).then(async response=>{
       const data = await response.json()
       if (!response.ok) throw new Error(data.error || 'Unable to load')
-      setNeeds(Array.isArray(data.demands) ? data.demands : [])
+      const published: Need[] = Array.isArray(data.demands) ? data.demands : []
+      setNeeds(published)
+      const requestedId = new URLSearchParams(window.location.search).get('need')
+      if (requestedId) setSelected(published.find(item=>item.id===requestedId) || null)
     }).catch(err=>setListError(err?.message || 'Unable to load confirmed requests'))
       .finally(()=>setLoading(false))
   },[])
