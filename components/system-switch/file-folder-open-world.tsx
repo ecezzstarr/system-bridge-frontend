@@ -474,6 +474,11 @@ export default function FileFolderOpenWorld({
               businessPurpose={world?.businessFormation?.purpose||workshopPurpose}
               districts={visibleDistricts} active={district} onEnter={enterDistrict}
               onOpenCustomerDoor={onOpenCustomerDoor}
+              onAction={act} busy={Boolean(busy)}
+              blueprints={Array.isArray(world?.blueprints)?world.blueprints:[]}
+              items={Array.isArray(world?.items)?world.items:[]}
+              inventory={Array.isArray(world?.inventory)?world.inventory:[]}
+              buildFunding={world?.buildFunding}
               builds={Array.isArray(world?.builds)?world.builds:[]}
               systemRecords={Array.isArray(world?.systems)?world.systems:[]}
               platformProjects={Array.isArray(world?.platformProjects)?world.platformProjects:[]}
