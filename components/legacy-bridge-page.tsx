@@ -44,6 +44,7 @@ export default function BridgePage() {
   const code = params.code as string
 
   const [prospectId, setProspectId] = useState<string | null>(null)
+  const [needId, setNeedId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
   const [bridger, setBridger] = useState<Bridger | null>(null)
@@ -77,6 +78,8 @@ export default function BridgePage() {
     const urlParams = new URLSearchParams(window.location.search)
     const pid = urlParams.get('pid')
     if (pid) setProspectId(pid)
+    const requestedNeed=urlParams.get('need')
+    if(requestedNeed && /^[0-9a-f-]{36}$/i.test(requestedNeed)) setNeedId(requestedNeed)
   }, [])
 
   useEffect(() => {
@@ -141,6 +144,7 @@ export default function BridgePage() {
           sessionId,
           visitorFingerprint: getFingerprint(code),
           prospectId,
+          needId,
           messages: nextMessages,
         }),
       })
@@ -215,6 +219,7 @@ export default function BridgePage() {
           sessionId: null,
           visitorFingerprint: getFingerprint(code),
           prospectId,
+          needId,
           messages: [{ role: 'user', content: '(started a conversation)' }],
         }),
       })
