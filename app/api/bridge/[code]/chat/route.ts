@@ -17,7 +17,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       SELECT b.id, t.system_prompt
       FROM bridge_ais b
       JOIN bridge_templates t ON t.id = b.template_id
+      JOIN users u ON u.id = b.bridger_id
       WHERE b.bridge_code = ${code} AND b.status = 'active'
+        AND u.is_active = true AND u.role IN ('bridger','admin')
     `
     if (bridges.length === 0) {
       return NextResponse.json({ error: 'Bridge not found or inactive' }, { status: 404 })
