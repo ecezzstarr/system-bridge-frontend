@@ -133,7 +133,7 @@ export default function HopeWhatsappWorkboard(){
   },{config_id:configId,response_type:'code',override_default_response_type:true,
    extras:{setup:{},featureType:'whatsapp_embedded_signup',sessionInfoVersion:'3'}})
  }
- async function act(action:'register'|'disconnect'){
+ async function act(action:'register'|'disconnect'|'refresh_registration'){
   setBusy(true);setError('');setNotice('')
   try{
    const response=await fetch(URL,{method:'POST',headers:{'Content-Type':'application/json'},
@@ -142,8 +142,9 @@ export default function HopeWhatsappWorkboard(){
    if(!response.ok)throw new Error(body.error||'Action failed')
    setPin('')
    setNotice(action==='register'?'Meta confirmed this number is registered. Your inbox can now receive conversations.':
+    action==='refresh_registration'?'Meta registration status checked. If the account is still pending, finish Meta registration or contact Administrations.':
     'This Weave connection is disabled. Its existing message records are retained.')
-   await refreshSettings();if(action==='register')await refreshThreads()
+   await refreshSettings();if(action==='register'||action==='refresh_registration')await refreshThreads()
   }catch(e){setError(e instanceof Error?e.message:'Unable to complete action')}
   finally{setBusy(false)}
  }
@@ -202,6 +203,7 @@ export default function HopeWhatsappWorkboard(){
        className="mt-2 block w-full max-w-xs rounded-lg border border-[#cdbb98] p-3"/></label>
      <button disabled={busy||pin.length!==6} onClick={()=>void act('register')}
       className="rounded-lg bg-[#183f49] px-5 py-3 text-sm font-semibold text-white disabled:opacity-40">Register through Meta</button>
+     <button disabled={busy} onClick={()=>void act('refresh_registration')} className="ml-0 rounded-lg border border-[#c4d4d0] px-5 py-3 text-sm font-semibold text-[#214a4a] sm:ml-3">Check Meta connection status</button>
     </div>:channel?.status!=='connected'?<div className="mt-5 space-y-4">
      <p className="text-sm leading-7 text-[#52626a]">Meta will ask you to sign in to your Business Portfolio, select a WhatsApp Business number and verify ownership using an SMS or voice call. Complete the SMS code <strong>inside Meta’s window</strong>. Numbers already used in a personal WhatsApp account may need to migrate; eligible WhatsApp Business app numbers may use Meta coexistence.</p>
      <button disabled={!metaReady||busy} onClick={startMeta}
