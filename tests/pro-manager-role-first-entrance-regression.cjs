@@ -58,7 +58,7 @@ assert.ok(verify.includes('<details className="pv-activation-disclosure">')&&
  !verify.includes('<div className="pv-fee">')&&
  verify.includes('680 USDT')&&
  verify.includes("action:'submit_plan'")&&verify.includes("action:'submit_payment'")&&
- verify.includes('requestRegistrationInvite'),
+ verify.includes('openDirectRegistration'),
  'Later fee is accurately disclosed without dominating entry or breaking verification')
 assert.ok(!verify.includes('CJ Dorado')&&
  !verify.includes('placeholder="Spain"'),
