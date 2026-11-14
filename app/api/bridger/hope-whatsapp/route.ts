@@ -48,7 +48,7 @@ export async function POST(request:NextRequest){
    if(!validId(wabaId)||(phoneNumberId&&!validId(phoneNumberId))||code.length<12||code.length>2500)
     return reply({error:'Complete Meta Embedded Signup and its phone verification first.'},400)
    const endpoint='https://graph.facebook.com/'+s.version+'/oauth/access_token?'+
-    new URLSearchParams({client_id:s.appId,client_secret:s.appSecret,code})
+    new URLSearchParams({client_id:s.appId,client_secret:s.appSecret,code}).toString()
    const exchange=await fetch(endpoint,{cache:'no-store',signal:AbortSignal.timeout(15000)})
    const data=await exchange.json().catch(()=>({}))
    const token=exchange.ok?String(data.access_token||''):''
