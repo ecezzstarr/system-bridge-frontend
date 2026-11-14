@@ -2,7 +2,7 @@
 import { isBuildPartCompatible } from '@/lib/file-folder-build-compatibility'
 import { quoteFileFolderBlueprint } from '@/lib/file-folder-build-quote'
 import FileFolderPlatformProjectStudio from './file-folder-platform-project-studio'
-import FileFolderLivingTerrain from './file-folder-living-terrain'
+import FileFolderProOperatingWorld from './file-folder-pro-operating-world'
 import FileFolderPlusRadiantWorld from './file-folder-plus-radiant-world'
 import FileFolderStandardLivingWorld from './file-folder-standard-living-world'
 import FileFolderPremiumWorld from './file-folder-premium-world'
@@ -468,9 +468,15 @@ export default function FileFolderOpenWorld({
               blueprints={Array.isArray(world?.blueprints)?world.blueprints:[]}
               inventory={Array.isArray(world?.inventory)?world.inventory:[]}
               customerDoor={world?.customerDoor} now={now}/>
-          : <FileFolderLivingTerrain districts={visibleDistricts} active={district} onEnter={enterDistrict}
-              systems={world?.systems?.length||0} building={activeBuilds.length} builds={activeBuilds} now={now}
-              appearance={worldAppearance||resolveFileFolderAppearance('pro')}/>} 
+          : <FileFolderProOperatingWorld
+              businessName={world?.businessFormation?.business_name||workshopTitle}
+              businessPurpose={world?.businessFormation?.purpose||workshopPurpose}
+              districts={visibleDistricts} active={district} onEnter={enterDistrict}
+              onOpenCustomerDoor={onOpenCustomerDoor}
+              builds={Array.isArray(world?.builds)?world.builds:[]}
+              systemRecords={Array.isArray(world?.systems)?world.systems:[]}
+              platformProjects={Array.isArray(world?.platformProjects)?world.platformProjects:[]}
+              customerDoor={world?.customerDoor} now={now}/>} 
 
 
 
