@@ -16,6 +16,8 @@ assert(world.includes("id:'speed',label:'Speed Bay',district:'boost_bay'"),
  'Pro must have an enterable Speed Bay in its 3D world')
 assert(world.includes("id:'parts',label:'Parts Workshop',district:'parts_workshop'"),
  'Pro must have an enterable Parts Workshop')
+assert(world.includes("if(id==='app'){onEnter('blueprint_foundry');return}"),
+ 'The App & Platform physical station must enter the existing platform project studio')
 assert(world.includes('<FileFolderProBuildConsole')&&world.includes('data-pro-textured-scene={interactive3D'),
  'Pro build tools must be inside the real touch-controlled world')
 assert(world.includes('applied_parts')&&world.includes('buildFormationProgress(b,now)'),
