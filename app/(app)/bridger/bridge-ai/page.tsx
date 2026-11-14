@@ -13,6 +13,7 @@ import { Plus, Copy, QrCode, Eye, MessageSquare, UserPlus, Loader2, Code2, Spark
 import { RiverChat } from '@/components/river-chat'
 import { WORLD_RULES } from '@/lib/world/constants'
 import { ClientFileFolderAssistance } from '@/components/bridger/client-file-folder-assistance'
+import PersonalWeaveExpressionWorkshop from '@/components/bridger/personal-weave-expression-workshop'
 
 interface Template { id: string; name: string; welcome_message: string; description?: string }
 interface Bridge {
@@ -130,7 +131,7 @@ export default function BridgerWorkshopPage() {
     <main className="weave-operating-environment overflow-hidden border-y border-cyan-300/15 bg-[#040a10]/78 sm:rounded-[2rem] sm:border" data-bridge-ai-environment>
       <header className="flex items-center justify-between gap-4 border-b border-cyan-300/15 px-5 py-6 md:px-7">
         <div>
-          <h1 className="text-2xl font-black" style={{ color: 'var(--foreground)' }}>Bridge AI Paths</h1>
+          <h1 className="text-2xl font-black" style={{ color: 'var(--foreground)' }}>Your Bridge AI · Personal Weave Intelligence</h1>
           <p className="weave-word-presence text-sm" style={{ color: 'var(--muted-foreground)' }}>
             Open a Client crossing with Bridge AI. When the person becomes a Client, the same Bridge AI continues as their AI support inside the File Folder.
           </p>
@@ -180,6 +181,7 @@ export default function BridgerWorkshopPage() {
         </Dialog>
       </header>
 
+      <PersonalWeaveExpressionWorkshop />
       <section className="border-b border-slate-800 bg-black/10 px-5 py-5 md:px-7" data-bridge-ai-station="per-template">
         <h2 className="text-lg font-bold text-white">Bridge AI · {BRIDGE_AI_TEMPLATE_PRICE} System Switch per template opening</h2>
         <p className="mt-2 text-sm text-slate-400">Each new Bridge AI path is purchased once when you open a template. Existing paths remain available with no monthly subscription. Your wallet is charged only when a new path is created.</p>
