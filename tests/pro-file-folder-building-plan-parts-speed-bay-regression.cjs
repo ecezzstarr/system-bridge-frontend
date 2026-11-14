@@ -22,6 +22,10 @@ assert(world.includes('applied_parts')&&world.includes('buildFormationProgress(b
  'Visible construction progress and attached parts must come from server records')
 assert(world.includes('CityMaterial')&&material.includes('city-material-atlas.png')&&material.includes('bumpMap={surfaces.relief}'),
  'Physical Pro buildings must carry WEAVE textured materials')
+assert(world.includes("frameloop={interactive3D?'always':'demand'}")&&
+ world.includes("data-pro-textured-scene={interactive3D?'interactive':'scroll-safe'}")&&
+ world.includes("pointerEvents:'none'"),
+ 'Phone scrolling must stay available before the user explicitly enters 3D controls')
 assert(!world.includes('CJ_DORADO_FILE_NUMBER')&&!world.includes("name:'Crypto Exchange'"),
  'Every Pro owner forms their own approved center business')
 assert(engine.includes('onAction={act} busy={Boolean(busy)}')&&
