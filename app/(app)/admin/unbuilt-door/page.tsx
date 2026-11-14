@@ -12,6 +12,7 @@ type Demand = {
 type Interest = {
   id:string; demand_id:string; business_name:string; contact_email:string
   proposed_service:string; movement_code:string|null; demand_title:string; status:string; created_at:string
+  bridger_id:string;bridge_code:string;bridger_name:string
 }
 export default function AdminUnbuiltDoorPage() {
   const [demands,setDemands]=useState<Demand[]>([])
@@ -98,7 +99,7 @@ export default function AdminUnbuiltDoorPage() {
 
       <section className="mt-10 border-t border-[#ddd1ba] pt-8">
         <h2 className="text-2xl font-semibold">Prospective File Folder businesses</h2>
-        <p className="mt-2 text-sm leading-6 text-[#5d5b57]">These are privately submitted business proposals. Contact only as consented. Weave must review suitability and explain official File Folder purchase terms; no automatic assignment or charge occurs.</p>
+        <p className="mt-2 text-sm leading-6 text-[#5d5b57]">Every business response arrives through a verified, active Hope Bridger Bridge. The Bridger owns the sales relationship; Administrations independently reviews the request and verifies File Folder payment. No proposal guarantees a sale, customer, activation, or commission.</p>
         {interests.length===0&&!loading&&<p className="mt-4 rounded-2xl border border-[#e1d5c0] bg-white p-5 text-sm">No business proposals recorded.</p>}
         <div className="mt-4 grid gap-4 lg:grid-cols-2">
           {interests.map(item=><article key={item.id} className="rounded-2xl border border-[#e0d4bd] bg-white p-5">
@@ -107,7 +108,9 @@ export default function AdminUnbuiltDoorPage() {
             <p className="mt-2 text-sm"><strong>Related need:</strong> {item.demand_title}</p>
             <p className="mt-2 text-sm leading-6">{item.proposed_service}</p>
             <p className="mt-3 break-all text-sm"><strong>Private contact:</strong> {item.contact_email}</p>
-            {item.movement_code&&<p className="mt-2 text-xs">Shared movement code: {item.movement_code} (unverified attribution)</p>}
+            <p className="mt-2 text-sm font-semibold">Responsible Bridger: {item.bridger_name}</p>
+            <p className="mt-1 break-all text-xs text-[#736e65]">Verified Bridge AI reference: {item.bridge_code}</p>
+            <p className="mt-2 text-xs text-[#736e65]">Business interest is not a purchase. Verify the actual Bridge-linked File Folder sale before recognizing commission.</p>
           </article>)}
         </div>
       </section>
