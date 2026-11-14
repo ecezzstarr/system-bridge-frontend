@@ -150,22 +150,27 @@ export async function collectFileFolderSalesMetrics(weeklyTarget?: number): Prom
          SELECT
            COALESCE(file_number,id::text) AS sale_key,
            amount_trx::numeric AS amount,
-           COALESCE(confirmed_at,created_at) AS sold_at
+           COALESCE(confirmed_at,created_at) AS sold_at,
+           1 AS source_priority
          FROM file_folder_purchases
          WHERE status='confirmed'
          UNION ALL
          SELECT
            COALESCE(file_number,id::text) AS sale_key,
            tier_trx::numeric AS amount,
-           COALESCE(verified_at,created_at) AS sold_at
+           COALESCE(verified_at,created_at) AS sold_at,
+           2 AS source_priority
          FROM bridge_deposits
          WHERE status='approved'
+       ), deduplicated AS (
+         SELECT sale_key,amount,
+           ROW_NUMBER() OVER (PARTITION BY sale_key ORDER BY source_priority) AS rn
+         FROM sales
+         WHERE (sold_at AT TIME ZONE $1)::date BETWEEN $2::date AND $3::date
        )
-       SELECT
-         COUNT(DISTINCT sale_key)::int AS confirmed_sales,
-         COALESCE(SUM(amount),0)::numeric AS confirmed_value
-       FROM sales
-       WHERE (sold_at AT TIME ZONE $1)::date BETWEEN $2::date AND $3::date`,
+       SELECT COUNT(*)::int AS confirmed_sales,
+              COALESCE(SUM(amount),0)::numeric AS confirmed_value
+       FROM deduplicated WHERE rn=1`,
       [FILE_FOLDER_SALES_MANAGER_TIMEZONE, weekStart, weekEnd],
     ),
     pool.query(
@@ -223,6 +228,24 @@ export async function collectFileFolderSalesMetrics(weeklyTarget?: number): Prom
     ),
   ])
 
+  // The legacy ChatGPT crossing and the owned Hope Bridge AI have separate
+  // session tables. A missing optional table must not fail the manager report.
+  let ownedBridgeSessions=0
+  try {
+    const available=await pool.query("SELECT to_regclass('public.bridge_sessions') AS relation")
+    if(available.rows[0]?.relation){
+      const native=await pool.query(
+        `SELECT COUNT(*)::int AS count FROM bridge_sessions s
+         JOIN bridge_ais b ON b.id=s.bridge_id
+         WHERE (s.created_at AT TIME ZONE $1)::date BETWEEN $2::date AND $3::date`,
+        [FILE_FOLDER_SALES_MANAGER_TIMEZONE,weekStart,weekEnd]
+      )
+      ownedBridgeSessions=Number(native.rows[0]?.count||0)
+    }
+  }catch(error){
+    console.error('[file-folder-sales-manager] owned Bridge conversation metric unavailable',error)
+  }
+
   const confirmedSales = Number(sales.rows[0]?.confirmed_sales || 0)
   return {
     weekStart,
@@ -244,7 +267,7 @@ export async function collectFileFolderSalesMetrics(weeklyTarget?: number): Prom
     contactableEmailLeads: Number(supply.rows[0]?.email_leads || 0),
     availableWhatsappProspects: Number(supply.rows[0]?.whatsapp_prospects || 0),
     activeBridgers: Number(bridgers.rows[0]?.count || 0),
-    crossingsOpened: Number(crossings.rows[0]?.count || 0),
+    crossingsOpened: Number(crossings.rows[0]?.count || 0) + ownedBridgeSessions,
   }
 }
 
