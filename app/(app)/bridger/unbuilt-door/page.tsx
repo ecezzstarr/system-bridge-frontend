@@ -64,9 +64,6 @@ export default function BridgerUnbuiltDoorPage() {
   if (!isInitialized) return <main className="p-6 text-sm">Opening outreach workshop…</main>
   if (user?.role!=='bridger') return <main className="p-6 text-sm">Hope Bridger access required.</main>
   const code = bridges.some(item=>item.bridge_code===bridgeCode) ? bridgeCode : ''
-  const params = new URLSearchParams()
-  if (selected) params.set('need',selected)
-  if (code) params.set('bridge',code)
   // Outreach shares the Bridger's Bridge AI, never a competing sales landing page.
   const url = code ? 'https://weavingsystem.online/bridge/'+encodeURIComponent(code)+
     (selected?'?need='+encodeURIComponent(selected):'') : ''
