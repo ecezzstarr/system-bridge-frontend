@@ -227,6 +227,16 @@ export default function FileFolderProOperatingWorld({
 }:Props){
  const [selected,setSelected]=useState<StationId>('business')
  const [consoleView,setConsoleView]=useState<ProWorkshopView>('plans')
+ const [phoneViewport,setPhoneViewport]=useState(false)
+ const [exploring3D,setExploring3D]=useState(false)
+ useEffect(()=>{
+  const media=window.matchMedia('(max-width:767px)')
+  const update=()=>setPhoneViewport(media.matches)
+  update()
+  media.addEventListener('change',update)
+  return ()=>media.removeEventListener('change',update)
+ },[])
+ const interactive3D=!phoneViewport||exploring3D
  const available=useMemo(()=>STATIONS.filter(s=>districts.some(d=>d.key===s.district)),[districts])
  useEffect(()=>{
   const station=STATIONS.find(s=>s.district===active)
@@ -261,9 +271,16 @@ export default function FileFolderProOperatingWorld({
    <p className="mt-2 text-xs text-slate-300">Drag to look · Pinch to zoom · Tap a workshop to enter real tools.</p>
   </header>
   <ProWorldRecovery>
-   <div className="relative h-[350px] w-full sm:h-[510px]" data-pro-textured-scene="interactive">
-    <Canvas shadows dpr={[1,1.5]} camera={{position:[25,23,36],fov:53,near:.1,far:130}}
-     gl={{antialias:true,powerPreference:'high-performance'}} style={{touchAction:'none'}}>
+   <div className="relative h-[350px] w-full sm:h-[510px]" data-pro-textured-scene={interactive3D?'interactive':'scroll-safe'}>
+    {phoneViewport&&<button type="button" onClick={()=>setExploring3D(value=>!value)}
+      aria-pressed={exploring3D}
+      className="absolute right-3 top-3 z-10 min-h-11 rounded-xl border border-sky-200/45 bg-[#071b34]/95 px-4 py-2 text-xs font-bold text-sky-100 shadow-xl">
+      {exploring3D?'Return to page scroll':'Explore 3D · Drag & pinch'}
+    </button>}
+    <Canvas shadows dpr={[1,1.5]} frameloop={interactive3D?'always':'demand'}
+     camera={{position:[25,23,36],fov:53,near:.1,far:130}}
+     gl={{antialias:true,powerPreference:'high-performance'}}
+     style={interactive3D?{touchAction:'none'}:{touchAction:'pan-y',pointerEvents:'none'}}> 
      <Suspense fallback={null}>
       <Scene name={businessName||'My Pro Business'} selected={selected} onSelect={enter}
        builds={builds} systems={systemRecords} now={now} onEnter={onEnter}/>
