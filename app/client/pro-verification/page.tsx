@@ -7,7 +7,8 @@ import {PRO_MANAGER_COMPANY_PURPOSE,PRO_MANAGER_FILE_FOLDER_DISTINCTION,
  PRO_MANAGER_PLAN_QUESTIONS,PRO_MANAGER_AGREEMENT_SECTIONS} from '@/lib/pro-regional-manager-language'
 type Verification={reference:string;fileNumber:string;businessName:string;
  status:string;feeUSDT:number;network:string;walletAddress:string|null;
- paymentVerified:boolean;folderActivated?:boolean;rejectionReason?:string|null;
+ paymentVerified:boolean;paymentVerifiedAmountUSDT?:number|null;
+ paymentTransactionId?:string|null;folderActivated?:boolean;rejectionReason?:string|null;
  companyPosition?:{title:string;monthlySalaryUSDT:number|null;salaryStatus:string}|null;
  operatingLocation?:{country:string;region:string;city:string}|null;
  siblingsEvent?:{reportedAmountUSDT:number;verifiedAmountUSDT:number;status:string;availableForWithdrawal:boolean}|null}
@@ -27,12 +28,12 @@ const STAGE_COPY:Record<string,{title:string;detail:string}>={
   detail:'Your payment reference is saved. Forensics must confirm the actual blockchain receipt before your verification advances. Do not transfer a second payment.',
  },
  payment_rejected:{
-  title:'Payment evidence needs reconciliation',
-  detail:'Your application remains saved, but Forensics needs to resolve the payment evidence. Read the finding below and contact Administrations before taking further action.',
+  title:'Payment evidence rejected · correction available',
+  detail:'Forensics has recorded the reason below. Correct the evidence for your original transfer or contact Administrations for reconciliation. Do not transfer funds again.',
  },
  paid_pending_account:{
-  title:'Payment verified · account activation in progress',
-  detail:'Forensics has verified the activation payment. Continue only when the Pro File Folder and company registration are authorized.',
+  title:'680 USDT verified · Pro registration follows',
+  detail:'Forensics approved your payment. When the File Folder is activated, register directly from this page without an email invitation or another payment.',
  },
  active:{
   title:'Pro File Folder activated',
@@ -134,7 +135,7 @@ export default function ProFileNumberVerification(){
    const json=await response.json()
    if(!response.ok)throw new Error(json.error||'Unable to submit payment evidence')
    await refresh()
-   setMessage('Payment reference received. Forensics must independently verify the TRC-20 transaction. Do not send a duplicate transfer.')
+   setMessage('Transaction evidence saved for independent Forensics review. Corrections preserve the previous rejection and evidence in company records. Do not send a second payment.')
   }catch(e){setError(e instanceof Error?e.message:'Payment review unavailable')}
   finally{setBusy(false)}
  }
@@ -148,18 +149,20 @@ export default function ProFileNumberVerification(){
   }catch(e){setError(e instanceof Error?e.message:'Unable to change File Number')}
   finally{setBusy(false)}
  }
- async function requestRegistrationInvite(){
-  if(!verification)return
+ async function openDirectRegistration(){
   setBusy(true);setError('');setMessage('')
   try{
    const response=await fetch('/api/public/pro-file-number-verification',{
     method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({action:'send_registration_invite',ticket:ticket||undefined}),
+    body:JSON.stringify({action:'open_registration',ticket:ticket||undefined}),
    })
-   const body=await response.json()
-   if(!response.ok)throw new Error(body.error||'Secure invitation could not be sent')
-   setMessage(body.message||'Check the approved company email for your private registration link.')
-  }catch(e){setError(e instanceof Error?e.message:'Secure registration unavailable')}
+   const json=await response.json()
+   if(!response.ok)throw new Error(json.error||'The verified registration handoff is not ready.')
+   if(typeof json.registrationUrl!=='string'||!json.registrationUrl.startsWith('/client/register?'))
+    throw new Error('The secure registration destination is unavailable.')
+   // Registration credential is kept only in an HttpOnly cookie, never the URL.
+   window.location.assign(json.registrationUrl)
+  }catch(e){setError(e instanceof Error?e.message:'Registration handoff unavailable')}
   finally{setBusy(false)}
  }
  return <main id="weave-pro-verification" className="pv-shell" data-pro-file-number-verification="true" data-pro-file-folder-theme="radiant-blue">
@@ -380,12 +383,12 @@ export default function ProFileNumberVerification(){
     </details>:<p className="text-xs text-slate-400">Your private verification is saved on this browser. Use the private code you previously saved to continue on a different device.</p>}
     {verification.status==='pending_identity'&&<p className="rounded-lg border border-amber-300/20 p-4 text-sm text-slate-200">Administrations is reviewing your File Number, identity, electronic signature, business name and business plan. Once approved, this workspace automatically moves to payment instructions. Your status refreshes every 20 seconds while this page is open.</p>}
     {verification.status==='payment_rejected'&&<div className="space-y-3 rounded-lg border border-rose-300/30 p-4">
-     <h3 className="font-semibold text-rose-200">Payment evidence needs a new review</h3>
-     <p className="text-sm text-slate-200">Forensics finding: {verification.rejectionReason||'Receipt not independently confirmed.'} The original evidence is retained for audit. Do not send another payment without reconciling with Administrations.</p>
+     <h3 className="font-semibold text-rose-200">Payment evidence rejected by Forensics</h3>
+     <p className="text-sm text-slate-200">Forensics finding: {verification.rejectionReason||'Receipt not independently confirmed.'} The original evidence and rejection reason are retained. Enter the correct transaction ID for your original transfer below, or contact Administrations. Do not pay again.</p>
      <p className="text-xs text-slate-300">Your existing plan and payment review remain recorded. Do not submit another form for the same application.</p>
     </div>}
-    {verification.status==='payment_required'&&<div className="space-y-4 rounded-lg border border-cyan-300/20 p-4">
-     <h3 className="text-lg font-bold">Awaiting activation payment · 680 USDT</h3>
+    {['payment_required','payment_rejected'].includes(verification.status)&&<div className="space-y-4 rounded-lg border border-cyan-300/20 p-4">
+     <h3 className="text-lg font-bold">{verification.status==='payment_rejected'?'Correct your existing transaction evidence':'Awaiting activation payment · 680 USDT'}</h3>
      {verification.rejectionReason&&<p className="text-sm text-rose-200">Forensics finding: {verification.rejectionReason}</p>}
      {verification.walletAddress?<div className="space-y-2">
       <p className="text-xs text-slate-300">Official receiving wallet · USDT TRC-20</p>
@@ -393,7 +396,7 @@ export default function ProFileNumberVerification(){
       <button onClick={()=>void navigator.clipboard.writeText(verification.walletAddress||'')}
        className="pv-secondary rounded-lg border border-white/25 px-3 py-2 text-xs">Copy wallet address</button>
      </div>:<p className="text-amber-200">Receiving wallet not yet configured. Do not transfer funds.</p>}
-     <p className="text-xs text-slate-300">Send exactly 680 USDT using TRON (TRC-20). Other networks and native TRX are not accepted; network fees are separate.</p>
+     <p className="text-xs text-slate-300">{verification.status==='payment_rejected'?'Do not pay again. Enter the correct TRON transaction ID for the original 680 USDT transfer. Forensics will review it again.':'Send exactly 680 USDT using TRON (TRC-20). Other networks and native TRX are not accepted; network fees are separate.'}</p>
      <label className="block text-sm">TRON blockchain transaction ID
       <input value={txHash} onChange={e=>setTxHash(e.target.value.trim())}
        maxLength={64} placeholder="64-character transaction hash"
@@ -401,20 +404,24 @@ export default function ProFileNumberVerification(){
      </label>
      <button disabled={busy||!verification.walletAddress||!/^[a-f0-9]{64}$/i.test(txHash)}
       onClick={()=>void submitPayment()}
-      className="rounded-lg bg-cyan-300 px-5 py-3 font-semibold text-slate-950 disabled:opacity-40">Send payment evidence to Forensics</button>
+      className="rounded-lg bg-cyan-300 px-5 py-3 font-semibold text-slate-950 disabled:opacity-40">{verification.status==='payment_rejected'?'Resubmit corrected evidence':'Send payment evidence to Forensics'}</button>
     </div>}
     {verification.status==='pending_forensics'&&<p className="text-sm text-slate-200">Your transaction hash was received. Forensics is checking the actual blockchain receipt, amount and receiving address. Do not send a duplicate payment.</p>}
     {verification.status==='paid_pending_account'&&<section className="space-y-3 rounded-xl border border-cyan-300/25 p-5">
-      <h3 className="text-lg font-semibold">6. Pro File Folder activation → account registration</h3>
+      <h3 className="text-lg font-semibold">Payment verified · 680 USDT · complete Client registration</h3>
+      {verification.paymentTransactionId&&<p className="break-all text-xs text-slate-300">Verified receipt: {verification.paymentTransactionId}</p>}
       <p className="text-sm text-slate-200">{verification.folderActivated
        ?'Your payment is verified and your Pro File Folder is activated under your verified File Number and current details. Now register your Client account to access that same activated Folder. No second activation payment is required.'
        :'Your payment is verified. Administrations must complete Pro File Folder activation before account registration opens.'}</p>
-      <p className="text-sm text-slate-200">Request a private registration link to your company-approved email. Create your own password using that link; registration connects your account to your activated Pro File Folder.</p>
-      <button type="button" disabled={busy||!verification.folderActivated} onClick={()=>void requestRegistrationInvite()}
-       className="rounded-lg bg-cyan-300 px-5 py-3 text-sm font-semibold text-slate-950 disabled:opacity-40">Email me my verified company registration link</button>
-      <p className="text-xs text-slate-400">If you already received an approved private company invitation, you may use that invitation instead. No registration token is displayed in this public workspace.</p>
+      <p className="text-sm text-slate-200">Continue directly into Client registration using this verified browser session. Create your password under the approved company identity and email. No email invitation or second payment is required.</p>
+      <button type="button" disabled={busy||!verification.folderActivated} onClick={()=>void openDirectRegistration()}
+       className="rounded-lg bg-cyan-300 px-5 py-3 text-sm font-semibold text-slate-950 disabled:opacity-40">{busy?'Preparing secure registration…':'Proceed directly to Client registration'}</button>
+      <p className="text-xs text-slate-400">This registration handoff stays valid for 15 minutes on this browser. If already registered, <Link href="/client/login" className="underline">sign in to your account</Link>. Do not share your verification code.</p>
      </section>}
-    {verification.status==='active'&&<p className="text-sm text-emerald-200">Pro File Folder activated. Sign in with the secure Client account you registered through the approved company email invitation, then open your private File Folder and company workspace. This verification code is not a login.</p>}
+    {verification.status==='active'&&<div className="space-y-3 rounded-xl border border-emerald-300/25 p-4">
+      <p className="text-sm text-emerald-200">Payment verified and Pro File Folder activated. Registration is complete. Sign in to enter your private Pro business environment; your verification code is not a login.</p>
+      <Link href="/client/login" className="inline-flex rounded-lg bg-cyan-300 px-5 py-3 text-sm font-semibold text-slate-950">Sign in to my Pro File Folder</Link>
+     </div>}
     {verification.status==='rejected'&&<p className="text-sm text-rose-200">Verification requires Administrations attention. Contact the company using your application reference.</p>}
     <button type="button" disabled={busy} onClick={()=>void refresh().catch(e=>setError(e.message))}
      className="pv-secondary rounded-lg border border-cyan-300/30 px-4 py-2 text-sm">Refresh verification status</button>
