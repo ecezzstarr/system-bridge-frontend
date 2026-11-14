@@ -108,7 +108,10 @@ jobs:
         run: npx tsx tests/branding-business-postgres.test.ts
 
       - name: File Folder careers, real-time builds and optional Boost Bay purchases
-        run: node tests/file-folder-career-and-boost-bay-regression.cjs
+        run: |
+          node tests/file-folder-career-and-boost-bay-regression.cjs
+          node tests/pro-file-folder-textured-world-regression.cjs
+          node tests/pro-file-folder-building-plan-parts-speed-bay-regression.cjs
 
       - name: Bridger outreach and Agent daily work integrity
         run: |

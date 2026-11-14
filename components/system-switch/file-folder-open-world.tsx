@@ -2,7 +2,7 @@
 import { isBuildPartCompatible } from '@/lib/file-folder-build-compatibility'
 import { quoteFileFolderBlueprint } from '@/lib/file-folder-build-quote'
 import FileFolderPlatformProjectStudio from './file-folder-platform-project-studio'
-import FileFolderLivingTerrain from './file-folder-living-terrain'
+import FileFolderProOperatingWorld from './file-folder-pro-operating-world'
 import FileFolderPlusRadiantWorld from './file-folder-plus-radiant-world'
 import FileFolderStandardLivingWorld from './file-folder-standard-living-world'
 import FileFolderPremiumWorld from './file-folder-premium-world'
@@ -418,7 +418,7 @@ export default function FileFolderOpenWorld({
       </header>
       </details>
 
-      <section data-file-folder-career-journey="choose-acquire-build-parts-boost-operate-earn" className="border-b border-amber-300/25 bg-[radial-gradient(ellipse_at_top_left,rgba(183,134,65,.16),transparent_72%)] p-4 text-white sm:p-6">
+      {fileFolderTier!=='pro'&&<section data-file-folder-career-journey="choose-acquire-build-parts-boost-operate-earn" className="border-b border-amber-300/25 bg-[radial-gradient(ellipse_at_top_left,rgba(183,134,65,.16),transparent_72%)] p-4 text-white sm:p-6">
         <p className="text-xs font-bold uppercase tracking-wider text-amber-200">Build your online career · Company of Time</p>
         <h2 className="mt-2 text-2xl font-black leading-tight sm:text-3xl">Choose a job. Build its system. Start serving customers.</h2>
         <p className="mt-3 max-w-3xl text-sm leading-7 text-stone-200">Every blueprint is a working capability you can turn into a paid service. See the exact material price and build time before buying. The system builds over real time; Boost Bay is optional. Customers pay for work only after you offer and deliver a real service.</p>
@@ -438,7 +438,7 @@ export default function FileFolderOpenWorld({
           </button>)}
         </div>
         <p className="mt-4 text-xs leading-6 text-stone-300">The company supplies buildable systems and charges only displayed fees. Actual earnings depend on verified customer jobs, agreed prices and genuine operating costs, not on purchasing a blueprint.</p>
-      </section>
+      </section>}
 
       <div className="min-h-[520px] sm:min-h-[650px]">
         {fileFolderTier==='standard'
@@ -468,9 +468,21 @@ export default function FileFolderOpenWorld({
               blueprints={Array.isArray(world?.blueprints)?world.blueprints:[]}
               inventory={Array.isArray(world?.inventory)?world.inventory:[]}
               customerDoor={world?.customerDoor} now={now}/>
-          : <FileFolderLivingTerrain districts={visibleDistricts} active={district} onEnter={enterDistrict}
-              systems={world?.systems?.length||0} building={activeBuilds.length} builds={activeBuilds} now={now}
-              appearance={worldAppearance||resolveFileFolderAppearance('pro')}/>} 
+          : <FileFolderProOperatingWorld
+              appearance={worldAppearance||resolveFileFolderAppearance('pro')}
+              businessName={world?.businessFormation?.business_name||workshopTitle}
+              businessPurpose={world?.businessFormation?.purpose||workshopPurpose}
+              districts={visibleDistricts} active={district} onEnter={enterDistrict}
+              onOpenCustomerDoor={onOpenCustomerDoor}
+              onAction={act} busy={Boolean(busy)}
+              blueprints={Array.isArray(world?.blueprints)?world.blueprints:[]}
+              items={Array.isArray(world?.items)?world.items:[]}
+              inventory={Array.isArray(world?.inventory)?world.inventory:[]}
+              buildFunding={world?.buildFunding}
+              builds={Array.isArray(world?.builds)?world.builds:[]}
+              systemRecords={Array.isArray(world?.systems)?world.systems:[]}
+              platformProjects={Array.isArray(world?.platformProjects)?world.platformProjects:[]}
+              customerDoor={world?.customerDoor} now={now}/>} 
 
 
 
