@@ -10,6 +10,11 @@ export const ADMIN_SPACES:readonly AdminSpace[]=[
     "description": "Return to the company districts and the work entrusted to A Time."
   },
   {
+    "title": "The Unbuilt Door · Demand Verification",
+    "href": "/admin/unbuilt-door",
+    "description": "Confirm actual customer needs before publishing them; review prospective File Folder business proposals privately."
+  },
+  {
     "title": "Company Movement Intelligence",
     "href": "/admin/company-movement",
     "description": "Monitor prospect purchases, Agent sales, verified Client File Folders, payment queues and transaction categories."
