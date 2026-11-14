@@ -1,13 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getPublicDoorDemands, submitDoorDemand, submitDoorInterest } from '@/lib/unbuilt-door'
+import { getPublicDoorDemands, submitDoorDemand, submitDoorInterest, getUnbuiltDoorBridger } from '@/lib/unbuilt-door'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const demands = await getPublicDoorDemands()
-    return NextResponse.json({ demands, verifiedCount: demands.length }, {
+    const bridge = await getUnbuiltDoorBridger(request.nextUrl.searchParams.get('bridge'))
+    return NextResponse.json({
+      demands, verifiedCount: demands.length,
+      bridger: bridge ? { name: bridge.bridger_name, bridgeCode: bridge.bridge_code } : null,
+    }, {
       headers: { 'Cache-Control': 'no-store' },
     })
   } catch (error) {
@@ -40,7 +44,7 @@ export async function POST(request: NextRequest) {
     }, { status: 201, headers: { 'Cache-Control': 'no-store' } })
   } catch (error) {
     if (error instanceof SyntaxError) return NextResponse.json({ error: 'Invalid request.' }, { status: 400 })
-    if (error instanceof Error && /Provide your|already submitted|opportunity is no longer|weekly interest limit/.test(error.message)) {
+    if (error instanceof Error && /Provide your|already submitted|opportunity is no longer|weekly interest limit|active Bridger Bridge/.test(error.message)) {
       return NextResponse.json({ error: error.message }, { status: 400 })
     }
     console.error('[unbuilt-door] submission failed', error)
