@@ -257,3 +257,22 @@ export async function updateBridgerDoorInterest(input: {
   if (!result.rows[0]) throw new Error('Prospect not found or already closed.')
   return result.rows[0]
 }
+
+/** Only this public summary can travel with the Bridger's personal Bridge link. */
+export async function getVerifiedDoorOpportunity(id: string) {
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) return null
+  await ensureUnbuiltDoorSchema()
+  const rows=await getPool().query(
+    `SELECT id,category,location,title,description
+     FROM weave_unbuilt_door_demands
+     WHERE id=$1::uuid AND status='verified' LIMIT 1`,[id],
+  )
+  const row=rows.rows[0]
+  if(!row)return null
+  const redact=(value:unknown)=>String(value||'')
+    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi,'[contact withheld]')
+    .replace(/(?:\+?\d[\s().-]?){8,}/g,'[phone withheld]')
+    .replace(/https?:\/\/\S+/gi,'[link withheld]')
+  return {id:row.id,category:row.category,location:redact(row.location),
+    title:redact(row.title),description:redact(row.description)}
+}
