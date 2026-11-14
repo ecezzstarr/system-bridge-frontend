@@ -80,7 +80,17 @@ export async function getPublicDoorDemands() {
      FROM weave_unbuilt_door_demands WHERE status = 'verified'
      ORDER BY reviewed_at DESC NULLS LAST LIMIT 36`,
   )
-  return result.rows
+  // Second privacy boundary: never disclose contact details from public fields.
+  const redact = (value: string) => value
+    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, '[contact withheld]')
+    .replace(/(?:\+?\d[\s().-]?){8,}/g, '[phone withheld]')
+    .replace(/https?:\/\/\S+/gi, '[link withheld]')
+  return result.rows.map(row => ({
+    ...row,
+    title: redact(String(row.title)),
+    location: redact(String(row.location)),
+    description: redact(String(row.description)),
+  }))
 }
 export async function getAdminDoorDemands() {
   await ensureUnbuiltDoorSchema()
