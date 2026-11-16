@@ -1,6 +1,13 @@
 'use client'
 
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
+import {useState} from 'react'
+
+const FileFolderMechanizedPreview=dynamic(
+ () => import('@/components/public/file-folder-mechanized-preview'),
+ {ssr:false,loading:()=> <div className="flex h-full min-h-64 items-center justify-center text-sm text-white">Preparing the 3D model…</div>}
+)
 import { ArrowLeft, ArrowRight, Building2, DoorOpen, Hammer, Layers3, PackageOpen, Store, Users, Workflow } from 'lucide-react'
 
 const tiers = [
@@ -86,6 +93,7 @@ const iconByTier = {
 } as const
 
 export default function FileFolderPreviewPage() {
+  const [mechanizedTier,setMechanizedTier]=useState<(typeof tiers)[number]['id']|null>(null)
   return (
     <main className="min-h-screen bg-[#080b10] px-3 py-5 text-white sm:px-5 sm:py-8" data-file-folder-tier-preview="four-types">
       <div className="mx-auto max-w-7xl">
@@ -102,7 +110,7 @@ export default function FileFolderPreviewPage() {
           <p className="text-[10px] font-black uppercase tracking-[.24em] text-amber-200">The Weave of Presence · System Switch</p>
           <h1 className="mt-3 text-3xl font-black tracking-tight sm:text-5xl">A place for your business to become.</h1>
           <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-300">
-            Standard. Pro. Premium. Plus. Each File Folder carries its own character, working districts and business capabilities. Explore the environment that fits your ambition; systems become operational as they are built and commissioned.
+            Standard. Pro. Premium. Plus. Each File Folder carries its own character, working districts and business capabilities. Explore the environment that fits your ambition; systems become operational as they are built and commissioned. Use each model's 3D control to inspect its architecture; models are illustrative and contain no live customer or business records.
           </p>
         </header>
 
@@ -115,7 +123,11 @@ export default function FileFolderPreviewPage() {
               <article key={tier.id} className={`overflow-hidden rounded-3xl border ${tier.tone === 'standard' ? 'border-emerald-200/20 bg-[#101b16]' : tier.tone === 'pro' ? 'border-sky-200/20 bg-[#0b1724]' : tier.tone === 'premium' ? 'border-amber-200/20 bg-[#17120e]' : 'border-yellow-100/35 bg-[#f7f4ec] text-[#28251f]'}`} data-file-folder-tier={tier.id}>
                 <div className="grid sm:grid-cols-[.88fr_1.12fr]">
                   <div className={`relative flex min-h-64 items-center justify-center overflow-hidden p-5 ${tier.tone === 'standard' ? 'bg-gradient-to-br from-sky-200 via-emerald-800 to-[#12291e]' : tier.tone === 'pro' ? 'bg-gradient-to-br from-sky-100 via-blue-900 to-[#07111d]' : tier.tone === 'premium' ? 'bg-gradient-to-br from-[#5a4128] via-[#151218] to-black' : 'bg-gradient-to-br from-white via-[#eee6d5] to-[#c6a96e]'}`}>
-                    {isOfficialPoster ? (
+                    {mechanizedTier===tier.id ? (
+                      <div className="relative h-[330px] w-full" aria-label={tier.name+' 3D architectural concept'}>
+                        <FileFolderMechanizedPreview tier={tier.id}/>
+                      </div>
+                    ) : isOfficialPoster ? (
                       <img src={tier.image} alt={tier.imageAlt} width={tier.id==='pro'?768:1229} height={tier.id==='pro'?960:1536} className="max-h-[380px] w-full object-contain" loading="lazy" decoding="async" />
                     ) : (
                       <div className="relative flex h-52 w-full max-w-xs items-center justify-center rounded-2xl border border-white/20 bg-black/10 p-7 shadow-2xl backdrop-blur-sm">
@@ -125,6 +137,11 @@ export default function FileFolderPreviewPage() {
                       </div>
                     )}
                     <span className={`absolute left-4 top-4 rounded-full border px-3 py-1 text-[9px] font-black uppercase tracking-[.16em] ${isPlus ? 'border-[#9b7a3c]/30 bg-white/75 text-[#6a5127]' : 'border-white/25 bg-black/25 text-white'}`}> {tier.name} File Folder </span>
+                    <button type="button" aria-pressed={mechanizedTier===tier.id}
+                      onClick={()=>setMechanizedTier(value=>value===tier.id?null:tier.id)}
+                      className="absolute right-3 top-3 z-10 min-h-11 rounded-xl border border-[#f5d8a5]/70 bg-[#061321]/90 px-3 py-2 text-xs font-bold text-white shadow-lg hover:bg-[#173452] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
+                      {mechanizedTier===tier.id?'View tier artwork':'Explore mechanized 3D'}
+                    </button>
                   </div>
                   <div className="weave-tier-content p-5 sm:p-6">
                     <div className="flex items-center gap-3">
