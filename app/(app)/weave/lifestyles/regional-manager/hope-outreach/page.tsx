@@ -18,7 +18,7 @@ type Data={
   success:boolean;mode:'manager'|'member';managerId:string;day:string;reports:Report[]
   sources:{prospects:boolean;publishing:boolean};note:string
 }
-const blank=():Targets=>({tiktok:0,facebook:0,instagram:0,x:0,youtube:0,linkedin:0})
+const blank=():Targets=>({tiktok:1,facebook:1,instagram:1,x:1,youtube:0,linkedin:0})
 const label=(key:string)=>({tiktok:'TikTok',facebook:'Facebook',instagram:'Instagram',x:'X',youtube:'YouTube',linkedin:'LinkedIn'} as Record<string,string>)[key]||key
 const number=(value:number)=>Number(value||0).toLocaleString('en-NG')
 const input='w-full min-h-11 rounded-lg border border-white/20 bg-[#0d1723] px-3 py-2 text-sm text-white outline-none focus:border-cyan-300'
