@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
     await client.query(
       `DELETE FROM bridger_daily_prospect_claims c
        WHERE c.bridger_id = $1::uuid
-         AND c.claim_date = CURRENT_DATE
+         AND c.claim_date = ((NOW() AT TIME ZONE 'Africa/Lagos')::date)
          AND NOT EXISTS (
            SELECT 1 FROM market_prospect_contacts m WHERE m.id = c.prospect_id
          )`,
@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
        LEFT JOIN market_prospect_outreach o
          ON o.id = c.outreach_id
        WHERE c.bridger_id = $1::uuid
-         AND c.claim_date = CURRENT_DATE
+         AND c.claim_date = ((NOW() AT TIME ZONE 'Africa/Lagos')::date)
        LIMIT 1`,
       [bridger.id]
     )
@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
        LEFT JOIN market_prospect_contacts m ON m.id = c.prospect_id
        LEFT JOIN market_prospect_outreach o ON o.id = c.outreach_id
        WHERE c.bridger_id = $1::uuid
-         AND c.claim_date = CURRENT_DATE
+         AND c.claim_date = ((NOW() AT TIME ZONE 'Africa/Lagos')::date)
        LIMIT 1
        FOR UPDATE OF c`,
       [bridger.id]
@@ -209,7 +209,7 @@ export async function POST(request: NextRequest) {
     const claimResult = await client.query(
       `INSERT INTO bridger_daily_prospect_claims
          (bridger_id, prospect_id, outreach_id, claim_date, claim_type)
-       VALUES ($1::uuid, $2::uuid, $3::uuid, CURRENT_DATE, 'daily_bonus')
+       VALUES ($1::uuid, $2::uuid, $3::uuid, ((NOW() AT TIME ZONE 'Africa/Lagos')::date), 'daily_bonus')
        RETURNING id, prospect_id, outreach_id, claim_date, claimed_at`,
       [bridger.id, prospect.id, outreachId]
     )
