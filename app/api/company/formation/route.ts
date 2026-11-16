@@ -46,7 +46,13 @@ export async function GET(request:NextRequest){
       WHERE ($1::text<>'client' OR c.client_id=$2::uuid)
       ORDER BY c.created_at DESC LIMIT 100`,[actor.role,actor.id])
     const requested=request.nextUrl.searchParams.get('caseId')||''
-    const caseId=uuid.test(requested)?requested:cases[0]?.id
+    const requestedEvent=request.nextUrl.searchParams.get('event')||''
+    let notifiedCaseId:string|null=null
+    if(anyStaff(actor)&&uuid.test(requestedEvent)){
+      const event=await pool.query('SELECT formation_case_id FROM weave_company_formation_events WHERE id=$1::uuid LIMIT 1',[requestedEvent])
+      notifiedCaseId=event.rows[0]?.formation_case_id||null
+    }
+    const caseId=uuid.test(requested)?requested:notifiedCaseId||cases[0]?.id
     let selected=null,actions:unknown[]=[],income=null,work=null
     if(caseId){
       selected=await selectedCase(String(caseId),actor)
@@ -69,7 +75,7 @@ export async function GET(request:NextRequest){
       events=rows
     }
     return NextResponse.json({success:true,mode:actor.role==='client'?'client':actor.role==='admin'?'administrations':'guidance',
-      departments:actor.departments, cases,selected,actions,income,work,events,milestones:FORMATION_MILESTONES,
+      departments:actor.departments, cases,selected,actions,income,work,events,focusedEventId:anyStaff(actor)&&uuid.test(requestedEvent)?requestedEvent:null,milestones:FORMATION_MILESTONES,
       note:'No income is inferred from pending orders, unverified payments, product promises, or company event participation.'},{headers})
   }catch(error){
     console.error('[company formation GET]',error)
