@@ -13,6 +13,48 @@ const COLOR:Record<EnterpriseTier,{metal:string;display:string;floor:string}>={
  plus:{metal:'#c8a56a',display:'#b7f4ff',floor:'#f1ede3'},
 }
 
+function AssemblyArm({tier,moving,reducedMotion}:{
+ tier:EnterpriseTier;moving:boolean;reducedMotion:boolean
+}){
+ const shoulder=useRef<Group>(null)
+ const elbow=useRef<Group>(null)
+ useFrame(({clock})=>{
+  if(reducedMotion||!moving)return
+  if(shoulder.current)shoulder.current.rotation.z=.18+Math.sin(clock.elapsedTime*.9)*.24
+  if(elbow.current)elbow.current.rotation.z=-.4+Math.sin(clock.elapsedTime*1.2+.6)*.18
+ })
+ return <group userData={{purpose:'architectural-assembly-arm',moving}}>
+  <mesh castShadow position={[0,.22,0]}>
+   <cylinderGeometry args={[.38,.45,.44,16]}/>
+   <EnterpriseMaterial tier={tier} surface="metal"/>
+  </mesh>
+  <group ref={shoulder} position={[0,.48,0]} rotation={[0,0,.18]}>
+   <mesh castShadow position={[0,.48,0]}>
+    <boxGeometry args={[.25,.96,.26]}/>
+    <EnterpriseMaterial tier={tier} surface="metal"/>
+   </mesh>
+   <mesh position={[0,.94,0]}>
+    <sphereGeometry args={[.21,12,10]}/>
+    <EnterpriseMaterial tier={tier} surface="stone"/>
+   </mesh>
+   <group ref={elbow} position={[0,.96,0]} rotation={[0,0,-.4]}>
+    <mesh castShadow position={[0,.37,0]}>
+     <boxGeometry args={[.21,.72,.21]}/>
+     <EnterpriseMaterial tier={tier} surface="metal"/>
+    </mesh>
+    <mesh position={[0,.78,0]}>
+     <boxGeometry args={[.45,.17,.38]}/>
+     <EnterpriseMaterial tier={tier} surface="stone"/>
+    </mesh>
+    {[-.16,.16].map(x=><mesh key={x} position={[x,.64,0]}>
+     <boxGeometry args={[.07,.31,.13]}/>
+     <EnterpriseMaterial tier={tier} surface="metal"/>
+    </mesh>)}
+   </group>
+  </group>
+ </group>
+}
+
 /** A visible sample of the enterprise premises included in the File Folder tier.
  * No business is claimed operational until its verified records say so.
  */
@@ -107,6 +149,10 @@ export function EnterpriseWorkshopInterior({
     <EnterpriseMaterial tier={tier} surface="metal"/>
    </mesh>)}
   </group>)}
+  {[-1.95,1.95].map((x,i)=><group key={i}
+    position={[x,.1,1.15]} rotation={[0,i?Math.PI:0,0]} scale={[.72,.72,.72]}>
+    <AssemblyArm tier={tier} moving={building} reducedMotion={reduceMotion}/>
+   </group>)}
   {/* Conveyor remains installed, but rollers are not falsely presented as trading. */}
   <group position={[0,.5,1.03]}>
    <mesh castShadow position={[0,.12,0]}>
