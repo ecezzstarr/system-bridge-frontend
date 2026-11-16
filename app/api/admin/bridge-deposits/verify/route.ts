@@ -1,3 +1,4 @@
+import { recordCompanyFormationMovement } from '@/lib/company-formation-movement'
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { sql } from '@/lib/db'
@@ -91,6 +92,8 @@ async function verifyBridgeRadiancePurchase({
       return NextResponse.json({ error: 'This File Folder approval is already complete' }, { status: 409 })
     }
 
+    await recordCompanyFormationMovement('file_folder_verified',String(purchase.id))
+      .catch(error=>console.error('[File Folder formation replay]',error))
     const existingClient = await resolveExistingClientForFileFolderPurchase(sql, purchase)
     let activation = null
     if (existingClient) {
@@ -240,6 +243,9 @@ async function verifyBridgeRadiancePurchase({
   if (!confirmed) {
     return NextResponse.json({ error: 'File Folder purchase changed before verification completed' }, { status: 409 })
   }
+
+  await recordCompanyFormationMovement('file_folder_verified',String(confirmed.id))
+    .catch(error=>console.error('[File Folder verified formation]',error))
 
   // Plus requires a confirmed ledger row before ready systems may be issued.
   // The existing Client was initially attached while payment was still
@@ -442,6 +448,8 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'This File Folder approval is already complete' }, { status: 409 })
       }
 
+      await recordCompanyFormationMovement('bridge_deposit_verified',String(deposit.id))
+        .catch(error=>console.error('[Bridge deposit formation replay]',error))
       let commissionMovement = null
       if (deposit.bridger_id) {
         commissionMovement = await creditBridgerActivityCommission({
@@ -527,6 +535,8 @@ export async function POST(request: NextRequest) {
     `
 
     await provisionPersistentFolder(fileNumber, deposit.prospect_name)
+    await recordCompanyFormationMovement('bridge_deposit_verified',String(deposit.id))
+      .catch(error=>console.error('[Bridge deposit verified formation]',error))
 
     if (deposit.outreach_id) {
       await sql`
