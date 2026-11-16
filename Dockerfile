@@ -38,6 +38,7 @@ RUN node tests/environment-grade.cjs
 RUN node tests/pro-file-folder-textured-world-regression.cjs
 RUN node tests/pro-file-folder-building-plan-parts-speed-bay-regression.cjs
 RUN node tests/pro-file-folder-official-artwork-regression.cjs
+RUN node tests/file-folder-luxury-mechanization-regression.cjs
 RUN node tests/adaptive-runtime.cjs
 RUN node tests/communication-security.cjs
 RUN node tests/recovery-desk.cjs
