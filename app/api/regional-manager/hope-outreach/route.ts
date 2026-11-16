@@ -134,9 +134,9 @@ export async function GET(request:NextRequest){
     const ctx=await access(user)
     if(!ctx)return NextResponse.json({error:'An active Hope regional assignment is required'},{status:403,headers})
     const ids=ctx.members.map(m=>m.user_id),day=today(),pool=getPool()
-    if(!ids.length)return NextResponse.json({success:true,mode:ctx.kind,day,managerId:ctx.managerId,reports:[],sources:{prospects:true,publishing:true}},{headers})
+    if(!ids.length)return NextResponse.json({success:true,mode:ctx.kind,day,managerId:ctx.managerId,reports:[],sources:{prospects:true,publishing:true,sales:true}},{headers})
     await snapshotTargets(ctx.managerId,ids,day)
-    const [targets,proofs,prospectsReady,publishingReady]=await Promise.all([
+    const [targets,proofs,prospectsReady,publishingReady,salesReady]=await Promise.all([
       pool.query(`SELECT bridger_id,working_hours,post_targets,updated_at FROM weave_regional_bridger_outreach_targets
         WHERE bridger_id=ANY($1::uuid[]) AND regional_manager_user_id=$3::uuid AND work_date=$2::date`,[ids,day,ctx.managerId]),
       pool.query(`SELECT id,bridger_id,channel_key,post_url,status,review_note,reviewed_at,created_at
@@ -144,9 +144,10 @@ export async function GET(request:NextRequest){
         WHERE bridger_id=ANY($1::uuid[]) AND regional_manager_user_id=$3::uuid AND work_date=$2::date
         ORDER BY created_at DESC LIMIT 2000`,[ids,day,ctx.managerId]),
       tableAvailable('market_prospect_outreach'),
-      tableAvailable('weave_distribution_deliveries')
+      tableAvailable('weave_distribution_deliveries'),
+      tableAvailable('file_folder_purchases')
     ])
-    const [contacts,deliveries]=await Promise.all([
+    const [contacts,deliveries,sales]=await Promise.all([
       prospectsReady?pool.query(`SELECT bridger_id,
         COUNT(*) FILTER(WHERE sent_at IS NOT NULL
           AND (sent_at AT TIME ZONE 'Africa/Lagos')::date=$2::date)::int AS send_confirmations,
@@ -157,11 +158,17 @@ export async function GET(request:NextRequest){
         WHERE user_id=ANY($1::uuid[]) AND status='published'
           AND (provider_url IS NOT NULL OR provider_post_id IS NOT NULL)
           AND (published_at AT TIME ZONE 'Africa/Lagos')::date=$2::date
-          AND channel_key=ANY($3::text[])`,[ids,day,[...channels]]):Promise.resolve({rows:[]})
+          AND channel_key=ANY($3::text[])`,[ids,day,[...channels]]):Promise.resolve({rows:[]}),
+      salesReady?pool.query(`SELECT bridger_id,
+        COUNT(DISTINCT COALESCE(NULLIF(file_number,''),id::text))::int AS confirmed
+        FROM file_folder_purchases WHERE bridger_id=ANY($1::uuid[]) AND status='confirmed'
+          AND (COALESCE(confirmed_at,created_at) AT TIME ZONE 'Africa/Lagos')::date=$2::date
+        GROUP BY bridger_id`,[ids,day]):Promise.resolve({rows:[]})
     ])
     const reports=ctx.members.map(member=>{
       const plan=targets.rows.find(r=>String(r.bridger_id)===member.user_id)
       const contact=contacts.rows.find(r=>String(r.bridger_id)===member.user_id)
+      const sale=sales.rows.find(r=>String(r.bridger_id)===member.user_id)
       const evidence=proofs.rows.filter(r=>String(r.bridger_id)===member.user_id)
       const providerRows=deliveries.rows.filter(r=>String(r.user_id)===member.user_id)
       const posts={} as Record<Channel,{target:number;providerConfirmed:number;managerReviewed:number;pending:number;total:number}>
@@ -180,10 +187,11 @@ export async function GET(request:NextRequest){
       return {member,plan:plan?{workingHours:Number(plan.working_hours),contactTarget:Number(plan.working_hours)*2,
         postTargets:desired,updatedAt:plan.updated_at}:null,
         contacts:{sendConfirmations:Number(contact?.send_confirmations||0),responsesOrConversions:Number(contact?.responses_or_conversions||0)},
+        confirmedFileFolders:Number(sale?.confirmed||0),
         posts,evidence}
     })
     return NextResponse.json({success:true,mode:ctx.kind,managerId:ctx.managerId,day,reports,
-      sources:{prospects:prospectsReady,publishing:publishingReady},
+      sources:{prospects:prospectsReady,publishing:publishingReady,sales:salesReady},
       note:'WhatsApp sends are Bridger-confirmed, not provider-confirmed. External links count only after manager review; provider receipts count separately.'},{headers})
   }catch(error){console.error('[regional hope outreach GET]',error)
     return NextResponse.json({error:'Hope outreach records unavailable; do not treat missing data as zero activity'},{status:503,headers})}
