@@ -17,6 +17,24 @@ export const STANDARD_FILE_FOLDER_REFERENCE = {
   operatingRule: 'Every verified Standard File Folder owner gets this actual interactive world, with businesses tied to their own records',
 } as const
 
+/** Approved 14 November 2026 by the Sovereign. This is the Pro tier reference
+ * poster, not an interactive world wallpaper or proof of activated systems.
+ * The central headquarters represents each appointed staff member's own
+ * approved business; individual workshops differ by owner and business plan.
+ */
+export const PRO_FILE_FOLDER_REFERENCE = {
+  name: 'Official Pro File Folder',
+  approved: '2026-11-14',
+  referenceImage: 'weave_pro_file_folder_campus.png',
+  posterAssetPath: '/weave/file-folder/official/weave-pro-file-folder-official.webp',
+  originalSha256: 'c1a896d359f38387711cb21d4b58312b4ee71bbee2c744d36704e5a50f225255',
+  originalDimensions: {width:1122,height:1402},
+  optimizedSha256: 'dd27f396e02555fae3f33c164c4927e7ee6d0c05103439d2432723a0ace4e76f',
+  posterDimensions: {width:768,height:960},
+  composition: 'Textured blue-and-gold enterprise campus with the owner business at the center and supporting workshops, App & Platform, construction, records and Customer Door',
+  operatingRule: 'Pro staff operate their own approved business. The poster is shared tier artwork, never a fixed industry or access grant to someone else\'s workshop.',
+} as const
+
 export const PLUS_FILE_FOLDER_REFERENCE = {
   name: 'Official Plus File Folder',
   approved: '2026-10-23',
