@@ -137,6 +137,7 @@ export default function AdministrationCompanyGuidancePage(){
               <h1 className="mt-1 text-2xl font-black text-white">Agent and Bridger guidance now has a reply endpoint.</h1>
               <p className="mt-2 max-w-3xl text-xs leading-5 text-slate-300">Requests remain separated by person and company position: Mandate, Attorney, Forensics or Administrations. Approved departmental Agent/Bridger staff can also reply within their assigned channels.</p>
               <Link href="/admin/guidance-staff" className="mt-3 inline-flex border border-amber-300/25 px-4 py-2 text-xs font-black text-amber-200">Manage departmental applications and appointments</Link>
+               <Link href="/company/formation" className="mt-3 ml-3 inline-flex border border-amber-300/25 px-4 py-2 text-xs font-black text-amber-200">Open Client Business Formation · Company Casework</Link>
             </div>
           </div>
         </header>
