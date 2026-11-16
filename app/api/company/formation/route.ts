@@ -2,7 +2,7 @@ import {NextRequest,NextResponse} from 'next/server'
 import {getAuthUser} from '@/lib/auth-api'
 import {getPool} from '@/lib/db'
 import {getGuidanceStaffDepartments,isGuidanceDepartment,type GuidanceDepartment} from '@/lib/weave-guidance-departments'
-import {ensureCompanyFormationSchema,syncFormationOwnership,backfillClientFormations,formationIncome,FORMATION_MILESTONES} from '@/lib/company-formation-movement'
+import {ensureCompanyFormationSchema,syncFormationOwnership,backfillClientFormations,formationIncome,FORMATION_MILESTONES,activeCompanyFormationRecipients} from '@/lib/company-formation-movement'
 
 export const dynamic='force-dynamic'
 const headers={'Cache-Control':'private, no-store','Vary':'Authorization'}
@@ -108,7 +108,7 @@ export async function POST(request:NextRequest){
         const saved=await db.query(`INSERT INTO weave_company_formation_actions
           (case_id,author_id,department,action_type,note,visibility)
           VALUES($1::uuid,$2::uuid,'client','client_brief',$3,'client') RETURNING id`,
-          [caseId,actor.id,'Business: '+brief+' | Customers: '+customer+' | Offer: '+offer+' | Next: '+next])
+          [caseId,actor.id,('Business: '+brief+' | Customers: '+customer+' | Offer: '+offer+' | Next: '+next).slice(0,2000)])
         actionId=String(saved.rows[0].id)
         await db.query('COMMIT')
       }catch(error){await db.query('ROLLBACK').catch(()=>{});throw error}
@@ -178,12 +178,8 @@ async function notifyAction(record:{id:string;client_id:string|null},actionId:st
   const recipients:string[]=[]
   if(visibility==='client'&&record.client_id&&record.client_id!==actorId)recipients.push(String(record.client_id))
   if(department==='client'){
-    const {rows}=await pool.query(`SELECT DISTINCT u.id FROM users u
-      LEFT JOIN weave_guidance_staff_applications a ON a.user_id=u.id
-        AND a.status='approved' AND a.source_role=u.role
-      WHERE COALESCE(u.is_active,true)=true
-        AND (u.role='admin' OR (u.role IN ('agent','bridger') AND a.department IN ('mandate','forensic','lawyer')))`)
-    for(const row of rows)if(String(row.id)!==actorId)recipients.push(String(row.id))
+    const active=await activeCompanyFormationRecipients()
+    for(const recipient of active)if(recipient.id!==actorId)recipients.push(recipient.id)
   }
   const unique=[...new Set(recipients)]
   for(const id of unique){
