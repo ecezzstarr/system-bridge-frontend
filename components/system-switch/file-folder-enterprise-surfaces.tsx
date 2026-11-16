@@ -1,6 +1,6 @@
 'use client'
 
-import {useEffect,useMemo} from 'react'
+import {useEffect,useMemo,useState} from 'react'
 import {useFrame} from '@react-three/fiber'
 import * as THREE from 'three'
 import {CityMaterial} from './file-folder-city-material'
@@ -62,8 +62,17 @@ export function EnterpriseWaterMaterial({tier='standard',fall=false}:{
  tier?:EnterpriseTier;fall?:boolean
 }){
  const map=useMemo(makeWaterNormal,[])
+ const [reducedMotion,setReducedMotion]=useState(false)
+ useEffect(()=>{
+  const preference=window.matchMedia('(prefers-reduced-motion: reduce)')
+  const update=()=>setReducedMotion(preference.matches)
+  update()
+  preference.addEventListener('change',update)
+  return()=>preference.removeEventListener('change',update)
+ },[])
  useEffect(()=>()=>map.dispose(),[map])
  useFrame((_,delta)=>{
+  if(reducedMotion)return
   const pace=Math.min(.05,delta)
   map.offset.x=(map.offset.x+pace*(fall?.015:.006))%1
   map.offset.y=(map.offset.y+pace*(fall?.085:.012))%1
