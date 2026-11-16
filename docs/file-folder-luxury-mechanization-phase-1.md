@@ -16,8 +16,15 @@ A Client's purchased File Folder must feel like receiving a substantial enterpri
 - Public preview machinery is **demonstrative architectural motion**, unlike the private Plus world, where construction and active equipment are tied to verified Client world records. It never claims ownership, live customers, new capabilities, fictional orders or income.
 - Preview models are loaded only on user request, use adaptive rendering, stay idle when offscreen or the page is hidden, honor reduced-motion settings, and provide graphics fallbacks. Their materials use only repository-owned surfaces. They do not call a payment API or read account storage.
 
+### Phase 2 — enterprise texture, interior and environmental depth
+- `file-folder-enterprise-surfaces.tsx` provides one physically shaded material interface for Standard, Pro, Premium and Plus, while preserving each tier's colors and the approved Plus PBR source. The other tiers use the installed `city-material-atlas.png` rather than remote texture services.
+- Shared enterprise water uses a deterministic 128×128 normal-map texture, slow UV movement, clearcoat, water-like index of refraction and correct linear normal-map color space. It is integrated into the Standard river and waterfalls, Pro water, Premium pools and waterfalls, and Plus cascades and rings. Reduced-motion settings stop water movement.
+- `file-folder-enterprise-interior.tsx` adds visible enclosed enterprise workspaces with glass walls, truss structure, interior consoles, a multi-roller conveyor, a machined gear and construction gantry. Each private tier scene mounts it as part of its purchased environment. The base architecture is present regardless of operating state, but motors and the construction lift only animate when the owner has real build or active system records. An operating indicator is shown only for verified active/commissioned systems.
+- Public four-tier 3D previews also show the same architectural interior and water materials with **no** work records passed; they are explicitly non-operating architectural examples, never fabricated commissioned businesses.
+- No File Folder entitlement, public route, company homepage, balances, transactions, payment verification or construction records are created or changed by these components.
+
 ### Limitations and next phases
-This is **not yet a photographic match** to the official Plus File Folder art. The large architecture still uses procedural primitives; true high-resolution normal/metalness/roughness sets, authored geometry, realistic glass and water, physically calibrated reflections, interior equipment and a coherent material-library import pipeline remain future work. The shared CityMaterial atlas remains unchanged, so Standard, Pro and Premium visual results are preserved by this first release.
+This is **not yet a photographic match** to the official Plus File Folder art. The large architecture still uses procedural primitives; true high-resolution author-created normal/metalness/roughness sets, complex imported architectural geometry, reflection-probed glass, GPU-accurate water and a curated material import pipeline remain future work. The new physically inspired materials and interior parts are an incremental improvement, not a fully photorealistic result. The shared CityMaterial atlas remains unchanged, so Standard, Pro and Premium visual results are preserved by this first release.
 
 The test contract checks record-gated machinery, local assets, maps and compatibility. It does not prove GPU frame rate, visual quality or authorized client operating flows. Release review must compare screenshots against the official art on representative Android phones and desktop, including reduced-motion mode, poor GPU fallback, build-to-commissioning state changes and inactive Client accounts.
 
@@ -27,6 +34,9 @@ The test contract checks record-gated machinery, local assets, maps and compatib
 - `components/public/pro-file-folder-preview.tsx`
 - `app/file-folder/page.tsx`
 - `tests/file-folder-public-mechanized-preview-regression.cjs`
+- `components/system-switch/file-folder-enterprise-surfaces.tsx`
+- `components/system-switch/file-folder-enterprise-interior.tsx`
+- `tests/file-folder-enterprise-depth-regression.cjs`
 - `components/system-switch/file-folder-luxury-material.tsx`
 - `components/system-switch/file-folder-plus-mechanization.tsx`
 - `components/system-switch/file-folder-plus-radiant-world.tsx`
