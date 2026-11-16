@@ -56,8 +56,7 @@ export function EnterpriseWorkshopInterior({
   if(motion.current&&(building||operating))motion.current.rotation.z+=step*.32
   if(hoist.current&&building)hoist.current.rotation.y+=step*.045
  })
- return <group data-enterprise-interior={tier}
-   userData={{tier,buildCount,liveCount,environment:'non-operating-base-equipment'}}>
+ return <group userData={{tier,buildCount,liveCount,environment:'non-operating-base-equipment'}}>
   <mesh castShadow receiveShadow position={[0,.09,0]}>
    <boxGeometry args={[6.3,.24,4.8]}/>
    <EnterpriseMaterial tier={tier} surface="floor" color={finish.floor} tile={3}/>
