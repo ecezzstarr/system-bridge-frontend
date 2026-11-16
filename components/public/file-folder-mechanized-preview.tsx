@@ -8,6 +8,8 @@ import type {Group} from 'three'
 import {AdaptiveCanvas} from '@/components/world/adaptive-canvas'
 import {CityMaterial} from '@/components/system-switch/file-folder-city-material'
 import {FileFolderLuxuryMaterial} from '@/components/system-switch/file-folder-luxury-material'
+import {EnterpriseWaterMaterial} from '@/components/system-switch/file-folder-enterprise-surfaces'
+import {EnterpriseWorkshopInterior} from '@/components/system-switch/file-folder-enterprise-interior'
 
 export type PublicFileFolderTier='standard'|'pro'|'premium'|'plus'
 
@@ -201,6 +203,13 @@ function ExhibitionScene({tier,reducedMotion}:{tier:PublicFileFolderTier;reduced
   </mesh>)}
   <Landmark tier={tier}/>
   {Array.from({length:f.stations},(_,i)=><WorkingDistrict key={i} tier={tier} index={i}/>)}
+  <mesh rotation={[-Math.PI/2,0,0]} position={[0,-.15,0]}>
+   <torusGeometry args={[9.0,.22,10,70]}/>
+   <EnterpriseWaterMaterial tier={tier}/>
+  </mesh>
+  <group position={[0,0,8.2]} scale={[.59,.59,.59]}>
+   <EnterpriseWorkshopInterior tier={tier}/>
+  </group>
   <group ref={ring}>
    <mesh rotation={[-Math.PI/2,0,0]} position={[0,1.4,0]}>
     <torusGeometry args={[4.2,.035,6,64]}/>
