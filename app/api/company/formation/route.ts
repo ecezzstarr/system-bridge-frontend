@@ -1,3 +1,4 @@
+import {formationNextWork} from '@/lib/company-formation-work-readiness'
 import {NextRequest,NextResponse} from 'next/server'
 import {getAuthUser} from '@/lib/auth-api'
 import {getPool} from '@/lib/db'
@@ -46,7 +47,7 @@ export async function GET(request:NextRequest){
       ORDER BY c.created_at DESC LIMIT 100`,[actor.role,actor.id])
     const requested=request.nextUrl.searchParams.get('caseId')||''
     const caseId=uuid.test(requested)?requested:cases[0]?.id
-    let selected=null,actions:unknown[]=[],income=null
+    let selected=null,actions:unknown[]=[],income=null,work=null
     if(caseId){
       selected=await selectedCase(String(caseId),actor)
       if(!selected&&requested)return NextResponse.json({error:'Formation case not found or unavailable'},{status:404,headers})
@@ -57,6 +58,7 @@ export async function GET(request:NextRequest){
           ORDER BY created_at ASC LIMIT 250`,[selected.id,actor.role])
         actions=rows
         income=await formationIncome(selected)
+        work=await formationNextWork(selected)
       }
     }
     let events:unknown[]=[]
@@ -67,7 +69,7 @@ export async function GET(request:NextRequest){
       events=rows
     }
     return NextResponse.json({success:true,mode:actor.role==='client'?'client':actor.role==='admin'?'administrations':'guidance',
-      departments:actor.departments, cases,selected,actions,income,events,milestones:FORMATION_MILESTONES,
+      departments:actor.departments, cases,selected,actions,income,work,events,milestones:FORMATION_MILESTONES,
       note:'No income is inferred from pending orders, unverified payments, product promises, or company event participation.'},{headers})
   }catch(error){
     console.error('[company formation GET]',error)
