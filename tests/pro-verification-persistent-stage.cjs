@@ -52,6 +52,7 @@ const route=load('app/api/public/pro-file-number-verification/route.ts',{
  'next/server':{NextResponse:{json}},
  '@/lib/pro-file-number-verification':lib,
  '@/lib/pro-client-registration-invitation':{sendVerifiedProClientRegistrationInvite:async ticket=>{inviteTicket=ticket;return{success:true}}},
+ '@/lib/company-client-staff':{PRO_DIRECT_REGISTRATION_COOKIE:'weave_pro_direct_registration'},
  '@/lib/administrations-activity-notifications':{notifyAdministrationsActivity:async()=>{notifications++}},
 })
 const request=(body,cookie=secret)=>({

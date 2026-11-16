@@ -9,7 +9,7 @@ import { buildUserReferralCode, resolveReferralOwnerByCode } from '@/lib/user-re
 import { publicFlameMovementCodeFromRequest, recordPublicFlameMovementEvent } from '@/lib/public-flame-movement'
 import { activatePurchasedFileFolderForClient } from '@/lib/file-folder-purchase-activation'
 import { ensureClientMonthlySchema, normalizeRegisteredGender } from '@/lib/client-monthly-subscription'
-import { ensureCompanyClientStaffSchema, staffOfferTokenHash } from '@/lib/company-client-staff'
+import { ensureCompanyClientStaffSchema, staffOfferTokenHash, PRO_DIRECT_REGISTRATION_COOKIE } from '@/lib/company-client-staff'
 import { issueWeaveReceipt } from '@/lib/weave-receipts'
 import { CJ_DORADO_FILE_NUMBER } from '@/lib/client-file-folder'
 import { notifyAdministrationsActivity } from '@/lib/administrations-activity-notifications'
@@ -20,7 +20,8 @@ export async function POST(request: NextRequest) {
     const shield=await getDivineShieldState()
     if(shield.active) return NextResponse.json({error:'WEAVE is under maintenance. Divine Shield is active.'},{status:423})
 
-    const { fileNumber: rawFileNumber, staffOffer, email, password, businessName, gender: rawGender, referredBy } = await request.json()
+    const { fileNumber: rawFileNumber, staffOffer: suppliedStaffOffer, email, password, businessName, gender: rawGender, referredBy } = await request.json()
+    const staffOffer=String(suppliedStaffOffer||request.cookies.get(PRO_DIRECT_REGISTRATION_COOKIE)?.value||'')
     const fileNumber=String(rawFileNumber||'').trim().toUpperCase()
     const gender=normalizeRegisteredGender(rawGender)
     if(!gender)return NextResponse.json({error:'Choose Male or Female at registration.'},{status:400})
@@ -37,7 +38,7 @@ export async function POST(request: NextRequest) {
     // repairing a reserved File Number. Retail registration is unaffected.
     await ensureCompanyClientStaffSchema()
     const [staffGrant] = await sql`
-      SELECT id,token_hash,candidate_name,candidate_phone,candidate_email,status,client_id,ticket_amount_usdt,applicant_contribution_usdt,proposed_personal_loan_usdt,folder_tier,receipt_number,appointment_approved_at
+      SELECT id,token_hash,candidate_name,candidate_phone,candidate_email,status,client_id,ticket_amount_usdt,applicant_contribution_usdt,proposed_personal_loan_usdt,folder_tier,receipt_number,appointment_approved_at,registration_token_expires_at
       FROM company_client_staff_offers
       WHERE file_number=${fileNumber}
       LIMIT 1
@@ -46,7 +47,8 @@ export async function POST(request: NextRequest) {
       staffGrant.status !== 'approved' || staffGrant.client_id ||
       String(staffGrant.candidate_email).toLowerCase() !== String(email).trim().toLowerCase() ||
       !/^[a-f0-9]{64}$/i.test(String(staffOffer||'')) ||
-      staffGrant.token_hash !== staffOfferTokenHash(String(staffOffer))
+      staffGrant.token_hash !== staffOfferTokenHash(String(staffOffer)) ||
+      (staffGrant.registration_token_expires_at&&new Date(staffGrant.registration_token_expires_at).getTime()<=Date.now())
     )) {
       return NextResponse.json({error:'This staff File Folder requires its private company invitation and named email'},{status:403})
     }
@@ -262,9 +264,10 @@ export async function POST(request: NextRequest) {
       adminPath:'/admin/company-movement',actorId:String(user.id),actorName:String(user.name),
     })
 
-    return NextResponse.json({
+    const registrationResponse=NextResponse.json({
       success: true,
       token,
+      proWorkspaceReady:activationTier==='pro'&&proActivation?.status==='active',
       activationRequired: (activationTier==='pro'||fileNumber===CJ_DORADO_FILE_NUMBER)&&proActivation?.status!=='active',
       customerDoor: activation.customerDoor,
       user: {
@@ -280,6 +283,13 @@ export async function POST(request: NextRequest) {
         referred_by: user.referred_by,
       },
     })
+    if(request.cookies.get(PRO_DIRECT_REGISTRATION_COOKIE)?.value){
+      registrationResponse.cookies.set(PRO_DIRECT_REGISTRATION_COOKIE,'',{
+        httpOnly:true,secure:process.env.NODE_ENV==='production',sameSite:'lax',
+        path:'/api/client',maxAge:0,
+      })
+    }
+    return registrationResponse
   } catch (error) {
     console.error('Weave register error:', error)
     return NextResponse.json(

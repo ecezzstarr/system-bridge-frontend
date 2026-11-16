@@ -1,5 +1,6 @@
 import {NextRequest,NextResponse} from 'next/server'
-import {sendVerifiedProClientRegistrationInvite} from '@/lib/pro-client-registration-invitation'
+import {sendVerifiedProClientRegistrationInvite,prepareVerifiedProClientRegistration} from '@/lib/pro-client-registration-invitation'
+import {PRO_DIRECT_REGISTRATION_COOKIE} from '@/lib/company-client-staff'
 import {notifyAdministrationsActivity} from '@/lib/administrations-activity-notifications'
 import {
  submitProFileNumberPlan,readProFileNumberVerification,submitProFileNumberPayment,
@@ -69,13 +70,32 @@ export async function POST(request:NextRequest){
     String(body.ticket||request.cookies.get(SAVED_VERIFICATION_COOKIE)?.value||''),request.nextUrl.origin)
    return NextResponse.json(result,{headers:proVerificationPublicHeaders})
   }
+  if(body.action==='open_registration'){
+   // This action is bound to a saved private session, verified receipt,
+   // approved offer and activated File Number, not mere number possession.
+   const origin=request.headers.get('origin')
+   if(origin&&origin!==request.nextUrl.origin)
+    return NextResponse.json({error:'Open registration from the official Weave verification page.'},
+      {status:403,headers:proVerificationPublicHeaders})
+   const result=await prepareVerifiedProClientRegistration(
+     String(body.ticket||request.cookies.get(SAVED_VERIFICATION_COOKIE)?.value||''))
+   const response=NextResponse.json({
+     success:true,registrationUrl:'/client/register?fileNumber='+encodeURIComponent(result.fileNumber),
+     expiresInSeconds:result.expiresInSeconds,
+   },{headers:proVerificationPublicHeaders})
+   response.cookies.set(PRO_DIRECT_REGISTRATION_COOKIE,result.token,{
+      httpOnly:true,secure:process.env.NODE_ENV==='production',sameSite:'lax',
+      path:'/api/client',maxAge:result.expiresInSeconds,
+   })
+   return response
+  }
   if(body.action==='submit_payment'){
    const result=await submitProFileNumberPayment(
     String(body.ticket||request.cookies.get(SAVED_VERIFICATION_COOKIE)?.value||''),String(body.txHash||''),String(body.expectedWallet||''))
    await notifyAdministrationsActivity({
     event:'pro_staff_payment_evidence',eventId:result.reference,
-    title:'Pro File Folder payment evidence needs Forensics',
-    content:'A Pro employee submitted blockchain payment evidence. Independently check network, exact receiving wallet, amount and transaction hash; this is not yet verified income.',
+    title:result.corrected?'Corrected Pro payment evidence needs Forensics':'Pro File Folder payment evidence needs Forensics',
+    content:result.corrected?'An employee corrected earlier rejected evidence. Check the recorded rejection and independently verify the original transfer, without requesting a second transfer.':'A Pro employee submitted blockchain payment evidence. Independently check network, exact receiving wallet, amount and transaction hash; this is not yet verified income.',
     adminPath:'/admin/pro-file-number-verifications',
     actorName:'WEAVE Pro Verification',
    })

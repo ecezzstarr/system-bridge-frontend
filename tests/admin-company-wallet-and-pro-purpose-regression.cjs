@@ -80,7 +80,7 @@ assert.ok(language.includes('Weave grows through the success')&&
 assert.ok(publicUi.includes('PRO_MANAGER_AGREEMENT_SECTIONS.map')&&
  publicUi.includes('PRO_MANAGER_PLAN_QUESTIONS')&&
  publicUi.includes('data-pro-reciprocal-company-purpose="true"')&&
- publicUi.includes("action:'submit_payment'")&&publicUi.includes('requestRegistrationInvite'),
+ publicUi.includes("action:'submit_payment'")&&publicUi.includes('openDirectRegistration'),
  'Client Pro File Number onboarding retains real signature, payment and account-registration flow with clear text')
 assert.ok(clientActivation.includes('PRO_MANAGER_AGREEMENT_SECTIONS.map')&&
  clientActivation.includes('PRO_MANAGER_COMPANY_PURPOSE')&&

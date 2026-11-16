@@ -2,7 +2,7 @@ import {randomBytes,createHash} from 'node:crypto'
 import {sql,getPool} from '@/lib/db'
 import {ensureProFileNumberVerificationSchema} from '@/lib/pro-file-number-verification'
 import {ensureProActivationSchema} from '@/lib/pro-file-folder-activation'
-import {staffOfferTokenHash,ensureCompanyClientStaffSchema} from '@/lib/company-client-staff'
+import {staffOfferTokenHash,ensureCompanyClientStaffSchema,PRO_DIRECT_REGISTRATION_TTL_SECONDS} from '@/lib/company-client-staff'
 import {passwordRecoveryEmailProvider} from '@/lib/password-recovery'
 import {sendAuthenticatedGoogleMail,systemGoogleMailbox} from '@/lib/weave-mail'
 import {getAdministrationGoogleMailboxCredential} from '@/lib/weave-mailbox'
@@ -17,6 +17,13 @@ export async function ensureProClientRegistrationInvitationSchema(){
  await ensureProFileNumberVerificationSchema()
  await ensureCompanyClientStaffSchema()
  await ensureProActivationSchema()
+ await sql`CREATE TABLE IF NOT EXISTS pro_client_registration_direct_handoffs (
+   verification_id uuid PRIMARY KEY REFERENCES pro_file_number_verifications(id) ON DELETE CASCADE,
+   window_started_at timestamptz NOT NULL DEFAULT now(),
+   issued_count integer NOT NULL DEFAULT 0,
+   last_issued_at timestamptz,
+   updated_at timestamptz NOT NULL DEFAULT now()
+ )`
  await sql`CREATE TABLE IF NOT EXISTS pro_client_registration_invitation_delivery (
    verification_id uuid PRIMARY KEY REFERENCES pro_file_number_verifications(id) ON DELETE CASCADE,
    window_started_at timestamptz NOT NULL DEFAULT now(),
@@ -110,7 +117,7 @@ export async function sendVerifiedProClientRegistrationInvite(ticket:string,requ
    throw new Error('An invitation was recently requested. Check your approved email or try again after the resend interval.')
   const token=randomBytes(32).toString('hex')
   const issued=await db.query(`UPDATE company_client_staff_offers
-    SET token_hash=$2,updated_at=now() WHERE id=$1::uuid AND status='approved'
+    SET token_hash=$2,registration_token_expires_at=NULL,updated_at=now() WHERE id=$1::uuid AND status='approved'
       AND client_id IS NULL RETURNING candidate_email`,[row.offer_id,staffOfferTokenHash(token)])
   if(issued.rows.length!==1)throw new Error('This employment invitation has already been claimed.')
   await db.query(`INSERT INTO pro_client_registration_invitation_delivery
@@ -132,4 +139,63 @@ export async function sendVerifiedProClientRegistrationInvite(ticket:string,requ
  finally{db.release()}
  if(!delivery)throw new Error('Unable to prepare registration invitation')
  return {success:true,message:'A private account registration link has been sent to the company-approved email address. Check your inbox. Never share the link. No new activation payment is required.'}
+}
+
+/** Direct registration: only the original private verification session, a
+ * verified 680 USDT payment, and an activated unclaimed Pro entitlement
+ * can mint a short-lived same-browser registration cookie. */
+export async function prepareVerifiedProClientRegistration(ticket:string){
+ if(!/^[a-f0-9]{64}$/i.test(ticket))throw new Error('Private verification session required before registration.')
+ await ensureProClientRegistrationInvitationSchema()
+ const hash=createHash('sha256').update(ticket.toLowerCase()).digest('hex')
+ const db=await getPool().connect()
+ try{
+  await db.query('BEGIN')
+  const {rows}=await db.query(`SELECT v.id,v.file_number,v.status,v.signed_name,
+    v.identity_verified_at,v.payment_verified_at,v.payment_verified_amount_usdt,
+    a.activated_at,a.client_id AS activated_owner,
+    o.id AS offer_id,o.candidate_name,o.candidate_email,o.status AS offer_status,
+    o.folder_tier,o.client_id,o.monthly_salary_usdt
+   FROM pro_file_number_verifications v
+   JOIN company_client_staff_offers o ON o.file_number=v.file_number
+   JOIN pro_file_folder_activations a ON a.file_number=v.file_number
+     AND a.status='active' AND a.payment_tx_hash=v.payment_tx_hash
+   WHERE v.access_token_hash=$1 FOR UPDATE OF v,o`,[hash])
+  const row=rows[0]
+  if(!row||row.status!=='paid_pending_account'||!row.identity_verified_at||
+    !row.payment_verified_at||Number(row.payment_verified_amount_usdt)!==680||
+    !row.activated_at||row.activated_owner||row.client_id||
+    row.offer_status!=='approved'||row.folder_tier!=='pro'||
+    Number(row.monthly_salary_usdt)<=0||
+    String(row.signed_name||'').trim().toLowerCase()!==
+      String(row.candidate_name||'').trim().toLowerCase()||
+    !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(row.candidate_email||'')))
+    throw new Error('Company registration is not authorized yet. Verified payment, identity and Pro Folder activation must be complete.')
+  const existing=await db.query(`SELECT id FROM users
+   WHERE file_number=$1 OR lower(email)=lower($2) LIMIT 1`,[row.file_number,row.candidate_email])
+  if(existing.rows.length)throw new Error('This account is already registered. Sign in or contact Administrations to reconcile access; do not pay again.')
+  const counter=await db.query(`SELECT issued_count,window_started_at,last_issued_at
+    FROM pro_client_registration_direct_handoffs WHERE verification_id=$1::uuid FOR UPDATE`,[row.id])
+  const previous=counter.rows[0]
+  const inWindow=Boolean(previous&&Date.now()-new Date(previous.window_started_at).getTime()<86400000)
+  if(inWindow&&Number(previous.issued_count)>=10)
+    throw new Error('Registration handoff limit reached. Use your existing registration page or contact Administrations.')
+  if(previous?.last_issued_at&&Date.now()-new Date(previous.last_issued_at).getTime()<5000)
+    throw new Error('Registration was just prepared. Continue in the same browser.')
+  const token=randomBytes(32).toString('hex')
+  const issued=await db.query(`UPDATE company_client_staff_offers
+   SET token_hash=$2,registration_token_expires_at=now()+interval '15 minutes',updated_at=now()
+   WHERE id=$1::uuid AND status='approved' AND client_id IS NULL RETURNING id`,
+   [row.offer_id,staffOfferTokenHash(token)])
+  if(issued.rows.length!==1)throw new Error('Company registration was already claimed.')
+  await db.query(`INSERT INTO pro_client_registration_direct_handoffs
+    (verification_id,issued_count,window_started_at,last_issued_at)
+    VALUES($1::uuid,1,now(),now()) ON CONFLICT(verification_id) DO UPDATE SET
+    issued_count=CASE WHEN $2 THEN pro_client_registration_direct_handoffs.issued_count+1 ELSE 1 END,
+    window_started_at=CASE WHEN $2 THEN pro_client_registration_direct_handoffs.window_started_at ELSE now() END,
+    last_issued_at=now(),updated_at=now()`,[row.id,inWindow])
+  await db.query('COMMIT')
+  return {fileNumber:String(row.file_number),token,expiresInSeconds:PRO_DIRECT_REGISTRATION_TTL_SECONDS}
+ }catch(e){await db.query('ROLLBACK').catch(()=>{});throw e}
+ finally{db.release()}
 }

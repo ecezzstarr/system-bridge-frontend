@@ -98,6 +98,7 @@ export default function RegionalDailyWorkspace(){
           'Read your assigned regional responsibilities, record evidence of completed work and let your Regional Manager know when guidance is needed.'}
       </p>
       <div className="flex flex-wrap gap-3 text-sm text-cyan-200">
+        {(isManager||data.membership?.position==='Bridger')&&<Link href="/weave/lifestyles/regional-manager/hope-outreach" className="font-semibold text-amber-100">Hope · Daily outreach control</Link>}
         <Link href="/communications">Team communications</Link>
         <Link href={isManager?'/weave/lifestyles/support':'/weave/lifestyles/support?managerId='+encodeURIComponent(data.managerId)}>Work support · private conversations</Link>
         <Link href="/weave/lifestyles/work">All approved positions</Link>
