@@ -49,7 +49,11 @@ function folderFace(tab:boolean){
   shape.quadraticCurveTo(-2.3,-1,-2.15,-1)
   return shape
 }
-const FOLDER_BACK=folderFfunction RadiantMaterial({color,gold=false,glass=false,realness='high'}:{
+const FOLDER_BACK=folderFace(true)
+const FOLDER_FRONT=folderFace(false)
+const FOLDER_EXTRUSION={depth:.11,bevelEnabled:false}
+
+function RadiantMaterial({color,gold=false,glass=false,realness='high'}:{
   color:string;gold?:boolean;glass?:boolean;realness?:string
 }){
  return <FileFolderLuxuryMaterial color={color} gold={gold} glass={glass} realness={realness}/>
