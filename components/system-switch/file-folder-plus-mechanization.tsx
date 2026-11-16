@@ -1,6 +1,7 @@
 'use client'
-import {useEffect,useRef,useState,type RefObject} from 'react'
+import {useEffect,useMemo,useRef,useState,type RefObject} from 'react'
 import {useFrame} from '@react-three/fiber'
+import * as THREE from 'three'
 import type {Group} from 'three'
 import {CityMaterial} from './file-folder-city-material'
 
@@ -21,27 +22,35 @@ type Props={
 function MachinedGear({radius=1,teeth=12,thin=false}:{
  radius?:number;teeth?:number;thin?:boolean
 }){
+ // One bevelled, holed silhouette replaces dozens of individual teeth meshes.
+ // It has the mechanical profile of a gear while keeping mobile draw calls low.
+ const shape=useMemo(()=>{
+  const outline=new THREE.Shape()
+  const steps=teeth*4
+  for(let i=0;i<steps;i++){
+   const angle=i/steps*Math.PI*2
+   const outer=i%4===1||i%4===2
+   const r=radius*(outer?1.13:.94)
+   const x=Math.cos(angle)*r,y=Math.sin(angle)*r
+   if(i===0)outline.moveTo(x,y)
+   else outline.lineTo(x,y)
+  }
+  outline.closePath()
+  const hub=new THREE.Path()
+  hub.absarc(0,0,radius*.2,0,Math.PI*2,true)
+  outline.holes.push(hub)
+  return outline
+ },[radius,teeth])
  const depth=thin?.09:.16
- return <group>
+ return <group rotation={[-Math.PI/2,0,0]}>
   <mesh castShadow receiveShadow>
-   <cylinderGeometry args={[radius,radius,depth,Math.max(12,teeth*2)]}/>
+   <extrudeGeometry args={[shape,{depth,steps:1,bevelEnabled:true,
+     bevelThickness:.02,bevelSize:.02,bevelSegments:1}]}/>
    <CityMaterial kind="metal" tint="#c8a66f" tileX={2} tileY={2}/>
   </mesh>
-  {Array.from({length:teeth},(_,i)=>{
-   const angle=i/teeth*Math.PI*2
-   return <mesh key={i} position={[Math.sin(angle)*radius,0,Math.cos(angle)*radius]}
-     rotation={[0,angle,0]} castShadow>
-    <boxGeometry args={[.16,depth+.025,.32]}/>
-    <CityMaterial kind="metal" tint="#dbbc82"/>
-   </mesh>
-  })}
-  <mesh position={[0,depth*.52+.012,0]}>
-   <cylinderGeometry args={[radius*.43,radius*.43,.035,24]}/>
-   <meshStandardMaterial color="#f4f1e5" metalness={.65} roughness={.3}/>
-  </mesh>
-  <mesh position={[0,depth*.58+.042,0]}>
-   <cylinderGeometry args={[radius*.14,radius*.14,.045,16]}/>
-   <meshStandardMaterial color="#a57635" metalness={.85} roughness={.24}/>
+  <mesh position={[0,0,depth+.04]}>
+   <ringGeometry args={[radius*.22,radius*.43,28]}/>
+   <meshStandardMaterial color="#f4f1e5" metalness={.65} roughness={.3} side={THREE.DoubleSide}/>
   </mesh>
  </group>
 }
