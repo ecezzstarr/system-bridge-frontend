@@ -11,12 +11,13 @@ type Report={
   member:{user_id:string;name:string;role:string;position:string;level:string}
   plan:{workingHours:number;contactTarget:number;postTargets:Targets;updatedAt:string}|null
   contacts:{sendConfirmations:number;responsesOrConversions:number}
+  confirmedFileFolders:number
   posts:Record<Channel,{target:number;providerConfirmed:number;managerReviewed:number;pending:number;total:number}>
   evidence:Evidence[]
 }
 type Data={
   success:boolean;mode:'manager'|'member';managerId:string;day:string;reports:Report[]
-  sources:{prospects:boolean;publishing:boolean};note:string
+  sources:{prospects:boolean;publishing:boolean;sales:boolean};note:string
 }
 const blank=():Targets=>({tiktok:1,facebook:1,instagram:1,x:1,youtube:0,linkedin:0})
 const label=(key:string)=>({tiktok:'TikTok',facebook:'Facebook',instagram:'Instagram',x:'X',youtube:'YouTube',linkedin:'LinkedIn'} as Record<string,string>)[key]||key
@@ -108,7 +109,7 @@ export default function RegionalHopeOutreachPage(){
     </header>
     {error&&<p role="alert" className="rounded-lg border border-rose-300/25 p-3 text-sm text-rose-200">Previous records are shown. Refresh failed: {error}</p>}
     {message&&<p role="status" className="rounded-lg border border-cyan-300/25 p-3 text-sm text-cyan-100">{message}</p>}
-    {(!data.sources.prospects||!data.sources.publishing)&&<p role="alert" className="rounded-lg border border-amber-300/25 p-3 text-sm text-amber-100">
+    {(!data.sources.prospects||!data.sources.publishing||!data.sources.sales)&&<p role="alert" className="rounded-lg border border-amber-300/25 p-3 text-sm text-amber-100">
       Some source records are unavailable. Missing data must not be treated as zero employee activity.
     </p>}
     <p className="text-sm leading-6 text-slate-400">Two contacts per working hour is the company standard. WhatsApp contacts in this board are Bridger-confirmed sends, not independent WhatsApp delivery receipts. A social post is counted only with a recorded provider receipt or a manager-reviewed public link; manager review is not provider verification.</p>
