@@ -3,9 +3,10 @@ import {Component,useEffect,useMemo,useRef,useState,type ReactNode} from 'react'
 import {Canvas,useFrame} from '@react-three/fiber'
 import {OrbitControls,Text} from '@react-three/drei'
 import type {Group} from 'three'
-import {DoubleSide} from 'three'
 import {buildFormationProgress} from '@/lib/file-folder-world-runtime'
 import {PREMIUM_FILE_FOLDER_REFERENCE,type FileFolderWorldAppearance} from '@/lib/file-folder-world-presets'
+import {EnterpriseMaterial,EnterpriseWaterMaterial} from './file-folder-enterprise-surfaces'
+import {EnterpriseWorkshopInterior} from './file-folder-enterprise-interior'
 
 // Premium owners must still be able to operate their purchased File Folder
 // when mobile WebGL, GPU context creation, or a 3D asset fails. The real
@@ -58,9 +59,8 @@ function stationForDistrict(district:string):StationKey{
  return 'build'
 }
 function GoldMaterial({color=GOLD,glass=false}:{color?:string;glass?:boolean}){
- return <meshPhysicalMaterial color={color} metalness={glass?.18:.73} roughness={glass?.18:.24}
-  clearcoat={1} clearcoatRoughness={.12} transparent={glass} opacity={glass?.68:1}
-  side={DoubleSide}/>
+ return <EnterpriseMaterial tier="premium"
+  surface={glass?'glass':color===GOLD?'metal':'stone'} color={color}/>
 }
 function Waterfalls(){
  const water=useRef<Group>(null)
@@ -70,7 +70,7 @@ function Waterfalls(){
    <mesh position={[0,-.4,0]}><boxGeometry args={[4,1,2]}/><GoldMaterial color="#4a5762"/></mesh>
    {[-1.2,-.4,.4,1.2].map(y=><mesh key={y} position={[y,-1.55,.9]}>
     <planeGeometry args={[.66,3.5]}/>
-    <meshPhysicalMaterial color="#a4e7ed" transparent opacity={.52} roughness={.13} side={DoubleSide} depthWrite={false}/>
+    <EnterpriseWaterMaterial tier="premium" fall/>
    </mesh>)}
   </group>)}
  </group>
@@ -291,7 +291,7 @@ function Scene({selected,onSelect,builds,systems,now,onEnter}:{selected:StationK
    <planeGeometry args={[95,95]}/><GoldMaterial color="#24242d"/>
   </mesh>
   <mesh rotation={[-Math.PI/2,0,0]} position={[0,-.54,-.5]}>
-   <circleGeometry args={[27,72]}/><GoldMaterial color="#3e6570" glass/>
+   <circleGeometry args={[27,72]}/><EnterpriseWaterMaterial tier="premium"/>
   </mesh>
   <mesh rotation={[-Math.PI/2,0,0]} position={[0,-.39,-.5]}>
    <ringGeometry args={[17,17.5,72]}/><GoldMaterial/>
@@ -327,6 +327,11 @@ function Scene({selected,onSelect,builds,systems,now,onEnter}:{selected:StationK
   <PremiumTerraces/>
   <CentralPremiumCitadel/>
   <VerifiedStructures builds={builds} systems={systems} now={now} onEnter={onEnter}/>
+  <group position={[0,0,-18.5]} scale={[1.1,1.1,1.1]}>
+   <EnterpriseWorkshopInterior tier="premium" buildCount={builds.filter(b=>b.status==='building').length}
+    liveCount={live} progress={builds.find(b=>b.status==='building')
+      ? buildFormationProgress(builds.find(b=>b.status==='building')!,now):0}/>
+  </group>
   {Array.from({length:12},(_,i)=>{
    const a=i/12*Math.PI*2
    const x=Math.sin(a)*21,z=Math.cos(a)*21
