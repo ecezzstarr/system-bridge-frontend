@@ -167,10 +167,10 @@ export function ProFileFolderPreview({ standalone = false }: { standalone?: bool
 
               <div className="relative mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
                 {[
-                  ['Customer Door', 'Open'],
-                  ['Systems', 'Ready'],
-                  ['Operations', 'Active'],
-                  ['Bridge AI', 'Available'],
+                  ['Customer Door', 'Preview'],
+                  ['Systems', 'Illustrative'],
+                  ['Operations', 'Illustrative'],
+                  ['Bridge AI', 'Concept'],
                 ].map(([label, value]) => (
                   <div key={label} className="rounded-2xl border border-white/[.07] bg-black/25 p-3">
                     <p className="text-[8px] font-black uppercase tracking-[.13em] text-slate-600">{label}</p>
