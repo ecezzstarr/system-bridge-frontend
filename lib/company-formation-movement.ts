@@ -91,7 +91,7 @@ async function committedMovement(kind:CompanyFormationEvent,sourceId:string){
     return rows[0]?{sourceKind:'prospect_package' as const,actorId:String(rows[0].actor_id),record:rows[0]}:null
   }
   if(kind==='bridge_payment_submitted'||kind==='bridge_deposit_verified'){
-    const {rows}=await pool.query(`SELECT b.id,b.bridger_id,b.file_number,b.status,b.tier_trx,
+    const {rows}=await pool.query(`SELECT b.id,b.bridger_id,b.file_number,b.status,b.tier_trx,b.verified_at,
       f.client_id,f.claimed_at
       FROM bridge_deposits b LEFT JOIN client_file_folders f ON f.file_number=b.file_number
       WHERE b.id=$1::uuid LIMIT 1`,[sourceId])
