@@ -140,7 +140,7 @@ export default function RegionalHopeOutreachPage(){
           <h2 className="text-xl font-bold">{current.member.name} · Today's work</h2>
           <span className="text-xs text-slate-300">{current.plan?'Targets active':'Awaiting manager targets'}</span>
         </div>
-        <div className="mt-4 grid gap-3 sm:grid-cols-3">
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <div className="rounded-xl border border-white/10 p-4">
             <p className="text-xs text-slate-300">Confirmed send actions</p>
             <p className="mt-2 text-2xl font-black">{data.sources.prospects?number(current.contacts.sendConfirmations):'Unavailable'} <span className="text-sm font-normal text-slate-400">/ {current.plan?.contactTarget??'unassigned'}</span></p>
@@ -148,6 +148,10 @@ export default function RegionalHopeOutreachPage(){
           <div className="rounded-xl border border-white/10 p-4">
             <p className="text-xs text-slate-300">Response or conversion movement today</p>
             <p className="mt-2 text-2xl font-black">{data.sources.prospects?number(current.contacts.responsesOrConversions):'Unavailable'}</p>
+          </div>
+          <div className="rounded-xl border border-white/10 p-4">
+            <p className="text-xs text-slate-300">Confirmed File Folder sales</p>
+            <p className="mt-2 text-2xl font-black">{data.sources.sales?number(current.confirmedFileFolders):"Unavailable"}</p>
           </div>
           <div className="rounded-xl border border-white/10 p-4">
             <p className="text-xs text-slate-300">Assigned working hours</p>
