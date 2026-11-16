@@ -3,6 +3,8 @@ import {Component,Suspense,useEffect,useMemo,useState,type ReactNode} from 'reac
 import {Canvas} from '@react-three/fiber'
 import {OrbitControls,Text} from '@react-three/drei'
 import {CityMaterial} from './file-folder-city-material'
+import {EnterpriseMaterial,EnterpriseWaterMaterial} from './file-folder-enterprise-surfaces'
+import {EnterpriseWorkshopInterior} from './file-folder-enterprise-interior'
 import {buildFormationProgress} from '@/lib/file-folder-world-runtime'
 import FileFolderProBuildConsole,{type ProWorkshopView,type ProBlueprint,type ProCatalogItem,type ProInventoryItem,type ProBuild} from './file-folder-pro-build-console'
 import {FILE_FOLDER_EQUIPMENT,resolveFileFolderAppearance,type FileFolderWorldAppearance} from '@/lib/file-folder-world-presets'
@@ -46,9 +48,8 @@ class ProWorldRecovery extends Component<{children:ReactNode},{failed:boolean}>{
 }
 
 function BlueMetal({glass=false}:{glass?:boolean}){
- return <meshPhysicalMaterial color={glass?'#c2ecff':'#164e89'}
-   transparent={glass} opacity={glass?.77:1} roughness={glass?.14:.29}
-   metalness={glass?.13:.64} clearcoat={.7} clearcoatRoughness={.17}/>
+ return <EnterpriseMaterial tier="pro" surface={glass?'glass':'metal'}
+   color={glass?'#c2ecff':'#164e89'}/>
 }
 function WorldFloor(){
  return <group>
@@ -57,7 +58,7 @@ function WorldFloor(){
   </mesh>
   <mesh rotation={[-Math.PI/2,0,0]} position={[0,-.24,25]}>
    <planeGeometry args={[64,12]}/>
-   <meshPhysicalMaterial color="#2085ba" transparent opacity={.73} metalness={.35} roughness={.13}/>
+   <EnterpriseWaterMaterial tier="pro"/>
   </mesh>
   {STATIONS.filter(s=>s.id!=='business').map(s=><group key={s.id}>
    <mesh position={[s.x/2,-.13,s.z/2]} rotation={[0,Math.atan2(s.x,s.z),0]} receiveShadow>
@@ -213,6 +214,12 @@ function Scene({name,selected,onSelect,builds,systems,now,onEnter}:{
   {STATIONS.filter(s=>s.id!=='business').map(s=><WorkshopBuilding
     key={s.id} station={s} selected={selected===s.id} onSelect={()=>onSelect(s.id)}/>)}
   <RecordedStructures builds={builds} systems={systems} now={now} onEnter={onEnter}/>
+  <group position={[6.2,0,3.7]} scale={[.9,.9,.9]}>
+   <EnterpriseWorkshopInterior tier="pro" buildCount={builds.filter(b=>b.status==='building').length}
+    liveCount={systems.filter(s=>s.status==='active').length}
+    progress={builds.find(b=>b.status==='building')
+      ? buildFormationProgress(builds.find(b=>b.status==='building')!,now):0}/>
+  </group>
   <OrbitControls enablePan={false} enableDamping dampingFactor={.08}
    minDistance={22} maxDistance={65} minPolarAngle={.4} maxPolarAngle={1.46} target={[0,2.5,0]}/>
  </>
