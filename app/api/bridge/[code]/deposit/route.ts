@@ -1,3 +1,4 @@
+import { recordCompanyFormationMovement } from '@/lib/company-formation-movement'
 import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 
@@ -128,6 +129,9 @@ export async function POST(
       secondaryLabel: `${tierLabel} File Folder`,
       adminLink: '/admin/control-center#bridge',
     })
+
+    await recordCompanyFormationMovement('bridge_payment_submitted',String(result[0].id))
+      .catch(error=>console.error('[Bridge formation notification]',error))
 
     return NextResponse.json({
       success: true,
