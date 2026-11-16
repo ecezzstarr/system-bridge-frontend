@@ -83,7 +83,7 @@ function deriveSurfaceMaps(source:THREE.Texture,metal:boolean):SurfaceMaps|null{
 export function FileFolderLuxuryMaterial({color,gold=false,glass=false,realness='high'}:{
  color:string;gold?:boolean;glass?:boolean;realness?:string
 }){
- const [marble,goldTexture]=useTexture(SOURCES)
+ const [marble,goldTexture]=useTexture([...SOURCES])
  const source=gold?goldTexture:marble
  const derived=useMemo(()=>{
   source.colorSpace=THREE.SRGBColorSpace
