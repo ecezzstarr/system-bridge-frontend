@@ -20,6 +20,7 @@ type Income={
 type NextWork={available:boolean;offerCount:number|null;orderCount:number|null;paidSettlements:number|null;pendingOrders:number|null;nextAction:string;actor:string;href:string}
 type State={
   success:boolean;mode:'client'|'guidance'|'administrations';departments:string[];
+  focusedEventId:string|null;
   cases:(FormationCase&{has_brief:boolean;action_count:number})[];
   selected:FormationCase|null;actions:Action[];events:Event[];income:Income|null;work:NextWork|null;
   milestones:{month:number;label:string;purpose:string}[];note:string
@@ -63,6 +64,10 @@ export default function CompanyFormationPage(){
     try{
       const params=new URLSearchParams()
       if(caseId)params.set('caseId',caseId)
+      else if(typeof window!=='undefined'){
+        const requestedEvent=new URLSearchParams(window.location.search).get('event')
+        if(requestedEvent)params.set('event',requestedEvent)
+      }
       const res=await fetch('/api/company/formation'+(params.toString()?'?'+params.toString():''),
         {headers:headers(),cache:'no-store'})
       const body=await res.json().catch(()=>({}))
@@ -153,9 +158,10 @@ export default function CompanyFormationPage(){
           <h2 className="text-lg font-bold">Company commercial alerts · {state.events.length}</h2>
           <p className="mt-2 text-xs leading-6 text-slate-300">These are company records, not verified customer income. Prospect materials are not Clients and submitted payments require verification.</p>
           <div className="mt-4 max-h-96 space-y-2 overflow-auto">
+            {state.focusedEventId&&state.events.some(e=>e.id===state.focusedEventId)&&<p className="text-xs text-[#e6cb87]">Notification selected in the activity list below.</p>}
             {state.events.map(e=><button type="button" key={e.id} disabled={!e.formation_case_id}
               onClick={()=>{if(e.formation_case_id)void load(e.formation_case_id)}}
-              className="block w-full rounded-lg border border-white/10 p-3 text-left text-xs disabled:opacity-75">
+              className={'block w-full rounded-lg border p-3 text-left text-xs disabled:opacity-75 '+(state.focusedEventId===e.id?'border-[#e6cb87] bg-[#e6cb87]/10':'border-white/10')}>
               <p className="font-medium">{eventNames[e.kind]||e.kind}</p>
               <p className="mt-1 text-slate-400">{date(e.created_at)} · {e.source_kind.replaceAll('_',' ')}</p>
             </button>)}
