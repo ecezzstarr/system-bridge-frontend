@@ -1,3 +1,4 @@
+import { recordCompanyFormationMovement } from '@/lib/company-formation-movement'
 import { notifyAdminOrder } from '@/lib/admin-order-notifications'
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
@@ -232,6 +233,9 @@ export async function POST(request: NextRequest) {
     await client.query('COMMIT')
     primaryCommitted=true
     await notifyAdminOrder({orderId:String(packageId),event:'paid',department:'bridger',subject:'Bridger prospect package purchase',detail:`Bridger purchased prospect package ${packageId} for ${priceTrx} System Switch with ${contactsResult.rows.length} prospects; Agent share reconciliation follows`,adminPath:'/admin/orders',actorId:userId,actorName:'Bridger'})
+
+    await recordCompanyFormationMovement('prospect_purchased',String(packageId)).catch(error=>
+      console.error('[Hope company formation notification]',error))
 
     import('@/lib/fulfillment-agent').then(({fulfillmentAgent})=>{
       fulfillmentAgent.reconcile().catch(err=>console.error('[market purchase] reconcile error:',err))

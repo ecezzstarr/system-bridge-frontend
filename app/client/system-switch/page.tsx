@@ -188,6 +188,7 @@ export default function ClientSystemSwitchPage() {
             ? <button type="button" onClick={()=>setPrivateWorkshop(false)}>Visit shared System Switch world</button>
             : <button type="button" onClick={()=>setPrivateWorkshop(true)}>Enter my private File Folder</button>}
           <Link href="/system-switch/world"><ArrowLeft className="h-4 w-4"/>Return to Weave Open World</Link>
+          <Link href="/company/formation" data-file-folder-business-formation="true"><FolderOpen className="h-4 w-4"/>Business Formation · Four-Month Work</Link>
           <Link href="/client/system-store" data-file-folder-publish-system="true"><PackageOpen className="h-4 w-4"/>Publish System</Link>
           <Link href="/client/system-switch/flame-event" data-file-folder-flame-event="inside"><Flame className="h-4 w-4"/>Flame Event</Link>
           <button type="button" disabled={!soundAvailable} onClick={()=>window.dispatchEvent(new Event('weave:toggle-live-sound'))}><Volume2 className="h-4 w-4"/>{!soundAvailable?'Live sound is offline':soundPlaying?'Pause live sound':'Play live sound'}</button>

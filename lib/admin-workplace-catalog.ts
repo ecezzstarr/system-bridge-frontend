@@ -45,6 +45,11 @@ export const ADMIN_SPACES:readonly AdminSpace[]=[
     "description": "Continue recorded messages with Clients and their authorized support."
   },
   {
+    "title": "File Folder Business Formation",
+    "href": "/company/formation",
+    "description": "Review Client formation cases, departmental actions, four-month verified income targets and purchase alerts."
+  },
+  {
     "title": "Company Guidance",
     "href": "/admin/company-guidance",
     "description": "Oversee actual departmental guidance and support conversations."

@@ -29,3 +29,14 @@ jobs:
         run: |
           set -euo pipefail
           curl --fail-with-body --silent --show-error             --request GET             --header "Authorization: Bearer ${{ steps.oidc.outputs.token }}"             "${SALES_MANAGER_URL}"
+
+      - name: Reconcile Client business formation and monthly reviews
+        if: always()
+        env:
+          FORMATION_REVIEW_URL: ${{ vars.WEAVE_COMPANY_FORMATION_URL || 'https://weavingsystem.online/api/cron/company-formation' }}
+        run: |
+          set -euo pipefail
+          curl --fail-with-body --silent --show-error \
+            --request GET \
+            --header "Authorization: Bearer ${{ steps.oidc.outputs.token }}" \
+            "${FORMATION_REVIEW_URL}"
