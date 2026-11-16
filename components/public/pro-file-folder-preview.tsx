@@ -17,6 +17,7 @@ import {
   WalletCards,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import {PRO_FILE_FOLDER_REFERENCE} from '@/lib/file-folder-world-presets'
 
 const stations = [
   {
@@ -103,6 +104,13 @@ export function ProFileFolderPreview({ standalone = false }: { standalone?: bool
           )}
         </div>
       </header>
+
+      <div className="relative flex justify-center border-b border-sky-200/10 bg-[radial-gradient(ellipse_at_top,rgba(52,133,193,.25),transparent_72%)] px-4 py-5">
+        <img src={PRO_FILE_FOLDER_REFERENCE.posterAssetPath}
+          alt="Official Pro File Folder campus — shared tier design reference, with the individual owner's business at its center"
+          width={768} height={960} loading="lazy" decoding="async"
+          className="max-h-[420px] w-full max-w-[400px] object-contain" />
+      </div>
 
       <div className="relative grid lg:grid-cols-[210px_minmax(0,1fr)]">
         <aside className="border-b border-white/10 bg-black/20 p-3 lg:border-b-0 lg:border-r">
