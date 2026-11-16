@@ -1,3 +1,4 @@
+import { recordCompanyFormationMovement } from '@/lib/company-formation-movement'
 import { notifyAdminOrder } from '@/lib/admin-order-notifications'
 import { NextRequest, NextResponse } from 'next/server'
 import { neon } from '@/lib/pg-neon'
@@ -210,6 +211,8 @@ export async function POST(request: NextRequest) {
     }
     const tierLabel = fileFolderTierLabel(fileFolderTier)
     if (paymentMethod === 'trx') await notifyAdminOrder({orderId:String(record.id),event:'placed',department:directBridgerId||movementBridgerId?'bridger':'client',subject:'File Folder purchase awaiting verification',detail:`${buyerName} requested ${tierLabel} File Folder for ${amountFlameCoin.toLocaleString()} TRX through ${bridgeCode?'Bridge AI':'public crossing'}. Verify payment before Client activation`,adminPath:'/admin/file-folder-sales-manager',actorId:directBridgerId||movementBridgerId||clientId||null,actorName:'Bridge of Radiance'})
+    if (paymentMethod === 'trx') await recordCompanyFormationMovement('file_folder_payment_submitted',String(record.id))
+      .catch(error=>console.error('[File Folder formation notification]',error))
     await recordSystemEvent({ eventType: 'file_folder_purchased', actorId: clientId, subjectType: 'file_folder_purchase', subjectId: String(record.id), source: 'bridge-file-folder', payload: { fileNumber, amountFlameCoin, fileFolderTier, paymentMethod, paymentReference } })
     const receipt = clientId ? await issueWeaveReceipt({ userId: clientId, kind: 'purchase', source: 'file_folder', sourceId: String(record.id), amount: amountFlameCoin, currency: fileFolderTier === 'plus' ? 'TRX' : 'Flame Coin', status: 'pending', description: `${tierLabel} File Folder purchase submitted`, metadata: { fileNumber, fileFolderTier, paymentMethod, paymentReference, plusFlameCoinValue: fileFolderTier === 'plus' ? FILE_FOLDER_PRICING.plusFlameCoin : null, plusUsdtReference: fileFolderTier === 'plus' ? FILE_FOLDER_PRICING.plusUsdt : null } }) : null
     try {
