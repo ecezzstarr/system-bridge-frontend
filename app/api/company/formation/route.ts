@@ -115,7 +115,7 @@ export async function POST(request:NextRequest){
         await db.query('COMMIT')
       }catch(error){await db.query('ROLLBACK').catch(()=>{});throw error}
       finally{db.release()}
-      await notifyAction(record,actionId,actor.id,'Client')
+      await notifyAction(record,actionId,actor.id,'Client').catch(error=>console.error('[formation brief alert]',error))
       return NextResponse.json({success:true,actionId},{headers})
     }
     if(action==='add_note'){
@@ -137,7 +137,7 @@ export async function POST(request:NextRequest){
         VALUES($1::uuid,$2::uuid,$3,$4,$5,$6,$7) RETURNING id`,
         [caseId,actor.id,authorDepartment,type,month,note,visibility])
       const actionId=String(rows[0].id)
-      await notifyAction(record,actionId,actor.id,authorDepartment,visibility)
+      await notifyAction(record,actionId,actor.id,authorDepartment,visibility).catch(error=>console.error('[formation note alert]',error))
       return NextResponse.json({success:true,actionId},{headers})
     }
     if(action==='advance_stage'){
@@ -160,12 +160,12 @@ export async function POST(request:NextRequest){
         const saved=await db.query(`INSERT INTO weave_company_formation_actions
           (case_id,author_id,department,action_type,note,visibility)
           VALUES($1::uuid,$2::uuid,$3,'review',$4,'client') RETURNING id`,
-          [caseId,actor.id,department,'Stage '+stage+': '+note])
+          [caseId,actor.id,department,('Stage '+stage+': '+note).slice(0,2000)])
         actionId=String(saved.rows[0].id)
         await db.query('COMMIT')
       }catch(error){await db.query('ROLLBACK').catch(()=>{});throw error}
       finally{db.release()}
-      await notifyAction(record,actionId,actor.id,department)
+      await notifyAction(record,actionId,actor.id,department).catch(error=>console.error('[formation stage alert]',error))
       return NextResponse.json({success:true,actionId,stage},{headers})
     }
     return NextResponse.json({error:'Unsupported formation action'},{status:400,headers})
