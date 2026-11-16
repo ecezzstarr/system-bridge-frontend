@@ -1,6 +1,12 @@
 'use client'
 
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
+
+const FileFolderMechanizedPreview=dynamic(
+ () => import('@/components/public/file-folder-mechanized-preview'),
+ {ssr:false,loading:()=> <div className="flex h-full items-center justify-center text-sm text-cyan-100">Preparing the Pro 3D model…</div>}
+)
 import { useState } from 'react'
 import {
   ArrowRight,
@@ -64,6 +70,7 @@ const stations = [
 
 export function ProFileFolderPreview({ standalone = false }: { standalone?: boolean }) {
   const [activeId, setActiveId] = useState(stations[0].id)
+  const [viewMechanized,setViewMechanized]=useState(false)
   const active = stations.find(station => station.id === activeId) || stations[0]
   const ActiveIcon = active.icon
 
@@ -106,10 +113,19 @@ export function ProFileFolderPreview({ standalone = false }: { standalone?: bool
       </header>
 
       <div className="relative flex justify-center border-b border-sky-200/10 bg-[radial-gradient(ellipse_at_top,rgba(52,133,193,.25),transparent_72%)] px-4 py-5">
-        <img src={PRO_FILE_FOLDER_REFERENCE.posterAssetPath}
-          alt="Official Pro File Folder campus — shared tier design reference, with the individual owner's business at its center"
-          width={768} height={960} loading="lazy" decoding="async"
-          className="max-h-[420px] w-full max-w-[400px] object-contain" />
+        {viewMechanized
+          ? <div className="h-[330px] w-full" aria-label="Illustrative Pro 3D mechanized architecture">
+              <FileFolderMechanizedPreview tier="pro"/>
+            </div>
+          : <img src={PRO_FILE_FOLDER_REFERENCE.posterAssetPath}
+              alt="Official Pro File Folder campus — shared tier design reference, with the individual owner's business at its center"
+              width={768} height={960} loading="lazy" decoding="async"
+              className="max-h-[420px] w-full max-w-[400px] object-contain" />}
+        <button type="button" aria-pressed={viewMechanized}
+          onClick={()=>setViewMechanized(value=>!value)}
+          className="absolute right-3 top-3 z-10 min-h-11 rounded-lg border border-cyan-100/35 bg-[#071b33]/90 px-3 text-xs font-bold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
+          {viewMechanized?'View official Pro artwork':'Explore mechanized 3D'}
+        </button>
       </div>
 
       <div className="relative grid lg:grid-cols-[210px_minmax(0,1fr)]">
