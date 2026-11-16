@@ -17,10 +17,11 @@ type Income={
   remainingSystemSwitch:number|null;recoveryPercent:number|null;targetAt:string|null;
   daysRemaining:number|null;passedFourMonths:boolean;status:string;note:string
 }
+type NextWork={available:boolean;offerCount:number|null;orderCount:number|null;paidSettlements:number|null;pendingOrders:number|null;nextAction:string;actor:string;href:string}
 type State={
   success:boolean;mode:'client'|'guidance'|'administrations';departments:string[];
   cases:(FormationCase&{has_brief:boolean;action_count:number})[];
-  selected:FormationCase|null;actions:Action[];events:Event[];income:Income|null;
+  selected:FormationCase|null;actions:Action[];events:Event[];income:Income|null;work:NextWork|null;
   milestones:{month:number;label:string;purpose:string}[];note:string
 }
 const names:Record<string,string>={mandate:'Mandate',forensic:'Forensics',lawyer:'Attorney',admin:'Administrations',client:'Client'}
@@ -203,6 +204,25 @@ export default function CompanyFormationPage(){
           </div>
           <p className="mt-3 text-xs leading-6 text-slate-400">{state.income?.note}</p>
         </section>
+
+        {state.work&&<section className={panel}>
+          <p className="text-xs font-bold uppercase tracking-widest text-[#e6cb87]">Today's business responsibility</p>
+          <h2 className="mt-2 text-xl font-bold">Next practical income-generating work</h2>
+          <p className="mt-2 text-sm font-semibold text-[#e6cb87]">{state.work.actor}</p>
+          <p className="mt-3 text-sm leading-7 text-slate-200">{state.work.nextAction}</p>
+          {state.work.available&&<div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {[
+              ['Live offers',state.work.offerCount],
+              ['Customer orders',state.work.orderCount],
+              ['Awaiting payment',state.work.pendingOrders],
+              ['Funded settlements',state.work.paidSettlements],
+            ].map(([label,value])=><div key={String(label)} className="rounded-xl border border-white/15 p-3">
+              <p className="text-xs text-slate-300">{label}</p>
+              <p className="mt-2 text-xl font-bold">{value??'Unavailable'}</p>
+            </div>)}
+          </div>}
+          <Link href={state.work.href} className="mt-4 inline-flex min-h-11 items-center rounded-xl border border-[#e6cb87]/40 px-4 py-2 text-sm font-semibold text-[#e6cb87]">Open the operating workstation</Link>
+        </section>}
 
         <section className={panel}>
           <h2 className="text-xl font-bold">Four months of practical business formation</h2>
