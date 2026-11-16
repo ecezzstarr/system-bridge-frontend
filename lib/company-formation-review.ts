@@ -16,13 +16,22 @@ export async function runCompanyFormationDailyReview(){
   const [packages,folders,deposits]=await Promise.all([
     pool.query(`SELECT id FROM market_prospect_packages
       WHERE status='sold' AND purchased_at>=NOW()-INTERVAL '7 days'
+        AND NOT EXISTS(SELECT 1 FROM weave_company_formation_events e WHERE e.kind='prospect_purchased' AND e.source_id=market_prospect_packages.id)
       ORDER BY purchased_at DESC LIMIT 40`),
     pool.query(`SELECT id,status FROM file_folder_purchases
       WHERE status IN ('pending_admin_confirmation','confirmed')
         AND created_at>=NOW()-INTERVAL '7 days'
+        AND (NOT EXISTS(SELECT 1 FROM weave_company_formation_events e
+          WHERE e.kind='file_folder_payment_submitted' AND e.source_id=file_folder_purchases.id)
+        OR (status='confirmed' AND NOT EXISTS(SELECT 1 FROM weave_company_formation_events e
+          WHERE e.kind='file_folder_verified' AND e.source_id=file_folder_purchases.id)))
       ORDER BY created_at DESC LIMIT 40`),
     pool.query(`SELECT id,status FROM bridge_deposits
       WHERE status IN ('pending','approved') AND created_at>=NOW()-INTERVAL '7 days'
+        AND (NOT EXISTS(SELECT 1 FROM weave_company_formation_events e
+          WHERE e.kind='bridge_payment_submitted' AND e.source_id=bridge_deposits.id)
+        OR (status='approved' AND NOT EXISTS(SELECT 1 FROM weave_company_formation_events e
+          WHERE e.kind='bridge_deposit_verified' AND e.source_id=bridge_deposits.id)))
       ORDER BY created_at DESC LIMIT 40`)
   ])
   const sources:{kind:CompanyFormationEvent;id:string}[]=[]
