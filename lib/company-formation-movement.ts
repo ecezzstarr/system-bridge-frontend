@@ -1,4 +1,5 @@
 import {getPool} from '@/lib/db'
+import {ensureClientFileFolderSchema} from '@/lib/client-file-folder'
 import {ensureGuidanceDepartmentSchema,getGuidanceStaffDepartments,type GuidanceDepartment} from '@/lib/weave-guidance-departments'
 import {FILE_FOLDER_PRICING} from '@/lib/file-folder-pricing'
 
@@ -24,6 +25,7 @@ let ready:Promise<void>|null=null
 export async function ensureCompanyFormationSchema(){
   if(!ready)ready=(async()=>{
     await ensureGuidanceDepartmentSchema()
+    await ensureClientFileFolderSchema()
     const pool=getPool()
     await pool.query(`CREATE TABLE IF NOT EXISTS weave_company_formation_cases (
       id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
