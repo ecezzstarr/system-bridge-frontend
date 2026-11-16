@@ -6,6 +6,8 @@ import {OrbitControls,Text} from '@react-three/drei'
 import {DoubleSide, type Group, type Mesh} from 'three'
 import {buildFormationProgress} from '@/lib/file-folder-world-runtime'
 import {FILE_FOLDER_PALETTES,type FileFolderWorldAppearance} from '@/lib/file-folder-world-presets'
+import {EnterpriseMaterial,EnterpriseWaterMaterial} from './file-folder-enterprise-surfaces'
+import {EnterpriseWorkshopInterior} from './file-folder-enterprise-interior'
 
 type District={key:string;label:string}
 type Build={id:string;title:string;status:string;started_at?:string;completes_at?:string}
@@ -44,6 +46,7 @@ const STATUS_WORDING:Record<StandardStation,string>={
 }
 
 function NatureMaterial({color,metal=false,glass=false}:{color:string;metal?:boolean;glass?:boolean}){
+  if(metal||glass)return <EnterpriseMaterial tier="standard" surface={glass?'glass':'metal'} color={color}/>
   return <meshPhysicalMaterial color={color} roughness={metal?.24:glass?.16:.76}
     metalness={metal?.64:glass?.28:.02} clearcoat={glass?.9:.1}
     transparent={glass} opacity={glass?.62:1} side={DoubleSide}/>
@@ -143,7 +146,7 @@ function LivingWaterfall({x,z}:{x:number;z:number}){
   <group ref={cascade} position={[0,.6,.42]}>
    {Array.from({length:6},(_,i)=><mesh key={i} position={[-1.25+i*.5,0,i*.04]} rotation={[.06,0,0]}>
     <planeGeometry args={[.43,2.25]}/>
-    <meshBasicMaterial color={i%2?'#b3edf4':'#e1fbff'} transparent opacity={i%2?.67:.74} side={DoubleSide} depthWrite={false}/>
+    <EnterpriseWaterMaterial tier="standard" fall/>
    </mesh>)}
   </group>
   <mesh position={[0,-.32,.75]} rotation={[-Math.PI/2,0,0]}>
@@ -173,7 +176,7 @@ function WaterAndLandscape({details}:{details:boolean}){
     <planeGeometry args={[100,100]}/><NatureMaterial color="#3e829c"/>
   </mesh>
   <mesh ref={river} rotation={[-Math.PI/2,0,0]} position={[0,-.55,7]}>
-    <planeGeometry args={[32,14]}/><meshPhysicalMaterial color="#60afc4" metalness={.22} roughness={.16} transparent opacity={.87} clearcoat={.8}/>
+    <planeGeometry args={[32,14]}/><EnterpriseWaterMaterial tier="standard"/>
   </mesh>
   <RiverRipples/>
   <LivingWaterfall x={16} z={12}/>
@@ -213,8 +216,9 @@ function WaterAndLandscape({details}:{details:boolean}){
   })}
  </group>
 }
-function StandardScene({appearance,selected,onSelect,live}:{appearance:FileFolderWorldAppearance;
- selected:StandardStation;onSelect:(id:StandardStation)=>void;live:Set<StandardStation>}){
+function StandardScene({appearance,selected,onSelect,live,buildCount,progress}:{appearance:FileFolderWorldAppearance;
+ selected:StandardStation;onSelect:(id:StandardStation)=>void;live:Set<StandardStation>;
+ buildCount:number;progress:number}){
  const palette=FILE_FOLDER_PALETTES[appearance.theme]
  const details=appearance.realness!=='basic'
  return <>
@@ -225,6 +229,9 @@ function StandardScene({appearance,selected,onSelect,live}:{appearance:FileFolde
   <directionalLight position={[-20,28,18]} intensity={3.0} color="#fff5d8"/>
   <pointLight position={[0,3,10]} intensity={26} distance={25} color="#ffdc94"/>
   <WaterAndLandscape details={details}/>
+  <group position={[-5.8,0,8.5]} scale={[.78,.78,.78]}>
+   <EnterpriseWorkshopInterior tier="standard" buildCount={buildCount} liveCount={live.size} progress={progress}/>
+  </group>
   {KEYS.map(id=><Building key={id} id={id} selected={id===selected}
     onSelect={onSelect} realness={appearance.realness} hasLiveSystem={live.has(id)}/>)}
   <mesh position={[0,-.23,-1]} rotation={[-Math.PI/2,0,0]}>
@@ -271,7 +278,8 @@ export default function FileFolderStandardLivingWorld({appearance,districts,onEn
   <div className="h-[370px] w-full sm:h-[560px]" role="img" aria-label="Interactive three-dimensional Standard File Folder world with river, mountains, stone Customer Door, construction yard and business districts">
    <Canvas dpr={[1,1.35]} camera={{position:[23,25,30],fov:49,near:.1,far:150}}
      gl={{alpha:false,antialias:true,powerPreference:'high-performance'}}>
-    <StandardScene appearance={appearance} selected={selected} onSelect={setSelected} live={live}/>
+    <StandardScene appearance={appearance} selected={selected} onSelect={setSelected} live={live}
+     buildCount={buildCount} progress={progress}/>
    </Canvas>
   </div>
   <div className="border-t border-[#b0a078]/35 bg-[#f4f2e9] p-3">
