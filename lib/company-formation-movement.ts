@@ -108,7 +108,7 @@ async function committedMovement(kind:CompanyFormationEvent,sourceId:string){
     (kind==='file_folder_verified'&&row.status!=='confirmed'))return null
   return {sourceKind:'file_folder_purchase' as const,actorId:row.bridger_id?String(row.bridger_id):null,record:row}
 }
-async function activeRecipients(){
+export async function activeCompanyFormationRecipients(){
   const {rows}=await getPool().query(`SELECT u.id,u.role,a.department
     FROM users u LEFT JOIN weave_guidance_staff_applications a
       ON a.user_id=u.id AND a.status='approved'
@@ -141,7 +141,7 @@ export async function recordCompanyFormationMovement(kind:CompanyFormationEvent,
   const source=await committedMovement(kind,sourceId)
   if(!source)return false
   const pool=getPool()
-  const recipientList=await activeRecipients()
+  const recipientList=await activeCompanyFormationRecipients()
   const db=await pool.connect()
   try{
     await db.query('BEGIN')
@@ -158,18 +158,21 @@ export async function recordCompanyFormationMovement(kind:CompanyFormationEvent,
         (source_kind,source_id,client_id,file_number,bridger_id,purchase_value_system_switch,
          stage,verified_at,activated_at)
         VALUES($1,$2::uuid,$3::uuid,$4,$5::uuid,$6,
-          $7,CASE WHEN $8 THEN NOW() ELSE NULL END,$9::timestamptz)
+          $7,CASE WHEN $8 THEN COALESCE($10::timestamptz,NOW()) ELSE NULL END,$9::timestamptz)
         ON CONFLICT(source_kind,source_id) DO UPDATE SET
           client_id=COALESCE(EXCLUDED.client_id,weave_company_formation_cases.client_id),
           file_number=COALESCE(EXCLUDED.file_number,weave_company_formation_cases.file_number),
           verified_at=COALESCE(weave_company_formation_cases.verified_at,EXCLUDED.verified_at),
           activated_at=COALESCE(weave_company_formation_cases.activated_at,EXCLUDED.activated_at),
           stage=CASE WHEN weave_company_formation_cases.stage='awaiting_verification' AND $8
-              THEN 'awaiting_client' ELSE weave_company_formation_cases.stage END,
+              THEN CASE WHEN $9::timestamptz IS NOT NULL THEN 'planning' ELSE 'awaiting_client' END
+              WHEN weave_company_formation_cases.stage='awaiting_client' AND $9::timestamptz IS NOT NULL
+              THEN 'planning' ELSE weave_company_formation_cases.stage END,
           updated_at=NOW()
         RETURNING id`,
         [source.sourceKind,sourceId,clientId,p.file_number||null,p.bridger_id||null,
-          value,approved?'awaiting_client':'awaiting_verification',approved,p.claimed_at||null])
+          value,approved?(p.claimed_at?'planning':'awaiting_client'):'awaiting_verification',approved,
+            p.claimed_at||null,p.verified_at||p.confirmed_at||null])
       caseId=String(rows[0].id)
     }
     const {rows:events}=await db.query(`INSERT INTO weave_company_formation_events
@@ -212,7 +215,8 @@ export async function syncFormationOwnership(){
     FROM client_file_folders f
     WHERE f.file_number=c.file_number AND f.client_id IS NOT NULL
       AND (c.client_id IS DISTINCT FROM f.client_id OR
-        (c.activated_at IS NULL AND f.claimed_at IS NOT NULL))`)
+        (c.activated_at IS NULL AND f.claimed_at IS NOT NULL) OR
+        (c.stage='awaiting_client' AND f.claimed_at IS NOT NULL))`)
 }
 export async function backfillClientFormations(clientId:string){
   await ensureCompanyFormationSchema()
