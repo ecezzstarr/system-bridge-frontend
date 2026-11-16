@@ -47,7 +47,7 @@ function MachinedGear({radius=1,teeth=12,thin=false}:{
 }
 
 function FormationGantry({progress,compact,head}:{
- progress:number;compact:boolean;head:React.RefObject<Group|null>
+ progress:number;compact:boolean;head:RefObject<Group|null>
 }){
  // The hoist has no independent economy state: height is derived from the
  // recorded construction percentage passed down by the File Folder world.
