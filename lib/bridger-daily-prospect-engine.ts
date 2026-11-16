@@ -20,6 +20,8 @@ export async function ensureDailyProspectClaimSchema(client:PoolClient|any){
     ALTER TABLE bridger_daily_prospect_claims
     ADD COLUMN IF NOT EXISTS outreach_id uuid
   `)
+  await client.query(`ALTER TABLE bridger_daily_prospect_claims
+    ALTER COLUMN claim_date SET DEFAULT ((NOW() AT TIME ZONE 'Africa/Lagos')::date)`)
   await client.query(`
     CREATE INDEX IF NOT EXISTS idx_daily_prospect_claims_bridger_date
     ON bridger_daily_prospect_claims(bridger_id, claim_date)
