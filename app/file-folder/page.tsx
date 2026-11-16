@@ -1,6 +1,12 @@
 'use client'
 
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
+
+const FileFolderMechanizedPreview=dynamic(
+ () => import('@/components/public/file-folder-mechanized-preview'),
+ {ssr:false,loading:()=> <div className="flex h-full items-center justify-center text-sm text-white">Preparing your tier model…</div>}
+)
 import { useEffect, useMemo, useState } from 'react'
 import {
   ArrowLeft,
@@ -42,6 +48,7 @@ function authHeaders(json = false): Record<string, string> {
 export default function PublicFileFolderPurchasePage() {
   const [staffOfferToken, setStaffOfferToken] = useState('')
   const [tier, setTier] = useState<'standard' | 'premium' | 'plus'>('standard')
+  const [showTierModel,setShowTierModel]=useState(false)
   const [standardAmount, setStandardAmount] = useState(String(FILE_FOLDER_PRICING.standardMinimumFlameCoin))
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
@@ -300,7 +307,25 @@ export default function PublicFileFolderPurchasePage() {
                 <button type="button" disabled={Boolean(purchase)} onClick={()=>setTier('plus')} className={`min-h-36 border-t border-white/10 p-4 text-left sm:col-span-2 ${tier==='plus'?'bg-emerald-300/[.07]':'bg-black/15'}`}><div className="flex items-center gap-2"><Crown className="h-4 w-4 text-emerald-200" /><span className="text-[9px] font-black uppercase tracking-[.14em]">Plus · Completed systems</span></div><p className="mt-3 text-2xl font-black">{FILE_FOLDER_PRICING.plusFlameCoin.toLocaleString()} System Switch</p><p className="mt-1 text-[10px] text-stone-300">Pay {FILE_FOLDER_PRICING.plusTrx.toLocaleString()} TRX · {FILE_FOLDER_PRICING.plusUsdt.toLocaleString()} USDT reference</p><p className="mt-1 text-[9px] text-stone-500">Administrations-defined package quote, not a live exchange rate. Payment on this page is TRX only.</p></button>
               </div>
 
-              {tier === 'standard' && <label className="mt-4 block"><span className="text-[9px] font-bold uppercase tracking-[.12em] text-stone-500">Standard amount · {FILE_FOLDER_PRICING.standardMinimumFlameCoin.toLocaleString()} to {FILE_FOLDER_PRICING.standardMaximumFlameCoin.toLocaleString()}</span><input inputMode="decimal" type="number" min={FILE_FOLDER_PRICING.standardMinimumFlameCoin} max={FILE_FOLDER_PRICING.standardMaximumFlameCoin} value={standardAmount} onChange={e=>setStandardAmount(e.target.value)} disabled={Boolean(purchase)} className="mt-2 w-full rounded-xl border border-white/10 bg-black/25 px-4 py-3 text-sm outline-none" /></label>}
+              <div className="mt-4 flex flex-wrap items-center gap-3 rounded-xl border border-white/10 bg-white/[.025] p-3">
+                <button type="button" aria-pressed={showTierModel}
+                  onClick={()=>setShowTierModel(value=>!value)}
+                  className="min-h-11 rounded-lg border border-sky-200/30 px-4 text-sm font-bold text-sky-100 hover:bg-sky-100/10">
+                  {showTierModel?'Close 3D model':'Preview selected tier in mechanized 3D'}
+                </button>
+                <Link href="/file-folder-preview" className="text-xs font-bold text-amber-200 underline">
+                  Compare all four File Folder environments
+                </Link>
+                <p className="w-full text-xs leading-5 text-slate-400">
+                  Architectural model only. Your personal business systems appear after verified purchase and construction.
+                </p>
+              </div>
+              {showTierModel&&<div className="mt-3 h-[330px] overflow-hidden rounded-2xl border border-white/10"
+                data-public-purchase-tier-model={tier}>
+                <FileFolderMechanizedPreview tier={tier}/>
+              </div>}
+
+                            {tier === 'standard' && <label className="mt-4 block"><span className="text-[9px] font-bold uppercase tracking-[.12em] text-stone-500">Standard amount · {FILE_FOLDER_PRICING.standardMinimumFlameCoin.toLocaleString()} to {FILE_FOLDER_PRICING.standardMaximumFlameCoin.toLocaleString()}</span><input inputMode="decimal" type="number" min={FILE_FOLDER_PRICING.standardMinimumFlameCoin} max={FILE_FOLDER_PRICING.standardMaximumFlameCoin} value={standardAmount} onChange={e=>setStandardAmount(e.target.value)} disabled={Boolean(purchase)} className="mt-2 w-full rounded-xl border border-white/10 bg-black/25 px-4 py-3 text-sm outline-none" /></label>}
 
               <div className="mt-5 grid grid-cols-2 gap-2" role="group" aria-label="Choose payment method">
                 <button type="button" disabled={Boolean(purchase)} onClick={() => setPaymentMethod('paystack')} className={`min-h-12 rounded-xl border px-3 py-2 text-xs font-black ${paymentMethod === 'paystack' ? 'border-emerald-200/50 bg-emerald-300/10 text-emerald-100' : 'border-white/10 text-slate-400'}`}>Paystack · Naira</button>
