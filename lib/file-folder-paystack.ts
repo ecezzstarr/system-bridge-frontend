@@ -1,3 +1,4 @@
+import { recordCompanyFormationMovement } from '@/lib/company-formation-movement'
 import { sql } from '@/lib/db'
 import { verifyPaystackTransaction, paystackTransactionMatches } from '@/lib/paystack'
 import { notifyAdminOrder } from '@/lib/admin-order-notifications'
@@ -47,5 +48,7 @@ export async function settleFileFolderPaystackPurchase(reference: string) {
       actorName: 'WEAVE Paystack',
     })
   }
+  if(updated[0])await recordCompanyFormationMovement('file_folder_payment_submitted',String(purchase.id))
+    .catch(error=>console.error('[Paystack formation notification]',error))
   return { matched: true, settled: Boolean(updated[0]), purchaseId: String(purchase.id), bridgeCode: purchase.bridge_code || null }
 }
