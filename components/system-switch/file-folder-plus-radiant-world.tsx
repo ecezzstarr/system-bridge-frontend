@@ -11,6 +11,8 @@ import {buildFormationProgress} from '@/lib/file-folder-world-runtime'
 import {derivePlusWorldFormation,type PlusBuildRecord,type PlusSystemRecord,type PlusZoneProgress,type PlusWorldFormation} from '@/lib/plus-file-folder-formation'
 import {FileFolderLuxuryMaterial} from './file-folder-luxury-material'
 import {PlusMechanizedDistrict} from './file-folder-plus-mechanization'
+import {EnterpriseWaterMaterial} from './file-folder-enterprise-surfaces'
+import {EnterpriseWorkshopInterior} from './file-folder-enterprise-interior'
 
 type District={key:string;label:string}
 type Props={
@@ -223,8 +225,7 @@ function WaterCascade({angle,index}:{angle:number;index:number}){
    <group ref={cascade} position={[0,0,7.25]}>
      <mesh position={[0,.66,0]}>
        <planeGeometry args={[1.28,2.1]}/>
-       <meshPhysicalMaterial color="#c9f4ff" transparent opacity={.63}
-         roughness={.16} metalness={.12} clearcoat={1} side={DoubleSide} depthWrite={false}/>
+       <EnterpriseWaterMaterial tier="plus" fall/>
      </mesh>
      {[-.39,.18,.48].map((x,i)=><mesh key={i} position={[x,.72,.028]}>
        <planeGeometry args={[.075,1.95]}/>
@@ -244,9 +245,9 @@ function RadiantLandscape({appearance,formation}:{appearance:FileFolderWorldAppe
    {[4.9,6.25,12.7].map((radius,index)=><mesh key={radius}
      rotation={[-Math.PI/2,0,0]} position={[0,-.17+index*.025,0]}>
      <torusGeometry args={[radius,index===1?.46:.23,10,90]}/>
-     <meshPhysicalMaterial color={index===1?'#8fcddd':palette.structure}
-       metalness={index===1?.23:.4} roughness={.21} clearcoat={.85}
-       transparent={index===1} opacity={index===1?.76:1}/>
+     {index===1?<EnterpriseWaterMaterial tier="plus"/>:
+       <meshPhysicalMaterial color={palette.structure}
+         metalness={.4} roughness={.21} clearcoat={.85}/>} 
    </mesh>)}
    {[0,Math.PI/2,Math.PI,Math.PI*1.5].map((a,index)=>
      <WaterCascade key={index} angle={a} index={index}/>)}
@@ -317,6 +318,11 @@ function Scene({appearance,formation,selected,onSelect,phoneLayout,interactive}:
       formation={formation.zones[zone]} selected={zone===selected} onSelect={onSelect}/>
   </group>)}
   <RadiantLandscape appearance={appearance} formation={formation}/>
+  <group position={[6.6,0,1]} scale={phoneLayout?[.53,.53,.53]:[.68,.68,.68]}>
+   <EnterpriseWorkshopInterior tier="plus" buildCount={formation.activeBuilds}
+     liveCount={formation.liveSystems}
+     progress={Math.max(...ZONE_IDS.map(zone=>formation.zones[zone].progress))}/>
+  </group>
   <CentralFolder appearance={appearance} phoneLayout={phoneLayout}/>
   <OrbitControls enabled={interactive} enablePan={false} enableDamping dampingFactor={.085}
     minDistance={17} maxDistance={48} minPolarAngle={.38} maxPolarAngle={1.32}
