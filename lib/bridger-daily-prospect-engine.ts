@@ -9,7 +9,7 @@ export async function ensureDailyProspectClaimSchema(client:PoolClient|any){
       bridger_id uuid NOT NULL,
       prospect_id uuid NOT NULL,
       outreach_id uuid,
-      claim_date date NOT NULL DEFAULT CURRENT_DATE,
+      claim_date date NOT NULL DEFAULT ((NOW() AT TIME ZONE 'Africa/Lagos')::date),
       claim_type varchar(32) NOT NULL DEFAULT 'daily_bonus',
       claimed_at timestamptz NOT NULL DEFAULT NOW(),
       UNIQUE (bridger_id, claim_date),
@@ -20,6 +20,8 @@ export async function ensureDailyProspectClaimSchema(client:PoolClient|any){
     ALTER TABLE bridger_daily_prospect_claims
     ADD COLUMN IF NOT EXISTS outreach_id uuid
   `)
+  await client.query(`ALTER TABLE bridger_daily_prospect_claims
+    ALTER COLUMN claim_date SET DEFAULT ((NOW() AT TIME ZONE 'Africa/Lagos')::date)`)
   await client.query(`
     CREATE INDEX IF NOT EXISTS idx_daily_prospect_claims_bridger_date
     ON bridger_daily_prospect_claims(bridger_id, claim_date)
