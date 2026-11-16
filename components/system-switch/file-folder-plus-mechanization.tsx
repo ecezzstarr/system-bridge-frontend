@@ -1,5 +1,5 @@
 'use client'
-import {useEffect,useRef,useState} from 'react'
+import {useEffect,useRef,useState,type RefObject} from 'react'
 import {useFrame} from '@react-three/fiber'
 import type {Group} from 'three'
 import {CityMaterial} from './file-folder-city-material'
