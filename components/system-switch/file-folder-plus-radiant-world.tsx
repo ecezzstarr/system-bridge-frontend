@@ -1,14 +1,16 @@
 'use client'
 import {useMemo,useRef,useState} from 'react'
 import {Canvas,useFrame} from '@react-three/fiber'
-import {OrbitControls,Text,useTexture} from '@react-three/drei'
+import {OrbitControls,Text} from '@react-three/drei'
 import type {Group} from 'three'
-import {DoubleSide,RepeatWrapping,Shape,SRGBColorSpace} from 'three'
+import {DoubleSide,Shape} from 'three'
 import {ArrowRight, Boxes, Hammer, Layers3, Settings, TrendingUp, Users} from 'lucide-react'
 import {FILE_FOLDER_EQUIPMENT,FILE_FOLDER_PALETTES,PLUS_FILE_FOLDER_REFERENCE,
   type EquipmentZone,type FileFolderWorldAppearance} from '@/lib/file-folder-world-presets'
 import {buildFormationProgress} from '@/lib/file-folder-world-runtime'
 import {derivePlusWorldFormation,type PlusBuildRecord,type PlusSystemRecord,type PlusZoneProgress,type PlusWorldFormation} from '@/lib/plus-file-folder-formation'
+import {FileFolderLuxuryMaterial} from './file-folder-luxury-material'
+import {PlusMechanizedDistrict} from './file-folder-plus-mechanization'
 
 type District={key:string;label:string}
 type Props={
@@ -47,27 +49,10 @@ function folderFace(tab:boolean){
   shape.quadraticCurveTo(-2.3,-1,-2.15,-1)
   return shape
 }
-const FOLDER_BACK=folderFace(true)
-const FOLDER_FRONT=folderFace(false)
-const FOLDER_EXTRUSION={depth:.11,bevelEnabled:false}
-
-function RadiantMaterial({color,gold=false,glass=false,realness='high'}:{
+const FOLDER_BACK=folderFfunction RadiantMaterial({color,gold=false,glass=false,realness='high'}:{
   color:string;gold?:boolean;glass?:boolean;realness?:string
 }){
-  // These are repository-owned material maps, not remote textures or a flat
-  // image of the promised world. Canvas/WebGL renders actual surface geometry.
-  const [porcelain,brushedGold]=useTexture([
-    '/weave/file-folder/assets/plus-porcelain-marble.svg',
-    '/weave/file-folder/assets/plus-brushed-gold.svg',
-  ])
-  porcelain.colorSpace=SRGBColorSpace
-  brushedGold.colorSpace=SRGBColorSpace
-  porcelain.wrapS=porcelain.wrapT=RepeatWrapping
-  brushedGold.wrapS=brushedGold.wrapT=RepeatWrapping
-  return <meshPhysicalMaterial color={color} map={glass?undefined:gold?brushedGold:porcelain}
-    metalness={gold?.76:glass?.32:.23} roughness={realness==='basic'?.47:gold?.17:glass?.13:.28}
-    clearcoat={glass?1:.75} clearcoatRoughness={.16} transparent={glass} opacity={glass?.72:1}
-    side={DoubleSide}/>
+ return <FileFolderLuxuryMaterial color={color} gold={gold} glass={glass} realness={realness}/>
 }
 
 function EquipmentBuilding({zone,index,selected,appearance,formation,onSelect,phoneLayout}:{
@@ -181,6 +166,9 @@ function EquipmentBuilding({zone,index,selected,appearance,formation,onSelect,ph
         </mesh>
       </group>
     })}
+    <PlusMechanizedDistrict constructionCount={formation.building}
+      activeSystemCount={formation.live} progress={formation.progress}
+      selected={selected} compact={phoneLayout}/>
     {selected&&<mesh position={[0,.04,0]} rotation={[-Math.PI/2,0,0]}>
       <torusGeometry args={[2.88,.07,8,44]}/><meshStandardMaterial color={palette.glow} emissive={palette.glow} emissiveIntensity={.65}/>
     </mesh>}
