@@ -221,7 +221,10 @@ export default function CompanyFormationPage(){
               <p className="mt-2 text-xl font-bold">{value??'Unavailable'}</p>
             </div>)}
           </div>}
-          <Link href={state.work.href} className="mt-4 inline-flex min-h-11 items-center rounded-xl border border-[#e6cb87]/40 px-4 py-2 text-sm font-semibold text-[#e6cb87]">Open the operating workstation</Link>
+          {owner
+            ?<Link href={state.work.href} className="mt-4 inline-flex min-h-11 items-center rounded-xl border border-[#e6cb87]/40 px-4 py-2 text-sm font-semibold text-[#e6cb87]">Open my operating workstation</Link>
+            :<p className="mt-4 text-xs leading-6 text-slate-400">Clients operate their own private File Folders. Staff should record guidance and assist through authorized company interactions rather than entering a Client's private workspace.</p>}
+
         </section>}
 
         <section className={panel}>
