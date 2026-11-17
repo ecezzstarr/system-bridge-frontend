@@ -9,7 +9,8 @@ type Plan={
   declaredCapitalNgn:number;bankProduct:string;managerVisibility:boolean;
   needsHelp:boolean;obstacleKind:string|null;createdAt:string
 }
-type Mine={success:boolean;plan:Plan|null;managerId:string|null;withdrawalTarget:number;withdrawalCount:number}
+type Mine={success:boolean;plan:Plan|null;managerId:string|null;withdrawalTarget:number;withdrawalCount:number;
+  monthlyLivingMoney:{netInterestCreditedNgn:number;spentFromInterestNgn:number}|null}
 type TeamMember={userId:string;name:string;position:string;withdrawalCount:number;needsHelp:boolean;obstacleKind:string|null}
 const obstacleLabels:Record<string,string>={
   work_tools:'Work tools or supplies',food_stock:'Company food stock',
@@ -28,6 +29,9 @@ export default function SunshineWorkshop(){
   const [ownership,setOwnership]=useState(false)
   const [obstacle,setObstacle]=useState('work_tools')
   const [rate,setRate]=useState('')
+  const [interestReceived,setInterestReceived]=useState('')
+  const [interestSpent,setInterestSpent]=useState('')
+  const [monthlySurplus,setMonthlySurplus]=useState('')
   const [loading,setLoading]=useState(true)
   const [busy,setBusy]=useState(false)
   const [error,setError]=useState('')
@@ -38,6 +42,10 @@ export default function SunshineWorkshop(){
     const result=await res.json()
     if(!res.ok)throw new Error(result.error||'Sunshine records unavailable')
     setMine(result)
+    if(result.monthlyLivingMoney){
+      setInterestReceived(String(result.monthlyLivingMoney.netInterestCreditedNgn))
+      setInterestSpent(String(result.monthlyLivingMoney.spentFromInterestNgn))
+    }
     if(result.plan){
       setCapital(String(result.plan.declaredCapitalNgn))
       setProduct(result.plan.bankProduct)
@@ -81,6 +89,12 @@ export default function SunshineWorkshop(){
   const projected=Number(capital)*annualRate/1200
   const validRate=rate.trim()!==''&&Number.isFinite(annualRate)&&annualRate>=0&&annualRate<=100
   const selectedBank=sunshineBankProduct(product)
+  const netInterest=Number(interestReceived)
+  const interestSpend=Number(interestSpent)
+  const validLivingMoney=interestReceived.trim()!==''&&interestSpent.trim()!==''&&
+    Number.isFinite(netInterest)&&Number.isFinite(interestSpend)&&
+    netInterest>=0&&interestSpend>=0&&interestSpend<=netInterest
+  const projectedMonths=Number(monthlySurplus)>0?Math.max(0,Math.ceil(Math.max(0,1000000-Number(capital))/Number(monthlySurplus))):null
   const supportLink='/weave/lifestyles/support'+(mine?.managerId?'?managerId='+encodeURIComponent(mine.managerId):'')
   return <main className="weave-operating-environment mx-auto min-h-screen max-w-6xl space-y-6 px-3 py-6 text-white sm:px-6" data-sunshine-workshop="mechanized-wealth">
     <header className="rounded-2xl border border-amber-200/30 bg-gradient-to-br from-[#283225] via-[#132630] to-[#0c1621] p-6">
@@ -106,6 +120,15 @@ export default function SunshineWorkshop(){
           </div>
           <div className="rounded-xl border border-white/15 p-4"><h3 className="font-bold text-amber-100">3 · Protect living capital</h3><p className="mt-2 text-sm leading-6 text-slate-200">Track interest, withdrawal activity and the bank's actual terms. Spend only affordable returns once the interest can cover living needs without consuming principal.</p></div>
         </div>
+      </section>
+      <section className="rounded-2xl border border-white/15 bg-[#0d1d25] p-5" data-sunshine-saving-goal>
+        <h2 className="text-xl font-bold">Savings from actual work · ₦1m milestone</h2>
+        <p className="mt-2 text-sm leading-6 text-slate-300">Use the amount you can afford to save monthly after real living and business expenses. This planning tool does not imply that Weave earnings are guaranteed or bank deposits are automatic.</p>
+        <label className="mt-4 block max-w-md text-sm font-semibold">Monthly surplus available for savings (₦)
+          <input type="number" min="0" step="1000" inputMode="decimal" value={monthlySurplus} onChange={e=>setMonthlySurplus(e.target.value)}
+            placeholder="After expenses" className="mt-2 min-h-11 w-full rounded-lg border border-white/25 bg-slate-950 p-3 text-white"/>
+        </label>
+        {projectedMonths!==null&&<p className="mt-3 text-sm text-amber-100">At this monthly savings surplus, the difference between your declared balance and ₦1m takes approximately <strong>{projectedMonths} month{projectedMonths===1?'':'s'}</strong> to close, excluding interest. Your actual results depend on work and expenses.</p>}
       </section>
       <section className="grid gap-4 lg:grid-cols-2">
         <div className="rounded-2xl border border-white/15 bg-[#10212a] p-5" data-sunshine-owner-record>
@@ -156,6 +179,24 @@ export default function SunshineWorkshop(){
             <button type="button" disabled={!enrolled||busy||count===0} onClick={()=>void send({action:'correct_withdrawal',requestId:crypto.randomUUID()})} className="min-h-11 rounded-lg border border-white/25 px-4 py-2 text-sm disabled:opacity-40">Correct last report</button>
           </div>
           <p className="mt-3 text-xs leading-6 text-slate-400">These are user-reported counts, not live bank transactions. A withdrawal is never blocked by Weave, and the count resets at the start of each month in Nigeria time.</p>
+          <div className="mt-6 border-t border-white/15 pt-5" data-sunshine-actual-living-money>
+            <h3 className="font-semibold">Interest credited · Living money</h3>
+            <p className="mt-2 text-xs leading-6 text-slate-300">At month end, record only net bank interest actually credited and how much of that interest you spent. Retain the remainder as new capital. Do not record projected interest as cash received.</p>
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              <label className="text-sm">Actual net interest credited (₦)
+                <input type="number" min="0" step="0.01" inputMode="decimal" value={interestReceived} onChange={e=>setInterestReceived(e.target.value)}
+                  className="mt-2 min-h-11 w-full rounded-lg border border-white/25 bg-slate-950 p-3"/>
+              </label>
+              <label className="text-sm">Living money spent from interest (₦)
+                <input type="number" min="0" step="0.01" inputMode="decimal" value={interestSpent} onChange={e=>setInterestSpent(e.target.value)}
+                  className="mt-2 min-h-11 w-full rounded-lg border border-white/25 bg-slate-950 p-3"/>
+              </label>
+            </div>
+            {validLivingMoney&&<p className="mt-3 text-sm text-amber-100">Interest retained to grow capital: <strong>{money(netInterest-interestSpend)}</strong>.</p>}
+            <button type="button" disabled={!enrolled||busy||!validLivingMoney}
+              onClick={()=>void send({action:'record_living_money',netInterestCreditedNgn:netInterest,spentFromInterestNgn:interestSpend})}
+              className="mt-3 min-h-11 rounded-lg border border-amber-200/40 px-4 py-2 text-sm font-semibold text-amber-100 disabled:opacity-40">Record actual living money</button>
+          </div>
           <div className="mt-6 border-t border-white/15 pt-5">
             <h3 className="font-semibold">Optional interest illustration</h3>
             <label className="mt-3 block text-sm">Bank-confirmed annual rate (%)
