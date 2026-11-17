@@ -230,6 +230,13 @@ export default function CodeWorkshopPage(){
     {error.includes('Unauthorized')&&<p className="mt-2 text-xs">Source control requires a designated Administrations operator. Configure WEAVE_WORKSHOP_ADMIN_IDS privately; ordinary admin membership alone cannot edit or merge company code.</p>}
    </section>}
 
+   <section className="rounded-3xl border border-amber-200/35 bg-[linear-gradient(115deg,#1e3547,#101f32)] p-5 sm:p-7" data-admin-native-workshop-entrance="no-server-rebuild">
+    <p className="text-xs font-bold uppercase tracking-[.18em] text-amber-200">WEAVE Methods · Native Creation</p>
+    <h2 className="mt-3 text-2xl font-bold text-white">Publish departments, pages and working systems inside WEAVE</h2>
+    <p className="mt-3 max-w-4xl text-sm leading-7 text-slate-200">Create responsive pages, real 3D glass worlds and recordable operational systems without GitHub source commits. Select a department, build with installed capabilities, preview, save, publish and restore versions. The app reads the new version from the database; Oracle does not rebuild for each publication.</p>
+    <Link href="/admin/native-foundry" className="mt-5 inline-flex min-h-12 items-center rounded-xl bg-[#f2dfbc] px-5 py-3 text-sm font-bold text-[#142739]">Open native visual workshop</Link>
+    <p className="mt-3 text-xs text-slate-400">For capabilities not yet installed, use the protected Source Workshop below. Core engine changes still require independently verified code releases.</p>
+   </section>
    <WeaveFormationComposer draftReady={branch!=='main'&&writeConfigured&&!busy} onUse={loadFormation}/>
    <div className="grid gap-5 lg:grid-cols-[minmax(230px,.72fr)_minmax(0,2fr)]">
     <aside className="space-y-5">
