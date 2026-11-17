@@ -50,6 +50,17 @@ assert.ok(api.includes("body.acknowledgeBankOwnership!==true"),'User must confir
 assert.ok(api.includes("record_living_money"),'Interest-only living money recorded')
 assert.ok(api.includes("spent>interest"),'Spending cannot exceed interest in saved record')
 assert.ok(page.includes('data-sunshine-earn-first'),'Earn before saving is first-class')
+assert.ok(page.includes('data-sunshine-approved-poster'),'Approved Sunshine artwork has a dedicated hero section')
+assert.ok(page.includes('/images/sunshine-mechanized-wealth-approved.jpg'),'Sunshine page links to the exact approved image')
+assert.ok(page.includes('calculated against verified bank interest'),'Explains that 70% support and 10% fee are based on interest, not principal')
+const imagePath=path.join(root,'public/images/sunshine-mechanized-wealth-approved.jpg')
+assert.ok(fs.existsSync(imagePath),'Approved Sunshine binary image is missing; add the artwork before merging')
+const imageBytes=fs.readFileSync(imagePath)
+assert.equal(imageBytes.subarray(0,3).toString('hex'),'ffd8ff','Approved artwork must be a JPEG')
+const {createHash}=require('node:crypto')
+assert.equal(createHash('sha256').update(imageBytes).digest('hex'),
+  'c9e28afbfe08eb732f88f3d65f83550371820f4028f9ab146a480e2454ae6543',
+  'Use the exact user-approved Sunshine artwork, without replacement or modification')
 assert.ok(page.includes('SUNSHINE_BANK_PRODUCTS.map'),'Bank selector uses verified product catalog')
 assert.ok(page.includes('selectedBank.liquidity'),'Bank-specific withdrawal policies shown')
 assert.ok(page.includes('data-sunshine-actual-living-money'),'Actual net interest tracked separately from projections')
