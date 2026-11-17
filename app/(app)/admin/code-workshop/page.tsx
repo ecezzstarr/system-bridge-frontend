@@ -234,6 +234,7 @@ export default function CodeWorkshopPage(){
     <p className="text-xs font-bold uppercase tracking-[.18em] text-amber-200">WEAVE Methods · Native Creation</p>
     <h2 className="mt-3 text-2xl font-bold text-white">Publish departments, pages and working systems inside WEAVE</h2>
     <p className="mt-3 max-w-4xl text-sm leading-7 text-slate-200">Create responsive pages, real 3D glass worlds and recordable operational systems without GitHub source commits. Select a department, build with installed capabilities, preview, save, publish and restore versions. The app reads the new version from the database; Oracle does not rebuild for each publication.</p>
+    <Link href="/admin/sovereign-server" className="mt-5 mr-3 inline-flex min-h-12 items-center rounded-xl border border-cyan-200/35 px-5 py-3 text-sm font-bold text-cyan-100">Weave-owned server readiness</Link>
     <Link href="/admin/native-foundry" className="mt-5 inline-flex min-h-12 items-center rounded-xl bg-[#f2dfbc] px-5 py-3 text-sm font-bold text-[#142739]">Open native visual workshop</Link>
     <p className="mt-3 text-xs text-slate-400">For capabilities not yet installed, use the protected Source Workshop below. Core engine changes still require independently verified code releases.</p>
    </section>
