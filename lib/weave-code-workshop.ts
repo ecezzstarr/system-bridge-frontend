@@ -15,10 +15,10 @@ const PROTECTED=[
  /^app\/api\//, /^app\/\(auth\)\//,
  /^lib\/(?:auth|workshop-auth|weave-github-release|weave-code-workshop|weave-workshop-purpose|weave-native-registry|weave-native-blueprint|weave-release|db(?:\.|\/)|pg-neon|payment|paystack|wallet|pro-file-folder-activation)/i,
  /^components\/admin\/(?:code-workshop|work-github-oracle-flow)/,
- /^components\/weave\/native-(?:department-rail|module-renderer|world-scene)/,
- /^app\/\(app\)\/admin\/(?:code-workshop|release-workshop|native-foundry)/,
+ /^components\/weave\/native-(?:department-rail|module-renderer|world-scene|intake-form)/,
+ /^app\/\(app\)\/admin\/(?:code-workshop|release-workshop|native-foundry|sovereign-server)/,
  /^app\/\(app\)\/weave-modules\//,
- /^tests\/(?:code-workshop|work-github-oracle-release|release-workshop|weave-native-publishing)/,
+ /^tests\/(?:code-workshop|work-github-oracle-release|release-workshop|weave-native-publishing|weave-sovereign-server)/,
  /^docs\/(?:sovereign-release-workshop|work-github-oracle-release-pipeline)/,
 ]
 export const CODE_WORKSHOP_POLICY={
