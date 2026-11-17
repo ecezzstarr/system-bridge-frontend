@@ -69,7 +69,7 @@ export function SunshineAdvanceDesk({enrolled,managerId}:{enrolled:boolean;manag
       An authorized Regional Manager may advance up to 70% of independently verified daily or monthly net bank interest.
       After the bank credits that interest, the original System Switch advance is returned to the funder,
       and Weave receives 10% of the verified interest in System Switch. The remaining 20% is the user's interest
-      before exchange movements or separate withdrawal charges. No bank funds are held or automatically debited by Weave.
+      before exchange movements or separate withdrawal charges. The 10% share of bank interest equals approximately 14.29% of the 70% amount advanced per interest period, so daily financing may be especially costly. No bank funds are held or automatically debited by Weave.
     </p>
     <p className="mt-2 text-xs leading-6 text-amber-100">
       This is a credit contract, not free earnings. Quotes are calculated from a live NGN/TRX rate,
