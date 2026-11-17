@@ -11,7 +11,9 @@ export const dynamic='force-dynamic'
  * this verifies the database path and the persistent media mount.
  * Does not disclose DB addresses, secrets, environment variables, or user data.
  */
-export async function GET(){
+let lastCheck:Promise<{checks:{database:boolean;media:boolean};ready:boolean}>|null=null
+let lastAt=0
+async function actualReadiness(){
  const checks={database:false,media:false}
  try{
   const result=await getPool().query({text:'SELECT 1 AS ready',query_timeout:3000})
@@ -26,6 +28,14 @@ export async function GET(){
   }
  }catch{ /* Not mounted or not writable; do not invent healthy storage. */ }
  const ready=checks.database&&checks.media
+ return {checks,ready}
+}
+export async function GET(){
+ if(!lastCheck||Date.now()-lastAt>10000){
+  lastAt=Date.now()
+  lastCheck=actualReadiness().catch(error=>{lastCheck=null;throw error})
+ }
+ const {checks,ready}=await lastCheck
  return NextResponse.json({
   status:ready?'ready':'blocked',
   releaseSha:/^[0-9a-f]{40}$/i.test(process.env.WEAVE_RELEASE_SHA||'')?
