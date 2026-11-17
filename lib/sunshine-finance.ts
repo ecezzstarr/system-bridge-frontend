@@ -1,4 +1,5 @@
 import {getPool} from '@/lib/db'
+import {ensureRegionalOperationsSchema} from '@/lib/regional-manager-operations'
 import {SUNSHINE_ENROLLMENT_TARGET_SS} from '@/lib/sunshine-continuity'
 
 /**
@@ -31,6 +32,7 @@ export function calculateSunshineSupport(netInterestNgn:number,rateNgnPerSystemS
     advancePercent:70,interestFeePercent:10}
 }
 export async function ensureSunshineFinanceSchema(){
+ await ensureRegionalOperationsSchema()
  const db=getPool()
  await db.query(`CREATE TABLE IF NOT EXISTS weave_sunshine_manager_assignments(
    user_id uuid PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
