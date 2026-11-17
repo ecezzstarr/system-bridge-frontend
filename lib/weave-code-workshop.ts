@@ -153,6 +153,20 @@ export async function workshopActivity(actorId:string){
   [validOwner(actorId)])
  return result.rows
 }
+/** Restore a designated administrator's own draft after a browser session ends. */
+export async function workshopDraftBranches(actorId:string){
+ await ensureAudit()
+ const result=await getPool().query(
+  "SELECT branch,MIN(created_at) AS created_at,MAX(created_at) AS updated_at, "+
+  "COUNT(*) FILTER (WHERE event='file_saved')::integer AS commits "+
+  "FROM weave_code_workshop_events WHERE actor_id=$1::uuid "+
+  "GROUP BY branch ORDER BY MAX(created_at) DESC LIMIT 50",
+  [validOwner(actorId)])
+ return result.rows.filter((row:{branch:string})=>{
+  try{draftFor(actorId,row.branch);return true}catch{return false}
+ })
+}
+
 export async function createWorkshopBranch(actorId:string,confirmation:string){
  if(confirmation!=='CREATE DRAFT')throw Error('Type CREATE DRAFT to begin a reviewable source branch')
  if(!isCodeWorkshopWritable())throw Error('Server source-writing permission is not configured')
