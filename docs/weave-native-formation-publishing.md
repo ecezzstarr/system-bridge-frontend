@@ -46,6 +46,25 @@ database. This is not automatic creation of arbitrary backend code.
    type \`UNPUBLISH WEAVE MODULE\` to withdraw a live page without
    deleting its version or movement history.
 
+### Live company work-intake capability
+
+A feature or system may also contain one or more **intake** blocks with
+validated short text, long text, optional questions and fixed choices.
+An authorized department member can submit the finished intake from
+the published page. WEAVE stores an immutable submission receipt and
+timestamp; the appointed Administration operator may review the latest
+80 records for that department module in the Native Formation Workshop.
+
+Intake is a work-record mechanism, not a financial settlement, identity
+verification, payroll instruction, AI-generated code, approval workflow
+or secret collection service. Published field keys are validated at
+write time. Each user has a 30-second per-form submission limit;
+a concurrent release withdrawal cannot accept a stale new submission.
+
+Forms are installed components that do not require Git commits or
+Oracle rebuilds for their definitions. New form action types or
+external connections require independently reviewed code.
+
 Existing Client File Folder ownership, paid systems, financial approvals,
 source code and department assignments are unchanged. The new Plus-style
 visual option does not grant a Plus File Folder, equipment, employees or
