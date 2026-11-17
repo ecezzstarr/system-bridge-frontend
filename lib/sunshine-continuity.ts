@@ -17,11 +17,6 @@ export function validSunshineCapital(value:unknown):number|null{
   return Number.isFinite(n)&&n>=SUNSHINE_MIN_START_NGN&&n<=999_999_999_999&&
     Math.abs(Math.round(n*100)-n*100)<0.00001?n:null
 }
-export function sunshineMonthKey():string{
-  // The authoritative month comes from PostgreSQL Africa/Lagos, not this clock.
-  return new Intl.DateTimeFormat('en-CA',{timeZone:'Africa/Lagos',year:'numeric',month:'2-digit'}).format(new Date()).slice(0,7)
-}
-
 export async function ensureSunshineSchema(){
   const db=getPool()
   await db.query(`CREATE TABLE IF NOT EXISTS weave_sunshine_savings_plans(
@@ -49,6 +44,16 @@ export async function ensureSunshineSchema(){
     request_id uuid NOT NULL,
     created_at timestamptz NOT NULL DEFAULT NOW(),
     UNIQUE(user_id,request_id)
+  )`)
+  await db.query(`CREATE TABLE IF NOT EXISTS weave_sunshine_monthly_living_money(
+    user_id uuid NOT NULL REFERENCES weave_sunshine_savings_plans(user_id) ON DELETE CASCADE,
+    month_key char(7) NOT NULL CHECK(month_key ~ '^[0-9]{4}-[0-9]{2}
+}
+),
+    net_interest_credited_ngn numeric(18,2) NOT NULL DEFAULT 0 CHECK(net_interest_credited_ngn>=0),
+    spent_from_interest_ngn numeric(18,2) NOT NULL DEFAULT 0 CHECK(spent_from_interest_ngn>=0 AND spent_from_interest_ngn<=net_interest_credited_ngn),
+    updated_at timestamptz NOT NULL DEFAULT NOW(),
+    PRIMARY KEY(user_id,month_key)
   )`)
   await db.query('CREATE INDEX IF NOT EXISTS idx_sunshine_plans_manager_visibility ON weave_sunshine_savings_plans(manager_visibility,needs_help)')
 }
