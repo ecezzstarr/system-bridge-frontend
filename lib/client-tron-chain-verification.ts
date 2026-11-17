@@ -82,7 +82,13 @@ export async function verifyClientNativeTrxDeposit(
   if(!response.ok)throw new Error('TRON mainnet verification provider is unavailable')
   const tx=await response.json() as Record<string,unknown>
   if(tx?.Error||!tx?.txID)throw new Error('TRX transfer has not been found in the solidified TRON mainnet chain')
-  return validateSolidifiedTrxTransfer(tx,hash,expectedTrx,companyAddress)
+  const proof=validateSolidifiedTrxTransfer(tx,hash,expectedTrx,companyAddress)
+  // External funds must arrive from outside the company; a self-transfer
+  // cannot be treated as new capital. Payouts are checked in a separate flow.
+  if(companyAddress===WORLD_RULES.COMPANY_TRX_WALLET&&
+      proof.sourceHex===tronAddressToHex(WORLD_RULES.COMPANY_TRX_WALLET))
+    throw new Error('Company self-transfer cannot fund a Client wallet')
+  return proof
 }
 
 /** Validates an actual company-funded outgoing TRX transfer after payout review.
