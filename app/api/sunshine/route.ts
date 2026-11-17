@@ -31,6 +31,16 @@ async function assignedManager(user:{id:string;role:string}){
   return memberships[0]?.manager_id||null
 }
 
+async function notifyWithdrawalTarget(managerId:string){
+  try{
+    await getPool().query(`INSERT INTO notifications
+      (user_id,type,title,content,from_user_name,link)
+      VALUES($1::uuid,'regional_work','Sunshine · withdrawal target reached',
+        'A consenting team member has reported two withdrawals this month. Ask about work obstacles and offer authorized support, without requesting bank access.',
+        'WEAVE · A Time','/weave/lifestyles/sunshine')`,[managerId])
+  }catch(error){console.error('[Sunshine withdrawal notice unavailable]',error)}
+}
+
 async function notifyManager(managerId:string){
   try{
     await getPool().query(`INSERT INTO notifications
@@ -173,8 +183,18 @@ export async function POST(request:NextRequest){
         await conn.query(`INSERT INTO weave_sunshine_withdrawal_audit
           (user_id,month_key,action,request_id)
           VALUES($1::uuid,${monthExpr},$2,$3::uuid)`,[user.id,auditAction,requestId])
+        const active=await conn.query(`SELECT withdrawal_count
+          FROM weave_sunshine_monthly_withdrawals WHERE user_id=$1::uuid
+            AND month_key=${monthExpr}`,[user.id])
+        const reportedCount=Number(active.rows[0]?.withdrawal_count||0)
+        const consent=await conn.query(`SELECT manager_visibility FROM weave_sunshine_savings_plans
+          WHERE user_id=$1::uuid`,[user.id])
         await conn.query('COMMIT')
-        return json({success:true})
+        if(auditAction==='record'&&reportedCount===2&&consent.rows[0]?.manager_visibility===true){
+          const managerId=await assignedManager(user)
+          if(managerId)await notifyWithdrawalTarget(managerId)
+        }
+        return json({success:true,withdrawalCount:reportedCount})
       }catch(error){
         await conn.query('ROLLBACK').catch(()=>{})
         throw error
