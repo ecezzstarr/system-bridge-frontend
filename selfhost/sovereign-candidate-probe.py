@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
-import hashlib
 import json
 import os
 import pathlib
@@ -64,7 +63,9 @@ def health(url: str) -> dict:
     try:
         req = urllib.request.Request(url, headers={"User-Agent": "weave-sovereign-probe/1"})
         with urllib.request.urlopen(req, timeout=8) as response:
-            if response.status != 200 or not response.geturl().startswith(url.split("://")[0] + "://"):
+            reached = urllib.parse.urlparse(response.geturl())
+            requested = urllib.parse.urlparse(url)
+            if (response.status != 200 or reached.scheme != requested.scheme or reached.netloc != requested.netloc or reached.path != requested.path):
                 return {}
             data = response.read(4000)
             return json.loads(data)
@@ -134,13 +135,20 @@ def gather(values: dict[str, str]) -> dict:
     }
 
 
+class _RejectRedirects(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        raise RuntimeError("Refusing to send candidate token through a redirect")
+
+
 def report(values: dict[str, str], evidence: dict) -> None:
     token = values.get("WEAVE_SOVEREIGN_PROBE_TOKEN", "").strip()
     endpoint = values.get("WEAVE_SOVEREIGN_PROBE_TARGET",
                           "https://weavingsystem.online/api/infrastructure/sovereign-probe")
     parsed = urllib.parse.urlparse(endpoint)
     if (not token or len(token) < 32 or parsed.scheme != "https" or
-            not parsed.hostname or parsed.username or parsed.password):
+            parsed.hostname != "weavingsystem.online" or
+            parsed.path != "/api/infrastructure/sovereign-probe" or
+            parsed.query or parsed.fragment or parsed.username or parsed.password):
         raise RuntimeError("A private probe token and HTTPS report endpoint are required")
     body = json.dumps(evidence, separators=(",", ":")).encode("utf8")
     req = urllib.request.Request(
@@ -148,7 +156,8 @@ def report(values: dict[str, str], evidence: dict) -> None:
         headers={"Authorization": "Bearer " + token,
                  "Content-Type": "application/json", "User-Agent": "weave-sovereign-probe/1"},
     )
-    with urllib.request.urlopen(req, timeout=12) as response:
+    opener = urllib.request.build_opener(_RejectRedirects())
+    with opener.open(req, timeout=12) as response:
         if response.status != 200 or not json.load(response).get("success"):
             raise RuntimeError("Weave refused the candidate readiness report")
 
