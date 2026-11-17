@@ -6,6 +6,8 @@ import {
  GitMerge,GitPullRequest,RefreshCw,Save,ShieldCheck,TerminalSquare
 } from 'lucide-react'
 import {useAuth} from '@/lib/auth-provider'
+import WeaveFormationComposer from '@/components/admin/weave-formation-composer'
+import type {WeaveFormationDraft} from '@/lib/weave-workshop-formation'
 import {isWeaveWorkArea,WEAVE_INDUSTRY_PURPOSE,WEAVE_WORK_AREAS} from '@/lib/weave-workshop-purpose'
 
 type Entry={name:string;path:string;type:'file'|'dir';size:number}
@@ -155,6 +157,21 @@ export default function CodeWorkshopPage(){
   }catch(e){setError(e instanceof Error?e.message:'Cannot open review')}
   finally{setBusy(false)}
  }
+ async function loadFormation(draft:WeaveFormationDraft){
+  if(branch==='main'||!writeConfigured)throw Error('Create a writable private GitHub draft first.')
+  if(source!==baseline)throw Error('Save or discard your current source changes before opening a formation.')
+  const result:Source=await query('file',draft.path,branch)
+  if(result.exists)throw Error('This workshop file already exists. Choose another formation name to protect existing work.')
+  setFile(draft.path)
+  setSource(draft.content)
+  setBaseline('')
+  setSha(null)
+  setReady(true)
+  setCommitMessage('Create '+draft.title+' '+draft.kind+' prototype')
+  setConfirmation('')
+  print('FORM '+draft.kind+' · '+draft.path+' · review generated TSX before saving')
+ }
+
  async function runCommand(){
   const input=command.trim()
   if(!input)return
@@ -201,6 +218,7 @@ export default function CodeWorkshopPage(){
     {error.includes('Unauthorized')&&<p className="mt-2 text-xs">Source control requires a designated Administrations operator. Configure WEAVE_WORKSHOP_ADMIN_IDS privately; ordinary admin membership alone cannot edit or merge company code.</p>}
    </section>}
 
+   <WeaveFormationComposer draftReady={branch!=='main'&&writeConfigured&&!busy} onUse={loadFormation}/>
    <div className="grid gap-5 lg:grid-cols-[minmax(230px,.72fr)_minmax(0,2fr)]">
     <aside className="space-y-5">
      <section className="rounded-2xl border border-white/10 bg-white/[.025] p-4">
