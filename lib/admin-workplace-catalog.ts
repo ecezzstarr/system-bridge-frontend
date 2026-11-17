@@ -327,6 +327,11 @@ export const ADMIN_SPACES:readonly AdminSpace[]=[
     "description": "Inspect infrastructure, Divine Shield and server authority."
   },
   {
+    "title": "Native Formation Workshop · No-Code Publisher",
+    "href": "/admin/native-foundry",
+    "description": "Form department pages, glass-tech worlds, features and personal systems in WEAVE. Publish and roll back runtime versions without rebuilding the server."
+  },
+  {
     "title": "Company Code Workshop · Source Terminal",
     "href": "/admin/code-workshop",
     "description": "Write reviewed Weave source in isolated GitHub draft branches; commit with an audit record and open CI-gated pull requests."
