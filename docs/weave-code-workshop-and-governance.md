@@ -3,7 +3,7 @@
 ## Institutional purpose
 
 WEAVE is one continuing company, not a collection of independent pages.
-Administration (A Time) establishes permissions, systems, policies, reviews and
+Administrations (A Time) establishes permissions, systems, policies, reviews and
 records so that Agents (Stability), Bridgers (Hope), and Clients (Dream Lovely)
 can carry their own authorized work into measurable value. The company's
 infrastructure must support participants without confusing company control
@@ -14,7 +14,7 @@ a public web shell. It is connected to the canonical GitHub repository
 `ecezzstarr/system-bridge-frontend` and hands off reviewed releases to the
 existing GitHub → Oracle deployment workflow.
 
-## Source authoring from inside Administration
+## Source authoring from inside Administrations
 
 1. Open `/admin/code-workshop` from the Administration workplace or Control Center.
 2. Log in as an explicitly appointed privileged administrator. Do not use
@@ -33,7 +33,7 @@ existing GitHub → Oracle deployment workflow.
    merge requires the **exact reviewed head SHA**, passing PR Production Check
    and any required external review; type `MERGE #<number>` only after review.
 8. The new `main` SHA must pass a **different push-to-main Production Check**.
-   Administration may then request the exact SHA in the Release Workshop.
+   Administrations may then request the exact SHA in the Release Workshop.
    The independent Oracle host worker must verify local and public health
    before the release is recorded as healthy in Sovereign + Flame.
 9. If the server is unavailable, use the existing privileged manual recovery
@@ -81,8 +81,9 @@ installations, arbitrary Git commands, or changes to a running container.
 No browser access to the Docker socket, filesystem secrets or Oracle keys
 is created. This is an intentional safeguard, not an incomplete shell.
 
-Every source promotion requires independent review, a passing Production Check,
-and a separately verified company release authorization.
+Every source promotion requires independent review and a passing Production Check.
+A separately verified company release authorization can be given per release,
+or through a one-time, revocable opt-in for verified main releases below.
 
 A draft commit or PR is never represented as deployed production code.
 Each creation, source commit and PR opening is recorded with the actor,
@@ -119,3 +120,61 @@ binding terms, with new acceptance recorded where legally required.
 The foundational workshop does **not** certify that all future systems are
 implemented or compliant. Future feature development still requires
 individual specifications, tests, authorized releases and periodic audits.
+
+
+## Still Water — Formation Foundry
+
+The Company Code Workshop now opens with an interactive Formation Foundry.
+
+1. Write a name and describe the intended presence in your own cadence.
+2. Choose a **glass page**, **interactive 3D glass world** or **reusable glass component**.
+3. Inspect the live visual preview; the 3D preview uses WebGL geometry, not a flat poster.
+4. Create a private GitHub draft using the existing CREATE DRAFT control.
+5. Load the generated TSX into the source editor. Its path is isolated to
+   app/weave-labs or components/weave-labs. The workshop refuses to overwrite
+   an existing file, and still enforces existing SHA checks and audits.
+6. Modify the TSX as needed, SAVE DRAFT, open independent review and verify CI.
+
+The initial compiler is **deterministic**, not a general-purpose AI developer:
+the cadence is safely embedded as inert content in a known starter template.
+It does not interpret business instructions into payments, permissions,
+database queries, or new company policies. The new 3D output is a visual
+prototype, not an activated, purchased or verified Client File Folder.
+Company customer data and permissions must be wired through existing
+authorized application paths after independent review.
+
+## Opt-in continuity — reviewed code may run without a manual deploy each time
+
+The workflow at .github/workflows/weave-verified-continuity.yml subscribes to
+completion of Production Check. **It is disabled by default.** The company
+repository owner may explicitly enable the GitHub Actions repository variable
+WEAVE_AUTONOMOUS_RELEASES with the exact value **enabled** once the following
+controls have been tested on the real Oracle host:
+
+- The main branch is protected and requires approved PR review and required CI.
+- Production Check succeeds for a **push to main**, not an unmerged PR or
+  a passing feature branch. The workflow verifies the exact head SHA still
+  equals current canonical main before dispatching anything.
+- The existing self-hosted GitHub runner is online, attached to the correct
+  WEAVE repository and authorized to run the manual recovery deploy workflow.
+- The host checkout, Docker storage guard, clean working tree, private
+  environment, health endpoint and previous healthy release are working.
+- The exact SHA is rechecked on the host; local and public application health
+  are verified before success; the previous healthy image is the rollback path.
+- The operating team has failure notifications and regular backup verification.
+  Code rollback does not roll back the database, customers' records or media.
+
+When enabled, a reviewed and merged main commit with a successful push-to-main
+Production Check automatically dispatches the existing Self-Host Manual
+Recovery Deploy workflow; its own CI, origin/main and host checks remain in
+force. No browser shell or server credentials are exposed. A commit to a
+draft branch does not start a deployment. This is **release automation**, not
+self-authoring code: someone must still define and merge reviewed changes.
+
+To stop **future automatic dispatches**, set the repository variable to a
+value other than enabled or remove it. Disabling the variable does not cancel
+an already-queued/running GitHub job; use GitHub Actions and the existing
+host deployment controls for that. A disconnected runner, unavailable host,
+broken CI or insufficient disk prevents deployment; an automatic workflow
+cannot fix host outages by itself. Production should not be described as
+updated until the real host and public health checks confirm the new SHA.
