@@ -26,9 +26,10 @@ export function validWeaveCountry(value:unknown):WeaveCountryCode|null{
 }
 export function suggestCountryFromLocale(value:string|null|undefined):WeaveCountryCode|null{
  const tag=String(value||'').replaceAll('_','-').trim()
- const region=tag.match(/(?:^|[-])([a-zA-Z]{2})(?:$|[-])/g)?.slice(-1)?.[0]?.replace(/-/g,'').toUpperCase()
- // en alone or generic browser language has no geographical meaning.
- if(!region||tag.split('-').length<2)return null
+ const segments=tag.split('-').filter(Boolean)
+ // Language-only en is not location; prefer a real language-region tag like en-NG.
+ const region=segments.slice(1).find(part=>/^[A-Za-z]{2}$/.test(part))?.toUpperCase()
+ if(!region)return null
  return validWeaveCountry(region)
 }
 export function paymentRegion(country:WeaveCountryCode|null,purpose:WeaveCheckoutPurpose){
