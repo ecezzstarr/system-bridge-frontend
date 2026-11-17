@@ -9,6 +9,7 @@ import {
 } from '@/lib/sunshine-finance'
 import {ensureRegionalOperationsSchema,regionalTeam} from '@/lib/regional-manager-operations'
 import {notifySunshineMovement} from '@/lib/sunshine-movement-notifications'
+import {getGuidanceStaffDepartments} from '@/lib/weave-guidance-departments'
 
 export const dynamic='force-dynamic'
 const noStore={'Cache-Control':'private, no-store','Vary':'Authorization'}
@@ -70,6 +71,16 @@ export async function GET(request:NextRequest){
     await ensureSunshineFinanceSchema()
     const db=getPool()
     const manager=await activeRegionalManager(user.id)
+    const departments=['agent','bridger'].includes(user.role)
+      ? await getGuidanceStaffDepartments(user):[]
+    // Authorized guidance staff see only their own stage notifications, not
+    // savings balances, bank evidence, interest values or applicant identities.
+    const departmentNotices=user.role==='admin'||departments.length>0
+      ?(await db.query(`SELECT type,title,content,link,created_at
+          FROM notifications WHERE user_id=$1::uuid
+          AND type LIKE 'sunshine_support_%'
+          ORDER BY created_at DESC LIMIT 30`,[user.id])).rows
+      :[]
     const rows=await db.query(`SELECT a.*,u.name AS worker_name FROM weave_sunshine_support_advances a
       JOIN users u ON u.id=a.user_id
       WHERE $1::text='admin' OR a.user_id=$2::uuid
@@ -79,7 +90,7 @@ export async function GET(request:NextRequest){
       Boolean(process.env.SUNSHINE_LENDING_AUTHORIZATION_ID) &&
       Boolean(process.env.SUNSHINE_TREASURY_USER_ID),
       support:rows.rows.map(r=>({...shape(r),workerName:user.role==='admin'||manager?r.worker_name:null})),
-      managerCanReview:manager})
+      managerCanReview:manager,departmentNotices,departmentLabels:departments})
   }catch(error){
     console.error('[Sunshine finance GET]',error)
     return fail('Sunshine support records unavailable',503)
