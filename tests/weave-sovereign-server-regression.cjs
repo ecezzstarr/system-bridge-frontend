@@ -56,6 +56,9 @@ for(const banned of ['WEAVE_DEPLOY_TARGET_SHA','git reset','docker compose resta
 }
 assert.ok(!read('app/(app)/admin/release-workshop/page.tsx').includes('/admin/sovereign-server'),
  'Original Release Workshop must remain unchanged')
+const sourcePolicy=read('lib/weave-code-workshop.ts')
+assert.match(sourcePolicy,/sovereign-server/)
+assert.match(sourcePolicy,/intake-form/)
 const native=read('lib/weave-native-blueprint.ts')
 const registry=read('lib/weave-native-registry.ts')
 const intake=read('components/weave/native-intake-form.tsx')
