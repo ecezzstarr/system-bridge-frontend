@@ -320,7 +320,7 @@ export default function PublicFileFolderPurchasePage() {
               </div>
               <div className="mt-5 grid grid-cols-2 gap-2" role="group" aria-label="Choose payment method">
                 <button type="button" disabled={Boolean(purchase)||!paymentCountryReady||paymentCountry!=='NG'} onClick={() => setPaymentMethod('paystack')} className={`min-h-12 rounded-xl border px-3 py-2 text-xs font-black ${paymentMethod === 'paystack' ? 'border-emerald-200/50 bg-emerald-300/10 text-emerald-100' : 'border-white/10 text-slate-400'}`}>Paystack · Naira</button>
-                <button type="button" disabled={Boolean(purchase)||!paymentCountryReady} onClick={() => setPaymentMethod('trx')} className={`min-h-12 rounded-xl border px-3 py-2 text-xs font-black ${paymentMethod === 'trx' ? 'border-orange-200/50 bg-orange-300/10 text-orange-100' : 'border-white/10 text-slate-400'}`}>TRX wallet</button>
+                <button type="button" disabled={Boolean(purchase)||!paymentCountryReady||paymentCountry==='NG'} onClick={() => setPaymentMethod('trx')} className={`min-h-12 rounded-xl border px-3 py-2 text-xs font-black ${paymentMethod === 'trx' ? 'border-orange-200/50 bg-orange-300/10 text-orange-100' : 'border-white/10 text-slate-400'}`}>TRX wallet</button>
               </div>
 
               {paymentMethod === 'trx' ? <div className="mt-5 rounded-2xl border border-emerald-300/10 bg-emerald-300/[.035] p-4">
