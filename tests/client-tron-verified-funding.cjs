@@ -74,4 +74,8 @@ assert.ok(adminWithdrawal.includes('data-weave-client-tron-withdrawal-settlement
 assert.ok(adminWithdrawal.indexOf('data-weave-client-tron-withdrawal-settlement')>adminWithdrawal.indexOf('function WithdrawalApprovalSection'),'Settlement UI in correct admin section')
 assert.ok(adminWithdrawal.includes('verify outgoing transfer and mark settled')||
  adminWithdrawal.includes('Verify outgoing transfer and mark settled'),'No payout completed without evidence')
+assert.ok(deposits.includes('forensicsAttributionConfirmed!==true'),'No credit without Forensics Client attribution')
+assert.ok(deposits.includes('attribution_reference'),'Store the verified ownership attribution record')
+assert.ok(read('app/(app)/admin/client-deposits/page.tsx').includes('attributionByDeposit'),'Reviewer must record independent payer evidence')
+assert.ok(read('app/api/admin/deposit/tron/verify/route.ts').includes('forensicsAttributionConfirmed'),'No approval bypass through server route')
 console.log('PASS: native solidified TRX from Bybit/Bitget/Wallet, proof of Weave receipt and payout, no credit or settlement from hash alone')
