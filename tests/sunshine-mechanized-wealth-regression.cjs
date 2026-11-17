@@ -30,7 +30,7 @@ assert.ok(banks.includes("rule:'two_monthly'"),'Ecobank enhanced-rate withdrawal
 assert.ok(banks.includes("rule:'quarterly_window'"),'SafeBox is not falsely classified as two monthly')
 assert.ok(banks.includes("rule:'one_monthly_bonus'"),'Stanbic bonus interest differs from two monthly')
 assert.ok(banks.includes('No APR is embedded'),'Variable bank rates must not be hard-coded')
-assert.ok(schema.includes('SUNSHINE_MIN_START_NGN=1_000_000'),'Minimum Sunshine capital is ₦1m')
+assert.ok(schema.includes('SUNSHINE_ENROLLMENT_TARGET_SS=1_000_000'),'Sunshine capital goal is 1m System Switch, not a minimum payment')
 assert.ok(schema.includes('weave_sunshine_savings_plans'),'Owner controls savings declaration')
 assert.ok(schema.includes('manager_visibility boolean NOT NULL DEFAULT false'),'Manager view opt-in defaults off')
 assert.ok(schema.includes('weave_sunshine_monthly_withdrawals'),'Month-scoped withdrawal tracking')
