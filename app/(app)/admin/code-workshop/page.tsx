@@ -11,6 +11,7 @@ import type {WeaveFormationDraft} from '@/lib/weave-workshop-formation'
 import {isWeaveWorkArea,WEAVE_INDUSTRY_PURPOSE,WEAVE_WORK_AREAS} from '@/lib/weave-workshop-purpose'
 
 type Entry={name:string;path:string;type:'file'|'dir';size:number}
+type DraftBranch={branch:string;created_at:string;updated_at:string;commits:number}
 type Activity={event:string;branch:string;file_path:string|null;commit_sha:string|null;
  pull_request:number|null;message:string;created_at:string}
 type Source={kind:'file'|'directory';branch:string;path?:string;directory?:string;
@@ -33,6 +34,7 @@ export default function CodeWorkshopPage(){
  const [sha,setSha]=useState<string|null>(null)
  const [entries,setEntries]=useState<Entry[]>([])
  const [activity,setActivity]=useState<Activity[]>([])
+ const [drafts,setDrafts]=useState<DraftBranch[]>([])
  const [ready,setReady]=useState(false)
  const [busy,setBusy]=useState(false)
  const [error,setError]=useState('')
@@ -57,7 +59,7 @@ export default function CodeWorkshopPage(){
   Authorization:'Bearer '+token,...(json?{'Content-Type':'application/json'}:{}),
  }),[token])
 
- const query=useCallback(async(mode:'file'|'directory'|'activity',path?:string,ref?:string)=>{
+ const query=useCallback(async(mode:'file'|'directory'|'activity'|'drafts',path?:string,ref?:string)=>{
   if(!token)throw Error('Administrator login is required')
   const qs=new URLSearchParams({mode,branch:ref||branch})
   if(path)qs.set('path',path)
@@ -92,8 +94,9 @@ export default function CodeWorkshopPage(){
  },[query])
 
  const reloadActivity=useCallback(async()=>{
-  const data=await query('activity')
+  const [data,history]=await Promise.all([query('activity'),query('drafts')])
   setActivity(data.entries||[])
+  setDrafts(history.drafts||[])
  },[query])
 
  useEffect(()=>{
@@ -157,6 +160,14 @@ export default function CodeWorkshopPage(){
   }catch(e){setError(e instanceof Error?e.message:'Cannot open review')}
   finally{setBusy(false)}
  }
+ async function resumeDraft(target:string){
+  if(source!==baseline)throw Error('Save or discard your current source edits before changing branches.')
+  if(branch===target)return
+  setBranch(target);setConfirmation('');setPrUrl('');setPrNumber(null)
+  await Promise.all([openFile(file,target),browse(directory,target)])
+  print('RESUMED '+target+' · source history belongs to this administrator')
+ }
+
  async function loadFormation(draft:WeaveFormationDraft){
   if(branch==='main'||!writeConfigured)throw Error('Create a writable private GitHub draft first.')
   if(source!==baseline)throw Error('Save or discard your current source changes before opening a formation.')
@@ -221,6 +232,19 @@ export default function CodeWorkshopPage(){
    <WeaveFormationComposer draftReady={branch!=='main'&&writeConfigured&&!busy} onUse={loadFormation}/>
    <div className="grid gap-5 lg:grid-cols-[minmax(230px,.72fr)_minmax(0,2fr)]">
     <aside className="space-y-5">
+     <section className="rounded-2xl border border-cyan-200/20 bg-white/[.025] p-4">
+      <p className="text-xs font-bold uppercase tracking-widest text-cyan-200">Continue your drafts</p>
+      <p className="mt-2 text-xs leading-5 text-slate-400">Your GitHub drafts remain available after logout and across devices. Select one to keep coding from its saved files.</p>
+      {drafts.length===0?<p className="mt-3 text-xs text-slate-400">No saved draft branches yet.</p>
+       :<div className="mt-3 max-h-52 space-y-2 overflow-auto">{drafts.map(draft=>
+        <button key={draft.branch} type="button" disabled={busy||source!==baseline} onClick={()=>void resumeDraft(draft.branch).catch(e=>setError(e.message))}
+         className={'w-full rounded-xl border p-3 text-left text-xs disabled:opacity-40 '+(draft.branch===branch?'border-cyan-300/60 bg-cyan-300/[.09]':'border-white/15 hover:border-cyan-300/40')}>
+         <span className="block break-all font-mono text-slate-200">{draft.branch.split('/').slice(-1)[0]}</span>
+         <span className="mt-1 block text-slate-400">{draft.commits} source commits · {new Date(draft.updated_at).toLocaleDateString()}</span>
+        </button>)}</div>}
+      <button type="button" disabled={busy} onClick={()=>void reloadActivity().catch(e=>setError(e.message))}
+       className="mt-3 text-xs font-semibold text-cyan-200 underline disabled:opacity-40">Refresh my drafts</button>
+     </section>
      <section className="rounded-2xl border border-white/10 bg-white/[.025] p-4">
       <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-sky-200"><Folder size={15}/> Repository files</p>
       <div className="mt-4 flex flex-wrap gap-2">{['app','components','lib','tests','docs','public'].map(root=>
