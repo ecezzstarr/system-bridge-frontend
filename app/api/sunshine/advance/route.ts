@@ -8,6 +8,7 @@ import {
   SUNSHINE_CREDIT_RELEASE_ENABLED
 } from '@/lib/sunshine-finance'
 import {ensureRegionalOperationsSchema,regionalTeam} from '@/lib/regional-manager-operations'
+import {notifySunshineMovement} from '@/lib/sunshine-movement-notifications'
 
 export const dynamic='force-dynamic'
 const noStore={'Cache-Control':'private, no-store','Vary':'Authorization'}
@@ -147,8 +148,7 @@ export async function POST(request:NextRequest){
       if(!existing.rows.length)return fail('Request ID already belongs to a different user',409)
       return reply({success:true,alreadyRequested:true,support:shape(existing.rows[0])})
     }
-    await sendNotice(managerId,'Sunshine · interest-based support requested',
-      'Your assigned participant needs assistance. An independent Administrations review of bank interest is required before any funding.')
+    await notifySunshineMovement('requested',String(created.rows[0].id))
     return reply({success:true,support:shape(created.rows[0]),notice:'Request recorded; no funds advanced'},201)
   }
   const id=normalized(body.id,50)
@@ -171,8 +171,7 @@ export async function POST(request:NextRequest){
         updated_at=now()
       WHERE id=$1::uuid AND status='requested' RETURNING *`,[id,user.id,evidence])
     if(!result.rows.length)return fail('Request changed',409)
-    await sendNotice(item.user_id,'Sunshine · interest verification complete',
-      'Review the advance amount, the 10% interest-based company share, and the full repayment before accepting.')
+    await notifySunshineMovement('interest_verified',id)
     return reply({success:true,support:shape(result.rows[0])})
   }
   if(action==='accept_terms'){
@@ -182,8 +181,8 @@ export async function POST(request:NextRequest){
     const result=await db.query(`UPDATE weave_sunshine_support_advances
       SET status='terms_accepted',terms_accepted_at=now(),updated_at=now()
       WHERE id=$1::uuid AND status='interest_verified' RETURNING *`,[id])
-    await sendNotice(item.manager_id,'Sunshine · borrower accepted terms',
-      'A verified participant has accepted the transparent Sunshine support terms. Funding remains approval-gated.')
+    if(!result.rows.length)return fail('Support state changed',409)
+    await notifySunshineMovement('terms_accepted',id)
     return reply({success:true,support:shape(result.rows[0])})
   }
   if(action==='reject'){
@@ -195,6 +194,8 @@ export async function POST(request:NextRequest){
       SET status='rejected',rejected_by=$2::uuid,rejection_reason=$3,updated_at=now()
       WHERE id=$1::uuid AND status IN ('requested','interest_verified','terms_accepted')
       RETURNING *`,[id,user.id,why])
+    if(!result.rows.length)return fail('Support state changed',409)
+    await notifySunshineMovement('rejected',id)
     return reply({success:true,support:shape(result.rows[0])})
   }
   if(action==='fund'){
@@ -248,8 +249,7 @@ export async function POST(request:NextRequest){
       await tx.query('ROLLBACK').catch(()=>{})
       return fail(error instanceof Error?error.message:'Funding failed',409)
     }finally{tx.release()}
-    await sendNotice(item.user_id,'Sunshine · support funded',
-      'System Switch was transferred from a funded manager wallet. Existing withdrawal rules apply. Repayment is due after independently verified bank interest.')
+    await notifySunshineMovement('funded',id)
     return reply({success:true,status:'funded',supportAmountSwitch:Number(item.maximum_advance_switch)})
   }
   if(action==='confirm_interest_received'){
@@ -263,8 +263,7 @@ export async function POST(request:NextRequest){
       SET status='interest_received',settlement_verified_by=$2::uuid,settlement_reference=$3,updated_at=now()
       WHERE id=$1::uuid AND status='funded' RETURNING *`,[id,user.id,reference])
     if(!updated.rows.length)return fail('Support state changed',409)
-    await sendNotice(item.user_id,'Sunshine · bank interest confirmed',
-      'Your bank interest has been independently verified. Review your System Switch repayment amount and authorize payment when funds are available.')
+    await notifySunshineMovement('interest_received',id)
     return reply({success:true,support:shape(updated.rows[0])})
   }
   if(action==='repay'){
@@ -322,7 +321,7 @@ export async function POST(request:NextRequest){
       await tx.query('ROLLBACK').catch(()=>{})
       return fail(error instanceof Error?error.message:'Repayment failed',409)
     }finally{tx.release()}
-    await sendNotice(managerId,'Sunshine · principal returned','The original Sunshine support principal has been repaid.')
+    await notifySunshineMovement('repaid',id)
     return reply({success:true,status:'repaid',principalReturnedSwitch:Number(item.maximum_advance_switch),
       companyIncomeSwitch:Number(item.company_fee_switch)})
   }
