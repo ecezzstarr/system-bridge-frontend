@@ -14,6 +14,12 @@ type Release={id:string;version:number;state:'draft'|'published'|'archived';depa
 const field='mt-2 w-full rounded-xl border border-white/20 bg-[#061826] p-3 text-sm text-white outline-none focus:border-cyan-200/60'
 const label='block text-xs font-semibold text-slate-200'
 const classes='rounded-xl border border-cyan-200/25 px-3 py-2 text-xs font-bold text-cyan-100 hover:bg-white/[.07] disabled:opacity-40'
+function stable(value:unknown):string{
+ if(Array.isArray(value))return '['+value.map(stable).join(',')+']'
+ if(value&&typeof value==='object')return '{'+Object.keys(value).sort().map(key=>
+  JSON.stringify(key)+':'+stable((value as Record<string,unknown>)[key])).join(',')+'}'
+ return JSON.stringify(value)
+}
 function newBlock(type:NativeBlock['type']):NativeBlock{
  if(type==='hero')return {type,eyebrow:'Weave of Presence',heading:'An emerging possibility',description:'Give this presence a clear purpose.'}
  if(type==='prose')return {type,heading:'The work',body:'Describe the movement and the person it serves.'}
@@ -108,12 +114,13 @@ export default function NativeFoundryPage(){
  }
  const current=releases.find(x=>x.state==='published')||null
  const selectedDraft=releases.find(x=>x.id===selectedId&&x.state==='draft')||null
- const draftMatches=Boolean(selectedDraft&&JSON.stringify(blueprint)===JSON.stringify(selectedDraft.blueprint))
+ const draftMatches=Boolean(selectedDraft&&stable(blueprint)===stable(selectedDraft.blueprint))
  async function saveDraft(){
   setBusy(true);setError('');setNotice('')
   try{
    const validated=validateNativeBlueprint(blueprint)
    const data=await send('draft',{blueprint:validated})
+   setBlueprint(validated)
    setSelectedId(data.release.id);setConfirm('')
    setNotice('Draft version '+data.release.version+' saved in Weave database. No server deployment required.')
    await load(department,blueprint.slug)
