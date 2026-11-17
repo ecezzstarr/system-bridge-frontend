@@ -59,9 +59,11 @@ async function main(){
   await client.query(`INSERT INTO weave_sunshine_support_advances
     (request_id,user_id,manager_id,bank_product,interest_period,
       expected_net_interest_ngn,rate_ngn_per_switch,bank_interest_switch,
-      maximum_advance_switch,company_fee_switch,repayment_switch,evidence_reference)
+      maximum_advance_switch,company_fee_switch,repayment_switch,evidence_reference,
+      purchase_kind,purchase_detail)
     VALUES(gen_random_uuid(),$1::uuid,$2::uuid,'ecobank_super_savers','monthly',
-      60000,400,$3,$4,$5,$6,'BANK-INTEREST-REF-2026-11')`,
+      60000,400,$3,$4,$5,$6,'BANK-INTEREST-REF-2026-11',
+      'weave_food','Electrolyte carton')`,
     [borrower,manager,quote.bankInterestSwitch,quote.maximumAdvanceSwitch,
       quote.companyInterestShareSwitch,quote.repaymentSwitch])
   await assert.rejects(()=>client.query(`INSERT INTO weave_sunshine_support_advances
@@ -71,11 +73,13 @@ async function main(){
     VALUES(gen_random_uuid(),$1::uuid,$2::uuid,'ecobank_super_savers','monthly',
       60000,400,150,105,15,120,'ANOTHER-REF-2026-11')`,[borrower,manager]),
     /duplicate key/i,'One active advance per borrower')
-  const row=await client.query("SELECT maximum_advance_switch,company_fee_switch,repayment_switch,status FROM weave_sunshine_support_advances WHERE user_id=$1::uuid",[borrower])
+  const row=await client.query("SELECT maximum_advance_switch,company_fee_switch,repayment_switch,status,purchase_kind,purchase_detail FROM weave_sunshine_support_advances WHERE user_id=$1::uuid",[borrower])
   assert.equal(Number(row.rows[0].maximum_advance_switch),105)
   assert.equal(Number(row.rows[0].company_fee_switch),15)
   assert.equal(Number(row.rows[0].repayment_switch),120)
   assert.equal(row.rows[0].status,'requested')
+  assert.equal(row.rows[0].purchase_kind,'weave_food')
+  assert.equal(row.rows[0].purchase_detail,'Electrolyte carton')
   await client.query(`INSERT INTO weave_sunshine_monthly_living_money
     (user_id,month_key,net_interest_credited_ngn,spent_from_interest_ngn)
     VALUES($1::uuid,'2026-11',60000,12000)`,[borrower])
