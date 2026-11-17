@@ -6,7 +6,7 @@ import {useAuth} from '@/lib/auth-provider'
 
 type Case={
   id:string;status:string;userId:string;managerId:string;workerName?:string|null;
-  interestPeriod:'daily'|'monthly';bankProduct:string;purchaseKind:string;purchaseDetail:string;
+  interestPeriod:'daily'|'monthly'|'annual';bankProduct:string;purchaseKind:string;purchaseDetail:string;
   expectedNetInterestNgn:number;rateNgnPerSwitch:number;
   bankInterestSwitch:number;advanceSwitch:number;companyFeeSwitch:number;
   totalRepaymentSwitch:number;evidenceReference:string;
@@ -70,7 +70,7 @@ export function SunshineAdvanceDesk({enrolled,managerId}:{enrolled:boolean;manag
   return <section className="rounded-2xl border border-amber-200/25 bg-[#0d1e29] p-5" data-sunshine-interest-support>
     <h2 className="text-2xl font-bold">Sunshine · Interest-backed work support</h2>
     <p className="mt-2 max-w-4xl text-sm leading-7 text-slate-200">
-      An authorized Regional Manager may advance up to 70% of independently verified daily or monthly net bank interest.
+      An authorized Regional Manager may advance up to 70% of independently verified daily, monthly or annual net bank interest.
       After the bank credits that interest, the original System Switch advance is returned to the funder,
       and Weave receives 10% of the verified interest in System Switch. The remaining 20% is the user's interest
       before exchange movements or separate withdrawal charges. The 10% share of bank interest equals approximately 14.29% of the 70% amount advanced per interest period, so daily financing may be especially costly. No bank funds are held or automatically debited by Weave.
@@ -92,7 +92,7 @@ export function SunshineAdvanceDesk({enrolled,managerId}:{enrolled:boolean;manag
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         <label className="text-sm">Bank interest period
           <select value={period} onChange={e=>setPeriod(e.target.value)} className="mt-2 min-h-11 w-full rounded-lg border border-white/25 bg-slate-950 p-3">
-            <option value="daily">Daily net interest</option><option value="monthly">Monthly net interest</option>
+            <option value="daily">Daily net interest</option><option value="monthly">Monthly net interest</option><option value="annual">Annual net interest</option>
           </select>
         </label>
         <label className="text-sm">Expected net interest from your bank (₦)
