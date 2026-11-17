@@ -107,6 +107,8 @@ export default function NativeFoundryPage(){
   return body
  }
  const current=releases.find(x=>x.state==='published')||null
+ const selectedDraft=releases.find(x=>x.id===selectedId&&x.state==='draft')||null
+ const draftMatches=Boolean(selectedDraft&&JSON.stringify(blueprint)===JSON.stringify(selectedDraft.blueprint))
  async function saveDraft(){
   setBusy(true);setError('');setNotice('')
   try{
@@ -119,7 +121,7 @@ export default function NativeFoundryPage(){
   finally{setBusy(false)}
  }
  async function publish(){
-  if(confirm!=='PUBLISH WEAVE MODULE'||!selectedId)return
+  if(confirm!=='PUBLISH WEAVE MODULE'||!selectedId||!draftMatches)return
   setBusy(true);setError('');setNotice('')
   try{
    await send('publish',{releaseId:selectedId,expectedPublishedId:current?.id||null,confirmation:confirm})
@@ -213,7 +215,9 @@ export default function NativeFoundryPage(){
       <button type="button" className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-cyan-100 px-4 text-sm font-bold text-[#092238] disabled:opacity-40" disabled={busy} onClick={()=>void saveDraft()}>
        <Save size={16}/>{busy?'Saving…':'Save version in WEAVE'}
       </button>
-     </div>:<div className="mt-5"><NativeModuleRenderer blueprint={blueprint} preview/></div>}
+     </div>:<div className="mt-5 rounded-xl border border-white/10 bg-[#081b2a] p-5 text-sm leading-7 text-slate-200">
+      The live preview is shown on the right. Return to Design to edit and save. One WebGL scene is rendered at a time on mobile devices.
+     </div>}
     </section>
     <div className="min-w-0 space-y-5">
      <section className="rounded-2xl border border-white/15 p-4 sm:p-6">
@@ -226,9 +230,10 @@ export default function NativeFoundryPage(){
       <p className="mt-2 text-xs leading-6 text-slate-300">A saved draft is immutable. Publishing replaces only the same department and address, with conflict checks. Other departments and existing features are unaffected.</p>
       <p className="mt-3 text-sm">Currently published: <strong>{current?'Version '+current.version:'None'}</strong></p>
       {selectedId&&<p className="mt-2 break-all text-xs text-cyan-200">Selected draft: {selectedId}</p>}
+      {selectedId&&!draftMatches&&<p className="mt-2 text-xs text-amber-200">This design differs from the saved draft. Save a new version to publish your current changes.</p>}
       <label className={label+' mt-4'}>Type PUBLISH WEAVE MODULE or UNPUBLISH WEAVE MODULE<input value={confirm} className={field}
        onChange={e=>setConfirm(e.target.value)} placeholder="PUBLISH WEAVE MODULE"/></label>
-      <button type="button" disabled={busy||!selectedId||confirm!=='PUBLISH WEAVE MODULE'}
+      <button type="button" disabled={busy||!selectedId||!draftMatches||confirm!=='PUBLISH WEAVE MODULE'}
        onClick={()=>void publish()} className="mt-4 inline-flex min-h-12 items-center gap-2 rounded-xl bg-[#efd7ae] px-5 font-bold text-[#1f3140] disabled:opacity-35">
        <Send size={16}/>Publish without server rebuild
       </button>
