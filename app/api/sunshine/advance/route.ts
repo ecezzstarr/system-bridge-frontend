@@ -106,6 +106,32 @@ export async function POST(request:NextRequest){
   await ensureSunshineSchema()
   await ensureSunshineFinanceSchema()
   const db=getPool()
+  if(action==='reconcile_notifications'){
+    if(user.role!=='admin')return fail('Only Administrations can reconcile company alerts',403)
+    // Rebuild only from committed financial records, never the browser's claims.
+    // The alert writer is idempotent per recipient/case/stage.
+    const historical=await db.query(`SELECT id,status,interest_verified_by,terms_accepted_at,
+      funded_at,settlement_verified_by,repaid_at
+      FROM weave_sunshine_support_advances ORDER BY updated_at DESC LIMIT 20`)
+    let events=0,failed=0
+    for(const row of historical.rows){
+      const stages:Array<Parameters<typeof notifySunshineMovement>[0]>=['requested']
+      if(row.interest_verified_by)stages.push('interest_verified')
+      if(row.terms_accepted_at)stages.push('terms_accepted')
+      if(row.funded_at)stages.push('funded')
+      if(row.settlement_verified_by)stages.push('interest_received')
+      if(row.repaid_at)stages.push('repaid')
+      if(row.status==='rejected')stages.push('rejected')
+      for(const stage of stages){
+        if(await notifySunshineMovement(stage,String(row.id)))events++
+        else failed++
+      }
+    }
+    if(failed)return reply({success:false,error:'Some Sunshine notifications need another reconciliation attempt',
+      reviewedCases:historical.rows.length,eventsChecked:events,failed},503)
+    return reply({success:true,reviewedCases:historical.rows.length,eventsChecked:events,
+      notice:'Committed Sunshine stages checked; previously delivered alerts were not duplicated.'})
+  }
   if(action==='assign_client_manager'){
     if(user.role!=='admin')return fail('Administrations must authorize Client Sunshine assignments',403)
     const clientId=normalized(body.clientId,50),managerId=normalized(body.managerId,50)
