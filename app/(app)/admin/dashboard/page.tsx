@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import { WeaveDashboardWorld } from '@/components/world/weave-dashboard-world'
 import { AdminWorkplace } from '@/components/admin/admin-workplace'
+import {NativeDepartmentRail} from '@/components/weave/native-department-rail'
 
 export default function AdministrationWorld(){
   const {user,isInitialized,isLoading}=useAuth()
@@ -23,6 +24,7 @@ export default function AdministrationWorld(){
       <WeaveDashboardWorld role="admin" userName={user?.name}/>
     </div>
   ) : (
-    <AdminWorkplace userName={user?.name} onOpenDistricts={()=>setOriginalWorld(true)}/>
+    <><AdminWorkplace userName={user?.name} onOpenDistricts={()=>setOriginalWorld(true)}/>
+      <NativeDepartmentRail department="administrations"/></>
   )
 }
