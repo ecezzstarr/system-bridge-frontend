@@ -3,6 +3,8 @@ import { ensureFlameSchema } from '@/lib/flame-schema'
 import LegacyBridgePage from '@/components/legacy-bridge-page'
 import ChatGptBridgeArrival from '@/components/bridge/chatgpt-bridge-arrival'
 import BridgerBridgeRadianceArrival from '@/components/bridge/bridger-bridge-radiance-arrival'
+import { getBridgerBridgeExpression } from '@/lib/bridger-expression'
+import { getVerifiedDoorOpportunity } from '@/lib/unbuilt-door'
 
 export const dynamic = 'force-dynamic'
 
@@ -10,7 +12,7 @@ export default async function BridgePage({
   params,searchParams,
 }: {
   params: Promise<{ code: string }>
-  searchParams?: Promise<{chat?:string}>
+  searchParams?: Promise<{chat?:string;need?:string}>
 }) {
   const { code } = await params
   const query=await searchParams
@@ -32,10 +34,24 @@ export default async function BridgePage({
 
     if (bridgerBridge) {
       if(query?.chat==='1') return <LegacyBridgePage/>
+      // The Bridge itself is the primary outreach destination; verified need
+      // and personal specialization are expressions inside that same Bridge.
+      const [profile,opportunity]=await Promise.all([
+        getBridgerBridgeExpression(code).catch(()=>null),
+        query?.need ? getVerifiedDoorOpportunity(query.need).catch(()=>null) : Promise.resolve(null),
+      ])
       return <BridgerBridgeRadianceArrival
         code={code}
         bridgerName={String(bridgerBridge.bridger_name||'My Bridger')}
         welcomeMessage={bridgerBridge.custom_welcome_message||null}
+        expression={profile ? {
+          specialty:String(profile.specialty||'general'),
+          title:String(profile.public_title||''),
+          purpose:String(profile.purpose||''),
+          voice:String(profile.expression||''),
+          invitation:String(profile.invitation||''),
+        } : null}
+        opportunity={opportunity}
       />
     }
   } catch (error) {

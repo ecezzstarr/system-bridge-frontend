@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 
 const VALID_POSITIONS = ['bridger', 'mandate', 'lawyer', 'forensic', 'admin']
+const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 // GET: visitor's message history with one of the 4 company positions
 // for this bridge session.
@@ -10,8 +11,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const { searchParams } = new URL(request.url)
   const sessionId = searchParams.get('sessionId')
   const position = searchParams.get('position')
+  const visitorFingerprint=searchParams.get('visitorFingerprint')
 
-  if (!sessionId || !position || !VALID_POSITIONS.includes(position)) {
+  if (!sessionId || !UUID.test(sessionId) || !visitorFingerprint || !UUID.test(visitorFingerprint) || !position || !VALID_POSITIONS.includes(position)) {
     return NextResponse.json({ success: false, error: 'sessionId and a valid position are required' }, { status: 400 })
   }
 
@@ -21,7 +23,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const sessionCheck = await sql`
       SELECT s.id FROM bridge_sessions s
       JOIN bridge_ais b ON b.id = s.bridge_id
-      WHERE s.id = ${sessionId}::uuid AND b.bridge_code = ${code}
+      WHERE s.id = ${sessionId}::uuid AND b.bridge_code = ${code} AND s.visitor_fingerprint=${visitorFingerprint} AND s.visitor_fingerprint=${visitorFingerprint}
     `
     if (sessionCheck.length === 0) {
       return NextResponse.json({ success: false, error: 'Session not found' }, { status: 404 })
@@ -54,9 +56,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const { code } = await params
 
   try {
-    const { sessionId, position, content } = await request.json()
+    const { sessionId, position, content, visitorFingerprint } = await request.json()
 
-    if (!sessionId || !position || !VALID_POSITIONS.includes(position) || !content?.trim()) {
+    if (!sessionId || !UUID.test(sessionId) || !visitorFingerprint || !UUID.test(visitorFingerprint) ||
+      !position || !VALID_POSITIONS.includes(position) ||
+      typeof content!=='string' || !content.trim() || content.length>2500) {
       return NextResponse.json({ success: false, error: 'sessionId, a valid position, and content are required' }, { status: 400 })
     }
 

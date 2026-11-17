@@ -72,7 +72,7 @@ export async function GET(request:NextRequest){
     const ids=[...new Set(gate.members.map(m=>m.user_id))]
     const bridgers=[...new Set(gate.members.filter(m=>m.role==='bridger').map(m=>m.user_id))]
     const agents=[...new Set(gate.members.filter(m=>m.role==='agent').map(m=>m.user_id))]
-    const [directions,work,participation,prospects,food,folders]=await Promise.all([
+    const [directions,work,participation,prospects,contacted,conversations,food,folders]=await Promise.all([
       pool.query(`SELECT id,direction,next_action,created_at
         FROM weave_regional_gate_directions
         WHERE regional_manager_user_id=$1::uuid
@@ -92,6 +92,19 @@ export async function GET(request:NextRequest){
         `SELECT COUNT(*)::int AS count,MAX(purchased_at) AS last_at
           FROM market_prospect_packages WHERE purchased_by=ANY($1::uuid[])
             AND status='sold' AND purchased_at>=(NOW()-INTERVAL '24 hours')`,bridgers),
+      // A purchased number is supply; a Bridger-confirmed sent message and
+      // a real Bridge AI conversation are different participation signals.
+      readSignal(pool,'market_prospect_outreach',
+        `SELECT COUNT(*)::int AS count,MAX(sent_at) AS last_at
+         FROM market_prospect_outreach
+         WHERE bridger_id=ANY($1::uuid[])
+           AND status IN ('sent','opened','responded','converted')
+           AND sent_at IS NOT NULL AND sent_at>=NOW()-INTERVAL '24 hours'`,bridgers),
+      readSignal(pool,'bridge_sessions',
+        `SELECT COUNT(*)::int AS count,MAX(s.created_at) AS last_at
+         FROM bridge_sessions s JOIN bridge_ais b ON b.id=s.bridge_id
+         WHERE b.bridger_id=ANY($1::uuid[])
+           AND s.created_at>=NOW()-INTERVAL '24 hours'`,bridgers),
       readSignal(pool,'carrier_food_orders',
         `SELECT COUNT(*)::int AS count,MAX(fulfilled_at) AS last_at
           FROM carrier_food_orders WHERE agent_id=ANY($1::uuid[])
@@ -107,6 +120,8 @@ export async function GET(request:NextRequest){
       {id:'participation',department:'Company of Time',title:'Team members participating today',...participation},
       {id:'completed_work',department:'Regional Work',title:'Verified assignments completed',...work},
       {id:'hope',department:'Hope · Bridgers',title:'Prospect packages purchased',...prospects},
+      {id:'hope_contacts',department:'Hope · Bridgers',title:'Bridger-confirmed message sends',...contacted},
+      {id:'hope_bridges',department:'Hope · Bridgers',title:'Bridge AI conversations started',...conversations},
       {id:'stability',department:'Stability · Agents',title:'Paid food orders fulfilled',...food},
       {id:'dream_lovely',department:'Dream Lovely',title:'Confirmed Client File Folder crossings',...folders}
     ]

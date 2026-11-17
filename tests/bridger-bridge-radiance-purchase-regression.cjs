@@ -25,7 +25,8 @@ assert(bridgePage.includes("AND b.status='active'"),'Inactive Bridge AI paths ca
 assert(bridgePage.includes("JOIN users u ON u.id=b.bridger_id"),'The crossing verifies real Bridger ownership')
 assert(arrival.includes('<BridgeRadianceWorld'),'Actual Bridge Radiance renderer opens')
 assert(arrival.includes('<FileFolderPurchase bridgeCode={code}/>'),'Native Bridger crossing includes Client File Folder purchase')
-assert(arrival.includes('Talk with Bridge AI'),'Prospect can still chat with their Bridger')
+assert(arrival.includes('Enter my Weave conversation')&&arrival.includes('chatHref'),
+  'Prospect can still enter the Bridger-owned Bridge AI conversation')
 assert(purchase.includes('FROM bridge_ais b'),'Purchase validates a native Bridger Bridge AI')
 assert(purchase.includes('directBridgerId=String(bridgerPath.bridger_id)'),'Native purchase has database-backed Bridger identity')
 assert(purchase.includes('${directBridgerId || movementBridgerId}::uuid'),'Bridger attribution is recorded on the purchase')

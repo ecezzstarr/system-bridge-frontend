@@ -126,6 +126,12 @@ jobs:
           node tests/pro-file-folder-textured-world-regression.cjs
           node tests/pro-file-folder-building-plan-parts-speed-bay-regression.cjs
 
+      - name: Hope PHE continuity, personal Bridge expression and commercial integrity
+        run: |
+          node tests/unbuilt-door-bridger-sales.cjs
+          node tests/bridger-personal-weave-expression.cjs
+          node tests/hope-phe-alignment.cjs
+
       - name: Bridger outreach and Agent daily work integrity
         run: |
           node tests/bridger-agent-daily-work-integrity.cjs
