@@ -74,6 +74,7 @@ jobs:
           node tests/regional-hope-outreach-regression.cjs
           node tests/regional-manager-work-support-integrity.cjs
           node tests/sunshine-mechanized-wealth-regression.cjs
+          node tests/sunshine-credit-contract-regression.cjs
           node tests/regional-system-switch-gate-regression.cjs
           node tests/burning-river-company-time-continuity.cjs
 
