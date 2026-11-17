@@ -236,7 +236,7 @@ export async function POST(request:NextRequest){
           JSON.stringify({commerce_type:'sunshine_advance',advance_id:id,role:'funder'})])
       await tx.query(`INSERT INTO ledger_entries(user_id,entry_type,amount,currency,description,
         balance_before,balance_after,metadata)
-        VALUES($1::uuid,'earning',$2,'Flame Coin','Sunshine repayable credit (not earnings)',$3,$4,$5::jsonb)`,
+        VALUES($1::uuid,'transfer',$2,'Flame Coin','Sunshine repayable credit (not earnings)',$3,$4,$5::jsonb)`,
         [item.user_id,advance,Number(borrower.balance_trx),Number(borrower.balance_trx)+advance,
           JSON.stringify({commerce_type:'sunshine_advance',advance_id:id,role:'borrower',repayable:true})])
       await tx.query(`UPDATE weave_sunshine_support_advances
@@ -308,7 +308,7 @@ export async function POST(request:NextRequest){
         if(amount===0)continue
         await tx.query(`INSERT INTO ledger_entries(user_id,entry_type,amount,currency,description,
           balance_before,balance_after,metadata) VALUES($1::uuid,$2,$3,'Flame Coin',$4,$5,$6,$7::jsonb)`,
-          [who,kind==='borrower_repayment'?'debit':'earning',amount,description,
+          [who,kind==='company_revenue'?'earning':'transfer',amount,description,
           before,before+(kind==='borrower_repayment'?-amount:amount),
           JSON.stringify({commerce_type:'sunshine_support_settlement',advance_id:id,kind})])
       }
