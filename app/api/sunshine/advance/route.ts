@@ -5,7 +5,7 @@ import {getTrxPaymentNgnRate} from '@/lib/trx-payment'
 import {ensureSunshineSchema} from '@/lib/sunshine-continuity'
 import {
   ensureSunshineFinanceSchema,calculateSunshineSupport,
-  SUNSHINE_CREDIT_RELEASE_ENABLED
+  SUNSHINE_CREDIT_RELEASE_ENABLED,SUNSHINE_PURCHASE_KINDS
 } from '@/lib/sunshine-finance'
 import {ensureRegionalOperationsSchema,regionalTeam} from '@/lib/regional-manager-operations'
 import {notifySunshineMovement} from '@/lib/sunshine-movement-notifications'
@@ -52,7 +52,8 @@ async function memberCase(id:string){
 }
 function shape(r:Record<string,any>){
   return {id:r.id,status:r.status,interestPeriod:r.interest_period,
-    bankProduct:r.bank_product,expectedNetInterestNgn:Number(r.expected_net_interest_ngn),
+    bankProduct:r.bank_product,purchaseKind:r.purchase_kind,purchaseDetail:r.purchase_detail,
+    expectedNetInterestNgn:Number(r.expected_net_interest_ngn),
     rateNgnPerSwitch:Number(r.rate_ngn_per_switch),
     bankInterestSwitch:Number(r.bank_interest_switch),
     advanceSwitch:Number(r.maximum_advance_switch),
@@ -134,6 +135,11 @@ export async function POST(request:NextRequest){
     const period=normalized(body.interestPeriod,20)
     const reference=normalized(body.evidenceReference,160)
     const requestId=normalized(body.requestId,50)
+    const purchaseKind=normalized(body.purchaseKind,36)
+    const purchaseDetail=normalized(body.purchaseDetail,180)
+    if(!SUNSHINE_PURCHASE_KINDS.includes(purchaseKind as typeof SUNSHINE_PURCHASE_KINDS[number])||
+       purchaseDetail.length<4||purchaseDetail.length>160)
+      return fail('Choose the Weave product and describe the purchase you need supported',422)
     if(!uuid.test(requestId)||!['daily','monthly'].includes(period)||
       !Number.isFinite(interest)||interest<=0||interest>maxNgn||
       Math.abs(Math.round(interest*100)-interest*100)>0.0001||
@@ -147,13 +153,13 @@ export async function POST(request:NextRequest){
     const created=await db.query(`INSERT INTO weave_sunshine_support_advances
       (request_id,user_id,manager_id,bank_product,interest_period,expected_net_interest_ngn,
        rate_ngn_per_switch,bank_interest_switch,maximum_advance_switch,company_fee_switch,
-       repayment_switch,evidence_reference)
-      VALUES($1::uuid,$2::uuid,$3::uuid,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+       repayment_switch,evidence_reference,purchase_kind,purchase_detail)
+      VALUES($1::uuid,$2::uuid,$3::uuid,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
       ON CONFLICT(request_id) DO NOTHING RETURNING *`,
       [requestId,user.id,managerId,plan.bank_product,period,interest,
        quote.rateNgnPerSystemSwitch,quote.bankInterestSwitch,
        quote.maximumAdvanceSwitch,quote.companyInterestShareSwitch,
-       quote.repaymentSwitch,reference])
+       quote.repaymentSwitch,reference,purchaseKind,purchaseDetail])
     if(!created.rows.length){
       const existing=await db.query('SELECT * FROM weave_sunshine_support_advances WHERE request_id=$1::uuid AND user_id=$2::uuid',[requestId,user.id])
       if(!existing.rows.length)return fail('Request ID already belongs to a different user',409)
