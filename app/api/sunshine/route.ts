@@ -3,7 +3,10 @@ import {getAuthUser} from '@/lib/auth-api'
 import {getPool,sql} from '@/lib/db'
 import {getActiveLegionEmployment} from '@/lib/legion-employment'
 import {ensureRegionalOperationsSchema,regionalTeam,type RegionalTeamMember} from '@/lib/regional-manager-operations'
-import {ensureSunshineSchema,SUNSHINE_PRODUCTS,SUNSHINE_OBSTACLES,validSunshineCapital} from '@/lib/sunshine-continuity'
+import {ensureSunshineSchema,SUNSHINE_PRODUCTS,SUNSHINE_OBSTACLES,validSunshineCapital,SUNSHINE_ENROLLMENT_TARGET_SS} from '@/lib/sunshine-continuity'
+import {ensureSunshineFinanceSchema} from '@/lib/sunshine-finance'
+import {getTrxPaymentNgnRate} from '@/lib/trx-payment'
+import {ngnToFlameCoin} from '@/lib/flame-coin'
 
 export const dynamic='force-dynamic'
 const headers={'Cache-Control':'private, no-store','Vary':'Authorization'}
@@ -25,6 +28,13 @@ async function managerTeam(user:{id:string;role:string}):Promise<RegionalTeamMem
 }
 
 async function assignedManager(user:{id:string;role:string}){
+  if(user.role==='client'){
+    await ensureSunshineFinanceSchema()
+    const a=await getPool().query(`SELECT a.manager_id FROM weave_sunshine_manager_assignments a
+      JOIN weave_regional_manager_appointments r ON r.user_id=a.manager_id AND r.status='active'
+      WHERE a.user_id=$1::uuid AND a.active=true LIMIT 1`,[user.id])
+    return a.rows[0]?.manager_id||null
+  }
   if(!['agent','bridger'].includes(user.role))return null
   await ensureRegionalOperationsSchema()
   const memberships=await regionalTeam(null,user.id)
@@ -56,10 +66,18 @@ export async function GET(request:NextRequest){
   if(!user)return json({error:'Authentication required'},401)
   try{
     await ensureSunshineSchema()
+    await ensureSunshineFinanceSchema()
     if(request.nextUrl.searchParams.get('view')==='team'){
       const team=await managerTeam(user)
       if(!team)return json({error:'Active ordinary Regional Manager appointment required'},403)
-      const unique=[...new Set(team.map(member=>member.user_id))]
+      const clients=await getPool().query(`SELECT a.user_id,u.name FROM weave_sunshine_manager_assignments a
+        JOIN users u ON u.id=a.user_id AND u.role='client' AND u.is_active=true
+        WHERE a.manager_id=$1::uuid AND a.active=true`,[user.id])
+      const teamMembers=[...team,...clients.rows.map(c=>({
+        manager_id:user.id,user_id:String(c.user_id),name:String(c.name),role:'client',
+        position:'Client · Sunshine',level:'direct' as const,lead_user_id:null
+      }))]
+      const unique=[...new Set(teamMembers.map(member=>member.user_id))]
       if(!unique.length)return json({success:true,team:[],withdrawalTarget:2})
       const records=await getPool().query(`SELECT p.user_id,p.needs_help,p.obstacle_kind,
         COALESCE(w.withdrawal_count,0)::int AS withdrawal_count
@@ -68,7 +86,7 @@ export async function GET(request:NextRequest){
           ON w.user_id=p.user_id AND w.month_key=${monthExpr}
         WHERE p.manager_visibility=true AND p.user_id=ANY($1::uuid[])`,[unique])
       const byUser=new Map(records.rows.map(row=>[String(row.user_id),row]))
-      return json({success:true,withdrawalTarget:2,team:team.filter(person=>byUser.has(person.user_id)).map(person=>{
+      return json({success:true,withdrawalTarget:2,team:teamMembers.filter(person=>byUser.has(person.user_id)).map(person=>{
         const record=byUser.get(person.user_id)
         return {userId:person.user_id,name:person.name,position:person.position,
           withdrawalCount:Number(record.withdrawal_count),
@@ -76,7 +94,7 @@ export async function GET(request:NextRequest){
       })})
     }
     const [planResult,withdrawalResult,livingResult,managerId]=await Promise.all([
-      getPool().query(`SELECT declared_capital_ngn,bank_product,manager_visibility,
+      getPool().query(`SELECT declared_capital_ngn,declared_capital_trx,capital_basis,bank_product,manager_visibility,
         needs_help,obstacle_kind,created_at FROM weave_sunshine_savings_plans
         WHERE user_id=$1::uuid`,[user.id]),
       getPool().query(`SELECT withdrawal_count FROM weave_sunshine_monthly_withdrawals
@@ -89,7 +107,14 @@ export async function GET(request:NextRequest){
     const plan=planResult.rows[0]||null
     // Declared capital is returned only to its owner, never to Regional Manager views.
     const living=livingResult.rows[0]
+    const currencyQuote=plan&&plan.capital_basis==='NGN'?await getTrxPaymentNgnRate():null
+    const capitalProgressSwitch=plan?(plan.capital_basis==='TRX'
+      ?Number(plan.declared_capital_trx)
+      :currencyQuote?.source==='live'
+        ?ngnToFlameCoin(Number(plan.declared_capital_ngn),currencyQuote.rateNgnPerTrx):null):null
     return json({success:true,managerId,withdrawalTarget:2,
+      savingsGoalSwitch:SUNSHINE_ENROLLMENT_TARGET_SS,capitalProgressSwitch,
+      capitalProgressRateSource:currencyQuote?.source||null,
       withdrawalCount:Number(withdrawalResult.rows[0]?.withdrawal_count||0),
       monthlyLivingMoney:living?{
         netInterestCreditedNgn:Number(living.net_interest_credited_ngn),
@@ -97,6 +122,8 @@ export async function GET(request:NextRequest){
       }:null,
       plan:plan?{
         declaredCapitalNgn:Number(plan.declared_capital_ngn),
+        declaredCapitalTrx:Number(plan.declared_capital_trx||0),
+        capitalBasis:plan.capital_basis||'NGN',
         bankProduct:plan.bank_product,managerVisibility:plan.manager_visibility,
         needsHelp:plan.needs_help,obstacleKind:plan.obstacle_kind,
         createdAt:plan.created_at
@@ -116,22 +143,27 @@ export async function POST(request:NextRequest){
     const action=String(body.action||'')
     const db=getPool()
     if(action==='enroll'){
-      const capital=validSunshineCapital(body.capitalNgn)
+      const basis=user.role==='client'?'TRX':'NGN'
+      const capital=validSunshineCapital(basis==='TRX'?(body.capitalTrx??body.capital):(body.capitalNgn??body.capital),basis)
       const product=String(body.bankProduct||'')
       if(capital===null||!SUNSHINE_PRODUCTS.includes(product as typeof SUNSHINE_PRODUCTS[number]))
-        return json({error:'Provide a self-declared balance of at least ₦1,000,000 and a supported savings product'},422)
+        return json({error:'Choose a bank product and record current savings, including zero when just starting'},422)
       if(body.acknowledgeBankOwnership!==true)
         return json({error:'Confirm that you control your external savings account, not WEAVE'},422)
       const managerId=await assignedManager(user)
       const visibility=body.managerVisibility===true && Boolean(managerId)
       await db.query(`INSERT INTO weave_sunshine_savings_plans
-        (user_id,declared_capital_ngn,bank_product,manager_visibility)
-        VALUES($1::uuid,$2,$3,$4)
+        (user_id,declared_capital_ngn,declared_capital_trx,capital_basis,bank_product,manager_visibility)
+        VALUES($1::uuid,$2,$3,$4,$5,$6)
         ON CONFLICT(user_id) DO UPDATE SET
           declared_capital_ngn=EXCLUDED.declared_capital_ngn,
+          declared_capital_trx=EXCLUDED.declared_capital_trx,
+          capital_basis=EXCLUDED.capital_basis,
           bank_product=EXCLUDED.bank_product,manager_visibility=EXCLUDED.manager_visibility,
-          updated_at=NOW()`,[user.id,capital,product,visibility])
-      return json({success:true,managerSupportEnabled:visibility,managerAssigned:Boolean(managerId)})
+          updated_at=NOW()`,[user.id,basis==='NGN'?capital:0,basis==='TRX'?capital:0,basis,product,visibility])
+      return json({success:true,managerSupportEnabled:visibility,managerAssigned:Boolean(managerId),
+        savingsGoalSwitch:SUNSHINE_ENROLLMENT_TARGET_SS,applicationFeeSwitch:0,
+        notice:'Savings stay in your bank; no System Switch is paid for Sunshine enrollment.'})
     }
     if(action==='record_living_money'){
       const interest=Number(body.netInterestCreditedNgn)
