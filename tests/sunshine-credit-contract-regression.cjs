@@ -19,10 +19,10 @@ const finance=read(names[0]),schema=read(names[1]),advance=read(names[2]),
   sunshine=read(names[3]),desk=read(names[4]),page=read(names[5])
 const transpiled=ts.transpileModule(finance,{compilerOptions:{target:ts.ScriptTarget.ES2020,
  module:ts.ModuleKind.CommonJS}}).outputText
-const module={exports:{}}
-vm.runInNewContext(transpiled,{module,exports:module.exports,process:{env:{}},
+const targetModule={exports:{}}
+vm.runInNewContext(transpiled,{module:targetModule,exports:targetModule.exports,process:{env:{}},
  console,require:()=>({SUNSHINE_ENROLLMENT_TARGET_SS:1000000})},{filename:'sunshine-finance.ts'})
-const calc=module.exports.calculateSunshineSupport
+const calc=targetModule.exports.calculateSunshineSupport
 const example=calc(60000,400)
 assert.equal(example.bankInterestSwitch,150)
 assert.equal(example.maximumAdvanceSwitch,105)
