@@ -65,18 +65,26 @@ export async function GET(request:NextRequest){
           needsHelp:record.needs_help===true,obstacleKind:record.obstacle_kind||null}
       })})
     }
-    const [planResult,withdrawalResult,managerId]=await Promise.all([
+    const [planResult,withdrawalResult,livingResult,managerId]=await Promise.all([
       getPool().query(`SELECT declared_capital_ngn,bank_product,manager_visibility,
         needs_help,obstacle_kind,created_at FROM weave_sunshine_savings_plans
         WHERE user_id=$1::uuid`,[user.id]),
       getPool().query(`SELECT withdrawal_count FROM weave_sunshine_monthly_withdrawals
         WHERE user_id=$1::uuid AND month_key=${monthExpr}`,[user.id]),
+      getPool().query(`SELECT net_interest_credited_ngn,spent_from_interest_ngn
+        FROM weave_sunshine_monthly_living_money WHERE user_id=$1::uuid
+        AND month_key=${monthExpr}`,[user.id]),
       assignedManager(user)
     ])
     const plan=planResult.rows[0]||null
     // Declared capital is returned only to its owner, never to Regional Manager views.
+    const living=livingResult.rows[0]
     return json({success:true,managerId,withdrawalTarget:2,
       withdrawalCount:Number(withdrawalResult.rows[0]?.withdrawal_count||0),
+      monthlyLivingMoney:living?{
+        netInterestCreditedNgn:Number(living.net_interest_credited_ngn),
+        spentFromInterestNgn:Number(living.spent_from_interest_ngn)
+      }:null,
       plan:plan?{
         declaredCapitalNgn:Number(plan.declared_capital_ngn),
         bankProduct:plan.bank_product,managerVisibility:plan.manager_visibility,
@@ -114,6 +122,26 @@ export async function POST(request:NextRequest){
           bank_product=EXCLUDED.bank_product,manager_visibility=EXCLUDED.manager_visibility,
           updated_at=NOW()`,[user.id,capital,product,visibility])
       return json({success:true,managerSupportEnabled:visibility,managerAssigned:Boolean(managerId)})
+    }
+    if(action==='record_living_money'){
+      const interest=Number(body.netInterestCreditedNgn)
+      const spent=Number(body.spentFromInterestNgn)
+      if(!Number.isFinite(interest)||!Number.isFinite(spent)||
+         interest<0||spent<0||spent>interest||
+         interest>999_999_999_999||Math.abs(Math.round(interest*100)-interest*100)>0.00001||
+         Math.abs(Math.round(spent*100)-spent*100)>0.00001)
+        return json({error:'Enter nonnegative net credited interest and spending no greater than the interest'},422)
+      const record=await db.query(`INSERT INTO weave_sunshine_monthly_living_money
+        (user_id,month_key,net_interest_credited_ngn,spent_from_interest_ngn)
+        SELECT $1::uuid,${monthExpr},$2,$3
+        WHERE EXISTS(SELECT 1 FROM weave_sunshine_savings_plans WHERE user_id=$1::uuid)
+        ON CONFLICT(user_id,month_key) DO UPDATE SET
+          net_interest_credited_ngn=EXCLUDED.net_interest_credited_ngn,
+          spent_from_interest_ngn=EXCLUDED.spent_from_interest_ngn,
+          updated_at=NOW()
+        RETURNING user_id`,[user.id,interest,spent])
+      if(!record.rows.length)return json({error:'Start Sunshine before recording living money'},409)
+      return json({success:true,capitalRetainedNgn:interest-spent})
     }
     if(action==='withdrawal'||action==='correct_withdrawal'){
       const requestId=String(body.requestId||'')
