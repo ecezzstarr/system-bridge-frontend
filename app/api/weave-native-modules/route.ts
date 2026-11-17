@@ -2,7 +2,7 @@ import {NextRequest,NextResponse} from 'next/server'
 import {getAuthUser} from '@/lib/auth-api'
 import {validNativeDepartment} from '@/lib/weave-native-blueprint'
 import {
- getNativePublished,getNativeProgress,listNativePublished,setNativeStep,
+ getNativePublished,getNativeProgress,listNativePublished,setNativeStep,submitNativeIntake,
 } from '@/lib/weave-native-registry'
 export const runtime='nodejs'
 export const dynamic='force-dynamic'
@@ -38,6 +38,19 @@ export async function POST(request:NextRequest){
  if(Number(request.headers.get('content-length')||0)>2500)
   return NextResponse.json({error:'Action exceeds limit'},{status:413,headers:noStore})
  const body=await request.json().catch(()=>null)
+ if(body?.action==='submit_intake'&&typeof body.releaseId==='string'&&
+  typeof body.formId==='string'&&typeof body.answers==='object'){
+  try{
+   const submission=await submitNativeIntake({
+    releaseId:body.releaseId,userId:user.id,role:user.role,
+    formId:body.formId,answers:body.answers,
+   })
+   return NextResponse.json({success:true,submission},{status:201,headers:noStore})
+  }catch(error){
+   return NextResponse.json({error:error instanceof Error?error.message:'Intake refused'},
+    {status:409,headers:noStore})
+  }
+ }
  if(!body||body.action!=='set_step'||typeof body.completed!=='boolean'||
   typeof body.stepId!=='string'||typeof body.releaseId!=='string')
   return NextResponse.json({error:'Valid work step required'},{status:400,headers:noStore})
