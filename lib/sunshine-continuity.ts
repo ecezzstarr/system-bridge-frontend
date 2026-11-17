@@ -1,4 +1,5 @@
 import {getPool} from '@/lib/db'
+import {SUNSHINE_BANK_PRODUCTS} from '@/lib/sunshine-bank-products'
 
 /**
  * Sunshine is a voluntary, self-reported personal savings continuity record.
@@ -8,13 +9,13 @@ import {getPool} from '@/lib/db'
  */
 export const SUNSHINE_MIN_START_NGN=1_000_000
 export const SUNSHINE_WITHDRAWAL_TARGET=2
-export const SUNSHINE_PRODUCTS=['ecobank_super_savers','other_savings'] as const
+export const SUNSHINE_PRODUCTS=SUNSHINE_BANK_PRODUCTS.map(product=>product.id)
 export const SUNSHINE_OBSTACLES=['work_tools','food_stock','customer_orders','transport','earnings_gap','other'] as const
 
 export function validSunshineCapital(value:unknown):number|null{
   const n=Number(value)
   return Number.isFinite(n)&&n>=SUNSHINE_MIN_START_NGN&&n<=999_999_999_999&&
-    Math.round(n*100)===n*100?n:null
+    Math.abs(Math.round(n*100)-n*100)<0.00001?n:null
 }
 export function sunshineMonthKey():string{
   // The authoritative month comes from PostgreSQL Africa/Lagos, not this clock.
@@ -26,7 +27,7 @@ export async function ensureSunshineSchema(){
   await db.query(`CREATE TABLE IF NOT EXISTS weave_sunshine_savings_plans(
     user_id uuid PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
     declared_capital_ngn numeric(18,2) NOT NULL CHECK(declared_capital_ngn>=1000000),
-    bank_product varchar(40) NOT NULL CHECK(bank_product IN ('ecobank_super_savers','other_savings')),
+    bank_product varchar(40) NOT NULL CHECK(bank_product IN (${SUNSHINE_PRODUCTS.map(id=>"'"+id+"'").join(',')})),
     manager_visibility boolean NOT NULL DEFAULT false,
     needs_help boolean NOT NULL DEFAULT false,
     obstacle_kind varchar(30) CHECK(obstacle_kind IN ('work_tools','food_stock','customer_orders','transport','earnings_gap','other')),
