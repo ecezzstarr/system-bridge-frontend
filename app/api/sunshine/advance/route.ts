@@ -8,7 +8,7 @@ import {
   SUNSHINE_CREDIT_RELEASE_ENABLED,SUNSHINE_PURCHASE_KINDS
 } from '@/lib/sunshine-finance'
 import {ensureRegionalOperationsSchema,regionalTeam} from '@/lib/regional-manager-operations'
-import {notifySunshineMovement} from '@/lib/sunshine-movement-notifications'
+import {notifySunshineMovement,type SunshineMovement} from '@/lib/sunshine-movement-notifications'
 import {getGuidanceStaffDepartments} from '@/lib/weave-guidance-departments'
 
 export const dynamic='force-dynamic'
@@ -115,7 +115,7 @@ export async function POST(request:NextRequest){
       FROM weave_sunshine_support_advances ORDER BY updated_at DESC LIMIT 20`)
     let events=0,failed=0
     for(const row of historical.rows){
-      const stages:Array<Parameters<typeof notifySunshineMovement>[0]>=['requested']
+      const stages:SunshineMovement[]=['requested']
       if(row.interest_verified_by)stages.push('interest_verified')
       if(row.terms_accepted_at)stages.push('terms_accepted')
       if(row.funded_at)stages.push('funded')
