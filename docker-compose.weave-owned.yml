@@ -1,0 +1,40 @@
+# Optional Weave-owned PostgreSQL layer.
+# Use ONLY on a separate provisioned candidate host with:
+#   docker compose --env-file selfhost/.env \
+#     -f docker-compose.selfhost.yml -f docker-compose.weave-owned.yml up -d
+#
+# This never replaces the existing Oracle-hosted application or Neon database.
+# Configure DATABASE_URL in selfhost/.env to point at weave-db AFTER loading
+# an isolated restore copy, and use the same password from the private file.
+services:
+  weave-db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: weave
+      POSTGRES_DB: weave
+      POSTGRES_PASSWORD_FILE: /run/secrets/weave_db_password
+    secrets:
+      - weave_db_password
+    volumes:
+      - weave-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U weave -d weave"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
+    networks:
+      - weave-net
+  weave:
+    depends_on:
+      weave-db:
+        condition: service_healthy
+
+secrets:
+  weave_db_password:
+    file: ./selfhost/sovereign-db-password.txt
+
+volumes:
+  weave-db-data:
+    name: weave-db-data
