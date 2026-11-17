@@ -846,6 +846,21 @@ function DepositApprovalSection({ user }: { user: any }) {
           ))}
         </div>
       )}
+      <section className="mt-8 rounded-xl border border-cyan-200/20 p-4" data-weave-client-tron-withdrawal-settlement>
+        <h3 className="text-lg font-bold text-white">Approved Client TRON withdrawals · Awaiting on-chain settlement</h3>
+        <p className="mt-2 text-xs leading-6 text-slate-300">Only after the approved amount has actually been transferred from Weave’s designated TRON company account to the Client destination, provide the transaction hash. Weave independently verifies the solidified transfer before marking completion. Do not treat approval as a completed payout.</p>
+        {approvedTronPayouts.length===0?<p className="mt-4 text-sm text-slate-400">No approved Client TRON payouts awaiting proof.</p>:
+          <div className="mt-4 space-y-3">{approvedTronPayouts.map(p=><article key={String(p.id)} className="rounded-lg border border-white/10 p-3">
+            <p className="text-sm font-semibold text-white">{p.client_name||'Client'} · {Number(p.amount_trx).toLocaleString()} TRX</p>
+            <p className="mt-1 break-all font-mono text-xs text-cyan-200">Destination: {p.wallet_address}</p>
+            <label className="mt-3 block text-xs text-slate-200">Actual outgoing TRON transaction ID
+              <input value={payoutHash[String(p.id)]||''} maxLength={64} onChange={e=>setPayoutHash(previous=>({...previous,[String(p.id)]:e.target.value}))}
+                className="mt-2 min-h-11 w-full rounded-lg border border-white/25 bg-slate-950 p-3 font-mono text-sm" placeholder="64-character on-chain transaction hash"/>
+            </label>
+            <Button size="sm" className="mt-3 min-h-11" disabled={Boolean(processingId)||!/^[0-9a-f]{64}$/i.test(payoutHash[String(p.id)]||'')}
+              onClick={()=>void confirmWeaveTronPayout(String(p.id))}>Verify outgoing transfer and mark settled</Button>
+          </article>)}</div>}
+      </section>
     </div>
   )
 }
@@ -965,6 +980,8 @@ function BridgeDepositApprovalSection({ user }: { user: any }) {
 
 function WithdrawalApprovalSection({ user }: { user: any }) {
   const [withdrawals, setWithdrawals] = useState<any[]>([])
+  const [approvedTronPayouts,setApprovedTronPayouts]=useState<any[]>([])
+  const [payoutHash,setPayoutHash]=useState<Record<string,string>>({})
   const [loading, setLoading] = useState(true)
   const [processingId, setProcessingId] = useState<string | null>(null)
 
@@ -980,6 +997,12 @@ function WithdrawalApprovalSection({ user }: { user: any }) {
       })
       const data = await response.json()
       setWithdrawals(Array.isArray(data) ? data : [])
+      const trx=await fetch('/api/admin/withdrawal/tron-settlement',{
+        headers:token?{Authorization:'Bearer '+token}:{},cache:'no-store'})
+      if(trx.ok){
+        const chain=await trx.json()
+        setApprovedTronPayouts(Array.isArray(chain.pendingPayout)?chain.pendingPayout:[])
+      }
     } catch (error) {
       console.error('Error fetching pending withdrawals:', error)
     } finally {
@@ -1001,7 +1024,7 @@ function WithdrawalApprovalSection({ user }: { user: any }) {
       })
       const data = await response.json()
       if (data.success) {
-        toast.success(data.message || `Withdrawal ${status === 'approved' ? 'released' : 'declined'}`)
+        toast.success(status==='approved'?'Withdrawal approved; complete the external transfer from Weave and verify the on-chain receipt.':data.message || 'Withdrawal declined')
       } else {
         toast.error(data.error || "That didn't update")
       }
@@ -1014,9 +1037,30 @@ function WithdrawalApprovalSection({ user }: { user: any }) {
     }
   }
 
+  const confirmWeaveTronPayout=async(id:string)=>{
+    const txHash=String(payoutHash[id]||'').trim()
+    if(!/^[0-9a-f]{64}$/i.test(txHash)){toast.error('Enter the actual 64-character TRON transaction hash');return}
+    if(!window.confirm('Confirm the outgoing payment was sent from Weave’s official TRON wallet. The server will verify solidified on-chain transfer, recipient and full amount.'))return
+    setProcessingId(id)
+    try{
+      const token=localStorage.getItem('ssb_auth_token')
+      const r=await fetch('/api/admin/withdrawal/tron-settlement',{
+        method:'POST',headers:{'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})},
+        body:JSON.stringify({withdrawalId:id,txHash,confirmCompanyPayout:true})
+      })
+      const body=await r.json()
+      if(!r.ok)throw new Error(body.error||'Payout not verified')
+      toast.success('Outgoing TRX verified on-chain; Client withdrawal settled.')
+      setPayoutHash(previous=>({...previous,[id]:''}))
+      await fetchPendingWithdrawals()
+    }catch(error){toast.error(error instanceof Error?error.message:'Payout verification failed')}
+    finally{setProcessingId(null)}
+  }
+
   return (
     <div className="p-4">
       <h3 className="font-bold text-white mb-4">Pending Withdrawals</h3>
+      <p className="mb-4 text-xs leading-6 text-amber-200">Approving reserves and records the Client's payout. It does not broadcast TRX. Only a later independently verified transfer from the designated Weave account marks the withdrawal completed.</p>
 
       {loading ? (
         <p className="text-slate-500 text-center py-8 text-xs">Loading withdrawals...</p>
