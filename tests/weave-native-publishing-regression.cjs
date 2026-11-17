@@ -62,6 +62,21 @@ assert.throws(()=>protocol.validateNativeBlueprint({...valid,blocks:[{
 const inert='<script>fetch("/api/admin")</script>'
 const safe=protocol.validateNativeBlueprint({...valid,description:inert})
 assert.equal(safe.description,inert)
+const feature=protocol.defaultWeaveNativeBlueprint('stability','feature')
+assert.equal(feature.blocks.some(b=>b.type==='intake'),true)
+assert.equal(protocol.validateNativeBlueprint(feature).kind,'feature')
+const intake=feature.blocks.find(b=>b.type==='intake')
+assert.throws(()=>protocol.validateNativeBlueprint({...feature,kind:'page'}),/Intake forms require/)
+assert.throws(()=>protocol.validateNativeBlueprint({...feature,
+ blocks:feature.blocks.map(b=>b.type==='intake'?{...b,fields:[{id:'one',label:'Only',kind:'choice',required:true,options:['only']}]}:b)
+}),/choice field needs/)
+assert.throws(()=>protocol.validateNativeBlueprint({...feature,
+ blocks:feature.blocks.map(b=>b.type==='intake'?{...b,fields:[{id:'one',label:'Only',kind:'file',required:true,options:[]}]}:b)
+}),/supported intake input/)
+assert.throws(()=>protocol.validateNativeBlueprint({...feature,
+ blocks:[intake,{...intake}]
+}),/unique stable key/)
+
 
 const registry=read('lib/weave-native-registry.ts')
 const admin=read('app/api/admin/native-foundry/route.ts')
@@ -80,6 +95,10 @@ assert.match(registry,/state='archived'/)
 assert.match(registry,/state='published'/)
 assert.match(registry,/validateNativeBlueprint\(release\.blueprint\)/)
 assert.match(registry,/INSERT INTO weave_native_work_progress/)
+assert.match(registry,/CREATE TABLE IF NOT EXISTS weave_native_form_submissions/)
+assert.match(registry,/FOR SHARE/)
+assert.match(registry,/submitNativeIntake/)
+assert.match(registry,/listNativeSubmissions/)
 assert.match(registry,/canReadNativeDepartment\(current\.department,input\.role\)/)
 assert.match(admin,/requireWorkshopAuthorization\(request\)/)
 assert.match(admin,/PUBLISH WEAVE MODULE/)
