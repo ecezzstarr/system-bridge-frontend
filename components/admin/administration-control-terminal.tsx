@@ -846,21 +846,7 @@ function DepositApprovalSection({ user }: { user: any }) {
           ))}
         </div>
       )}
-      <section className="mt-8 rounded-xl border border-cyan-200/20 p-4" data-weave-client-tron-withdrawal-settlement>
-        <h3 className="text-lg font-bold text-white">Approved Client TRON withdrawals · Awaiting on-chain settlement</h3>
-        <p className="mt-2 text-xs leading-6 text-slate-300">Only after the approved amount has actually been transferred from Weave’s designated TRON company account to the Client destination, provide the transaction hash. Weave independently verifies the solidified transfer before marking completion. Do not treat approval as a completed payout.</p>
-        {approvedTronPayouts.length===0?<p className="mt-4 text-sm text-slate-400">No approved Client TRON payouts awaiting proof.</p>:
-          <div className="mt-4 space-y-3">{approvedTronPayouts.map(p=><article key={String(p.id)} className="rounded-lg border border-white/10 p-3">
-            <p className="text-sm font-semibold text-white">{p.client_name||'Client'} · {Number(p.amount_trx).toLocaleString()} TRX</p>
-            <p className="mt-1 break-all font-mono text-xs text-cyan-200">Destination: {p.wallet_address}</p>
-            <label className="mt-3 block text-xs text-slate-200">Actual outgoing TRON transaction ID
-              <input value={payoutHash[String(p.id)]||''} maxLength={64} onChange={e=>setPayoutHash(previous=>({...previous,[String(p.id)]:e.target.value}))}
-                className="mt-2 min-h-11 w-full rounded-lg border border-white/25 bg-slate-950 p-3 font-mono text-sm" placeholder="64-character on-chain transaction hash"/>
-            </label>
-            <Button size="sm" className="mt-3 min-h-11" disabled={Boolean(processingId)||!/^[0-9a-f]{64}$/i.test(payoutHash[String(p.id)]||'')}
-              onClick={()=>void confirmWeaveTronPayout(String(p.id))}>Verify outgoing transfer and mark settled</Button>
-          </article>)}</div>}
-      </section>
+
     </div>
   )
 }
@@ -1117,6 +1103,21 @@ function WithdrawalApprovalSection({ user }: { user: any }) {
           ))}
         </div>
       )}
+      <section className="mt-8 rounded-xl border border-cyan-200/20 p-4" data-weave-client-tron-withdrawal-settlement>
+        <h3 className="text-lg font-bold text-white">Approved Client TRON withdrawals · Awaiting on-chain settlement</h3>
+        <p className="mt-2 text-xs leading-6 text-slate-300">Only after the approved amount has actually been transferred from Weave’s designated TRON company account to the Client destination, provide the transaction hash. Weave independently verifies the solidified transfer before marking completion. Do not treat approval as a completed payout.</p>
+        {approvedTronPayouts.length===0?<p className="mt-4 text-sm text-slate-400">No approved Client TRON payouts awaiting proof.</p>:
+          <div className="mt-4 space-y-3">{approvedTronPayouts.map(p=><article key={String(p.id)} className="rounded-lg border border-white/10 p-3">
+            <p className="text-sm font-semibold text-white">{p.client_name||'Client'} · {Number(p.amount_trx).toLocaleString()} TRX</p>
+            <p className="mt-1 break-all font-mono text-xs text-cyan-200">Destination: {p.wallet_address}</p>
+            <label className="mt-3 block text-xs text-slate-200">Actual outgoing TRON transaction ID
+              <input value={payoutHash[String(p.id)]||''} maxLength={64} onChange={e=>setPayoutHash(previous=>({...previous,[String(p.id)]:e.target.value}))}
+                className="mt-2 min-h-11 w-full rounded-lg border border-white/25 bg-slate-950 p-3 font-mono text-sm" placeholder="64-character on-chain transaction hash"/>
+            </label>
+            <Button size="sm" className="mt-3 min-h-11" disabled={Boolean(processingId)||!/^[0-9a-f]{64}$/i.test(payoutHash[String(p.id)]||'')}
+              onClick={()=>void confirmWeaveTronPayout(String(p.id))}>Verify outgoing transfer and mark settled</Button>
+          </article>)}</div>}
+      </section>
     </div>
   )
 }
