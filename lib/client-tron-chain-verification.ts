@@ -1,6 +1,17 @@
 import {createHash,timingSafeEqual} from 'node:crypto'
 import {WORLD_RULES} from '@/lib/world/constants'
-import {normalizeTronTxHash,normalizeTronAmount} from '@/lib/client-trx-deposits'
+function normalizeTronTxHash(value:unknown){
+ const hash=String(value||'').trim().toLowerCase()
+ if(!/^[0-9a-f]{64}$/.test(hash))throw new Error('Invalid TRON transaction ID')
+ return hash
+}
+function normalizeTronAmount(value:unknown){
+ const amount=Number(value)
+ if(!Number.isFinite(amount)||amount<=0||amount>1_000_000_000||
+   Math.abs(Math.round(amount*1e6)-amount*1e6)>1e-5)
+   throw new Error('Invalid native TRX amount')
+ return amount
+}
 
 // Only native TRX transfers on TRON mainnet count. A transaction hash,
 // an explorer screenshot or an exchange withdrawal order is not proof.
