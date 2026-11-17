@@ -2,7 +2,7 @@ import {NextRequest,NextResponse} from 'next/server'
 import {requireWorkshopAuthorization} from '@/lib/workshop-auth'
 import {validNativeDepartment} from '@/lib/weave-native-blueprint'
 import {
- draftNativeModule,listNativeReleases,publishNativeModule,prepareNativeRollback,
+ draftNativeModule,listNativeReleases,publishNativeModule,prepareNativeRollback,unpublishNativeModule,
 } from '@/lib/weave-native-registry'
 
 export const runtime='nodejs'
@@ -49,6 +49,17 @@ export async function POST(request:NextRequest){
     expectedPublishedId:typeof body.expectedPublishedId==='string'?body.expectedPublishedId:null,
    })
    return NextResponse.json({success:true,published},{headers:noStore})
+  }
+  if(body.action==='unpublish'){
+   if(body.confirmation!=='UNPUBLISH WEAVE MODULE')
+    return NextResponse.json({error:'Type UNPUBLISH WEAVE MODULE'},{status:400,headers:noStore})
+   if(!validNativeDepartment(body.department))
+    return NextResponse.json({error:'Choose a valid department'},{status:400,headers:noStore})
+   const unpublished=await unpublishNativeModule({
+    department:body.department,slug:String(body.slug||''),
+    actorId,expectedPublishedId:String(body.expectedPublishedId||''),
+   })
+   return NextResponse.json({success:true,unpublished},{headers:noStore})
   }
   if(body.action==='prepare_rollback'){
    const release=await prepareNativeRollback(Number(body.version),actorId)
