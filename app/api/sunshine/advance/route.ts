@@ -141,13 +141,20 @@ export async function POST(request:NextRequest){
       JOIN weave_sunshine_savings_plans p ON p.user_id=u.id
       WHERE u.id=$1::uuid AND u.role='client' AND u.is_active=true`,[clientId])
     if(!valid.rows.length)return fail('Client needs an active Sunshine plan before assignment',409)
-    await db.query(`INSERT INTO weave_sunshine_manager_assignments(user_id,manager_id,assigned_by)
+    const assignment=await db.query(`INSERT INTO weave_sunshine_manager_assignments(user_id,manager_id,assigned_by)
       VALUES($1::uuid,$2::uuid,$3::uuid) ON CONFLICT(user_id) DO UPDATE
       SET manager_id=EXCLUDED.manager_id,assigned_by=EXCLUDED.assigned_by,
-        active=true,updated_at=now()`,[clientId,managerId,user.id])
-    await sendNotice(clientId,'Sunshine · regional support assigned',
-      'An authorized Regional Manager is available to assist your Sunshine work; your personal savings remain your own.')
-    return reply({success:true,managerId})
+        active=true,updated_at=now()
+      WHERE weave_sunshine_manager_assignments.manager_id IS DISTINCT FROM EXCLUDED.manager_id
+         OR weave_sunshine_manager_assignments.active=false
+      RETURNING user_id`,[clientId,managerId,user.id])
+    if(assignment.rows.length){
+      await sendNotice(clientId,'Sunshine · regional support assigned',
+        'An authorized Regional Manager is available to assist your Sunshine work; your personal savings remain your own.')
+      await sendNotice(managerId,'Sunshine · Client added to your regional work',
+        'Administrations assigned a Sunshine Client to your region. Review support needs without requesting bank access.')
+    }
+    return reply({success:true,managerId,alreadyAssigned:!assignment.rows.length})
   }
   if(action==='request'){
     if(!['agent','bridger','client'].includes(user.role))return fail('Weave participant required',403)
