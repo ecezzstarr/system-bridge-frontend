@@ -209,6 +209,7 @@ export default function CodeWorkshopPage(){
    <nav className="flex flex-wrap items-center gap-4 text-xs font-semibold text-sky-200">
     <Link href="/admin/control-center" className="underline">Administrations Control Center</Link>
     <Link href="/admin/release-workshop" className="underline">GitHub merge & Oracle release</Link>
+    <Link href="/admin/native-foundry" className="underline">WEAVE Native Formation · Publish without rebuild</Link>
     <Link href="/admin/deployment-records" className="underline">Sovereign + Flame release records</Link>
     <Link href="/policies" className="underline">Company operating policies</Link>
    </nav>
