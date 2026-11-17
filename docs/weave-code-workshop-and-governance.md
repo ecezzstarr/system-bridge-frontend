@@ -134,6 +134,9 @@ The Company Code Workshop now opens with an interactive Formation Foundry.
    app/weave-labs or components/weave-labs. The workshop refuses to overwrite
    an existing file, and still enforces existing SHA checks and audits.
 6. Modify the TSX as needed, SAVE DRAFT, open independent review and verify CI.
+7. On another day or device, use **Continue your drafts** to reopen one of your
+   personally owned GitHub branches. Only that administrator's recorded drafts
+   can be listed. The exact current branch file is still loaded from GitHub.
 
 The initial compiler is **deterministic**, not a general-purpose AI developer:
 the cadence is safely embedded as inert content in a known starter template.
