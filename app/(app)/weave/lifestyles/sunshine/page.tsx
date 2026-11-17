@@ -38,6 +38,7 @@ export default function SunshineWorkshop(){
   const [busy,setBusy]=useState(false)
   const [error,setError]=useState('')
   const [notice,setNotice]=useState('')
+  const [posterAvailable,setPosterAvailable]=useState(true)
   const fetchMine=useCallback(async()=>{
     if(!token)return
     const res=await fetch('/api/sunshine',{headers:{Authorization:'Bearer '+token},cache:'no-store'})
@@ -105,6 +106,21 @@ export default function SunshineWorkshop(){
     monthlySurplusSwitch>0?Math.max(0,Math.ceil(Math.max(0,targetSwitch-progressSwitch)/monthlySurplusSwitch)):null
   const supportLink='/weave/lifestyles/support'+(mine?.managerId?'?managerId='+encodeURIComponent(mine.managerId):'')
   return <main className="weave-operating-environment mx-auto min-h-screen max-w-6xl space-y-6 px-3 py-6 text-white sm:px-6" data-sunshine-workshop="mechanized-wealth">
+    <section className="overflow-hidden rounded-2xl border border-amber-300/35 bg-gradient-to-b from-[#071a35] via-[#102b48] to-[#0b162e] p-3 shadow-2xl shadow-amber-950/20 sm:p-6" data-sunshine-approved-poster>
+      {posterAvailable
+        ? <a href="/images/sunshine-mechanized-wealth-approved.jpg" target="_blank" rel="noopener noreferrer" aria-label="Open the full-size approved Sunshine Mechanized Wealth advertisement">
+            <img src="/images/sunshine-mechanized-wealth-approved.jpg"
+              width={1404} height={1536} loading="eager" decoding="async"
+              onError={()=>setPosterAvailable(false)}
+              alt="WEAVE Sunshine Mechanized Wealth advertisement: keep personal bank savings, access eligible support up to 70% of bank interest for Weave product purchases, repay upon verified bank interest credit with a 10% interest-based service fee, and contact your Regional Manager."
+              className="mx-auto h-auto w-full max-w-[840px] rounded-xl object-contain"/>
+          </a>
+        : <div className="mx-auto max-w-3xl space-y-3 rounded-xl border border-amber-200/20 bg-slate-950/50 p-6 text-center" role="status">
+            <p className="text-lg font-black tracking-wider text-amber-200">SUNSHINE · MECHANIZED WEALTH</p>
+            <p className="text-sm leading-7 text-slate-200">Need a Weave product but short of immediate funds? Eligible interest-backed support can assist without withdrawing savings from your bank. The approved promotional image is not yet available on this deployment.</p>
+          </div>}
+      <p className="mx-auto mt-3 max-w-[840px] text-center text-xs leading-6 text-amber-100/90">The 70% limit and 10% Weave fee are calculated against verified bank interest—not the savings principal. Support is subject to eligibility and independent approval; funding remains disabled until authorized.</p>
+    </section>
     <header className="rounded-2xl border border-amber-200/30 bg-gradient-to-br from-[#283225] via-[#132630] to-[#0c1621] p-6">
       <Link className="text-sm text-cyan-200" href="/weave/lifestyles">← Weave Lifestyle</Link>
       <p className="mt-5 text-xs font-bold uppercase tracking-[.23em] text-amber-200">Sunshine · Mechanized Wealth</p>
