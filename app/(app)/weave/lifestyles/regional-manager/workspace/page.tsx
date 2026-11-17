@@ -32,6 +32,11 @@ export default function RegionalDailyWorkspace(){
   const [error,setError]=useState('')
   const [message,setMessage]=useState('')
   const [activePanel,setActivePanel]=useState<RegionalPanel>('overview')
+  useEffect(()=>{
+    if(activePanel==='overview')return
+    const frame=requestAnimationFrame(()=>document.getElementById('regional-panel-'+activePanel)?.scrollIntoView({behavior:'smooth',block:'start'}))
+    return ()=>cancelAnimationFrame(frame)
+  },[activePanel])
   const [target,setTarget]=useState('')
   const [title,setTitle]=useState('')
   const [instructions,setInstructions]=useState('')
@@ -110,13 +115,15 @@ export default function RegionalDailyWorkspace(){
       {error&&<p role="alert" className="border border-rose-400/30 p-3 text-sm text-rose-200">{error}</p>}
       {message&&<p role="status" className="border border-cyan-300/25 p-3 text-sm text-cyan-200">{message}</p>}
     </header>
+    {isManager&&error&&<p role="alert" className="rounded-xl border border-rose-300/40 bg-rose-950/80 p-3 text-sm text-rose-100">{error}</p>}
+    {isManager&&message&&<p role="status" className="rounded-xl border border-cyan-200/40 bg-slate-950/80 p-3 text-sm text-cyan-100">{message}</p>}
     {isManager&&<RegionalManagerCommandCenter team={data.team} tasks={data.tasks} summary={data.summary}
       todayCheckins={data.summary?.todayCheckins??0} missingCheckins={missingCheckins.length}
       supportCases={data.supportAvailable?waitingSupport.length:null} supportAvailable={data.supportAvailable}
       metrics={data.metrics} selected={activePanel} onSelect={setActivePanel} onRefresh={()=>void load()}/>}
-    {(!isManager||activePanel==='gate')&&<RegionalSystemSwitchGate />}
+    {(!isManager||activePanel==='gate')&&<div id="regional-panel-gate"><RegionalSystemSwitchGate /></div>}
     {isManager&&<>
-      <section data-regional-manager-daily-cycle="verify-direct-delegate-support-record" className={activePanel==='guide'?'rounded-2xl border border-amber-200/25 bg-gradient-to-br from-[#152531] to-[#0b1722] p-5 sm:p-6':'hidden'}>
+      <section id="regional-panel-guide" data-regional-manager-daily-cycle="verify-direct-delegate-support-record" className={activePanel==='guide'?'rounded-2xl border border-amber-200/25 bg-gradient-to-br from-[#152531] to-[#0b1722] p-5 sm:p-6':'hidden'}>
         <h2 className="text-2xl font-bold">Regional Manager · A complete working day</h2>
         <p className="mt-2 text-sm leading-6 text-slate-200">One active region, many real company careers. Your duty is to keep verified leads, their assistants, Bridgers and Agents working with clear instructions, support and records. You do not take over a lead's assistants or approve unverified company payments.</p>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -128,13 +135,13 @@ export default function RegionalDailyWorkspace(){
           ].map(([name,detail])=><div key={name} className="rounded-xl border border-white/15 bg-white/[.035] p-4"><h3 className="text-base font-bold text-amber-100">{name}</h3><p className="mt-2 text-sm leading-6 text-slate-200">{detail}</p></div>)}
         </div>
       </section>
-      <div className={activePanel==='reports'?'grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-7':'hidden'}>
+      <div id="regional-panel-reports" className={activePanel==='reports'?'grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-7':'hidden'}>
         {cards.map(c=><section key={c.name} className="rounded-xl border border-white/15 bg-slate-950/75 p-3">
           <p className="text-xs text-slate-400">{c.name}</p>
           <p className="mt-2 text-2xl font-bold tabular-nums">{format(c.value)}</p>
         </section>)}
       </div>
-      <section data-regional-manager-live-attention="today" className={activePanel==='attention'?'rounded-xl border border-cyan-300/25 bg-[#0f1c28] p-5':'hidden'}>
+      <section id="regional-panel-attention" data-regional-manager-live-attention="today" className={activePanel==='attention'?'rounded-xl border border-cyan-300/25 bg-[#0f1c28] p-5':'hidden'}>
         <div className="flex flex-wrap items-center justify-between gap-3"><h2 className="text-xl font-bold">Daily attention queue</h2><button type="button" onClick={()=>void load()} className="min-h-11 rounded-lg border border-cyan-200/30 px-4 py-2 text-sm font-semibold text-cyan-100">Refresh verified records</button></div>
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
           <div className="rounded-xl border border-white/10 p-4"><p className="text-sm text-slate-300">Assigned staff without a check-in today</p><p className="mt-2 text-3xl font-bold">{missingCheckins.length}</p></div>
@@ -161,7 +168,7 @@ export default function RegionalDailyWorkspace(){
           })}
         </div>
       </section>
-      <section className={activePanel==='team'?'space-y-3 rounded-xl border border-white/15 bg-slate-950/70 p-4':'hidden'}>
+      <section id="regional-panel-team" className={activePanel==='team'?'space-y-3 rounded-xl border border-white/15 bg-slate-950/70 p-4':'hidden'}>
         <h2 className="text-xl font-black">Staff and departmental hierarchy</h2>
         <p className="text-sm text-slate-300">Direct Bridgers and approved leads receive regional assignments. Lead managers remain responsible for their own assistants.</p>
         {!data.team.length?<p className="text-sm text-amber-200">No staff have been assigned by Administrations. Ask Administrations to allocate the approved team.</p>:
@@ -175,7 +182,7 @@ export default function RegionalDailyWorkspace(){
           </article>)}
         </div>}
       </section>
-      <section data-regional-work-support-queue="private" className={activePanel==='support'?'rounded-xl border border-amber-300/20 bg-slate-950/70 p-5':'hidden'}>
+      <section id="regional-panel-support" data-regional-work-support-queue="private" className={activePanel==='support'?'rounded-xl border border-amber-300/20 bg-slate-950/70 p-5':'hidden'}>
         <h2 className="text-xl font-bold">Manager Work Support · Approved advances and conversations</h2>
         <p className="mt-2 text-sm leading-6 text-slate-300">One-to-one obstacles belong to their real employee. Guidance is a conversation; financial support requires a written offer, worker acceptance and confirmed funding. System Switch credit is restricted to approved Prospect Market purchases, with recovery from eligible verified platform earnings. Food stock funding in NGN requires separate Administrations verification and repayment evidence.</p>
         {data.supportAvailable?<div className="mt-4 grid gap-3 sm:grid-cols-3">
@@ -194,7 +201,7 @@ export default function RegionalDailyWorkspace(){
         {data.supportAvailable&&waitingSupport.length===0&&<p className="mt-4 text-sm text-slate-400">No pending support cases for the currently assigned team. Staff may still submit a new request.</p>}
         <Link href="/weave/lifestyles/support" className="mt-4 inline-flex min-h-11 items-center rounded-lg bg-amber-200 px-5 py-3 text-sm font-bold text-[#172633]">Open private Support Workshop</Link>
       </section>
-      <section className={activePanel==='tasks'?'space-y-3 rounded-xl border border-white/15 bg-slate-950/70 p-4':'hidden'}>
+      <section id="regional-panel-tasks" className={activePanel==='tasks'?'space-y-3 rounded-xl border border-white/15 bg-slate-950/70 p-4':'hidden'}>
         <h2 className="text-xl font-black">Assign today's work</h2>
         <label className="block text-xs text-slate-300">Approved direct report
           <select value={target} onChange={e=>setTarget(e.target.value)} className="mt-2 w-full rounded-lg border border-white/20 bg-slate-950 p-3 text-white">
