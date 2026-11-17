@@ -56,7 +56,7 @@ function shape(r:Record<string,any>){
     advanceSwitch:Number(r.maximum_advance_switch),
     companyFeeSwitch:Number(r.company_fee_switch),
     totalRepaymentSwitch:Number(r.repayment_switch),
-    managerId:r.manager_id,userId:r.user_id,
+    evidenceReference:r.evidence_reference,managerId:r.manager_id,userId:r.user_id,
     termsAccepted:Boolean(r.terms_accepted_at),
     fundedAt:r.funded_at||null,repaidAt:r.repaid_at||null,
     reason:r.rejection_reason||null,createdAt:r.created_at}
