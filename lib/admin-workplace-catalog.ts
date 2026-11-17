@@ -327,6 +327,11 @@ export const ADMIN_SPACES:readonly AdminSpace[]=[
     "description": "Inspect infrastructure, Divine Shield and server authority."
   },
   {
+    "title": "Weave-Owned Server Formation",
+    "href": "/admin/sovereign-server",
+    "description": "Inspect measured candidate-server readiness while Oracle remains the verified live host. No automatic DNS or data migration."
+  },
+  {
     "title": "Native Formation Workshop · No-Code Publisher",
     "href": "/admin/native-foundry",
     "description": "Form department pages, glass-tech worlds, features and personal systems in WEAVE. Publish and roll back runtime versions without rebuilding the server."
