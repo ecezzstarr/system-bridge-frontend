@@ -213,7 +213,7 @@ export default function SunshineWorkshop(){
               <input value={rate} onChange={e=>setRate(e.target.value)} type="number" min="0" max="100" step="0.01" placeholder="Enter rate from your bank"
                 className="mt-2 min-h-11 w-full rounded-lg border border-white/25 bg-slate-950 p-3"/>
             </label>
-            {validRate&&<p className="mt-3 text-sm">Approximate monthly gross interest at a constant balance: <strong>{money(projected)}</strong>.</p>}
+            {validRate&&!isClient&&<p className="mt-3 text-sm">Approximate monthly gross interest at a constant balance: <strong>{money(projected)}</strong>.</p>}
             <p className="mt-2 text-xs text-slate-400">Illustration only, before withholding tax or charges. No interest rate or payout is promised by Weave.</p>
           </div>
         </div>
