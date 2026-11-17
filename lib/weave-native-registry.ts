@@ -261,6 +261,11 @@ export async function submitNativeIntake(input:{
   // for the same user even if several browser tabs submit concurrently.
   await client.query("SELECT pg_advisory_xact_lock(hashtext($1))",
    ['native-intake:'+input.releaseId+':'+input.userId])
+  // Lock the release against publication/withdrawal while recording work.
+  const stillLive=await client.query(
+   "SELECT state FROM weave_native_module_releases WHERE id=$1::uuid FOR SHARE",
+   [input.releaseId])
+  if(stillLive.rows[0]?.state!=='published')throw Error('This published intake has changed. Refresh before submitting.')
   const recent=await client.query(
    "SELECT id FROM weave_native_form_submissions "+
    "WHERE release_id=$1::uuid AND user_id=$2::uuid AND form_id=$3 "+
