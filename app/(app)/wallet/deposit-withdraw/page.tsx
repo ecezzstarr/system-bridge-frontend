@@ -4,13 +4,22 @@ import { useAuth } from '@/lib/auth-provider'
 import { Button } from '@/components/ui/button'
 import { ArrowRight, ArrowDownToLine, ArrowUpFromLine, Wallet, Copy, Check, ShieldCheck } from 'lucide-react'
 import Link from 'next/link'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+import {PaymentRegionSelector,type RegionResolution} from '@/components/payments/payment-region-selector'
+import {ClientTronFunding} from '@/components/payments/client-tron-funding'
+import type {WeavePaymentRail} from '@/lib/weave-payment-region'
 import { visiblePoll } from '@/lib/visible-poll'
 
 export default function WalletDepositWithdrawPage() {
   const { user } = useAuth()
   const isOpayRole = user?.role === 'admin' || user?.role === 'agent' || user?.role === 'bridger'
   const [activeTab, setActiveTab] = useState<'deposit' | 'withdraw'>('deposit')
+  const [fundingRail,setFundingRail]=useState<WeavePaymentRail|null>(null)
+  const [regionReady,setRegionReady]=useState(false)
+  const onRegionResolved=useCallback((next:RegionResolution)=>{
+    setFundingRail(next.rail)
+    setRegionReady(next.ready)
+  },[])
   const [amount, setAmount] = useState('')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
@@ -18,6 +27,7 @@ export default function WalletDepositWithdrawPage() {
   const [balanceError,setBalanceError]=useState('')
   const [balanceUpdatedAt,setBalanceUpdatedAt]=useState<string|null>(null)
   const [depositHistoryLoaded,setDepositHistoryLoaded]=useState(false)
+  const [withdrawalHistory,setWithdrawalHistory]=useState<Array<{id:string;status:string;amount_trx:number|string;wallet_address:string;tx_hash?:string|null;created_at:string}>>([])
   const [depositHistoryError,setDepositHistoryError]=useState('')
   const balanceLabel=balance===null?'—':balance.toLocaleString(undefined,{maximumFractionDigits:6})
   const [withdrawAddress, setWithdrawAddress] = useState('')
@@ -64,6 +74,7 @@ export default function WalletDepositWithdrawPage() {
     setDepositHistoryLoaded(false)
     void fetchBalance()
     if (user) {
+      if(user.role==='client')void fetchWithdrawalHistory()
       void fetchClientDeposits()
       if (isOpayRole) void fetchConversions()
     }
@@ -85,7 +96,7 @@ export default function WalletDepositWithdrawPage() {
   useEffect(() => {
     if (!user?.id) return
     return visiblePoll(async () => {
-      await Promise.allSettled([fetchBalance(), fetchClientDeposits(), ...(isOpayRole?[fetchConversions()]:[])])
+      await Promise.allSettled([fetchBalance(), fetchClientDeposits(),...(user.role==='client'?[fetchWithdrawalHistory()]:[]),...(isOpayRole?[fetchConversions()]:[])])
     }, 20000, false)
   }, [user?.id, isOpayRole])
 
@@ -121,6 +132,17 @@ export default function WalletDepositWithdrawPage() {
       console.error('Unable to refresh Client deposit history',error)
       setDepositHistoryError(error instanceof Error?error.message:'Deposit history unavailable')
     }
+  }
+
+  const fetchWithdrawalHistory=async()=>{
+    if(user?.role!=='client')return
+    const token=localStorage.getItem('ssb_auth_token')
+    try{
+      const r=await fetch('/api/wallet/withdraw',{cache:'no-store',headers:token?{Authorization:'Bearer '+token}:{}})
+      const body=await r.json()
+      if(!r.ok)throw new Error(body.error||'Withdrawal status unavailable')
+      setWithdrawalHistory(Array.isArray(body.withdrawals)?body.withdrawals:[])
+    }catch(error){console.error('[Client withdrawal stage]',error)}
   }
 
   const fetchBalance = async () => {
@@ -172,6 +194,10 @@ export default function WalletDepositWithdrawPage() {
   }
 
   const handleDeposit = async () => {
+    if(!regionReady||fundingRail!=='paystack_ngn'){
+      setMessage('Confirm your payment country. NGN checkout is enabled only on the supported Paystack route.')
+      return
+    }
     const ngnAmount = Number(amount)
     if (!Number.isFinite(ngnAmount) || ngnAmount < 1) {
       setMessage('Enter a valid NGN amount of at least ₦1')
@@ -244,7 +270,7 @@ export default function WalletDepositWithdrawPage() {
 
       const data = await response.json()
       if (data.success) {
-        setMessage(`Withdrawal of ${amount} System Switch initiated! Processing time: 1-24 hours`)
+        setMessage(`TRON withdrawal request for ${amount} System Switch recorded. This is not a completed transfer: Administrations must approve, execute the payout from Weave’s account and verify the solidified blockchain transaction.`)
         setAmount('')
         setWithdrawAddress('')
         fetchBalance()
@@ -394,7 +420,9 @@ export default function WalletDepositWithdrawPage() {
           {/* Deposit Tab */}
           {activeTab === 'deposit' && (
             <div className="space-y-6">
-              <div className="group relative">
+              <PaymentRegionSelector purpose="wallet_deposit" onResolved={onRegionResolved}/>
+              {user.role==='client'&&<ClientTronFunding onSubmitted={()=>{void fetchClientDeposits();void fetchBalance()}}/>}
+              {regionReady&&fundingRail==='paystack_ngn'&&<div className="group relative">
                 <div className="absolute -inset-0.5 bg-gradient-to-r from-green-500 to-emerald-500 rounded-2xl opacity-20 blur"></div>
                 <div className="relative bg-slate-900/80 backdrop-blur-xl border border-slate-700 rounded-2xl p-8">
                   <>
@@ -453,11 +481,16 @@ export default function WalletDepositWithdrawPage() {
                     Payment is verified by Paystack and Weave before System Switch is credited. Withdrawals remain on their existing method.
                   </p>
                 </div>
-              </div>
+              </div>}
+              {!regionReady&&<section data-weave-international-rail-hold className="rounded-2xl border border-amber-200/25 bg-slate-900/70 p-5 text-sm text-amber-100">
+                <h2 className="font-bold">Funding route not enabled</h2>
+                <p className="mt-2 leading-6">Select and confirm your country to see its supported currency. Nigerian NGN checkout is active through Paystack. International manual TRX funding from this generic checkout is unavailable. Clients can request verified native TRX funding through the dedicated Client panel if Administrations has enabled it; any on-chain credit requires independent Forensics confirmation.</p>
+                <p className="mt-2">Bybit, Bitget and Tron Wallet are supported as sender sources in the separately gated Client TRON process, not third-party merchant gateways. Flutterwave and direct OPay checkout are not yet connected here.</p>
+              </section>}
 
               {<section data-client-tron-deposits className="rounded-2xl border border-cyan-300/20 bg-slate-900/60 p-5 text-white">
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div><h3 className="text-lg font-black">My deposit records</h3><p className="mt-1 text-xs text-slate-400">Only confirmed Paystack payments credit System Switch. Pending checkouts and earlier TRX deposits appear with their actual status.</p></div>
+                  <div><h3 className="text-lg font-black">My deposit records</h3><p className="mt-1 text-xs text-slate-400">Confirmed Paystack deposits and independently verified Client TRX transfers credit System Switch. Pending submissions do not.</p></div>
                   <Button onClick={()=>{void fetchClientDeposits();void fetchBalance()}} variant="outline" size="sm">Refresh deposits</Button>
                 </div>
                 <div className="mt-4 space-y-2">
@@ -647,8 +680,18 @@ export default function WalletDepositWithdrawPage() {
                     </Button>
 
                     <p className="text-xs text-slate-500 text-center mt-4">
-                      Minimum withdrawal: 10 System Switch - Processing time: 1-24 hours
+                      Minimum withdrawal: 10 System Switch. Weave reviews the request and sends native TRX from its designated account. No external payout is complete until its on-chain transaction is verified.
                     </p>
+                    <section data-client-tron-withdrawal-status className="mt-6 rounded-xl border border-cyan-200/20 p-4">
+                      <h3 className="text-sm font-bold text-cyan-100">My TRON payout history</h3>
+                      <p className="mt-2 text-xs text-slate-300">Pending: awaiting review. Approved: internal authorization, not yet sent. Completed: company payout independently confirmed on-chain.</p>
+                      <button type="button" onClick={()=>void fetchWithdrawalHistory()} className="mt-2 min-h-10 rounded-lg border border-white/20 px-3 py-2 text-xs">Refresh status</button>
+                      <div className="mt-3 space-y-2">{withdrawalHistory.length===0?<p className="text-xs text-slate-400">No TRON withdrawal requests recorded.</p>:withdrawalHistory.map(item=><div key={String(item.id)} className="rounded-lg border border-white/10 p-3 text-xs">
+                        <p className="font-bold text-white">{Number(item.amount_trx).toLocaleString()} System Switch · {item.status==='completed'?'Paid · on-chain verified':item.status==='approved'?'Approved · awaiting blockchain settlement':item.status==='pending'?'Pending review':item.status==='rejected'?'Rejected':item.status}</p>
+                        <p className="mt-1 break-all text-slate-400">Destination: {item.wallet_address}</p>
+                        {item.tx_hash&&<a target="_blank" rel="noopener noreferrer" className="mt-1 block break-all text-cyan-200 underline" href={'https://tronscan.org/#/transaction/'+encodeURIComponent(item.tx_hash)}>Verified TRON payout: {item.tx_hash}</a>}
+                      </div>)}</div>
+                    </section>
                   </>
                 )}
               </div>

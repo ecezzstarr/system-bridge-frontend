@@ -76,6 +76,14 @@ jobs:
           node tests/regional-system-switch-gate-regression.cjs
           node tests/burning-river-company-time-continuity.cjs
 
+      - name: Country-aware NGN and TRX System Switch checkout
+        run: node tests/weave-country-currency-checkout.cjs
+
+      - name: Client TRON mainnet credit and Forensics proof
+        run: |
+          node tests/client-tron-verified-funding.cjs
+          node tests/client-deposit-world-regression.cjs
+
       - name: Agent Creative Studio fee and image regressions
         run: |
           node tests/agent-creative-studio-regression.cjs

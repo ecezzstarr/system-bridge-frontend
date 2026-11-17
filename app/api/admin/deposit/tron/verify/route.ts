@@ -18,6 +18,8 @@ export async function POST(request:NextRequest){
       decision:body.status,
       confirmation:String(body?.confirmation||''),
       verifiedAmountTrx:body?.verifiedAmountTrx,
+      attributionReference:body?.attributionReference,
+      forensicsAttributionConfirmed:body?.forensicsAttributionConfirmed===true,
     })
     // Notifications run after the committed wallet and deposit transaction.
     await notifyDepositDecision({

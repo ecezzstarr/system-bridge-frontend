@@ -97,8 +97,13 @@ assert(publicFileFolder.includes('submitFileFolderPurchase(request)'),'One sale 
 const entry=read('lib/department-entry-tickets.ts')
 assert(entry.includes('await notifyAdmins('),'Entry Ticket payment already alerts Administration')
 assert(read('app/api/deposit/paystack/route.ts').includes('notifyDepositSubmitted('),'Active Paystack deposit route retains deposit verification alerts')
-for(const path of ['app/api/deposit/opay/route.ts','app/api/deposit/tron/route.ts'])
-  assert(read(path).includes('status: 410'),path+' is retired and cannot create duplicate deposit alerts')
+assert(read('app/api/deposit/opay/route.ts').includes('status: 410'),
+  'Retired OPay direct deposit route must not produce duplicate payment alerts')
+const clientTron=read('app/api/deposit/tron/route.ts')
+assert(clientTron.includes('CLIENT_TRON_FUNDING_ENABLED')&&clientTron.includes('notifyDepositSubmitted'),
+  'New Client TRON submission creates only a pending Forensics alert after a gated recorded request')
+assert(clientTron.includes('if(!created.existing)'),
+  'An idempotent repeat of a pending TRON transaction cannot generate a duplicate company notification')
 const feed=read('app/api/admin/orders/route.ts')
 assert(feed.includes("user.role!=='admin'"),'The Admin order inbox must be private')
 assert(feed.includes("type LIKE 'order_%'"),'Only server-generated order alerts appear in Order inbox')

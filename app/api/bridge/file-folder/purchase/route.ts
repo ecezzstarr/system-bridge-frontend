@@ -115,6 +115,7 @@ export async function POST(request: NextRequest) {
       const rate = await getTrxPaymentNgnRate()
       rateNgnPerTrx = rate.rateNgnPerTrx
       rateSource = rate.source
+      if(rate.source!=='live') return NextResponse.json({error:'Live TRX/NGN quote is unavailable; Naira checkout is paused rather than using an estimated fallback rate.'},{status:503})
       const payableValue = fileFolderTier === 'plus' ? FILE_FOLDER_PRICING.plusFlameCoin : amountFlameCoin
       amountNgn = Math.round(payableValue * rateNgnPerTrx * 100) / 100
       if (!Number.isFinite(amountNgn) || amountNgn < 1 || rateNgnPerTrx <= 0) return NextResponse.json({ error: 'A valid live NGN quote is unavailable. Please try again later.' }, { status: 503 })

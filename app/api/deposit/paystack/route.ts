@@ -50,6 +50,7 @@ export async function POST(request: NextRequest) {
     }
     if (!user.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(user.email)) return NextResponse.json({error:'A valid email is required on your Weave account for Paystack checkout.'},{status:400})
     const {rateNgnPerTrx,source:rateSource}=await getTrxPaymentNgnRate()
+    if(rateSource!=='live')return NextResponse.json({error:'Live TRX/NGN price unavailable. Deposits paused rather than charging a fallback rate.'},{status:503})
     const flameCoin=ngnToFlameCoin(amountNgn,rateNgnPerTrx)
     if (!Number.isFinite(flameCoin)||flameCoin<=0) return NextResponse.json({error:'This amount cannot produce a valid System Switch credit.'},{status:400})
     const reference=createPaystackReference(user.role.toUpperCase())
