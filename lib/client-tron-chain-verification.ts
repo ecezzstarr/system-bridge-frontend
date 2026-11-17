@@ -84,3 +84,15 @@ export async function verifyClientNativeTrxDeposit(
   if(tx?.Error||!tx?.txID)throw new Error('TRX transfer has not been found in the solidified TRON mainnet chain')
   return validateSolidifiedTrxTransfer(tx,hash,expectedTrx,companyAddress)
 }
+
+/** Validates an actual company-funded outgoing TRX transfer after payout review.
+ * This does not broadcast a transaction or access a company private key.
+ */
+export async function verifyWeaveNativeTrxPayout(
+ txHash:string,amountTrx:number,recipientAddress:string
+):Promise<VerifiedNativeTrx>{
+ const proof=await verifyClientNativeTrxDeposit(txHash,amountTrx,recipientAddress)
+ if(proof.sourceHex!==tronAddressToHex(WORLD_RULES.COMPANY_TRX_WALLET))
+   throw new Error('Withdrawal did not originate from the registered Weave company TRON wallet')
+ return proof
+}
