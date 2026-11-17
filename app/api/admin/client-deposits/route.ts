@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { sql } from '@/lib/db'
+import {ensureClientTronSourceSchema} from '@/lib/client-trx-deposits'
 
 export async function GET(request: NextRequest) {
   const admin = await getAuthUser(request)
@@ -9,6 +10,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    await ensureClientTronSourceSchema()
     const deposits = await sql`
       SELECT
         d.id,
@@ -22,9 +24,13 @@ export async function GET(request: NextRequest) {
         d.updated_at,
         u.name AS client_name,
         u.email AS client_email,
-        u.file_number
+        u.file_number,
+        s.source AS funding_source,
+        CASE WHEN v.deposit_id IS NOT NULL THEN true ELSE false END AS independently_verified
       FROM deposits d
       JOIN users u ON u.id=d.user_id
+      LEFT JOIN weave_client_tron_deposit_sources s ON s.deposit_id=d.id
+      LEFT JOIN weave_client_tron_chain_verifications v ON v.deposit_id=d.id
       WHERE u.role='client'
         AND d.method='tron'
       ORDER BY
