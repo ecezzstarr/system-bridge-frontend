@@ -222,7 +222,8 @@ export async function POST(request:NextRequest){
         [[user.id,item.user_id]])
       const funder=wallets.rows.find(w=>String(w.user_id)===user.id)
       const borrower=wallets.rows.find(w=>String(w.user_id)===String(item.user_id))
-      if(!funder||!borrower||funder.id===borrower.id)throw new Error('Both distinct verified user wallets required')
+      if(!funder||!borrower||funder.id===borrower.id||wallets.rows.length!==2)
+        throw new Error('Exactly one primary wallet is required for each party')
       const pending=await tx.query(`SELECT COALESCE(SUM(amount_trx),0)::numeric AS reserved
         FROM withdrawal_requests WHERE user_id=$1::uuid AND status IN ('pending','approved')`,[user.id])
       if(Number(funder.balance_trx)-Number(pending.rows[0]?.reserved||0)<advance)
@@ -289,7 +290,8 @@ export async function POST(request:NextRequest){
         WHERE user_id=ANY($1::uuid[]) AND is_primary=true ORDER BY user_id FOR UPDATE`,[people])
       const find=(id:string)=>wallets.rows.find(w=>String(w.user_id)===id)
       const from=find(user.id),funder=find(managerId),treasury=find(treasuryId)
-      if(!from||!funder||!treasury)throw new Error('One or more required wallets missing')
+      if(!from||!funder||!treasury||wallets.rows.length!==3)
+        throw new Error('Exactly one primary wallet is required for borrower, funder and treasury')
       const principal=Number(locked.rows[0].maximum_advance_switch)
       const companyFee=Number(locked.rows[0].company_fee_switch)
       const due=Math.round((principal+companyFee)*1e6)/1e6
