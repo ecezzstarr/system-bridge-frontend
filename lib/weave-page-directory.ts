@@ -49,6 +49,7 @@ const entrances:readonly (readonly [string,string,string])[]=[
   ['/video-feed','Weave Video Feed','Explore published videos and the people, services and businesses behind them.'],
   ['/video-call/[id]','WEAVE Private Video Invitation','Accept a private invitation from a Bridger, grant camera and microphone permission, and speak securely face to face. No AI or charges are involved.'],
   ['/weave/file-folder/[fileNumber]','Client File Folder','Open the File Folder linked to this File Number through the access available to your position.'],
+  ['/weave/lifestyles/sunshine','Sunshine · Mechanized Wealth','Grow capital through verified company work, save externally, preserve bank ownership and ask your Regional Manager for help with obstacles.'],
   ['/weave/lifestyles/pro-regional-manager','Pro Regional Manager','Review the separate company appointment, Pro File Folder and business-plan requirements before applying.'],
   ['/weave/lifestyles/pro-regional-manager/activation','Pro Regional Manager Activation','Follow the approval, agreement and payment verification required to open your approved Pro workspace.'],
   ['/weave/lifestyles/pro-regional-manager/workspace','Pro Regional Manager Workspace','Direct your approved regional responsibilities and operate the business in your Pro File Folder.'],

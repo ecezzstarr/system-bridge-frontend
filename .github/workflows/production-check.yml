@@ -73,8 +73,16 @@ jobs:
           node tests/company-formation-four-departments.cjs
           node tests/regional-hope-outreach-regression.cjs
           node tests/regional-manager-work-support-integrity.cjs
+          node tests/sunshine-mechanized-wealth-regression.cjs
+          node tests/sunshine-credit-contract-regression.cjs
+          node tests/sunshine-notification-routing-regression.cjs
           node tests/regional-system-switch-gate-regression.cjs
           node tests/burning-river-company-time-continuity.cjs
+
+      - name: Sunshine PostgreSQL capital and credit contract
+        env:
+          WEAVE_SYSTEM_SWITCH_TEST_DATABASE_URL: postgres://weave_qa:weave_qa_only@127.0.0.1:5432/weave_switch_test
+        run: node tests/sunshine-postgres-contract.cjs
 
       - name: Agent Creative Studio fee and image regressions
         run: |
