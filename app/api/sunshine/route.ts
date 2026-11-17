@@ -115,6 +115,7 @@ export async function GET(request:NextRequest){
     return json({success:true,managerId,withdrawalTarget:2,
       savingsGoalSwitch:SUNSHINE_ENROLLMENT_TARGET_SS,capitalProgressSwitch,
       capitalProgressRateSource:currencyQuote?.source||null,
+      rateNgnPerSystemSwitch:currencyQuote?.source==='live'?currencyQuote.rateNgnPerTrx:null,
       withdrawalCount:Number(withdrawalResult.rows[0]?.withdrawal_count||0),
       monthlyLivingMoney:living?{
         netInterestCreditedNgn:Number(living.net_interest_credited_ngn),
