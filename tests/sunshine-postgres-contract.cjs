@@ -80,10 +80,26 @@ async function main(){
   assert.equal(row.rows[0].status,'requested')
   assert.equal(row.rows[0].purchase_kind,'weave_food')
   assert.equal(row.rows[0].purchase_detail,'Electrolyte carton')
+  // An annual-interest product may also request Sunshine support.
+  const annualBorrower=(await client.query("INSERT INTO users(id,role) VALUES(gen_random_uuid(),'client') RETURNING id")).rows[0].id
+  await client.query(`INSERT INTO weave_sunshine_savings_plans
+    (user_id,declared_capital_ngn,declared_capital_trx,capital_basis,bank_product)
+    VALUES($1::uuid,0,0,'TRX','ecobank_super_savers')`,[annualBorrower])
+  await client.query(`INSERT INTO weave_sunshine_support_advances
+    (request_id,user_id,manager_id,bank_product,interest_period,
+      expected_net_interest_ngn,rate_ngn_per_switch,bank_interest_switch,
+      maximum_advance_switch,company_fee_switch,repayment_switch,evidence_reference,
+      purchase_kind,purchase_detail)
+    VALUES(gen_random_uuid(),$1::uuid,$2::uuid,'ecobank_super_savers','annual',
+      60000,400,150,105,15,120,'ANNUAL-INTEREST-REF-2026-11',
+      'file_folder','Standard Client File Folder')`,[annualBorrower,manager])
+  const annual=(await client.query('SELECT interest_period,purchase_kind FROM weave_sunshine_support_advances WHERE user_id=$1::uuid',[annualBorrower])).rows[0]
+  assert.equal(annual.interest_period,'annual')
+  assert.equal(annual.purchase_kind,'file_folder')
   await client.query(`INSERT INTO weave_sunshine_monthly_living_money
     (user_id,month_key,net_interest_credited_ngn,spent_from_interest_ngn)
     VALUES($1::uuid,'2026-11',60000,12000)`,[borrower])
-  console.log('PASS: Sunshine PostgreSQL enrollment from zero, Client TRX basis, monthly interest records, staged 70/10 loan and single active advance')
+  console.log('PASS: Sunshine PostgreSQL enrollment from zero, Client TRX basis, monthly and annual interest records, staged 70/10 loan and single active advance')
  }finally{
   await client.query('ROLLBACK').catch(()=>{})
   await client.query('RESET search_path').catch(()=>{})
