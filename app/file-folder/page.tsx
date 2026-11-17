@@ -1,7 +1,9 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import {PaymentRegionSelector,type RegionResolution} from '@/components/payments/payment-region-selector'
+import type {WeaveCountryCode} from '@/lib/weave-payment-region'
 import {
   ArrowLeft,
   ArrowRight,
@@ -47,7 +49,14 @@ export default function PublicFileFolderPurchasePage() {
   const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
   const [reference, setReference] = useState('')
-  const [paymentMethod, setPaymentMethod] = useState<'paystack' | 'trx'>('paystack')
+  const [paymentMethod, setPaymentMethod] = useState<'paystack' | 'trx'>('trx')
+  const [paymentCountry,setPaymentCountry]=useState<WeaveCountryCode|null>(null)
+  const [paymentCountryReady,setPaymentCountryReady]=useState(false)
+  const resolvePaymentCountry=useCallback((region:RegionResolution)=>{
+    setPaymentCountry(region.country)
+    setPaymentCountryReady(region.ready)
+    if(region.ready)setPaymentMethod(region.rail==='paystack_ngn'?'paystack':'trx')
+  },[])
   const [wallet, setWallet] = useState('')
   const [walletLoading, setWalletLoading] = useState(true)
   const [copied, setCopied] = useState(false)
@@ -183,6 +192,10 @@ export default function PublicFileFolderPurchasePage() {
   }
 
   const submitPurchase = async () => {
+    if(!paymentCountryReady||!paymentCountry){setMessage('Confirm your country and a supported payment currency before checkout.');return}
+    if(paymentMethod==='paystack'&&paymentCountry!=='NG'){
+      setMessage('NGN Paystack is for the Nigerian checkout route. Use the supported TRX purchase route for this region.');return
+    }
     if (!validAmount || !name.trim() || !phone.trim() || purchase) return
     if (paymentMethod === 'trx' && !reference.trim()) return
     if (paymentMethod === 'paystack' && !email.trim()) return
@@ -258,7 +271,7 @@ export default function PublicFileFolderPurchasePage() {
             <div>
               <p className="text-[9px] font-black uppercase tracking-[.22em] text-orange-200">Public Client Crossing · File Folder</p>
               <h1 className="mt-3 max-w-4xl text-3xl font-black tracking-tight sm:text-5xl">Purchase your File Folder. Enter WEAVE as a Client.</h1>
-              <p className="mt-3 max-w-3xl text-sm leading-6 text-stone-400">Visitors do not need a Bridger link to become Clients. Choose a File Folder, pay securely in Naira through Paystack or keep using the existing TRX wallet method. Administrations verifies the payment and issues your File Number before the Client crossing opens.</p>
+              <p className="mt-3 max-w-3xl text-sm leading-6 text-stone-400">Visitors do not need a Bridger link to become Clients. Choose a File Folder and confirm your payment country. Nigerians see NGN via Paystack; other countries use the existing TRX purchase route until more local currency gateways are verified. Administrations verifies the payment and issues your File Number before the Client crossing opens.</p>
             </div>
             <div className="border-l border-white/10 pl-4">
               <p className="text-[8px] font-black uppercase tracking-[.18em] text-white/35">Current state</p>
@@ -302,9 +315,12 @@ export default function PublicFileFolderPurchasePage() {
 
               {tier === 'standard' && <label className="mt-4 block"><span className="text-[9px] font-bold uppercase tracking-[.12em] text-stone-500">Standard amount · {FILE_FOLDER_PRICING.standardMinimumFlameCoin.toLocaleString()} to {FILE_FOLDER_PRICING.standardMaximumFlameCoin.toLocaleString()}</span><input inputMode="decimal" type="number" min={FILE_FOLDER_PRICING.standardMinimumFlameCoin} max={FILE_FOLDER_PRICING.standardMaximumFlameCoin} value={standardAmount} onChange={e=>setStandardAmount(e.target.value)} disabled={Boolean(purchase)} className="mt-2 w-full rounded-xl border border-white/10 bg-black/25 px-4 py-3 text-sm outline-none" /></label>}
 
+              <div className="mt-5">
+                <PaymentRegionSelector purpose="file_folder" amountSwitch={Number.isFinite(amount)&&amount>0?amount:undefined} onResolved={resolvePaymentCountry} disabled={Boolean(purchase)}/>
+              </div>
               <div className="mt-5 grid grid-cols-2 gap-2" role="group" aria-label="Choose payment method">
-                <button type="button" disabled={Boolean(purchase)} onClick={() => setPaymentMethod('paystack')} className={`min-h-12 rounded-xl border px-3 py-2 text-xs font-black ${paymentMethod === 'paystack' ? 'border-emerald-200/50 bg-emerald-300/10 text-emerald-100' : 'border-white/10 text-slate-400'}`}>Paystack · Naira</button>
-                <button type="button" disabled={Boolean(purchase)} onClick={() => setPaymentMethod('trx')} className={`min-h-12 rounded-xl border px-3 py-2 text-xs font-black ${paymentMethod === 'trx' ? 'border-orange-200/50 bg-orange-300/10 text-orange-100' : 'border-white/10 text-slate-400'}`}>TRX wallet</button>
+                <button type="button" disabled={Boolean(purchase)||!paymentCountryReady||paymentCountry!=='NG'} onClick={() => setPaymentMethod('paystack')} className={`min-h-12 rounded-xl border px-3 py-2 text-xs font-black ${paymentMethod === 'paystack' ? 'border-emerald-200/50 bg-emerald-300/10 text-emerald-100' : 'border-white/10 text-slate-400'}`}>Paystack · Naira</button>
+                <button type="button" disabled={Boolean(purchase)||!paymentCountryReady} onClick={() => setPaymentMethod('trx')} className={`min-h-12 rounded-xl border px-3 py-2 text-xs font-black ${paymentMethod === 'trx' ? 'border-orange-200/50 bg-orange-300/10 text-orange-100' : 'border-white/10 text-slate-400'}`}>TRX wallet</button>
               </div>
 
               {paymentMethod === 'trx' ? <div className="mt-5 rounded-2xl border border-emerald-300/10 bg-emerald-300/[.035] p-4">
@@ -315,7 +331,7 @@ export default function PublicFileFolderPurchasePage() {
 
               {paymentMethod === 'trx' ? <label className="mt-5 block"><span className="text-[9px] font-bold uppercase tracking-[.12em] text-stone-500">TRX transaction hash</span><div className="mt-2 flex items-center gap-3 rounded-xl border border-white/10 bg-black/25 px-3"><FileKey2 className="h-4 w-4 text-orange-200" /><input value={reference} onChange={e=>setReference(e.target.value)} disabled={Boolean(purchase)} placeholder="Paste transaction hash after payment" className="w-full bg-transparent py-3 text-sm outline-none placeholder:text-white/20 disabled:opacity-50" /></div></label> : <div className="mt-5 rounded-2xl border border-cyan-200/15 bg-cyan-300/[.04] p-4"><p className="text-xs font-bold text-cyan-100">Paystack secure checkout</p><p className="mt-2 text-[10px] leading-5 text-slate-400">Your current File Folder value will be quoted in Naira using the configured payment rate. Payment verification and Administrations approval remain required.</p></div>}
 
-              {!purchase && <Button onClick={submitPurchase} disabled={busy || !validAmount || !name.trim() || !phone.trim() || (paymentMethod === 'trx' && (!wallet || !reference.trim())) || (paymentMethod === 'paystack' && !email.trim())} className="mt-5 h-12 w-full bg-white font-black text-[#090605] hover:bg-stone-100">{busy?<Loader2 className="mr-2 h-4 w-4 animate-spin"/>:<ArrowRight className="mr-2 h-4 w-4"/>}{busy ? (paymentMethod === 'paystack' ? 'Opening Paystack…' : 'Submitting purchase…') : paymentMethod === 'paystack' ? 'Continue to Paystack' : 'Submit File Folder purchase'}</Button>}
+              {!purchase && <Button onClick={submitPurchase} disabled={busy || !paymentCountryReady || !validAmount || !name.trim() || !phone.trim() || (paymentMethod === 'trx' && (!wallet || !reference.trim())) || (paymentMethod === 'paystack' && !email.trim())} className="mt-5 h-12 w-full bg-white font-black text-[#090605] hover:bg-stone-100">{busy?<Loader2 className="mr-2 h-4 w-4 animate-spin"/>:<ArrowRight className="mr-2 h-4 w-4"/>}{busy ? (paymentMethod === 'paystack' ? 'Opening Paystack…' : 'Submitting purchase…') : paymentMethod === 'paystack' ? 'Continue to Paystack' : 'Submit File Folder purchase'}</Button>}
 
               {message && <div className={`mt-5 rounded-2xl border p-4 text-xs leading-5 ${purchase?.status==='confirmed'?'border-emerald-300/20 bg-emerald-300/[.06] text-emerald-100':purchase?.status==='rejected'?'border-rose-300/20 bg-rose-300/[.05] text-rose-100':'border-amber-300/15 bg-amber-300/[.04] text-amber-100'}`}>{message}</div>}
 
