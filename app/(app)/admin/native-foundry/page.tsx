@@ -129,6 +129,18 @@ export default function NativeFoundryPage(){
   }catch(e){setError(e instanceof Error?e.message:'Publication failed')}
   finally{setBusy(false)}
  }
+ async function unpublish(){
+  if(confirm!=='UNPUBLISH WEAVE MODULE'||!current)return
+  setBusy(true);setError('');setNotice('')
+  try{
+   await send('unpublish',{department,slug:blueprint.slug,
+    expectedPublishedId:current.id,confirmation:confirm})
+   setSelectedId('');setConfirm('')
+   setNotice('Module withdrawn from the department. Its archived version remains restorable.')
+   await load(department,blueprint.slug)
+  }catch(e){setError(e instanceof Error?e.message:'Unable to withdraw module')}
+  finally{setBusy(false)}
+ }
  async function rollback(version:number){
   setBusy(true);setError('');setNotice('')
   try{
@@ -214,12 +226,17 @@ export default function NativeFoundryPage(){
       <p className="mt-2 text-xs leading-6 text-slate-300">A saved draft is immutable. Publishing replaces only the same department and address, with conflict checks. Other departments and existing features are unaffected.</p>
       <p className="mt-3 text-sm">Currently published: <strong>{current?'Version '+current.version:'None'}</strong></p>
       {selectedId&&<p className="mt-2 break-all text-xs text-cyan-200">Selected draft: {selectedId}</p>}
-      <label className={label+' mt-4'}>Type PUBLISH WEAVE MODULE<input value={confirm} className={field}
+      <label className={label+' mt-4'}>Type PUBLISH WEAVE MODULE or UNPUBLISH WEAVE MODULE<input value={confirm} className={field}
        onChange={e=>setConfirm(e.target.value)} placeholder="PUBLISH WEAVE MODULE"/></label>
       <button type="button" disabled={busy||!selectedId||confirm!=='PUBLISH WEAVE MODULE'}
        onClick={()=>void publish()} className="mt-4 inline-flex min-h-12 items-center gap-2 rounded-xl bg-[#efd7ae] px-5 font-bold text-[#1f3140] disabled:opacity-35">
        <Send size={16}/>Publish without server rebuild
       </button>
+      {current&&<button type="button" disabled={busy||confirm!=='UNPUBLISH WEAVE MODULE'}
+       onClick={()=>void unpublish()}
+       className="mt-3 ml-2 inline-flex min-h-12 items-center gap-2 rounded-xl border border-rose-300/35 px-4 text-sm font-semibold text-rose-100 disabled:opacity-35">
+       <Trash2 size={15}/>Withdraw current publication
+      </button>}
       {current&&<Link href={'/weave-modules/'+department+'/'+blueprint.slug}
        className="mt-4 block break-all text-sm text-cyan-200 underline">Open live department page</Link>}
      </section>
@@ -235,6 +252,10 @@ export default function NativeFoundryPage(){
         </div>
         <p className="mt-2 text-xs text-slate-300">{item.blueprint.title} · {item.blueprint.kind}</p>
         <div className="mt-3 flex flex-wrap gap-2">
+         {item.state==='published'&&<button type="button" className={classes} onClick={()=>{
+          setBlueprint(item.blueprint);setSelectedId('');setConfirm('')
+          setNotice('Published version loaded for editing. Save a new draft to update it.')
+         }}>Edit from live version</button>}
          {item.state==='draft'&&<button type="button" className={classes} onClick={()=>{
           setBlueprint(item.blueprint);setSelectedId(item.id);setConfirm('')
           setNotice('Draft selected. It is immutable; changes must be saved as a new draft.')
