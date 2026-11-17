@@ -35,7 +35,7 @@ async function ensureNativeRegistry(){
   await db.query("CREATE TABLE IF NOT EXISTS weave_native_module_events ("+
    "id uuid PRIMARY KEY DEFAULT gen_random_uuid(),actor_id uuid NOT NULL REFERENCES users(id),"+
    "release_id uuid NOT NULL REFERENCES weave_native_module_releases(id),"+
-   "event varchar(24) NOT NULL CHECK(event IN ('draft','publish','rollback_draft')),"+
+   "event varchar(24) NOT NULL CHECK(event IN ('draft','publish','rollback_draft','unpublish')),"+
    "created_at timestamptz NOT NULL DEFAULT now())")
   await db.query("CREATE TABLE IF NOT EXISTS weave_native_work_progress ("+
    "release_id uuid NOT NULL REFERENCES weave_native_module_releases(id),"+
@@ -135,6 +135,35 @@ export async function publishNativeModule(input:{
  }catch(error){await client.query('ROLLBACK').catch(()=>{});throw error}
  finally{client.release()}
 }
+/** Withdraw a live module while retaining every immutable version for restoration. */
+export async function unpublishNativeModule(input:{
+ department:NativeDepartment;slug:string;actorId:string;expectedPublishedId:string
+}){
+ target(input.department,input.slug)
+ await ensureNativeRegistry()
+ const client=await getPool().connect()
+ try{
+  await client.query('BEGIN')
+  await client.query("SELECT pg_advisory_xact_lock(hashtext($1))",
+   [input.department+':'+input.slug])
+  const current=await client.query(
+   "SELECT id FROM weave_native_module_releases "+
+   "WHERE department=$1 AND slug=$2 AND state='published' FOR UPDATE",
+   [input.department,input.slug])
+  if(!current.rows[0]||current.rows[0].id!==id(input.expectedPublishedId))
+   throw Error('Live module changed. Refresh before withdrawing.')
+  await client.query(
+   "UPDATE weave_native_module_releases SET state='archived' WHERE id=$1::uuid",
+   [input.expectedPublishedId])
+  await client.query(
+   "INSERT INTO weave_native_module_events(actor_id,release_id,event) "+
+   "VALUES($1::uuid,$2::uuid,'unpublish')",[id(input.actorId),input.expectedPublishedId])
+  await client.query('COMMIT')
+  return {department:input.department,slug:input.slug,state:'archived'}
+ }catch(error){await client.query('ROLLBACK').catch(()=>{});throw error}
+ finally{client.release()}
+}
+
 export async function prepareNativeRollback(version:number,actorId:string){
  if(!Number.isSafeInteger(version)||version<1)throw Error('Select an actual archived version')
  await ensureNativeRegistry()
