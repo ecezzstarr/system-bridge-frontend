@@ -1,7 +1,7 @@
 import 'server-only'
 import {getPool} from '@/lib/db'
 import {
- canReadNativeDepartment,validNativeDepartment,validateNativeBlueprint,
+ WEAVE_NATIVE_DEPARTMENTS,canReadNativeDepartment,validNativeDepartment,validateNativeBlueprint,
  type NativeDepartment,type WeaveNativeBlueprint,
 } from '@/lib/weave-native-blueprint'
 
@@ -190,7 +190,8 @@ export async function setNativeStep(input:{
   "SELECT department,blueprint FROM weave_native_module_releases "+
   "WHERE id=$1::uuid AND state='published' LIMIT 1",[id(input.releaseId)])
  const current=record.rows[0]
- if(!current||!canReadNativeDepartment(current.department,input.role))
+ if(!current||!canReadNativeDepartment(current.department,input.role)||
+  WEAVE_NATIVE_DEPARTMENTS[current.department as NativeDepartment].role!==input.role)
   throw Error('This department system is not available to your account')
  const blueprint:WeaveNativeBlueprint=validateNativeBlueprint(current.blueprint)
  if(blueprint.kind!=='system')throw Error('Only an operating system has work steps')
