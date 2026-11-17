@@ -6,6 +6,7 @@ import { ArrowRight, ArrowDownToLine, ArrowUpFromLine, Wallet, Copy, Check, Shie
 import Link from 'next/link'
 import { useState, useEffect, useCallback } from 'react'
 import {PaymentRegionSelector,type RegionResolution} from '@/components/payments/payment-region-selector'
+import {ClientTronFunding} from '@/components/payments/client-tron-funding'
 import type {WeavePaymentRail} from '@/lib/weave-payment-region'
 import { visiblePoll } from '@/lib/visible-poll'
 
@@ -407,6 +408,7 @@ export default function WalletDepositWithdrawPage() {
           {activeTab === 'deposit' && (
             <div className="space-y-6">
               <PaymentRegionSelector purpose="wallet_deposit" onResolved={onRegionResolved}/>
+              {user.role==='client'&&<ClientTronFunding onSubmitted={()=>{void fetchClientDeposits();void fetchBalance()}}/>}
               {regionReady&&fundingRail==='paystack_ngn'&&<div className="group relative">
                 <div className="absolute -inset-0.5 bg-gradient-to-r from-green-500 to-emerald-500 rounded-2xl opacity-20 blur"></div>
                 <div className="relative bg-slate-900/80 backdrop-blur-xl border border-slate-700 rounded-2xl p-8">
@@ -469,13 +471,13 @@ export default function WalletDepositWithdrawPage() {
               </div>}
               {!regionReady&&<section data-weave-international-rail-hold className="rounded-2xl border border-amber-200/25 bg-slate-900/70 p-5 text-sm text-amber-100">
                 <h2 className="font-bold">Funding route not enabled</h2>
-                <p className="mt-2 leading-6">Select and confirm your country to see its supported currency. Nigerian NGN checkout is active through Paystack. International manual TRX wallet funding is currently retired, so no deposit will be collected or System Switch credited using an unavailable route.</p>
-                <p className="mt-2">TRON, Bybit and other crypto wallets require a separately verified receiving and reconciliation workflow. Flutterwave and OPay direct channels are not yet connected to this wallet funding endpoint.</p>
+                <p className="mt-2 leading-6">Select and confirm your country to see its supported currency. Nigerian NGN checkout is active through Paystack. International manual TRX funding from this generic checkout is unavailable. Clients can request verified native TRX funding through the dedicated Client panel if Administrations has enabled it; any on-chain credit requires independent Forensics confirmation.</p>
+                <p className="mt-2">Bybit, Bitget and Tron Wallet are supported as sender sources in the separately gated Client TRON process, not third-party merchant gateways. Flutterwave and direct OPay checkout are not yet connected here.</p>
               </section>}
 
               {<section data-client-tron-deposits className="rounded-2xl border border-cyan-300/20 bg-slate-900/60 p-5 text-white">
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div><h3 className="text-lg font-black">My deposit records</h3><p className="mt-1 text-xs text-slate-400">Only confirmed Paystack payments credit System Switch. Pending checkouts and earlier TRX deposits appear with their actual status.</p></div>
+                  <div><h3 className="text-lg font-black">My deposit records</h3><p className="mt-1 text-xs text-slate-400">Confirmed Paystack deposits and independently verified Client TRX transfers credit System Switch. Pending submissions do not.</p></div>
                   <Button onClick={()=>{void fetchClientDeposits();void fetchBalance()}} variant="outline" size="sm">Refresh deposits</Button>
                 </div>
                 <div className="mt-4 space-y-2">
