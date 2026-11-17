@@ -75,6 +75,7 @@ export function RegionalManagerCommandCenter({team,tasks,summary,todayCheckins,m
    <div className="min-w-0">
     <div className="relative overflow-hidden bg-gradient-to-r from-[#062d63] via-[#0b4f8e] to-[#338ac0] p-5 text-white sm:px-7 sm:py-6">
      <div aria-hidden="true" className="pointer-events-none absolute -right-7 top-0 h-40 w-64 rounded-full bg-sky-200/20 blur-3xl"/>
+     <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 w-[60%] bg-right bg-no-repeat opacity-30" style={{backgroundImage:"url('/weave/loader-company-world.svg')",backgroundSize:'auto 160%'}}/>
      <div aria-hidden="true" className="pointer-events-none absolute bottom-0 right-[9%] h-12 w-56 rounded-t-[75%] border-x-4 border-t-4 border-amber-200/35 bg-white/10"/>
      <div className="relative flex flex-wrap items-start justify-between gap-3">
       <div><p className="text-[11px] font-bold uppercase tracking-[.22em] text-amber-200">WEAVE · A Time · Company of Time</p>
