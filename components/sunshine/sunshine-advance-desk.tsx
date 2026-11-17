@@ -146,7 +146,14 @@ export function SunshineAdvanceDesk({enrolled,managerId}:{enrolled:boolean;manag
         className="mt-3 min-h-11 rounded-lg border border-cyan-200/40 px-4 py-2 text-sm font-semibold disabled:opacity-40">Record authorized Client assignment</button>
     </div>}
     {(isAdmin||Boolean(data.departmentLabels?.length))&&<section className="mt-6 rounded-xl border border-cyan-200/25 bg-[#0a202c] p-4" data-sunshine-department-notifications>
-      <h3 className="text-lg font-bold">Company departments · Sunshine movement</h3>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h3 className="text-lg font-bold">Company departments · Sunshine movement</h3>
+        {isAdmin&&<button type="button" disabled={busy}
+          onClick={()=>void act('reconcile_notifications')}
+          className="min-h-11 rounded-lg border border-amber-200/40 px-4 py-2 text-xs font-semibold text-amber-100 disabled:opacity-40">
+          Recover missing stage notifications
+        </button>}
+      </div>
       <p className="mt-2 text-xs leading-6 text-slate-300">Administrations, approved Forensics, Mandate and Attorney personnel receive recorded stage alerts through the company notification inbox and subscribed phone push. These notices contain no private bank evidence or savings balances. Only the participant, assigned manager and Administrations can view detailed financial cases.</p>
       {(data.departmentNotices||[]).length===0
         ?<p className="mt-3 text-sm text-slate-400">No Sunshine stage notices for your authorized company account.</p>
