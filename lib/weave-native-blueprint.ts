@@ -20,6 +20,7 @@ export type NativeBlock=
   |{type:'scene';heading:string;scene:NativeScene}
   |{type:'action';heading:string;description:string;label:string;href:string}
   |{type:'steps';heading:string;steps:{id:string;label:string;description:string}[]}
+  |{type:'intake';formId:string;heading:string;description:string;fields:{id:string;label:string;kind:'short'|'long'|'choice';required:boolean;options:string[]}[]}
 
 export type WeaveNativeBlueprint={
  department:NativeDepartment
@@ -35,6 +36,7 @@ const stepPattern=/^[a-z][a-z0-9-]{1,49}$/
 const allowedKinds=['page','feature','system']
 const allowedQualities=['crystal','premium','plus']
 const scenes=['water','glass-kingdom','mechanized']
+const fieldKinds=['short','long','choice']
 const reserved=['api','admin','system','auth','login','workshop','new']
 const plain=(value:unknown,max:number,label:string)=>{
  if(typeof value!=='string')throw Error(label+' must be text')
@@ -97,6 +99,32 @@ export function validateNativeBlueprint(value:unknown):WeaveNativeBlueprint{
   if(type==='action')return {type,heading:plain(block.heading,120,'action heading'),
    description:plain(block.description,500,'action description'),
    label:plain(block.label,70,'action label'),href:validateLink(block.href)}
+  if(type==='intake'){
+   if(value.kind==='page')throw Error('Intake forms require a feature or system')
+   const formId=plain(block.formId,50,'intake form key')
+   if(!stepPattern.test(formId)||uniqueStepKeys.has('form:'+formId))throw Error('Each intake form needs a unique stable key')
+   uniqueStepKeys.add('form:'+formId)
+   if(!Array.isArray(block.fields)||block.fields.length<1||block.fields.length>10)
+    throw Error('An intake needs 1–10 fields')
+   const ids=new Set<string>()
+   const fields=block.fields.map(field=>{
+    if(!isObject(field))throw Error('Invalid intake field')
+    const id=plain(field.id,50,'field key')
+    if(!stepPattern.test(id)||ids.has(id))throw Error('Intake field keys must be distinct')
+    ids.add(id)
+    if(!fieldKinds.includes(String(field.kind)))throw Error('Choose a supported intake input')
+    if(typeof field.required!=='boolean')throw Error('Intake required must be true or false')
+    const kind=field.kind as 'short'|'long'|'choice'
+    const opts=kind==='choice'?field.options:[]
+    if(kind==='choice'&&(!Array.isArray(opts)||opts.length<2||opts.length>12))
+     throw Error('A choice field needs 2–12 options')
+    const options=kind==='choice'?(opts as unknown[]).map(opt=>plain(opt,90,'choice label')):[]
+    if(new Set(options).size!==options.length)throw Error('Choice values must be unique')
+    return {id,label:plain(field.label,100,'intake field label'),kind,required:field.required,options}
+   })
+   return {type,formId,heading:plain(block.heading,120,'intake heading'),
+    description:plain(block.description,700,'intake description'),fields}
+  }
   if(type==='steps'){
    if(value.kind!=='system')throw Error('Operational steps are available only for systems')
    if(!Array.isArray(block.steps)||block.steps.length<1||block.steps.length>12)
@@ -135,6 +163,7 @@ export function defaultWeaveNativeBlueprint(
  ]
  if(kind==='feature')blocks.push({type:'action',heading:'Continue into Weave',
   description:'Connect to an existing authorized workshop.',label:'Open workspace',href:'/dashboard'})
+ if(kind==='feature')blocks.push({type:'intake',formId:'interest',heading:'Record your interest',description:'Provide only work information necessary for a response, never passwords or payment credentials.',fields:[{id:'request',label:'What do you need?',kind:'long',required:true,options:[]}]})
  if(kind==='system')blocks.push({type:'steps',heading:'Working sequence',steps:[
   {id:'prepare',label:'Prepare',description:'Set the goal and required resources.'},
   {id:'act',label:'Act',description:'Carry out the next authorized work.'},
