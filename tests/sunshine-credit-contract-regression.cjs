@@ -67,6 +67,14 @@ assert.ok(advance.includes("pending','approved"),'Reserved withdrawal balance ex
 assert.ok(advance.includes("'transfer',$2,'Flame Coin','Sunshine repayable credit (not earnings)'"),'Repayable credit is never falsely recorded as earned commission')
 assert.ok(desk.includes('data-sunshine-interest-support'),'Full borrower/manager/admin interface')
 assert.ok(finance.includes('SUNSHINE_PURCHASE_KINDS'),'Sunshine requires an actual Weave purchase purpose')
+assert.ok(finance.includes("InterestPeriod='daily'|'monthly'|'annual'"),
+ 'Sunshine tracks daily, monthly and annual bank-interest payout periods')
+assert.ok(finance.includes("CHECK(interest_period IN ('daily','monthly','annual'))"),
+ 'Annual bank-interest plans remain valid in PostgreSQL')
+assert.ok(advance.includes("!['daily','monthly','annual'].includes(period)"),
+ 'Sunshine API accepts only supported interest payout periods')
+assert.ok(desk.includes('<option value="annual">Annual net interest</option>'),
+ 'Annual interest selection appears for users')
 assert.ok(finance.includes('purchase_kind varchar(36)'),'Purchase category persists in the credit contract')
 assert.ok(finance.includes('purchase_detail varchar(180)'),'Requested product or quote reference persists')
 assert.ok(finance.includes('ADD COLUMN IF NOT EXISTS purchase_kind'),'Existing requests migrate safely')
