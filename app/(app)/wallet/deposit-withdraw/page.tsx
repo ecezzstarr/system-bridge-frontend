@@ -4,13 +4,21 @@ import { useAuth } from '@/lib/auth-provider'
 import { Button } from '@/components/ui/button'
 import { ArrowRight, ArrowDownToLine, ArrowUpFromLine, Wallet, Copy, Check, ShieldCheck } from 'lucide-react'
 import Link from 'next/link'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+import {PaymentRegionSelector,type RegionResolution} from '@/components/payments/payment-region-selector'
+import type {WeavePaymentRail} from '@/lib/weave-payment-region'
 import { visiblePoll } from '@/lib/visible-poll'
 
 export default function WalletDepositWithdrawPage() {
   const { user } = useAuth()
   const isOpayRole = user?.role === 'admin' || user?.role === 'agent' || user?.role === 'bridger'
   const [activeTab, setActiveTab] = useState<'deposit' | 'withdraw'>('deposit')
+  const [fundingRail,setFundingRail]=useState<WeavePaymentRail|null>(null)
+  const [regionReady,setRegionReady]=useState(false)
+  const onRegionResolved=useCallback((next:RegionResolution)=>{
+    setFundingRail(next.rail)
+    setRegionReady(next.ready)
+  },[])
   const [amount, setAmount] = useState('')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
@@ -172,6 +180,10 @@ export default function WalletDepositWithdrawPage() {
   }
 
   const handleDeposit = async () => {
+    if(!regionReady||fundingRail!=='paystack_ngn'){
+      setMessage('Confirm your payment country. NGN checkout is enabled only on the supported Paystack route.')
+      return
+    }
     const ngnAmount = Number(amount)
     if (!Number.isFinite(ngnAmount) || ngnAmount < 1) {
       setMessage('Enter a valid NGN amount of at least ₦1')
@@ -394,7 +406,8 @@ export default function WalletDepositWithdrawPage() {
           {/* Deposit Tab */}
           {activeTab === 'deposit' && (
             <div className="space-y-6">
-              <div className="group relative">
+              <PaymentRegionSelector purpose="wallet_deposit" onResolved={onRegionResolved}/>
+              {regionReady&&fundingRail==='paystack_ngn'&&<div className="group relative">
                 <div className="absolute -inset-0.5 bg-gradient-to-r from-green-500 to-emerald-500 rounded-2xl opacity-20 blur"></div>
                 <div className="relative bg-slate-900/80 backdrop-blur-xl border border-slate-700 rounded-2xl p-8">
                   <>
@@ -453,7 +466,12 @@ export default function WalletDepositWithdrawPage() {
                     Payment is verified by Paystack and Weave before System Switch is credited. Withdrawals remain on their existing method.
                   </p>
                 </div>
-              </div>
+              </div>}
+              {!regionReady&&<section data-weave-international-rail-hold className="rounded-2xl border border-amber-200/25 bg-slate-900/70 p-5 text-sm text-amber-100">
+                <h2 className="font-bold">Funding route not enabled</h2>
+                <p className="mt-2 leading-6">Select and confirm your country to see its supported currency. Nigerian NGN checkout is active through Paystack. International manual TRX wallet funding is currently retired, so no deposit will be collected or System Switch credited using an unavailable route.</p>
+                <p className="mt-2">TRON, Bybit and other crypto wallets require a separately verified receiving and reconciliation workflow. Flutterwave and OPay direct channels are not yet connected to this wallet funding endpoint.</p>
+              </section>}
 
               {<section data-client-tron-deposits className="rounded-2xl border border-cyan-300/20 bg-slate-900/60 p-5 text-white">
                 <div className="flex flex-wrap items-center justify-between gap-3">
