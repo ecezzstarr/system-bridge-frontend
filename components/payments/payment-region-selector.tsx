@@ -38,10 +38,10 @@ export function PaymentRegionSelector({purpose,amountSwitch,onResolved,disabled=
       if(explicit)publicValue=WEAVE_PAYMENT_COUNTRIES.find(x=>x.code===explicit)?.code||null
     }catch{}
     const locale=typeof navigator!=='undefined'?(navigator.languages?.[0]||navigator.language):''
-    const suggestion=publicValue||suggestCountryFromLocale(locale)
+    const suggestion=(token?null:publicValue)||suggestCountryFromLocale(locale)
     setCountry(suggestion)
-    setConfirmed(Boolean(publicValue))
-    setSource(publicValue?'public_choice':'suggested')
+    setConfirmed(Boolean(publicValue&&!token))
+    setSource(publicValue&&!token?'public_choice':'suggested')
   }
   setLoaded(true)
  },[purpose,token])
