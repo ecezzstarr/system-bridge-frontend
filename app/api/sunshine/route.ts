@@ -41,23 +41,32 @@ async function assignedManager(user:{id:string;role:string}){
   return memberships[0]?.manager_id||null
 }
 
-async function notifyWithdrawalTarget(managerId:string){
+async function notifyWithdrawalTarget(managerId:string,workerId:string){
   try{
+    const linkExpr="'/weave/lifestyles/sunshine?withdrawalMember=' || $2::text || '&month=' || "+monthExpr
     await getPool().query(`INSERT INTO notifications
       (user_id,type,title,content,from_user_name,link)
-      VALUES($1::uuid,'regional_work','Sunshine · withdrawal target reached',
-        'A consenting team member has reported two withdrawals this month. Ask about work obstacles and offer authorized support, without requesting bank access.',
-        'WEAVE · A Time','/weave/lifestyles/sunshine')`,[managerId])
+      SELECT $1::uuid,'sunshine_withdrawal_goal',
+        'Sunshine · withdrawal target reached',
+        'A consenting assigned participant reported two withdrawals in the current month. Offer authorized work support without access to private bank funds.',
+        'WEAVE · A Time',${linkExpr}
+      WHERE NOT EXISTS (SELECT 1 FROM notifications n
+        WHERE n.user_id=$1::uuid AND n.type='sunshine_withdrawal_goal' AND n.link=${linkExpr})`,
+      [managerId,workerId])
   }catch(error){console.error('[Sunshine withdrawal notice unavailable]',error)}
 }
 
-async function notifyManager(managerId:string){
+async function notifyManager(managerId:string,workerId:string){
   try{
     await getPool().query(`INSERT INTO notifications
       (user_id,type,title,content,from_user_name,link)
-      VALUES($1::uuid,'regional_work','Sunshine · continuity support requested',
-        'An assigned employee requested help protecting their savings continuity. Review Sunshine and open private Company Support.',
-        'WEAVE · A Time','/weave/lifestyles/sunshine')`,[managerId])
+      SELECT $1::uuid,'sunshine_work_obstacle','Sunshine · continuity support requested',
+        'An assigned participant reported a work obstacle. Review the consenting Sunshine team queue and offer documented Company Support.',
+        'WEAVE · A Time','/weave/lifestyles/sunshine?workMember=' || $2::text
+      WHERE NOT EXISTS (SELECT 1 FROM notifications n
+        WHERE n.user_id=$1::uuid AND n.type='sunshine_work_obstacle'
+          AND n.link='/weave/lifestyles/sunshine?workMember=' || $2::text
+          AND n.created_at >= NOW() - INTERVAL '1 day')`,[managerId,workerId])
   }catch(error){console.error('[Sunshine support notification unavailable]',error)}
 }
 
@@ -225,7 +234,7 @@ export async function POST(request:NextRequest){
         await conn.query('COMMIT')
         if(auditAction==='record'&&reportedCount===2&&consent.rows[0]?.manager_visibility===true){
           const managerId=await assignedManager(user)
-          if(managerId)await notifyWithdrawalTarget(managerId)
+          if(managerId)await notifyWithdrawalTarget(managerId,user.id)
         }
         return json({success:true,withdrawalCount:reportedCount})
       }catch(error){
@@ -244,7 +253,7 @@ export async function POST(request:NextRequest){
         WHERE user_id=$1::uuid AND manager_visibility=true RETURNING user_id`,
         [user.id,action==='request_help',action==='request_help'?kind:null])
       if(!updated.rows.length)return json({error:'Enable voluntary manager support in your Sunshine plan first'},409)
-      if(action==='request_help')await notifyManager(managerId)
+      if(action==='request_help')await notifyManager(managerId,user.id)
       return json({success:true})
     }
     return json({error:'Unsupported Sunshine action'},400)
