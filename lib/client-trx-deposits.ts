@@ -37,8 +37,10 @@ export async function ensureClientTronSourceSchema(){
    sender_hex char(42) NOT NULL,
    amount_trx numeric(18,6) NOT NULL CHECK(amount_trx>0),
    solidified boolean NOT NULL DEFAULT true,
+   attribution_reference varchar(180),
    verified_at timestamptz NOT NULL DEFAULT NOW()
  )`)
+ await getPool().query("ALTER TABLE weave_client_tron_chain_verifications ADD COLUMN IF NOT EXISTS attribution_reference varchar(180)")
 }
 /** Pending transactions carry a claimed wallet source, not a Bybit/Bitget partnership. */
 
@@ -78,7 +80,8 @@ export async function submitClientTronDeposit(userId:string,amountInput:unknown,
 /** Transactionally approve/reject once: wallet credit, ledger, receipt and decision must agree. */
 export async function decideClientTronDeposit(input:{
   depositId:string;adminId:string;decision:'approved'|'rejected'
-  confirmation:string;verifiedAmountTrx?:unknown
+  confirmation:string;verifiedAmountTrx?:unknown;
+  attributionReference?:string;forensicsAttributionConfirmed?:boolean
 }){
   if(!uuid.test(input.depositId))throw new Error('Invalid deposit identity')
   if(!uuid.test(input.adminId))throw new Error('Invalid Administrations identity')
@@ -86,6 +89,10 @@ export async function decideClientTronDeposit(input:{
   if(input.confirmation!==(input.decision==='approved'?'VERIFIED TRX':'REJECT TRX'))
     throw new Error('Confirm the deposit decision before continuing')
   // Schema creation happens before the transaction, never in the wallet/decision transaction.
+  const attributionRef=String(input.attributionReference||'').trim()
+  if(input.decision==='approved'&&
+      (input.forensicsAttributionConfirmed!==true||attributionRef.length<12||attributionRef.length>180))
+    throw new Error('Forensics must independently link the external sender or exchange withdrawal receipt to the correct Client before any TRX wallet credit')
   let verified:VerifiedNativeTrx|null=null
   if(input.decision==='approved'){
     await ensureWeaveReceiptSchema()
@@ -126,9 +133,9 @@ export async function decideClientTronDeposit(input:{
       )
       if(paidAgain.rows[0])throw new Error('TRX transaction already credited to another deposit')
       await client.query(`INSERT INTO weave_client_tron_chain_verifications
-        (deposit_id,verified_by,tx_hash,destination_hex,sender_hex,amount_trx)
-        VALUES($1::uuid,$2::uuid,$3,$4,$5,$6)`,
-        [input.depositId,input.adminId,hash,verified.destinationHex,verified.sourceHex,amount])
+        (deposit_id,verified_by,tx_hash,destination_hex,sender_hex,amount_trx,attribution_reference)
+        VALUES($1::uuid,$2::uuid,$3,$4,$5,$6,$7)`,
+        [input.depositId,input.adminId,hash,verified.destinationHex,verified.sourceHex,amount,attributionRef])
       await client.query(
         "INSERT INTO wallets(id,user_id,balance_trx,balance_usdt,is_primary,is_eight_engine_controlled,created_at,updated_at) SELECT gen_random_uuid(),$1::uuid,0,0,true,true,NOW(),NOW() WHERE NOT EXISTS (SELECT 1 FROM wallets WHERE user_id=$1::uuid AND is_primary=true)",
         [deposit.user_id],
@@ -142,7 +149,8 @@ export async function decideClientTronDeposit(input:{
         'INSERT INTO ledger_entries(user_id,entry_type,amount,currency,description,metadata) VALUES($1::uuid,$2,$3,$4,$5,$6::jsonb)',
         [deposit.user_id,'deposit',credited,'Flame Coin','Verified Client TRX deposit credited',
           JSON.stringify({deposit_id:input.depositId,approved_by:input.adminId,paid_trx:amount,tx_hash:hash,
-            chain:'tron-mainnet',confirmation:'solidified',recipient_hex:verified.destinationHex,credited_flame_coin:credited})],
+            chain:'tron-mainnet',confirmation:'solidified',recipient_hex:verified.destinationHex,
+            forensics_attribution_reference:attributionRef,credited_flame_coin:credited})],
       )
       const receipt=await client.query(
         "INSERT INTO weave_receipts(receipt_number,user_id,kind,source,source_id,amount,currency,status,description,metadata) VALUES($1,$2::uuid,'deposit','client_trx_deposit',$3,$4,'Flame Coin','completed','Verified TRX wallet funding',$5::jsonb) RETURNING id,receipt_number",
