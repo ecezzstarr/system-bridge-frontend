@@ -34,6 +34,10 @@ assert.ok(!helper.includes('evidence_reference'),'Do not leak private bank evide
 assert.ok(push.includes('weave_notification_push')&&push.includes('weave_push_queue'),
  'Sunshine notifications should enter existing background push pipeline')
 assert.ok(page.includes('data-sunshine-approved-poster'),'Keep approved Sunshine image')
+assert.ok(route.includes("action==='reconcile_notifications'"),'Administrations can replay missing alerts')
+assert.ok(route.includes("user.role!=='admin'"),'Alert replay remains admin-only')
+assert.ok(route.includes('ORDER BY updated_at DESC LIMIT 20'),'Replay bounded to recent verified cases')
+assert.ok(route.includes('notifySunshineMovement(stage,String(row.id))'),'Replay uses committed-stage idempotent fanout')
 const desk=read('components/sunshine/sunshine-advance-desk.tsx')
 assert.ok(route.includes('getGuidanceStaffDepartments(user)'),
   'Only approved active company guidance users see the department queue')
