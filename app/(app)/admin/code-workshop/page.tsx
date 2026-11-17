@@ -11,7 +11,7 @@ import type {WeaveFormationDraft} from '@/lib/weave-workshop-formation'
 import {isWeaveWorkArea,WEAVE_INDUSTRY_PURPOSE,WEAVE_WORK_AREAS} from '@/lib/weave-workshop-purpose'
 
 type Entry={name:string;path:string;type:'file'|'dir';size:number}
-type DraftBranch={branch:string;created_at:string;updated_at:string;commits:number}
+type DraftBranch={branch:string;created_at:string;updated_at:string;commits:number;last_file_path:string|null}
 type Activity={event:string;branch:string;file_path:string|null;commit_sha:string|null;
  pull_request:number|null;message:string;created_at:string}
 type Source={kind:'file'|'directory';branch:string;path?:string;directory?:string;
@@ -160,11 +160,11 @@ export default function CodeWorkshopPage(){
   }catch(e){setError(e instanceof Error?e.message:'Cannot open review')}
   finally{setBusy(false)}
  }
- async function resumeDraft(target:string){
+ async function resumeDraft(target:string,lastFile:string|null){
   if(source!==baseline)throw Error('Save or discard your current source edits before changing branches.')
   if(branch===target)return
   setBranch(target);setConfirmation('');setPrUrl('');setPrNumber(null)
-  await Promise.all([openFile(file,target),browse(directory,target)])
+  await Promise.all([openFile(lastFile||file,target),browse(directory,target)])
   print('RESUMED '+target+' · source history belongs to this administrator')
  }
 
@@ -237,10 +237,10 @@ export default function CodeWorkshopPage(){
       <p className="mt-2 text-xs leading-5 text-slate-400">Your GitHub drafts remain available after logout and across devices. Select one to keep coding from its saved files.</p>
       {drafts.length===0?<p className="mt-3 text-xs text-slate-400">No saved draft branches yet.</p>
        :<div className="mt-3 max-h-52 space-y-2 overflow-auto">{drafts.map(draft=>
-        <button key={draft.branch} type="button" disabled={busy||source!==baseline} onClick={()=>void resumeDraft(draft.branch).catch(e=>setError(e.message))}
+        <button key={draft.branch} type="button" disabled={busy||source!==baseline} onClick={()=>void resumeDraft(draft.branch,draft.last_file_path).catch(e=>setError(e.message))}
          className={'w-full rounded-xl border p-3 text-left text-xs disabled:opacity-40 '+(draft.branch===branch?'border-cyan-300/60 bg-cyan-300/[.09]':'border-white/15 hover:border-cyan-300/40')}>
          <span className="block break-all font-mono text-slate-200">{draft.branch.split('/').slice(-1)[0]}</span>
-         <span className="mt-1 block text-slate-400">{draft.commits} source commits · {new Date(draft.updated_at).toLocaleDateString()}</span>
+         <span className="mt-1 block text-slate-400">{draft.commits} source commits · {new Date(draft.updated_at).toLocaleDateString()}{draft.last_file_path&&<span className="mt-1 block break-all text-cyan-100/70">{draft.last_file_path}</span>}</span>
         </button>)}</div>}
       <button type="button" disabled={busy} onClick={()=>void reloadActivity().catch(e=>setError(e.message))}
        className="mt-3 text-xs font-semibold text-cyan-200 underline disabled:opacity-40">Refresh my drafts</button>
