@@ -3,6 +3,7 @@ import {getAuthUser} from '@/lib/auth-api'
 import {getPool} from '@/lib/db'
 import {normalizeTronTxHash,normalizeTronAmount} from '@/lib/client-trx-deposits'
 import {verifyWeaveNativeTrxPayout} from '@/lib/client-tron-chain-verification'
+import {notifyUser} from '@/lib/deposit-notifications'
 
 export const dynamic='force-dynamic'
 const headers={'Cache-Control':'private, no-store','Vary':'Authorization'}
@@ -81,6 +82,11 @@ export async function POST(request:NextRequest){
       WHERE id=$1 AND status='approved' RETURNING id,status`,[id,hash])
    if(updated.rowCount!==1)throw new Error('Withdrawal completion conflict')
    await conn.query('COMMIT')
+   await notifyUser(String(withdrawal.user_id),{
+     type:'withdrawal_settled',title:'TRON withdrawal independently confirmed',
+     content:'Weave confirmed your '+expected.toLocaleString()+' TRX payout to the recorded destination. Transaction '+hash+'.',
+     link:'/wallet/deposit-withdraw',fromUserId:admin.id,fromUserName:'WEAVE Administrations'
+   })
    return response({success:true,withdrawalId:id,status:'completed',txHash:hash,
      amountTrx:expected,confirmation:'solidified',network:'tron-mainnet',
      message:'Weave account payout independently verified and recorded.'})
