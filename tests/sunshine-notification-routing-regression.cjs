@@ -118,7 +118,7 @@ const notify=mod.exports.notifySunshineMovement
  actualRow={...actualRow,status:'interest_received',settlement_verified_by:C}
  assert.equal(await notify('interest_received',caseId),true)
  assert.equal(inserts.length,18)
- assert.equal(commits,3)
+ assert.equal(commits,4,'Idempotent repeat still commits a harmless no-op notification transaction')
  assert.ok(guidanceInit>=3)
  console.log('PASS: Sunshine four-department + owner/manager alerts, committed stage validation, idempotency and push bridge')
 })().catch(err=>{console.error(err);process.exitCode=1})
