@@ -20,11 +20,14 @@ export function calculateSunshineSupport(netInterestNgn:number,rateNgnPerSystemS
   if(!Number.isFinite(netInterestNgn)||netInterestNgn<=0||netInterestNgn>1e12||
     !Number.isFinite(rateNgnPerSystemSwitch)||rateNgnPerSystemSwitch<=0)
     throw new Error('Interest and verified NGN/System Switch quotation must be positive')
-  const bankInterestSwitch=round6(netInterestNgn/rateNgnPerSystemSwitch)
-  const maximumAdvanceSwitch=floor6(bankInterestSwitch*SUNSHINE_ADVANCE_FRACTION)
-  const companyInterestShareSwitch=floor6(bankInterestSwitch*SUNSHINE_INTEREST_FEE_FRACTION)
+  const exactInterestSwitch=netInterestNgn/rateNgnPerSystemSwitch
+  const bankInterestSwitch=round6(exactInterestSwitch)
+  // Round the advance and fee down against unrounded interest so a quotation
+  // can never exceed 70% support or 10% company share by rounding up.
+  const maximumAdvanceSwitch=floor6(exactInterestSwitch*SUNSHINE_ADVANCE_FRACTION)
+  const companyInterestShareSwitch=floor6(exactInterestSwitch*SUNSHINE_INTEREST_FEE_FRACTION)
   const repaymentSwitch=round6(maximumAdvanceSwitch+companyInterestShareSwitch)
-  const retainedInterestSwitch=round6(bankInterestSwitch-repaymentSwitch)
+  const retainedInterestSwitch=round6(exactInterestSwitch-repaymentSwitch)
   if(maximumAdvanceSwitch<=0||retainedInterestSwitch<0)
     throw new Error('Bank interest too small for a valid Sunshine quote')
   return {bankInterestSwitch,maximumAdvanceSwitch,companyInterestShareSwitch,
