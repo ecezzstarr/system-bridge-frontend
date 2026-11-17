@@ -103,6 +103,8 @@ export default function NativeFoundryPage(){
  const {token,user,isInitialized}=useAuth()
  const [blueprint,setBlueprint]=useState<WeaveNativeBlueprint>(defaultWeaveNativeBlueprint())
  const [releases,setReleases]=useState<Release[]>([])
+ const [submissions,setSubmissions]=useState<{id:string;form_id:string;answers:Record<string,string>;author_name:string;created_at:string}[]>([])
+ const [submissionsOpen,setSubmissionsOpen]=useState(false)
  const [selectedId,setSelectedId]=useState('')
  const [busy,setBusy]=useState(false)
  const [error,setError]=useState('')
@@ -122,6 +124,18 @@ export default function NativeFoundryPage(){
  },[token])
  useEffect(()=>{if(token&&user?.role==='admin')void load(department,blueprint.slug).catch(e=>setError(e.message))},
   [token,user?.role,department,blueprint.slug,load])
+ async function loadSubmissions(){
+  if(!token)return
+  setError('')
+  try{
+   const qs=new URLSearchParams({department,slug:blueprint.slug,mode:'submissions'})
+   const res=await fetch('/api/admin/native-foundry?'+qs,{headers:{Authorization:'Bearer '+token},cache:'no-store'})
+   const body=await res.json()
+   if(!res.ok||!body.success)throw Error(body.error||'Records unavailable')
+   setSubmissions(body.submissions||[])
+   setSubmissionsOpen(true)
+  }catch(e){setError(e instanceof Error?e.message:'Unable to load intake records')}
+ }
  const send=async(action:string,data:Record<string,unknown>)=>{
   if(!token)throw Error('Administrator login required')
   const response=await fetch('/api/admin/native-foundry',{
@@ -271,6 +285,21 @@ export default function NativeFoundryPage(){
       </button>}
       {current&&<Link href={'/weave-modules/'+department+'/'+blueprint.slug}
        className="mt-4 block break-all text-sm text-cyan-200 underline">Open live department page</Link>}
+     </section>
+     <section className="rounded-2xl border border-cyan-200/15 bg-white/[.035] p-5">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+       <div><h2 className="text-xl font-bold">Company work intake records</h2>
+        <p className="mt-2 text-xs leading-6 text-slate-300">Submissions from this department module are visible only to appointed Administrations operators. They are not payments or approvals.</p></div>
+       <button type="button" className={classes} onClick={()=>void loadSubmissions()}>Read latest 80 records</button>
+      </div>
+      {submissionsOpen&&<div className="mt-4 space-y-3">
+       {!submissions.length&&<p className="text-sm text-slate-400">No recorded requests for this module.</p>}
+       {submissions.map(x=><article key={x.id} className="rounded-xl border border-white/10 p-4">
+        <p className="break-all text-xs font-bold text-cyan-100">{x.author_name} · {x.form_id} · {new Date(x.created_at).toLocaleString()}</p>
+        <p className="mt-1 break-all text-[11px] text-slate-400">Record {x.id}</p>
+        <div className="mt-3 space-y-1">{Object.entries(x.answers).map(([key,value])=><p key={key} className="whitespace-pre-wrap break-words text-xs leading-6 text-slate-200"><strong>{key}:</strong> {value}</p>)}</div>
+       </article>)}
+      </div>}
      </section>
      <section className="rounded-2xl border border-white/10 bg-white/[.025] p-5">
       <h2 className="text-xl font-bold">Version history</h2>
