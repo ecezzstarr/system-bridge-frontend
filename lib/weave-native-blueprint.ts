@@ -71,6 +71,7 @@ export function validateNativeBlueprint(value:unknown):WeaveNativeBlueprint{
  const description=plain(value.description,1200,'module purpose')
  if(!Array.isArray(value.blocks)||value.blocks.length<1||value.blocks.length>12)
   throw Error('A module needs 1 to 12 approved visual blocks')
+ const uniqueStepKeys=new Set<string>()
  const blocks:NativeBlock[]=value.blocks.map((block,index)=>{
   if(!isObject(block))throw Error('Invalid block '+(index+1))
   const type=String(block.type)
@@ -100,12 +101,11 @@ export function validateNativeBlueprint(value:unknown):WeaveNativeBlueprint{
    if(value.kind!=='system')throw Error('Operational steps are available only for systems')
    if(!Array.isArray(block.steps)||block.steps.length<1||block.steps.length>12)
     throw Error('A system needs 1–12 work steps')
-   const keys=new Set<string>()
    const steps=block.steps.map(item=>{
     if(!isObject(item))throw Error('Invalid work step')
     const id=plain(item.id,50,'step key')
-    if(!stepPattern.test(id)||keys.has(id))throw Error('Each step requires a distinct stable key')
-    keys.add(id)
+    if(!stepPattern.test(id)||uniqueStepKeys.has(id))throw Error('Each step requires a distinct stable key')
+    uniqueStepKeys.add(id)
     return {id,label:plain(item.label,110,'step label'),
      description:plain(item.description,500,'step description')}
    })
