@@ -40,7 +40,10 @@ export async function POST(request: NextRequest) {
         [status, rejectionNote || null, withdrawalId]
       )
       await client.query('COMMIT')
-      return NextResponse.json({ success: true, withdrawal: updated.rows[0], message: 'Withdrawal ' + status + ' successfully.' })
+      return NextResponse.json({ success: true, withdrawal: updated.rows[0],
+        message:status==='approved'
+          ?'Withdrawal approved internally. No external transfer is completed until the Weave funding account executes and the blockchain or payout provider confirms settlement.'
+          :'Withdrawal rejected; no payout initiated.' })
     } catch (error) {
       await client.query('ROLLBACK')
       throw error
