@@ -12,7 +12,8 @@ type Progress={step_id:string;completed:boolean}
 export function NativeModuleRenderer({blueprint,releaseId,progress=[],preview=false}:{
  blueprint:WeaveNativeBlueprint;releaseId?:string;progress?:Progress[];preview?:boolean
 }){
- const {token}=useAuth()
+ const {token,user}=useAuth()
+ const mayWork=user?.role===WEAVE_NATIVE_DEPARTMENTS[blueprint.department].role
  const [stepStates,setStepStates]=useState<Record<string,boolean>>(
   Object.fromEntries(progress.map(x=>[x.step_id,x.completed])))
  const [saving,setSaving]=useState('')
@@ -75,7 +76,7 @@ export function NativeModuleRenderer({blueprint,releaseId,progress=[],preview=fa
    <div className="mt-5 grid gap-3">
     {block.steps.map((step,i)=><label key={step.id} className="flex items-start gap-3 rounded-xl border border-white/10 bg-black/15 p-4">
      <input type="checkbox" checked={Boolean(stepStates[step.id])}
-      disabled={preview||saving!==''||!releaseId}
+      disabled={preview||saving!==''||!releaseId||!mayWork}
       onChange={e=>void updateStep(step.id,e.target.checked)}
       className="mt-1 h-5 w-5 shrink-0 accent-cyan-300"/>
      <span><strong className="flex items-center gap-2 text-sm">{i+1}. {step.label}
