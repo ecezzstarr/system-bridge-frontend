@@ -34,6 +34,16 @@ assert.ok(!helper.includes('evidence_reference'),'Do not leak private bank evide
 assert.ok(push.includes('weave_notification_push')&&push.includes('weave_push_queue'),
  'Sunshine notifications should enter existing background push pipeline')
 assert.ok(page.includes('data-sunshine-approved-poster'),'Keep approved Sunshine image')
+const desk=read('components/sunshine/sunshine-advance-desk.tsx')
+assert.ok(route.includes('getGuidanceStaffDepartments(user)'),
+  'Only approved active company guidance users see the department queue')
+assert.ok(route.includes("WHERE user_id=$1::uuid") &&
+  route.includes("type LIKE 'sunshine_support_%'"),
+  'Department queue contains only the logged-in staff notifications')
+assert.ok(desk.includes('data-sunshine-department-notifications'),
+  'Sunshine page must present departmental stage notices')
+assert.ok(desk.includes('no private bank evidence')||desk.includes('no private bank'),
+  'Departmental alerts must explain restricted financial access')
 
 const A='10000000-0000-4000-8000-000000000001'
 const B='10000000-0000-4000-8000-000000000002'
