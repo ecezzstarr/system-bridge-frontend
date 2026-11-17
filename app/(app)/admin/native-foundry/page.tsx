@@ -84,8 +84,8 @@ export default function NativeFoundryPage(){
  const [confirm,setConfirm]=useState('')
  const [tab,setTab]=useState<'design'|'preview'>('design')
  const department=blueprint.department
- const set=<K extends keyof WeaveNativeBlueprint>(key:K,value:WeaveNativeBlueprint[K])=>setBlueprint(b=>({...b,[key]:value}))
- const updateBlock=(index:number,block:NativeBlock)=>set('blocks',blueprint.blocks.map((x,i)=>i===index?block:x))
+ function setField<K extends keyof WeaveNativeBlueprint>(key:K,value:WeaveNativeBlueprint[K]){setBlueprint(b=>({...b,[key]:value}))}
+ const updateBlock=(index:number,block:NativeBlock)=>setField('blocks',blueprint.blocks.map((x,i)=>i===index?block:x))
  const load=useCallback(async(dep:NativeDepartment,slug:string)=>{
   if(!token)return
   const params=new URLSearchParams({department:dep,slug})
@@ -183,24 +183,24 @@ export default function NativeFoundryPage(){
         <option value="system">System · recordable working steps</option></select></label>
       </div>
       <label className={label}>Visual quality<select value={blueprint.quality} className={field}
-       onChange={e=>set('quality',e.target.value as WeaveNativeBlueprint['quality'])}>
+       onChange={e=>setField('quality',e.target.value as WeaveNativeBlueprint['quality'])}>
        <option value="crystal">Crystal · lightweight glass</option>
        <option value="premium">Premium · detailed physical surfaces</option>
        <option value="plus">Plus · elevated glass, gold and machinery</option>
       </select></label>
-      <label className={label}>Title<input maxLength={95} value={blueprint.title} className={field} onChange={e=>set('title',e.target.value)}/></label>
-      <label className={label}>Permanent page address<input maxLength={50} value={blueprint.slug} className={field} onChange={e=>set('slug',e.target.value)}/>
+      <label className={label}>Title<input maxLength={95} value={blueprint.title} className={field} onChange={e=>setField('title',e.target.value)}/></label>
+      <label className={label}>Permanent page address<input maxLength={50} value={blueprint.slug} className={field} onChange={e=>setField('slug',e.target.value)}/>
        <span className="mt-1 block break-all text-[11px] text-cyan-200">/weave-modules/{department}/{blueprint.slug}</span></label>
       <label className={label}>Cadence and purpose<textarea maxLength={1200} rows={3} className={field}
-       value={blueprint.description} onChange={e=>set('description',e.target.value)}/></label>
+       value={blueprint.description} onChange={e=>setField('description',e.target.value)}/></label>
       <h2 className="border-t border-white/15 pt-5 text-xl font-bold">Page and system elements</h2>
       {blueprint.blocks.map((block,index)=><div key={index} className="rounded-2xl border border-cyan-200/20 bg-black/15 p-4">
        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <h3 className="text-sm font-bold capitalize text-cyan-200">{index+1}. {block.type.replaceAll('-',' ')}</h3>
         <div className="flex gap-1">
-         <button type="button" aria-label="Move up" disabled={!index} onClick={()=>set('blocks',blueprint.blocks.map((x,i)=>i===index-1?block:i===index?blueprint.blocks[index-1]:x))} className={classes}><ArrowUp size={14}/></button>
-         <button type="button" aria-label="Move down" disabled={index===blueprint.blocks.length-1} onClick={()=>set('blocks',blueprint.blocks.map((x,i)=>i===index+1?block:i===index?blueprint.blocks[index+1]:x))} className={classes}><ArrowDown size={14}/></button>
-         <button type="button" aria-label="Remove element" disabled={blueprint.blocks.length===1||(block.type==='steps'&&blueprint.kind==='system'&&blueprint.blocks.filter(x=>x.type==='steps').length===1)} onClick={()=>set('blocks',blueprint.blocks.filter((_,i)=>i!==index))} className={classes}><Trash2 size={14}/></button>
+         <button type="button" aria-label="Move up" disabled={!index} onClick={()=>setField('blocks',blueprint.blocks.map((x,i)=>i===index-1?block:i===index?blueprint.blocks[index-1]:x))} className={classes}><ArrowUp size={14}/></button>
+         <button type="button" aria-label="Move down" disabled={index===blueprint.blocks.length-1} onClick={()=>setField('blocks',blueprint.blocks.map((x,i)=>i===index+1?block:i===index?blueprint.blocks[index+1]:x))} className={classes}><ArrowDown size={14}/></button>
+         <button type="button" aria-label="Remove element" disabled={blueprint.blocks.length===1||(block.type==='steps'&&blueprint.kind==='system'&&blueprint.blocks.filter(x=>x.type==='steps').length===1)} onClick={()=>setField('blocks',blueprint.blocks.filter((_,i)=>i!==index))} className={classes}><Trash2 size={14}/></button>
         </div>
        </div>
        <NativeBlockEditor block={block} onChange={next=>updateBlock(index,next)}/>
@@ -208,7 +208,7 @@ export default function NativeFoundryPage(){
       <div className="flex flex-wrap gap-2">
        {(['hero','prose','glass-grid','scene','action',...(blueprint.kind==='system'?['steps']:[])] as NativeBlock['type'][]).map(type=>
         <button key={type} type="button" disabled={blueprint.blocks.length>=12} className={classes}
-         onClick={()=>set('blocks',[...blueprint.blocks,newBlock(type)])}><Plus size={14} className="mr-1 inline"/>{type.replaceAll('-',' ')}</button>)}
+         onClick={()=>setField('blocks',[...blueprint.blocks,newBlock(type)])}><Plus size={14} className="mr-1 inline"/>{type.replaceAll('-',' ')}</button>)}
       </div>
       <button type="button" className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-cyan-100 px-4 text-sm font-bold text-[#092238] disabled:opacity-40" disabled={busy} onClick={()=>void saveDraft()}>
        <Save size={16}/>{busy?'Saving…':'Save version in WEAVE'}
