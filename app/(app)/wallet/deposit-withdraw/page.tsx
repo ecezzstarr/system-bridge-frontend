@@ -27,6 +27,7 @@ export default function WalletDepositWithdrawPage() {
   const [balanceError,setBalanceError]=useState('')
   const [balanceUpdatedAt,setBalanceUpdatedAt]=useState<string|null>(null)
   const [depositHistoryLoaded,setDepositHistoryLoaded]=useState(false)
+  const [withdrawalHistory,setWithdrawalHistory]=useState<Array<{id:string;status:string;amount_trx:number|string;wallet_address:string;tx_hash?:string|null;created_at:string}>>([])
   const [depositHistoryError,setDepositHistoryError]=useState('')
   const balanceLabel=balance===null?'—':balance.toLocaleString(undefined,{maximumFractionDigits:6})
   const [withdrawAddress, setWithdrawAddress] = useState('')
@@ -73,6 +74,7 @@ export default function WalletDepositWithdrawPage() {
     setDepositHistoryLoaded(false)
     void fetchBalance()
     if (user) {
+      if(user.role==='client')void fetchWithdrawalHistory()
       void fetchClientDeposits()
       if (isOpayRole) void fetchConversions()
     }
@@ -94,7 +96,7 @@ export default function WalletDepositWithdrawPage() {
   useEffect(() => {
     if (!user?.id) return
     return visiblePoll(async () => {
-      await Promise.allSettled([fetchBalance(), fetchClientDeposits(), ...(isOpayRole?[fetchConversions()]:[])])
+      await Promise.allSettled([fetchBalance(), fetchClientDeposits(),...(user.role==='client'?[fetchWithdrawalHistory()]:[]),...(isOpayRole?[fetchConversions()]:[])])
     }, 20000, false)
   }, [user?.id, isOpayRole])
 
@@ -130,6 +132,17 @@ export default function WalletDepositWithdrawPage() {
       console.error('Unable to refresh Client deposit history',error)
       setDepositHistoryError(error instanceof Error?error.message:'Deposit history unavailable')
     }
+  }
+
+  const fetchWithdrawalHistory=async()=>{
+    if(user?.role!=='client')return
+    const token=localStorage.getItem('ssb_auth_token')
+    try{
+      const r=await fetch('/api/wallet/withdraw',{cache:'no-store',headers:token?{Authorization:'Bearer '+token}:{}})
+      const body=await r.json()
+      if(!r.ok)throw new Error(body.error||'Withdrawal status unavailable')
+      setWithdrawalHistory(Array.isArray(body.withdrawals)?body.withdrawals:[])
+    }catch(error){console.error('[Client withdrawal stage]',error)}
   }
 
   const fetchBalance = async () => {
@@ -257,7 +270,7 @@ export default function WalletDepositWithdrawPage() {
 
       const data = await response.json()
       if (data.success) {
-        setMessage(`Withdrawal of ${amount} System Switch initiated! Processing time: 1-24 hours`)
+        setMessage(`TRON withdrawal request for ${amount} System Switch recorded. This is not a completed transfer: Administrations must approve, execute the payout from Weave’s account and verify the solidified blockchain transaction.`)
         setAmount('')
         setWithdrawAddress('')
         fetchBalance()
@@ -667,8 +680,18 @@ export default function WalletDepositWithdrawPage() {
                     </Button>
 
                     <p className="text-xs text-slate-500 text-center mt-4">
-                      Minimum withdrawal: 10 System Switch - Processing time: 1-24 hours
+                      Minimum withdrawal: 10 System Switch. Weave reviews the request and sends native TRX from its designated account. No external payout is complete until its on-chain transaction is verified.
                     </p>
+                    <section data-client-tron-withdrawal-status className="mt-6 rounded-xl border border-cyan-200/20 p-4">
+                      <h3 className="text-sm font-bold text-cyan-100">My TRON payout history</h3>
+                      <p className="mt-2 text-xs text-slate-300">Pending: awaiting review. Approved: internal authorization, not yet sent. Completed: company payout independently confirmed on-chain.</p>
+                      <button type="button" onClick={()=>void fetchWithdrawalHistory()} className="mt-2 min-h-10 rounded-lg border border-white/20 px-3 py-2 text-xs">Refresh status</button>
+                      <div className="mt-3 space-y-2">{withdrawalHistory.length===0?<p className="text-xs text-slate-400">No TRON withdrawal requests recorded.</p>:withdrawalHistory.map(item=><div key={String(item.id)} className="rounded-lg border border-white/10 p-3 text-xs">
+                        <p className="font-bold text-white">{Number(item.amount_trx).toLocaleString()} System Switch · {item.status==='completed'?'Paid · on-chain verified':item.status==='approved'?'Approved · awaiting blockchain settlement':item.status==='pending'?'Pending review':item.status==='rejected'?'Rejected':item.status}</p>
+                        <p className="mt-1 break-all text-slate-400">Destination: {item.wallet_address}</p>
+                        {item.tx_hash&&<a target="_blank" rel="noopener noreferrer" className="mt-1 block break-all text-cyan-200 underline" href={'https://tronscan.org/#/transaction/'+encodeURIComponent(item.tx_hash)}>Verified TRON payout: {item.tx_hash}</a>}
+                      </div>)}</div>
+                    </section>
                   </>
                 )}
               </div>
