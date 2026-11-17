@@ -1,5 +1,5 @@
 import {NextRequest,NextResponse} from 'next/server'
-import {timingSafeEqual} from 'node:crypto'
+import {createHash,timingSafeEqual} from 'node:crypto'
 import {getPool} from '@/lib/db'
 import {requireWorkshopAuthorization} from '@/lib/workshop-auth'
 
@@ -30,7 +30,8 @@ function authorizeNode(request:NextRequest){
  const expected=process.env.WEAVE_SOVEREIGN_PROBE_TOKEN||''
  if(expected.length<32)return {ok:false,configured:false}
  const supplied=request.headers.get('authorization')?.replace(/^Bearer\s+/i,'')||''
- const good=supplied.length===expected.length&&timingSafeEqual(Buffer.from(supplied),Buffer.from(expected))
+ const good=timingSafeEqual(createHash('sha256').update(supplied).digest(),
+  createHash('sha256').update(expected).digest())
  return {ok:good,configured:true}
 }
 
