@@ -99,6 +99,7 @@ export default function RegionalDailyWorkspace(){
       </p>
       <div className="flex flex-wrap gap-3 text-sm text-cyan-200">
         {(isManager||data.membership?.position==='Bridger')&&<Link href="/weave/lifestyles/regional-manager/hope-outreach" className="font-semibold text-amber-100">Hope · Daily outreach control</Link>}
+        {isManager&&<Link href="/weave/lifestyles/sunshine" data-regional-sunshine-oversight="true" className="font-semibold text-amber-100">Sunshine · Staff capital continuity</Link>}
         <Link href="/communications">Team communications</Link>
         <Link href={isManager?'/weave/lifestyles/support':'/weave/lifestyles/support?managerId='+encodeURIComponent(data.managerId)}>Work support · private conversations</Link>
         <Link href="/weave/lifestyles/work">All approved positions</Link>
