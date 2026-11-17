@@ -11,6 +11,8 @@ const page=read('app/(app)/admin/code-workshop/page.tsx')
 const composer=read('components/admin/weave-formation-composer.tsx')
 const workflow=read('.github/workflows/weave-verified-continuity.yml')
 const manual=read('.github/workflows/weave-selfhost-deploy.yml')
+const api=read('app/api/admin/code-workshop/route.ts')
+const engine=read('lib/weave-code-workshop.ts')
 
 function parses(source,fileName){
   const diagnostics=ts.transpileModule(source,{
@@ -62,6 +64,13 @@ assert.match(world.content,/not a purchased File Folder/i)
 assert.match(page,/onUse=\{loadFormation\}/)
 assert.match(page,/result\.exists/)
 assert.match(page,/setSha\(null\)/)
+assert.match(page,/Continue your drafts/)
+assert.match(page,/resumeDraft\(draft.branch\)/)
+assert.match(api,/kind==='drafts'/)
+assert.match(api,/workshopDraftBranches\(userId\)/)
+assert.match(engine,/export async function workshopDraftBranches/)
+assert.match(engine,/GROUP BY branch ORDER BY MAX\(created_at\) DESC LIMIT 50/)
+
 assert.match(composer,/data-weave-formation-foundry="cadence-to-source"/)
 assert.match(composer,/Live appearance preview/)
 assert.match(composer,/Canvas/)
