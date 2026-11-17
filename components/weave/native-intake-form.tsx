@@ -1,5 +1,5 @@
 'use client'
-import {useState} from 'react'
+import {useState,type FormEvent} from 'react'
 import {CheckCircle2,Send,ShieldCheck} from 'lucide-react'
 import {useAuth} from '@/lib/auth-provider'
 import {WEAVE_NATIVE_DEPARTMENTS,type NativeDepartment,type NativeBlock} from '@/lib/weave-native-blueprint'
@@ -14,7 +14,7 @@ export function NativeIntakeForm({block,releaseId,department,preview}:{
  const [record,setRecord]=useState('')
  const [error,setError]=useState('')
  const authorized=user?.role===WEAVE_NATIVE_DEPARTMENTS[department].role
- async function submit(event:React.FormEvent<HTMLFormElement>){
+ async function submit(event:FormEvent<HTMLFormElement>){
   event.preventDefault()
   if(preview||!authorized||!releaseId||!token)return
   setBusy(true);setError('');setRecord('')
