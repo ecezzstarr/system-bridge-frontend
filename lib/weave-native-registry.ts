@@ -37,6 +37,15 @@ async function ensureNativeRegistry(){
    "release_id uuid NOT NULL REFERENCES weave_native_module_releases(id),"+
    "event varchar(24) NOT NULL CHECK(event IN ('draft','publish','rollback_draft','unpublish')),"+
    "created_at timestamptz NOT NULL DEFAULT now())")
+  await db.query("CREATE TABLE IF NOT EXISTS weave_native_form_submissions ("+
+   "id uuid PRIMARY KEY DEFAULT gen_random_uuid(),"+
+   "release_id uuid NOT NULL REFERENCES weave_native_module_releases(id),"+
+   "user_id uuid NOT NULL REFERENCES users(id),form_id varchar(50) NOT NULL,"+
+   "answers jsonb NOT NULL,created_at timestamptz NOT NULL DEFAULT now())")
+  await db.query("CREATE INDEX IF NOT EXISTS weave_native_form_user_history ON "+
+   "weave_native_form_submissions(user_id,release_id,created_at DESC)")
+  await db.query("CREATE INDEX IF NOT EXISTS weave_native_form_admin_history ON "+
+   "weave_native_form_submissions(release_id,created_at DESC)")
   await db.query("CREATE TABLE IF NOT EXISTS weave_native_work_progress ("+
    "release_id uuid NOT NULL REFERENCES weave_native_module_releases(id),"+
    "user_id uuid NOT NULL REFERENCES users(id),step_id varchar(50) NOT NULL,"+
@@ -205,4 +214,79 @@ export async function setNativeStep(input:{
   "SET completed=EXCLUDED.completed,updated_at=now()",
   [input.releaseId,id(input.userId),input.stepId,input.completed])
  return {stepId:input.stepId,completed:input.completed}
+}
+
+
+/** Free-form content is not executed. All field keys/types must exist in the published definition. */
+export async function submitNativeIntake(input:{
+ releaseId:string;userId:string;role:string;formId:string;answers:unknown
+}){
+ await ensureNativeRegistry()
+ const db=getPool()
+ const existing=await db.query(
+  "SELECT department,blueprint FROM weave_native_module_releases "+
+  "WHERE id=$1::uuid AND state='published' LIMIT 1",[id(input.releaseId)])
+ const live=existing.rows[0]
+ if(!live||WEAVE_NATIVE_DEPARTMENTS[live.department as NativeDepartment]?.role!==input.role)
+  throw Error('This work intake is not available to your position')
+ const blueprint=validateNativeBlueprint(live.blueprint)
+ const form=blueprint.blocks.find(b=>b.type==='intake'&&b.formId===input.formId)
+ if(!form||form.type!=='intake')throw Error('This intake is not installed in the live module')
+ if(!input.answers||typeof input.answers!=='object'||Array.isArray(input.answers))
+  throw Error('Form data must be an object')
+ const submitted=input.answers as Record<string,unknown>
+ if(Object.keys(submitted).some(key=>!form.fields.some(field=>field.id===key)))
+  throw Error('Unknown intake field')
+ const answers:Record<string,string>={}
+ for(const field of form.fields){
+  const raw=submitted[field.id]
+  if(raw===undefined||raw===null||raw===''){
+   if(field.required)throw Error('Complete '+field.label)
+   continue
+  }
+  if(typeof raw!=='string')throw Error('Invalid '+field.label)
+  const trimmed=raw.trim()
+  if(!trimmed&&field.required)throw Error('Complete '+field.label)
+  if(!trimmed)continue
+  if(/[\u0000-\u0008\u000b-\u001f\u007f]/.test(trimmed))throw Error('Invalid field text')
+  if(trimmed.length>(field.kind==='long'?1500:240))throw Error('Field exceeds text limit')
+  if(field.kind==='choice'&&!field.options.includes(trimmed))
+   throw Error('Choose a published option for '+field.label)
+  answers[field.id]=trimmed
+ }
+ const client=await db.connect()
+ try{
+  await client.query('BEGIN')
+  // One submission per module/form/user every 30 seconds; serializes requests
+  // for the same user even if several browser tabs submit concurrently.
+  await client.query("SELECT pg_advisory_xact_lock(hashtext($1))",
+   ['native-intake:'+input.releaseId+':'+input.userId])
+  const recent=await client.query(
+   "SELECT id FROM weave_native_form_submissions "+
+   "WHERE release_id=$1::uuid AND user_id=$2::uuid AND form_id=$3 "+
+   "AND created_at>now()-interval '30 seconds' LIMIT 1",
+   [input.releaseId,input.userId,input.formId])
+  if(recent.rowCount)throw Error('A recent submission is already recorded')
+  const created=await client.query(
+   "INSERT INTO weave_native_form_submissions(release_id,user_id,form_id,answers) "+
+   "VALUES($1::uuid,$2::uuid,$3,$4::jsonb) RETURNING id,created_at",
+   [input.releaseId,id(input.userId),input.formId,JSON.stringify(answers)])
+  await client.query('COMMIT')
+  return {id:created.rows[0].id,created_at:created.rows[0].created_at}
+ }catch(error){await client.query('ROLLBACK').catch(()=>{});throw error}
+ finally{client.release()}
+}
+
+/** Approved Administrations operators see submission evidence; no public listing. */
+export async function listNativeSubmissions(department:NativeDepartment,slugValue:string){
+ target(department,slugValue)
+ await ensureNativeRegistry()
+ const result=await getPool().query(
+  "SELECT s.id,s.form_id,s.answers,s.created_at,u.name AS author_name "+
+  "FROM weave_native_form_submissions s "+
+  "JOIN weave_native_module_releases r ON r.id=s.release_id "+
+  "JOIN users u ON u.id=s.user_id "+
+  "WHERE r.department=$1 AND r.slug=$2 ORDER BY s.created_at DESC LIMIT 80",
+  [department,slugValue])
+ return result.rows
 }
