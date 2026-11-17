@@ -3,6 +3,7 @@ import Link from 'next/link'
 import {useState} from 'react'
 import {CheckCircle2,ChevronRight,Layers,ShieldCheck} from 'lucide-react'
 import {NativeWorldScene} from '@/components/weave/native-world-scene'
+import {NativeIntakeForm} from '@/components/weave/native-intake-form'
 import {
  WEAVE_NATIVE_DEPARTMENTS,type WeaveNativeBlueprint,type NativeBlock,
 } from '@/lib/weave-native-blueprint'
@@ -63,6 +64,7 @@ export function NativeModuleRenderer({blueprint,releaseId,progress=[],preview=fa
     </article>)}
    </div>
   </section>
+  if(block.type==='intake')return <NativeIntakeForm key={index} block={block} releaseId={releaseId} department={blueprint.department} preview={preview}/>
   if(block.type==='action')return <section key={index} className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-amber-200/25 bg-[#e8cba0]/[.08] p-6 sm:p-8">
    <div><h2 className="text-xl font-bold">{block.heading}</h2>
     <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">{block.description}</p></div>
