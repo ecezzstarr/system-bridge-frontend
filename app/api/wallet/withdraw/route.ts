@@ -74,3 +74,23 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: false, error: error.message || 'Withdrawal failed' }, { status: 500 })
   }
 }
+
+/** Personal withdraw stage: pending → approved (not paid) → completed (solidified on-chain).
+ * This never exposes other users' wallet destinations or transaction IDs.
+ */
+export async function GET(request:NextRequest){
+ const user=await getAuthUser(request)
+ if(!user)return NextResponse.json({error:'Login required'},{status:401})
+ try{
+  const history=await sql`
+    SELECT id,amount_trx,wallet_address,status,tx_hash,created_at,updated_at
+    FROM withdrawal_requests WHERE user_id=${user.id}::uuid
+    ORDER BY created_at DESC LIMIT 30
+  `
+  return NextResponse.json({success:true,withdrawals:history},{headers:{
+    'Cache-Control':'private, no-store','Vary':'Authorization'}})
+ }catch(error){
+  console.error('[personal withdrawal status]',error)
+  return NextResponse.json({error:'Withdrawal status unavailable'},{status:503})
+ }
+}
