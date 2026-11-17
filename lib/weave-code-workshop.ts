@@ -158,7 +158,7 @@ export async function workshopDraftBranches(actorId:string){
  await ensureAudit()
  const result=await getPool().query(
   "SELECT branch,MIN(created_at) AS created_at,MAX(created_at) AS updated_at, "+
-  "COUNT(*) FILTER (WHERE event='file_saved')::integer AS commits "+
+  "COUNT(*) FILTER (WHERE event='file_saved')::integer AS commits, "+
   "(ARRAY_AGG(file_path ORDER BY created_at DESC) FILTER (WHERE file_path IS NOT NULL))[1] AS last_file_path "+
   "FROM weave_code_workshop_events WHERE actor_id=$1::uuid "+
   "GROUP BY branch ORDER BY MAX(created_at) DESC LIMIT 50",
