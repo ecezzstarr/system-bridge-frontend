@@ -17,6 +17,8 @@ type Deposit = {
   client_name: string
   client_email: string
   file_number?: string | null
+  funding_source?:string|null
+  independently_verified?:boolean
 }
 
 export default function AdminClientDepositsPage() {
@@ -57,7 +59,7 @@ export default function AdminClientDepositsPage() {
     if(!deposit || busy)return
     const approved=status==='approved'
     if(!window.confirm(approved
-      ? 'Have you independently verified the TRON transaction, its amount, and receipt at the Company TRX wallet? Confirm only after all three match.'
+      ? 'Confirm that Forensics reviewed this transfer. The server will independently verify the native TRX transaction is solidified and matches Weave’s receiving address and exact amount before crediting.'
       : 'Reject this Client deposit? No System Switch will be credited.'))return
     setBusy(depositId)
     try {
@@ -87,7 +89,7 @@ export default function AdminClientDepositsPage() {
           <p className="text-sm font-black uppercase tracking-[0.18em] text-emerald-300">Administrations · Client Funding</p>
           <h1 className="mt-2 text-3xl font-black md:text-5xl">Client Deposit Requests</h1>
           <p className="mt-3 max-w-3xl text-base leading-7 text-slate-300">
-            Clients fund System Switch by sending TRX to the Company wallet. Review the Client, File Number, amount and transaction hash here before approving or rejecting the request.
+            Clients may fund System Switch using native TRX sent from Bybit, Bitget, Tron Wallet or another compatible wallet. Approvals require an independent, solidified TRON mainnet transaction matching the Company's designated receiving address and amount.
           </p>
         </div>
         <button onClick={() => void load()} className="inline-flex items-center gap-2 rounded-full border border-white/10 px-4 py-2 text-sm font-bold">
@@ -119,7 +121,7 @@ export default function AdminClientDepositsPage() {
                   <div>
                     <p className="text-sm font-bold uppercase tracking-wider text-slate-500">Amount</p>
                     <p className="mt-1 text-2xl font-black text-emerald-300">{Number(deposit.amount_trx || 0).toLocaleString()} TRX</p>
-                    <p className="text-sm text-slate-500">→ same System Switch after verification</p>
+                    <p className="text-sm text-slate-500">→ same System Switch after verification</p><p className="mt-2 text-xs uppercase text-amber-200">Sender source: {deposit.funding_source?.replaceAll('_',' ')||'Historical TRON transfer'}</p>
                   </div>
                   <div className="min-w-0">
                     <p className="text-sm font-bold uppercase tracking-wider text-slate-500">Transaction hash</p>
@@ -129,7 +131,7 @@ export default function AdminClientDepositsPage() {
                         Inspect TRON transaction on Tronscan
                       </a>
                     )}
-                    <p className="mt-2 text-xs text-amber-200">Approval requires independently verifying the transfer arrived in the Company wallet for this exact TRX amount. A submitted hash is not proof of payment.</p>
+                    <p className="mt-2 text-xs text-amber-200">The server checks the solidified TRON mainnet transaction, direct native TRX type, recipient and exact amount before any approval. A submitted hash or exchange order screenshot is not proof of payment.</p>
                     <p className="mt-2 text-sm text-slate-500">{new Date(deposit.created_at).toLocaleString()}</p>
                   </div>
                   <div className="flex gap-2 lg:flex-col">
