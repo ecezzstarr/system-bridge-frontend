@@ -6,7 +6,7 @@ import {useAuth} from '@/lib/auth-provider'
 
 type Case={
   id:string;status:string;userId:string;managerId:string;workerName?:string|null;
-  interestPeriod:'daily'|'monthly';bankProduct:string;
+  interestPeriod:'daily'|'monthly';bankProduct:string;purchaseKind:string;purchaseDetail:string;
   expectedNetInterestNgn:number;rateNgnPerSwitch:number;
   bankInterestSwitch:number;advanceSwitch:number;companyFeeSwitch:number;
   totalRepaymentSwitch:number;evidenceReference:string;
@@ -24,6 +24,8 @@ export function SunshineAdvanceDesk({enrolled,managerId}:{enrolled:boolean;manag
   const [period,setPeriod]=useState('monthly')
   const [netInterest,setNetInterest]=useState('')
   const [bankReference,setBankReference]=useState('')
+  const [purchaseKind,setPurchaseKind]=useState('file_folder')
+  const [purchaseDetail,setPurchaseDetail]=useState('')
   const [acceptedBankOwnership,setAcceptedBankOwnership]=useState(false)
   const [reviewReference,setReviewReference]=useState('')
   const [settlementReference,setSettlementReference]=useState('')
@@ -98,6 +100,24 @@ export function SunshineAdvanceDesk({enrolled,managerId}:{enrolled:boolean;manag
             className="mt-2 min-h-11 w-full rounded-lg border border-white/25 bg-slate-950 p-3"/>
         </label>
       </div>
+      <div className="mt-4 grid gap-3 sm:grid-cols-2" data-sunshine-product-intent>
+        <label className="text-sm">Which Weave product do you want to purchase?
+          <select value={purchaseKind} onChange={e=>setPurchaseKind(e.target.value)}
+            className="mt-2 min-h-11 w-full rounded-lg border border-white/25 bg-slate-950 p-3">
+            <option value="file_folder">Client File Folder</option>
+            <option value="weave_food">Weave food product</option>
+            <option value="weave_system">Weave system or business part</option>
+            <option value="weave_workshop">Weave workshop</option>
+            <option value="other_weave_product">Another Weave product</option>
+          </select>
+        </label>
+        <label className="text-sm">Purchase needed (name or internal quote reference)
+          <input value={purchaseDetail} maxLength={160} onChange={e=>setPurchaseDetail(e.target.value)}
+            placeholder="e.g. Premium File Folder, Electrolyte carton"
+            className="mt-2 min-h-11 w-full rounded-lg border border-white/25 bg-slate-950 p-3"/>
+        </label>
+      </div>
+      <p className="mt-2 text-xs text-amber-100">This records purchase intent for your Regional Manager and Administrations. It is not a paid order or a verified purchase, and no support is issued on application.</p>
       <label className="mt-4 block text-sm">Bank interest statement/reference (no account number or credentials)
         <input value={bankReference} maxLength={160} onChange={e=>setBankReference(e.target.value)}
           placeholder="Bank period / interest notice reference" className="mt-2 min-h-11 w-full rounded-lg border border-white/25 bg-slate-950 p-3"/>
@@ -105,9 +125,10 @@ export function SunshineAdvanceDesk({enrolled,managerId}:{enrolled:boolean;manag
       <label className="mt-4 flex gap-3 text-sm leading-6"><input type="checkbox" checked={acceptedBankOwnership} onChange={e=>setAcceptedBankOwnership(e.target.checked)} className="mt-1 h-5 w-5"/>
         <span>I request an eligibility review, confirm the account and interest information are mine, and understand no funds are issued by applying.</span>
       </label>
-      <button type="button" disabled={busy||!canRequest||!acceptedBankOwnership||Number(netInterest)<=0||bankReference.trim().length<12}
+      <button type="button" disabled={busy||!canRequest||!acceptedBankOwnership||Number(netInterest)<=0||bankReference.trim().length<12||purchaseDetail.trim().length<4}
         onClick={()=>void act('request',{interestPeriod:period,expectedNetInterestNgn:Number(netInterest),
-          evidenceReference:bankReference,requestId:crypto.randomUUID(),bankOwnershipConfirmed:true})}
+          evidenceReference:bankReference,purchaseKind,purchaseDetail:purchaseDetail.trim(),
+          requestId:crypto.randomUUID(),bankOwnershipConfirmed:true})}
         className="mt-4 min-h-11 rounded-xl bg-amber-200 px-5 py-3 text-sm font-bold text-slate-950 disabled:opacity-40">
         Request 70% interest-based support quote
       </button>
@@ -150,6 +171,7 @@ export function SunshineAdvanceDesk({enrolled,managerId}:{enrolled:boolean;manag
         return <article key={c.id} className="rounded-xl border border-white/15 bg-slate-950/50 p-4" data-sunshine-advance-case={c.status}>
           <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-bold">Support · {c.interestPeriod} interest{c.workerName?' · '+c.workerName:''}</h3>
             <span className="rounded-full border border-amber-200/30 px-3 py-1 text-xs font-semibold text-amber-100">{c.status.replaceAll('_',' ')}</span></div>
+          <p className="mt-2 text-sm text-amber-100">Requested Weave purchase: <strong>{c.purchaseDetail||"Product not specified"}</strong> · {c.purchaseKind?.replaceAll("_"," ")||"Weave product"}. This request is not itself proof of a completed order.</p>
           <p className="mt-2 text-sm text-slate-300">Verified-interest basis: {naira(c.expectedNetInterestNgn)} · Recorded rate: ₦{c.rateNgnPerSwitch.toLocaleString('en-NG')} / System Switch</p>
           <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
             {[['Bank interest value',c.bankInterestSwitch],['70% support',c.advanceSwitch],['Weave 10% share',c.companyFeeSwitch],['Total repayment',c.totalRepaymentSwitch]].map(([label,value])=>
