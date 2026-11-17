@@ -200,3 +200,28 @@ The same Docker image and Compose stack can later move to a Weave-owned machine.
 ## Phase 2: remove the remaining Google dependency
 
 The current migration deliberately separates hosting from storage. After the server is stable, migrate Google Cloud Storage-backed media routes to an S3-compatible provider or Weave-owned storage, then remove Google credentials from the host completely.
+
+
+## Weave-owned server candidate — production remains on Oracle
+
+The next controlled path is **not** a live host migration. The separate
+company-owned candidate can report readiness evidence into Administrations
+at \`/admin/sovereign-server\` without changing DNS, payments or deployment.
+
+- Candidate read-only health: \`/api/health/ready\`
+- Candidate inspector: \`python3 selfhost/sovereign-candidate-probe.py\`
+- Optional authenticated report: \`python3 selfhost/sovereign-candidate-probe.py --report\`
+- Optional isolated PostgreSQL service:
+  \`docker-compose.weave-owned.yml\`
+- Required safety and actual hardware/network/backup instructions:
+  [Weave-owned transition](../docs/weave-sovereign-server-transition.md)
+
+The original Administration Release Workshop, its GitHub verification
+gate, existing host-side release worker and rollback protocol are
+preserved. The Native Formation Workshop separately publishes installed
+pages, forms, working-step systems and 3D scenes as versioned data
+without a new container image on every ordinary module update.
+
+A report marked ready never authorizes moving traffic or decommissioning
+Oracle. Ownership of physical machines, real restore ability and
+readiness for a write-consistent cutover require independent confirmation.
