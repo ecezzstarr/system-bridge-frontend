@@ -2,7 +2,7 @@ import {NextRequest,NextResponse} from 'next/server'
 import {requireWorkshopAuthorization} from '@/lib/workshop-auth'
 import {
  CODE_WORKSHOP_POLICY,isCodeWorkshopWritable,readWorkshopSource,workshopActivity,
- createWorkshopBranch,commitWorkshopFile,createWorkshopReview,
+ createWorkshopBranch,commitWorkshopFile,createWorkshopReview,workshopDraftBranches,
 } from '@/lib/weave-code-workshop'
 
 export const runtime='nodejs'
@@ -19,6 +19,11 @@ export async function GET(request:NextRequest){
   if(kind==='activity'){
    const entries=await workshopActivity(userId)
    return NextResponse.json({success:true,kind,entries,policy:CODE_WORKSHOP_POLICY,
+    writingConfigured:isCodeWorkshopWritable()},{headers:noStore})
+  }
+  if(kind==='drafts'){
+   const drafts=await workshopDraftBranches(userId)
+   return NextResponse.json({success:true,kind,drafts,policy:CODE_WORKSHOP_POLICY,
     writingConfigured:isCodeWorkshopWritable()},{headers:noStore})
   }
   if(kind!=='file'&&kind!=='directory')
