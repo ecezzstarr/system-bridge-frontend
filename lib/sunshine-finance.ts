@@ -82,7 +82,7 @@ export async function ensureSunshineFinanceSchema(){
  )`)
  // Compatible with existing Sunshine requests created before purchase details were tracked.
  // Existing tables may retain the first daily/monthly CHECK; expand only when needed.
- await db.query(`DO $ BEGIN
+ await db.query(`DO $$ BEGIN
    IF EXISTS (SELECT 1 FROM pg_constraint c
      WHERE c.conrelid='weave_sunshine_support_advances'::regclass
        AND c.conname='weave_sunshine_support_advances_interest_period_check'
@@ -93,7 +93,7 @@ export async function ensureSunshineFinanceSchema(){
        ADD CONSTRAINT weave_sunshine_support_advances_interest_period_check
        CHECK(interest_period IN ('daily','monthly','annual'));
    END IF;
- END $`)
+ END $$`)
  await db.query(`ALTER TABLE weave_sunshine_support_advances
    ADD COLUMN IF NOT EXISTS purchase_kind varchar(36) NOT NULL DEFAULT 'other_weave_product'`)
  await db.query(`ALTER TABLE weave_sunshine_support_advances
