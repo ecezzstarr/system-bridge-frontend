@@ -229,6 +229,7 @@ jobs:
           node tests/code-workshop-governance-regression.cjs
           node tests/weave-formation-continuity-regression.cjs
           node tests/weave-native-publishing-regression.cjs
+          node tests/weave-sovereign-server-regression.cjs
           node tests/company-of-time-homepage-regression.cjs
           node tests/file-folder-standard-official-world-regression.cjs
           node tests/weave-narration-studio.cjs
