@@ -26,6 +26,7 @@ export default function AdminClientDepositsPage() {
   const [pending, setPending] = useState<Deposit[]>([])
   const [recent, setRecent] = useState<Deposit[]>([])
   const [busy, setBusy] = useState('')
+  const [attributionByDeposit,setAttributionByDeposit]=useState<Record<string,string>>({})
   const [message, setMessage] = useState('')
 
   const headers = () => ({
@@ -58,6 +59,8 @@ export default function AdminClientDepositsPage() {
     const deposit=pending.find(item=>item.id===depositId)
     if(!deposit || busy)return
     const approved=status==='approved'
+    const attributionReference=String(attributionByDeposit[depositId]||'').trim()
+    if(approved&&attributionReference.length<12){setMessage('Forensics must independently verify which Client initiated this shared-address transfer and enter its withdrawal evidence reference before approval.');return}
     if(!window.confirm(approved
       ? 'Confirm that Forensics reviewed this transfer. The server will independently verify the native TRX transaction is solidified and matches Weave’s receiving address and exact amount before crediting.'
       : 'Reject this Client deposit? No System Switch will be credited.'))return
@@ -66,7 +69,11 @@ export default function AdminClientDepositsPage() {
       const res = await fetch('/api/admin/deposit/tron/verify', {
         method: 'POST',
         headers: headers(),
-        body: JSON.stringify({ depositId, status, confirmation: status==='approved' ? 'VERIFIED TRX' : 'REJECT TRX', ...(status==='approved'?{verifiedAmountTrx:Number(deposit.amount_trx)}:{}) }),
+        body: JSON.stringify({ depositId, status, confirmation: status==='approved' ? 'VERIFIED TRX' : 'REJECT TRX', ...(status==='approved'?{
+          verifiedAmountTrx:Number(deposit.amount_trx),
+          attributionReference,
+          forensicsAttributionConfirmed:true
+        }:{}) }),
       })
       const data = await res.json()
       if (!res.ok || !data.success) throw new Error(data.error || 'Deposit decision failed')
@@ -131,13 +138,19 @@ export default function AdminClientDepositsPage() {
                         Inspect TRON transaction on Tronscan
                       </a>
                     )}
-                    <p className="mt-2 text-xs text-amber-200">The server checks the solidified TRON mainnet transaction, direct native TRX type, recipient and exact amount before any approval. A submitted hash or exchange order screenshot is not proof of payment.</p>
+                    <p className="mt-2 text-xs text-amber-200">The server checks the solidified TRON mainnet transaction, direct native TRX type, recipient and exact amount before any approval. Because Weave uses a shared receiving address, Forensics must also prove the transfer belongs to this Client; a publicly visible transaction hash alone cannot establish ownership.</p>
+                    <label className="mt-3 block text-xs text-slate-300">Verified Client attribution reference · exchange withdrawal ID or signed wallet ownership proof record (no secrets)
+                      <input type="text" value={attributionByDeposit[deposit.id]||''} maxLength={180}
+                        onChange={e=>setAttributionByDeposit(previous=>({...previous,[deposit.id]:e.target.value}))}
+                        placeholder="Record the independently checked Client ownership evidence reference"
+                        className="mt-2 min-h-11 w-full rounded-lg border border-white/20 bg-slate-950 p-3 text-sm"/>
+                    </label>
                     <p className="mt-2 text-sm text-slate-500">{new Date(deposit.created_at).toLocaleString()}</p>
                   </div>
                   <div className="flex gap-2 lg:flex-col">
                     <button
                       onClick={() => void decide(deposit.id, 'approved')}
-                      disabled={Boolean(busy)}
+                      disabled={Boolean(busy)||String(attributionByDeposit[deposit.id]||'').trim().length<12}
                       className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 py-3 text-sm font-black text-slate-950 disabled:opacity-50"
                     >
                       <CheckCircle2 className="h-4 w-4" /> Approve
