@@ -111,6 +111,16 @@ for(const [department,file] of [
 }
 assert.ok(read('lib/admin-workplace-catalog.ts').includes('"/admin/native-foundry"'))
 assert.ok(read('app/(app)/admin/code-workshop/page.tsx').includes('/admin/native-foundry'))
+const sourceBoundary=read('lib/weave-code-workshop.ts')
+assert.match(sourceBoundary,/weave-native-registry/)
+assert.match(sourceBoundary,/weave-native-blueprint/)
+assert.match(sourceBoundary,/native-foundry/)
+assert.match(sourceBoundary,/weave-modules/)
+assert.match(sourceBoundary,/native-\(\?:department-rail\|module-renderer\|world-scene\)/)
+assert.match(read('app/(app)/admin/code-workshop/page.tsx'),/data-admin-native-workshop-entrance/)
+assert.match(ui,/draftMatches/)
+assert.match(ui,/stable\(blueprint\)/)
+
 assert.ok(read('app/(app)/admin/release-workshop/page.tsx').includes('/admin/native-foundry'))
 for(const file of ['lib/weave-native-registry.ts','lib/weave-native-blueprint.ts']){
  const contents=read(file)
