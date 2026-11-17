@@ -10,6 +10,9 @@ import {SUNSHINE_ENROLLMENT_TARGET_SS} from '@/lib/sunshine-continuity'
  */
 export const SUNSHINE_ADVANCE_FRACTION=0.70
 export const SUNSHINE_INTEREST_FEE_FRACTION=0.10
+export const SUNSHINE_PURCHASE_KINDS=[
+ 'file_folder','weave_food','weave_system','weave_workshop','other_weave_product'
+] as const
 export const SUNSHINE_CREDIT_RELEASE_ENABLED=process.env.SUNSHINE_CREDIT_RELEASE_ENABLED==='true'
 export {SUNSHINE_ENROLLMENT_TARGET_SS}
 const round6=(v:number)=>Math.round(v*1e6)/1e6
@@ -52,6 +55,9 @@ export async function ensureSunshineFinanceSchema(){
    manager_id uuid NOT NULL REFERENCES weave_regional_manager_appointments(user_id),
    bank_product varchar(40) NOT NULL,
    interest_period varchar(8) NOT NULL CHECK(interest_period IN ('daily','monthly')),
+   purchase_kind varchar(36) NOT NULL DEFAULT 'other_weave_product'
+     CHECK(purchase_kind IN ('file_folder','weave_food','weave_system','weave_workshop','other_weave_product')),
+   purchase_detail varchar(180) NOT NULL DEFAULT 'Weave product support',
    expected_net_interest_ngn numeric(18,2) NOT NULL CHECK(expected_net_interest_ngn>0),
    rate_ngn_per_switch numeric(20,8) NOT NULL CHECK(rate_ngn_per_switch>0),
    bank_interest_switch numeric(20,6) NOT NULL CHECK(bank_interest_switch>0),
@@ -74,6 +80,11 @@ export async function ensureSunshineFinanceSchema(){
    created_at timestamptz NOT NULL DEFAULT now(),
    updated_at timestamptz NOT NULL DEFAULT now()
  )`)
+ // Compatible with existing Sunshine requests created before purchase details were tracked.
+ await db.query(`ALTER TABLE weave_sunshine_support_advances
+   ADD COLUMN IF NOT EXISTS purchase_kind varchar(36) NOT NULL DEFAULT 'other_weave_product'`)
+ await db.query(`ALTER TABLE weave_sunshine_support_advances
+   ADD COLUMN IF NOT EXISTS purchase_detail varchar(180) NOT NULL DEFAULT 'Weave product support'`)
  await db.query(`CREATE UNIQUE INDEX IF NOT EXISTS idx_sunshine_one_active_advance
    ON weave_sunshine_support_advances(user_id)
    WHERE status IN ('requested','interest_verified','terms_accepted','funded','interest_received')`)
