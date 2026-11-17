@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import {useAuth} from '@/lib/auth-provider'
 import {useCallback,useEffect,useState} from 'react'
+import {SUNSHINE_BANK_PRODUCTS,sunshineBankProduct} from '@/lib/sunshine-bank-products'
 
 type Plan={
   declaredCapitalNgn:number;bankProduct:string;managerVisibility:boolean;
@@ -79,6 +80,7 @@ export default function SunshineWorkshop(){
   const annualRate=Number(rate)
   const projected=Number(capital)*annualRate/1200
   const validRate=rate.trim()!==''&&Number.isFinite(annualRate)&&annualRate>=0&&annualRate<=100
+  const selectedBank=sunshineBankProduct(product)
   const supportLink='/weave/lifestyles/support'+(mine?.managerId?'?managerId='+encodeURIComponent(mine.managerId):'')
   return <main className="weave-operating-environment mx-auto min-h-screen max-w-6xl space-y-6 px-3 py-6 text-white sm:px-6" data-sunshine-workshop="mechanized-wealth">
     <header className="rounded-2xl border border-amber-200/30 bg-gradient-to-br from-[#283225] via-[#132630] to-[#0c1621] p-6">
@@ -92,6 +94,19 @@ export default function SunshineWorkshop(){
     {error&&<p role="alert" className="rounded-xl border border-rose-300/30 p-4 text-sm text-rose-100">{error}</p>}
     {notice&&<p role="status" className="rounded-xl border border-cyan-300/30 p-4 text-sm text-cyan-100">{notice}</p>}
     {isInitialized&&!loading&&token&&<>
+      <section className="rounded-2xl border border-amber-200/25 bg-[#102329] p-5" data-sunshine-earn-first>
+        <h2 className="text-xl font-bold">First earn. Then build savings. Then live from interest.</h2>
+        <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-200">Sunshine is the wealth-continuity phase of real Weave work. Complete verified tasks and serve real customers; separate affordable savings from actual proceeds, then open the eligible savings product directly with your chosen institution. Weave does not promise earnings, transfer funds to banks, or provide a banking account.</p>
+        <div className="mt-4 grid gap-3 sm:grid-cols-3">
+          <div className="rounded-xl border border-white/15 p-4"><h3 className="font-bold text-amber-100">1 · Earn through Weave</h3><p className="mt-2 text-sm leading-6 text-slate-200">{user?.role==='bridger'?'Work in Hope: outreach, qualified prospects and verified Client File Folder sales.':user?.role==='agent'?'Work in Stability: food distribution, customer fulfillment and verified Agent earnings.':user?.role==='client'?'Operate your Client File Folder and Customer Door, serve customers and verify business earnings.':'Grow income through authorized Weave activities and records.'}</p>
+            <Link className="mt-3 inline-flex text-sm font-semibold text-cyan-200" href={user?.role==='bridger'?'/bridger/dashboard':user?.role==='agent'?'/agent/distribution':user?.role==='client'?'/client/dashboard':'/weave/lifestyles/work'}>Open working systems →</Link>
+          </div>
+          <div className="rounded-xl border border-white/15 p-4"><h3 className="font-bold text-amber-100">2 · Accumulate capital</h3><p className="mt-2 text-sm leading-6 text-slate-200">Set a feasible savings goal from earnings after work expenses and essential living costs. The initial Sunshine milestone is ₦1,000,000 in an account you control.</p>
+            <Link className="mt-3 inline-flex text-sm font-semibold text-cyan-200" href="/weave/lifestyles/support">Request work assistance →</Link>
+          </div>
+          <div className="rounded-xl border border-white/15 p-4"><h3 className="font-bold text-amber-100">3 · Protect living capital</h3><p className="mt-2 text-sm leading-6 text-slate-200">Track interest, withdrawal activity and the bank's actual terms. Spend only affordable returns once the interest can cover living needs without consuming principal.</p></div>
+        </div>
+      </section>
       <section className="grid gap-4 lg:grid-cols-2">
         <div className="rounded-2xl border border-white/15 bg-[#10212a] p-5" data-sunshine-owner-record>
           <h2 className="text-xl font-bold">My Sunshine capital</h2>
@@ -104,10 +119,16 @@ export default function SunshineWorkshop(){
           <label className="mt-4 block text-sm font-semibold">Savings account product
             <select value={product} onChange={e=>setProduct(e.target.value)}
               className="mt-2 min-h-12 w-full rounded-lg border border-white/25 bg-slate-950 p-3 text-white">
-              <option value="ecobank_super_savers">Ecobank · SuperSavers</option>
-              <option value="other_savings">Other interest-bearing savings account</option>
+              {SUNSHINE_BANK_PRODUCTS.map(bank=><option key={bank.id} value={bank.id}>{bank.bank} · {bank.name}</option>)}
             </select>
           </label>
+          {selectedBank&&<div className="mt-3 rounded-xl border border-amber-200/20 bg-amber-200/[.05] p-4 text-sm leading-6 text-slate-200" data-sunshine-product-conditions>
+            <p className="font-bold text-amber-100">{selectedBank.payout}</p>
+            <p className="mt-1">{selectedBank.liquidity}</p>
+            {selectedBank.rule==='two_monthly'?<p className="mt-2 text-xs text-amber-200">This bank product specifically rewards no more than two withdrawals per month.</p>:
+              <p className="mt-2 text-xs text-amber-200">Two withdrawals per month is Sunshine's voluntary personal discipline target—not this provider's product rule. Confirm provider restrictions before withdrawing.</p>}
+            {selectedBank.source&&<a href={selectedBank.source} target="_blank" rel="noopener noreferrer" className="mt-2 inline-block text-xs font-semibold text-cyan-200 underline">Read provider terms</a>}
+          </div>}
           <label className="mt-4 flex items-start gap-3 text-sm leading-6">
             <input type="checkbox" checked={share} onChange={e=>setShare(e.target.checked)} className="mt-1 h-5 w-5"/>
             <span>Let my currently assigned Regional Manager see my withdrawal count and work-support needs. My capital balance remains private.</span>
