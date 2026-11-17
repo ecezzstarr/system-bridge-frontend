@@ -121,7 +121,13 @@ assert.match(read('app/(app)/admin/code-workshop/page.tsx'),/data-admin-native-w
 assert.match(ui,/draftMatches/)
 assert.match(ui,/stable\(blueprint\)/)
 
-assert.ok(read('app/(app)/admin/release-workshop/page.tsx').includes('/admin/native-foundry'))
+const existingReleaseWorkshop=read('app/(app)/admin/release-workshop/page.tsx')
+assert.ok(existingReleaseWorkshop.includes('/admin/code-workshop'),
+ 'Release Workshop must retain its existing source editor entrance')
+assert.ok(existingReleaseWorkshop.includes('/admin/file-folder-world-releases'),
+ 'Release Workshop must retain existing File Folder release entrance')
+assert.ok(!existingReleaseWorkshop.includes('/admin/native-foundry'),
+ 'Native Formation must not alter the existing Release Workshop UI')
 for(const file of ['lib/weave-native-registry.ts','lib/weave-native-blueprint.ts']){
  const contents=read(file)
  for(const forbidden of ['child_process','execSync(', 'eval(', 'Function(', 'docker compose','ssh '])
