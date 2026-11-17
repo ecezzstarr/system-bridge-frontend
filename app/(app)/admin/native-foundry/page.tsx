@@ -26,6 +26,7 @@ function newBlock(type:NativeBlock['type']):NativeBlock{
  if(type==='scene')return {type,heading:'A living three-dimensional world',scene:'glass-kingdom'}
  if(type==='glass-grid')return {type,heading:'Systems in motion',items:[{title:'First system',description:'What this system does.'}]}
  if(type==='action')return {type,heading:'A real destination',description:'Open an existing authorized workspace.',label:'Open workspace',href:'/dashboard'}
+ if(type==='intake')return {type,formId:'work-request',heading:'Work intake',description:'Record a request and receive an immutable reference.',fields:[{id:'request',label:'Describe the work',kind:'long',required:true,options:[]}]}
  return {type,heading:'Working sequence',steps:[{id:'first',label:'First step',description:'Carry out the intended work.'}]}
 }
 function NativeBlockEditor({block,onChange}:{block:NativeBlock;onChange:(next:NativeBlock)=>void}){
@@ -57,6 +58,25 @@ function NativeBlockEditor({block,onChange}:{block:NativeBlock;onChange:(next:Na
   {stringField('Description',block.description,v=>onChange({...block,description:v}),500,3)}
   {stringField('Link label',block.label,v=>onChange({...block,label:v}),70)}
   {stringField('Existing WEAVE route',block.href,v=>onChange({...block,href:v}),180)}
+ </div>
+ if(block.type==='intake')return <div className="space-y-3">
+  {stringField('Stable form key',block.formId,v=>onChange({...block,formId:v}),50)}
+  {stringField('Form heading',block.heading,v=>onChange({...block,heading:v}))}
+  {stringField('Information guidance',block.description,v=>onChange({...block,description:v}),700,3)}
+  <p className="text-xs text-amber-100">Forms record work requests, not financial or identity verification. Do not request passwords, payment details or secrets.</p>
+  {block.fields.map((f,index)=><div key={index} className="grid gap-2 rounded-xl border border-white/10 p-3">
+   {stringField('Stable field key',f.id,v=>onChange({...block,fields:block.fields.map((x,i)=>i===index?{...x,id:v}:x)}),50)}
+   {stringField('Question label',f.label,v=>onChange({...block,fields:block.fields.map((x,i)=>i===index?{...x,label:v}:x)}),100)}
+   <div className="grid gap-3 sm:grid-cols-2">
+    <label className={label}>Input type<select className={field} value={f.kind} onChange={e=>onChange({...block,fields:block.fields.map((x,i)=>i===index?{...x,kind:e.target.value as typeof f.kind,options:e.target.value==='choice'?['First option','Second option']:[]}:x)})}>
+     <option value="short">Short answer</option><option value="long">Long answer</option><option value="choice">Choice</option>
+    </select></label>
+    <label className="flex items-center gap-2 text-xs text-slate-200"><input type="checkbox" checked={f.required} onChange={e=>onChange({...block,fields:block.fields.map((x,i)=>i===index?{...x,required:e.target.checked}:x)})}/>Required answer</label>
+   </div>
+   {f.kind==='choice'&&<label className={label}>Options · one per line (2–12)<textarea rows={4} value={f.options.join('\n')} onChange={e=>onChange({...block,fields:block.fields.map((x,i)=>i===index?{...x,options:e.target.value.split('\n')}:x)})} className={field}/></label>}
+   <button type="button" className={classes} disabled={block.fields.length===1} onClick={()=>onChange({...block,fields:block.fields.filter((_,i)=>i!==index)})}>Remove field</button>
+  </div>)}
+  <button type="button" className={classes} disabled={block.fields.length>=10} onClick={()=>onChange({...block,fields:[...block.fields,{id:'field-'+(block.fields.length+1),label:'New question',kind:'short',required:false,options:[]}]})}>Add question</button>
  </div>
  if(block.type==='glass-grid')return <div className="space-y-3">
   {stringField('Grid heading',block.heading,v=>onChange({...block,heading:v}))}
@@ -215,7 +235,7 @@ export default function NativeFoundryPage(){
        <NativeBlockEditor block={block} onChange={next=>updateBlock(index,next)}/>
       </div>)}
       <div className="flex flex-wrap gap-2">
-       {(['hero','prose','glass-grid','scene','action',...(blueprint.kind==='system'?['steps']:[])] as NativeBlock['type'][]).map(type=>
+       {(['hero','prose','glass-grid','scene','action',...(blueprint.kind!=='page'?['intake']:[]),...(blueprint.kind==='system'?['steps']:[])] as NativeBlock['type'][]).map(type=>
         <button key={type} type="button" disabled={blueprint.blocks.length>=12} className={classes}
          onClick={()=>setField('blocks',[...blueprint.blocks,newBlock(type)])}><Plus size={14} className="mr-1 inline"/>{type.replaceAll('-',' ')}</button>)}
       </div>
