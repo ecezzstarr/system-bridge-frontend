@@ -166,11 +166,11 @@ export async function POST(request:NextRequest){
     if(!SUNSHINE_PURCHASE_KINDS.includes(purchaseKind as typeof SUNSHINE_PURCHASE_KINDS[number])||
        purchaseDetail.length<4||purchaseDetail.length>160)
       return fail('Choose the Weave product and describe the purchase you need supported',422)
-    if(!uuid.test(requestId)||!['daily','monthly'].includes(period)||
+    if(!uuid.test(requestId)||!['daily','monthly','annual'].includes(period)||
       !Number.isFinite(interest)||interest<=0||interest>maxNgn||
       Math.abs(Math.round(interest*100)-interest*100)>0.0001||
       reference.length<12||body.bankOwnershipConfirmed!==true)
-      return fail('Provide daily/monthly net bank interest, a non-sensitive bank evidence reference and your consent',422)
+      return fail('Provide daily, monthly or annual net bank interest, a non-sensitive bank evidence reference and your consent',422)
     const market=await getTrxPaymentNgnRate()
     if(market.source!=='live')return fail('Live TRX/NGN price unavailable; no financial support quote can be created',503)
     const quote=calculateSunshineSupport(interest,market.rateNgnPerTrx)
