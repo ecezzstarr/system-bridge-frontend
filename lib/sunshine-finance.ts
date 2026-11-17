@@ -17,7 +17,7 @@ export const SUNSHINE_CREDIT_RELEASE_ENABLED=process.env.SUNSHINE_CREDIT_RELEASE
 export {SUNSHINE_ENROLLMENT_TARGET_SS}
 const round6=(v:number)=>Math.round(v*1e6)/1e6
 const floor6=(v:number)=>Math.floor(v*1e6+1e-8)/1e6
-export type InterestPeriod='daily'|'monthly'
+export type InterestPeriod='daily'|'monthly'|'annual'
 
 export function calculateSunshineSupport(netInterestNgn:number,rateNgnPerSystemSwitch:number){
   if(!Number.isFinite(netInterestNgn)||netInterestNgn<=0||netInterestNgn>1e12||
@@ -54,7 +54,7 @@ export async function ensureSunshineFinanceSchema(){
    user_id uuid NOT NULL REFERENCES weave_sunshine_savings_plans(user_id),
    manager_id uuid NOT NULL REFERENCES weave_regional_manager_appointments(user_id),
    bank_product varchar(40) NOT NULL,
-   interest_period varchar(8) NOT NULL CHECK(interest_period IN ('daily','monthly')),
+   interest_period varchar(8) NOT NULL CHECK(interest_period IN ('daily','monthly','annual')),
    purchase_kind varchar(36) NOT NULL DEFAULT 'other_weave_product'
      CHECK(purchase_kind IN ('file_folder','weave_food','weave_system','weave_workshop','other_weave_product')),
    purchase_detail varchar(180) NOT NULL DEFAULT 'Weave product support',
