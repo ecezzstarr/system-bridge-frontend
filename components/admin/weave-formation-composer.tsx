@@ -2,7 +2,7 @@
 
 import {useMemo,useState} from 'react'
 import {Canvas} from '@react-three/fiber'
-import {OrbitControls} from '@react-three/drei'
+import {Float,OrbitControls} from '@react-three/drei'
 import {Box,Code2,Layers3,PanelsTopLeft,Workflow} from 'lucide-react'
 import {
   buildWeaveFormationDraft,type WeaveFormationDraft,type WeaveFormationKind,
@@ -91,6 +91,16 @@ export default function WeaveFormationComposer({draftReady,onUse}:{
                   <planeGeometry args={[30,30]}/>
                   <meshStandardMaterial color="#142f45" roughness={.65}/>
                 </mesh>
+                <mesh receiveShadow rotation={[-Math.PI/2,0,0]} position={[0,.025,2.4]}>
+                  <planeGeometry args={[13,2.5]}/>
+                  <meshPhysicalMaterial color="#287eae" roughness={.07} metalness={.22} clearcoat={1} transparent opacity={.78}/>
+                </mesh>
+                <Float speed={1.1} rotationIntensity={.45} floatIntensity={.25}>
+                  <mesh position={[0,5,-1]} rotation={[Math.PI/3,0,0]}>
+                    <torusGeometry args={[1.2,.09,12,64]}/>
+                    <meshStandardMaterial color="#a6f3ff" emissive="#206f96" emissiveIntensity={1.3} metalness={.5}/>
+                  </mesh>
+                </Float>
                 {[-3,0,3].map((x,i)=><group key={x} position={[x,0,0]}>
                   <mesh castShadow receiveShadow position={[0,1.2+i*.4,0]}>
                     <boxGeometry args={[1.8,2.4+i*.8,1.7]}/>
