@@ -12,7 +12,9 @@ type Case={
   totalRepaymentSwitch:number;evidenceReference:string;
   fundedAt:string|null;repaidAt:string|null;reason:string|null
 }
-type State={support:Case[];creditReleaseEnabled:boolean;managerCanReview:boolean}
+type DepartmentNotice={type:string;title:string;content:string;link:string;created_at:string}
+type State={support:Case[];creditReleaseEnabled:boolean;managerCanReview:boolean;
+  departmentNotices?:DepartmentNotice[];departmentLabels?:string[]}
 const switchFmt=(v:number)=>Number(v||0).toLocaleString('en-NG',{maximumFractionDigits:6})+' System Switch'
 const naira=(v:number)=>new Intl.NumberFormat('en-NG',{style:'currency',currency:'NGN',maximumFractionDigits:2}).format(v)
 
@@ -122,6 +124,20 @@ export function SunshineAdvanceDesk({enrolled,managerId}:{enrolled:boolean;manag
         onClick={()=>void act('assign_client_manager',{clientId,managerId:regionalManagerId})}
         className="mt-3 min-h-11 rounded-lg border border-cyan-200/40 px-4 py-2 text-sm font-semibold disabled:opacity-40">Record authorized Client assignment</button>
     </div>}
+    {(isAdmin||Boolean(data.departmentLabels?.length))&&<section className="mt-6 rounded-xl border border-cyan-200/25 bg-[#0a202c] p-4" data-sunshine-department-notifications>
+      <h3 className="text-lg font-bold">Company departments · Sunshine movement</h3>
+      <p className="mt-2 text-xs leading-6 text-slate-300">Administrations, approved Forensics, Mandate and Attorney personnel receive recorded stage alerts through the company notification inbox and subscribed phone push. These notices contain no private bank evidence or savings balances. Only the participant, assigned manager and Administrations can view detailed financial cases.</p>
+      {(data.departmentNotices||[]).length===0
+        ?<p className="mt-3 text-sm text-slate-400">No Sunshine stage notices for your authorized company account.</p>
+        :<div className="mt-3 max-h-80 space-y-2 overflow-y-auto">
+          {(data.departmentNotices||[]).map((notice,index)=><div key={notice.type+notice.link+index}
+            className="rounded-lg border border-white/10 p-3">
+            <p className="text-sm font-semibold text-amber-100">{notice.title}</p>
+            <p className="mt-1 text-xs leading-6 text-slate-200">{notice.content}</p>
+            <p className="mt-1 text-[11px] text-slate-400">{new Date(notice.created_at).toLocaleString('en-NG')}</p>
+          </div>)}
+        </div>}
+    </section>}
     {(isAdmin||data.managerCanReview)&&<p className="mt-5 text-sm text-amber-100">{data.creditReleaseEnabled?
       'Regulatory release flag is configured; verify independent evidence before approving.' :
       'Live disbursements are locked. Compliance approval, company treasury configuration and release authorization are required.'}</p>}
