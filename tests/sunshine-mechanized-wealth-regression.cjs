@@ -45,7 +45,7 @@ assert.ok(!api.slice(api.indexOf("if(request.nextUrl.searchParams.get('view')===
   api.indexOf("const [planResult")).includes('declared_capital_ngn'),
   'Team view never discloses personal capital')
 assert.ok(api.includes("await assignedManager(user)"),'Actual assigned manager required')
-assert.ok(api.includes('notifyWithdrawalTarget(managerId)'),'Two withdrawals triggers manager support alert with consent')
+assert.ok(api.includes('notifyWithdrawalTarget(managerId,user.id)'),'Two withdrawals triggers manager support alert with consent')
 assert.ok(api.includes("body.acknowledgeBankOwnership!==true"),'User must confirm external bank ownership')
 assert.ok(api.includes("record_living_money"),'Interest-only living money recorded')
 assert.ok(api.includes("spent>interest"),'Spending cannot exceed interest in saved record')
