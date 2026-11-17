@@ -2,7 +2,7 @@ import {NextRequest,NextResponse} from 'next/server'
 import {requireWorkshopAuthorization} from '@/lib/workshop-auth'
 import {validNativeDepartment} from '@/lib/weave-native-blueprint'
 import {
- draftNativeModule,listNativeReleases,publishNativeModule,prepareNativeRollback,unpublishNativeModule,
+ draftNativeModule,listNativeReleases,listNativeSubmissions,publishNativeModule,prepareNativeRollback,unpublishNativeModule,
 } from '@/lib/weave-native-registry'
 
 export const runtime='nodejs'
@@ -21,6 +21,12 @@ export async function GET(request:NextRequest){
  if(!validNativeDepartment(department))
   return NextResponse.json({error:'Choose a department'},{status:400,headers:noStore})
  try{
+  if(params.get('mode')==='submissions'){
+   const slug=params.get('slug')
+   if(!slug)return NextResponse.json({error:'Select a published module'},{status:400,headers:noStore})
+   const submissions=await listNativeSubmissions(department,slug)
+   return NextResponse.json({success:true,submissions},{headers:noStore})
+  }
   const releases=await listNativeReleases(department,params.get('slug')||undefined)
   return NextResponse.json({success:true,releases},{headers:noStore})
  }catch(error){return errorResponse(error)}
