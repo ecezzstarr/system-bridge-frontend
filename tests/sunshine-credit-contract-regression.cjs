@@ -64,7 +64,7 @@ assert.ok(advance.includes('authorizeRepayment!==true'),'Borrower controls repay
 assert.ok(advance.includes("status='repaid'"),'Settlement exactly once')
 assert.ok(advance.includes("balance_trx=balance_trx-$2"),'Manager funds actual loan from existing balance')
 assert.ok(advance.includes("pending','approved"),'Reserved withdrawal balance excluded from funding/repayment')
-assert.ok(!advance.includes("Sunshine repayable credit (not earnings)',$3"),'No fabricated bank balance')
+assert.ok(advance.includes("'transfer',$2,'Flame Coin','Sunshine repayable credit (not earnings)'"),'Repayable credit is never falsely recorded as earned commission')
 assert.ok(desk.includes('data-sunshine-interest-support'),'Full borrower/manager/admin interface')
 assert.ok(page.includes('<SunshineAdvanceDesk enrolled={enrolled}'),'New finance desk is in Sunshine')
 assert.ok(page.includes('isClient?Number(capital):undefined'),'Client capital submitted as TRX')
