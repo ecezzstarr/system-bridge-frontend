@@ -1,24 +1,14 @@
 'use client'
 
-import { useEffect,useMemo,useState } from 'react'
-import { useRouter } from 'next/navigation'
+import {useEffect,useMemo,useState} from 'react'
+import {useRouter} from 'next/navigation'
 import Link from 'next/link'
-import {
-  ArrowDown,
-  ArrowUp,
-  Eye,
-  EyeOff,
-  LayoutTemplate,
-  LockKeyhole,
-  RefreshCw,
-  RotateCcw,
-  Search,
-} from 'lucide-react'
-import { toast } from 'sonner'
-import { useAuth } from '@/lib/auth-provider'
-import { getAuthHeaders } from '@/lib/auth-client'
-import { WeaveSystemRoom } from '@/components/world/weave-system-room'
-import { EnvironmentRuntimeControls } from '@/components/admin/environment-runtime-controls'
+import {ArrowDown,ArrowUp,Eye,EyeOff,LayoutTemplate,LockKeyhole,RefreshCw,RotateCcw,Search,SlidersHorizontal} from 'lucide-react'
+import {toast} from 'sonner'
+import {useAuth} from '@/lib/auth-provider'
+import {getAuthHeaders} from '@/lib/auth-client'
+import {WeaveSystemRoom} from '@/components/world/weave-system-room'
+import {EnvironmentRuntimeControls} from '@/components/admin/environment-runtime-controls'
 
 type Surface={
   surface_key:string
@@ -32,6 +22,9 @@ type Surface={
   is_protected:boolean
   updated_at:string
 }
+type View='stations'|'runtime'
+type Visibility='all'|'live'|'hidden'
+type Kind='all'|'district'|'station'
 
 export default function EnvironmentOrganizerWorkshop(){
   const {user,isInitialized}=useAuth()
@@ -39,7 +32,12 @@ export default function EnvironmentOrganizerWorkshop(){
   const [items,setItems]=useState<Surface[]>([])
   const [loading,setLoading]=useState(true)
   const [busy,setBusy]=useState('')
+  const [error,setError]=useState('')
+  const [view,setView]=useState<View>('stations')
+  const [area,setArea]=useState('Administrations')
   const [query,setQuery]=useState('')
+  const [visibility,setVisibility]=useState<Visibility>('all')
+  const [kind,setKind]=useState<Kind>('all')
 
   useEffect(()=>{
     if(isInitialized&&(!user||user.role!=='admin'))router.replace('/dashboard')
@@ -50,145 +48,205 @@ export default function EnvironmentOrganizerWorkshop(){
     try{
       const response=await fetch('/api/admin/environment-organizer',{headers:getAuthHeaders(),cache:'no-store'})
       const body=await response.json()
-      if(!response.ok)throw new Error(body.error||'Unable to load Environment Organizer')
-      setItems(body.items||[])
-    }catch(error:any){
-      toast.error(error.message||'Unable to load Environment Organizer')
-    }finally{
-      setLoading(false)
-    }
+      if(!response.ok||!body.success)throw new Error(body.error||'Unable to load Environment Organizer')
+      setItems(Array.isArray(body.items)?body.items:[])
+      setError('')
+    }catch(e){
+      const message=e instanceof Error?e.message:'Unable to load Environment Organizer'
+      setError(message)
+      toast.error(message)
+    }finally{setLoading(false)}
   }
 
-  useEffect(()=>{if(user?.role==='admin')void load()},[user?.id])
+  useEffect(()=>{if(user?.role==='admin')void load()},[user?.id,user?.role])
 
   const run=async(payload:Record<string,unknown>,key:string)=>{
+    if(busy)return
     setBusy(key)
     try{
       const response=await fetch('/api/admin/environment-organizer',{
-        method:'PATCH',
-        headers:getAuthHeaders(),
-        body:JSON.stringify(payload),
+        method:'PATCH',headers:getAuthHeaders(),body:JSON.stringify(payload),
       })
       const body=await response.json()
-      if(!response.ok)throw new Error(body.error||'Environment update failed')
-      setItems(body.items||[])
+      if(!response.ok||!body.success)throw new Error(body.error||'Environment update failed')
+      setItems(Array.isArray(body.items)?body.items:[])
+      setError('')
       window.dispatchEvent(new Event('weave-environment-refresh'))
-      toast.success(payload.action==='restore_defaults'?'Environment defaults restored.':'Environment organization updated.')
-    }catch(error:any){
-      toast.error(error.message||'Environment update failed')
-    }finally{
-      setBusy('')
-    }
+      toast.success(payload.action==='restore_defaults'?'Default organization restored.':'Saved to the active environment.')
+    }catch(e){
+      const message=e instanceof Error?e.message:'Environment update failed'
+      toast.error(message)
+      setError(message)
+    }finally{setBusy('')}
   }
 
+  const areas=useMemo(()=>[...new Set(items.map(item=>item.area))].sort((a,b)=>a.localeCompare(b)),[items])
   const filtered=useMemo(()=>{
     const q=query.trim().toLowerCase()
-    if(!q)return items
-    return items.filter(item=>[item.label,item.route,item.area,item.scope,item.surface_kind].some(value=>String(value).toLowerCase().includes(q)))
-  },[items,query])
-
+    return items.filter(item=>
+      (area==='all'||item.area===area)&&
+      (visibility==='all'||(visibility==='live'?item.is_visible:!item.is_visible))&&
+      (kind==='all'||item.surface_kind===kind)&&
+      (!q||[item.label,item.route,item.area,item.scope,item.surface_kind].some(value=>String(value).toLowerCase().includes(q))))
+  },[items,area,visibility,kind,query])
   const grouped=useMemo(()=>{
-    const map=new Map<string,Surface[]>()
+    const groups=new Map<string,Surface[]>()
     for(const item of filtered){
-      const group=map.get(item.area)||[]
-      group.push(item)
-      map.set(item.area,group)
+      const current=groups.get(item.area)||[]
+      current.push(item)
+      groups.set(item.area,current)
     }
-    return [...map.entries()]
+    return [...groups.entries()].map(([name,surfaces])=>[name,
+      [...surfaces].sort((a,b)=>a.sort_order-b.sort_order||a.label.localeCompare(b.label)||a.surface_key.localeCompare(b.surface_key))
+    ] as const)
   },[filtered])
-
+  const canMove=!query.trim()&&visibility==='all'&&kind==='all'
   const live=items.filter(item=>item.is_visible).length
   const hidden=items.length-live
 
   if(!isInitialized||!user||user.role!=='admin')return null
 
   const left=<>
-    <section className="rounded-3xl border border-cyan-300/15 bg-cyan-400/[.035] p-4">
+    <section className="rounded-2xl border border-cyan-300/20 bg-cyan-400/[.04] p-4">
       <LayoutTemplate className="h-5 w-5 text-cyan-300"/>
-      <p className="mt-3 text-sm font-black text-white">Runtime environment authority</p>
-      <p className="mt-2 text-xs leading-5 text-slate-400">Remove a badly placed station or district from the active environment without deleting its source. Restore it when the structure is ready.</p>
+      <h2 className="mt-2 text-base font-bold text-white">Organize actual work</h2>
+      <p className="mt-2 text-sm leading-6 text-slate-300">Choose a department, move its stations or change visibility. Each adjustment is recorded; source code and user records remain intact.</p>
     </section>
-    <section className="rounded-3xl border border-white/10 bg-black/20 p-4">
-      <p className="text-[9px] font-black uppercase tracking-wider text-slate-500">Registry state</p>
-      <div className="mt-3 grid grid-cols-2 gap-2">
-        <div className="rounded-xl border border-emerald-300/10 bg-emerald-400/[.035] p-3 text-center"><p className="text-[8px] uppercase text-emerald-300">Live</p><p className="mt-1 text-2xl font-black text-white">{live}</p></div>
-        <div className="rounded-xl border border-amber-300/10 bg-amber-400/[.035] p-3 text-center"><p className="text-[8px] uppercase text-amber-300">Removed</p><p className="mt-1 text-2xl font-black text-white">{hidden}</p></div>
+    <section className="mt-3 rounded-2xl border border-white/10 bg-white/[.04] p-4">
+      <h2 className="text-xs font-bold uppercase tracking-wider text-slate-300">Registered environment</h2>
+      <div className="mt-3 grid grid-cols-2 gap-2 text-center">
+        <div className="rounded-xl border border-emerald-300/20 p-3"><p className="text-sm text-emerald-200">Visible</p><p className="mt-1 text-2xl font-bold text-white">{live}</p></div>
+        <div className="rounded-xl border border-amber-300/20 p-3"><p className="text-sm text-amber-200">Hidden</p><p className="mt-1 text-2xl font-bold text-white">{hidden}</p></div>
       </div>
-    </section>
-    <section className="rounded-3xl border border-violet-300/15 bg-violet-400/[.035] p-4">
-      <p className="text-[9px] font-black uppercase tracking-wider text-violet-300">Safety rule</p>
-      <p className="mt-3 text-xs leading-5 text-slate-300">Protected control surfaces stay present so Administrations cannot remove the Organizer, core Operating Rooms, or the Client’s Main File Folder entrance.</p>
     </section>
   </>
 
-  const center=loading?<div className="flex min-h-[520px] items-center justify-center"><RefreshCw className="h-7 w-7 animate-spin text-cyan-300"/></div>:<>
-    <div className="flex flex-col gap-3 rounded-3xl border border-white/10 bg-black/20 p-4 md:flex-row md:items-center md:justify-between">
-      <div>
-        <p className="text-[9px] font-black uppercase tracking-[.2em] text-cyan-300">Environment registry</p>
-        <h2 className="mt-1 text-xl font-black text-white">Districts and stations in operating order</h2>
-        <p className="mt-2 text-xs leading-5 text-slate-400">Removal here means hidden from active navigation/runtime. Source code and records remain intact.</p>
-      </div>
-      <label className="flex min-w-[260px] items-center gap-2 rounded-xl border border-white/10 bg-black/30 px-3 py-2">
-        <Search className="h-4 w-4 text-slate-500"/>
-        <input value={query} onChange={event=>setQuery(event.target.value)} placeholder="Find district or station…" className="w-full bg-transparent text-xs text-white outline-none"/>
-      </label>
-    </div>
+  const center=<div data-phe-organizer="phone-first" className="min-w-0">
+    <nav className="grid grid-cols-2 gap-2" aria-label="Organizer workshops">
+      <button type="button" onClick={()=>setView('stations')} aria-pressed={view==='stations'}
+        className={`min-h-12 rounded-xl border px-3 py-3 text-sm font-bold ${view==='stations'?'border-amber-200 bg-amber-200 text-[#142c3c]':'border-white/20 bg-black/20 text-slate-200'}`}>
+        Pages and stations
+      </button>
+      <button type="button" onClick={()=>setView('runtime')} aria-pressed={view==='runtime'}
+        className={`inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border px-3 py-3 text-sm font-bold ${view==='runtime'?'border-amber-200 bg-amber-200 text-[#142c3c]':'border-white/20 bg-black/20 text-slate-200'}`}>
+        <SlidersHorizontal className="h-4 w-4"/> Runtime
+      </button>
+    </nav>
 
-    <Link href="/admin/loader-workshop" className="mt-5 block rounded-xl border border-sky-300/25 bg-sky-400/[.045] p-4 text-sm font-bold text-sky-100">Open Loader Workshop → Edit three department lessons and automatic timing, then publish without deployment</Link>
-    <EnvironmentRuntimeControls />
-
-    <div className="mt-5 space-y-5">
-      {grouped.map(([area,surfaces])=><section key={area} className="overflow-hidden rounded-3xl border border-white/10 bg-[#030914]/70">
-        <header className="flex items-center justify-between border-b border-white/10 px-4 py-3">
-          <div><p className="text-[9px] font-black uppercase tracking-[.18em] text-sky-300">{area}</p><p className="mt-1 text-[10px] text-slate-500">{surfaces.length} registered surfaces</p></div>
-        </header>
-        <div className="divide-y divide-white/5">
-          {surfaces.map((item,index)=><article key={item.surface_key} className="grid gap-3 p-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <h3 className="text-sm font-black text-white">{item.label}</h3>
-                <span className="rounded-full border border-white/10 px-2 py-0.5 text-[8px] font-black uppercase text-slate-400">{item.surface_kind}</span>
-                <span className="rounded-full border border-white/10 px-2 py-0.5 text-[8px] font-black uppercase text-slate-500">{item.scope}</span>
-                {item.is_protected&&<span className="inline-flex items-center gap-1 rounded-full border border-violet-300/15 bg-violet-400/[.04] px-2 py-0.5 text-[8px] font-black uppercase text-violet-200"><LockKeyhole className="h-3 w-3"/>Protected</span>}
-              </div>
-              <p className="mt-1 truncate font-mono text-[9px] text-slate-600">{item.route}</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <button disabled={Boolean(busy)||index===0} onClick={()=>void run({action:'set_order',surfaceKey:item.surface_key,sortOrder:item.sort_order-15},item.surface_key+':up')} className="rounded-lg border border-white/10 p-2 text-slate-400 disabled:opacity-30" aria-label="Move earlier"><ArrowUp className="h-3.5 w-3.5"/></button>
-              <button disabled={Boolean(busy)||index===surfaces.length-1} onClick={()=>void run({action:'set_order',surfaceKey:item.surface_key,sortOrder:item.sort_order+15},item.surface_key+':down')} className="rounded-lg border border-white/10 p-2 text-slate-400 disabled:opacity-30" aria-label="Move later"><ArrowDown className="h-3.5 w-3.5"/></button>
-              <button
-                disabled={Boolean(busy)||(item.is_protected&&item.is_visible)}
-                onClick={()=>void run({action:'set_visibility',surfaceKey:item.surface_key,visible:!item.is_visible},item.surface_key+':visibility')}
-                className={`inline-flex min-w-[118px] items-center justify-center gap-2 rounded-xl border px-3 py-2 text-[9px] font-black uppercase ${item.is_visible?'border-amber-300/20 bg-amber-400/[.05] text-amber-200':'border-emerald-300/20 bg-emerald-400/[.05] text-emerald-200'} disabled:opacity-35`}
-              >
-                {item.is_visible?<><EyeOff className="h-3.5 w-3.5"/>Remove</>:<><Eye className="h-3.5 w-3.5"/>Restore</>}
-              </button>
-            </div>
-          </article>)}
+    {view==='runtime'?<div className="mt-4" data-phe-organizer-runtime>
+      <p className="mb-3 text-sm leading-6 text-slate-300">Loading, presence and ambience remain independent of the company’s pages. Review changes before publishing them.</p>
+      <EnvironmentRuntimeControls/>
+      <Link href="/admin/loader-workshop" className="mt-4 inline-flex min-h-12 w-full items-center rounded-xl border border-sky-300/30 p-3 text-sm font-bold text-sky-100">Open Loader Workshop</Link>
+    </div>:<>
+      <header className="mt-4 rounded-2xl border border-white/15 bg-black/25 p-4">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <h2 className="text-xl font-bold text-white">Pages and operating stations</h2>
+            <p className="mt-1 text-sm text-slate-300">Select a department and arrange its real entrances.</p>
+          </div>
+          <button type="button" onClick={()=>void load()} disabled={loading||Boolean(busy)} aria-label="Refresh environment registry" className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-white/20 text-white disabled:opacity-40"><RefreshCw className={`h-5 w-5 ${loading?'animate-spin':''}`}/></button>
         </div>
-      </section>)}
-    </div>
-  </>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2" data-phe-organizer-filters>
+          <label className="block text-sm font-semibold text-slate-200">Department or district
+            <select value={area} onChange={e=>setArea(e.target.value)} className="mt-1 block min-h-12 w-full min-w-0 rounded-xl border border-white/25 bg-[#0c2638] px-3 text-base text-white">
+              <option value="all">All company areas</option>
+              {areas.map(name=><option key={name} value={name}>{name}</option>)}
+            </select>
+          </label>
+          <label className="block text-sm font-semibold text-slate-200">Search station or address
+            <span className="mt-1 flex min-h-12 items-center gap-2 rounded-xl border border-white/25 bg-[#0c2638] px-3">
+              <Search className="h-4 w-4 shrink-0 text-sky-200"/>
+              <input type="search" value={query} onChange={e=>setQuery(e.target.value)}
+                placeholder="e.g. Hope, File Folder…" className="min-w-0 w-full bg-transparent py-3 text-base text-white outline-none placeholder:text-slate-400"/>
+            </span>
+          </label>
+          <label className="block text-sm font-semibold text-slate-200">Visibility
+            <select value={visibility} onChange={e=>setVisibility(e.target.value as Visibility)} className="mt-1 block min-h-12 w-full rounded-xl border border-white/25 bg-[#0c2638] px-3 text-base text-white">
+              <option value="all">Visible and hidden</option><option value="live">Visible only</option><option value="hidden">Hidden only</option>
+            </select>
+          </label>
+          <label className="block text-sm font-semibold text-slate-200">Type
+            <select value={kind} onChange={e=>setKind(e.target.value as Kind)} className="mt-1 block min-h-12 w-full rounded-xl border border-white/25 bg-[#0c2638] px-3 text-base text-white">
+              <option value="all">All types</option><option value="district">Districts</option><option value="station">Stations</option>
+            </select>
+          </label>
+        </div>
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+          <p role="status" aria-live="polite" className="text-sm text-slate-300">{loading?'Reading environment…':`${filtered.length} of ${items.length} surfaces shown`}</p>
+          {!canMove&&<p className="text-xs leading-5 text-amber-200">Clear search and visibility/type filters to reorder accurately.</p>}
+        </div>
+      </header>
+
+      {error&&<p role="alert" className="mt-3 rounded-xl border border-rose-300/40 p-3 text-sm text-rose-100">{error}</p>}
+      {loading?<p role="status" className="mt-4 rounded-xl border border-white/15 p-5 text-sm text-slate-200">Loading recorded stations…</p>:
+      grouped.length===0?<p className="mt-4 rounded-xl border border-white/15 p-5 text-sm text-slate-200">No stations match these filters. Change the department or clear the search.</p>:
+      <div className="mt-4 space-y-4" data-phe-organizer-groups>
+        {grouped.map(([name,surfaces])=><section key={name} className="overflow-hidden rounded-2xl border border-white/15 bg-[#0b2132]/85" aria-label={name}>
+          <header className="flex items-center justify-between gap-3 border-b border-white/15 px-4 py-3">
+            <div><h3 className="text-lg font-bold text-white">{name}</h3><p className="mt-1 text-xs text-slate-300">{surfaces.length} registered surfaces</p></div>
+          </header>
+          <ol className="divide-y divide-white/10">
+            {surfaces.map((item,index)=><li key={item.surface_key} data-phe-organizer-surface={item.surface_key} className="min-w-0 p-3 sm:p-4">
+              <article className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="inline-flex h-7 min-w-7 items-center justify-center rounded-lg border border-white/20 px-2 text-xs font-bold text-white">{index+1}</span>
+                  <h4 className="min-w-0 text-base font-bold text-white">{item.label}</h4>
+                </div>
+                <p className="mt-2 break-all text-xs text-slate-300">{item.route}</p>
+                <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-200">
+                  <span className="rounded-full border border-white/20 px-2 py-1">{item.surface_kind}</span>
+                  <span className="rounded-full border border-white/20 px-2 py-1">{item.scope}</span>
+                  <span className={`rounded-full border px-2 py-1 ${item.is_visible?'border-emerald-300/40 text-emerald-200':'border-amber-300/40 text-amber-100'}`}>{item.is_visible?'Visible':'Hidden'}</span>
+                  {item.is_protected&&<span className="inline-flex items-center gap-1 rounded-full border border-violet-300/40 px-2 py-1 text-violet-200"><LockKeyhole className="h-3 w-3"/> Protected</span>}
+                </div>
+                <div className="mt-3 grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-2 sm:flex sm:flex-wrap" data-phe-organizer-actions>
+                  <button type="button" aria-label={`Move ${item.label} earlier`}
+                    disabled={Boolean(busy)||!canMove||index===0}
+                    onClick={()=>void run({action:'move_surface',surfaceKey:item.surface_key,direction:'earlier'},item.surface_key+':earlier')}
+                    className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-white/25 px-3 py-2 text-sm font-semibold text-white disabled:opacity-35">
+                    <ArrowUp className="h-4 w-4"/> Earlier
+                  </button>
+                  <button type="button" aria-label={`Move ${item.label} later`}
+                    disabled={Boolean(busy)||!canMove||index===surfaces.length-1}
+                    onClick={()=>void run({action:'move_surface',surfaceKey:item.surface_key,direction:'later'},item.surface_key+':later')}
+                    className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-white/25 px-3 py-2 text-sm font-semibold text-white disabled:opacity-35">
+                    <ArrowDown className="h-4 w-4"/> Later
+                  </button>
+                  <button type="button" disabled={Boolean(busy)||(item.is_protected&&item.is_visible)}
+                    onClick={()=>{
+                      if(item.is_visible&&!window.confirm(`Hide ${item.label} from navigation? Its records and source remain preserved.`))return
+                      void run({action:'set_visibility',surfaceKey:item.surface_key,visible:!item.is_visible},item.surface_key+':visibility')
+                    }}
+                    className={`col-span-2 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-bold sm:ml-auto ${item.is_visible?'border-amber-300/40 text-amber-100':'border-emerald-300/40 text-emerald-200'} disabled:opacity-35`}>
+                    {item.is_visible?<><EyeOff className="h-4 w-4"/>Remove from navigation</>:<><Eye className="h-4 w-4"/>Restore to navigation</>}
+                  </button>
+                </div>
+              </article>
+            </li>)}
+          </ol>
+        </section>)}
+      </div>}
+    </> }
+  </div>
 
   const right=<>
-    <section className="rounded-3xl border border-emerald-300/15 bg-emerald-400/[.035] p-4">
-      <div className="flex items-center gap-2"><Eye className="h-4 w-4 text-emerald-300"/><p className="text-[9px] font-black uppercase tracking-[.18em] text-emerald-300">Runtime effect</p></div>
-      <p className="mt-3 text-sm font-black text-white">No Cloud Run rebuild for later changes</p>
-      <p className="mt-2 text-xs leading-5 text-slate-400">Once this source upgrade is eventually released, Organizer changes are database-backed and active clients refresh the registry automatically.</p>
+    <section className="rounded-2xl border border-violet-300/25 bg-violet-300/[.04] p-4">
+      <h2 className="text-sm font-bold text-violet-100">Protected company functions</h2>
+      <p className="mt-2 text-sm leading-6 text-slate-300">Critical entrances remain visible. Hiding an optional surface never removes its code, permissions or user records.</p>
     </section>
-    <button onClick={()=>void load()} disabled={loading} className="flex w-full items-center justify-between rounded-2xl border border-white/10 bg-white/[.025] px-4 py-3 text-xs font-black text-white"><span>Reload registry</span><RefreshCw className={`h-4 w-4 text-cyan-300 ${loading?'animate-spin':''}`}/></button>
-    <button onClick={()=>{if(window.confirm('Restore every registered district/station to its default visibility and order?'))void run({action:'restore_defaults'},'restore')}} disabled={Boolean(busy)} className="flex w-full items-center justify-between rounded-2xl border border-amber-300/15 bg-amber-400/[.035] px-4 py-3 text-xs font-black text-amber-200 disabled:opacity-40"><span>Restore default organization</span><RotateCcw className="h-4 w-4"/></button>
+    <button type="button" onClick={()=>void load()} disabled={loading||Boolean(busy)}
+      className="mt-3 flex min-h-12 w-full items-center justify-between rounded-xl border border-white/20 px-4 py-3 text-sm font-bold text-white disabled:opacity-40">Reload registry <RefreshCw className="h-4 w-4"/></button>
+    <button type="button" disabled={Boolean(busy)} onClick={()=>{
+      if(window.confirm('Restore the default visibility and order of every registered surface?'))void run({action:'restore_defaults'},'restore')
+    }} className="mt-3 flex min-h-12 w-full items-center justify-between rounded-xl border border-amber-300/30 px-4 py-3 text-sm font-bold text-amber-200 disabled:opacity-40">Restore default organization <RotateCcw className="h-4 w-4"/></button>
   </>
 
   return <WeaveSystemRoom
     roomKey="administration-environment-organizer"
     eyebrow="Administrations · Environment Authority"
     title="Environment Organizer"
-    detail="Control environment formation, live presence ambience, registered districts and stations from one runtime authority. Correct loading, sound, visibility and operating order without rebuilding Cloud Run."
-    tone="sky"
-    left={left}
-    center={center}
-    right={right}
-    pulse={hidden?`${hidden} surfaces removed from the active environment`:'Environment registry fully visible'}
+    detail="Put each department’s working stations in a useful order. Phone navigation comes first; runtime presence and sounds remain separately controlled."
+    tone="sky" left={left} center={center} right={right}
+    pulse={hidden?`${hidden} optional surfaces hidden`:'Active environment organization'}
   />
 }
