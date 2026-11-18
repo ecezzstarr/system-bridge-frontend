@@ -3,6 +3,7 @@ import Link from 'next/link'
 import {useCallback,useEffect,useState} from 'react'
 import {ArrowLeft,CheckCircle2,RefreshCw,Server,ShieldAlert,XCircle} from 'lucide-react'
 import {useAuth} from '@/lib/auth-provider'
+import {WeaveSovereignHostMove} from '@/components/admin/weave-sovereign-host-move'
 const tests=[
  {key:'independent_host',label:'Independent Weave-owned candidate',info:'Dedicated host configured outside Oracle; operational ownership still needs physical verification.'},
  {key:'hardware',label:'Compute and disk capacity',info:'At least four CPUs, eight GiB RAM and 32 GiB free at time of check.'},
@@ -15,7 +16,8 @@ const tests=[
  {key:'restore_rehearsal',label:'Recent recovery rehearsal',info:'Administrator attested a separate database and media restore drill within seven days.'},
 ] as const
 type NodeReport={nodeId:string;provider:string;observedAt:string;receivedAt:string;
- releaseSha:string|null;checks:Record<string,boolean>;reportedReady:boolean;fresh:boolean;ready:boolean}
+ releaseSha:string|null;checks:Record<string,boolean>;reportedReady:boolean;fresh:boolean;ready:boolean;
+ sharedCurrentDatabase:boolean;continuityMode:string}
 export default function SovereignServerPage(){
  const {token,user,isInitialized}=useAuth()
  const [nodes,setNodes]=useState<NodeReport[]>([])
@@ -64,7 +66,8 @@ export default function SovereignServerPage(){
      <div className="flex items-start gap-3"><Server className="mt-1 h-7 w-7 text-[#f1d39b]"/>
       <div><h3 className="text-2xl font-bold">{node.nodeId}</h3>
        <p className="mt-1 text-xs text-slate-300">Candidate host · {node.provider} · Last report {new Date(node.receivedAt).toLocaleString()}</p>
-       <p className="mt-1 break-all text-[11px] text-slate-400">Application release {node.releaseSha||'unverified'}</p></div>
+       <p className="mt-1 break-all text-[11px] text-slate-400">Application release {node.releaseSha||'unverified'}</p>
+       <p className={'mt-2 text-xs '+(node.sharedCurrentDatabase?'text-cyan-100':'text-amber-100')}>{node.sharedCurrentDatabase?'Configured for the same current production database':'Existing production database continuity NOT established'}</p></div>
      </div>
      <span className={'rounded-full border px-3 py-2 text-xs font-bold '+(node.ready?'border-cyan-200/40 text-cyan-100':'border-amber-200/35 text-amber-100')}>
       {node.ready?'Readiness evidence complete · cutover not authorized':node.fresh?'Preparation incomplete':'Report stale · host status unknown'}
@@ -78,9 +81,10 @@ export default function SovereignServerPage(){
      </div>)}
     </div>
    </article>)}
+   <WeaveSovereignHostMove nodes={nodes}/>
    <section className="rounded-2xl border border-amber-200/20 bg-[#372919]/15 p-6">
     <h2 className="flex items-center gap-2 text-xl font-bold text-[#f1d9ad]"><ShieldAlert size={21}/>Cutover safety boundary</h2>
-    <p className="mt-3 max-w-4xl text-sm leading-7 text-slate-200">A complete report means the configured checks passed recently, not that full ownership, load capacity, payment settlement, security compliance or disaster recovery is certified. Before changing production traffic, independently verify the server, restore a separate database and media backup, run live workflow acceptance tests, prepare failback to Oracle and obtain an explicit company change authorization. There is no cutover control here.</p>
+    <p className="mt-3 max-w-4xl text-sm leading-7 text-slate-200">A complete report means the configured checks passed recently, not that full ownership, load capacity, payment settlement, security compliance or disaster recovery is certified. Before changing production traffic, independently verify the server, restore a separate database and media backup, run live workflow acceptance tests, prepare failback to Oracle and obtain an explicit company change authorization. The separate manual migration panel records the appointed operator's decisions but does not control the DNS provider or shut down Oracle.</p>
    </section>
    <p className="text-xs text-slate-400">Host instructions: <code>docs/weave-sovereign-server-transition.md</code>. Candidate command: <code>python3 selfhost/sovereign-candidate-probe.py --report</code>. Token stays private on each server.</p>
   </div>
