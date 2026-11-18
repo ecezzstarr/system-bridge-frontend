@@ -40,14 +40,15 @@ const priorities=[
 export function AdminWorkplace({userName,onOpenDistricts}:{userName?:string|null;onOpenDistricts?:()=>void}){
  const [active,setActive]=useState<AdminSpaceId>('desk')
  const [search,setSearch]=useState('')
- const {isVisible}=useEnvironmentOrganizer()
+ const {isVisible,orderFor}=useEnvironmentOrganizer()
  const q=search.trim().toLocaleLowerCase()
  const space=ADMIN_SPACES.find(x=>x.id===active)||ADMIN_SPACES[0]
  const stations=useMemo(()=>{
   const input=q?ADMIN_SPACES.flatMap(x=>x.stations):space.stations
   const visible=input.filter(x=>isVisible(x.href)&&(!q||[x.title,x.href,x.description].some(t=>t.toLocaleLowerCase().includes(q))))
-  return q?visible.filter((x,i)=>visible.findIndex(y=>y.href===x.href)===i):visible
- },[q,space,isVisible])
+  const listed=q?visible.filter((x,i)=>visible.findIndex(y=>y.href===x.href)===i):visible
+  return [...listed].sort((a,b)=>orderFor(a.href)-orderFor(b.href))
+ },[q,space,isVisible,orderFor])
 
  return <main data-phe-role-workplace="admin" data-admin-workplace="five-destinations" data-admin-imagery="verified-company-assets"
    className="relative mx-auto min-h-[calc(100svh-4rem)] w-full max-w-[1580px] overflow-hidden bg-[#f8f5ed] pb-20 text-[#22343d]">
