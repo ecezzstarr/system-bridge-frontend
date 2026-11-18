@@ -29,6 +29,39 @@ for(const role of ['agent','bridger']){
  const source=read(`components/${role}/${role}-workplace.tsx`)
  assert(source.includes('data-phe-role-steps'),`${role}: retain daily guide`)
 }
+const organizer=read('app/(app)/admin/environment-organizer/page.tsx')
+const organizerApi=read('app/api/admin/environment-organizer/route.ts')
+const organizerDb=read('lib/weave-environment-organizer.ts')
+for(const hook of [
+ 'data-phe-organizer="phone-first"','data-phe-organizer-filters',
+ 'data-phe-organizer-groups','data-phe-organizer-surface={item.surface_key}',
+ 'data-phe-organizer-actions','data-phe-organizer-runtime',
+ "action:'move_surface'","action:'set_visibility'", "action:'restore_defaults'",
+ "setView('runtime')"
+]){
+ assert(organizer.includes(hook),`Mobile Organizer must expose ${hook}`)
+}
+assert(organizer.includes('const canMove=!query.trim()'),
+ 'Filtered results must not pretend a move is an exact group reorder')
+assert(organizer.includes('min-h-12'),
+ 'Phone controls need a comfortable 48px touch target')
+assert(organizerApi.includes("action==='move_surface'")&&organizerApi.includes("'environment_organizer.move'"),
+ 'Every move must be authorized and audited')
+for(const marker of ['pg_advisory_xact_lock','FOR UPDATE','BEGIN','ROLLBACK','COMMIT','unnest($1::text[],$2::integer[])']){
+ assert(organizerDb.includes(marker),`Movement must be atomic: ${marker}`)
+}
+for(const role of ['agent','bridger','admin']){
+ const work=read(`components/${role}/${role}-workplace.tsx`)
+ assert(work.includes('orderFor(')&&work.includes('isVisible('),
+   `Live Organizer visibility and order must drive ${role} real stations`)
+}
+assert(css.includes('@media (max-width: 767px)'), 'Phone is the primary PHE layout')
+for(const marker of [
+ '[data-phe-role-hero] { order: 0','[data-phe-role-nav] {','[data-phe-role-stage] { order: 2',
+ '[data-phe-role-steps] { order: 3','[data-phe-agent-product-cards]',
+ '[data-phe-organizer-actions] > button'
+])assert(css.includes(marker),`Phone layout needs ${marker}`)
+
 const district=read('components/world/role-district-environment.tsx')
 assert(district.includes('data-phe-district-directory="daily-first"'),
  'Shared districts must group workstations by actual daily duties')
