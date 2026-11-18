@@ -94,6 +94,46 @@ traffic; plan a final consistent media delta and stop writes during
 the controlled switch. Sessions and provider webhooks also need
 acceptance checks; shared DB alone does not guarantee they work.
 
+### Quarantine the candidate while it points at production data
+
+Never leave a second normal customer-facing application freely accessible
+while both Oracle and the candidate use the same live database. During
+normal tests, keep the candidate on an isolated staging database. For
+the final same-database readiness window, supply a **read-only database
+account**, prohibit background tasks that can change production data,
+and restrict candidate public ingress to health probes using the
+separate preview-only Caddy overlay:
+
+\`\`\`bash
+# On the independently provisioned candidate host ONLY.
+# Use a separately secured staging/test configuration first.
+docker compose --env-file selfhost/.env \
+  -f docker-compose.selfhost.yml \
+  -f docker-compose.weave-candidate.yml \
+  config --quiet
+
+docker compose --env-file selfhost/.env \
+  -f docker-compose.selfhost.yml \
+  -f docker-compose.weave-candidate.yml \
+  up -d
+\`\`\`
+
+\`selfhost/Caddyfile.sovereign-candidate\` exposes only
+\`/api/health\` and \`/api/health/ready\` over the candidate hostname.
+All other public requests are blocked until an authorized operator
+changes the candidate's ingress configuration during the controlled
+maintenance window. The compose overlay does **not** disable
+in-process background workers or guarantee read-only database behavior,
+so those must be addressed independently. Do not run unverified scripts
+or app tasks against the shared production database.
+
+**The transition console does not remotely execute these commands.**
+After the Administrations authorization stage, the independent host
+operator carries out the documented, access-controlled ingress and
+routing change, and returns to the console for confirmation. The
+ordinary Release Workshop still has its original authority and
+deployment behavior.
+
 ### Manual company authorization in Administrations
 
 Open \`/admin/sovereign-server\` after the independent candidate has been
