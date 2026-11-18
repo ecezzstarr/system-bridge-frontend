@@ -184,7 +184,8 @@ export function RoleDistrictEnvironment({
               </Link>)}
             </div>
           </section>)}
-        </div>      </div>
+        </div>
+      </div>
     </section>
   </main>
 }
