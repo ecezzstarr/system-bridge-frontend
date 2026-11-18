@@ -81,7 +81,8 @@ async function verifyPublicDestination(plan:{target_ipv4:string;release_sha:stri
  })
  const evidence=await response.json().catch(()=>null)
  if(!response.ok||evidence?.status!=='ready'||evidence?.releaseSha!==plan.release_sha||
-  evidence?.checks?.database!==true||evidence?.checks?.media!==true)
+  evidence?.checks?.database!==true||evidence?.checks?.accounts!==true||
+  evidence?.checks?.media!==true)
   throw Error('Public destination did not pass database, media and exact release verification')
 }
 
