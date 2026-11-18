@@ -273,6 +273,7 @@ jobs:
           node tests/bridger-registration-durable-regression.cjs
           node tests/bridger-workplace-preservation.cjs
           node tests/agent-admin-workplace-preservation.cjs
+          node tests/phe-workspace-organization.cjs
           node tests/password-hash-login-regression.cjs
           node tests/admin-login-destination.cjs
           node tests/agent-login-clear-arrival.cjs
