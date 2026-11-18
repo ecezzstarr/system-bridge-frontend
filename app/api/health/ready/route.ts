@@ -11,13 +11,15 @@ export const dynamic='force-dynamic'
  * this verifies the database path and the persistent media mount.
  * Does not disclose DB addresses, secrets, environment variables, or user data.
  */
-let lastCheck:Promise<{checks:{database:boolean;media:boolean};ready:boolean}>|null=null
+let lastCheck:Promise<{checks:{database:boolean;accounts:boolean;media:boolean};ready:boolean}>|null=null
 let lastAt=0
 async function actualReadiness(){
- const checks={database:false,media:false}
+ const checks={database:false,accounts:false,media:false}
  try{
   const result=await getPool().query('SELECT 1 AS ready')
   checks.database=result.rows[0]?.ready===1
+  const accounts=await getPool().query('SELECT EXISTS(SELECT 1 FROM users) AS accounts')
+  checks.accounts=accounts.rows[0]?.accounts===true
  }catch(error){console.error('[weave readiness] DB unavailable',error instanceof Error?error.message:'unavailable')}
  try{
   const root=process.env.WEAVE_MEDIA_ROOT||'/var/lib/weave/media'
@@ -27,7 +29,7 @@ async function actualReadiness(){
    checks.media=true
   }
  }catch{ /* Not mounted or not writable; do not invent healthy storage. */ }
- const ready=checks.database&&checks.media
+ const ready=checks.database&&checks.accounts&&checks.media
  return {checks,ready}
 }
 export async function GET(){
