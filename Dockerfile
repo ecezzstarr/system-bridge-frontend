@@ -36,6 +36,7 @@ RUN node tests/file-folder-customer-door-purchase-regression.cjs
 RUN node tests/file-folder-pricing-contract-regression.cjs
 RUN node tests/wiring.cjs
 RUN node tests/environment-grade.cjs
+RUN node tests/phe-workspace-organization.cjs
 RUN node tests/pro-file-folder-textured-world-regression.cjs
 RUN node tests/pro-file-folder-building-plan-parts-speed-bay-regression.cjs
 RUN node tests/pro-file-folder-official-artwork-regression.cjs
