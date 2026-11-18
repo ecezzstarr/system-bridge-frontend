@@ -42,6 +42,113 @@ ownership certificate.
 - Administrations reviews those results at \`/admin/sovereign-server\`.
   That page has **no** migrate, publish, DNS switch, SSH or Oracle shutdown action.
 
+## Mandatory first transition: preserve the live database
+
+The first move removes Oracle **application hosting** without changing the
+production PostgreSQL source of truth. The original verified database and
+all of its users, credentials, File Numbers, System Switch, wallet/ledger
+rows, Client ownership, orders, commissions and audit events must remain
+available. **No new user-registration campaign, new database initialization
+or reset of balances is part of moving the app server.**
+
+The safest hosting transition is:
+
+\`\`\`text
+BEFORE MANUAL AUTHORIZATION
+People / Weave domain
+       → Oracle application (production)
+       → existing production DATABASE_URL
+       → all current users and company records
+
+AFTER EXPLICIT MANUAL DNS CHANGE & ACCEPTANCE
+Same people / same Weave domain
+       → Weave-owned application (production)
+       → SAME existing production DATABASE_URL
+       → SAME existing users and company records
+
+Oracle remains preserved for controlled recovery.
+\`\`\`
+
+The app's database connection is supplied by \`DATABASE_URL\`; the
+candidate's controlled probe calculates a credential-free fingerprint
+over its PostgreSQL host, port and database name. The Oracle-hosted
+Weave side calculates the same fingerprint from its own server-only
+\`DATABASE_URL\`. The reports must match before a first-stage hosting
+transition can be authorized. This proves configuration agreement,
+**not full data reconciliation or independently proven physical ownership**.
+Credentials themselves never enter browser fields or GitHub source.
+
+**Never run acceptance tests that write production data against the shared
+live database.** During candidate development use a separated restored
+staging database, staging media and test-provider credentials. At the
+final manual cutover, after authorization and validation, configure the
+target runtime to use the exact same production database endpoint
+with appropriately managed production credentials. Do not allow a
+separate write-capable staging app or duplicated payment callbacks
+to act against the live database while Oracle remains production.
+
+Persistent \`weave-media\` is a separate Docker volume on each host:
+it does **not** follow the shared database connection. Copy and
+verify the complete current media collection and hashes before moving
+traffic; plan a final consistent media delta and stop writes during
+the controlled switch. Sessions and provider webhooks also need
+acceptance checks; shared DB alone does not guarantee they work.
+
+### Manual company authorization in Administrations
+
+Open \`/admin/sovereign-server\` after the independent candidate has been
+provisioned and its latest readiness report is visible:
+
+1. Select only a candidate that is currently healthy, points to the **same
+   production database endpoint**, and runs the identical verified release
+   SHA. Provide its independently confirmed public IPv4 address. The
+   register refuses an address already on production DNS.
+2. **Prepare** a controlled transition. A single unfinished transition
+   is permitted; earlier work remains in company audit history.
+3. Before the next step, verify the existing media and File Folders,
+   real backups and restore rehearsal, critical work access, payment
+   callback plan and safe Oracle failback. Type
+   \`AUTHORIZE WEAVE HOST MOVE\`. This records **permission, not execution**.
+4. An appointed DNS operator changes the A record at the actual domain
+   provider **manually**. At this stage no current Weave DNS provider
+   API configuration exists in this repository, so the workshop does
+   not pretend to change traffic on its own. Type
+   \`VERIFY MANUAL DNS SWITCH\`; the workshop checks public DNS,
+   the approved address and the live application readiness response.
+5. Verify login continuity, Client File Number/File Folder access,
+   wallet and transaction balances, commissions, public Customer Doors,
+   media and payment callbacks. Type \`CONFIRM WEAVE OWNED HOST\`.
+   The record marks operator acceptance without stopping Oracle.
+6. Cancel \`prepared\` or \`authorized\` stages with
+   \`CANCEL WEAVE HOST MOVE\`. Once DNS is changed, use the separately
+   reviewed emergency failback and record reconciliation procedure:
+   **do not** simply point DNS back while the new host accepts live
+   writes unless the authoritative database/media state is consistent.
+
+This is a manual company-control workflow, not an uncontrolled web
+server terminal. It does not mutate production hosts or edit the
+existing Release Workshop. To change DNS directly **from inside the
+workshop**, a separate approved integration for the actual DNS
+provider is required; no provider credential or API capability has
+been assumed.
+
+### Later: the second, optional owned-database migration
+
+The opt-in \`docker-compose.weave-owned.yml\` PostgreSQL service is for
+a later data-sovereignty stage or for **isolated staging** during host
+preparation. It must **not** be used as an empty replacement for the
+live source during the initial hosting migration.
+
+When Weave decides to move the database as well, it will need:
+a consistent PostgreSQL export or controlled logical replication;
+complete schema/role/sequence/extension migration; tested encrypted
+backup and restoration; appropriate migration of every dependent
+file/media service; final writes/callback quiescence; per-account and
+financial-ledger reconciliation; transaction identity/idempotency
+checks; and explicit Administration approval of a separate data
+cutover. Neither this PR nor the native publish mechanism migrates
+financial data automatically.
+
 ## Phase 1 — provision company infrastructure, without downtime
 
 Company-controlled machine: use a modern supported Linux host. For first
