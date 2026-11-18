@@ -98,6 +98,11 @@ export function RoleDistrictEnvironment({
       return orderFor(a.href)-orderFor(b.href)
     })
 
+  const groupedPlaces=[
+    {id:'daily',title:'Start with today’s work',description:'Your daily stations appear first. Open the real system to perform and record work.',places:places.filter(place=>place.daily)},
+    {id:'other',title:'Other workstations',description:'Continue to the functions available in this district whenever they are relevant.',places:places.filter(place=>!place.daily)},
+  ].filter(group=>group.places.length>0)
+
   return <main
     className="relative min-h-[calc(100svh-7rem)] overflow-x-clip px-3 pb-[max(3rem,env(safe-area-inset-bottom))] pt-12 sm:min-h-[calc(100dvh-7rem)] md:px-6"
     data-weave-room="role-district"
@@ -140,35 +145,46 @@ export function RoleDistrictEnvironment({
         <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-slate-300">{district.purpose}</p>
       </header>
 
-      <div className="mx-auto mt-10 max-w-4xl">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-2 border-y border-white/[.07] py-3">
-          <p className="text-[8px] font-black uppercase tracking-[.18em] text-slate-500">Places inside this district</p>
-          <p className="text-[8px] font-black uppercase tracking-[.18em] text-slate-600">{places.length} active</p>
+      <div className="mx-auto mt-10 max-w-6xl" data-phe-district-directory="daily-first">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/10 bg-[#071923]/65 px-5 py-4">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[.15em] text-sky-200">Places inside this district</p>
+            <p className="mt-1 text-sm text-slate-300">Choose a real working station, not a simulated activity.</p>
+          </div>
+          <p className="text-xs font-semibold text-slate-300">{places.length} available workstations</p>
         </div>
 
-        <div className="relative">
-          <div className="pointer-events-none absolute bottom-4 left-[19px] top-4 w-px bg-gradient-to-b from-sky-300/25 via-white/10 to-transparent"/>
-          {places.map((place,index)=><Link
-            key={place.href}
-            href={place.href}
-            data-daily-place={place.daily?'true':'false'}
-            data-district-place={place.label}
-            className="group relative grid min-h-20 grid-cols-[40px_minmax(0,1fr)_24px] items-center gap-3 border-b border-white/[.055] px-0 py-3 transition hover:border-white/15 sm:px-2"
-          >
-            <div className="relative z-10 flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-[#06101a] text-[9px] font-black" style={{color:district.accent}}>
-              {String(index+1).padStart(2,'0')}
-            </div>
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <h2 className="text-sm font-black text-white sm:text-base">{place.label}</h2>
-                {place.daily&&<span className="text-[7px] font-black uppercase tracking-[.12em] text-emerald-300">Daily</span>}
+        <div className="mt-5 space-y-6">
+          {groupedPlaces.map(group=><section key={group.id} data-phe-district-group={group.id} className="min-w-0 rounded-[1.5rem] border border-white/10 bg-[#081b29]/75 p-4 shadow-[0_18px_42px_rgba(0,0,0,.15)] sm:p-6">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-bold text-white">{group.title}</h2>
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">{group.description}</p>
               </div>
-              <p className="mt-1 text-[10px] leading-5 text-slate-400 sm:text-xs">{place.detail}</p>
+              <span className="rounded-full border border-white/15 px-3 py-1 text-xs text-slate-300">{group.places.length} station{group.places.length===1?'':'s'}</span>
             </div>
-            <ArrowRight className="h-4 w-4 text-slate-600 transition group-hover:translate-x-1 group-hover:text-white"/>
-          </Link>)}
-        </div>
-      </div>
+            <div className="mt-5 grid min-w-0 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {group.places.map((place,index)=><Link key={place.href}
+                href={place.href}
+                data-daily-place={place.daily?'true':'false'}
+                data-district-place={place.label}
+                className="group relative flex min-h-[150px] min-w-0 flex-col justify-between rounded-[1.2rem] border border-white/15 bg-[linear-gradient(150deg,rgba(236,244,250,.075),rgba(6,19,30,.62))] p-4 transition hover:-translate-y-0.5 hover:border-white/40 hover:bg-white/[.09] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-200"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <span className="inline-flex h-8 min-w-8 items-center justify-center rounded-lg border border-white/15 bg-black/25 px-2 text-xs font-bold" style={{color:district.accent}}>
+                    {String(index+1).padStart(2,'0')}
+                  </span>
+                  {place.daily&&<span className="rounded-full border border-emerald-300/30 bg-emerald-300/10 px-2 py-1 text-[10px] font-semibold text-emerald-200">Daily</span>}
+                </div>
+                <div className="mt-4">
+                  <h3 className="text-base font-bold text-white">{place.label}</h3>
+                  <p className="mt-2 text-sm leading-6 text-slate-300">{place.detail}</p>
+                  <span className="mt-4 inline-flex items-center gap-2 text-xs font-semibold text-sky-200">Open workstation <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1"/></span>
+                </div>
+              </Link>)}
+            </div>
+          </section>)}
+        </div>      </div>
     </section>
   </main>
 }
