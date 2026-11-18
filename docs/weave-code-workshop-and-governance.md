@@ -83,7 +83,7 @@ is created. This is an intentional safeguard, not an incomplete shell.
 
 Every source promotion requires independent review and a passing Production Check.
 A separately verified company release authorization can be given per release,
-or through a one-time, revocable opt-in for verified main releases below.
+through the existing manual Release Workshop. Oracle automatic code promotion is frozen.
 
 A draft commit or PR is never represented as deployed production code.
 Each creation, source commit and PR opening is recorded with the actor,
@@ -146,38 +146,28 @@ prototype, not an activated, purchased or verified Client File Folder.
 Company customer data and permissions must be wired through existing
 authorized application paths after independent review.
 
-## Opt-in continuity — reviewed code may run without a manual deploy each time
+## Reviewed continuity while Oracle remains production
 
-The workflow at .github/workflows/weave-verified-continuity.yml subscribes to
-completion of Production Check. **It is disabled by default.** The company
-repository owner may explicitly enable the GitHub Actions repository variable
-WEAVE_AUTONOMOUS_RELEASES with the exact value **enabled** once the following
-controls have been tested on the real Oracle host:
+The workflow at
+\`.github/workflows/weave-verified-continuity.yml\` now **only reports**
+passing, exact-main Production Check results. It has read-only GitHub
+permissions. It cannot dispatch an application deployment or perform a
+host command even if a historical repository variable such as
+\`WEAVE_AUTONOMOUS_RELEASES=enabled\` remains set.
 
-- The main branch is protected and requires approved PR review and required CI.
-- Production Check succeeds for a **push to main**, not an unmerged PR or
-  a passing feature branch. The workflow verifies the exact head SHA still
-  equals current canonical main before dispatching anything.
-- The existing self-hosted GitHub runner is online, attached to the correct
-  WEAVE repository and authorized to run the manual recovery deploy workflow.
-- The host checkout, Docker storage guard, clean working tree, private
-  environment, health endpoint and previous healthy release are working.
-- The exact SHA is rechecked on the host; local and public application health
-  are verified before success; the previous healthy image is the rollback path.
-- The operating team has failure notifications and regular backup verification.
-  Code rollback does not roll back the database, customers' records or media.
+**The existing Administrations Release Workshop is the only approved
+in-application path for an Oracle deployment.** An authorized operator must
+request and verify the release using its unchanged host worker, rollback
+and health procedures. Merely merging GitHub main does not authorize
+touching Oracle.
 
-When enabled, a reviewed and merged main commit with a successful push-to-main
-Production Check automatically dispatches the existing Self-Host Manual
-Recovery Deploy workflow; its own CI, origin/main and host checks remain in
-force. No browser shell or server credentials are exposed. A commit to a
-draft branch does not start a deployment. This is **release automation**, not
-self-authoring code: someone must still define and merge reviewed changes.
+This restriction remains in force while Oracle serves production.
+Future unattended updates on a separately verified Weave-owned server
+will require a **new, independent host-specific authorization and worker
+protocol**, with reviewed controls and safeguards against mis-targeting
+Oracle. No automatic production dispatch is installed by this change.
 
-To stop **future automatic dispatches**, set the repository variable to a
-value other than enabled or remove it. Disabling the variable does not cancel
-an already-queued/running GitHub job; use GitHub Actions and the existing
-host deployment controls for that. A disconnected runner, unavailable host,
-broken CI or insufficient disk prevents deployment; an automatic workflow
-cannot fix host outages by itself. Production should not be described as
-updated until the real host and public health checks confirm the new SHA.
+The Native Formation Workshop is different: after its engine is installed
+through a reviewed, operator-authorized software release, ordinary
+versioned pages and supported system blocks can be published in the
+existing database without rebuilding either application host.
