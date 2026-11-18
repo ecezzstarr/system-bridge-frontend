@@ -50,11 +50,11 @@ export function AgentWorkplace({userName,onOpenDistricts}:{userName?:string|null
     return query?filtered.filter((x,i)=>filtered.findIndex(y=>y.href===x.href)===i):filtered
   },[query,space,isVisible])
 
-  return <main data-agent-workplace="five-destinations" data-product-imagery="official-repository-assets"
+  return <main data-phe-role-workplace="agent" data-agent-workplace="five-destinations" data-product-imagery="official-repository-assets"
     className="relative mx-auto min-h-[calc(100svh-4rem)] w-full max-w-[1580px] overflow-hidden bg-[#f8f5ed] pb-20 text-[#243640]">
     <div className="pointer-events-none absolute inset-x-0 top-0 h-96 bg-[radial-gradient(ellipse_at_83%_8%,rgba(196,148,58,.22),transparent_48%),radial-gradient(ellipse_at_10%_40%,rgba(119,190,160,.15),transparent_55%)]"/>
-    <div className="relative z-10 px-4 pt-6 sm:px-8 sm:pt-9 lg:px-12">
-      <header className="relative overflow-hidden rounded-[1.7rem] border border-[#d0b582] bg-gradient-to-br from-[#fffefa] via-[#f7f1e3] to-[#e9f2ef] p-5 shadow-[0_20px_55px_rgba(65,48,20,.12)] sm:p-8">
+    <div data-phe-role-content className="relative z-10 px-4 pt-6 sm:px-8 sm:pt-9 lg:px-12">
+      <header data-phe-role-hero className="relative overflow-hidden rounded-[1.7rem] border border-[#d0b582] bg-gradient-to-br from-[#fffefa] via-[#f7f1e3] to-[#e9f2ef] p-5 shadow-[0_20px_55px_rgba(65,48,20,.12)] sm:p-8">
         <div className="pointer-events-none absolute right-[-6rem] top-[-9rem] h-80 w-80 rounded-full border-[44px] border-[#dfc28c]/15 [transform:perspective(400px)_rotateX(25deg)]"/>
         <div className="relative flex flex-wrap items-start justify-between gap-6">
           <div className="max-w-3xl">
@@ -79,7 +79,7 @@ export function AgentWorkplace({userName,onOpenDistricts}:{userName?:string|null
         </div>
       </header>
 
-      <section data-agent-daily-job-guide="learn-order-supply-settle" className="mt-5 rounded-2xl border border-[#d6bf8e] bg-white/90 p-5 shadow-sm sm:p-6">
+      <section data-phe-role-steps data-agent-daily-job-guide="learn-order-supply-settle" className="mt-5 rounded-2xl border border-[#d6bf8e] bg-white/90 p-5 shadow-sm sm:p-6">
         <h2 className="text-xl font-bold text-[#293b42]">Your work, from product to payment.</h2>
         <p className="mt-2 text-sm leading-6 text-[#52636b]">Weave supplies the product and commercial systems. Your role is to perform real distribution or an approved digital service, serve people, and keep honest stock and financial records.</p>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -99,7 +99,7 @@ export function AgentWorkplace({userName,onOpenDistricts}:{userName?:string|null
         </div>
         <p className="mt-3 text-xs leading-5 text-[#617078]">Stock cost and customer price are displayed by each official product. Gross margin excludes delivery, spoiled or unsold goods and other expenses. Any support advance requires approval and is subject to its recorded repayment rules.</p>
       </section>
-      <nav className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5" aria-label="Agent Stability workplaces">
+      <nav data-phe-role-nav className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5" aria-label="Agent Stability workplaces">
         {AGENT_SPACES.map(x=>{
           const Icon=ICONS[x.id], selected=!query&&x.id===active
           return <button key={x.id} type="button" aria-pressed={selected} onClick={()=>{setActive(x.id);setSearch('')}}
@@ -109,7 +109,7 @@ export function AgentWorkplace({userName,onOpenDistricts}:{userName?:string|null
         })}
       </nav>
 
-      <section className="mt-5 rounded-[1.5rem] border border-[#d8c5a0] bg-white/85 p-4 shadow-[0_12px_35px_rgba(60,51,33,.07)] sm:p-6">
+      <section data-phe-role-stage className="mt-5 rounded-[1.5rem] border border-[#d8c5a0] bg-white/85 p-4 shadow-[0_12px_35px_rgba(60,51,33,.07)] sm:p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="max-w-3xl">
             <p className="text-xs font-semibold uppercase tracking-[.16em] text-[#94702a]">Stability · Working stations</p>
@@ -146,7 +146,7 @@ export function AgentWorkplace({userName,onOpenDistricts}:{userName?:string|null
         {stations.length===0&&<p className="mt-5 rounded-xl border border-[#dcc9a6] bg-[#f8f1e2] p-5 text-sm">No visible station matches this search.</p>}
       </section>
 
-      <footer className="mt-5 grid gap-3 rounded-xl border border-[#dac7a2] bg-[#fffbf3] p-5 text-sm text-[#506269] sm:grid-cols-2">
+      <footer data-phe-role-footer className="mt-5 grid gap-3 rounded-xl border border-[#dac7a2] bg-[#fffbf3] p-5 text-sm text-[#506269] sm:grid-cols-2">
         <div className="flex items-start gap-2"><Package className="mt-0.5 h-5 w-5 shrink-0 text-[#99732f]"/><p><strong className="text-[#293b43]">Know what you sell.</strong> Explore Agility, Electrolyte, Ember and Daisy Pastries. Check each product’s current stock, pricing and selling guidance before you order.</p></div>
         <div className="flex items-start gap-2"><ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#99732f]"/><p><strong className="text-[#293b43]">Keep your work in view.</strong> Follow your orders, outlet collections and approved commissions. Your records show what has been received, sold and paid.</p></div>
       </footer>
