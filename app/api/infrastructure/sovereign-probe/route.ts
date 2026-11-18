@@ -67,10 +67,24 @@ export async function POST(request:NextRequest){
  const ready=provider==='weave-owned'&&Boolean(sha)&&CHECKS.every(key=>checks[key]===true)
  try{
   await ensure()
-  await getPool().query(
-   "INSERT INTO weave_sovereign_server_reports(node_id,provider,observed_at,release_sha,checks,ready,database_fingerprint) "+
-   "VALUES($1,$2,$3,$4,$5::jsonb,$6,$7)",
-   [nodeId,provider,recordedAt.toISOString(),sha,JSON.stringify(checks),ready,dbFingerprint])
+  const db=await getPool().connect()
+  try{
+   await db.query('BEGIN')
+   await db.query("SELECT pg_advisory_xact_lock(hashtext($1))",['weave-candidate:'+nodeId])
+   const recent=await db.query(
+    "SELECT observed_at FROM weave_sovereign_server_reports "+
+    "WHERE node_id=$1 ORDER BY observed_at DESC LIMIT 1",[nodeId])
+   if(recent.rows[0]&&new Date(recent.rows[0].observed_at).getTime()>=recordedAt.getTime())
+    throw Error('Older or replayed server report refused')
+   await db.query(
+    "INSERT INTO weave_sovereign_server_reports(node_id,provider,observed_at,release_sha,checks,ready,database_fingerprint) "+
+    "VALUES($1,$2,$3,$4,$5::jsonb,$6,$7)",
+    [nodeId,provider,recordedAt.toISOString(),sha,JSON.stringify(checks),ready,dbFingerprint])
+   await db.query('COMMIT')
+  }catch(error){
+   await db.query('ROLLBACK').catch(()=>{})
+   throw error
+  }finally{db.release()}
   return NextResponse.json({success:true,recorded:true,ready},{headers:noStore})
  }catch(error){
   console.error('[weave sovereign server] evidence storage unavailable',error instanceof Error?error.message:'unknown')
