@@ -10,6 +10,9 @@ const typed=[
  'app/api/infrastructure/sovereign-probe/route.ts',
  'app/(app)/admin/sovereign-server/page.tsx',
  'components/weave/native-intake-form.tsx',
+ 'lib/weave-sovereign-database-identity.ts',
+ 'app/api/admin/sovereign-host-transition/route.ts',
+ 'components/admin/weave-sovereign-host-move.tsx',
 ]
 for(const file of typed){
  const diagnostics=ts.transpileModule(read(file),{
@@ -48,6 +51,32 @@ assert.doesNotMatch(overlay,/ports:\s*[\s\S]*5432/)
 assert.match(env,/WEAVE_HOST_PROVIDER=oracle/)
 assert.match(env,/WEAVE_SOVEREIGN_PROBE_TOKEN/)
 assert.match(ui,/Oracle remains production/)
+assert.match(ui,/WeaveSovereignHostMove/)
+const transition=read('app/api/admin/sovereign-host-transition/route.ts')
+const transitionUi=read('components/admin/weave-sovereign-host-move.tsx')
+const identity=read('lib/weave-sovereign-database-identity.ts')
+assert.match(identity,/databaseEndpointFingerprint/)
+assert.match(identity,/createHash\('sha256'\)/)
+assert.match(probe,/databaseFingerprint/)
+assert.match(route,/currentDatabaseEndpointFingerprint/)
+assert.match(route,/sharedCurrentDatabase/)
+assert.match(transition,/requireWorkshopAuthorization\(request\)/)
+assert.match(transition,/suitableCandidate/)
+assert.match(transition,/Database continuity blocked/)
+assert.match(transition,/WEAVE_RELEASE_SHA/)
+assert.match(transition,/AUTHORIZE WEAVE HOST MOVE/)
+assert.match(transition,/VERIFY MANUAL DNS SWITCH/)
+assert.match(transition,/CONFIRM WEAVE OWNED HOST/)
+assert.match(transition,/CANCEL WEAVE HOST MOVE/)
+assert.match(transition,/resolve4\(HOST\)/)
+assert.match(transition,/databaseRule:/)
+assert.match(transition,/dnsChangeSupported:false/)
+assert.match(transitionUi,/sharedCurrentDatabase/)
+assert.match(transitionUi,/balancesAndLedgerChecked/)
+for(const forbidden of ['dns.update','cloudflare.com','aws route53','docker run','docker stop','execSync','ssh ','ALTER ROLE','DROP TABLE']){
+ assert.ok(!transition.includes(forbidden),'Manual migration route must not independently execute '+forbidden)
+}
+
 assert.match(ui,/data-weave-sovereign-server/)
 assert.match(read('lib/admin-workplace-catalog.ts'),/\/admin\/sovereign-server/)
 assert.match(read('app\/(app)\/admin\/code-workshop\/page.tsx'),/\/admin\/sovereign-server/)
@@ -72,4 +101,5 @@ assert.match(registry,/SELECT pg_advisory_xact_lock/)
 assert.match(intake,/submit_intake/)
 assert.match(intake,/Record this work/)
 assert.match(read('app\/(app)\/admin\/native-foundry\/page.tsx'),/Company work intake records/)
+assert.match(read('lib/weave-code-workshop.ts'),/sovereign-host-transition/)
 console.log('WEAVE owned candidate: syntax, read-only checks, signed evidence, no DNS mutation, company forms verified')
