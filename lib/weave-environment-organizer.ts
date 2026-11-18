@@ -1,5 +1,6 @@
-import { sql } from '@/lib/db'
+import { getPool,sql } from '@/lib/db'
 import { WEAVE_ENVIRONMENT_REGISTRY } from '@/lib/weave-environment-registry'
+import { WEAVE_NATIVE_DEPARTMENTS,validNativeDepartment } from '@/lib/weave-native-blueprint'
 import {
   DEFAULT_ENVIRONMENT_RUNTIME_CONFIG,
   normalizeEnvironmentRuntimeConfig,
@@ -88,6 +89,63 @@ export async function ensureEnvironmentOrganizerSchema(){
   return environmentSchemaPromise
 }
 
+/**
+ * Published Native Formation systems are first-class operating stations.
+ * Only the active publication is exposed; archived versions keep their
+ * original history and user records but disappear from the active directory.
+ * Existing administrator visibility/order choices are never overwritten.
+ */
+async function synchronizeNativeOrganizerSurfaces(){
+  const pool=getPool()
+  const exists=await pool.query("SELECT to_regclass('weave_native_module_releases') AS name")
+  if(!exists.rows[0]?.name)return [] as string[]
+  const published=await pool.query<{
+    department:string;slug:string;title:string|null
+  }>(`SELECT department,slug,blueprint->>'title' AS title
+      FROM weave_native_module_releases WHERE state='published'
+      ORDER BY department,published_at ASC,slug ASC`)
+  const keys:string[]=[],labels:string[]=[],routes:string[]=[],areas:string[]=[],scopes:string[]=[]
+  const ranks:number[]=[]
+  const nextByDepartment=new Map<string,number>()
+  for(const row of published.rows){
+    if(!validNativeDepartment(row.department))continue
+    const department=row.department
+    const entry=WEAVE_NATIVE_DEPARTMENTS[department]
+    const next=(nextByDepartment.get(department)||0)+1
+    nextByDepartment.set(department,next)
+    keys.push('native-'+department+'-'+row.slug)
+    labels.push(row.title?.trim()||row.slug)
+    routes.push('/weave-modules/'+department+'/'+row.slug)
+    areas.push(entry.label)
+    scopes.push(entry.role)
+    ranks.push(400+next*10)
+  }
+  if(!keys.length)return keys
+  // One batch with unchanged-row suppression prevents per-user polling from
+  // doing one database write per published module every 15 seconds.
+  await pool.query(`
+    INSERT INTO weave_environment_surfaces(
+      surface_key,label,surface_kind,route,area,scope,
+      is_visible,sort_order,is_protected
+    )
+    SELECT entries.surface_key,entries.label,'station',entries.route,
+           entries.area,entries.scope,true,entries.rank,false
+    FROM unnest(
+      $1::text[],$2::text[],$3::text[],$4::text[],$5::text[],$6::integer[]
+    ) AS entries(surface_key,label,route,area,scope,rank)
+    ON CONFLICT(surface_key) DO UPDATE SET
+      label=EXCLUDED.label,surface_kind='station',route=EXCLUDED.route,
+      area=EXCLUDED.area,scope=EXCLUDED.scope,is_protected=false
+    WHERE weave_environment_surfaces.label IS DISTINCT FROM EXCLUDED.label
+      OR weave_environment_surfaces.surface_kind IS DISTINCT FROM 'station'
+      OR weave_environment_surfaces.route IS DISTINCT FROM EXCLUDED.route
+      OR weave_environment_surfaces.area IS DISTINCT FROM EXCLUDED.area
+      OR weave_environment_surfaces.scope IS DISTINCT FROM EXCLUDED.scope
+      OR weave_environment_surfaces.is_protected IS DISTINCT FROM false
+  `,[keys,labels,routes,areas,scopes,ranks])
+  return keys
+}
+
 export async function getEnvironmentRuntimeProfile(){
   await ensureEnvironmentOrganizerSchema()
   const [row]=await sql`
@@ -105,6 +163,7 @@ export async function getEnvironmentRuntimeProfile(){
 
 export async function getEnvironmentOrganizerState(){
   await ensureEnvironmentOrganizerSchema()
+  const nativeKeys=await synchronizeNativeOrganizerSurfaces()
   const [storedItems,runtime]=await Promise.all([
     sql`
       SELECT surface_key,label,surface_kind,route,area,scope,is_visible,sort_order,is_protected,updated_at
@@ -113,7 +172,7 @@ export async function getEnvironmentOrganizerState(){
     `,
     getEnvironmentRuntimeProfile(),
   ])
-  const activeKeys=new Set(WEAVE_ENVIRONMENT_REGISTRY.map(surface=>surface.key))
+  const activeKeys=new Set([...WEAVE_ENVIRONMENT_REGISTRY.map(surface=>surface.key),...nativeKeys])
   const items=storedItems.filter((item:any)=>activeKeys.has(String(item.surface_key)))
   return {items,runtime}
 }
@@ -150,6 +209,57 @@ export async function setEnvironmentSurfaceOrder(surfaceKey:string,sortOrder:num
   return getEnvironmentOrganizerState()
 }
 
+/**
+ * Mobile-first one-step movement. The older numeric set_order action remains
+ * available for compatibility, but it can create ties when gaps are small.
+ * A complete ordered group is locked and normalized atomically instead.
+ */
+export async function moveEnvironmentSurface(
+  surfaceKey:string,direction:'earlier'|'later',userId:string,
+){
+  if(direction!=='earlier'&&direction!=='later')throw new Error('Invalid movement')
+  await ensureEnvironmentOrganizerSchema()
+  const client=await getPool().connect()
+  try{
+    await client.query('BEGIN')
+    const result=await client.query<{area:string}>(
+      'SELECT area FROM weave_environment_surfaces WHERE surface_key=$1',
+      [surfaceKey],
+    )
+    const area=result.rows[0]?.area
+    if(!area)throw new Error('Environment surface not found')
+    // Serialize changes within the same workplace; other areas stay independent.
+    await client.query('SELECT pg_advisory_xact_lock(hashtext($1))',
+      ['weave-environment-area:'+area])
+    const rows=await client.query<{surface_key:string}>(
+      `SELECT surface_key FROM weave_environment_surfaces
+       WHERE area=$1 ORDER BY sort_order ASC,label ASC,surface_key ASC FOR UPDATE`,
+      [area],
+    )
+    const keys=rows.rows.map(row=>row.surface_key)
+    const index=keys.indexOf(surfaceKey)
+    const next=index+(direction==='earlier'?-1:1)
+    if(index<0)throw new Error('Environment surface not found')
+    if(next>=0&&next<keys.length){
+      ;[keys[index],keys[next]]=[keys[next],keys[index]]
+      const ranks=keys.map((_,i)=>(i+1)*10)
+      await client.query(`
+        UPDATE weave_environment_surfaces AS surface
+        SET sort_order=movement.rank,updated_by=$3::uuid,updated_at=NOW()
+        FROM unnest($1::text[],$2::integer[]) AS movement(surface_key,rank)
+        WHERE surface.surface_key=movement.surface_key
+      `,[keys,ranks,userId])
+    }
+    await client.query('COMMIT')
+  }catch(error){
+    await client.query('ROLLBACK')
+    throw error
+  }finally{
+    client.release()
+  }
+  return getEnvironmentOrganizerState()
+}
+
 export async function setEnvironmentRuntimeConfig(input:unknown,userId:string){
   await ensureEnvironmentOrganizerSchema()
   const config=normalizeEnvironmentRuntimeConfig(input)
@@ -171,6 +281,7 @@ export async function restoreEnvironmentRuntimeDefaults(userId:string){
 
 export async function restoreEnvironmentDefaults(userId:string){
   await ensureEnvironmentOrganizerSchema()
+  const nativeKeys=await synchronizeNativeOrganizerSurfaces()
   for(const surface of WEAVE_ENVIRONMENT_REGISTRY){
     await sql`
       UPDATE weave_environment_surfaces
@@ -180,6 +291,13 @@ export async function restoreEnvironmentDefaults(userId:string){
         updated_by=${userId}::uuid,
         updated_at=NOW()
       WHERE surface_key=${surface.key}
+    `
+  }
+  for(const [index,key] of nativeKeys.entries()){
+    await sql`
+      UPDATE weave_environment_surfaces
+      SET is_visible=true,sort_order=${400+(index+1)*10},updated_by=${userId}::uuid,updated_at=NOW()
+      WHERE surface_key=${key}
     `
   }
   return getEnvironmentOrganizerState()

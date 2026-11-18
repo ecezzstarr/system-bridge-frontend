@@ -53,8 +53,8 @@ export function WeaveSystemRoom({
           <p className="mt-3 max-w-5xl text-sm leading-7 text-slate-300">{detail}</p>
         </header>
 
-        <div className="relative grid min-h-0 xl:min-h-[520px] xl:grid-cols-[210px_minmax(0,1fr)_230px]">
-          <aside className="border-b border-white/[0.07] bg-black/10 p-4 xl:border-b-0 xl:border-r">
+        <div data-phe-room-grid className="relative grid min-h-0 xl:min-h-[520px] xl:grid-cols-[210px_minmax(0,1fr)_230px]">
+          <aside data-phe-room-rail data-phe-room-left className="border-b border-white/[0.07] bg-black/10 p-4 xl:border-b-0 xl:border-r">
             <div className="xl:sticky xl:top-20">
               <div className="mb-4 flex items-center gap-2">
                 <span className={`h-2 w-2 rounded-full ${t.soft}`}/>
@@ -80,7 +80,7 @@ export function WeaveSystemRoom({
             {center}
           </section>
 
-          <aside className="border-t border-white/[0.07] bg-black/10 p-4 xl:border-l xl:border-t-0">
+          <aside data-phe-room-rail data-phe-room-right className="border-t border-white/[0.07] bg-black/10 p-4 xl:border-l xl:border-t-0">
             <div className="space-y-5 xl:sticky xl:top-20">
               <section className="border-l border-white/10 pl-4">
                 <div className="flex items-center gap-2">
@@ -89,7 +89,7 @@ export function WeaveSystemRoom({
                 </div>
                 <p data-weave-live-word="station" className="mt-3 text-sm font-black text-white">{pulse}</p>
                 <p className="mt-2 text-[10px] leading-5 text-slate-400">
-                  Actions alter live WEAVE state. This rail reports the room while the center remains the working stage.
+                  This rail keeps the room's supporting context visible. Confirm actual results in the working stage and source records.
                 </p>
               </section>
               {right}

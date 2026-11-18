@@ -85,7 +85,7 @@ export function BridgerWorkplace({
 }){
   const [selected, setSelected] = useState<BridgerWorkplaceSpaceId>('desk')
   const [search, setSearch] = useState('')
-  const { isVisible } = useEnvironmentOrganizer()
+  const { isVisible, orderFor } = useEnvironmentOrganizer()
 
   const space = BRIDGER_WORKPLACE_SPACES.find(item => item.id === selected) || BRIDGER_WORKPLACE_SPACES[0]
   const trimmedSearch = search.trim().toLowerCase()
@@ -98,19 +98,21 @@ export function BridgerWorkplace({
       [item.label, item.detail, item.href].some(value => value.toLowerCase().includes(trimmedSearch))))
     // Several destinations intentionally link to the same operating system.
     // A search shows it once while retaining each original route.
-    return trimmedSearch ? matched.filter((item, index) =>
+    const visible = trimmedSearch ? matched.filter((item, index) =>
       matched.findIndex(other => other.href === item.href) === index) : matched
-  }, [isVisible, space, trimmedSearch])
+    return [...visible].sort((a,b) => orderFor(a.href) - orderFor(b.href))
+  }, [isVisible, orderFor, space, trimmedSearch])
 
   return (
     <main
       className="relative mx-auto min-h-[calc(100svh-4rem)] w-full max-w-[1500px] overflow-hidden bg-[#f9f6ef] pb-20 text-[#1c2c39]"
+      data-phe-role-workplace="bridger"
       data-bridger-workplace="five-destinations"
       data-bridger-workplace-preserves="existing-routes-and-records"
     >
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[440px] bg-[radial-gradient(circle_at_78%_18%,rgba(229,192,117,.3),transparent_36%),radial-gradient(circle_at_9%_28%,rgba(156,193,199,.22),transparent_38%)]"/>
-      <div className="relative z-10 px-4 pt-6 sm:px-8 sm:pt-10 lg:px-12">
-        <header className="overflow-hidden rounded-[1.6rem] border border-[#d6bf8e]/75 bg-gradient-to-br from-[#fffcf7] via-[#fcf5e7] to-[#eaf2f1] p-5 shadow-[0_18px_55px_rgba(87,65,29,.11)] sm:p-8">
+      <div data-phe-role-content className="relative z-10 px-4 pt-6 sm:px-8 sm:pt-10 lg:px-12">
+        <header data-phe-role-hero className="overflow-hidden rounded-[1.6rem] border border-[#d6bf8e]/75 bg-gradient-to-br from-[#fffcf7] via-[#fcf5e7] to-[#eaf2f1] p-5 shadow-[0_18px_55px_rgba(87,65,29,.11)] sm:p-8">
           <div className="flex flex-wrap items-start justify-between gap-5">
             <div className="max-w-3xl">
               <WeaveLogo size="sm"/>
@@ -137,7 +139,7 @@ export function BridgerWorkplace({
           </div>
         </header>
 
-        <section data-bridger-daily-job-guide="find-contact-confirm-serve-earn" className="mt-5 rounded-2xl border border-[#d6bf8e] bg-white/90 p-5 shadow-sm sm:p-6">
+        <section data-phe-role-steps data-bridger-daily-job-guide="find-contact-confirm-serve-earn" className="mt-5 rounded-2xl border border-[#d6bf8e] bg-white/90 p-5 shadow-sm sm:p-6">
           <h2 className="text-xl font-bold text-[#293b42]">A conversation. A connection. A beginning.</h2>
           <p className="mt-2 text-sm leading-6 text-[#52636b]">Hope brings real people into useful conversations. The company expects two genuine outreach contacts each working hour. Prospects are candidates, not promised customers.</p>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -156,7 +158,7 @@ export function BridgerWorkplace({
           </div>
           <p className="mt-3 text-xs leading-5 text-[#617078]">The company prices each optional instrument on its actual purchase page. External social connections, AI telephone calls and future video sessions have their own availability and consent rules; this desk does not imply they are all live.</p>
         </section>
-        <nav className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-5" aria-label="Bridger workplace destinations">
+        <nav data-phe-role-nav className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-5" aria-label="Bridger workplace destinations">
           {BRIDGER_WORKPLACE_SPACES.map(item => {
             const Icon = ICONS[item.id]
             const active = selected === item.id && !trimmedSearch
@@ -171,7 +173,7 @@ export function BridgerWorkplace({
           })}
         </nav>
 
-        <div className="mt-5 rounded-2xl border border-[#dac99e] bg-white/85 p-4 shadow-sm sm:p-6">
+        <div data-phe-role-stage className="mt-5 rounded-2xl border border-[#dac99e] bg-white/85 p-4 shadow-sm sm:p-6">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="max-w-3xl">
               <p className="text-xs font-semibold uppercase tracking-[.14em] text-[#946b29]">Your working environment</p>
@@ -219,7 +221,7 @@ export function BridgerWorkplace({
           )}
         </div>
 
-        <footer className="mt-5 grid gap-3 rounded-2xl border border-[#e0d1af] bg-[#fffaf0] p-5 text-sm text-[#4b5a61] md:grid-cols-2">
+        <footer data-phe-role-footer className="mt-5 grid gap-3 rounded-2xl border border-[#e0d1af] bg-[#fffaf0] p-5 text-sm text-[#4b5a61] md:grid-cols-2">
           <div className="flex items-start gap-3">
             <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-[#94712f]"/>
             <p><strong className="text-[#263943]">Your core Bridger position has no recurring subscription.</strong> Optional instruments and Lifestyle specializations disclose their own costs and access rules.</p>

@@ -1,0 +1,296 @@
+/*
+ * PHE workspace organization — spatial hierarchy, not a global recolor.
+ * Applies only to explicitly opted-in operational pages. The existing
+ * departments, routes, source records and company event remain unchanged.
+ */
+[data-phe-role-workplace] {
+  --phe-ink: #263a47;
+  --phe-line: rgba(174, 139, 80, .35);
+}
+[data-phe-role-content] > :is(header,nav,section,div,footer) {
+  min-width: 0;
+}
+[data-phe-role-nav] {
+  display: flex;
+  gap: .6rem;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scroll-snap-type: x proximity;
+  scrollbar-width: thin;
+  padding-block: .2rem .6rem;
+}
+[data-phe-role-nav] > button {
+  flex: 0 0 min(11.5rem, 49%);
+  min-height: 3.25rem;
+  scroll-snap-align: start;
+}
+[data-phe-role-steps] {
+  min-width: 0;
+}
+[data-phe-role-stage] {
+  min-width: 0;
+  container-type: inline-size;
+}
+[data-phe-role-stage] :is([data-agent-station-directory],[data-admin-station-directory],[data-bridger-workplace-links]) {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  align-items: stretch;
+}
+[data-phe-role-stage] :is([data-agent-station],[data-admin-station],[data-bridger-place]) {
+  min-width: 0;
+  isolation: isolate;
+}
+[data-phe-role-stage] :is([data-agent-station],[data-admin-station],[data-bridger-place]):focus-visible,
+[data-phe-role-nav] > button:focus-visible {
+  outline: 3px solid #a77825;
+  outline-offset: 3px;
+}
+[data-phe-role-stage] img {
+  max-width: 100%;
+}
+@media (min-width: 1024px) {
+  [data-phe-role-content] {
+    display: grid;
+    align-items: start;
+    grid-template-columns: minmax(190px, 226px) minmax(0, 1fr);
+    gap: 1.1rem 1.4rem;
+  }
+  [data-phe-role-hero] {
+    grid-column: 1 / -1;
+  }
+  [data-phe-role-nav] {
+    grid-column: 1;
+    grid-row: 2 / span 2;
+    position: sticky;
+    top: 4.5rem;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: .6rem;
+    overflow-x: visible;
+    padding: .75rem;
+    border: 1px solid var(--phe-line);
+    border-radius: 1.5rem;
+    background: linear-gradient(165deg, rgba(255,254,250,.98), rgba(239,232,216,.95));
+    box-shadow: 0 18px 48px rgba(42,48,54,.09);
+    scroll-snap-type: none;
+  }
+  [data-phe-role-nav]::before {
+    content: 'WORKSPACE DIRECTORY';
+    display: block;
+    padding: .4rem .4rem .65rem;
+    font-size: .68rem;
+    line-height: 1.35;
+    font-weight: 800;
+    letter-spacing: .12em;
+    color: #8c6323;
+  }
+  [data-phe-role-nav] > button {
+    flex: none;
+    width: 100%;
+    min-height: 3.4rem;
+    scroll-snap-align: unset;
+  }
+  [data-phe-role-steps] {
+    grid-column: 2;
+    grid-row: 2;
+    margin-top: 0;
+  }
+  [data-phe-role-stage] {
+    grid-column: 2;
+    grid-row: 3;
+    margin-top: 0;
+  }
+  [data-phe-role-workplace="admin"] [data-phe-role-stage] {
+    grid-row: 2;
+  }
+  [data-phe-role-footer] {
+    grid-column: 1 / -1;
+    margin-top: 0;
+  }
+}
+@media (min-width: 1440px) {
+  [data-phe-role-content] {
+    grid-template-columns: minmax(210px, 255px) minmax(0, 1fr);
+    gap: 1.35rem 1.8rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-phe-role-workplace] :is(a,button) {
+    transition-duration: .01ms !important;
+    transform: none !important;
+  }
+}
+
+/* Control center: the institutional terminal remains the authoritative
+   working surface; the card deck only organizes existing entrances. */
+[data-phe-control] {
+  --phe-gold: rgba(225,197,139,.4);
+}
+[data-phe-control-panel] {
+  background: linear-gradient(120deg, rgba(16,34,48,.97), rgba(16,29,37,.94));
+  border: 1px solid var(--phe-gold);
+  box-shadow: 0 20px 60px rgba(2,8,23,.2);
+}
+[data-phe-control-grid] {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 285px),1fr));
+  gap: 1rem;
+  align-items: start;
+}
+[data-phe-control-group] {
+  min-width: 0;
+  border: 1px solid rgba(178,204,216,.25);
+  border-radius: 1.25rem;
+  background: rgba(9,23,34,.84);
+  padding: 1rem;
+}
+[data-phe-control-group] [data-phe-control-link] {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  min-height: 4.25rem;
+  margin-top: .55rem;
+  border: 1px solid rgba(188,210,225,.18);
+  border-radius: .85rem;
+  background: rgba(255,255,255,.045);
+  padding: .75rem .85rem;
+  color: #edf5fb;
+  text-decoration: none;
+  font-size: .83rem;
+  line-height: 1.4;
+  font-weight: 600;
+  transition: border-color .18s, background-color .18s, transform .18s;
+}
+[data-phe-control-group] [data-phe-control-link]:is(:hover,:focus-visible) {
+  border-color: rgba(230,191,111,.8);
+  background: rgba(230,191,111,.1);
+  transform: translateY(-1px);
+}
+[data-phe-control-link] small {
+  margin-top: .35rem;
+  color: #b1c4d1;
+  font-size: .75rem;
+  font-weight: 400;
+}
+
+/* Rooms show the active work before supporting context on small screens. */
+[data-weave-room] [data-weave-room-stage] { scroll-margin-top: 5rem; }
+[data-weave-room] [data-phe-room-rail] { min-width: 0; }
+@media (max-width: 1279px) {
+  [data-weave-room] [data-phe-room-grid] {
+    display: flex;
+    flex-direction: column;
+  }
+  [data-weave-room] [data-weave-room-stage] { order: 0; }
+  [data-weave-room] [data-phe-room-left] { order: 1; }
+  [data-weave-room] [data-phe-room-right] { order: 2; }
+}
+
+/*
+ * Phone is WEAVE's primary workplace, not a smaller desktop canvas.
+ * In narrow viewports: the person sees the position, the work selector and
+ * the active system before any introductory training or secondary rail.
+ */
+@media (max-width: 767px) {
+  [data-phe-role-content] {
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+    padding-left: .75rem;
+    padding-right: .75rem;
+  }
+  [data-phe-role-hero] { order: 0; padding: 1rem; }
+  [data-phe-role-nav] {
+    order: 1;
+    position: relative;
+    width: 100%;
+    margin-top: 0;
+    padding-bottom: .4rem;
+    -webkit-overflow-scrolling: touch;
+  }
+  [data-phe-role-nav] > button {
+    flex: 0 0 clamp(155px, 61vw, 215px);
+    min-height: 3.25rem;
+    padding: .75rem;
+    font-size: .875rem;
+    line-height: 1.25rem;
+    text-align: left;
+  }
+  [data-phe-role-stage] { order: 2; margin-top: 0; padding: .9rem; }
+  [data-phe-role-steps] { order: 3; margin-top: 0; padding: .9rem; }
+  [data-phe-role-footer] { order: 4; margin-top: 0; }
+  [data-phe-role-stage] :is([data-agent-station-directory],[data-admin-station-directory],[data-bridger-workplace-links]) {
+    grid-template-columns: minmax(0,1fr);
+    gap: .75rem;
+  }
+  [data-phe-role-stage] :is([data-agent-station],[data-admin-station],[data-bridger-place]) {
+    min-height: 0;
+  }
+  [data-phe-role-stage] :is([data-agent-station],[data-admin-station],[data-bridger-place]) :is(h3,p) {
+    overflow-wrap: anywhere;
+  }
+  [data-phe-role-workplace] a,
+  [data-phe-role-workplace] button,
+  [data-phe-control] a,
+  [data-phe-control] button {
+    touch-action: manipulation;
+  }
+  [data-phe-control-grid] {
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+  }
+  [data-phe-control-group] { padding: .9rem; }
+  [data-phe-control-group] [data-phe-control-link] {
+    min-height: 3.25rem;
+    font-size: .875rem;
+  }
+  [data-phe-agent-product-cards] {
+    grid-template-columns: minmax(0,1fr);
+  }
+  [data-phe-district-directory] [data-phe-district-group] > div.grid {
+    grid-template-columns: minmax(0,1fr);
+  }
+  [data-phe-organizer] {
+    width: 100%;
+    min-width: 0;
+  }
+  [data-phe-organizer-filters] {
+    grid-template-columns: minmax(0,1fr);
+  }
+  [data-phe-organizer-actions] > button { min-height: 3rem; }
+}
+@media (min-width: 768px) and (max-width: 1023px) {
+  [data-phe-role-content] {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  [data-phe-role-nav] { order: 1; margin-top: 0; }
+  [data-phe-role-stage] { order: 2; margin-top: 0; }
+  [data-phe-role-steps] { order: 3; margin-top: 0; }
+  [data-phe-role-footer] { order: 4; }
+}
+
+/* Touch and phone keyboard safety for live Administrations controls. */
+@media (max-width: 767px) {
+  [data-phe-organizer-runtime] :is(button,input[type="number"],select) {
+    min-height: 44px;
+    max-width: 100%;
+  }
+  [data-phe-organizer-runtime] :is(input[type="number"],input[type="text"],select) {
+    font-size: 16px;
+  }
+  [data-phe-organizer-runtime] input[type="range"] {
+    min-height: 32px;
+    width: 100%;
+    touch-action: pan-y;
+  }
+  [data-phe-organizer] :is(button,select,input) {
+    touch-action: manipulation;
+  }
+  [data-phe-organizer-surface] {
+    scroll-margin-top: 5rem;
+  }
+}
