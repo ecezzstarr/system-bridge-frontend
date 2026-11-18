@@ -104,7 +104,8 @@ async function synchronizeNativeOrganizerSurfaces(){
   }>(`SELECT department,slug,blueprint->>'title' AS title
       FROM weave_native_module_releases WHERE state='published'
       ORDER BY department,published_at ASC,slug ASC`)
-  const active:string[]=[]
+  const keys:string[]=[],labels:string[]=[],routes:string[]=[],areas:string[]=[],scopes:string[]=[]
+  const ranks:number[]=[]
   const nextByDepartment=new Map<string,number>()
   for(const row of published.rows){
     if(!validNativeDepartment(row.department))continue
@@ -112,29 +113,37 @@ async function synchronizeNativeOrganizerSurfaces(){
     const entry=WEAVE_NATIVE_DEPARTMENTS[department]
     const next=(nextByDepartment.get(department)||0)+1
     nextByDepartment.set(department,next)
-    const surfaceKey='native-'+department+'-'+row.slug
-    active.push(surfaceKey)
-    await pool.query(`
-      INSERT INTO weave_environment_surfaces(
-        surface_key,label,surface_kind,route,area,scope,
-        is_visible,sort_order,is_protected
-      ) VALUES ($1,$2,'station',$3,$4,$5,true,$6,false)
-      ON CONFLICT(surface_key) DO UPDATE SET
-        label=EXCLUDED.label,surface_kind='station',route=EXCLUDED.route,
-        area=EXCLUDED.area,scope=EXCLUDED.scope,is_protected=false
-      WHERE weave_environment_surfaces.label IS DISTINCT FROM EXCLUDED.label
-        OR weave_environment_surfaces.surface_kind IS DISTINCT FROM 'station'
-        OR weave_environment_surfaces.route IS DISTINCT FROM EXCLUDED.route
-        OR weave_environment_surfaces.area IS DISTINCT FROM EXCLUDED.area
-        OR weave_environment_surfaces.scope IS DISTINCT FROM EXCLUDED.scope
-        OR weave_environment_surfaces.is_protected IS DISTINCT FROM false
-    `,[
-      surfaceKey,row.title?.trim()||row.slug,
-      '/weave-modules/'+department+'/'+row.slug,entry.label,entry.role,
-      400+next*10,
-    ])
+    keys.push('native-'+department+'-'+row.slug)
+    labels.push(row.title?.trim()||row.slug)
+    routes.push('/weave-modules/'+department+'/'+row.slug)
+    areas.push(entry.label)
+    scopes.push(entry.role)
+    ranks.push(400+next*10)
   }
-  return active
+  if(!keys.length)return keys
+  // One batch with unchanged-row suppression prevents per-user polling from
+  // doing one database write per published module every 15 seconds.
+  await pool.query(`
+    INSERT INTO weave_environment_surfaces(
+      surface_key,label,surface_kind,route,area,scope,
+      is_visible,sort_order,is_protected
+    )
+    SELECT entries.surface_key,entries.label,'station',entries.route,
+           entries.area,entries.scope,true,entries.rank,false
+    FROM unnest(
+      $1::text[],$2::text[],$3::text[],$4::text[],$5::text[],$6::integer[]
+    ) AS entries(surface_key,label,route,area,scope,rank)
+    ON CONFLICT(surface_key) DO UPDATE SET
+      label=EXCLUDED.label,surface_kind='station',route=EXCLUDED.route,
+      area=EXCLUDED.area,scope=EXCLUDED.scope,is_protected=false
+    WHERE weave_environment_surfaces.label IS DISTINCT FROM EXCLUDED.label
+      OR weave_environment_surfaces.surface_kind IS DISTINCT FROM 'station'
+      OR weave_environment_surfaces.route IS DISTINCT FROM EXCLUDED.route
+      OR weave_environment_surfaces.area IS DISTINCT FROM EXCLUDED.area
+      OR weave_environment_surfaces.scope IS DISTINCT FROM EXCLUDED.scope
+      OR weave_environment_surfaces.is_protected IS DISTINCT FROM false
+  `,[keys,labels,routes,areas,scopes,ranks])
+  return keys
 }
 
 export async function getEnvironmentRuntimeProfile(){
