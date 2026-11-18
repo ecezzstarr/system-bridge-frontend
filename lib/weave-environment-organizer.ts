@@ -122,6 +122,12 @@ async function synchronizeNativeOrganizerSurfaces(){
       ON CONFLICT(surface_key) DO UPDATE SET
         label=EXCLUDED.label,surface_kind='station',route=EXCLUDED.route,
         area=EXCLUDED.area,scope=EXCLUDED.scope,is_protected=false
+      WHERE weave_environment_surfaces.label IS DISTINCT FROM EXCLUDED.label
+        OR weave_environment_surfaces.surface_kind IS DISTINCT FROM 'station'
+        OR weave_environment_surfaces.route IS DISTINCT FROM EXCLUDED.route
+        OR weave_environment_surfaces.area IS DISTINCT FROM EXCLUDED.area
+        OR weave_environment_surfaces.scope IS DISTINCT FROM EXCLUDED.scope
+        OR weave_environment_surfaces.is_protected IS DISTINCT FROM false
     `,[
       surfaceKey,row.title?.trim()||row.slug,
       '/weave-modules/'+department+'/'+row.slug,entry.label,entry.role,
