@@ -1,0 +1,7 @@
+# Candidate-only ingress overlay. Does not modify Oracle, source DB or
+# the normal production Caddyfile. Stage with an independent DB for full
+# acceptance testing, then use this overlay if checking the shared live DB.
+services:
+  caddy:
+    volumes:
+      - ./selfhost/Caddyfile.sovereign-candidate:/etc/caddy/Caddyfile:ro

@@ -48,6 +48,7 @@ const entrances:readonly (readonly [string,string,string])[]=[
   ['/system-switch/flame-event','Flame Event · Burning River','Enter the shared company event and continue through your own position.'],
   ['/video-feed','Weave Video Feed','Explore published videos and the people, services and businesses behind them.'],
   ['/video-call/[id]','WEAVE Private Video Invitation','Accept a private invitation from a Bridger, grant camera and microphone permission, and speak securely face to face. No AI or charges are involved.'],
+  ['/weave-modules/[department]/[slug]','Department Working System','Enter a published Weave page, feature or operating system available to your current role.'],
   ['/weave/file-folder/[fileNumber]','Client File Folder','Open the File Folder linked to this File Number through the access available to your position.'],
   ['/weave/lifestyles/sunshine','Sunshine · Mechanized Wealth','Grow capital through verified company work, save externally, preserve bank ownership and ask your Regional Manager for help with obstacles.'],
   ['/weave/lifestyles/pro-regional-manager','Pro Regional Manager','Review the separate company appointment, Pro File Folder and business-plan requirements before applying.'],

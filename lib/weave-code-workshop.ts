@@ -13,10 +13,12 @@ const MAX_BYTES=96*1024
 const EDIT_ROOTS=['app/','components/','lib/','tests/','docs/','public/'] as const
 const PROTECTED=[
  /^app\/api\//, /^app\/\(auth\)\//,
- /^lib\/(?:auth|workshop-auth|weave-github-release|weave-code-workshop|weave-workshop-purpose|weave-release|db(?:\.|\/)|pg-neon|payment|paystack|wallet|pro-file-folder-activation)/i,
- /^components\/admin\/(?:code-workshop|work-github-oracle-flow)/,
- /^app\/\(app\)\/admin\/(?:code-workshop|release-workshop)/,
- /^tests\/(?:code-workshop|work-github-oracle-release|release-workshop)/,
+ /^lib\/(?:auth|workshop-auth|weave-github-release|weave-code-workshop|weave-workshop-purpose|weave-native-registry|weave-native-blueprint|weave-sovereign-database-identity|weave-release|db(?:\.|\/)|pg-neon|payment|paystack|wallet|pro-file-folder-activation)/i,
+ /^components\/admin\/(?:code-workshop|work-github-oracle-flow|weave-sovereign-host-move)/,
+ /^components\/weave\/native-(?:department-rail|module-renderer|world-scene|intake-form)/,
+ /^app\/\(app\)\/admin\/(?:code-workshop|release-workshop|native-foundry|sovereign-server)/,
+ /^app\/\(app\)\/weave-modules\//,
+ /^tests\/(?:code-workshop|work-github-oracle-release|release-workshop|weave-native-publishing|weave-sovereign-server)/,
  /^docs\/(?:sovereign-release-workshop|work-github-oracle-release-pipeline)/,
 ]
 export const CODE_WORKSHOP_POLICY={
@@ -153,6 +155,21 @@ export async function workshopActivity(actorId:string){
   [validOwner(actorId)])
  return result.rows
 }
+/** Restore a designated administrator's own draft after a browser session ends. */
+export async function workshopDraftBranches(actorId:string){
+ await ensureAudit()
+ const result=await getPool().query(
+  "SELECT branch,MIN(created_at) AS created_at,MAX(created_at) AS updated_at, "+
+  "COUNT(*) FILTER (WHERE event='file_saved')::integer AS commits, "+
+  "(ARRAY_AGG(file_path ORDER BY created_at DESC) FILTER (WHERE file_path IS NOT NULL))[1] AS last_file_path "+
+  "FROM weave_code_workshop_events WHERE actor_id=$1::uuid "+
+  "GROUP BY branch ORDER BY MAX(created_at) DESC LIMIT 50",
+  [validOwner(actorId)])
+ return result.rows.filter((row:{branch:string})=>{
+  try{draftFor(actorId,row.branch);return true}catch{return false}
+ })
+}
+
 export async function createWorkshopBranch(actorId:string,confirmation:string){
  if(confirmation!=='CREATE DRAFT')throw Error('Type CREATE DRAFT to begin a reviewable source branch')
  if(!isCodeWorkshopWritable())throw Error('Server source-writing permission is not configured')

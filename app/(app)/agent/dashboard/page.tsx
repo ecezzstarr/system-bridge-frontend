@@ -6,6 +6,7 @@ import { BriefcaseBusiness, Share2, Truck } from 'lucide-react'
 import { useAuth } from '@/lib/auth-provider'
 import { WeaveDashboardWorld } from '@/components/world/weave-dashboard-world'
 import { AgentWorkplace } from '@/components/agent/agent-workplace'
+import {NativeDepartmentRail} from '@/components/weave/native-department-rail'
 import { ArrowLeft } from 'lucide-react'
 import { ManagerLifestyleEntry } from '@/components/manager-lifestyle-entry'
 import { RegionalSystemSwitchGate } from '@/components/weave/regional-system-switch-gate'
@@ -36,6 +37,7 @@ export default function AgentWorld() {
     ) : (
       <AgentWorkplace userName={user.name} onOpenDistricts={()=>setOriginalWorld(true)}/>
     )}
+    <NativeDepartmentRail department="stability" />
     <ManagerLifestyleEntry />
     <div className="sr-only focus-within:not-sr-only">
       <Link href="/agility">Agility home</Link>

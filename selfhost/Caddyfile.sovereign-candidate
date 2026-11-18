@@ -1,0 +1,25 @@
+# Quarantine candidate while it points to the SAME LIVE PRODUCTION DATABASE.
+# This is not the public production Caddy configuration.
+# Only liveness/readiness probes are public during final transition staging.
+# No signup, login, payments, webhooks or private File Folder routes can
+# reach the candidate through this ingress before the manual DNS cutover.
+{$WEAVE_DOMAIN:candidate.weavingsystem.online} {
+    encode zstd gzip
+    @readiness path /api/health /api/health/ready
+    handle @readiness {
+        reverse_proxy weave:3000
+    }
+    handle {
+        respond "WEAVE candidate under independent verification. Oracle remains active." 503
+    }
+    header {
+        X-Content-Type-Options nosniff
+        Referrer-Policy strict-origin-when-cross-origin
+        Cache-Control no-store
+        -Server
+    }
+    log {
+        output stdout
+        format console
+    }
+}

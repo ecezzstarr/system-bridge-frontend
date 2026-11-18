@@ -11,3 +11,11 @@ __pycache__/
 =
 screenshot-main.png
 *.failed-backup
+
+# Weave-owned server secrets, backup proofs and database archives
+selfhost/sovereign-db-password.txt
+selfhost/sovereign-restore-proof.json
+selfhost/*.dump
+selfhost/*.backup
+selfhost/*.sql
+selfhost/*.tar.gz

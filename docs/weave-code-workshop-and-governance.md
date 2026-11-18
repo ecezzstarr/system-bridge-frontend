@@ -3,7 +3,7 @@
 ## Institutional purpose
 
 WEAVE is one continuing company, not a collection of independent pages.
-Administration (A Time) establishes permissions, systems, policies, reviews and
+Administrations (A Time) establishes permissions, systems, policies, reviews and
 records so that Agents (Stability), Bridgers (Hope), and Clients (Dream Lovely)
 can carry their own authorized work into measurable value. The company's
 infrastructure must support participants without confusing company control
@@ -14,7 +14,7 @@ a public web shell. It is connected to the canonical GitHub repository
 `ecezzstarr/system-bridge-frontend` and hands off reviewed releases to the
 existing GitHub → Oracle deployment workflow.
 
-## Source authoring from inside Administration
+## Source authoring from inside Administrations
 
 1. Open `/admin/code-workshop` from the Administration workplace or Control Center.
 2. Log in as an explicitly appointed privileged administrator. Do not use
@@ -33,7 +33,7 @@ existing GitHub → Oracle deployment workflow.
    merge requires the **exact reviewed head SHA**, passing PR Production Check
    and any required external review; type `MERGE #<number>` only after review.
 8. The new `main` SHA must pass a **different push-to-main Production Check**.
-   Administration may then request the exact SHA in the Release Workshop.
+   Administrations may then request the exact SHA in the Release Workshop.
    The independent Oracle host worker must verify local and public health
    before the release is recorded as healthy in Sovereign + Flame.
 9. If the server is unavailable, use the existing privileged manual recovery
@@ -81,8 +81,9 @@ installations, arbitrary Git commands, or changes to a running container.
 No browser access to the Docker socket, filesystem secrets or Oracle keys
 is created. This is an intentional safeguard, not an incomplete shell.
 
-Every source promotion requires independent review, a passing Production Check,
-and a separately verified company release authorization.
+Every source promotion requires independent review and a passing Production Check.
+A separately verified company release authorization can be given per release,
+through the existing manual Release Workshop. Oracle automatic code promotion is frozen.
 
 A draft commit or PR is never represented as deployed production code.
 Each creation, source commit and PR opening is recorded with the actor,
@@ -119,3 +120,54 @@ binding terms, with new acceptance recorded where legally required.
 The foundational workshop does **not** certify that all future systems are
 implemented or compliant. Future feature development still requires
 individual specifications, tests, authorized releases and periodic audits.
+
+
+## Still Water — Formation Foundry
+
+The Company Code Workshop now opens with an interactive Formation Foundry.
+
+1. Write a name and describe the intended presence in your own cadence.
+2. Choose a **glass page**, **interactive 3D glass world** or **reusable glass component**.
+3. Inspect the live visual preview; the 3D preview uses WebGL geometry, not a flat poster.
+4. Create a private GitHub draft using the existing CREATE DRAFT control.
+5. Load the generated TSX into the source editor. Its path is isolated to
+   app/weave-labs or components/weave-labs. The workshop refuses to overwrite
+   an existing file, and still enforces existing SHA checks and audits.
+6. Modify the TSX as needed, SAVE DRAFT, open independent review and verify CI.
+7. On another day or device, use **Continue your drafts** to reopen one of your
+   personally owned GitHub branches. Only that administrator's recorded drafts
+   can be listed. The exact current branch file is still loaded from GitHub.
+
+The initial compiler is **deterministic**, not a general-purpose AI developer:
+the cadence is safely embedded as inert content in a known starter template.
+It does not interpret business instructions into payments, permissions,
+database queries, or new company policies. The new 3D output is a visual
+prototype, not an activated, purchased or verified Client File Folder.
+Company customer data and permissions must be wired through existing
+authorized application paths after independent review.
+
+## Reviewed continuity while Oracle remains production
+
+The workflow at
+\`.github/workflows/weave-verified-continuity.yml\` now **only reports**
+passing, exact-main Production Check results. It has read-only GitHub
+permissions. It cannot dispatch an application deployment or perform a
+host command even if a historical repository variable such as
+\`WEAVE_AUTONOMOUS_RELEASES=enabled\` remains set.
+
+**The existing Administrations Release Workshop is the only approved
+in-application path for an Oracle deployment.** An authorized operator must
+request and verify the release using its unchanged host worker, rollback
+and health procedures. Merely merging GitHub main does not authorize
+touching Oracle.
+
+This restriction remains in force while Oracle serves production.
+Future unattended updates on a separately verified Weave-owned server
+will require a **new, independent host-specific authorization and worker
+protocol**, with reviewed controls and safeguards against mis-targeting
+Oracle. No automatic production dispatch is installed by this change.
+
+The Native Formation Workshop is different: after its engine is installed
+through a reviewed, operator-authorized software release, ordinary
+versioned pages and supported system blocks can be published in the
+existing database without rebuilding either application host.

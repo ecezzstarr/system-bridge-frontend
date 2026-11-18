@@ -7,6 +7,7 @@ import { ArrowLeft, Flame, FolderOpen, Menu, PackageOpen, Volume2 } from 'lucide
 import SharedSystemSwitchWorld from '@/components/system-switch/shared-system-switch-world'
 import ClientFileFolderGate from '@/components/system-switch/client-file-folder-gate'
 import ClientFileFolderOperatingEnvironment from '@/components/system-switch/client-file-folder-operating-environment'
+import {NativeDepartmentRail} from '@/components/weave/native-department-rail'
 import { FileFolderEnvironmentLoader } from '@/components/system-switch/file-folder-environment-loader'
 import { getClientToken, getClientUser } from '@/lib/client-auth'
 import { WEAVE_WRITING } from '@/lib/weave-writing'
@@ -180,6 +181,7 @@ export default function ClientSystemSwitchPage() {
       {privateWorkshop
         ? <ClientFileFolderOperatingEnvironment data={data}/>
         : <SharedSystemSwitchWorld role="client" getToken={getClientToken} onPrivateWorkshop={()=>setPrivateWorkshop(true)}/>}
+      <NativeDepartmentRail department="dream-lovely"/>
       <details className="ff-page-actions">
         <summary aria-label="File Folder menu"><Menu aria-hidden="true" className="h-5 w-5"/></summary>
         <nav aria-label="File Folder actions">

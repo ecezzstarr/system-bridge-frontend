@@ -6,9 +6,12 @@ import {
  GitMerge,GitPullRequest,RefreshCw,Save,ShieldCheck,TerminalSquare
 } from 'lucide-react'
 import {useAuth} from '@/lib/auth-provider'
+import WeaveFormationComposer from '@/components/admin/weave-formation-composer'
+import type {WeaveFormationDraft} from '@/lib/weave-workshop-formation'
 import {isWeaveWorkArea,WEAVE_INDUSTRY_PURPOSE,WEAVE_WORK_AREAS} from '@/lib/weave-workshop-purpose'
 
 type Entry={name:string;path:string;type:'file'|'dir';size:number}
+type DraftBranch={branch:string;created_at:string;updated_at:string;commits:number;last_file_path:string|null}
 type Activity={event:string;branch:string;file_path:string|null;commit_sha:string|null;
  pull_request:number|null;message:string;created_at:string}
 type Source={kind:'file'|'directory';branch:string;path?:string;directory?:string;
@@ -31,6 +34,7 @@ export default function CodeWorkshopPage(){
  const [sha,setSha]=useState<string|null>(null)
  const [entries,setEntries]=useState<Entry[]>([])
  const [activity,setActivity]=useState<Activity[]>([])
+ const [drafts,setDrafts]=useState<DraftBranch[]>([])
  const [ready,setReady]=useState(false)
  const [busy,setBusy]=useState(false)
  const [error,setError]=useState('')
@@ -55,7 +59,7 @@ export default function CodeWorkshopPage(){
   Authorization:'Bearer '+token,...(json?{'Content-Type':'application/json'}:{}),
  }),[token])
 
- const query=useCallback(async(mode:'file'|'directory'|'activity',path?:string,ref?:string)=>{
+ const query=useCallback(async(mode:'file'|'directory'|'activity'|'drafts',path?:string,ref?:string)=>{
   if(!token)throw Error('Administrator login is required')
   const qs=new URLSearchParams({mode,branch:ref||branch})
   if(path)qs.set('path',path)
@@ -90,8 +94,9 @@ export default function CodeWorkshopPage(){
  },[query])
 
  const reloadActivity=useCallback(async()=>{
-  const data=await query('activity')
+  const [data,history]=await Promise.all([query('activity'),query('drafts')])
   setActivity(data.entries||[])
+  setDrafts(history.drafts||[])
  },[query])
 
  useEffect(()=>{
@@ -155,6 +160,29 @@ export default function CodeWorkshopPage(){
   }catch(e){setError(e instanceof Error?e.message:'Cannot open review')}
   finally{setBusy(false)}
  }
+ async function resumeDraft(target:string,lastFile:string|null){
+  if(source!==baseline)throw Error('Save or discard your current source edits before changing branches.')
+  if(branch===target)return
+  setBranch(target);setConfirmation('');setPrUrl('');setPrNumber(null)
+  await Promise.all([openFile(lastFile||file,target),browse(directory,target)])
+  print('RESUMED '+target+' · source history belongs to this administrator')
+ }
+
+ async function loadFormation(draft:WeaveFormationDraft){
+  if(branch==='main'||!writeConfigured)throw Error('Create a writable private GitHub draft first.')
+  if(source!==baseline)throw Error('Save or discard your current source changes before opening a formation.')
+  const result:Source=await query('file',draft.path,branch)
+  if(result.exists)throw Error('This workshop file already exists. Choose another formation name to protect existing work.')
+  setFile(draft.path)
+  setSource(draft.content)
+  setBaseline('')
+  setSha(null)
+  setReady(true)
+  setCommitMessage('Create '+draft.title+' '+draft.kind+' prototype')
+  setConfirmation('')
+  print('FORM '+draft.kind+' · '+draft.path+' · review generated TSX before saving')
+ }
+
  async function runCommand(){
   const input=command.trim()
   if(!input)return
@@ -181,6 +209,7 @@ export default function CodeWorkshopPage(){
    <nav className="flex flex-wrap items-center gap-4 text-xs font-semibold text-sky-200">
     <Link href="/admin/control-center" className="underline">Administrations Control Center</Link>
     <Link href="/admin/release-workshop" className="underline">GitHub merge & Oracle release</Link>
+    <Link href="/admin/native-foundry" className="underline">WEAVE Native Formation · Publish without rebuild</Link>
     <Link href="/admin/deployment-records" className="underline">Sovereign + Flame release records</Link>
     <Link href="/policies" className="underline">Company operating policies</Link>
    </nav>
@@ -201,8 +230,30 @@ export default function CodeWorkshopPage(){
     {error.includes('Unauthorized')&&<p className="mt-2 text-xs">Source control requires a designated Administrations operator. Configure WEAVE_WORKSHOP_ADMIN_IDS privately; ordinary admin membership alone cannot edit or merge company code.</p>}
    </section>}
 
+   <section className="rounded-3xl border border-amber-200/35 bg-[linear-gradient(115deg,#1e3547,#101f32)] p-5 sm:p-7" data-admin-native-workshop-entrance="no-server-rebuild">
+    <p className="text-xs font-bold uppercase tracking-[.18em] text-amber-200">WEAVE Methods · Native Creation</p>
+    <h2 className="mt-3 text-2xl font-bold text-white">Publish departments, pages and working systems inside WEAVE</h2>
+    <p className="mt-3 max-w-4xl text-sm leading-7 text-slate-200">Create responsive pages, real 3D glass worlds and recordable operational systems without GitHub source commits. Select a department, build with installed capabilities, preview, save, publish and restore versions. The app reads the new version from the database; Oracle does not rebuild for each publication.</p>
+    <Link href="/admin/sovereign-server" className="mt-5 mr-3 inline-flex min-h-12 items-center rounded-xl border border-cyan-200/35 px-5 py-3 text-sm font-bold text-cyan-100">Weave-owned server readiness</Link>
+    <Link href="/admin/native-foundry" className="mt-5 inline-flex min-h-12 items-center rounded-xl bg-[#f2dfbc] px-5 py-3 text-sm font-bold text-[#142739]">Open native visual workshop</Link>
+    <p className="mt-3 text-xs text-slate-400">For capabilities not yet installed, use the protected Source Workshop below. Core engine changes still require independently verified code releases.</p>
+   </section>
+   <WeaveFormationComposer draftReady={branch!=='main'&&writeConfigured&&!busy} onUse={loadFormation}/>
    <div className="grid gap-5 lg:grid-cols-[minmax(230px,.72fr)_minmax(0,2fr)]">
     <aside className="space-y-5">
+     <section className="rounded-2xl border border-cyan-200/20 bg-white/[.025] p-4">
+      <p className="text-xs font-bold uppercase tracking-widest text-cyan-200">Continue your drafts</p>
+      <p className="mt-2 text-xs leading-5 text-slate-400">Your GitHub drafts remain available after logout and across devices. Select one to keep coding from its saved files.</p>
+      {drafts.length===0?<p className="mt-3 text-xs text-slate-400">No saved draft branches yet.</p>
+       :<div className="mt-3 max-h-52 space-y-2 overflow-auto">{drafts.map(draft=>
+        <button key={draft.branch} type="button" disabled={busy||source!==baseline} onClick={()=>void resumeDraft(draft.branch,draft.last_file_path).catch(e=>setError(e.message))}
+         className={'w-full rounded-xl border p-3 text-left text-xs disabled:opacity-40 '+(draft.branch===branch?'border-cyan-300/60 bg-cyan-300/[.09]':'border-white/15 hover:border-cyan-300/40')}>
+         <span className="block break-all font-mono text-slate-200">{draft.branch.split('/').slice(-1)[0]}</span>
+         <span className="mt-1 block text-slate-400">{draft.commits} source commits · {new Date(draft.updated_at).toLocaleDateString()}{draft.last_file_path&&<span className="mt-1 block break-all text-cyan-100/70">{draft.last_file_path}</span>}</span>
+        </button>)}</div>}
+      <button type="button" disabled={busy} onClick={()=>void reloadActivity().catch(e=>setError(e.message))}
+       className="mt-3 text-xs font-semibold text-cyan-200 underline disabled:opacity-40">Refresh my drafts</button>
+     </section>
      <section className="rounded-2xl border border-white/10 bg-white/[.025] p-4">
       <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-sky-200"><Folder size={15}/> Repository files</p>
       <div className="mt-4 flex flex-wrap gap-2">{['app','components','lib','tests','docs','public'].map(root=>
