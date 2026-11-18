@@ -272,3 +272,25 @@
   [data-phe-role-steps] { order: 3; margin-top: 0; }
   [data-phe-role-footer] { order: 4; }
 }
+
+/* Touch and phone keyboard safety for live Administrations controls. */
+@media (max-width: 767px) {
+  [data-phe-organizer-runtime] :is(button,input[type="number"],select) {
+    min-height: 44px;
+    max-width: 100%;
+  }
+  [data-phe-organizer-runtime] :is(input[type="number"],input[type="text"],select) {
+    font-size: 16px;
+  }
+  [data-phe-organizer-runtime] input[type="range"] {
+    min-height: 32px;
+    width: 100%;
+    touch-action: pan-y;
+  }
+  [data-phe-organizer] :is(button,select,input) {
+    touch-action: manipulation;
+  }
+  [data-phe-organizer-surface] {
+    scroll-margin-top: 5rem;
+  }
+}
