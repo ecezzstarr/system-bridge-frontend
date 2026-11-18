@@ -2,6 +2,7 @@ import {NextRequest,NextResponse} from 'next/server'
 import {createHash,timingSafeEqual} from 'node:crypto'
 import {getPool} from '@/lib/db'
 import {requireWorkshopAuthorization} from '@/lib/workshop-auth'
+import {currentDatabaseEndpointFingerprint} from '@/lib/weave-sovereign-database-identity'
 
 export const dynamic='force-dynamic'
 export const runtime='nodejs'
@@ -20,6 +21,7 @@ async function ensure(){
    "node_id varchar(64) NOT NULL,provider varchar(32) NOT NULL,"+
    "observed_at timestamptz NOT NULL,received_at timestamptz NOT NULL DEFAULT now(),"+
    "release_sha varchar(40),checks jsonb NOT NULL,ready boolean NOT NULL)")
+  await getPool().query("ALTER TABLE weave_sovereign_server_reports ADD COLUMN IF NOT EXISTS database_fingerprint varchar(64)")
   await getPool().query("CREATE INDEX IF NOT EXISTS weave_sovereign_reports_latest "+
    "ON weave_sovereign_server_reports(node_id,received_at DESC)")
  })().catch(error=>{initialized=null;throw error})
@@ -48,11 +50,13 @@ export async function POST(request:NextRequest){
  if(!body||typeof body!=='object'||Array.isArray(body)||JSON.stringify(body).length>12000)
   return NextResponse.json({error:'Invalid evidence'},{status:400,headers:noStore})
  const nodeId=body.nodeId,provider=body.provider,sha=body.releaseSha
+ const dbFingerprint=body.databaseFingerprint
  const recordedAt=new Date(body.observedAt)
  const checks=body.checks
  if(typeof nodeId!=='string'||!validNode.test(nodeId)||
   !['weave-owned','unverified'].includes(provider)||
   (sha!==null&&!(typeof sha==='string'&&validSha.test(sha)))||
+  (dbFingerprint!==null&&!(typeof dbFingerprint==='string'&&/^[0-9a-f]{64}$/i.test(dbFingerprint)))||
   !Number.isFinite(recordedAt.getTime())||
   Math.abs(Date.now()-recordedAt.getTime())>10*60*1000||
   !checks||typeof checks!=='object'||Array.isArray(checks)||
@@ -64,9 +68,9 @@ export async function POST(request:NextRequest){
  try{
   await ensure()
   await getPool().query(
-   "INSERT INTO weave_sovereign_server_reports(node_id,provider,observed_at,release_sha,checks,ready) "+
-   "VALUES($1,$2,$3,$4,$5::jsonb,$6)",
-   [nodeId,provider,recordedAt.toISOString(),sha,JSON.stringify(checks),ready])
+   "INSERT INTO weave_sovereign_server_reports(node_id,provider,observed_at,release_sha,checks,ready,database_fingerprint) "+
+   "VALUES($1,$2,$3,$4,$5::jsonb,$6,$7)",
+   [nodeId,provider,recordedAt.toISOString(),sha,JSON.stringify(checks),ready,dbFingerprint])
   return NextResponse.json({success:true,recorded:true,ready},{headers:noStore})
  }catch(error){
   console.error('[weave sovereign server] evidence storage unavailable',error instanceof Error?error.message:'unknown')
@@ -81,14 +85,17 @@ export async function GET(request:NextRequest){
  try{
   await ensure()
   const query=await getPool().query(
-   "SELECT DISTINCT ON (node_id) node_id,provider,observed_at,received_at,release_sha,checks,ready "+
+   "SELECT DISTINCT ON (node_id) node_id,provider,observed_at,received_at,release_sha,checks,ready,database_fingerprint "+
    "FROM weave_sovereign_server_reports ORDER BY node_id,received_at DESC")
+  const productionDb=currentDatabaseEndpointFingerprint()
   const nodes=query.rows.slice(0,25).map(row=>({
    nodeId:row.node_id,provider:row.provider,observedAt:row.observed_at,
    receivedAt:row.received_at,releaseSha:row.release_sha,checks:row.checks,
    reportedReady:row.ready,
+   sharedCurrentDatabase:Boolean(productionDb&&row.database_fingerprint===productionDb),
+   continuityMode:productionDb&&row.database_fingerprint===productionDb?'same-live-database':'not-proven',
    fresh:Date.now()-new Date(row.received_at).getTime()<=15*60*1000,
-   ready:row.ready&&(Date.now()-new Date(row.received_at).getTime()<=15*60*1000),
+   ready:row.ready&&(Date.now()-new Date(row.received_at).getTime()<=15*60*1000)&&Boolean(productionDb&&row.database_fingerprint===productionDb),
   }))
   return NextResponse.json({success:true,nodes,
    cutoverAuthorized:false,
