@@ -105,9 +105,11 @@ New or changed executable capability
 
 This path remains necessary for changes to authorization, payments,
 external API credentials, new arbitrary behavior, database mechanisms or
-React/Three.js component implementations. The optional verified-continuity
-workflow may reduce repeated manual deployment after reviewed merges,
-but it remains gated by CI and host checks.
+React/Three.js component implementations. The verified-continuity workflow is review-only while Oracle remains the
+active company host. It can report a verified GitHub main SHA but cannot
+dispatch a deployment. Administrations must use the original manual Release
+Workshop for executable server updates. Future automatic owned-host updates
+require a separately authorized host-specific worker.
 
 ## Permissions and safety
 
