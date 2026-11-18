@@ -49,11 +49,11 @@ export function AdminWorkplace({userName,onOpenDistricts}:{userName?:string|null
   return q?visible.filter((x,i)=>visible.findIndex(y=>y.href===x.href)===i):visible
  },[q,space,isVisible])
 
- return <main data-admin-workplace="five-destinations" data-admin-imagery="verified-company-assets"
+ return <main data-phe-role-workplace="admin" data-admin-workplace="five-destinations" data-admin-imagery="verified-company-assets"
    className="relative mx-auto min-h-[calc(100svh-4rem)] w-full max-w-[1580px] overflow-hidden bg-[#f8f5ed] pb-20 text-[#22343d]">
    <div className="pointer-events-none absolute inset-x-0 top-0 h-[410px] bg-[radial-gradient(ellipse_at_73%_17%,rgba(194,147,62,.24),transparent_48%),radial-gradient(ellipse_at_14%_44%,rgba(143,172,200,.16),transparent_55%)]"/>
-   <div className="relative z-10 px-4 pt-6 sm:px-8 sm:pt-9 lg:px-12">
-     <header className="relative overflow-hidden rounded-[1.7rem] border border-[#d5bc87] bg-gradient-to-br from-[#fffefa] via-[#f8f0dc] to-[#edf2f2] p-5 shadow-[0_21px_55px_rgba(70,45,17,.13)] sm:p-8">
+   <div data-phe-role-content className="relative z-10 px-4 pt-6 sm:px-8 sm:pt-9 lg:px-12">
+     <header data-phe-role-hero className="relative overflow-hidden rounded-[1.7rem] border border-[#d5bc87] bg-gradient-to-br from-[#fffefa] via-[#f8f0dc] to-[#edf2f2] p-5 shadow-[0_21px_55px_rgba(70,45,17,.13)] sm:p-8">
        <div className="pointer-events-none absolute -right-16 -top-32 h-[440px] w-[440px] rounded-full border-[55px] border-[#caa05d]/10 [transform:perspective(550px)_rotateX(26deg)]"/>
        <div className="relative flex flex-wrap items-start justify-between gap-5">
          <div className="max-w-3xl">
@@ -76,7 +76,7 @@ export function AdminWorkplace({userName,onOpenDistricts}:{userName?:string|null
          </div>
        </div>
      </header>
-     <nav className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5" aria-label="Administrations working destinations">
+     <nav data-phe-role-nav className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5" aria-label="Administrations working destinations">
        {ADMIN_SPACES.map(x=>{
          const Icon=ICONS[x.id],selected=x.id===active&&!q
          return <button key={x.id} type="button" aria-pressed={selected} onClick={()=>{setActive(x.id);setSearch('')}}
@@ -85,7 +85,7 @@ export function AdminWorkplace({userName,onOpenDistricts}:{userName?:string|null
          </button>
        })}
      </nav>
-     <section className="mt-5 rounded-[1.5rem] border border-[#d8c49f] bg-white/85 p-4 shadow-[0_12px_35px_rgba(60,51,33,.08)] sm:p-6">
+     <section data-phe-role-stage className="mt-5 rounded-[1.5rem] border border-[#d8c49f] bg-white/85 p-4 shadow-[0_12px_35px_rgba(60,51,33,.08)] sm:p-6">
        <div className="flex flex-wrap items-start justify-between gap-4">
          <div className="max-w-3xl">
            <p className="text-xs font-semibold uppercase tracking-[.16em] text-[#956f2e]">Company authority · Verified functions</p>
@@ -118,7 +118,7 @@ export function AdminWorkplace({userName,onOpenDistricts}:{userName?:string|null
        </div>
        {!stations.length&&<p className="mt-5 rounded-lg border border-[#e0cfab] bg-[#faf4e7] p-5 text-sm">No visible company station matches this search.</p>}
      </section>
-     <footer className="mt-5 grid gap-3 rounded-xl border border-[#dbc6a0] bg-[#fffaf0] p-5 text-sm leading-6 text-[#53636a] sm:grid-cols-2">
+     <footer data-phe-role-footer className="mt-5 grid gap-3 rounded-xl border border-[#dbc6a0] bg-[#fffaf0] p-5 text-sm leading-6 text-[#53636a] sm:grid-cols-2">
        <div className="flex items-start gap-2"><ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#98712b]"/><p><strong className="text-[#273c46]">Records stay at their source.</strong> Clients, staff, product orders and account balances retain existing ownership and verification rules.</p></div>
        <div className="flex items-start gap-2"><Megaphone className="mt-0.5 h-5 w-5 shrink-0 text-[#98712b]"/><p><strong className="text-[#273c46]">The company event remains separate.</strong> Burning River retains its own Flame Event identity; food imagery uses the existing WEAVE product assets.</p></div>
      </footer>
