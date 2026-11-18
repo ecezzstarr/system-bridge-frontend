@@ -1,8 +1,11 @@
-name: WEAVE Verified Continuity Release
+name: WEAVE Verified Continuity Review
 
-# Opt-in, unattended promotion of reviewed main commits. Production cannot be
-# reached by a workshop draft or a pull_request workflow success.
-# A one-time repository variable is required: WEAVE_AUTONOMOUS_RELEASES=enabled.
+# The company currently uses Oracle as its public host. Main-branch CI
+# completion cannot request a production deployment on that host.
+# Administrations alone initiates verified host releases through the
+# unchanged /admin/release-workshop. This workflow is read-only.
+# Future Weave-owned autonomous host updates require a separate
+# intentionally reviewed and authorized host-specific release protocol.
 on:
   workflow_run:
     workflows: ["Production Check"]
@@ -10,24 +13,22 @@ on:
 
 permissions:
   contents: read
-  actions: write
 
 concurrency:
-  group: weave-autonomous-release-dispatch
+  group: weave-reviewed-continuity
   cancel-in-progress: false
 
 jobs:
-  dispatch-verified-main:
+  review-verified-main:
     if: >-
-      ${{ vars.WEAVE_AUTONOMOUS_RELEASES == 'enabled' &&
-      github.event.workflow_run.conclusion == 'success' &&
+      ${{ github.event.workflow_run.conclusion == 'success' &&
       github.event.workflow_run.event == 'push' &&
       github.event.workflow_run.head_branch == 'main' &&
       github.event.workflow_run.head_repository.full_name == github.repository }}
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
-      - name: Revalidate immutable canonical main before sending to host
+      - name: Confirm exact source revision without executing a release
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -39,23 +40,13 @@ jobs:
           [[ "$VERIFIED_SHA" =~ ^[0-9a-f]{40}$ ]]
           CURRENT_MAIN="$(gh api "repos/$REPO/git/ref/heads/main" --jq '.object.sha')"
           if [ "$CURRENT_MAIN" != "$VERIFIED_SHA" ]; then
-            echo "A newer main exists; the corresponding CI event will handle it."
+            echo "A newer main exists; this is not a production candidate."
             exit 0
           fi
-          echo "main_sha=$VERIFIED_SHA" >> "$GITHUB_ENV"
-
-      - name: Dispatch the existing CI-verified host release and rollback path
-        if: env.main_sha != ''
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-          REPO: ${{ github.repository }}
-          VERIFIED_SHA: ${{ env.main_sha }}
-        run: |
-          set -euo pipefail
-          # The existing self-hosted workflow rechecks origin/main and the
-          # exact push-to-main Production Check before touching the server.
-          # It shares the same production concurrency/lock and health rollback.
-          gh api --method POST "repos/$REPO/actions/workflows/weave-selfhost-deploy.yml/dispatches" \
-            -f ref=main -f "inputs[release_sha]=$VERIFIED_SHA"
-          echo "Queued verified main $VERIFIED_SHA for independent host verification."
+          {
+            echo "### WEAVE verified source candidate"
+            echo "Revision: $VERIFIED_SHA"
+            echo "Oracle production host: unchanged."
+            echo "Reviewed code requires an explicit authorized request in Administrations Release Workshop."
+            echo "No host release, DNS switch, database migration or Oracle command was dispatched."
+          } >> "$GITHUB_STEP_SUMMARY"
