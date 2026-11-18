@@ -4,6 +4,7 @@ import { canAccessEnvironmentRoute } from '@/lib/company-guidance-access'
 import { logAudit } from '@/lib/db'
 import {
   getEnvironmentOrganizerState,
+  moveEnvironmentSurface,
   restoreEnvironmentDefaults,
   restoreEnvironmentRuntimeDefaults,
   setEnvironmentRuntimeConfig,
@@ -51,6 +52,12 @@ export async function PATCH(request:NextRequest){
       if(!Number.isFinite(sortOrder))return NextResponse.json({success:false,error:'Valid sort order required'},{status:400})
       state=await setEnvironmentSurfaceOrder(surfaceKey,sortOrder,auth.user.id)
       await logAudit(auth.user.id,'environment_organizer.order',{surfaceKey,sortOrder})
+    }else if(action==='move_surface'){
+      const surfaceKey=String(input.surfaceKey||'')
+      const direction=input.direction
+      if(direction!=='earlier'&&direction!=='later')return NextResponse.json({success:false,error:'Valid movement direction required'},{status:400})
+      state=await moveEnvironmentSurface(surfaceKey,direction,auth.user.id)
+      await logAudit(auth.user.id,'environment_organizer.move',{surfaceKey,direction})
     }else if(action==='set_runtime'){
       state=await setEnvironmentRuntimeConfig(input.config,auth.user.id)
       await logAudit(auth.user.id,'environment_organizer.runtime',{config:state.runtime.config,version:state.runtime.version})
