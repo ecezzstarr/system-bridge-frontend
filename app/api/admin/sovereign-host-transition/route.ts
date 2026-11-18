@@ -164,6 +164,9 @@ export async function POST(request:NextRequest){
      required.some(key=>attest[key]!==true))
     return problem('Complete every named company-continuity attestation')
    await suitableCandidate(plan.node_id,plan.release_sha)
+   const alreadyRouted=await dnsTargets()
+   if(alreadyRouted.includes(plan.target_ipv4))
+    throw Error('DNS already points at the candidate; stop and reconcile the live host before authorization')
    await journalWrite(
     "UPDATE weave_host_transition_plans SET stage='authorized',approved_by=$2::uuid,"+
     "authorized_at=now(),company_attestations=$3::jsonb "+
@@ -209,6 +212,9 @@ export async function POST(request:NextRequest){
   if(action==='cancel'){
    if(!['prepared','authorized'].includes(plan.stage)||body.confirmation!=='CANCEL WEAVE HOST MOVE')
     return problem('Only a pre-DNS plan can be cancelled here. Live failback requires an independently controlled recovery procedure.')
+   const currentDns=await dnsTargets()
+   if(currentDns.includes(plan.target_ipv4))
+    throw Error('Public DNS may already route to this host. Verify it or execute the reviewed failback; a database cancellation alone is unsafe.')
    await journalWrite(
     "UPDATE weave_host_transition_plans SET stage='cancelled' "+
     "WHERE id=$1::uuid AND stage IN ('prepared','authorized') RETURNING id",
