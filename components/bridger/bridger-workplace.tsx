@@ -85,7 +85,7 @@ export function BridgerWorkplace({
 }){
   const [selected, setSelected] = useState<BridgerWorkplaceSpaceId>('desk')
   const [search, setSearch] = useState('')
-  const { isVisible } = useEnvironmentOrganizer()
+  const { isVisible, orderFor } = useEnvironmentOrganizer()
 
   const space = BRIDGER_WORKPLACE_SPACES.find(item => item.id === selected) || BRIDGER_WORKPLACE_SPACES[0]
   const trimmedSearch = search.trim().toLowerCase()
@@ -98,9 +98,10 @@ export function BridgerWorkplace({
       [item.label, item.detail, item.href].some(value => value.toLowerCase().includes(trimmedSearch))))
     // Several destinations intentionally link to the same operating system.
     // A search shows it once while retaining each original route.
-    return trimmedSearch ? matched.filter((item, index) =>
+    const visible = trimmedSearch ? matched.filter((item, index) =>
       matched.findIndex(other => other.href === item.href) === index) : matched
-  }, [isVisible, space, trimmedSearch])
+    return [...visible].sort((a,b) => orderFor(a.href) - orderFor(b.href))
+  }, [isVisible, orderFor, space, trimmedSearch])
 
   return (
     <main
