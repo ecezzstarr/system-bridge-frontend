@@ -1,5 +1,6 @@
 import { getPool,sql } from '@/lib/db'
 import { WEAVE_ENVIRONMENT_REGISTRY } from '@/lib/weave-environment-registry'
+import { WEAVE_NATIVE_DEPARTMENTS,validNativeDepartment } from '@/lib/weave-native-blueprint'
 import {
   DEFAULT_ENVIRONMENT_RUNTIME_CONFIG,
   normalizeEnvironmentRuntimeConfig,
@@ -88,6 +89,48 @@ export async function ensureEnvironmentOrganizerSchema(){
   return environmentSchemaPromise
 }
 
+/**
+ * Published Native Formation systems are first-class operating stations.
+ * Only the active publication is exposed; archived versions keep their
+ * original history and user records but disappear from the active directory.
+ * Existing administrator visibility/order choices are never overwritten.
+ */
+async function synchronizeNativeOrganizerSurfaces(){
+  const pool=getPool()
+  const exists=await pool.query("SELECT to_regclass('weave_native_module_releases') AS name")
+  if(!exists.rows[0]?.name)return [] as string[]
+  const published=await pool.query<{
+    department:string;slug:string;title:string|null
+  }>(`SELECT department,slug,blueprint->>'title' AS title
+      FROM weave_native_module_releases WHERE state='published'
+      ORDER BY department,published_at ASC,slug ASC`)
+  const active:string[]=[]
+  const nextByDepartment=new Map<string,number>()
+  for(const row of published.rows){
+    if(!validNativeDepartment(row.department))continue
+    const department=row.department
+    const entry=WEAVE_NATIVE_DEPARTMENTS[department]
+    const next=(nextByDepartment.get(department)||0)+1
+    nextByDepartment.set(department,next)
+    const surfaceKey='native-'+department+'-'+row.slug
+    active.push(surfaceKey)
+    await pool.query(`
+      INSERT INTO weave_environment_surfaces(
+        surface_key,label,surface_kind,route,area,scope,
+        is_visible,sort_order,is_protected
+      ) VALUES ($1,$2,'station',$3,$4,$5,true,$6,false)
+      ON CONFLICT(surface_key) DO UPDATE SET
+        label=EXCLUDED.label,surface_kind='station',route=EXCLUDED.route,
+        area=EXCLUDED.area,scope=EXCLUDED.scope,is_protected=false
+    `,[
+      surfaceKey,row.title?.trim()||row.slug,
+      '/weave-modules/'+department+'/'+row.slug,entry.label,entry.role,
+      400+next*10,
+    ])
+  }
+  return active
+}
+
 export async function getEnvironmentRuntimeProfile(){
   await ensureEnvironmentOrganizerSchema()
   const [row]=await sql`
@@ -105,6 +148,7 @@ export async function getEnvironmentRuntimeProfile(){
 
 export async function getEnvironmentOrganizerState(){
   await ensureEnvironmentOrganizerSchema()
+  const nativeKeys=await synchronizeNativeOrganizerSurfaces()
   const [storedItems,runtime]=await Promise.all([
     sql`
       SELECT surface_key,label,surface_kind,route,area,scope,is_visible,sort_order,is_protected,updated_at
@@ -113,7 +157,7 @@ export async function getEnvironmentOrganizerState(){
     `,
     getEnvironmentRuntimeProfile(),
   ])
-  const activeKeys=new Set(WEAVE_ENVIRONMENT_REGISTRY.map(surface=>surface.key))
+  const activeKeys=new Set([...WEAVE_ENVIRONMENT_REGISTRY.map(surface=>surface.key),...nativeKeys])
   const items=storedItems.filter((item:any)=>activeKeys.has(String(item.surface_key)))
   return {items,runtime}
 }
@@ -222,6 +266,7 @@ export async function restoreEnvironmentRuntimeDefaults(userId:string){
 
 export async function restoreEnvironmentDefaults(userId:string){
   await ensureEnvironmentOrganizerSchema()
+  const nativeKeys=await synchronizeNativeOrganizerSurfaces()
   for(const surface of WEAVE_ENVIRONMENT_REGISTRY){
     await sql`
       UPDATE weave_environment_surfaces
@@ -231,6 +276,13 @@ export async function restoreEnvironmentDefaults(userId:string){
         updated_by=${userId}::uuid,
         updated_at=NOW()
       WHERE surface_key=${surface.key}
+    `
+  }
+  for(const [index,key] of nativeKeys.entries()){
+    await sql`
+      UPDATE weave_environment_surfaces
+      SET is_visible=true,sort_order=${400+(index+1)*10},updated_by=${userId}::uuid,updated_at=NOW()
+      WHERE surface_key=${key}
     `
   }
   return getEnvironmentOrganizerState()
