@@ -50,6 +50,18 @@ assert(organizerApi.includes("action==='move_surface'")&&organizerApi.includes("
 for(const marker of ['pg_advisory_xact_lock','FOR UPDATE','BEGIN','ROLLBACK','COMMIT','unnest($1::text[],$2::integer[])']){
  assert(organizerDb.includes(marker),`Movement must be atomic: ${marker}`)
 }
+const nativeRail=read('components/weave/native-department-rail.tsx')
+for(const marker of ['synchronizeNativeOrganizerSurfaces','weave_native_module_releases',
+  "state='published'",'validNativeDepartment','activeKeys','nativeKeys']){
+ assert(organizerDb.includes(marker),`Native Formation must enter active Organizer: ${marker}`)
+}
+assert(organizerDb.includes('IS DISTINCT FROM EXCLUDED.label'),
+ 'Routine native registry refresh should not rewrite unchanged rows')
+assert(nativeRail.includes('isVisible(')&&nativeRail.includes('orderFor('),
+ 'Native departmental modules must respect saved visibility and ordering')
+assert(nativeRail.includes('/api/weave-native-modules'),
+ 'Published native modules must still come from their authorized source')
+
 for(const role of ['agent','bridger','admin']){
  const work=read(`components/${role}/${role}-workplace.tsx`)
  assert(work.includes('orderFor(')&&work.includes('isVisible('),
