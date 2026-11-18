@@ -12,7 +12,6 @@ const HOST='weavingsystem.online'
 const nodePattern=/^[a-z][a-z0-9-]{5,63}$/
 const shaPattern=/^[0-9a-f]{40}$/i
 const planIdPattern=/^[0-9a-f-]{36}$/i
-type Stage='prepared'|'authorized'|'dns_observed'|'confirmed'|'cancelled'
 function problem(message:string,status=409){
  return NextResponse.json({error:message},{status,headers:noStore})
 }
@@ -81,10 +80,19 @@ async function getPlans(){
  return result.rows
 }
 
-async function addEvent(planId:string,actorId:string,event:string){
- await getPool().query(
-  "INSERT INTO weave_host_transition_events(plan_id,actor_id,event) VALUES($1::uuid,$2::uuid,$3)",
-  [planId,actorId,event])
+/** Change the plan and write its audit event in one transaction. */
+async function journalWrite(query:string,params:unknown[],actorId:string,event:string){
+ const db=await getPool().connect()
+ try{
+  await db.query('BEGIN')
+  const result=await db.query(query,params)
+  if(!result.rowCount||!result.rows[0]?.id)throw Error('The migration plan changed. Refresh and review it again.')
+  await db.query("INSERT INTO weave_host_transition_events(plan_id,actor_id,event) "+
+   "VALUES($1::uuid,$2::uuid,$3)",[result.rows[0].id,actorId,event])
+  await db.query('COMMIT')
+  return result.rows[0]
+ }catch(error){await db.query('ROLLBACK').catch(()=>{});throw error}
+ finally{db.release()}
 }
 
 export async function GET(request:NextRequest){
@@ -120,12 +128,11 @@ export async function POST(request:NextRequest){
    const {sha}=await suitableCandidate(nodeId)
    const present=await dnsTargets()
    if(present.includes(ip))throw Error('Target address is already on the production DNS; require a separate independent candidate')
-   const created=await getPool().query(
+   const created=await journalWrite(
     "INSERT INTO weave_host_transition_plans(node_id,target_ipv4,release_sha,stage,created_by) "+
     "VALUES($1,$2,$3,'prepared',$4::uuid) RETURNING id,node_id,target_ipv4,release_sha,stage",
-    [nodeId,ip,sha,actor])
-   await addEvent(created.rows[0].id,actor,'prepared')
-   return NextResponse.json({success:true,plan:created.rows[0]},{status:201,headers:noStore})
+    [nodeId,ip,sha,actor],actor,'prepared')
+   return NextResponse.json({success:true,plan:created},{status:201,headers:noStore})
   }
   if(typeof body.planId!=='string'||!planIdPattern.test(body.planId))
    return problem('Choose an existing transition record',400)
@@ -143,13 +150,12 @@ export async function POST(request:NextRequest){
      required.some(key=>attest[key]!==true))
     return problem('Complete every named company-continuity attestation')
    await suitableCandidate(plan.node_id,plan.release_sha)
-   const result=await getPool().query(
+   await journalWrite(
     "UPDATE weave_host_transition_plans SET stage='authorized',approved_by=$2::uuid,"+
     "authorized_at=now(),company_attestations=$3::jsonb "+
     "WHERE id=$1::uuid AND stage='prepared' RETURNING id",
-    [plan.id,actor,JSON.stringify(Object.fromEntries(required.map(key=>[key,true])))])
-   if(!result.rowCount)throw Error('Plan changed; refresh before authorizing')
-   await addEvent(plan.id,actor,'authorized')
+    [plan.id,actor,JSON.stringify(Object.fromEntries(required.map(key=>[key,true])))],
+    actor,'authorized')
    return NextResponse.json({success:true,stage:'authorized',
     note:'Authorization recorded only. The DNS provider has not been instructed to change records.'},
     {headers:noStore})
@@ -169,11 +175,10 @@ export async function POST(request:NextRequest){
    if(!health.ok||evidence?.status!=='ready'||evidence?.releaseSha!==plan.release_sha||
       evidence?.checks?.database!==true||evidence?.checks?.media!==true)
     throw Error('Public Weave health does not verify the approved release, database and media')
-   const result=await getPool().query(
+   await journalWrite(
     "UPDATE weave_host_transition_plans SET stage='dns_observed',dns_observed_at=now() "+
-    "WHERE id=$1::uuid AND stage='authorized' RETURNING id",[plan.id])
-   if(!result.rowCount)throw Error('Plan changed; refresh before verification')
-   await addEvent(plan.id,actor,'dns_observed')
+    "WHERE id=$1::uuid AND stage='authorized' RETURNING id",
+    [plan.id],actor,'dns_observed')
    return NextResponse.json({success:true,stage:'dns_observed',
     note:'Observed DNS and public readiness. Accounting, media, callbacks and user access still require explicit operator checks.'},{headers:noStore})
   }
@@ -186,24 +191,22 @@ export async function POST(request:NextRequest){
    if(!attest||typeof attest!=='object'||Array.isArray(attest)||
     required.some(key=>attest[key]!==true))
     return problem('Company continuity needs verified post-switch work checks')
-   const result=await getPool().query(
+   await journalWrite(
     "UPDATE weave_host_transition_plans SET stage='confirmed',confirmed_by=$2::uuid,confirmed_at=now(),"+
     "company_attestations=company_attestations||$3::jsonb "+
     "WHERE id=$1::uuid AND stage='dns_observed' RETURNING id",
-    [plan.id,actor,JSON.stringify(Object.fromEntries(required.map(key=>[key,true])))])
-   if(!result.rowCount)throw Error('Plan already changed')
-   await addEvent(plan.id,actor,'confirmed')
+    [plan.id,actor,JSON.stringify(Object.fromEntries(required.map(key=>[key,true])))],
+    actor,'confirmed')
    return NextResponse.json({success:true,stage:'confirmed',
     note:'Operator acceptance recorded; Oracle has NOT been shut down and must remain available for reviewed recovery.'},{headers:noStore})
   }
   if(action==='cancel'){
    if(!['prepared','authorized'].includes(plan.stage)||body.confirmation!=='CANCEL WEAVE HOST MOVE')
     return problem('Only a pre-DNS plan can be cancelled here. Live failback requires an independently controlled recovery procedure.')
-   const result=await getPool().query(
+   await journalWrite(
     "UPDATE weave_host_transition_plans SET stage='cancelled' "+
-    "WHERE id=$1::uuid AND stage IN ('prepared','authorized') RETURNING id",[plan.id])
-   if(!result.rowCount)throw Error('Plan already changed')
-   await addEvent(plan.id,actor,'cancelled')
+    "WHERE id=$1::uuid AND stage IN ('prepared','authorized') RETURNING id",
+    [plan.id],actor,'cancelled')
    return NextResponse.json({success:true,stage:'cancelled',note:'No production infrastructure was modified by this cancellation.'},{headers:noStore})
   }
   return problem('Unknown controlled transition step',400)
