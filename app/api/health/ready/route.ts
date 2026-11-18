@@ -16,7 +16,7 @@ let lastAt=0
 async function actualReadiness(){
  const checks={database:false,media:false}
  try{
-  const result=await getPool().query({text:'SELECT 1 AS ready',query_timeout:3000})
+  const result=await getPool().query('SELECT 1 AS ready')
   checks.database=result.rows[0]?.ready===1
  }catch(error){console.error('[weave readiness] DB unavailable',error instanceof Error?error.message:'unavailable')}
  try{
