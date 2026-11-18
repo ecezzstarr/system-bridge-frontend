@@ -72,6 +72,19 @@ async function suitableCandidate(nodeId:string,expectedSha?:string){
  return {node,sha}
 }
 
+async function verifyPublicDestination(plan:{target_ipv4:string;release_sha:string}){
+ const targets=await dnsTargets()
+ if(!targets.includes(plan.target_ipv4))
+  throw Error('Public DNS does not resolve to the approved Weave-owned host IP')
+ const response=await fetch('https://'+HOST+'/api/health/ready',{
+  cache:'no-store',signal:AbortSignal.timeout(7000),redirect:'error',
+ })
+ const evidence=await response.json().catch(()=>null)
+ if(!response.ok||evidence?.status!=='ready'||evidence?.releaseSha!==plan.release_sha||
+  evidence?.checks?.database!==true||evidence?.checks?.media!==true)
+  throw Error('Public destination did not pass database, media and exact release verification')
+}
+
 async function getPlans(){
  const result=await getPool().query(
   "SELECT id,node_id,target_ipv4,release_sha,stage,created_at,authorized_at,dns_observed_at,"+
@@ -164,17 +177,7 @@ export async function POST(request:NextRequest){
    if(plan.stage!=='authorized'||body.confirmation!=='VERIFY MANUAL DNS SWITCH')
     return problem('Manually authorize first, then type VERIFY MANUAL DNS SWITCH')
    await suitableCandidate(plan.node_id,plan.release_sha)
-   const targets=await dnsTargets()
-   if(!targets.includes(plan.target_ipv4))
-    throw Error('Public DNS does not resolve to the approved candidate address; no cutover was verified')
-   const health=await fetch('https://'+HOST+'/api/health/ready',{
-    cache:'no-store',signal:AbortSignal.timeout(7000),
-    redirect:'error',
-   })
-   const evidence=await health.json().catch(()=>null)
-   if(!health.ok||evidence?.status!=='ready'||evidence?.releaseSha!==plan.release_sha||
-      evidence?.checks?.database!==true||evidence?.checks?.media!==true)
-    throw Error('Public Weave health does not verify the approved release, database and media')
+   await verifyPublicDestination(plan)
    await journalWrite(
     "UPDATE weave_host_transition_plans SET stage='dns_observed',dns_observed_at=now() "+
     "WHERE id=$1::uuid AND stage='authorized' RETURNING id",
@@ -185,6 +188,8 @@ export async function POST(request:NextRequest){
   if(action==='confirm'){
    if(plan.stage!=='dns_observed'||body.confirmation!=='CONFIRM WEAVE OWNED HOST')
     return problem('DNS observation is required before confirmation')
+   await suitableCandidate(plan.node_id,plan.release_sha)
+   await verifyPublicDestination(plan)
    const attest=body.attestations
    const required=['liveUserSessionsChecked','fileFoldersChecked',
     'balancesAndLedgerChecked','mediaAndCustomerDoorsChecked','paymentCallbacksChecked']
