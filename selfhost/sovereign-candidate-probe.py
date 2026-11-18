@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import hashlib
 import json
 import os
 import pathlib
@@ -92,6 +93,25 @@ def restore_proof() -> bool:
         return False
 
 
+def database_fingerprint(raw: str) -> str | None:
+    """Matches the Node app's private endpoint identity; excludes credentials."""
+    if not raw:
+        return None
+    try:
+        parsed = urllib.parse.urlsplit(raw)
+        if parsed.scheme not in ("postgres", "postgresql") or not parsed.hostname:
+            return None
+        db = urllib.parse.unquote(parsed.path.lstrip("/"))
+        if not db or "/" in db or len(db) > 256 or "\x00" in db:
+            return None
+        host = parsed.hostname.lower().rstrip(".")
+        port = parsed.port or 5432
+        canonical = f"WEAVE:db-endpoint:v1\x00{host}\x00{port}\x00{db}"
+        return hashlib.sha256(canonical.encode("utf8")).hexdigest()
+    except (ValueError, TypeError):
+        return None
+
+
 def gather(values: dict[str, str]) -> dict:
     node = values.get("WEAVE_SOVEREIGN_NODE_ID", "")
     if not re.fullmatch(r"[a-z][a-z0-9-]{5,63}", node):
@@ -129,6 +149,7 @@ def gather(values: dict[str, str]) -> dict:
         "provider": "weave-owned" if provider == "weave-owned" else "unverified",
         "observedAt": dt.datetime.now(dt.timezone.utc).isoformat(),
         "releaseSha": sha if sha_valid else None,
+        "databaseFingerprint": database_fingerprint(values.get("DATABASE_URL", "")),
         "checks": checks,
         "ready": all(checks.values()),
         "requirements": {"minimumCpu": 4, "minimumRamGiB": 8, "minimumFreeDiskGiB": 32},
