@@ -139,6 +139,7 @@ def gather(values: dict[str, str]) -> dict:
         "persistent_media": run_check("docker", "volume", "inspect", "weave-media"),
         "database_and_media": (local.get("status") == "ready" and
                                local.get("checks", {}).get("database") is True and
+                               local.get("checks", {}).get("accounts") is True and
                                local.get("checks", {}).get("media") is True),
         "https_preview": (preview_valid and remote.get("status") == "ready"),
         "release_identity": bool(sha_valid and remote.get("releaseSha") == sha),
