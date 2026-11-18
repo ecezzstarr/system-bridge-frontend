@@ -1,4 +1,4 @@
-import { sql } from '@/lib/db'
+import { getPool,sql } from '@/lib/db'
 import { WEAVE_ENVIRONMENT_REGISTRY } from '@/lib/weave-environment-registry'
 import {
   DEFAULT_ENVIRONMENT_RUNTIME_CONFIG,
@@ -147,6 +147,57 @@ export async function setEnvironmentSurfaceOrder(surfaceKey:string,sortOrder:num
     RETURNING surface_key
   `
   if(!result[0])throw new Error('Environment surface not found')
+  return getEnvironmentOrganizerState()
+}
+
+/**
+ * Mobile-first one-step movement. The older numeric set_order action remains
+ * available for compatibility, but it can create ties when gaps are small.
+ * A complete ordered group is locked and normalized atomically instead.
+ */
+export async function moveEnvironmentSurface(
+  surfaceKey:string,direction:'earlier'|'later',userId:string,
+){
+  if(direction!=='earlier'&&direction!=='later')throw new Error('Invalid movement')
+  await ensureEnvironmentOrganizerSchema()
+  const client=await getPool().connect()
+  try{
+    await client.query('BEGIN')
+    const result=await client.query<{area:string}>(
+      'SELECT area FROM weave_environment_surfaces WHERE surface_key=$1',
+      [surfaceKey],
+    )
+    const area=result.rows[0]?.area
+    if(!area)throw new Error('Environment surface not found')
+    // Serialize changes within the same workplace; other areas stay independent.
+    await client.query('SELECT pg_advisory_xact_lock(hashtext($1))',
+      ['weave-environment-area:'+area])
+    const rows=await client.query<{surface_key:string}>(
+      `SELECT surface_key FROM weave_environment_surfaces
+       WHERE area=$1 ORDER BY sort_order ASC,label ASC,surface_key ASC FOR UPDATE`,
+      [area],
+    )
+    const keys=rows.rows.map(row=>row.surface_key)
+    const index=keys.indexOf(surfaceKey)
+    const next=index+(direction==='earlier'?-1:1)
+    if(index<0)throw new Error('Environment surface not found')
+    if(next>=0&&next<keys.length){
+      ;[keys[index],keys[next]]=[keys[next],keys[index]]
+      const ranks=keys.map((_,i)=>(i+1)*10)
+      await client.query(`
+        UPDATE weave_environment_surfaces AS surface
+        SET sort_order=movement.rank,updated_by=$3::uuid,updated_at=NOW()
+        FROM unnest($1::text[],$2::integer[]) AS movement(surface_key,rank)
+        WHERE surface.surface_key=movement.surface_key
+      `,[keys,ranks,userId])
+    }
+    await client.query('COMMIT')
+  }catch(error){
+    await client.query('ROLLBACK')
+    throw error
+  }finally{
+    client.release()
+  }
   return getEnvironmentOrganizerState()
 }
 
