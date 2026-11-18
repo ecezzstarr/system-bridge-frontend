@@ -65,12 +65,101 @@ async function checkLoaders(browser) {
   console.log('PASS: 27 shared-loader lessons at 360×640 across all roles, four File Folder tiers and Flame Event')
 }
 
+/**
+ * Real Chromium phone check for the Administrations Organizer.
+ * Every API reply is a local fixture: no money, accounts or production state.
+ */
+async function checkPhoneOrganizer(browser){
+  for(const width of [320,360,390]){
+    const context=await browser.newContext({
+      viewport:{width,height:780},reducedMotion:'reduce',
+    })
+    await context.addInitScript(()=>{
+      localStorage.setItem('ssb_auth_token','organizer-presentation-fixture')
+      localStorage.setItem('ssb_auth_user',JSON.stringify({
+        id:'11111111-1111-4111-8111-111111111111',
+        role:'admin',name:'Presentation Operator',email:'presentation@example.invalid',
+      }))
+    })
+    let items=[
+      {surface_key:'admin-control-center',label:'Control Center',surface_kind:'district',
+       route:'/admin/control-center',area:'Administrations',scope:'admin',is_visible:true,
+       sort_order:10,is_protected:true,updated_at:'2026-11-18T00:00:00Z'},
+      {surface_key:'admin-ad-workshop',label:'Ad Workshop',surface_kind:'district',
+       route:'/admin/ad-workshop',area:'Administrations',scope:'admin',is_visible:true,
+       sort_order:20,is_protected:false,updated_at:'2026-11-18T00:00:00Z'},
+      {surface_key:'admin-bridge-templates',label:'Bridge Templates',surface_kind:'district',
+       route:'/admin/bridge-templates',area:'Administrations',scope:'admin',is_visible:true,
+       sort_order:30,is_protected:false,updated_at:'2026-11-18T00:00:00Z'},
+    ]
+    await context.route('**/api/**',async route=>{
+      const req=route.request()
+      const url=new URL(req.url())
+      if(url.pathname==='/api/admin/environment-organizer'&&req.method()==='PATCH'){
+        const input=JSON.parse(req.postData()||'{}')
+        if(input.action==='move_surface'){
+          const index=items.findIndex(x=>x.surface_key===input.surfaceKey)
+          const next=index+(input.direction==='earlier'?-1:1)
+          if(index>=0&&next>=0&&next<items.length){
+            const copy=[...items]
+            ;[copy[index],copy[next]]=[copy[next],copy[index]]
+            items=copy.map((item,i)=>({...item,sort_order:(i+1)*10}))
+          }
+        }
+        if(input.action==='set_visibility'){
+          items=items.map(item=>item.surface_key===input.surfaceKey?
+            {...item,is_visible:Boolean(input.visible)}:item)
+        }
+        await route.fulfill({contentType:'application/json',body:JSON.stringify({success:true,items})})
+        return
+      }
+      const body=url.pathname==='/api/divine-shield/status'
+        ?{active:false,sessionValid:true,administrationBypass:false}
+        :{success:true,sessionValid:true,active:false,needsAcceptance:false,
+          items,runtime:{config:{loading:{bootMinMs:0,transitMinMs:0,autoAdvanceMs:1000}}},
+          event:{...FLAME_EVENT,status:'planned',effectiveStatus:'planned'}}
+      await route.fulfill({contentType:'application/json',body:JSON.stringify(body)})
+    })
+    const page=await context.newPage()
+    const errors=[]
+    page.on('pageerror',error=>errors.push(error.message))
+    await page.goto(origin+'/admin/environment-organizer',{waitUntil:'domcontentloaded'})
+    await page.locator('[data-phe-organizer="phone-first"]').waitFor({state:'visible',timeout:40000})
+    await page.locator('[data-phe-organizer-surface]').first().waitFor({state:'visible',timeout:15000})
+    const initial=await page.locator('[data-phe-organizer-surface]').evaluateAll(nodes=>
+      nodes.map(node=>node.getAttribute('data-phe-organizer-surface')))
+    assert.deepEqual(initial,['admin-control-center','admin-ad-workshop','admin-bridge-templates'])
+    const mobile=await page.evaluate(()=>{
+      const selector=document.querySelector('[data-phe-organizer="phone-first"]')
+      const controls=[...document.querySelectorAll('[data-phe-organizer-actions] button')]
+      return {
+        overflow:document.documentElement.scrollWidth>innerWidth,
+        width:selector?.getBoundingClientRect().width,
+        touches:controls.map(control=>control.getBoundingClientRect().height),
+      }
+    })
+    assert.equal(mobile.overflow,false,'Organizer must not overflow at '+width+'px')
+    assert.ok(mobile.width<=width,'Organizer must fit the '+width+'px phone')
+    assert.ok(mobile.touches.every(height=>height>=44),'All Organizer controls need 44px phone targets')
+    await page.getByRole('button',{name:'Move Ad Workshop earlier'}).click()
+    await page.waitForFunction(()=>document.querySelector('[data-phe-organizer-surface]')?.getAttribute('data-phe-organizer-surface')==='admin-ad-workshop')
+    page.once('dialog',dialog=>void dialog.accept())
+    await page.getByRole('button',{name:'Remove from navigation'}).first().click()
+    await page.getByText('Hidden',{exact:true}).first().waitFor({timeout:15000})
+    await page.screenshot({path:path.join(output,`environment-organizer-${width}.png`),fullPage:true})
+    assert.deepEqual(errors,[],'Organizer JavaScript runtime errors at '+width+'px')
+    await context.close()
+  }
+  console.log('PASS: phone Organizer at 320/360/390px, exact card order, visibility and touch controls')
+}
+
 async function main() {
   fs.mkdirSync(output, { recursive: true })
   const browser = await chromium.launch()
   const results = []
   try {
     await checkLoaders(browser)
+    await checkPhoneOrganizer(browser)
     for (const width of [360, 390, 768, 1440]) {
       const context = await browser.newContext({ viewport: { width, height: 900 }, reducedMotion: 'reduce' })
       await context.route('**/api/**', route => route.fulfill({
