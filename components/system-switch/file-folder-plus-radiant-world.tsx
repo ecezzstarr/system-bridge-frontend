@@ -1,14 +1,18 @@
 'use client'
 import {useMemo,useRef,useState} from 'react'
 import {Canvas,useFrame} from '@react-three/fiber'
-import {OrbitControls,Text,useTexture} from '@react-three/drei'
+import {OrbitControls,Text} from '@react-three/drei'
 import type {Group} from 'three'
-import {DoubleSide,RepeatWrapping,Shape,SRGBColorSpace} from 'three'
+import {DoubleSide,Shape} from 'three'
 import {ArrowRight, Boxes, Hammer, Layers3, Settings, TrendingUp, Users} from 'lucide-react'
 import {FILE_FOLDER_EQUIPMENT,FILE_FOLDER_PALETTES,PLUS_FILE_FOLDER_REFERENCE,
   type EquipmentZone,type FileFolderWorldAppearance} from '@/lib/file-folder-world-presets'
 import {buildFormationProgress} from '@/lib/file-folder-world-runtime'
 import {derivePlusWorldFormation,type PlusBuildRecord,type PlusSystemRecord,type PlusZoneProgress,type PlusWorldFormation} from '@/lib/plus-file-folder-formation'
+import {FileFolderLuxuryMaterial} from './file-folder-luxury-material'
+import {PlusMechanizedDistrict} from './file-folder-plus-mechanization'
+import {EnterpriseWaterMaterial} from './file-folder-enterprise-surfaces'
+import {EnterpriseWorkshopInterior} from './file-folder-enterprise-interior'
 
 type District={key:string;label:string}
 type Props={
@@ -54,20 +58,7 @@ const FOLDER_EXTRUSION={depth:.11,bevelEnabled:false}
 function RadiantMaterial({color,gold=false,glass=false,realness='high'}:{
   color:string;gold?:boolean;glass?:boolean;realness?:string
 }){
-  // These are repository-owned material maps, not remote textures or a flat
-  // image of the promised world. Canvas/WebGL renders actual surface geometry.
-  const [porcelain,brushedGold]=useTexture([
-    '/weave/file-folder/assets/plus-porcelain-marble.svg',
-    '/weave/file-folder/assets/plus-brushed-gold.svg',
-  ])
-  porcelain.colorSpace=SRGBColorSpace
-  brushedGold.colorSpace=SRGBColorSpace
-  porcelain.wrapS=porcelain.wrapT=RepeatWrapping
-  brushedGold.wrapS=brushedGold.wrapT=RepeatWrapping
-  return <meshPhysicalMaterial color={color} map={glass?undefined:gold?brushedGold:porcelain}
-    metalness={gold?.76:glass?.32:.23} roughness={realness==='basic'?.47:gold?.17:glass?.13:.28}
-    clearcoat={glass?1:.75} clearcoatRoughness={.16} transparent={glass} opacity={glass?.72:1}
-    side={DoubleSide}/>
+ return <FileFolderLuxuryMaterial color={color} gold={gold} glass={glass} realness={realness}/>
 }
 
 function EquipmentBuilding({zone,index,selected,appearance,formation,onSelect,phoneLayout}:{
@@ -181,6 +172,9 @@ function EquipmentBuilding({zone,index,selected,appearance,formation,onSelect,ph
         </mesh>
       </group>
     })}
+    <PlusMechanizedDistrict constructionCount={formation.building}
+      activeSystemCount={formation.live} progress={formation.progress}
+      selected={selected} compact={phoneLayout}/>
     {selected&&<mesh position={[0,.04,0]} rotation={[-Math.PI/2,0,0]}>
       <torusGeometry args={[2.88,.07,8,44]}/><meshStandardMaterial color={palette.glow} emissive={palette.glow} emissiveIntensity={.65}/>
     </mesh>}
@@ -231,8 +225,7 @@ function WaterCascade({angle,index}:{angle:number;index:number}){
    <group ref={cascade} position={[0,0,7.25]}>
      <mesh position={[0,.66,0]}>
        <planeGeometry args={[1.28,2.1]}/>
-       <meshPhysicalMaterial color="#c9f4ff" transparent opacity={.63}
-         roughness={.16} metalness={.12} clearcoat={1} side={DoubleSide} depthWrite={false}/>
+       <EnterpriseWaterMaterial tier="plus" fall/>
      </mesh>
      {[-.39,.18,.48].map((x,i)=><mesh key={i} position={[x,.72,.028]}>
        <planeGeometry args={[.075,1.95]}/>
@@ -252,9 +245,9 @@ function RadiantLandscape({appearance,formation}:{appearance:FileFolderWorldAppe
    {[4.9,6.25,12.7].map((radius,index)=><mesh key={radius}
      rotation={[-Math.PI/2,0,0]} position={[0,-.17+index*.025,0]}>
      <torusGeometry args={[radius,index===1?.46:.23,10,90]}/>
-     <meshPhysicalMaterial color={index===1?'#8fcddd':palette.structure}
-       metalness={index===1?.23:.4} roughness={.21} clearcoat={.85}
-       transparent={index===1} opacity={index===1?.76:1}/>
+     {index===1?<EnterpriseWaterMaterial tier="plus"/>:
+       <meshPhysicalMaterial color={palette.structure}
+         metalness={.4} roughness={.21} clearcoat={.85}/>} 
    </mesh>)}
    {[0,Math.PI/2,Math.PI,Math.PI*1.5].map((a,index)=>
      <WaterCascade key={index} angle={a} index={index}/>)}
@@ -325,6 +318,11 @@ function Scene({appearance,formation,selected,onSelect,phoneLayout,interactive}:
       formation={formation.zones[zone]} selected={zone===selected} onSelect={onSelect}/>
   </group>)}
   <RadiantLandscape appearance={appearance} formation={formation}/>
+  <group position={[6.6,0,1]} scale={phoneLayout?[.53,.53,.53]:[.68,.68,.68]}>
+   <EnterpriseWorkshopInterior tier="plus" buildCount={formation.activeBuilds}
+     liveCount={formation.liveSystems}
+     progress={Math.max(...ZONE_IDS.map(zone=>formation.zones[zone].progress))}/>
+  </group>
   <CentralFolder appearance={appearance} phoneLayout={phoneLayout}/>
   <OrbitControls enabled={interactive} enablePan={false} enableDamping dampingFactor={.085}
     minDistance={17} maxDistance={48} minPolarAngle={.38} maxPolarAngle={1.32}

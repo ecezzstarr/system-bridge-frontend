@@ -222,6 +222,9 @@ jobs:
           node tests/pro-regional-manager-dual-entry-regression.cjs
           node tests/pro-regional-manager-end-to-end-regression.cjs
           node tests/file-folder-plus-official-world-regression.cjs
+          node tests/file-folder-luxury-mechanization-regression.cjs
+          node tests/file-folder-public-mechanized-preview-regression.cjs
+          node tests/file-folder-enterprise-depth-regression.cjs
           node tests/weave-plus-company-theme-regression.cjs
           node tests/plus-file-folder-formation-behavior.cjs
           node tests/admin-music-studio-dj.cjs
