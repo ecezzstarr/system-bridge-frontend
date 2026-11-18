@@ -41,14 +41,15 @@ function Station({station}:{station:AgentStation}) {
 export function AgentWorkplace({userName,onOpenDistricts}:{userName?:string|null;onOpenDistricts?:()=>void}){
   const [active,setActive]=useState<AgentSpaceId>('desk')
   const [search,setSearch]=useState('')
-  const {isVisible}=useEnvironmentOrganizer()
+  const {isVisible,orderFor}=useEnvironmentOrganizer()
   const query=search.trim().toLocaleLowerCase()
   const space=AGENT_SPACES.find(x=>x.id===active)||AGENT_SPACES[0]
   const stations=useMemo(()=>{
     const inventory=query?AGENT_SPACES.flatMap(x=>x.stations):space.stations
     const filtered=inventory.filter(x=>isVisible(x.href)&&(!query||[x.title,x.description,x.href].some(k=>k.toLocaleLowerCase().includes(query))))
-    return query?filtered.filter((x,i)=>filtered.findIndex(y=>y.href===x.href)===i):filtered
-  },[query,space,isVisible])
+    const visible=query?filtered.filter((x,i)=>filtered.findIndex(y=>y.href===x.href)===i):filtered
+    return [...visible].sort((a,b)=>orderFor(a.href)-orderFor(b.href))
+  },[query,space,isVisible,orderFor])
 
   return <main data-phe-role-workplace="agent" data-agent-workplace="five-destinations" data-product-imagery="official-repository-assets"
     className="relative mx-auto min-h-[calc(100svh-4rem)] w-full max-w-[1580px] overflow-hidden bg-[#f8f5ed] pb-20 text-[#243640]">
