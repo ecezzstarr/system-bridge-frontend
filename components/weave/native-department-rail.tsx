@@ -3,6 +3,7 @@ import Link from 'next/link'
 import {useEffect,useState} from 'react'
 import {Blocks,ChevronRight} from 'lucide-react'
 import {useAuth} from '@/lib/auth-provider'
+import {useEnvironmentOrganizer} from '@/components/world/environment-organizer-provider'
 import {
  WEAVE_NATIVE_DEPARTMENTS,type NativeDepartment,type WeaveNativeBlueprint,
 } from '@/lib/weave-native-blueprint'
@@ -11,6 +12,7 @@ type Live={id:string;slug:string;version:number;blueprint:WeaveNativeBlueprint}
 /** A single dynamic entry on each real department desk. */
 export function NativeDepartmentRail({department}:{department:NativeDepartment}){
  const {user,token,isInitialized}=useAuth()
+ const {isVisible,orderFor}=useEnvironmentOrganizer()
  const [modules,setModules]=useState<Live[]>([])
  useEffect(()=>{
   if(!isInitialized||!token||!user)return
@@ -23,14 +25,16 @@ export function NativeDepartmentRail({department}:{department:NativeDepartment})
   }).catch(()=>{})
   return ()=>controller.abort()
  },[department,isInitialized,token,user?.id])
- if(!modules.length)return null
+ const available=modules.filter(module=>isVisible('/weave-modules/'+department+'/'+module.slug))
+  .sort((a,b)=>orderFor('/weave-modules/'+department+'/'+a.slug)-orderFor('/weave-modules/'+department+'/'+b.slug))
+ if(!available.length)return null
  return <section className="mx-auto my-5 w-full max-w-6xl rounded-2xl border border-[#d4b982]/40 bg-[#102a3d] p-4 text-white shadow-xl sm:p-6" data-weave-native-department-rail={department}>
   <div className="flex flex-wrap items-center gap-3"><Blocks className="h-5 w-5 text-[#edd3a1]"/>
    <div><h2 className="text-lg font-bold">New working systems</h2>
     <p className="text-xs text-slate-300">{WEAVE_NATIVE_DEPARTMENTS[department].label} · Published by Administrations</p></div>
   </div>
   <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-   {modules.map(module=><Link key={module.id} href={'/weave-modules/'+department+'/'+module.slug}
+   {available.map(module=><Link key={module.id} href={'/weave-modules/'+department+'/'+module.slug}
     className="group flex min-h-28 items-center justify-between gap-3 rounded-xl border border-cyan-200/20 bg-white/[.055] p-4 transition hover:border-cyan-200/50">
     <div><h3 className="text-sm font-bold">{module.blueprint.title}</h3>
      <p className="mt-2 line-clamp-2 text-xs leading-5 text-slate-300">{module.blueprint.description}</p>
