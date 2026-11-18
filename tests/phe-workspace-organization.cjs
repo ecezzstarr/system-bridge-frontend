@@ -29,6 +29,18 @@ for(const role of ['agent','bridger']){
  const source=read(`components/${role}/${role}-workplace.tsx`)
  assert(source.includes('data-phe-role-steps'),`${role}: retain daily guide`)
 }
+const district=read('components/world/role-district-environment.tsx')
+assert(district.includes('data-phe-district-directory="daily-first"'),
+ 'Shared districts must group workstations by actual daily duties')
+assert(district.includes('data-phe-district-group={group.id}'),
+ 'Daily work and other stations must form distinct groups')
+assert(district.includes("isVisible(place.href)")&&district.includes('orderFor(a.href)'),
+ 'Only visible company workstations may appear and their authorized order remains intact')
+assert(district.includes('data-district-scene={scene.label}'),
+ 'The original department environment stays active')
+assert(district.includes("data-daily-place={place.daily?'true':'false'}"),
+ 'Existing daily station markers remain available')
+
 const room=read('components/world/weave-system-room.tsx')
 for(const hook of ['data-phe-room-grid','data-phe-room-left','data-phe-room-right','data-weave-room-stage']){
  assert(room.includes(hook),`Shared room must provide ${hook}`)
