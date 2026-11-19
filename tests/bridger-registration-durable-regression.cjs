@@ -23,14 +23,21 @@ const compiled=ts.transpileModule(src,{compilerOptions:{
 }}).outputText
 const response=(body,opts={})=>({status:opts.status||200,body,async json(){return body}})
 const validId='12345678-1234-4234-9234-123456789abc'
-async function runSignup({role='bridger',fail='',codeUsed=false,duplicate=false,recover=false}={}){
+async function runSignup({role='bridger',fail='',codeUsed=false,duplicate=false,recover=false,loan=false,loanMismatch=false}={}){
   const commands=[]
+  const walletValues=[]
   const adminAlerts=[]
   let released=0
   const client={
     async query(query,params=[]){
       const cmd=String(query).replace(/\s+/g,' ').trim()
       commands.push(cmd)
+      if(cmd.startsWith('INSERT INTO wallets'))walletValues.push(params[1])
+      if(cmd.startsWith('SELECT r.id,r.status,r.applicant_email'))return {rows:loan?[{
+        id:validId,status:'approved',applicant_email:loanMismatch?'different@sample.test':'new@sample.test',
+        applicant_balance_consent:true,approved_principal:role==='agent'?5:8,price_flame_coin:role==='agent'?5:8,
+      }]:[]}
+      if(cmd.startsWith('UPDATE department_entry_loan_requests'))return {rows:[{id:validId}]}
       if(fail==='profile'&&cmd.startsWith('INSERT INTO bridger_profiles'))throw Error('profile insert failed')
       if(fail==='wallet'&&cmd.startsWith('INSERT INTO wallets'))throw Error('wallet insert failed')
       if(duplicate&&cmd.startsWith('INSERT INTO users'))throw Object.assign(Error('duplicate'),{code:'23505'})
@@ -65,6 +72,7 @@ async function runSignup({role='bridger',fail='',codeUsed=false,duplicate=false,
     '@/lib/client-monthly-subscription':{normalizeRegisteredGender:value=>['male','female'].includes(value)?value:null,ensureClientMonthlySchema:async()=>{}},
     '@/lib/public-flame-movement':{publicFlameMovementCodeFromRequest:()=>null,recordPublicFlameMovementEvent:async()=>{}},
     '@/lib/administrations-activity-notifications':{notifyAdministrationsActivity:async activity=>{adminAlerts.push(activity);return true}},
+    '@/lib/department-entry-loan-support':{ensureEntryLoanSupportSchema:async()=>{}},
   }
   const module={exports:{}}
   const sandbox={module,exports:module.exports,require:key=>{
@@ -78,7 +86,7 @@ async function runSignup({role='bridger',fail='',codeUsed=false,duplicate=false,
     termsAccepted:true,fullNameConfirmed:'New Member',
     departmentalCode:'BRIDGER-AAAA-BBBB-CCCC',
   })})
-  return {result,commands,released,adminAlerts}
+  return {result,commands,released,adminAlerts,walletValues}
 }
 (async()=>{
   const normal=await runSignup()
@@ -124,11 +132,29 @@ async function runSignup({role='bridger',fail='',codeUsed=false,duplicate=false,
   assert(!recovered.commands.some(x=>x.startsWith('INSERT INTO users')),'Recovery must not create a second account')
   assert.equal(recovered.adminAlerts.length,0,'Mobile response recovery must not repeat the registration alert')
 
+  const loanBridger=await runSignup({loan:true})
+  assert.equal(loanBridger.result.status,200)
+  assert.equal(loanBridger.result.body.user.platform_wallet_balance,-8)
+  assert.deepEqual(loanBridger.walletValues,[-8])
+  assert(loanBridger.commands.some(x=>x.startsWith('UPDATE department_entry_loan_requests')),'Approved loan must be consumed with account transaction')
+  assert(loanBridger.commands.includes('COMMIT'))
+
+  const loanAgent=await runSignup({role:'agent',loan:true})
+  assert.equal(loanAgent.result.status,200)
+  assert.equal(loanAgent.result.body.user.platform_wallet_balance,-5)
+  assert.deepEqual(loanAgent.walletValues,[-5])
+
+  const wrongLoanOwner=await runSignup({loan:true,loanMismatch:true})
+  assert.equal(wrongLoanOwner.result.status,409)
+  assert.equal(wrongLoanOwner.result.body.code,'ENTRY_LOAN_NOT_AUTHORIZED')
+  assert(wrongLoanOwner.commands.includes('ROLLBACK'))
+  assert(!wrongLoanOwner.commands.includes('COMMIT'))
+
   const agent=await runSignup({role:'agent'})
   assert.equal(agent.result.status,200)
   assert(agent.commands.some(x=>x.startsWith('INSERT INTO agent_profiles')))
   assert(!agent.commands.some(x=>x.startsWith('INSERT INTO bridger_profiles')))
   assert.equal(agent.adminAlerts.length,1)
   assert.equal(agent.adminAlerts[0].title,'New Agent registered')
-  console.log('Bridger/Agent paid registration: atomic commit, rollback, code retry and phone resume passed')
+  console.log('Bridger/Agent registration: atomic paid/loan commit, negative ticket wallet, mismatch rollback, code retry and phone resume passed')
 })().catch(err=>{console.error(err);process.exitCode=1})

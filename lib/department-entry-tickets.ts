@@ -283,12 +283,16 @@ export async function listDepartmentEntryTickets() {
       t.*,
       dc.code AS departmental_code,
       dc.status AS departmental_code_status,
-      u.name AS verified_by_name
+      u.name AS verified_by_name,
+      loan.status AS entry_loan_status,
+      loan.approved_principal AS entry_loan_principal
     FROM departmental_entry_tickets t
     LEFT JOIN departmental_codes dc
       ON dc.registration_request_id = t.id
     LEFT JOIN users u
       ON u.id = t.verified_by
+    LEFT JOIN department_entry_loan_requests loan
+      ON loan.ticket_id = t.id
     ORDER BY
       CASE t.status
         WHEN 'PAYMENT_PENDING' THEN 0

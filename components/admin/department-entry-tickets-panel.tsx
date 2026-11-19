@@ -17,6 +17,8 @@ type EntryTicket = {
   payer_email?: string | null
   payer_phone?: string | null
   payment_reference?: string | null
+  entry_loan_status?: string | null
+  entry_loan_principal?: number | string | null
   payment_submitted_at?: string | null
   departmental_code?: string | null
   verified_by_name?: string | null
@@ -100,7 +102,12 @@ export function DepartmentEntryTicketsPanel() {
           </p>
 
           <div className="mt-2 space-y-1 text-xs text-slate-400">
-            <p>{ticket.payer_name || 'Visitor has not submitted payment details yet.'}</p>
+            {ticket.entry_loan_status && (
+              <p className="font-semibold text-sky-200">
+                Entry loan: {ticket.entry_loan_status} · {Number(ticket.entry_loan_principal || ticket.price_flame_coin).toLocaleString()} System Switch · no paid receipt
+              </p>
+            )}
+            <p>{ticket.payer_name || (ticket.entry_loan_status ? 'Loan application is recorded in Administrations support review.' : 'Visitor has not submitted payment details yet.')}</p>
             {(ticket.payer_phone || ticket.payer_email) && <p>{ticket.payer_phone || ticket.payer_email}</p>}
             {ticket.payment_reference && (
               <div className="flex items-center gap-2">

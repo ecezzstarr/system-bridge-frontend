@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { visiblePoll } from '@/lib/visible-poll'
+import { DepartmentEntryLoanSupport } from '@/components/department-entry-loan-support'
 import {
   ArrowLeft,
   CheckCircle2,
@@ -352,6 +353,8 @@ export function DepartmentEntryTicketGate({
         )}
       </div>
 
+      {!freeTicket && <DepartmentEntryLoanSupport key={ticket.id} accessToken={accessToken} ticketStatus={ticket.status} ticketValue={ticket.priceFlameCoin} onCodeIssued={() => void refreshTicket()} />}
+
       {ticket.status === 'PRESENTED' && !freeTicket && (
         <div className="space-y-3 rounded-2xl border border-white/10 bg-slate-950/60 p-5">
           <p className="text-xs font-black uppercase tracking-widest text-slate-300">Submit Payment for Verification</p>
@@ -403,7 +406,7 @@ export function DepartmentEntryTicketGate({
       {codeIssued && (
         <div className="rounded-2xl border border-green-400/30 bg-green-400/10 p-6 text-center">
           <CheckCircle2 className="mx-auto h-9 w-9 text-green-400" />
-          <p className="mt-3 text-[10px] font-black uppercase tracking-[0.22em] text-green-300">{freeTicket ? 'Saturday Free Entry · Code Released' : 'Payment Verified · Code Released'}</p>
+          <p className="mt-3 text-[10px] font-black uppercase tracking-[0.22em] text-green-300">{freeTicket ? 'Saturday Free Entry · Code Released' : 'Entry Authorized · Code Released'}</p>
           <div className="mt-4 flex items-center justify-center gap-2 rounded-xl border border-green-400/20 bg-black/30 p-4">
             <KeyRound className="h-4 w-4 text-green-400" />
             <code className="break-all font-mono text-sm font-black tracking-wider text-white">{ticket.departmentalCode}</code>

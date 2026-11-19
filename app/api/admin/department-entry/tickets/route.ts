@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
+import { ensureEntryLoanSupportSchema } from '@/lib/department-entry-loan-support'
 import {
   approveDepartmentEntryTicket,
   listDepartmentEntryTickets,
@@ -18,6 +19,7 @@ export async function GET(request: NextRequest) {
   if (auth.response) return auth.response
 
   try {
+    await ensureEntryLoanSupportSchema()
     const tickets = await listDepartmentEntryTickets()
     return NextResponse.json({ success: true, tickets })
   } catch (error: any) {

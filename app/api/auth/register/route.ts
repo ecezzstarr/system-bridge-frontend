@@ -11,6 +11,7 @@ import { buildUserReferralCode, resolveReferralOwnerByCode } from '@/lib/user-re
 import { queueReferralSignupBonus } from '@/lib/referral-bonus'
 import { publicFlameMovementCodeFromRequest, recordPublicFlameMovementEvent } from '@/lib/public-flame-movement'
 import { notifyAdministrationsActivity } from '@/lib/administrations-activity-notifications'
+import { ensureEntryLoanSupportSchema } from '@/lib/department-entry-loan-support'
 
 // A client may lose the HTTP response after a successful DB commit on mobile.
 // Reusing the paid ticket is safe only when the original owner's password and
@@ -23,9 +24,11 @@ async function recoverCompletedRegistration(input:{
   if (!attempt.allowed) return NextResponse.json({error:'Too many sign-in attempts. Try again later.'}, {status:429,headers:{'Retry-After':String(attempt.retryAfter)}})
   const [owner]=await sql`
     SELECT u.id,u.email,u.username,u.name,u.role,u.departmental_code,
-      u.referral_code,u.assigned_agent_id,u.password_hash
+      u.referral_code,u.assigned_agent_id,u.password_hash,
+      w.balance_trx AS platform_wallet_balance
     FROM departmental_codes dc
     JOIN users u ON u.id=dc.used_by
+    LEFT JOIN wallets w ON w.user_id=u.id AND w.is_primary=true
     WHERE dc.code=${input.code} AND dc.department=${input.department}
       AND dc.status='USED' AND u.role=${input.role}
       AND u.email=${input.email} AND u.username=${input.username}
@@ -44,7 +47,7 @@ async function recoverCompletedRegistration(input:{
       id:owner.id,email:owner.email,username:owner.username,name:owner.name,
       role:owner.role,departmental_code:owner.departmental_code,
       referral_code:owner.referral_code,assigned_agent_id:owner.assigned_agent_id||null,
-      platform_wallet_balance:0,escrow_balance:0,
+      platform_wallet_balance:Number(owner.platform_wallet_balance ?? 0),escrow_balance:0,
     },
   })
 }
@@ -151,6 +154,9 @@ export async function POST(request: NextRequest) {
 
     if (bridgerReferrerId) await ensureBridgerReferralColumns()
 
+    // Ensure the optional registration-loan ledger exists before starting the account transaction.
+    await ensureEntryLoanSupportSchema()
+
     // Form a whole account or none. A paid one-use code cannot be spent on an
     // account that fails to create its wallet, profile or login session.
     const userId = randomUUID()
@@ -158,6 +164,7 @@ export async function POST(request: NextRequest) {
     const token = `ssb_${randomBytes(32).toString('base64url')}`
     const connection = await getPool().connect()
     let user: any = null
+    let registrationLoanValue = 0
     try {
       await connection.query('BEGIN')
       const tx = async (parts: TemplateStringsArray, ...values: unknown[]) => {
@@ -195,14 +202,50 @@ export async function POST(request: NextRequest) {
           code: 'ENTRY_CODE_UNAVAILABLE',
         }, { status: 409 })
       }
+      // A Regional Manager's approved ticket loan is tied to the original applicant,
+      // not a general-purpose code. Debt and user creation must be atomic.
+      const matchingLoans = await tx`
+        SELECT r.id,r.status,r.applicant_email,r.applicant_balance_consent,
+          r.approved_principal,t.price_flame_coin
+        FROM departmental_codes dc
+        JOIN department_entry_loan_requests r ON r.ticket_id=dc.registration_request_id
+        JOIN departmental_entry_tickets t ON t.id=r.ticket_id
+        WHERE dc.id=${used[0].id}::uuid
+        FOR UPDATE OF r
+      `
+      const ticketLoan = matchingLoans[0]
+      if (ticketLoan) {
+        const principal = Number(ticketLoan.approved_principal)
+        if (ticketLoan.status !== 'approved' ||
+            ticketLoan.applicant_email.toLowerCase() !== email ||
+            ticketLoan.applicant_balance_consent !== true ||
+            !Number.isFinite(principal) || principal <= 0 ||
+            principal !== Number(ticketLoan.price_flame_coin)) {
+          await connection.query('ROLLBACK')
+          return NextResponse.json({
+            error:'This loan-approved entry code belongs to the original approved applicant and exact ticket fee.',
+            code:'ENTRY_LOAN_NOT_AUTHORIZED',
+          }, {status:409})
+        }
+        registrationLoanValue = principal
+      }
       await tx`
         INSERT INTO departmental_audit_log (event, department, target_user, code_id, result)
         VALUES ('USE_CODE', ${dept}, ${userId}::uuid, ${used[0].id}::uuid, 'SUCCESS')
       `
       await tx`
         INSERT INTO wallets (id, user_id, balance_trx, balance_usdt, is_primary, is_eight_engine_controlled, created_at, updated_at)
-        VALUES (gen_random_uuid(), ${userId}::uuid, 0, 0, true, true, NOW(), NOW())
+        VALUES (gen_random_uuid(), ${userId}::uuid, ${-registrationLoanValue}, 0, true, true, NOW(), NOW())
       `
+      if (ticketLoan) {
+        const marked = await tx`
+          UPDATE department_entry_loan_requests
+          SET status='registered',registered_user_id=${userId}::uuid,registered_at=NOW(),updated_at=NOW()
+          WHERE id=${ticketLoan.id}::uuid AND status='approved' AND registered_user_id IS NULL
+          RETURNING id
+        `
+        if (!marked.length) throw new Error('Entry-loan request changed before registration completed')
+      }
       if (role === 'agent') {
         await tx`
           INSERT INTO agent_profiles (id, user_id, agent_type, status, rating, total_earnings, matches_completed, commission_rate, created_at, updated_at)
@@ -297,7 +340,7 @@ export async function POST(request: NextRequest) {
     await notifyAdministrationsActivity({
       event:'staff_registration',eventId:userId,
       title:role==='agent'?'New Agent registered':'New Bridger registered',
-      content:name+' entered WEAVE as '+role+' using a verified Entry Ticket. Open the company movement register for this new position.',
+      content:name+' entered WEAVE as '+role+' using an authorized Entry Ticket'+(registrationLoanValue>0?' with a recorded negative System Switch entry-loan balance.':' with verified entry. ')+' Open the company movement register for this new position.',
       adminPath:'/admin/company-movement',actorId:userId,actorName:name,
     })
 
@@ -313,7 +356,7 @@ export async function POST(request: NextRequest) {
         departmental_code: user.departmental_code,
         referral_code: user.referral_code,
         assigned_agent_id: user.assigned_agent_id || null,
-        platform_wallet_balance: 0,
+        platform_wallet_balance: -registrationLoanValue,
         escrow_balance: 0,
       },
     })
