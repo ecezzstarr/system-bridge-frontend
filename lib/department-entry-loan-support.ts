@@ -4,7 +4,9 @@ import { getDepartmentEntryTicket } from '@/lib/department-entry-tickets'
 
 export type EntryLoanStatus = 'pending' | 'reviewing' | 'contacted' | 'declined' | 'approved' | 'registered'
 
-export async function ensureEntryLoanSupportSchema() {
+let entryLoanSchemaReady: Promise<void> | null = null
+export function ensureEntryLoanSupportSchema(): Promise<void> {
+  if (!entryLoanSchemaReady) entryLoanSchemaReady = (async () => {
   await sql`
     CREATE TABLE IF NOT EXISTS department_entry_loan_requests (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -31,6 +33,8 @@ export async function ensureEntryLoanSupportSchema() {
   `
   await sql`CREATE INDEX IF NOT EXISTS idx_entry_loan_requests_review
     ON department_entry_loan_requests(status, created_at DESC)`
+  })().catch(error => { entryLoanSchemaReady = null; throw error })
+  return entryLoanSchemaReady
 }
 
 export async function readEntryLoanSupport(accessToken: string) {
