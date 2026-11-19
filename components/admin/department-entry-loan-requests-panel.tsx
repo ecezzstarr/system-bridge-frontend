@@ -19,6 +19,8 @@ type LoanItem = {
   ticket_number: string
   ticket_status: string
   amount_ngn: string | number
+  price_flame_coin: string | number
+  expires_at: string
 }
 
 export function DepartmentEntryLoanRequestsPanel() {
@@ -47,7 +49,7 @@ export function DepartmentEntryLoanRequestsPanel() {
     return visiblePoll(() => load(true), 15000, false)
   }, [])
 
-  const review = async (item: LoanItem, status: 'reviewing' | 'contacted' | 'declined') => {
+  const review = async (item: LoanItem, status: 'reviewing' | 'contacted' | 'declined' | 'approved') => {
     setWorking(item.id)
     try {
       const res = await fetch('/api/admin/department-entry/loan-support', {
@@ -57,7 +59,7 @@ export function DepartmentEntryLoanRequestsPanel() {
       })
       const data = await res.json()
       if (!res.ok || !data.success) throw new Error(data.error || 'Unable to save review')
-      toast.success('Support review recorded')
+      toast.success(data.message || 'Entry-loan decision recorded')
       await load(true)
     } catch (error: any) {
       toast.error(error?.message || 'Unable to save support review')
@@ -66,9 +68,12 @@ export function DepartmentEntryLoanRequestsPanel() {
     }
   }
 
-  const active = requests.filter(r => r.status === 'pending' || r.status === 'reviewing')
-  const history = requests.filter(r => r.status !== 'pending' && r.status !== 'reviewing')
-  const renderItem = (item: LoanItem) => (
+  const active = requests.filter(r => ['pending', 'reviewing', 'contacted'].includes(r.status))
+  const history = requests.filter(r => !['pending', 'reviewing', 'contacted'].includes(r.status))
+  const renderItem = (item: LoanItem) => {
+    const open = ['pending', 'reviewing', 'contacted'].includes(item.status)
+    const unavailable = item.ticket_status !== 'PRESENTED' || new Date(item.expires_at).getTime() <= Date.now()
+    return (
     <div key={item.id} className="rounded-xl border border-white/10 bg-slate-950/50 p-4">
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-xs font-bold text-white">{item.applicant_name}</span>
@@ -76,27 +81,40 @@ export function DepartmentEntryLoanRequestsPanel() {
         <span className="text-[10px] text-slate-400">{item.status}</span>
       </div>
       <p className="mt-2 break-all text-xs text-slate-300">{item.applicant_email}{item.applicant_phone ? ' · ' + item.applicant_phone : ''}</p>
-      <p className="mt-1 text-xs text-slate-400">{item.ticket_number} · {item.ticket_status} · ₦{Number(item.amount_ngn).toLocaleString()}</p>
+      <p className="mt-1 text-xs text-slate-400">
+        {item.ticket_number} · {item.ticket_status} · ₦{Number(item.amount_ngn).toLocaleString()}
+        {' · '}{Number(item.price_flame_coin).toLocaleString()} System Switch
+      </p>
+      {open && unavailable && <p className="mt-1 text-xs text-amber-200">
+        This ticket is expired or unavailable. Approval is disabled; decline or contact the applicant.
+      </p>}
       {item.statement && <p className="mt-2 whitespace-pre-wrap text-xs leading-5 text-slate-300">{item.statement}</p>}
       <p className="mt-2 text-[10px] text-slate-500">{new Date(item.created_at).toLocaleString()}</p>
-      <label className="mt-3 block text-xs text-slate-300">
-        Response visible to this ticket holder
-        <textarea rows={2} maxLength={1200}
-          value={notes[item.id] ?? item.admin_note ?? ''}
-          onChange={e => setNotes(previous => ({ ...previous, [item.id]: e.target.value }))}
-          placeholder="Explain the review or how to contact Administrations. This is not loan approval."
-          className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 p-3 text-xs text-white" />
-      </label>
-      <div className="mt-3 flex flex-wrap gap-2">
-        <Button type="button" size="sm" variant="outline" disabled={working === item.id}
-          onClick={() => void review(item, 'reviewing')} className="text-xs">Under review</Button>
-        <Button type="button" size="sm" variant="outline" disabled={working === item.id}
-          onClick={() => void review(item, 'contacted')} className="text-xs">Follow-up provided</Button>
-        <Button type="button" size="sm" variant="outline" disabled={working === item.id}
-          onClick={() => void review(item, 'declined')} className="text-xs text-rose-200">Decline request</Button>
-      </div>
+      {open ? <>
+        <label className="mt-3 block text-xs text-slate-300">
+          Review reason (at least 10 characters to approve or decline)
+          <textarea rows={2} maxLength={1200}
+            value={notes[item.id] ?? item.admin_note ?? ''}
+            onChange={e => setNotes(previous => ({ ...previous, [item.id]: e.target.value }))}
+            placeholder="Give a clear reason for approving, declining or following up."
+            className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 p-3 text-xs text-white" />
+        </label>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Button type="button" size="sm" variant="outline" disabled={!!working}
+            onClick={() => void review(item, 'reviewing')} className="text-xs">Under review</Button>
+          <Button type="button" size="sm" variant="outline" disabled={!!working}
+            onClick={() => void review(item, 'contacted')} className="text-xs">Follow-up provided</Button>
+          <Button type="button" size="sm" disabled={!!working || unavailable}
+            onClick={() => void review(item, 'approved')} className="bg-sky-200 text-xs font-bold text-slate-950 hover:bg-sky-100">
+            Approve loan & release code
+          </Button>
+          <Button type="button" size="sm" variant="outline" disabled={!!working}
+            onClick={() => void review(item, 'declined')} className="text-xs text-rose-200">Decline request</Button>
+        </div>
+      </> : item.admin_note && <p className="mt-3 text-xs text-slate-300">Decision reason: {item.admin_note}</p>}
     </div>
-  )
+    )
+  }
 
   return (
     <section data-admin-entry-loan-requests="true" className="rounded-2xl border border-sky-300/20 bg-sky-300/[0.03] p-5 text-white">
@@ -106,8 +124,9 @@ export function DepartmentEntryLoanRequestsPanel() {
             <HandCoins className="h-5 w-5 text-sky-300" /> Entry-fee loan support
           </h2>
           <p className="mt-1 text-xs leading-5 text-slate-400">
-            Visitor loan inquiries only. Contact and assess each applicant separately. No action here releases money,
-            verifies ticket payment or issues a registration code.
+            Administrations can approve or decline Agent and Bridger entry loans, or request follow-up.
+            Approval releases one registration code and records the exact ticket amount as a negative System Switch
+            balance when the applicant registers. It does not verify payment or record ticket revenue.
           </p>
         </div>
         <Button type="button" variant="ghost" size="sm" onClick={() => void load()} disabled={loading}>

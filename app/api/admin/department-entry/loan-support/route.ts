@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSessionByToken, sql } from '@/lib/db'
 import { trustedMutationOrigin } from '@/lib/request-origin'
 import { ensureDepartmentEntryTicketSchema } from '@/lib/department-entry-tickets'
-import { ensureEntryLoanSupportSchema } from '@/lib/department-entry-loan-support'
+import { ensureEntryLoanSupportSchema, decideEntryLoanByAdministrations } from '@/lib/department-entry-loan-support'
 
 export const dynamic = 'force-dynamic'
 const headers = { 'Cache-Control': 'private, no-store' }
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
       SELECT r.id, r.department, r.applicant_name, r.applicant_email,
         r.applicant_phone, r.statement, r.status, r.admin_note,
         r.created_at, r.updated_at, t.ticket_number, t.status AS ticket_status,
-        t.amount_ngn, t.price_flame_coin
+        t.amount_ngn, t.price_flame_coin, t.expires_at
       FROM department_entry_loan_requests r
       JOIN departmental_entry_tickets t ON t.id = r.ticket_id
       ORDER BY CASE WHEN r.status='pending' THEN 0 WHEN r.status='reviewing' THEN 1 ELSE 2 END,
@@ -47,13 +47,31 @@ export async function PATCH(request: NextRequest) {
   const status = String(body?.status || '')
   const note = String(body?.note || '').trim()
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id) ||
-      !['reviewing', 'contacted', 'declined'].includes(status) ||
-      note.length > 1200 || ((status === 'contacted' || status === 'declined') && note.length < 8)) {
+      !['reviewing', 'contacted', 'declined', 'approved'].includes(status) ||
+      note.length > 1200 || ((status === 'contacted' || status === 'declined' || status === 'approved') && note.length < 10)) {
     return reply({ error: 'Choose a valid request, review stage, and explanation.' }, 400)
   }
   try {
     await ensureDepartmentEntryTicketSchema()
     await ensureEntryLoanSupportSchema()
+    if (status === 'approved' || status === 'declined') {
+      // Use the same locked ticket/code transaction as Regional Managers.
+      // Only the Administrations role is allowed; never mark an entry ticket as paid.
+      const decision = await decideEntryLoanByAdministrations({
+        requestId: id,
+        adminId: admin.user_id,
+        action: status === 'approved' ? 'approve' : 'decline',
+        note,
+      })
+      if ('error' in decision) return reply({ error: decision.error }, decision.statusCode)
+      return reply({
+        success: true,
+        request: { id, status: decision.status },
+        message: status === 'approved'
+          ? 'Loan approved. A one-use registration code has been released; the ticket amount will be an initial negative System Switch balance.'
+          : 'Loan declined with the recorded reason.',
+      })
+    }
     const changed = await sql`
       UPDATE department_entry_loan_requests SET
         status = ${status}, admin_note = ${note || null},
@@ -62,7 +80,7 @@ export async function PATCH(request: NextRequest) {
       RETURNING id, status, admin_note
     `
     if (!changed[0]) return reply({ error: 'Request already decided or unavailable' }, 409)
-    // This review cannot generate a loan, change a payment state or release an entry code.
+    // Reviewing and contacted remain informational states only.
     return reply({ success: true, request: changed[0] })
   } catch (error) {
     console.error('[entry-loan-support] admin review failed:', error)
