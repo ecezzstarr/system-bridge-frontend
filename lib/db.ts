@@ -1,3 +1,4 @@
+import { isPredictableSessionToken } from '@/lib/session-security'
 // ===========================================
 // DATABASE CONFIGURATION - ECOSYSTEM CONTINUITY
 // Supports Neon and Google Cloud SQL
@@ -291,6 +292,7 @@ export async function createSession(userId: string, token: string, expiresAt: Da
 }
 
 export async function getSessionByToken(token: string) {
+  if (isPredictableSessionToken(token)) return null
   const result = await sql`
     SELECT s.*, u.id as user_id, u.email, u.name, u.role, u.avatar_url, u.tron_wallet_address
     FROM sessions s

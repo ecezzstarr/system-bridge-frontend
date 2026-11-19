@@ -1,3 +1,6 @@
+import { credentialStamp } from '@/lib/session-security'
+import { trustedMutationOrigin } from '@/lib/request-origin'
+import { isPredictableSessionToken } from '@/lib/session-security'
 import { NextRequest } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from './auth'
@@ -73,18 +76,21 @@ async function applyRuntimeAccess(user:AuthUser):Promise<AuthUser|null>{
  */
 export async function getAuthUser(request: NextRequest): Promise<AuthUser | null> {
   try {
-    const session = await getServerSession(authOptions)
+    // An explicit API bearer must not be shadowed by a stale browser cookie.
+    const session = request.headers.get('authorization') ? null : await getServerSession(authOptions)
     if (session?.user) {
+      if (!trustedMutationOrigin(request)) return null
       // Re-read role and activity from the database on every privileged request.
       // Signed JWT claims can outlive suspension, demotion, or account closure.
       const sessionUser=session.user as any
       if(typeof sessionUser.id!=='string'||!/^[0-9a-f-]{36}$/i.test(sessionUser.id))return null
       const rows=await sql`
-        SELECT id,name,username,email,role,file_number FROM users
+        SELECT id,name,username,email,role,file_number,password_hash FROM users
         WHERE id=${sessionUser.id}::uuid AND is_active=true LIMIT 1
       `
       if(!rows.length)return null
       const user=rows[0]
+      if (!sessionUser.credentialStamp || sessionUser.credentialStamp !== credentialStamp(user.password_hash)) return null
       return applyRuntimeAccess({
         id:user.id,
         name:user.name||user.username||'User',
@@ -97,7 +103,7 @@ export async function getAuthUser(request: NextRequest): Promise<AuthUser | null
 
     const authHeader = request.headers.get('authorization')
     const token = authHeader?.replace('Bearer ', '')
-    if (!token) return null
+    if (!token || isPredictableSessionToken(token)) return null
 
     const sessions = await sql`
       SELECT user_id FROM sessions WHERE token = ${token} AND expires_at > NOW()

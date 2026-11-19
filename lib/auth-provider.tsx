@@ -193,6 +193,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const logout = () => {
+    // Revoke this server session as well as clearing the device. Local logout
+    // remains immediate when offline; keepalive survives ordinary navigation.
+    if (token) void fetch('/api/auth/logout', {
+      method: 'POST', headers: { Authorization: `Bearer ${token}` }, keepalive: true,
+    }).catch(() => {})
     // Stop this browser receiving private alerts after signing out, even offline.
     if ('serviceWorker' in navigator) void navigator.serviceWorker.getRegistration()
       .then(registration => registration?.pushManager.getSubscription())

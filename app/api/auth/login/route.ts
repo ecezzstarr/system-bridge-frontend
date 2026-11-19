@@ -1,3 +1,4 @@
+import { consumeAuthAttempt } from '@/lib/auth-throttle'
 import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 import bcrypt from 'bcryptjs'
@@ -43,10 +44,14 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const email = String(body.email || '').trim()
     const password = String(body.password || '')
+    if (email.length > 254 || password.length > 1024) return NextResponse.json({error:'Invalid login details'}, {status:400})
 
     if (!email || !password) {
       return NextResponse.json({ error: 'Email and password required' }, { status: 400 })
     }
+
+    const attempt = await consumeAuthAttempt('login-email', email)
+    if (!attempt.allowed) return NextResponse.json({error:'Too many sign-in attempts. Try again later.'}, {status:429, headers:{'Retry-After':String(attempt.retryAfter)}})
 
     // Break-glass compatibility: accept the pre-existing server-side fallback
     // secret only for the original Administration identity, and only when that

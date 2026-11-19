@@ -1,29 +1,16 @@
+import { getAuthUser } from '@/lib/auth-api'
+import { recordPresenceHeartbeat } from '@/lib/presence-accounting'
 import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 
 // Record presence heartbeat - called periodically while user is in field
 export async function POST(request: NextRequest) {
   try {
-    const { userId, minutes = 1 } = await request.json()
-
-    if (!userId) {
-      return NextResponse.json({ error: 'User ID required' }, { status: 400 })
-    }
-
-    // Update user's field presence minutes
-    await sql`
-      UPDATE users 
-      SET field_presence_minutes = COALESCE(field_presence_minutes, 0) + ${minutes},
-          updated_at = NOW()
-      WHERE id = ${userId}::uuid
-    `
-
-    // Get updated presence stats
-    const users = await sql`
-      SELECT field_presence_minutes FROM users WHERE id = ${userId}::uuid
-    `
-
-    const totalMinutes = users.length > 0 ? Number(users[0].field_presence_minutes) : 0
+    const user = await getAuthUser(request)
+    if (!user) return NextResponse.json({error:'Unauthorized'}, {status:401})
+    const body = await request.json().catch(() => ({}))
+    if (body.userId && body.userId !== user.id) return NextResponse.json({error:'Forbidden'}, {status:403})
+    const totalMinutes = await recordPresenceHeartbeat(user.id)
 
     return NextResponse.json({
       success: true,
@@ -42,12 +29,11 @@ export async function POST(request: NextRequest) {
 // Get user's presence stats
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url)
-    const userId = searchParams.get('userId')
-
-    if (!userId) {
-      return NextResponse.json({ error: 'User ID required' }, { status: 400 })
-    }
+    const user = await getAuthUser(request)
+    if (!user) return NextResponse.json({error:'Unauthorized'}, {status:401})
+    const requestedUserId = request.nextUrl.searchParams.get('userId')
+    if (requestedUserId && requestedUserId !== user.id) return NextResponse.json({error:'Forbidden'}, {status:403})
+    const userId = user.id
 
     const users = await sql`
       SELECT field_presence_minutes, created_at FROM users WHERE id = ${userId}::uuid

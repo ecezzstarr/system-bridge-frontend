@@ -1,3 +1,4 @@
+import { isPredictableSessionToken } from '@/lib/session-security'
 import { NextRequest, NextResponse } from 'next/server'
 import { neon } from './pg-neon'
 
@@ -54,7 +55,7 @@ export async function requireWorkshopAuthorization(req?: NextRequest): Promise<W
     if (req) {
       const authHeader = req.headers.get('authorization') || ''
       const token = authHeader.replace(/^Bearer\s+/i, '').trim()
-      if (token) {
+      if (token && !isPredictableSessionToken(token)) {
         const sessions = await sql`
           SELECT s.user_id
           FROM sessions s

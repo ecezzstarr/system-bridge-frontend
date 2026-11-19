@@ -70,6 +70,7 @@ function sqlFor(current) {
 function staffRoute(current) {
   return load('app/api/auth/login/route.ts', {
     'next/server': next, bcryptjs: bcrypt,
+    '@/lib/auth-throttle': { consumeAuthAttempt: async () => ({ allowed: true, retryAfter: 1 }) },
     '@/lib/password-hash': { usableBcryptPasswordHash },
     '@/lib/pro-file-folder-activation': { getProActivationState: async () => null },
     '@/lib/db': { sql: sqlFor(current) },
@@ -80,6 +81,7 @@ function staffRoute(current) {
 function clientRoute(current) {
   return load('app/api/client/weave-login/route.ts', {
     'next/server': next, bcryptjs: bcrypt,
+    '@/lib/auth-throttle': { consumeAuthAttempt: async () => ({ allowed: true, retryAfter: 1 }) },
     '@/lib/password-hash': { usableBcryptPasswordHash },
     '@/lib/pro-file-folder-activation': { getProActivationState: async () => null },
     '@/lib/client-file-folder-tier': { resolveVerifiedClientFileFolderTier: async () => 'standard' },

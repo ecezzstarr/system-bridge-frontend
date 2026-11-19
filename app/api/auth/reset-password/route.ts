@@ -42,8 +42,8 @@ export async function POST(request:NextRequest){
       )
     }
 
-    if(password.length<8){
-      return NextResponse.json({error:'Password must be at least 8 characters.'},{status:400})
+    if(password.length<8 || Buffer.byteLength(password,'utf8')>72){
+      return NextResponse.json({error:'Use at least 8 characters and at most 72 UTF-8 bytes.'},{status:400})
     }
 
     await Promise.all([

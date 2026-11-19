@@ -1,3 +1,5 @@
+import { credentialStamp } from '@/lib/session-security'
+import { consumeAuthAttempt } from '@/lib/auth-throttle'
 import type { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
@@ -9,6 +11,7 @@ declare module 'next-auth' {
   interface Session {
     user: {
       id: string
+      credentialStamp?: string
       username: string
       name: string
       role: string
@@ -17,6 +20,7 @@ declare module 'next-auth' {
     }
   }
   interface User {
+    credentialStamp?: string
     id: string
     username: string
     name: string
@@ -28,6 +32,7 @@ declare module 'next-auth' {
 
 declare module 'next-auth/jwt' {
   interface JWT {
+    credentialStamp?: string
     id: string
     username: string
     name: string
@@ -49,52 +54,45 @@ const providers: NextAuthOptions['providers'] = [
     },
     async authorize(credentials) {
       try {
-        console.log('[WEAVE] Authorize called with username:', credentials?.username)
         
-        if (!credentials?.username || !credentials?.password) {
-          console.log('[WEAVE] Missing credentials')
+        if (!credentials?.username || !credentials?.password || credentials.username.length > 254 || credentials.password.length > 1024) {
           return null
         }
 
+        const attempt = await consumeAuthAttempt('login-username', credentials.username)
+        if (!attempt.allowed) return null
+
         // Get user from current WEAVE database
-        console.log('[WEAVE] Looking up user in database...')
         const user = await getUserByUsername(credentials.username)
-        console.log('[WEAVE] User found:', user ? 'yes' : 'no')
         
         if (!user) {
-          console.log('[WEAVE] No user found for username:', credentials.username)
           return null
         }
 
         const passwordHash = usableBcryptPasswordHash(user.password_hash)
 
         if (!passwordHash) {
-          console.log('[WEAVE] User requires password setup/recovery')
           return null
         }
 
         // Verify password
-        console.log('[WEAVE] Verifying password...')
         const isValid = await bcrypt.compare(credentials.password, passwordHash)
-        console.log('[WEAVE] Password valid:', isValid)
         
         if (!isValid) {
-          console.log('[WEAVE] Invalid password')
           return null
         }
 
         const shield=await getDivineShieldState()
         if(shield.active && user.role!=='admin') {
-          console.log('[auth] Divine Shield blocked non-admin credential session')
           return null
         }
 
         // Update last login
         await updateUserLastLogin(user.id)
-        console.log('[WEAVE] Login successful for:', user.username)
 
         return {
           id: user.id,
+          credentialStamp: credentialStamp(user.password_hash) || undefined,
           username: user.username,
           name: user.name,
           role: user.role,
@@ -115,6 +113,7 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
+        token.credentialStamp = user.credentialStamp
         token.id = user.id
         token.username = user.username
         token.name = user.name
@@ -128,6 +127,7 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       session.user = {
         id: token.id as string,
+        credentialStamp: token.credentialStamp,
         username: token.username as string,
         name: token.name as string,
         role: token.role as string,

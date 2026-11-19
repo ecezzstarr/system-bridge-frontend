@@ -17,3 +17,16 @@ playwright-report
 test-results
 .tmp
 tmp
+
+# Keep every environment variant, private key and database archive out of images.
+**/.env
+**/.env.*
+!**/.env.example
+**/*.pem
+**/*.key
+selfhost/*.dump
+selfhost/*.backup
+selfhost/*.sql
+selfhost/*.tar.gz
+selfhost/*password*.txt
+selfhost/*restore-proof*.json

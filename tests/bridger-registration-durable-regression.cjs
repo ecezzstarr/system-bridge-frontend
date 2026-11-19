@@ -53,6 +53,7 @@ async function runSignup({role='bridger',fail='',codeUsed=false,duplicate=false,
   }
   const mocks={
     'next/server':{NextResponse:{json:response}},
+    '@/lib/auth-throttle':{consumeAuthAttempt:async()=>({allowed:true,retryAfter:1})},
     '@/lib/db':{sql:external,getPool:()=>({connect:async()=>client})},
     'node:crypto':require('node:crypto'),
     'bcryptjs':{hash:async()=>'$2a$10$hashed',compare:async(password,hash)=>password==='strongpassword'&&hash==='$2a$10$hashed'},
@@ -69,7 +70,7 @@ async function runSignup({role='bridger',fail='',codeUsed=false,duplicate=false,
   const sandbox={module,exports:module.exports,require:key=>{
     if(!(key in mocks))throw Error('unexpected dependency '+key)
     return mocks[key]
-  },console,Date,Promise}
+  },console,Date,Promise,Buffer}
   vm.runInNewContext(compiled,sandbox)
   const result=await module.exports.POST({json:async()=>({
     email:'NEW@sample.test',username:'newmember',name:'New Member',

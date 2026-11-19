@@ -1,3 +1,4 @@
+import { consumeAuthAttempt } from '@/lib/auth-throttle'
 import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 import bcrypt from 'bcryptjs'
@@ -15,6 +16,7 @@ export async function POST(request: NextRequest) {
     if(shield.active) return NextResponse.json({error:'WEAVE is under maintenance. Divine Shield is active.'},{status:423})
 
     const { fileNumber, password } = await request.json()
+    if (typeof fileNumber !== 'string' || typeof password !== 'string' || fileNumber.length > 128 || password.length > 1024) return NextResponse.json({error:'Invalid login details'}, {status:400})
 
     if (!fileNumber || !password) {
       return NextResponse.json(
@@ -22,6 +24,9 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       )
     }
+
+    const attempt = await consumeAuthAttempt('login-client', fileNumber)
+    if (!attempt.allowed) return NextResponse.json({error:'Too many sign-in attempts. Try again later.'}, {status:429, headers:{'Retry-After':String(attempt.retryAfter)}})
 
     const result = await sql`
       SELECT id, email, name, role, password_hash, file_number, business_name, referral_code, referred_by

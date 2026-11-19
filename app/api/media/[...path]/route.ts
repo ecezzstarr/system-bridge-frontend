@@ -20,7 +20,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const objectName = normalizeMediaObjectName((resolved.path || []).join('/'))
 
     // System Store packages are delivered only through the entitlement/download route.
-    if (objectName.startsWith('system-store/') || objectName.startsWith('clients/') || objectName.startsWith('weave-private/music/') || objectName.startsWith('weave-private/admin-music/') || objectName.startsWith('weave-private/images/')) {
+    if (objectName.startsWith('weave-private/') || objectName.endsWith('.weave-meta.json') || objectName.startsWith('system-store/') || objectName.startsWith('clients/') || objectName.startsWith('weave-private/music/') || objectName.startsWith('weave-private/admin-music/') || objectName.startsWith('weave-private/images/')) {
       return new Response('Not found', { status: 404 })
     }
 
@@ -51,6 +51,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         status: 206,
         headers: {
           'Content-Type': contentType,
+          'X-Content-Type-Options': 'nosniff',
+          'Content-Security-Policy': 'sandbox',
           'Content-Length': String(end - start + 1),
           'Content-Range': `bytes ${start}-${end}/${info.size}`,
           'Accept-Ranges': 'bytes',
@@ -63,6 +65,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       status: 200,
       headers: {
         'Content-Type': contentType,
+          'X-Content-Type-Options': 'nosniff',
+          'Content-Security-Policy': 'sandbox',
         'Content-Length': String(info.size),
         'Accept-Ranges': 'bytes',
         'Cache-Control': cacheControl,

@@ -1,6 +1,7 @@
+import { consumeAuthAttempt } from '@/lib/auth-throttle'
 import { NextRequest, NextResponse } from 'next/server'
 import { sql, getPool } from '@/lib/db'
-import { randomUUID } from 'node:crypto'
+import { randomUUID, randomBytes } from 'node:crypto'
 import { normalizeRegisteredGender, ensureClientMonthlySchema } from '@/lib/client-monthly-subscription'
 import bcrypt from 'bcryptjs'
 import { ensureBridgerReferralColumns } from '@/lib/bridger-referral-commission'
@@ -18,6 +19,8 @@ async function recoverCompletedRegistration(input:{
   code:string;department:string;role:string;email:string;username:string;password:string
 }){
   if(!input.code||!input.email||!input.username||!input.password)return null
+  const attempt = await consumeAuthAttempt('login-email', input.email)
+  if (!attempt.allowed) return NextResponse.json({error:'Too many sign-in attempts. Try again later.'}, {status:429,headers:{'Retry-After':String(attempt.retryAfter)}})
   const [owner]=await sql`
     SELECT u.id,u.email,u.username,u.name,u.role,u.departmental_code,
       u.referral_code,u.assigned_agent_id,u.password_hash
@@ -30,7 +33,7 @@ async function recoverCompletedRegistration(input:{
     LIMIT 1
   `
   if(!owner||!await bcrypt.compare(input.password,owner.password_hash))return null
-  const token=`ssb_${owner.id}_${Date.now()}`
+  const token=`ssb_${randomBytes(32).toString('base64url')}`
   await sql`
     INSERT INTO sessions (id,user_id,token,created_at,expires_at)
     VALUES (gen_random_uuid(),${owner.id}::uuid,${token},NOW(),NOW()+INTERVAL '7 days')
@@ -79,7 +82,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || username.length < 3 || username.length > 100 || name.length < 2 || name.length > 255 || typeof password !== 'string' || password.length < 8) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || username.length < 3 || username.length > 100 || name.length < 2 || name.length > 255 || typeof password !== 'string' || password.length < 8 || Buffer.byteLength(password, 'utf8') > 72) {
       return NextResponse.json({
         error: 'Enter a valid email, a username of 3–100 characters, a full name, and a password of at least 8 characters.',
         code: 'INVALID_REGISTRATION_DETAILS',
@@ -152,7 +155,7 @@ export async function POST(request: NextRequest) {
     // account that fails to create its wallet, profile or login session.
     const userId = randomUUID()
     const referralCode = buildUserReferralCode(userId, role)
-    const token = `ssb_${userId}_${Date.now()}`
+    const token = `ssb_${randomBytes(32).toString('base64url')}`
     const connection = await getPool().connect()
     let user: any = null
     try {

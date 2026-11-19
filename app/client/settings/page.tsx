@@ -16,6 +16,7 @@ export default function ClientSettings() {
   const [name, setName] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [currentPassword, setCurrentPassword] = useState('')
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
   const [isSaving, setIsSaving] = useState(false)
@@ -72,12 +73,19 @@ export default function ClientSettings() {
         },
         body: JSON.stringify({
           name: changedName,
+          currentPassword: password ? currentPassword : undefined,
           newPassword: password || undefined,
           confirmPassword: password ? confirmPassword : undefined,
         }),
       })
       const result = await response.json()
       if (!response.ok) throw new Error(result.error || 'Unable to update Client identity')
+      if (result.reauthenticate) {
+        logout()
+        router.replace('/client/login?passwordChanged=1')
+        return
+      }
+      setCurrentPassword('')
       setPassword('')
       setConfirmPassword('')
       setMessage('Client identity updated in the live WEAVE account record.')
@@ -124,6 +132,7 @@ export default function ClientSettings() {
             <div className="mt-6 border-t border-white/10 pt-6">
               <p className="text-[9px] font-black uppercase tracking-[0.18em] text-violet-300">Security</p>
               <div className="mt-4 grid gap-3">
+                <Input type="password" autoComplete="current-password" value={currentPassword} onChange={event=>setCurrentPassword(event.target.value)} placeholder="Current password · required to change password" aria-label="Current password" className="border-white/10 bg-black/25 text-white"/>
                 <Input type="password" value={password} onChange={event=>setPassword(event.target.value)} placeholder="New password · leave blank to keep current" className="border-white/10 bg-black/25 text-white"/>
                 <Input type="password" value={confirmPassword} onChange={event=>setConfirmPassword(event.target.value)} placeholder="Confirm new password" className="border-white/10 bg-black/25 text-white"/>
               </div>

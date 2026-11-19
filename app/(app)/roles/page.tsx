@@ -52,6 +52,7 @@ export default function PositionIdentityPage() {
   const [name, setName] = useState(user?.name || '')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [currentPassword, setCurrentPassword] = useState('')
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
   const [isSaving, setIsSaving] = useState(false)
@@ -96,12 +97,19 @@ export default function PositionIdentityPage() {
         },
         body: JSON.stringify({
           name: changedName,
+          currentPassword: newPassword ? currentPassword : undefined,
           newPassword: newPassword || undefined,
           confirmPassword: newPassword ? confirmPassword : undefined,
         }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Identity update failed')
+      if (data.reauthenticate) {
+        logout()
+        router.replace('/login?passwordChanged=1')
+        return
+      }
+      setCurrentPassword('')
       setMessage('Identity record updated.')
       setNewPassword('')
       setConfirmPassword('')
@@ -155,6 +163,7 @@ export default function PositionIdentityPage() {
                   <Input value={name} onChange={event=>setName(event.target.value)} className="border-white/10 bg-black/25 text-white"/>
                 </div>
                 <div className="grid gap-3 md:grid-cols-2">
+                <Input type="password" autoComplete="current-password" value={currentPassword} onChange={event=>setCurrentPassword(event.target.value)} placeholder="Current password · required to change password" aria-label="Current password" className="border-white/10 bg-black/25 text-white"/>
                   <Input type="password" placeholder="New password · optional" value={newPassword} onChange={event=>setNewPassword(event.target.value)} className="border-white/10 bg-black/25 text-white"/>
                   <Input type="password" placeholder="Confirm new password" value={confirmPassword} onChange={event=>setConfirmPassword(event.target.value)} className="border-white/10 bg-black/25 text-white"/>
                 </div>

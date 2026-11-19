@@ -1,3 +1,4 @@
+import { trustedMutationOrigin } from '@/lib/request-origin'
 import { NextRequest, NextResponse } from 'next/server'
 import { getSessionByToken } from '@/lib/db'
 import { 
@@ -30,6 +31,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  if (!trustedMutationOrigin(request)) return NextResponse.json({error:'Forbidden origin'}, {status:403})
   const token = request.headers.get('Authorization')?.replace('Bearer ', '') || 
                 request.cookies.get('ssb_auth_token')?.value
 
@@ -58,6 +60,7 @@ export async function POST(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
+  if (!trustedMutationOrigin(request)) return NextResponse.json({error:'Forbidden origin'}, {status:403})
   const token = request.headers.get('Authorization')?.replace('Bearer ', '') || 
                 request.cookies.get('ssb_auth_token')?.value
 

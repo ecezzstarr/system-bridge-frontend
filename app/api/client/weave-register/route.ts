@@ -34,6 +34,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    if (typeof password !== 'string' || password.length < 8 || Buffer.byteLength(password, 'utf8') > 72) return NextResponse.json({error:'Use a password of at least 8 characters and at most 72 UTF-8 bytes'}, {status:400})
+
     // Require the private approved staff token before looking up or
     // repairing a reserved File Number. Retail registration is unaffected.
     await ensureCompanyClientStaffSchema()
