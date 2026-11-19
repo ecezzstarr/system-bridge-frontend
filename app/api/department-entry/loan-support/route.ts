@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
   const phone = String(body.phone || '').trim()
   const statement = String(body.statement || '').trim()
   if (name.length < 2 || name.length > 120 ||
-      email.length > 254 || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email) ||
+      email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
       phone.length > 80 || statement.length > 600) {
     return reply({ error: 'Provide your name and valid email. Phone and message are optional.' }, 400)
   }
