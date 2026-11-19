@@ -29,13 +29,14 @@ import Link from 'next/link'
 import FileFolderOpenWorld, { FILE_FOLDER_WORKSHOP_DISTRICTS } from '@/components/system-switch/file-folder-open-world'
 import FileFolderPlusRadiantWorld from '@/components/system-switch/file-folder-plus-radiant-world'
 import FileFolderPremiumWorld from '@/components/system-switch/file-folder-premium-world'
-import {resolveFileFolderAppearance} from '@/lib/file-folder-world-presets'
+import {resolveFileFolderAppearance, isSupportedFileFolderTier} from '@/lib/file-folder-world-presets'
 import GenerativeFormationWorkshop from '@/components/system-switch/generative-formation-workshop'
 import ClientWorkshopWorld from '@/components/system-switch/client-workshop-world'
 import EnterpriseDreamPanel from '@/components/system-switch/enterprise-dream-panel'
 import ClientGrowthWorld from '@/components/system-switch/client-growth-world'
 import { ClientPremiumDJ } from '@/components/system-switch/client-premium-dj'
 import { ClientBridgeAiSupport } from '@/components/system-switch/client-bridge-ai-support'
+import { FileFolderOwnerHall } from './file-folder-owner-hall'
 import { FileFolderWorkshopInterior } from './file-folder-workshop-interior'
 import { ClientFileFolder3D } from '@/components/system-switch/client-file-folder-3d'
 import { getClientToken } from '@/lib/client-auth'
@@ -382,6 +383,8 @@ function HostedSystem({
 export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
   const { isVisible, orderFor } = useEnvironmentOrganizer()
   const [surface, setSurface] = useState<Surface>('command')
+  const [ownerHall, setOwnerHall] = useState(false)
+  const [hallProject, setHallProject] = useState('')
   const [panelOpen, setPanelOpen] = useState(false)
   const [walkPlusTerritory,setWalkPlusTerritory]=useState(false)
   const isPlus=data.file_folder_tier==='plus'
@@ -607,6 +610,31 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
     rose: { selected: 'border-rose-300/30 bg-rose-400/10', icon: 'text-rose-300', badge: 'border-rose-300/15 bg-rose-400/5 text-rose-200' },
   }
 
+  if (ownerHall && !panelOpen) {
+    const buildAccess = surfaces.some(item => item.key === 'builds')
+    const available = (district: string) => buildAccess && isVisible(`/client/system-switch#studio:${district}`)
+    const stations = [
+      { key: 'workshop_core', label: 'Workshop', open: () => travelToStudio('workshop_core') },
+      { key: 'library_district', label: 'Project Library', open: () => enterWorkshopDistrict('library_district') },
+      { key: 'build_market', label: 'Materials', open: () => enterWorkshopDistrict('build_market') },
+    ].filter(station => available(station.key))
+    const projects = [
+      ...(available('formation_yard') ? activeBuilds.map((build: any) => ({
+        key: 'build-' + build.id, label: build.title, systemType: build.system_type,
+        progress: buildProgress(build, now), status: 'Building', open: () => openBuild(build.id),
+      })) : []),
+      ...(available('active_systems') ? systems.filter((system: any) => system.status === 'active').map((system: any) => ({
+        key: 'system-' + system.id, label: system.title, systemType: system.system_type,
+        progress: 100, status: 'Active', open: () => openHostedSystem(system.id),
+      })) : []),
+    ]
+    return <div className="h-full max-h-dvh min-h-0 md:h-[75dvh]">
+      <FileFolderOwnerHall appearance={resolveFileFolderAppearance(isSupportedFileFolderTier(data.file_folder_tier) ? data.file_folder_tier : 'standard', data.file_folder_world_release?.config).theme} tier={String(data.file_folder_tier)} name={territoryName} sector={businessFormation.sector}
+        projects={projects} stations={stations} selected={hallProject} onSelect={setHallProject}
+        onExit={() => setOwnerHall(false)}/>
+    </div>
+  }
+
   return (
     <section
       className="ff-environment weave-system-depth relative h-[calc(100svh-4.5rem)] min-h-[560px] overflow-x-clip overflow-y-auto border-y border-cyan-200/10 bg-[#070b10] shadow-[0_34px_110px_rgba(0,0,0,.42)] sm:h-[calc(100dvh-5.5rem)] sm:min-h-[720px] sm:overflow-clip"
@@ -736,6 +764,10 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
           presenceKey={String(data.client.file_number||'')}
           territoryMode
         />}
+        {!panelOpen && !travelingTo && <button type="button" onClick={() => setOwnerHall(true)}
+          className="absolute bottom-24 right-3 z-30 min-h-11 rounded-xl border border-amber-200/60 bg-[#152331] px-4 py-2 text-sm font-bold text-amber-100 shadow-lg">
+          Enter owner hall
+        </button>}
         {plusPhone&&walkPlusTerritory&&!panelOpen&&<button type="button"
           onClick={()=>setWalkPlusTerritory(false)}
           className="absolute left-3 top-3 z-[26] min-h-11 rounded-lg border border-sky-300/40 bg-slate-900 px-3 text-sm font-semibold text-sky-100">
@@ -765,7 +797,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
               type="button"
               onClick={() => setPanelOpen(false)}
               className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-black/25 text-stone-300 transition hover:border-amber-200/30 hover:text-amber-100"
-              aria-label="Return to File Folder territory"
+              aria-label={ownerHall ? "Return to owner hall" : "Return to File Folder territory"}
             >
               <X className="h-4 w-4"/>
             </button>
