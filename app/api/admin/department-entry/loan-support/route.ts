@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic'
 const headers = { 'Cache-Control': 'private, no-store' }
 const reply = (data: object, status = 200) => NextResponse.json(data, { status, headers })
 async function authorized(request: NextRequest) {
-  const token = request.headers.get('Authorization')?.replace(/^Bearer\\s+/i, '') ||
+  const token = request.headers.get('Authorization')?.replace(/^Bearer\s+/i, '') ||
     request.cookies.get('ssb_auth_token')?.value || ''
   if (!token) return false
   const session = await getSessionByToken(token)
