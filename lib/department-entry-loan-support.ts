@@ -125,20 +125,46 @@ export async function requestEntryLoanSupport(accessToken: string, input: {
   return { request: rows[0], created: true } as const
 }
 
-/** Manager approval releases a one-use code; it NEVER represents verified Paystack revenue. */
-export async function decideEntryLoanByManager(input: {
+/** Loan approval releases a one-use code; it NEVER represents verified Paystack revenue. */
+type EntryLoanDecisionInput = {
+  requestId: string
+  actorId: string
+  authority: 'regional_manager' | 'administrations'
+  action: 'approve' | 'decline'
+  note: string
+}
+
+/** Ordinary Regional Managers remain authorized through an active appointment. */
+export function decideEntryLoanByManager(input: {
   requestId: string; managerId: string; action: 'approve' | 'decline'; note: string
 }) {
+  return decideEntryLoan({ ...input, actorId: input.managerId, authority: 'regional_manager' })
+}
+
+/** Administrations can make the same credit decision, without impersonating a Regional Manager. */
+export function decideEntryLoanByAdministrations(input: {
+  requestId: string; adminId: string; action: 'approve' | 'decline'; note: string
+}) {
+  return decideEntryLoan({ ...input, actorId: input.adminId, authority: 'administrations' })
+}
+
+async function decideEntryLoan(input: EntryLoanDecisionInput) {
   await ensureEntryLoanSupportSchema()
   const db = await getPool().connect()
   try {
     await db.query('BEGIN')
-    const manager = await db.query(`
-      SELECT 1 FROM weave_regional_manager_appointments a
-      JOIN users u ON u.id=a.user_id AND COALESCE(u.is_active,true)=true
-      WHERE a.user_id=$1::uuid AND a.status='active' AND u.role IN ('agent','bridger')
-    `, [input.managerId])
-    if (!manager.rowCount) throw new Error('An active ordinary Regional Manager appointment is required.')
+    // Revalidate the actor inside the transaction: callers cannot elevate their own authority.
+    const authorized = input.authority === 'administrations'
+      ? await db.query(`
+          SELECT 1 FROM users
+          WHERE id=$1::uuid AND role='admin' AND COALESCE(is_active,true)=true
+        `, [input.actorId])
+      : await db.query(`
+          SELECT 1 FROM weave_regional_manager_appointments a
+          JOIN users u ON u.id=a.user_id AND COALESCE(u.is_active,true)=true
+          WHERE a.user_id=$1::uuid AND a.status='active' AND u.role IN ('agent','bridger')
+        `, [input.actorId])
+    if (!authorized.rowCount) throw new Error('Authorized Administrations or an active Regional Manager appointment is required.')
     const selected = await db.query(`
       SELECT r.*, t.ticket_number, t.status AS ticket_status, t.expires_at, t.price_flame_coin,
         t.department AS ticket_department
@@ -165,12 +191,15 @@ export async function decideEntryLoanByManager(input: {
         INSERT INTO departmental_codes
           (code, department, issued_by, expires_at, status, registration_request_id)
         VALUES ($1,$2,$3::uuid,NOW()+INTERVAL '7 days','ACTIVE',$4::uuid)
-      `, [code, record.department, input.managerId, record.ticket_id])
+      `, [code, record.department, input.actorId, record.ticket_id])
       await db.query(`
         INSERT INTO departmental_audit_log(event,department,code_id,result,metadata)
         SELECT 'ISSUE_CODE',$1,id,'SUCCESS',$2::jsonb FROM departmental_codes WHERE code=$3
-      `,[record.department, JSON.stringify({source:'regional_manager_entry_loan',loanRequestId:record.id,
-        managerId:input.managerId,principalSystemSwitch:principal}), code])
+      `,[record.department, JSON.stringify({
+        source: input.authority === 'administrations' ? 'administrations_entry_loan' : 'regional_manager_entry_loan',
+        loanRequestId: record.id, approverId: input.actorId, authority: input.authority,
+        principalSystemSwitch: principal,
+      }), code])
       await db.query(`
         UPDATE departmental_entry_tickets SET status='CODE_ISSUED',updated_at=NOW()
         WHERE id=$1::uuid AND status='PRESENTED'
@@ -180,13 +209,13 @@ export async function decideEntryLoanByManager(input: {
         SET status='approved', approved_principal=$2, approved_by=$3::uuid,
           approved_at=NOW(), reviewed_by=$3::uuid, reviewed_at=NOW(), admin_note=$4, updated_at=NOW()
         WHERE id=$1::uuid
-      `,[record.id,principal,input.managerId,input.note])
+      `,[record.id,principal,input.actorId,input.note])
     } else {
       await db.query(`
         UPDATE department_entry_loan_requests
         SET status='declined',reviewed_by=$2::uuid,reviewed_at=NOW(),admin_note=$3,updated_at=NOW()
         WHERE id=$1::uuid
-      `,[record.id,input.managerId,input.note])
+      `,[record.id,input.actorId,input.note])
     }
     await db.query('COMMIT')
     return { success: true, status: input.action === 'approve' ? 'approved' : 'declined' } as const
