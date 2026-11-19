@@ -353,7 +353,7 @@ export function DepartmentEntryTicketGate({
         )}
       </div>
 
-      {!freeTicket && <DepartmentEntryLoanSupport key={ticket.id} accessToken={accessToken} ticketStatus={ticket.status} />}
+      {!freeTicket && <DepartmentEntryLoanSupport key={ticket.id} accessToken={accessToken} ticketStatus={ticket.status} ticketValue={ticket.priceFlameCoin} onCodeIssued={() => void refreshTicket()} />}
 
       {ticket.status === 'PRESENTED' && !freeTicket && (
         <div className="space-y-3 rounded-2xl border border-white/10 bg-slate-950/60 p-5">
