@@ -30,13 +30,14 @@ export async function POST(request: NextRequest) {
   const email = String(body.email || '').trim().toLowerCase()
   const phone = String(body.phone || '').trim()
   const statement = String(body.statement || '').trim()
+  const acceptsDeduction = body.acceptsDeduction === true
   if (name.length < 2 || name.length > 120 ||
       email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
-      phone.length > 80 || statement.length > 600) {
-    return reply({ error: 'Provide your name and valid email. Phone and message are optional.' }, 400)
+      phone.length > 80 || statement.length > 600 || !acceptsDeduction) {
+    return reply({ error: 'Provide your name and valid email. Phone and message are optional; consent to the negative ticket balance is required.' }, 400)
   }
   try {
-    const result = await requestEntryLoanSupport(token, { name, email, phone, statement })
+    const result = await requestEntryLoanSupport(token, { name, email, phone, statement, acceptsDeduction })
     if ('error' in result) return reply({ error: result.error }, result.statusCode)
     return reply({
       success: true, status: result.request.status,
