@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { WEAVE_COMPANY } from '@/lib/company-profile'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import {
@@ -299,7 +300,15 @@ export default function Home() {
         <footer className="weave-home-footer px-4 py-8">
           <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3">
             <WeaveLogo size="sm" />
-            <p className="text-sm font-semibold text-slate-300">The Company of Time · Interaction in Motion</p>
+            <div className="text-sm text-slate-300">
+              <p className="font-semibold">{WEAVE_COMPANY.legalName} · RC {WEAVE_COMPANY.registrationNumber}</p>
+              <p className="mt-1">Registered {WEAVE_COMPANY.incorporationDateLabel} · {WEAVE_COMPANY.companyType}</p>
+              <div className="flex flex-wrap gap-x-5">
+                <Link href="/company" className="inline-flex min-h-11 items-center font-semibold hover:underline">Company information</Link>
+                <Link href="/terms" className="inline-flex min-h-11 items-center hover:underline">Terms</Link>
+                <Link href="/privacy" className="inline-flex min-h-11 items-center hover:underline">Privacy</Link>
+              </div>
+            </div>
           </div>
         </footer>
       </div>

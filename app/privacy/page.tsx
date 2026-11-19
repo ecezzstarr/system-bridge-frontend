@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { WEAVE_COMPANY } from '@/lib/company-profile'
 
 export const metadata = {
   title: 'Privacy | Weave of Presence',
@@ -15,6 +16,7 @@ export default function PrivacyPage() {
         </div>
 
         <section className="space-y-3 text-sm leading-7 text-slate-300">
+          <p>Weave of Presence is operated by {WEAVE_COMPANY.legalName}, registered with the Corporate Affairs Commission under RC {WEAVE_COMPANY.registrationNumber}. <Link href="/company" className="text-amber-200 underline">Company information</Link>.</p>
           <p>
             Weave processes information that a person chooses to provide when using its website, Client paths, System Switch,
             Bridge AI, support functions, or connected integrations. This can include account information, messages, business

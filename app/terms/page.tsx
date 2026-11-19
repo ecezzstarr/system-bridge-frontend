@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { WEAVE_COMPANY } from '@/lib/company-profile'
 
 export const metadata = {
   title: 'Terms | Weave of Presence',
@@ -15,6 +16,7 @@ export default function TermsPage() {
         </div>
 
         <section className="space-y-3 text-sm leading-7 text-slate-300">
+          <p>Weave of Presence is operated by {WEAVE_COMPANY.legalName}, registered with the Corporate Affairs Commission under RC {WEAVE_COMPANY.registrationNumber}. <Link href="/company" className="text-amber-200 underline">Company information</Link>.</p>
           <p>
             Weave of Presence provides systems, services, instruments, workshops, and participation environments. Access to a
             specific paid service is governed by the terms, price, and conditions shown for that service at the time of use.
