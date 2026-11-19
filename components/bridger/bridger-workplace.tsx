@@ -3,9 +3,8 @@
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
 import {
-  ArrowRight, ArrowUpRight, BookOpen, BriefcaseBusiness, Building2,
-  CheckCircle2, Compass, FolderOpen, House, Network, Search, ShieldCheck,
-  Sparkles, WalletCards, type LucideIcon,
+  ArrowUpRight, BriefcaseBusiness, Building2, Compass, FolderOpen, House,
+  MessageCircle, Network, Palette, Search, WalletCards, type LucideIcon,
 } from 'lucide-react'
 import { WeaveLogo } from '@/components/weave-logo'
 import { useEnvironmentOrganizer } from '@/components/world/environment-organizer-provider'
@@ -19,6 +18,8 @@ import {
 const ICONS: Record<BridgerWorkplaceSpaceId, LucideIcon> = {
   desk: House,
   outreach: Network,
+  conversations: MessageCircle,
+  studio: Palette,
   employment: BriefcaseBusiness,
   records: WalletCards,
   company: Building2,
@@ -30,32 +31,15 @@ const ACCESS: Record<Exclude<BridgerWorkplaceAccess, 'core'>, string> = {
   preview: 'Not yet live',
 }
 
-const BEGIN = [
-  {
-    title: 'Learn your position',
-    detail: 'Read the human-first crossing process once. Return whenever you need it.',
-    href: '/bridger/crossing-notebook',
-    icon: BookOpen,
-  },
-  {
-    title: 'Choose an outreach method',
-    detail: 'Start from available prospects, your social presence or another authorized channel.',
-    href: '/weave/market/prospects',
-    icon: Network,
-  },
-  {
-    title: 'Continue a real conversation',
-    detail: 'Use your established channels and Bridge AI only when the person wants to continue.',
-    href: '/communications',
-    icon: ArrowRight,
-  },
-] as const
+function placeHref(place: BridgerWorkplacePlace) {
+  return place.label==='My Prospects'?place.href+'?tab=mine':place.href
+}
 
 function PlaceLink({place}:{place:BridgerWorkplacePlace}){
   const label = place.access && place.access !== 'core' ? ACCESS[place.access] : null
   return (
     <Link
-      href={place.label==='My Prospects'?place.href+'?tab=mine':place.href}
+      href={placeHref(place)}
       className="group flex h-full min-h-[142px] flex-col justify-between rounded-[1.2rem] border border-[#dccba8]/70 bg-white/85 p-4 text-[#1c2c39] shadow-[0_8px_25px_rgba(90,68,20,.07)] transition duration-200 hover:-translate-y-0.5 hover:border-[#ba9551] hover:shadow-[0_15px_32px_rgba(90,68,20,.13)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9d7124]"
       data-bridger-place={place.href}
     >
@@ -99,13 +83,13 @@ export function BridgerWorkplace({
     // Several destinations intentionally link to the same operating system.
     // A search shows it once while retaining each original route.
     return trimmedSearch ? matched.filter((item, index) =>
-      matched.findIndex(other => other.href === item.href) === index) : matched
+      matched.findIndex(other => placeHref(other) === placeHref(item)) === index) : matched
   }, [isVisible, space, trimmedSearch])
 
   return (
     <main
       className="relative mx-auto min-h-[calc(100svh-4rem)] w-full max-w-[1500px] overflow-hidden bg-[#f9f6ef] pb-20 text-[#1c2c39]"
-      data-bridger-workplace="five-destinations"
+      data-bridger-workplace="online-work-desk"
       data-bridger-workplace-preserves="existing-routes-and-records"
     >
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[440px] bg-[radial-gradient(circle_at_78%_18%,rgba(229,192,117,.3),transparent_36%),radial-gradient(circle_at_9%_28%,rgba(156,193,199,.22),transparent_38%)]"/>
@@ -116,11 +100,10 @@ export function BridgerWorkplace({
               <WeaveLogo size="sm"/>
               <p className="mt-4 text-xs font-semibold uppercase tracking-[.16em] text-[#916a25]">Hope · Bridger Department</p>
               <h1 className="mt-2 text-2xl font-semibold leading-tight tracking-tight sm:text-4xl">
-                The work of Hope.{userName ? <span className="block mt-1 text-lg font-normal text-[#576872] sm:text-xl">{userName}</span> : null}
+                Hope workspace{userName ? <span className="block mt-1 text-lg font-normal text-[#576872] sm:text-xl">{userName}</span> : null}
               </h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-[#4c5a61] sm:text-base">
-                Introduce people to what Weave makes possible. Understand their existing work,
-                choose the right outreach instrument, and support willing participants through System Switch.
+                Find prospects, carry the conversation forward and support each Client through File Folder activation.
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
@@ -137,26 +120,7 @@ export function BridgerWorkplace({
           </div>
         </header>
 
-        <section data-bridger-daily-job-guide="find-contact-confirm-serve-earn" className="mt-5 rounded-2xl border border-[#d6bf8e] bg-white/90 p-5 shadow-sm sm:p-6">
-          <h2 className="text-xl font-bold text-[#293b42]">A conversation. A connection. A beginning.</h2>
-          <p className="mt-2 text-sm leading-6 text-[#52636b]">Hope brings real people into useful conversations. The company expects two genuine outreach contacts each working hour. Prospects are candidates, not promised customers.</p>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {[
-              {name:'1. Find a prospect',info:'Claim a free daily candidate or purchase a package with a displayed System Switch price.',href:'/weave/market/prospects'},
-              {name:'2. Contact and listen',info:'Use WhatsApp, connected email, authorized social publications or consent-based River calls. Confirm a send only after it happened.',href:'/weave/market/prospects?tab=mine'},
-              {name:'3. Explain a service',info:'Offer the Bridge or a real business system only after a person responds and asks to continue.',href:'/bridger/bridge-ai'},
-              {name:'4. Verify your earnings',info:'Check actual paid referrals, approved commission records and receipts. A sent message alone earns nothing.',href:'/referrals'},
-            ].map(step=><Link key={step.name} href={step.href} className="flex min-h-36 flex-col rounded-xl border border-[#ded0b3] bg-[#fffdfa] p-4 text-[#293c47] hover:border-[#ac8842]">
-              <strong className="text-base">{step.name}</strong><span className="mt-2 flex-1 text-sm leading-6 text-[#56656b]">{step.info}</span><span className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-[#926d27]">Open work <ArrowRight size={16}/></span>
-            </Link>)}
-          </div>
-          <div className="mt-4 flex flex-wrap items-center gap-3 text-sm">
-            <Link href="/bridger/working-manual" className="min-h-11 rounded-lg border border-[#d5c399] px-4 py-3 font-semibold text-[#735620]">Read complete working manual</Link>
-            <Link href="/weave/lifestyles/support" className="min-h-11 rounded-lg border border-[#d5c399] px-4 py-3 font-semibold text-[#735620]">Get approved manager support</Link>
-          </div>
-          <p className="mt-3 text-xs leading-5 text-[#617078]">The company prices each optional instrument on its actual purchase page. External social connections, AI telephone calls and future video sessions have their own availability and consent rules; this desk does not imply they are all live.</p>
-        </section>
-        <nav className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-5" aria-label="Bridger workplace destinations">
+        <nav className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7" aria-label="Bridger workplace destinations">
           {BRIDGER_WORKPLACE_SPACES.map(item => {
             const Icon = ICONS[item.id]
             const active = selected === item.id && !trimmedSearch
@@ -171,10 +135,9 @@ export function BridgerWorkplace({
           })}
         </nav>
 
-        <div className="mt-5 rounded-2xl border border-[#dac99e] bg-white/85 p-4 shadow-sm sm:p-6">
+        <div data-bridger-daily-job-guide="find-contact-confirm-serve-earn" className="mt-5 rounded-2xl border border-[#dac99e] bg-white/85 p-4 shadow-sm sm:p-6">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="max-w-3xl">
-              <p className="text-xs font-semibold uppercase tracking-[.14em] text-[#946b29]">Your working environment</p>
               <h2 className="mt-1 text-2xl font-semibold">{trimmedSearch ? 'Search results' : space.name}</h2>
               <p className="mt-2 text-sm leading-6 text-[#4b5d65]">{trimmedSearch ? 'Matching existing Weave workstations are shown below.' : space.description}</p>
             </div>
@@ -182,32 +145,11 @@ export function BridgerWorkplace({
               <Search className="h-4 w-4 shrink-0 text-[#9b772f]"/>
               <span className="sr-only">Search Bridger workstations</span>
               <input type="search" value={search} onChange={event => setSearch(event.target.value)}
-                placeholder="Example: find Clients or send messages" className="w-full bg-transparent py-3 text-sm text-[#263c4c] outline-none placeholder:text-[#75828a]"/>
+                placeholder="Search Hope tools" className="w-full bg-transparent py-3 text-sm text-[#263c4c] outline-none placeholder:text-[#75828a]"/>
             </label>
           </div>
 
-          <Link href="/search" data-role-company-search="bridger" className="mt-4 inline-flex min-h-11 items-center rounded-lg border border-[#b38b51] bg-white/80 px-4 py-2 text-sm font-semibold text-[#5e4823]">Describe a task instead: find Clients, explain File Folders, or follow a job.</Link>
-
-          {selected === 'desk' && !trimmedSearch && (
-            <section className="mt-6 rounded-2xl bg-[#f2f3f0] p-4 sm:p-5" aria-label="How to begin working">
-              <div className="flex items-center gap-2 text-[#70551e]"><BookOpen className="h-5 w-5"/><h3 className="text-base font-semibold">How to begin your day</h3></div>
-              <p className="mt-1 text-sm leading-6 text-[#53646a]">Begin with your guidance, choose a prospect and make room for a useful conversation.</p>
-              <div className="mt-4 grid gap-3 md:grid-cols-3">
-                {BEGIN.filter(item => isVisible(item.href)).map((item,index) => {
-                  const StepIcon = item.icon
-                  return <Link key={item.title} href={item.href} className="group rounded-xl border border-[#dbd3c2] bg-white p-4 text-[#243741] transition hover:border-[#b6975f]">
-                    <div className="flex items-center justify-between">
-                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f2e3c1] text-sm font-bold text-[#76591f]">{index+1}</span>
-                      <StepIcon className="h-5 w-5 text-[#a57d31]"/>
-                    </div>
-                    <p className="mt-3 text-base font-semibold">{item.title}</p>
-                    <p className="mt-1 text-sm leading-5 text-[#516269]">{item.detail}</p>
-                    <span className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-[#855f20]">Open <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1"/></span>
-                  </Link>
-                })}
-              </div>
-            </section>
-          )}
+          <Link href="/search" data-role-company-search="bridger" className="mt-4 inline-flex min-h-11 items-center rounded-lg border border-[#b38b51] bg-white/80 px-4 py-2 text-sm font-semibold text-[#5e4823]">Search across Weave</Link>
 
           <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3" data-bridger-workplace-links>
             {places.map((place,index) => <PlaceLink key={place.href + '-' + index} place={place}/>)}
@@ -219,20 +161,6 @@ export function BridgerWorkplace({
           )}
         </div>
 
-        <footer className="mt-5 grid gap-3 rounded-2xl border border-[#e0d1af] bg-[#fffaf0] p-5 text-sm text-[#4b5a61] md:grid-cols-2">
-          <div className="flex items-start gap-3">
-            <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-[#94712f]"/>
-            <p><strong className="text-[#263943]">Your core Bridger position has no recurring subscription.</strong> Optional instruments and Lifestyle specializations disclose their own costs and access rules.</p>
-          </div>
-          <div className="flex items-start gap-3">
-            <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#94712f]"/>
-            <p><strong className="text-[#263943]">Carry the conversation forward.</strong> Return to your prospects, support a Client’s next step and follow your work and payments through their records.</p>
-          </div>
-        </footer>
-        <div className="mt-5 flex items-center gap-2 text-xs text-[#65717a]">
-          <Sparkles className="h-4 w-4 text-[#ad873b]"/>
-          Echo and Company Guidance remain available when a task needs explanation.
-        </div>
       </div>
     </main>
   )
