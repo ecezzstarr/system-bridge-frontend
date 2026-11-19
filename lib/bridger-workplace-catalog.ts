@@ -5,7 +5,7 @@
  * pages, their APIs, records, or access policies. All older district routes
  * remain accessible in the original district world.
  */
-export type BridgerWorkplaceSpaceId = 'desk' | 'outreach' | 'employment' | 'records' | 'company'
+export type BridgerWorkplaceSpaceId = 'desk' | 'conversations' | 'studio' | 'outreach' | 'employment' | 'records' | 'company'
 export type BridgerWorkplaceAccess = 'core' | 'lifestyle' | 'approval' | 'preview'
 
 export type BridgerWorkplacePlace = {
@@ -26,39 +26,56 @@ export type BridgerWorkplaceSpace = {
 export const BRIDGER_WORKPLACE_SPACES: readonly BridgerWorkplaceSpace[] = [
   {
     id: 'desk',
-    name: 'My Workplace',
-    shortName: 'Work Desk',
-    description: 'Understand Hope, find your current responsibilities, and continue work you have already started.',
+    name: 'Daily work desk',
+    shortName: 'Work desk',
+    description: 'Contact two prospects each working hour. Start with your assigned targets and return to the people already in your care.',
     places: [
-      { label: 'Bridger Presence', href: '/bridger/presence', detail: 'Understand your position in the Hope Department.' },
-      { label: 'Crossing Notebook', href: '/bridger/crossing-notebook', detail: 'Learn the actual steps from first conversation to Client continuity.' },
-      { label: 'My Approved Jobs', href: '/weave/lifestyles/work', detail: 'Only verified appointments appear in this staff workspace.', access: 'approval' },
+      { label: 'Hope Daily Outreach', href: '/weave/lifestyles/regional-manager/hope-outreach', detail: 'Check your assigned contact and publishing targets, submit post links and read your manager’s review.', access: 'approval' },
+      { label: 'My Prospects', href: '/weave/market/prospects', detail: 'Return to your acquired prospects, previous contacts and the responses you need to follow.' },
+      { label: 'Prospect Market', href: '/weave/market/prospects', detail: 'Claim your daily free candidate or acquire unverified prospect packages.' },
+      { label: 'Bridge AI', href: '/bridger/bridge-ai', detail: 'Share your Bridge AI path when a prospect agrees to explore a File Folder.' },
       { label: 'Notifications', href: '/notifications', detail: 'Read company messages, decisions and work updates.' },
-      { label: 'Company Loops', href: '/company/loops', detail: 'Understand the currently published company movement.' },
+      { label: 'Manager Work Support', href: '/weave/lifestyles/support', detail: 'Request verified manager assistance or eligible restricted work support for a legitimate blocked outreach task.' },
     ],
   },
   {
     id: 'outreach',
-    name: 'Outreach & Crossing',
-    shortName: 'Outreach',
-    description: 'Choose how to reach people. Keep acquired prospects separate from social publications and their responses.',
+    name: 'Prospects & crossing',
+    shortName: 'Prospects',
+    description: 'Find someone to contact, follow their response and guide a willing prospect toward a Client File Folder.',
     places: [
-      { label: 'Flame of Hope · Mystery Box', href: '/bridger/flame-of-hope', detail: 'Unlock one weekly Electrolyte or Ember food mystery box during Burning River after verified System Switch spending equal to five times the food price.' },
       { label: 'Prospect Market', href: '/weave/market/prospects', detail: 'Claim your daily free candidate or acquire unverified prospect packages.' },
       { label: 'My Prospects', href: '/weave/market/prospects', detail: 'Return to your acquired prospects, previous contacts and the responses you need to follow.' },
-      { label: 'Crossing Notebook', href: '/bridger/crossing-notebook', detail: 'Follow the human-first conversation and crossing sequence.' },
-      { label: 'Bridge AI', href: '/bridger/bridge-ai', detail: 'Open and use Bridge paths to support willing participants; each new template has a displayed cost.' },
-      { label: 'Social Outreach', href: '/distribution-studio', detail: 'Prepare publications and manage your own social channel requests. Provider posting requires authorization.' },
       { label: 'Email Outreach', href: '/bridger/email-outreach', detail: 'Acquire email candidates and review messages and replies separately from My Prospects.' },
+      { label: 'Bridge AI', href: '/bridger/bridge-ai', detail: 'Share your Bridge AI path when a prospect agrees to explore a File Folder.' },
+      { label: 'Crossing Notebook', href: '/bridger/crossing-notebook', detail: 'Learn the actual steps from first conversation to Client continuity.' },
+    ],
+  },
+  {
+    id: 'conversations',
+    name: 'Messages & calls',
+    shortName: 'Conversations',
+    description: 'Continue a conversation in writing, by voice or on video.',
+    places: [
+      { label: 'Direct Communication', href: '/communications', detail: 'Continue authorized conversations with Prospects, Clients, Agents and Administrations.' },
       { label: 'River AI Voice Calls', href: '/bridger/river-call-outreach', detail: 'Consented AI telephone outreach, with its own call records and pricing.' },
       { label: 'WEAVE Video Call', href: '/bridger/ai-video-call', detail: 'Create a private one-to-one video invitation, speak with a consenting guest, and use camera, microphone, and hangup controls. TURN relay must be configured for dependable mobile calling.' },
       { label: 'Hope Video Studio', href: '/bridger/video-studio', detail: 'Purchase permanent live-video backgrounds, color effects and synthetic face treatments with System Switch; packages offer lower prices.' },
       { label: 'Number Bay', href: '/bridger/numbers', detail: 'Purchase numbers by country and follow delivery or verification.' },
-      { label: 'Branding Business', href: '/image-workshop/business', detail: 'Start a real clothing, merchandise, advertising or artist-design service. Build examples, agree customer prices, open a Service Door and record actual paid work.' },
-      { label: 'Material Branding Editor', href: '/image-workshop/branding', detail: 'Personalize original product templates and genuine customer photos. Commercial exports require the displayed System Switch license.' },
+    ],
+  },
+  {
+    id: 'studio',
+    name: 'Publishing & creative work',
+    shortName: 'Studio',
+    description: 'Prepare an image or video, publish through your authorized channels and submit the post link for review.',
+    places: [
+      { label: 'Social Outreach', href: '/distribution-studio', detail: 'Prepare publications and manage your own social channel requests. Provider posting requires authorization.' },
       { label: 'Image Creative Studio', href: '/agent/creative', detail: 'Prepare graphics for your existing outreach channels.' },
       { label: 'Video Ad Studio', href: '/video-ad-studio', detail: 'Produce promotional videos in the studio. Live video conversations have their own separate entrance.' },
-      { label: 'Direct Communication', href: '/communications', detail: 'Continue authorized conversations with Prospects, Clients, Agents and Administrations.' },
+      { label: 'Material Branding Editor', href: '/image-workshop/branding', detail: 'Personalize original product templates and genuine customer photos. Commercial exports require the displayed System Switch license.' },
+      { label: 'Branding Business', href: '/image-workshop/business', detail: 'Start a real clothing, merchandise, advertising or artist-design service. Build examples, agree customer prices, open a Service Door and record actual paid work.' },
+      { label: 'Hope Daily Outreach', href: '/weave/lifestyles/regional-manager/hope-outreach', detail: 'Check your assigned contact and publishing targets, submit post links and read your manager’s review.', access: 'approval' },
       { label: 'Carrier', href: '/weave/carrier', detail: 'Use eligible Carrier access for approved public activity.', access: 'lifestyle' },
     ],
   },
@@ -74,7 +91,7 @@ export const BRIDGER_WORKPLACE_SPACES: readonly BridgerWorkplaceSpace[] = [
       { label: 'Distribution Manager', href: '/manager/dashboard', detail: 'Review the actual team, employment document, targets and approval status.', access: 'approval' },
       { label: 'Assistant Distribution Manager', href: '/weave/lifestyles/distribution-assistant', detail: 'Apply to support a verified Distribution Manager and team.', access: 'approval' },
       { label: 'Regional Daily Work & Check-in', href: '/weave/lifestyles/regional-manager/workspace', detail: 'For a verified regional assignment: receive duties, record evidence, request help or supervise staff.' },
-      { label: 'Hope Daily Outreach', href: '/weave/lifestyles/regional-manager/hope-outreach', detail: 'For an assigned regional Bridger: follow daily contact and social publication targets, submit post links, and inspect manager review.', access: 'approval' },
+      { label: 'Hope Daily Outreach', href: '/weave/lifestyles/regional-manager/hope-outreach', detail: 'Check your assigned contact and publishing targets, submit post links and read your manager’s review.', access: 'approval' },
       { label: 'Regional Manager Application', href: '/weave/lifestyles/regional-manager', detail: 'Review and apply for a region-based appointment.', access: 'approval' },
       { label: 'Mandate, Forensics & Attorney', href: '/weave/lifestyles/mandate', detail: 'Apply for eligible Company Guidance department appointments.', access: 'approval' },
       { label: 'Approved Guidance Inbox', href: '/weave/lifestyles/mandate/inbox', detail: 'Read and answer assigned guidance conversations after authorization.', access: 'approval' },
@@ -90,7 +107,7 @@ export const BRIDGER_WORKPLACE_SPACES: readonly BridgerWorkplaceSpace[] = [
     id: 'records',
     name: 'Value & Records',
     shortName: 'Records',
-    description: 'See what you actually earned or spent. Application status and projected income are not completed payments.',
+    description: 'Check your System Switch balance, earnings and payment receipts.',
     places: [
       { label: 'Referral Movement', href: '/referrals', detail: 'Share your referral entrance and review verified ₦500 registration bonuses.' },
       { label: 'System Switch Wallet', href: '/wallet', detail: 'See your recorded balance and transactions.' },
@@ -107,6 +124,9 @@ export const BRIDGER_WORKPLACE_SPACES: readonly BridgerWorkplaceSpace[] = [
     shortName: 'Company',
     description: 'Find guidance, people, company activity and the original world without losing your place at work.',
     places: [
+      { label: 'Bridger Presence', href: '/bridger/presence', detail: 'Understand your role in Hope.' },
+      { label: 'Working Manual', href: '/bridger/working-manual', detail: 'Follow the steps for daily outreach and Client follow-up.' },
+      { label: 'Flame of Hope · Mystery Box', href: '/bridger/flame-of-hope', detail: 'Unlock one weekly Electrolyte or Ember food mystery box during Burning River after verified System Switch spending equal to five times the food price.' },
       { label: 'Echo', href: '/echo', detail: 'Receive immediate guidance and see relevant next movements.' },
       { label: 'Company Guidance', href: '/company-chat', detail: 'Contact the appropriate company support department.' },
       { label: 'Manager Work Support', href: '/weave/lifestyles/support', detail: 'Request verified manager assistance or eligible restricted work support for a legitimate blocked outreach task.' },
