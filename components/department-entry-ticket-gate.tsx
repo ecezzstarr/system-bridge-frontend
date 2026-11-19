@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { visiblePoll } from '@/lib/visible-poll'
+import { DepartmentEntryLoanSupport } from '@/components/department-entry-loan-support'
 import {
   ArrowLeft,
   CheckCircle2,
@@ -351,6 +352,8 @@ export function DepartmentEntryTicketGate({
           </>
         )}
       </div>
+
+      {!freeTicket && <DepartmentEntryLoanSupport key={ticket.id} accessToken={accessToken} ticketStatus={ticket.status} />}
 
       {ticket.status === 'PRESENTED' && !freeTicket && (
         <div className="space-y-3 rounded-2xl border border-white/10 bg-slate-950/60 p-5">
