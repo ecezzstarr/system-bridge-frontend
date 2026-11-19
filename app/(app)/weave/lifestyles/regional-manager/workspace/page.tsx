@@ -4,6 +4,7 @@ import {useAuth} from '@/lib/auth-provider'
 import {useCallback,useEffect,useState} from 'react'
 import {RegionalSystemSwitchGate} from '@/components/weave/regional-system-switch-gate'
 import {RegionalManagerCommandCenter,type RegionalPanel} from '@/components/weave/regional-manager-command-center'
+import {RegionalEntryLoanDesk} from '@/components/weave/regional-entry-loan-desk'
 
 type Member={user_id:string;name:string;role:string;position:string;level:'direct'|'assistant';lead_user_id:string|null}
 type Task={id:string;assigned_user_id:string;assigned_name:string;title:string;instructions:string;status:string;
@@ -122,6 +123,7 @@ export default function RegionalDailyWorkspace(){
       supportCases={data.supportAvailable?waitingSupport.length:null} supportAvailable={data.supportAvailable}
       metrics={data.metrics} selected={activePanel} onSelect={setActivePanel} onRefresh={()=>void load()}/>}
     {(!isManager||activePanel==='gate')&&<div id="regional-panel-gate"><RegionalSystemSwitchGate /></div>}
+    {isManager&&activePanel==='support'&&<RegionalEntryLoanDesk token={token || ''} />}
     {isManager&&<>
       <section id="regional-panel-guide" data-regional-manager-daily-cycle="verify-direct-delegate-support-record" className={activePanel==='guide'?'rounded-2xl border border-amber-200/25 bg-gradient-to-br from-[#152531] to-[#0b1722] p-5 sm:p-6':'hidden'}>
         <h2 className="text-2xl font-bold">Regional Manager · A complete working day</h2>
