@@ -58,10 +58,10 @@ export async function PATCH(request: NextRequest) {
       UPDATE department_entry_loan_requests SET
         status = ${status}, admin_note = ${note || null},
         reviewed_by = ${admin.user_id}::uuid, reviewed_at = NOW(), updated_at = NOW()
-      WHERE id = ${id}::uuid
+      WHERE id = ${id}::uuid AND status IN ('pending','reviewing','contacted')
       RETURNING id, status, admin_note
     `
-    if (!changed[0]) return reply({ error: 'Request not found' }, 404)
+    if (!changed[0]) return reply({ error: 'Request already decided or unavailable' }, 409)
     // This review cannot generate a loan, change a payment state or release an entry code.
     return reply({ success: true, request: changed[0] })
   } catch (error) {
