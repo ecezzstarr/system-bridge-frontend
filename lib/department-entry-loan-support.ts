@@ -79,6 +79,14 @@ export async function requestEntryLoanSupport(accessToken: string, input: {
       ${input.email.toLowerCase()}, ${input.phone || null}, ${input.statement || null}, true)
     ON CONFLICT (ticket_id) DO NOTHING RETURNING id, status
   `
+  if (rows[0]) {
+    // Leave time for human loan review without making applicants buy a second ticket.
+    await sql`
+      UPDATE departmental_entry_tickets SET
+        expires_at=GREATEST(expires_at,NOW()+INTERVAL '7 days'),updated_at=NOW()
+      WHERE id=${ticket.id}::uuid AND status='PRESENTED'
+    `
+  }
   if (!rows[0]) {
     const again = await sql`
       SELECT id, status FROM department_entry_loan_requests
