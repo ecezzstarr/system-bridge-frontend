@@ -3,20 +3,24 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { HandCoins } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { visiblePoll } from '@/lib/visible-poll'
 import { Input } from '@/components/ui/input'
 
 type LoanRequest = { status: string; admin_note?: string | null }
 
 export function DepartmentEntryLoanSupport({
-  accessToken, ticketStatus,
+  accessToken, ticketStatus, ticketValue, onCodeIssued,
 }: {
   accessToken: string
   ticketStatus: string
+  ticketValue: number
+  onCodeIssued: () => void
 }) {
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
   const [request, setRequest] = useState<LoanRequest | null>(null)
   const [error, setError] = useState('')
+  const [acceptsDeduction, setAcceptsDeduction] = useState(false)
   const [form, setForm] = useState({ name: '', email: '', phone: '', statement: '' })
   const canApply = ticketStatus === 'PRESENTED'
 
@@ -28,13 +32,20 @@ export function DepartmentEntryLoanSupport({
         cache: 'no-store',
       })
       const data = await res.json()
-      if (res.ok && data.success) setRequest(data.request || null)
+      if (res.ok && data.success) {
+        setRequest(data.request || null)
+        if (data.request?.status === 'approved' && ticketStatus !== 'CODE_ISSUED') onCodeIssued()
+      }
     } catch {
       // Loan support is optional; an unavailable review route must not block payment.
     }
   }
 
   useEffect(() => { void refresh() }, [accessToken])
+  useEffect(() => {
+    if (!request || !['pending','reviewing','contacted','approved'].includes(request.status)) return
+    return visiblePoll(() => refresh(), 10000, false)
+  }, [request?.status, accessToken, ticketStatus])
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -45,7 +56,7 @@ export function DepartmentEntryLoanSupport({
       const res = await fetch('/api/department-entry/loan-support', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-entry-ticket-token': accessToken },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, acceptsDeduction }),
       })
       const data = await res.json()
       if (!res.ok || !data.success) throw new Error(data.error || 'Unable to send request')
@@ -77,12 +88,13 @@ export function DepartmentEntryLoanSupport({
                 Click here to request a loan
               </button>
               <p className="mt-1 text-xs leading-5 text-slate-400">
-                Administrations reviews requests individually. A request does not guarantee a loan or waive the ticket fee.
+                An approved Regional Manager reviews each request. The loan does not waive the ticket fee.
               </p>
             </>
           ) : (
             <div aria-live="polite" className="mt-2 text-xs leading-5 text-slate-200">
               <p>Loan-support request: <strong className="capitalize text-sky-200">{request.status}</strong></p>
+              {request.status === 'approved' && <p className="mt-2 text-sky-100">Your Regional Manager approved the ticket loan. A one-use registration code is released; continue registration. Your starting System Switch balance will be −{ticketValue}.</p>}
               {request.admin_note && <p className="mt-2 whitespace-pre-wrap text-slate-300">{request.admin_note}</p>}
               <button type="button" onClick={() => void refresh()}
                 className="mt-2 font-semibold text-sky-200 underline underline-offset-4">
@@ -115,12 +127,22 @@ export function DepartmentEntryLoanSupport({
               className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 p-3 text-sm text-white"
               placeholder="Briefly explain your entry-fee support need" />
           </label>
+          <label className="flex items-start gap-2 text-xs leading-5 text-slate-200">
+            <input type="checkbox" required checked={acceptsDeduction}
+              onChange={event => setAcceptsDeduction(event.target.checked)}
+              className="mt-1 accent-sky-300" />
+            <span>I request an internal System Switch registration loan of {ticketValue} System Switch.
+              If approved by an authorized Regional Manager, my new account will start
+              at −{ticketValue} System Switch. Future verified System Switch credits will
+              offset this debt. No interest is added by this registration flow.</span>
+          </label>
           <p className="text-xs leading-5 text-slate-400">
-            This is a request, not funding approval. Any loan requires eligibility review, written repayment terms and your agreement. Registration still requires verified ticket funding.
+            A request is not approval. The standard ticket price still applies,
+            and Administrations can review the record.
           </p>
           {error && <p role="alert" className="text-xs text-red-300">{error}</p>}
           <Button type="submit" disabled={busy} className="min-h-11 w-full bg-sky-700 font-bold hover:bg-sky-600">
-            {busy ? 'Submitting request…' : 'Send request to Administrations'}
+            {busy ? 'Submitting request…' : 'Request Regional Manager loan review'}
           </Button>
         </form>
       )}
