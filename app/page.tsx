@@ -302,7 +302,6 @@ export default function Home() {
             <WeaveLogo size="sm" />
             <div className="text-sm text-slate-300">
               <p className="font-semibold">{WEAVE_COMPANY.legalName} · RC {WEAVE_COMPANY.registrationNumber}</p>
-              <p className="mt-1">Registered {WEAVE_COMPANY.incorporationDateLabel} · {WEAVE_COMPANY.companyType}</p>
               <div className="flex flex-wrap gap-x-5">
                 <Link href="/company" className="inline-flex min-h-11 items-center font-semibold hover:underline">Company information</Link>
                 <Link href="/terms" className="inline-flex min-h-11 items-center hover:underline">Terms</Link>
