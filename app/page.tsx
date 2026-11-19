@@ -86,20 +86,26 @@ export default function Home() {
           <section className="weave-home-hero relative px-3 py-10 text-center sm:px-8 sm:py-14" data-company-of-time="introduction">
             <div className="weave-home-hero-light pointer-events-none absolute inset-0" aria-hidden="true" />
             <div className="relative mx-auto max-w-5xl">
-              <h1 className="weave-home-title text-4xl font-black leading-tight tracking-tight sm:text-6xl md:text-7xl">The Company of Time</h1>
-              <p className="weave-home-credit mt-5 text-base font-semibold tracking-wide sm:text-lg">Interaction in Motion presents</p>
-              <h2 className="weave-home-subtitle mx-auto mt-5 max-w-4xl text-2xl font-black leading-snug tracking-tight sm:text-4xl">
+              <p className="weave-home-credit mb-4 uppercase">The Company of Time</p>
+              <h1 className="mx-auto max-w-5xl text-[clamp(2.65rem,7.5vw,6.5rem)] font-black leading-[.99] tracking-tight text-[#17384d]">
                 The Weave of Presence
-                <span className="weave-home-subject">System Switch — Bridge of Radiance</span>
-              </h2>
+              </h1>
               <p className="weave-home-invitation">Give your work a place. Give your dreams a living form.</p>
-              <p className="mx-auto mt-5 max-w-3xl text-base font-medium leading-7 text-slate-100" data-home-system-switch-explanation="website-to-3d">
+              <div className="weave-home-hero-actions">
+                <Link href="/file-folder-preview" className="weave-action-primary">Explore File Folders <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
+                <Link href="/register" className="weave-action-secondary">Join Weave <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
+              </div>
+            </div>
+          </section>
+
+          <details className="mx-auto my-2 w-full max-w-5xl rounded-xl border border-[#a88650]/40 bg-[#fffdf7]/90 text-[#18364a]">
+            <summary className="cursor-pointer px-5 py-4 text-base font-bold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#75521e]">Company and events</summary>
+            <div className="px-4 pb-5 sm:px-6">
+              <p className="weave-home-credit mt-3">Interaction in Motion presents</p>
+              <p className="weave-home-subject">System Switch — Bridge of Radiance</p>
+              <p className="mx-auto mt-5 max-w-3xl text-base font-medium leading-7 text-[#29465b]" data-home-system-switch-explanation="website-to-3d">
                 Weave connects people, company tools and real work. System Switch is the entrance to a shared 3D Open World where visitors can find Client businesses and Customer Doors. Your own position determines which private workspaces you can enter.
               </p>
-              <div className="weave-home-hero-actions">
-                <Link href="/file-folder-preview" className="weave-action-primary">Discover File Folders <ArrowRight className="h-4 w-4" /></Link>
-                <Link href="/login" className="weave-action-secondary">Enter WEAVE <ArrowRight className="h-4 w-4" /></Link>
-              </div>
               <div className="weave-home-departments mx-auto mt-9 grid max-w-4xl grid-cols-2 gap-3 sm:grid-cols-4" data-company-time-departments>
                 {departments.map(department => (
                   <div key={department.name} className="weave-home-department px-3 py-4">
@@ -140,161 +146,172 @@ export default function Home() {
                 </div>
               </section>
             </div>
-          </section>
+          </details>
 
-          <section className="weave-home-plus-world relative" data-home-plus-file-folder="official-picture">
-            <div className="weave-home-plus-heading px-5 pb-3 pt-5 text-center sm:px-8">
-              <p className="weave-eyebrow">Dream Lovely · The Plus File Folder</p>
-              <h2 className="text-2xl font-black sm:text-3xl">Plus File Folder</h2>
-              <p className="weave-home-plus-introduction">Your business, your systems, and a place for the work to grow.</p>
-            </div>
-            {!posterMissing ? (
-              <img
-                src="/weave/plus-file-folder-white-official.webp"
-                alt="Official white Plus File Folder picture with its environment, capabilities, price and market promises"
-                width={1229}
-                height={1536}
-                loading="eager"
-                decoding="async"
-                onError={() => setPosterMissing(true)}
-                className="weave-home-plus-image mx-auto h-auto w-full max-w-[930px] object-contain"
-                data-plus-file-folder-official-image
-              />
-            ) : (
-              <div className="mx-auto max-w-xl px-5 py-12 text-center" role="status">
-                <p className="text-lg font-bold">Plus File Folder</p>
-                <p className="mt-2 text-sm leading-6 text-stone-600">The approved official picture is awaiting publication with this release.</p>
-              </div>
-            )}
-            <div className="weave-home-plus-guide" data-home-plus-readable-explanation="true">
-              <p>
-                Plus File Folder is a premium Client business environment inside Weave. The private world belongs to its verified owner; visitors reach the business through its published Customer Door, while employees use only the access granted to them.
-              </p>
-              <ul className="weave-home-plus-facts" aria-label="Plus File Folder capabilities">
-                <li>Private business world</li>
-                <li>Customer Door</li>
-                <li>Workshops and systems</li>
-                <li>Authorized employees</li>
-                <li>Activity records</li>
-              </ul>
-              <p>Explore the File Folder plans and verified purchase terms before choosing a tier. Building a business takes participation, customers and completed work; results are not guaranteed.</p>
-            </div>
-            <div className="weave-home-plus-actions flex flex-wrap justify-center gap-3 px-4 py-4">
-              <Link href="/file-folder" className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-[#283d52] px-5 py-3 text-sm font-bold text-white hover:bg-[#16293e]">
-                Explore File Folders <ArrowRight className="h-4 w-4" />
-              </Link>
-              <Link href="/file-folder-preview" className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-[#b9ab8c] px-5 py-3 text-sm font-bold text-[#283d52] hover:bg-[#e8e0d1]">
-                View File Folder Preview
-              </Link>
-              <Link href="/file-folder" className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-emerald-200/35 bg-emerald-200/10 px-5 py-3 text-sm font-bold text-emerald-50 hover:bg-emerald-200/15">
-                Purchase · Paystack or TRX <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
-          </section>
-
-          <section className="weave-home-work-section grid gap-5 lg:grid-cols-[1.15fr_.85fr]" data-home-what-weave-builds>
-            <div className="weave-home-work-copy p-5 sm:p-7">
-              <p className="text-sm font-bold text-sky-200">What WEAVE Builds</p>
-              <h2 className="mt-3 text-2xl font-black leading-tight sm:text-3xl">From the work you know to the business you envision.</h2>
-              <p className="mt-4 text-base leading-7 text-slate-200">Start with the work you already know. Weave offers distinct positions, company tools and business systems for carrying out tasks, reaching customers and keeping records. Each person remains responsible for the work they accept; Administrations supports and verifies company activity.</p>
-              <div className="mt-6 grid gap-3 sm:grid-cols-3">
-                {systems.map(({ icon: Icon, title, copy }) => (
-                  <article key={title} className="weave-home-system p-4">
-                    <Icon className="h-6 w-6 text-sky-200" aria-hidden="true" />
-                    <h3 className="mt-3 text-lg font-bold text-white">{title}</h3>
-                    <p className="mt-2 text-sm leading-6 text-slate-200">{copy}</p>
-                  </article>
-                ))}
-              </div>
-            </div>
-
-            <aside className="weave-home-client-entry p-5 sm:p-7" data-home-client-access>
-              <p className="text-sm font-bold text-amber-200">Client Access Point</p>
-              <h2 className="mt-3 text-2xl font-black sm:text-3xl">Already a WEAVE Client?</h2>
-              <p className="mt-4 text-base leading-7 text-slate-200">Your business and records continue beyond each visit. Sign in with your registered account to open your File Folder, review Customer Door activity, manage ongoing work and communicate with authorized staff.</p>
-              <p className="mt-7 text-sm font-bold text-amber-200">Authorized Access</p>
-              <Link href="/client/login" className="mt-2 inline-flex min-h-12 w-full items-center justify-between gap-3 rounded-lg border border-amber-200/35 bg-amber-200/10 px-4 py-3 text-base font-bold text-white hover:bg-amber-200/15">
-                Open Client Portal <DoorOpen className="h-5 w-5" />
-              </Link>
-              <Link href="/client/register" className="mt-4 inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-amber-100 hover:text-white">
-                Register with your File Number <ArrowRight className="h-4 w-4" />
-              </Link>
-            </aside>
-          </section>
-
-          <PublicReachRequestForm />
-          <div className="weave-home-reach-tracking px-5 pb-6 sm:px-7">
-            <div className="mx-auto max-w-5xl"><ReachRequestTracker /></div>
-          </div>
-
-          <section className="weave-home-agent-application p-5 sm:p-7" data-reach-agent-application>
-            <div className="mx-auto max-w-5xl">
-              <p className="text-sm font-bold text-amber-200">Participate in this service</p>
-              <h2 className="mt-2 text-2xl font-black sm:text-3xl">Become a Weave Reach Agent</h2>
-              <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-200">Agents make the service possible by carrying approved messages, obtaining sender-funded items and completing other lawful assigned tasks. Apply through the existing Agent entry. Applications do not guarantee assignment or earnings; each request is quoted and accepted before movement.</p>
-              <Link href="/register?role=agent" className="mt-5 inline-flex min-h-12 items-center gap-2 rounded-lg bg-amber-200 px-5 py-3 text-sm font-black text-slate-950 hover:bg-white">
-                Apply to participate as an Agent <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
-          </section>
-
-          <section className="weave-home-presence-signature px-5 py-8 text-center sm:px-7" data-weave-presence-signature>
-            <p className="text-xs font-bold uppercase tracking-[.22em] text-sky-200">The Company of Time</p>
-            <h2 className="mt-3 text-2xl font-black text-white sm:text-3xl">The Weave of Presence</h2>
-            <p className="mt-2 text-sm text-slate-300">Interaction in Motion.</p>
-          </section>
-
-          <section className="weave-home-staff p-5 sm:p-7" data-home-staff-entry>
-            <p className="text-sm font-bold text-sky-200">The Company of Time · Department Entrances</p>
-            <h2 className="mt-2 text-2xl font-black sm:text-3xl">Find your place in the company.</h2>
-            <p className="mt-3 text-base leading-7 text-slate-200">An Agent works in Stability, a Bridger works in Hope, and a Client builds through Dream Lovely. Administrations coordinates verified company operations. Select your own position to sign in, or follow the appropriate registration path to begin.</p>
-            <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              {staffEntrances.map(entrance => (
-                <div key={entrance.name} className="weave-home-staff-position flex flex-col p-4">
-                  <p className="text-sm font-bold text-amber-200">{entrance.department}</p>
-                  <h3 className="mt-1 text-xl font-black">{entrance.name}</h3>
-                  <Link href={entrance.enter} className="mt-5 inline-flex min-h-11 items-center justify-between gap-2 rounded-lg bg-sky-100 px-4 py-3 text-sm font-bold text-[#09243c] hover:bg-white">
-                    Enter position <ArrowRight className="h-4 w-4" />
-                  </Link>
-                  {entrance.registration && (
-                    <Link href={entrance.registration} className="mt-3 inline-flex min-h-11 items-center text-sm font-semibold text-sky-100 hover:underline">
-                      {entrance.registrationLabel}
-                    </Link>
-                  )}
+          <details className="group mx-auto w-full max-w-5xl rounded-xl border border-[#a88650]/40 bg-[#fffdf7]/90 text-[#18364a]">
+            <summary className="cursor-pointer px-5 py-4 text-base font-bold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#75521e]">File Folders, Reach and Client access</summary>
+            <div className="px-3 pb-5 sm:px-5">
+              <section className="weave-home-plus-world relative" data-home-plus-file-folder="official-picture">
+                <div className="weave-home-plus-heading px-5 pb-3 pt-5 text-center sm:px-8">
+                  <p className="weave-eyebrow">Dream Lovely · The Plus File Folder</p>
+                  <h2 className="text-2xl font-black sm:text-3xl">Plus File Folder</h2>
+                  <p className="weave-home-plus-introduction">Your business, your systems, and a place for the work to grow.</p>
                 </div>
-              ))}
-            </div>
-            <Link href="/register" className="mt-5 inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-slate-100 hover:underline">
-              Register for Agent or Bridger participation <ArrowRight className="h-4 w-4" />
-            </Link>
-          </section>
+                {!posterMissing ? (
+                  <img
+                    src="/weave/plus-file-folder-white-official.webp"
+                    alt="Official white Plus File Folder picture with its environment, capabilities, price and market promises"
+                    width={1229}
+                    height={1536}
+                    loading="lazy"
+                    decoding="async"
+                    onError={() => setPosterMissing(true)}
+                    className="weave-home-plus-image mx-auto h-auto w-full max-w-[930px] object-contain"
+                    data-plus-file-folder-official-image
+                  />
+                ) : (
+                  <div className="mx-auto max-w-xl px-5 py-12 text-center" role="status">
+                    <p className="text-lg font-bold">Plus File Folder</p>
+                    <p className="mt-2 text-sm leading-6 text-stone-600">The approved official picture is awaiting publication with this release.</p>
+                  </div>
+                )}
+                <div className="weave-home-plus-guide" data-home-plus-readable-explanation="true">
+                  <p>
+                    Plus File Folder is a premium Client business environment inside Weave. The private world belongs to its verified owner; visitors reach the business through its published Customer Door, while employees use only the access granted to them.
+                  </p>
+                  <ul className="weave-home-plus-facts" aria-label="Plus File Folder capabilities">
+                    <li>Private business world</li>
+                    <li>Customer Door</li>
+                    <li>Workshops and systems</li>
+                    <li>Authorized employees</li>
+                    <li>Activity records</li>
+                  </ul>
+                  <p>Explore the File Folder plans and verified purchase terms before choosing a tier. Building a business takes participation, customers and completed work; results are not guaranteed.</p>
+                </div>
+                <div className="weave-home-plus-actions flex flex-wrap justify-center gap-3 px-4 py-4">
+                  <Link href="/file-folder" className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-[#283d52] px-5 py-3 text-sm font-bold text-white hover:bg-[#16293e]">
+                    Explore File Folders <ArrowRight className="h-4 w-4" />
+                  </Link>
+                  <Link href="/file-folder-preview" className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-[#b9ab8c] px-5 py-3 text-sm font-bold text-[#283d52] hover:bg-[#e8e0d1]">
+                    View File Folder Preview
+                  </Link>
+                  <Link href="/file-folder" className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-emerald-200/35 bg-emerald-200/10 px-5 py-3 text-sm font-bold text-emerald-50 hover:bg-emerald-200/15">
+                    Purchase · Paystack or TRX <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </div>
+              </section>
 
-          <section className="weave-home-participation p-5 sm:p-7" data-home-farm-to-family>
-            <p className="text-sm font-bold text-emerald-200">WEAVE · Stability and Lifestyle</p>
-            <h2 className="mt-2 text-xl font-black sm:text-2xl">The company in everyday life.</h2>
-            <p className="mt-3 text-sm leading-6 text-slate-200">Discover Weave Family Food, Farm to Family and the public Customer Market. Explore the services available today, check each offer's terms and use the relevant company entrance when you decide to participate.</p>
-            <Link href="/food-store" className="weave-home-food-picture mt-5 block w-full max-w-md overflow-hidden" aria-label="Browse WEAVE Family Food products">
-              <img src="/weave-food/weave-family-products.avif" alt="WEAVE Family Food collection — the company's food products, with stock and pricing verified inside the Family Food Store" width={1200} height={700} loading="lazy" className="h-auto w-full object-cover"/>
-            </Link>
-            <div className="mt-5 flex flex-wrap gap-3">
-              <Link href="/food-store" className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-emerald-200/30 px-4 py-3 text-sm font-bold text-emerald-100 hover:bg-emerald-200/10"><Store className="h-4 w-4" /> Family Food Store</Link>
-              <Link href="/lifestyle" className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-emerald-200/30 px-4 py-3 text-sm font-bold text-emerald-100 hover:bg-emerald-200/10"><BriefcaseBusiness className="h-4 w-4" /> Lifestyle</Link>
-              <Link href="/market" className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-emerald-200/30 px-4 py-3 text-sm font-bold text-emerald-100 hover:bg-emerald-200/10"><Crown className="h-4 w-4" /> Customer Market</Link>
-              <Link href="/stream" className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-emerald-200/30 px-4 py-3 text-sm font-bold text-emerald-100 hover:bg-emerald-200/10"><Radio className="h-4 w-4" /> Stream Network</Link>
-              <Link href="/enterprise" className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-emerald-200/30 px-4 py-3 text-sm font-bold text-emerald-100 hover:bg-emerald-200/10"><Network className="h-4 w-4" /> Enterprise Territory</Link>
-              <Link href="/flame-event" className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-orange-200/30 px-4 py-3 text-sm font-bold text-orange-100 hover:bg-orange-200/10"><Flame className="h-4 w-4" /> Burning River</Link>
-            </div>
-          </section>
+              <section className="weave-home-work-section grid gap-5 lg:grid-cols-[1.15fr_.85fr]" data-home-what-weave-builds>
+                <div className="weave-home-work-copy p-5 sm:p-7">
+                  <p className="text-sm font-bold text-sky-200">What WEAVE Builds</p>
+                  <h2 className="mt-3 text-2xl font-black leading-tight sm:text-3xl">From the work you know to the business you envision.</h2>
+                  <p className="mt-4 text-base leading-7 text-slate-200">Start with the work you already know. Weave offers distinct positions, company tools and business systems for carrying out tasks, reaching customers and keeping records. Each person remains responsible for the work they accept; Administrations supports and verifies company activity.</p>
+                  <div className="mt-6 grid gap-3 sm:grid-cols-3">
+                    {systems.map(({ icon: Icon, title, copy }) => (
+                      <article key={title} className="weave-home-system p-4">
+                        <Icon className="h-6 w-6 text-sky-200" aria-hidden="true" />
+                        <h3 className="mt-3 text-lg font-bold text-white">{title}</h3>
+                        <p className="mt-2 text-sm leading-6 text-slate-200">{copy}</p>
+                      </article>
+                    ))}
+                  </div>
+                </div>
 
-          <section className="weave-home-ai p-5 sm:p-7" data-ai-participation="public-world">
-            <div className="flex items-start gap-3">
-              <Bot className="mt-1 h-6 w-6 shrink-0 text-violet-200" />
-              <div>
-                <h2 className="text-lg font-bold">AI has a place inside participation</h2>
-                <p className="mt-2 text-sm leading-6 text-slate-200">AI supports planning, communication and routine work. People remain responsible for their decisions, customer commitments and verified results; the company keeps the work connected through records and authorized support.</p>
+                <aside className="weave-home-client-entry p-5 sm:p-7" data-home-client-access>
+                  <p className="text-sm font-bold text-amber-200">Client Access Point</p>
+                  <h2 className="mt-3 text-2xl font-black sm:text-3xl">Already a WEAVE Client?</h2>
+                  <p className="mt-4 text-base leading-7 text-slate-200">Your business and records continue beyond each visit. Sign in with your registered account to open your File Folder, review Customer Door activity, manage ongoing work and communicate with authorized staff.</p>
+                  <p className="mt-7 text-sm font-bold text-amber-200">Authorized Access</p>
+                  <Link href="/client/login" className="mt-2 inline-flex min-h-12 w-full items-center justify-between gap-3 rounded-lg border border-amber-200/35 bg-amber-200/10 px-4 py-3 text-base font-bold text-white hover:bg-amber-200/15">
+                    Open Client Portal <DoorOpen className="h-5 w-5" />
+                  </Link>
+                  <Link href="/client/register" className="mt-4 inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-amber-100 hover:text-white">
+                    Register with your File Number <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </aside>
+              </section>
+
+              <PublicReachRequestForm />
+              <div className="weave-home-reach-tracking px-5 pb-6 sm:px-7">
+                <div className="mx-auto max-w-5xl"><ReachRequestTracker /></div>
               </div>
+
+              <section className="weave-home-agent-application p-5 sm:p-7" data-reach-agent-application>
+                <div className="mx-auto max-w-5xl">
+                  <p className="text-sm font-bold text-amber-200">Participate in this service</p>
+                  <h2 className="mt-2 text-2xl font-black sm:text-3xl">Become a Weave Reach Agent</h2>
+                  <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-200">Agents make the service possible by carrying approved messages, obtaining sender-funded items and completing other lawful assigned tasks. Apply through the existing Agent entry. Applications do not guarantee assignment or earnings; each request is quoted and accepted before movement.</p>
+                  <Link href="/register?role=agent" className="mt-5 inline-flex min-h-12 items-center gap-2 rounded-lg bg-amber-200 px-5 py-3 text-sm font-black text-slate-950 hover:bg-white">
+                    Apply to participate as an Agent <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </div>
+              </section>
+
             </div>
-          </section>
+          </details>
+
+          <details className="group mx-auto w-full max-w-5xl rounded-xl border border-[#a88650]/40 bg-[#fffdf7]/90 text-[#18364a]">
+            <summary className="cursor-pointer px-5 py-4 text-base font-bold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#75521e]">Departments, food and other services</summary>
+            <div className="px-3 pb-5 sm:px-5">
+              <section className="weave-home-presence-signature px-5 py-8 text-center sm:px-7" data-weave-presence-signature>
+                <p className="text-xs font-bold uppercase tracking-[.22em] text-sky-200">The Company of Time</p>
+                <h2 className="mt-3 text-2xl font-black text-white sm:text-3xl">The Weave of Presence</h2>
+                <p className="mt-2 text-sm text-slate-300">Interaction in Motion.</p>
+              </section>
+
+              <section className="weave-home-staff p-5 sm:p-7" data-home-staff-entry>
+                <p className="text-sm font-bold text-sky-200">The Company of Time · Department Entrances</p>
+                <h2 className="mt-2 text-2xl font-black sm:text-3xl">Find your place in the company.</h2>
+                <p className="mt-3 text-base leading-7 text-slate-200">An Agent works in Stability, a Bridger works in Hope, and a Client builds through Dream Lovely. Administrations coordinates verified company operations. Select your own position to sign in, or follow the appropriate registration path to begin.</p>
+                <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  {staffEntrances.map(entrance => (
+                    <div key={entrance.name} className="weave-home-staff-position flex flex-col p-4">
+                      <p className="text-sm font-bold text-amber-200">{entrance.department}</p>
+                      <h3 className="mt-1 text-xl font-black">{entrance.name}</h3>
+                      <Link href={entrance.enter} className="mt-5 inline-flex min-h-11 items-center justify-between gap-2 rounded-lg bg-sky-100 px-4 py-3 text-sm font-bold text-[#09243c] hover:bg-white">
+                        Enter position <ArrowRight className="h-4 w-4" />
+                      </Link>
+                      {entrance.registration && (
+                        <Link href={entrance.registration} className="mt-3 inline-flex min-h-11 items-center text-sm font-semibold text-sky-100 hover:underline">
+                          {entrance.registrationLabel}
+                        </Link>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <Link href="/register" className="mt-5 inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-slate-100 hover:underline">
+                  Register for Agent or Bridger participation <ArrowRight className="h-4 w-4" />
+                </Link>
+              </section>
+
+              <section className="weave-home-participation p-5 sm:p-7" data-home-farm-to-family>
+                <p className="text-sm font-bold text-emerald-200">WEAVE · Stability and Lifestyle</p>
+                <h2 className="mt-2 text-xl font-black sm:text-2xl">The company in everyday life.</h2>
+                <p className="mt-3 text-sm leading-6 text-slate-200">Discover Weave Family Food, Farm to Family and the public Customer Market. Explore the services available today, check each offer's terms and use the relevant company entrance when you decide to participate.</p>
+                <Link href="/food-store" className="weave-home-food-picture mt-5 block w-full max-w-md overflow-hidden" aria-label="Browse WEAVE Family Food products">
+                  <img src="/weave-food/weave-family-products.avif" alt="WEAVE Family Food collection — the company's food products, with stock and pricing verified inside the Family Food Store" width={1200} height={700} loading="lazy" className="h-auto w-full object-cover"/>
+                </Link>
+                <div className="mt-5 flex flex-wrap gap-3">
+                  <Link href="/food-store" className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-emerald-200/30 px-4 py-3 text-sm font-bold text-emerald-100 hover:bg-emerald-200/10"><Store className="h-4 w-4" /> Family Food Store</Link>
+                  <Link href="/lifestyle" className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-emerald-200/30 px-4 py-3 text-sm font-bold text-emerald-100 hover:bg-emerald-200/10"><BriefcaseBusiness className="h-4 w-4" /> Lifestyle</Link>
+                  <Link href="/market" className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-emerald-200/30 px-4 py-3 text-sm font-bold text-emerald-100 hover:bg-emerald-200/10"><Crown className="h-4 w-4" /> Customer Market</Link>
+                  <Link href="/stream" className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-emerald-200/30 px-4 py-3 text-sm font-bold text-emerald-100 hover:bg-emerald-200/10"><Radio className="h-4 w-4" /> Stream Network</Link>
+                  <Link href="/enterprise" className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-emerald-200/30 px-4 py-3 text-sm font-bold text-emerald-100 hover:bg-emerald-200/10"><Network className="h-4 w-4" /> Enterprise Territory</Link>
+                  <Link href="/flame-event" className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-orange-200/30 px-4 py-3 text-sm font-bold text-orange-100 hover:bg-orange-200/10"><Flame className="h-4 w-4" /> Burning River</Link>
+                </div>
+              </section>
+
+              <section className="weave-home-ai p-5 sm:p-7" data-ai-participation="public-world">
+                <div className="flex items-start gap-3">
+                  <Bot className="mt-1 h-6 w-6 shrink-0 text-violet-200" />
+                  <div>
+                    <h2 className="text-lg font-bold">AI has a place inside participation</h2>
+                    <p className="mt-2 text-sm leading-6 text-slate-200">AI supports planning, communication and routine work. People remain responsible for their decisions, customer commitments and verified results; the company keeps the work connected through records and authorized support.</p>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </details>
         </main>
 
         <footer className="weave-home-footer px-4 py-8">
