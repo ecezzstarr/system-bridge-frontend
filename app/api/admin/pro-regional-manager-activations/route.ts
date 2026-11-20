@@ -6,6 +6,7 @@ import {ensureProRegionalManagerActivationSchema,prepareApprovedProRegionalManag
 import {ensureClientFileFolderSchema} from '@/lib/client-file-folder'
 import {ensureClientWorkshopSchema} from '@/lib/client-system-workshop'
 import {ensureProActivationSchema,isTronAddress} from '@/lib/pro-file-folder-activation'
+import {PRO_MANAGER_PROFIT_TERMS_VERSION,proManagerApprovalState} from '@/lib/pro-regional-manager-profit-share'
 
 export const dynamic='force-dynamic'
 const headers={'Cache-Control':'private, no-store'}
@@ -25,6 +26,9 @@ export async function GET(request:NextRequest){
      p.payment_verified_at,p.verified_amount_usdt,p.verified_evidence_reference,
      p.rejection_reason,p.activated_at,a.business_name,
      a.agreed_monthly_salary_usdt,a.employment_terms_reference,
+     a.compensation_model AS application_compensation_model,a.monthly_profit_share_bps,
+     a.approved_continent,a.approved_activation_fee_usdt,p.quoted_fee_usdt,
+     p.activation_continent,p.compensation_model,p.profit_share_bps,
      a.operating_country,a.operating_region,a.operating_city,
      u.name,u.email,u.is_active,u.role AS current_role
     FROM weave_pro_regional_manager_activations p
@@ -34,7 +38,7 @@ export async function GET(request:NextRequest){
      WHEN 'payment_required' THEN 2 WHEN 'awaiting_signature' THEN 3 ELSE 4 END,
      p.updated_at DESC LIMIT 200`
   return NextResponse.json({success:true,activations:rows,
-    feeUSDT:PRO_MANAGER_ACTIVATION_FEE_USDT,network:PRO_MANAGER_NETWORK},{headers})
+    legacyFeeUSDT:PRO_MANAGER_ACTIVATION_FEE_USDT,network:PRO_MANAGER_NETWORK},{headers})
  }catch(e){console.error('[Pro Manager Forensics GET]',e)
   return NextResponse.json({error:'Unable to read Pro Regional Manager activation register'},{status:503,headers})}
 }
@@ -64,9 +68,10 @@ export async function POST(request:NextRequest){
   const reason=String(body.reason||'').trim()
   if(action==='approve_payment'&&(
    !/^[a-f0-9]{64}$/.test(hash)||!isTronAddress(wallet)||
-   network!==PRO_MANAGER_NETWORK||amount!==PRO_MANAGER_ACTIVATION_FEE_USDT||
+   network!==PRO_MANAGER_NETWORK||!Number.isFinite(amount)||amount<=0||
+   Math.round(amount*100)!==amount*100||
    evidence.length<12||evidence.length>255||body.onChainConfirmed!==true))
-   return NextResponse.json({error:'Independently verify the full 680 USDT TRC-20 transfer, exact transaction, receiving wallet and documented blockchain evidence.'},{status:400,headers})
+   return NextResponse.json({error:'Independently verify the exact individually quoted USDT TRC-20 transfer, transaction, receiving wallet and blockchain evidence.'},{status:400,headers})
   if(action==='reject_payment'&&reason.length<10)
    return NextResponse.json({error:'Record a reason for rejecting the unverified payment.'},{status:400,headers})
   await ensureProRegionalManagerActivationSchema()
@@ -79,6 +84,8 @@ export async function POST(request:NextRequest){
    const result=await db.query(`SELECT p.*,a.status AS application_status,
      a.source_role AS application_role,a.business_plan,a.business_name,
      a.agreed_monthly_salary_usdt,a.employment_terms_reference,
+     a.compensation_model AS application_compensation_model,a.monthly_profit_share_bps,
+     a.approved_continent,a.approved_activation_fee_usdt,
      u.name,u.role,u.is_active
     FROM weave_pro_regional_manager_activations p
     JOIN weave_pro_regional_manager_applications a ON a.user_id=p.user_id
@@ -90,9 +97,20 @@ export async function POST(request:NextRequest){
       row.application_status!=='approved_pending_verification'||
       row.role!==row.source_role||row.application_role!==row.source_role||
       !['agent','bridger'].includes(row.role)||!row.is_active||
-      Number(row.agreed_monthly_salary_usdt)<=0||!row.employment_terms_reference||
       !row.business_plan)
     throw new Error('A signed, independently approved Agent/Bridger Pro activation awaiting Forensics is required.')
+   const contract=proManagerApprovalState({...row,compensation_model:row.application_compensation_model})
+   if(!contract||amount!==contract.feeUSDT||
+      (contract.model==='profit_share'&&(
+        row.compensation_model!=='profit_share'||
+        Number(row.quoted_fee_usdt)!==contract.feeUSDT||
+        row.activation_continent!==contract.continent||
+        Number(row.profit_share_bps)!==contract.profitShareBps||
+        row.terms_version!==PRO_MANAGER_PROFIT_TERMS_VERSION)))
+    throw new Error('Independently verified amount, recorded continent, signed 20% agreement and original approved quote must match before activation.')
+   /* Verified location and the original quote remain immutable in the activation
+      snapshot; this prevents a later region or fee change from repricing proof. */
+ 
    if(action==='reject_payment'){
     await db.query(`UPDATE weave_pro_regional_manager_activations
       SET status='payment_rejected',rejection_reason=$2,payment_tx_hash=NULL,
