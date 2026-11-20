@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { getPool } from '@/lib/db'
+import { planExplainer } from '@/lib/editorial-explainer'
 import { formOriginalScriptScenes } from '@/lib/weave-narration-script'
 import { mediaObjectNameFromUrl } from '@/lib/weave-media-storage'
 import {
@@ -46,18 +47,26 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Title, subject, objective and audience are required' }, { status: 400 })
     }
 
-    const narrationScript = typeof body?.scriptText === 'string' ? body.scriptText : ''
-    const scenes = narrationScript.trim()
+    let illustratedScenes: ReturnType<typeof planExplainer> | undefined
+    if (body.mode === 'illustrated') {
+      try {
+        illustratedScenes = planExplainer(String(body.lines || ''), body.durationSeconds)
+      } catch (error) {
+        return NextResponse.json({success:false, error:error instanceof Error ? error.message : 'Invalid script'}, {status:400})
+      }
+    }
+    const narrationScript = illustratedScenes ? illustratedScenes.map(scene => scene.voiceover).join(' ') : typeof body?.scriptText === 'string' ? body.scriptText : ''
+    const scenes = illustratedScenes ?? (narrationScript.trim()
       ? formOriginalScriptScenes(narrationScript, durationSeconds)
-      : (await generateVideoAdStoryboard({ title, subject, objective, audience, durationSeconds })).scenes
+      : (await generateVideoAdStoryboard({ title, subject, objective, audience, durationSeconds })).scenes)
     await ensureVideoAdWorkshopSchema()
     const pool = getPool()
     const result = await pool.query(
       `INSERT INTO admin_video_ad_projects
-        (created_by,title,subject,objective,audience,duration_seconds,aspect_ratio,status,storyboard,narration_script)
-       VALUES ($1::uuid,$2,$3,$4,$5,$6,'9:16','planned',$7::jsonb,$8)
+        (created_by,title,subject,objective,audience,duration_seconds,aspect_ratio,status,storyboard,narration_script,demo_mode)
+       VALUES ($1::uuid,$2,$3,$4,$5,$6,'9:16','planned',$7::jsonb,$8,$9)
        RETURNING *`,
-      [auth.user.id, title, subject, objective, audience, durationSeconds, JSON.stringify(scenes), narrationScript]
+      [auth.user.id, title, subject, objective, audience, durationSeconds, JSON.stringify(scenes), narrationScript, Boolean(illustratedScenes && body.simulation === true)]
     )
     return NextResponse.json({ success: true, project: mapVideoAdProject(result.rows[0]), provider: narrationScript.trim() ? 'original-script' : 'storyboard' })
   } catch (error: any) {
@@ -72,6 +81,7 @@ function sanitizeStoryboard(value: unknown): VideoAdScene[] | null {
     id: String(scene?.id || `scene-${index + 1}`).slice(0, 48),
     order: index + 1,
     durationSeconds: Math.max(1, Math.min(90, Math.round(Number(scene?.durationSeconds || 1)))),
+    ...(typeof scene?.heading === 'string' && scene.heading.trim() ? {heading: scene.heading.trim().slice(0,48)} : {}),
     beat: String(scene?.beat || '').slice(0, 64),
     text: String(scene?.text || '').slice(0, 160),
     visualDirection: String(scene?.visualDirection || '').slice(0, 700),

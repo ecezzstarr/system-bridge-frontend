@@ -11,6 +11,7 @@ import path from 'node:path'
 import { Readable } from 'node:stream'
 import { pipeline } from 'node:stream/promises'
 import { mediaObjectNameFromUrl, mediaObjectPath, saveMediaFile } from '@/lib/weave-media-storage'
+import { paperOverlay } from '@/lib/editorial-explainer'
 import { weaveRealTextureFilter } from '@/lib/weave-video-real-texture'
 
 export const runtime = 'nodejs'
@@ -129,7 +130,7 @@ export async function POST(request: NextRequest) {
     if (!scenes.length) return NextResponse.json({ success: false, error: 'Storyboard has no scenes' }, { status: 400 })
     const total = scenes.reduce((sum, scene) => sum + Number(scene.durationSeconds || 0), 0)
     if (total !== Number(row.duration_seconds)) return NextResponse.json({ success: false, error: `Scene timing must total ${row.duration_seconds} seconds before rendering` }, { status: 400 })
-    const missing = scenes.find(scene => !scene.assetUrl || !scene.assetType)
+    const missing = scenes.find(scene => !(isAdmin && scene.heading) && (!scene.assetUrl || !scene.assetType))
     if (missing) return NextResponse.json({ success: false, error: `Scene ${missing.order} needs an image or video before rendering` }, { status: 400 })
 
     await pool.query("UPDATE admin_video_ad_projects SET status='rendering',error_message=NULL,updated_at=NOW() WHERE id=$1::uuid", [projectId])
@@ -139,10 +140,21 @@ export async function POST(request: NextRequest) {
     const segments: string[] = []
 
     for (const scene of scenes) {
-      const inputPath = path.join(workDir, `asset-${scene.order}${extFor(scene.assetUrl!, scene.assetType === 'image' ? '.jpg' : '.mp4')}`)
+      const inputPath = path.join(workDir, `asset-${scene.order}${extFor(scene.assetUrl || '', scene.assetType === 'image' ? '.jpg' : '.mp4')}`)
       const textPath = path.join(workDir, `text-${scene.order}.txt`)
       const segmentPath = path.join(segmentDir, `scene-${String(scene.order).padStart(2, '0')}.mp4`)
-      await downloadAsset(scene.assetUrl!, inputPath)
+      if (scene.assetUrl) await downloadAsset(scene.assetUrl, inputPath)
+      if (isAdmin && scene.heading) {
+        const overlay = path.join(workDir, `paper-${scene.order}.ass`)
+        await writeFile(overlay, paperOverlay(scene.heading, scene.text, scene.order, Boolean(row.demo_mode), Boolean(scene.assetUrl)))
+        const source = !scene.assetUrl
+          ? ['-f','lavfi','-i','color=c=0xe8dfca:s=720x1280:r=30']
+          : scene.assetType === 'image' ? ['-loop','1','-framerate','30','-i',inputPath] : ['-stream_loop','-1','-i',inputPath]
+        const filters = `scale=720:1280:force_original_aspect_ratio=increase,crop=720:1280,setsar=1,fps=30,ass=${overlay}`
+        await runFfmpeg(['-y',...source,'-t',String(scene.durationSeconds),'-vf',filters,'-an','-c:v','libx264','-preset','fast','-crf','18','-pix_fmt','yuv420p',segmentPath])
+        segments.push(segmentPath)
+        continue
+      }
       await writeFile(textPath, readableCaption(scene.text), 'utf8')
 
       const duration = Math.max(1, Number(scene.durationSeconds || 1))
