@@ -2,9 +2,12 @@
  * Pro Regional Manager is an Administration-appointed position, distinct from
  * the ordinary Bridger/Agent Regional Manager Lifestyle role.
  *
- * All Pro Regional Managers require approved employment terms, a verified
- * business plan and operating address, a personally owned Pro File Folder
- * entitlement, and independent verification of the activation payment.
+ * Pro Regional Managers require separately approved company service terms, a
+ * business plan and verified operating location, a personally owned Pro File
+ * Folder entitlement, and independent verification of the activation payment.
+ * New Agent/Bridger appointments contribute 20% of verified monthly net business
+ * profit rather than drawing a fixed WEAVE salary; signed older salary and
+ * Client Pro staff agreements remain separate, untouched arrangements.
  * No role, File Number, salary or folder is granted by this policy alone.
  *
  * Pro describes the File Folder tier, not the business inside it.
