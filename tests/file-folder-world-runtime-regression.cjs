@@ -34,11 +34,10 @@ for(const input of [
   {spanMetres:12,uniformLoadKnPerMetre:-1,midspanPointLoadKn:0},
   {spanMetres:12,uniformLoadKnPerMetre:15,midspanPointLoadKn:NaN},
 ])assert.throws(()=>beam.calculateSimpleBeamStudy(input),'Invalid load or span rejected')
-assert(beam.beamStudyNote('River Crossing',{spanMetres:12,uniformLoadKnPerMetre:15,midspanPointLoadKn:20},combined).includes('not a final design')===false ||
-       beam.beamStudyNote('River Crossing',{spanMetres:12,uniformLoadKnPerMetre:15,midspanPointLoadKn:20},combined).includes('Not a final design'),'Note must disclose limitations')
+assert.match(beam.beamStudyNote('River Crossing',{spanMetres:12,uniformLoadKnPerMetre:15,midspanPointLoadKn:20},combined),/not a final design/i,'Note must disclose engineering limitations')
 const academicUI=fs.readFileSync('components/system-switch/file-folder-platform-project-studio.tsx','utf8')
 const academicBeamUI=fs.readFileSync('components/system-switch/file-folder-academic-study.tsx','utf8')
-assert(academicUI.includes("action:'create_platform_project'")===false || academicUI.includes('isFileFolderAcademicProjectKind'),'Academic template must use existing Client-owned project studio')
+assert(academicUI.includes('isFileFolderAcademicProjectKind'),'Academic template must use existing Client-owned project studio')
 assert(academicUI.includes('<FileFolderAcademicStudy')&&academicUI.includes('School & research'),'School pathway and working study are visible')
 assert(academicBeamUI.includes('calculateSimpleBeamStudy')&&academicBeamUI.includes('Educational screening only'),'Worksheet computes and labels assumptions')
 const sectorCatalog=load('lib/file-folder-institutional-catalog.ts')
