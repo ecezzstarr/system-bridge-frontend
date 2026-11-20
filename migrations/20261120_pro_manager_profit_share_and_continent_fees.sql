@@ -22,14 +22,17 @@ ALTER TABLE weave_pro_regional_manager_activations
 -- Only newly approved profit-share appointments use the new policy.
 -- Africa prices must be positive but strictly below 60 USDT. Europe is 680.
 -- A cost proposal is not a payment receipt or a verified company liability.
-ALTER TABLE weave_pro_regional_manager_applications
-  ADD CONSTRAINT weave_pro_manager_new_quote_valid CHECK (
+DO $$
+BEGIN
+ IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname='weave_pro_manager_new_quote_valid') THEN
+  ALTER TABLE weave_pro_regional_manager_applications
+   ADD CONSTRAINT weave_pro_manager_new_quote_valid CHECK (
     compensation_model <> 'profit_share' OR (
-      monthly_profit_share_bps = 2000 AND
-      agreed_monthly_salary_usdt IS NULL AND (
-        (approved_continent = 'africa' AND approved_activation_fee_usdt > 0 AND approved_activation_fee_usdt < 60)
-        OR (approved_continent = 'europe' AND approved_activation_fee_usdt = 680)
-      )
+     monthly_profit_share_bps = 2000 AND
+     agreed_monthly_salary_usdt IS NULL AND
+     ((approved_continent = 'africa' AND approved_activation_fee_usdt > 0 AND approved_activation_fee_usdt < 60)
+       OR (approved_continent = 'europe' AND approved_activation_fee_usdt = 680))
     )
-  ) NOT VALID;
--- Existing unmodified salary contracts are not subjected to the new condition.
+   ) NOT VALID;
+ END IF;
+END $$;
