@@ -12,7 +12,9 @@ type ProData={
   workScope:string;dailyWork:string;businessName:string;fileNumber:string|null;
   territory:{country:string;region:string;city:string;address:string};
   businessPlan:Record<string,string>;dailyWorkPlan:string;
-  agreedMonthlySalaryUSDT:number;employmentTermsReference:string;
+  agreedMonthlySalaryUSDT:number|null;employmentTermsReference:string;
+  compensationModel:'profit_share'|'legacy_salary'|null;profitShareBps:number;
+  quotedActivationFeeUSDT:number|null;approvedContinent:string|null;
   applicationStatus:string;activationStatus:string};
  world?:any;businessStore?:any;
  activity?:Array<{id:string;activity_type:string;title:string;organization:string|null;
@@ -118,8 +120,9 @@ export default function ProRegionalManagerWorkspace(){
     <p className="text-sm text-slate-300">{position?.department||''} · {position?.businessName||'Verified business'} · {position?.territory?.country||'Operating territory pending'}</p>
     <p className="max-w-3xl text-sm leading-6 text-slate-200">Your department determines your company work. Your Pro File Folder contains your separately owned business, construction systems, customer entrance and daily records. Your existing {user.role} account remains unchanged.</p>
     <p className="font-mono text-xs text-sky-100">Pro File Number: {position?.fileNumber||'Pending independent preparation'}</p>
-    <p className="text-xs text-slate-200">Agreed monthly company salary: {Number(position?.agreedMonthlySalaryUSDT)>0?
-       Number(position?.agreedMonthlySalaryUSDT).toLocaleString()+' USDT':'Administrations employment agreement pending'} · recorded separately from business earnings and activation.</p>
+    <p className="text-xs text-slate-200">{position?.compensationModel==='profit_share'
+        ?'Your own Pro business serves WEAVE. Company participation is 20% of verified net monthly business profit; this arrangement has no fixed WEAVE salary.'
+        :'Legacy monthly company salary: '+(Number(position?.agreedMonthlySalaryUSDT)>0?Number(position?.agreedMonthlySalaryUSDT).toLocaleString()+' USDT':'Pending reconciliation')}. Business earnings and activation are recorded separately.</p>
    </header>
    {error&&<p role="alert" className="rounded-xl border border-rose-300/30 p-4 text-sm text-rose-100">{error}</p>}
    {notice&&<p role="status" className="rounded-xl border border-sky-300/25 p-4 text-sm text-sky-200">{notice}</p>}
@@ -209,7 +212,9 @@ export default function ProRegionalManagerWorkspace(){
      <h2 className="text-2xl font-semibold">Business Progress</h2>
      <p className="text-sm text-slate-300">Territory: {[position?.territory.city,position?.territory.region,position?.territory.country].filter(Boolean).join(', ')}</p>
      <p className="text-sm text-slate-300">Company work items: {(data.activity||[]).length} · Customer Door orders: {(store?.orders||[]).length} · Active systems: {liveSystems.length}</p>
-     <p className="text-xs text-slate-400">Salary follows the signed employment agreement and company payroll. Customer payments are separate and cannot be marked verified by self-report. Administrations oversees independently verified records.</p>
+     <p className="text-xs text-slate-400">{position?.compensationModel==='profit_share'
+         ?'20% of independently verified NET monthly business profit supports WEAVE under your accepted terms. No automatic salary or automatic debit. Profit-share payment awaits verified monthly reconciliation, operating costs and proper settlement.'
+         :'Existing signed salary terms remain separate from the owner’s independent business receipts.'} Customer payments are separate and cannot be marked verified by self-report. Administrations oversees independently verified records.</p>
      <details><summary className="cursor-pointer text-sm font-semibold">My approved Pro business plan</summary>
       {Object.entries(position?.businessPlan||{}).map(([key,value])=><p key={key} className="mt-3 whitespace-pre-wrap text-sm text-slate-300"><strong>{formatType(key)}:</strong> {value}</p>)}
      </details>
