@@ -1,6 +1,5 @@
 'use client'
 
-import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { Gift, MessageCircle, Phone, CheckCircle2, RefreshCw, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -9,7 +8,7 @@ import { openWhatsAppWithNumber } from '@/components/external-apps-nav'
 import { emitWeaveMotion } from '@/lib/weave-interaction-motion'
 import { visiblePoll } from '@/lib/visible-poll'
 
-export function DailyProspectClaim() {
+export function DailyProspectClaim({onOpenProspects}:{onOpenProspects:()=>void}) {
   const [loading, setLoading] = useState(true)
   const [claiming, setClaiming] = useState(false)
   const [claimed, setClaimed] = useState(false)
@@ -139,11 +138,9 @@ export function DailyProspectClaim() {
                     Message Prospect
                   </Button>
                 )}
-                <Button asChild variant="outline" className="border-slate-700">
-                  <Link href="/weave/market/prospects">
+                <Button type="button" onClick={onOpenProspects} variant="outline" className="border-slate-700">
                     <Users className="mr-2 h-4 w-4" />
                     Open My Prospects
-                  </Link>
                 </Button>
               </div>
             </div>

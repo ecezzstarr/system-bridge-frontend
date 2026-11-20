@@ -11,7 +11,6 @@ export default function ClientFlameEventPage() {
 
   return (
     <main data-flame-event-location="burning-river" data-system-switch-crossed="false" data-weave-world="flame-event">
-      <CompanyStaffWorkspaceEntry />
       <PositionEventWorld
         role="client"
         context={[
@@ -20,6 +19,7 @@ export default function ClientFlameEventPage() {
           { label: 'Movement', value: 'Burning River · Event ground' },
         ]}
       />
+      <CompanyStaffWorkspaceEntry />
     </main>
   )
 }

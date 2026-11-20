@@ -107,6 +107,7 @@ export function BridgerWorkplace({
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
+              {isVisible('/weave/market/prospects') && <Link href="/weave/market/prospects?tab=mine" className="inline-flex min-h-11 items-center rounded-full bg-[#283d45] px-4 py-2 text-sm font-semibold text-white">Open my prospects</Link>}
               <Link href="/bridger/presence" className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#cdb780] bg-white/80 px-4 py-2 text-sm font-semibold text-[#655020]">
                 <Compass className="h-4 w-4"/> Position guidance
               </Link>

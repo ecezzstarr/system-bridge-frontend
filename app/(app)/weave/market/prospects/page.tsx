@@ -258,7 +258,11 @@ export default function ProspectMarketPage() {
 
   return (
     <div className="container mx-auto py-10 space-y-8">
-      {user?.role === 'bridger' && <DailyProspectClaim />}
+      {user?.role === 'bridger' && <div id="daily-candidate" className="scroll-mt-24"><DailyProspectClaim onOpenProspects={()=>{
+        if(tab==='mine') void fetchMine()
+        else setTab('mine')
+        document.getElementById('prospect-tabs')?.scrollIntoView({block:'start'})
+      }}/></div>}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex items-center gap-4">
           <div className="bg-blue-600 p-3 rounded-xl shadow-lg shadow-blue-900/20">
@@ -296,7 +300,7 @@ export default function ProspectMarketPage() {
         <span className="text-xs font-bold text-sky-200">Read the working standard →</span>
       </Link>
 
-      <div className="flex gap-2 border-b border-slate-800">
+      <div id="prospect-tabs" className="flex scroll-mt-24 gap-2 border-b border-slate-800">
         <button
           onClick={() => setTab('browse')}
           className={`px-4 py-2 text-sm font-bold uppercase tracking-tight ${tab === 'browse' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-slate-500'}`}
@@ -422,9 +426,13 @@ export default function ProspectMarketPage() {
           {prospectsError&&<div role="alert" className="rounded-xl border border-rose-300/30 bg-rose-300/5 p-4 text-sm text-rose-100">{prospectsError} <button type="button" onClick={()=>void fetchMine()} className="ml-2 underline">Retry my records</button></div>}
           {mineLoading ? (
             <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-slate-700" /></div>
-          ) : myProspects.length === 0 ? (
+          ) : prospectsError ? null : myProspects.length === 0 ? (
             <div className="text-center py-20 text-slate-500 text-sm">
-              No prospects assigned yet. Claim a free candidate or browse available packages.
+              <p>No prospects assigned yet.</p>
+              <div className="mt-3 flex flex-wrap justify-center gap-3">
+                {user?.role==='bridger' && <a href="#daily-candidate" className="inline-flex min-h-11 items-center px-3 text-emerald-200 underline">Check today’s free candidate</a>}
+                <button type="button" onClick={()=>setTab('browse')} className="min-h-11 px-3 text-blue-300 underline">Browse packages</button>
+              </div>
             </div>
           ) : (
             <div className="space-y-3">
