@@ -384,6 +384,8 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
   const [surface, setSurface] = useState<Surface>('command')
   const [panelOpen, setPanelOpen] = useState(false)
   const [walkPlusTerritory,setWalkPlusTerritory]=useState(false)
+  const tier = data.file_folder_tier
+  const workshopTier = tier === 'plus' || tier === 'premium' || tier === 'pro' ? tier : 'standard'
   const isPlus=data.file_folder_tier==='plus'
   const [phoneViewport,setPhoneViewport]=useState<boolean|null>(null)
   const plusPhone=isPlus&&phoneViewport===true
@@ -453,6 +455,14 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
   }
 
   const [insideWorkshop,setInsideWorkshop]=useState(false)
+  const districtTools = useRef<HTMLDivElement>(null)
+  const operateWorkbench = () => {
+    setInsideWorkshop(false)
+    requestAnimationFrame(() => {
+      districtTools.current?.focus({preventScroll:true})
+      districtTools.current?.scrollIntoView({block:'start'})
+    })
+  }
   const enterWorkshopDistrict=(district:string,buildId='')=>{
     setInsideWorkshop(false)
     setSelectedBuildId(buildId)
@@ -516,6 +526,8 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
   const builds = Array.isArray(world?.builds) ? world.builds : []
   const systems = Array.isArray(world?.systems) ? world.systems : []
   const activeBuilds = builds.filter((build: any) => build.status === 'building')
+  const activeSystems = systems.filter((system:any)=>system.status==='active')
+  const workshopBuild = activeBuilds.find((build:any)=>build.id===selectedBuildId) || activeBuilds[0]
   const openHostedSystem=(id:string)=>{
     if(!systems.some((system:any)=>system.id===id&&system.status==='active'))return
     setInsideWorkshop(false)
@@ -528,7 +540,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
   const openBuild=(id:string)=>{
     if(activeBuilds.some((build:any)=>build.id===id))enterWorkshopDistrict('formation_yard',id)
   }
-  const liveSystemTypes=new Set(systems.filter((system:any)=>system.status==='active').map((system:any)=>system.system_type))
+  const liveSystemTypes=new Set(activeSystems.map((system:any)=>system.system_type))
   const marketLevel=liveSystemTypes.has('marketplace_network')
     ? 3
     : liveSystemTypes.has('commerce_storefront')
@@ -705,7 +717,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
               effectValue:Number(part.effect_value||0),
             })):[],
           }))}
-          liveSystems={systems.filter((system:any)=>system.status==='active').map((system:any)=>({
+          liveSystems={activeSystems.map((system:any)=>({
             id:system.id,
             title:system.title,
             systemType:system.system_type,
@@ -771,7 +783,12 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
             </button>
           </div>
           <div className="ff-workspace-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain p-3 sm:p-4 md:p-5">
-          {surface==='builds'&&insideWorkshop&&<FileFolderWorkshopInterior key={formationDistrict} district={formationDistrict} onOperate={()=>setInsideWorkshop(false)}/>}
+          {surface==='builds'&&insideWorkshop&&<FileFolderWorkshopInterior
+            key={formationDistrict} district={formationDistrict} tier={workshopTier}
+            buildCount={activeBuilds.length} liveCount={activeSystems.length}
+            progress={workshopBuild ? buildProgress(workshopBuild,now) : 0}
+            onOperate={operateWorkbench}
+          />}
         <section aria-label="Construction sequence" className="ff-build-sequence border-y border-cyan-100/10 bg-[#06101b]/55 px-2 py-2.5 md:px-4 md:py-3" data-file-folder-awareness="compact-build-sequence">
           <div className="flex items-center gap-3">
             <button onClick={()=>travelToStudio('workshop_core')} className="inline-flex shrink-0 items-center gap-1.5 border-r border-cyan-100/10 pr-3 text-[8px] font-black uppercase tracking-[.12em] text-amber-100 md:gap-2 md:text-[9px] md:tracking-[.14em]">
@@ -978,17 +995,18 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
                   </div>
                   <div className="flex shrink-0 gap-4 text-right text-[8px] uppercase tracking-wider text-stone-500">
                     <span><b className="block text-base text-amber-100">{activeBuilds.length}</b>building</span>
-                    <span><b className="block text-base text-emerald-100">{systems.length}</b>live</span>
+                    <span><b className="block text-base text-emerald-100">{activeSystems.length}</b>live</span>
                   </div>
                 </div>
                 {!plusPhone&&<GenerativeFormationWorkshop />}
+                <div ref={districtTools} tabIndex={-1} aria-label="Workshop tools" role="region">
                 <FileFolderOpenWorld
                   embedded={data.file_folder_tier==='premium'||plusPhone}
                   clientName={data.client.name}
                   fileNumber={data.client.file_number}
                   fileFolderTier={data.file_folder_tier}
                   worldAppearance={resolveFileFolderAppearance(
-                    data.file_folder_tier==='plus'?'plus':data.file_folder_tier==='premium'?'premium':data.file_folder_tier==='pro'?'pro':'standard',
+                    workshopTier,
                     data.file_folder_world_release?.config,
                   )}
                   workshopTitle={data.workshop.title}
@@ -1002,6 +1020,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
                   pollWorld={false}
                   pollAi={false}
                 />
+                </div>
                 {plusPhone&&<GenerativeFormationWorkshop />}
               </>
             )}
