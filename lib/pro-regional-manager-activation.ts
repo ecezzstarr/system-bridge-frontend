@@ -5,6 +5,7 @@ import {ensureProRegionalManagerApplicationsSchema} from '@/lib/pro-regional-man
 import {getAuthUser} from '@/lib/auth-api'
 import {NextRequest} from 'next/server'
 import {PRO_ACTIVATION_FEE_USDT,getReceivingWallet,isTronAddress} from '@/lib/pro-file-folder-activation'
+import {PRO_MANAGER_PROFIT_TERMS_VERSION,proManagerApprovalState} from '@/lib/pro-regional-manager-profit-share'
 
 export const PRO_MANAGER_TERMS_VERSION='PRO-REGIONAL-MANAGER-2026-11'
 export const PRO_MANAGER_NETWORK='TRC20_USDT'
@@ -34,6 +35,10 @@ export async function ensureProRegionalManagerActivationSchema(){
    created_at timestamptz NOT NULL DEFAULT NOW(),
    updated_at timestamptz NOT NULL DEFAULT NOW()
  )`
+ await sql`ALTER TABLE weave_pro_regional_manager_activations ADD COLUMN IF NOT EXISTS quoted_fee_usdt numeric(16,2)`
+ await sql`ALTER TABLE weave_pro_regional_manager_activations ADD COLUMN IF NOT EXISTS activation_continent varchar(20)`
+ await sql`ALTER TABLE weave_pro_regional_manager_activations ADD COLUMN IF NOT EXISTS compensation_model varchar(32)`
+ await sql`ALTER TABLE weave_pro_regional_manager_activations ADD COLUMN IF NOT EXISTS profit_share_bps integer`
  await sql`CREATE INDEX IF NOT EXISTS weave_pro_manager_activation_status_time
    ON weave_pro_regional_manager_activations(status,created_at DESC)`
  await sql`CREATE TABLE IF NOT EXISTS weave_pro_regional_manager_work (
@@ -68,14 +73,16 @@ export async function prepareApprovedProRegionalManager(userId:string){
   await db.query('BEGIN')
   const result=await db.query(`SELECT a.user_id,a.source_role,a.status,
     a.business_name,a.operating_country,a.operating_region,a.operating_city,
-    a.agreed_monthly_salary_usdt,a.employment_terms_reference,u.name,u.role,u.is_active
+    a.agreed_monthly_salary_usdt,a.employment_terms_reference,
+    a.compensation_model,a.monthly_profit_share_bps,a.approved_continent,
+    a.approved_activation_fee_usdt,u.name,u.role,u.is_active
     FROM weave_pro_regional_manager_applications a
     JOIN users u ON u.id=a.user_id
     WHERE a.user_id=$1::uuid FOR UPDATE OF a,u`,[userId])
   const app=result.rows[0]
   if(!app||app.status!=='approved_pending_verification'||!app.is_active||
      !['agent','bridger'].includes(app.role)||app.role!==app.source_role||
-     Number(app.agreed_monthly_salary_usdt)<=0||!app.employment_terms_reference)
+     !proManagerApprovalState(app))
    throw new Error('Approved Agent or Bridger Pro employment terms are required.')
   const old=await db.query('SELECT file_number,status FROM weave_pro_regional_manager_activations WHERE user_id=$1::uuid',[userId])
   if(old.rows.length){
@@ -103,9 +110,11 @@ export async function prepareApprovedProRegionalManager(userId:string){
   }
   if(!allocated)throw new Error('Unable to reserve a unique Pro File Number.')
   const created=await db.query(`INSERT INTO weave_pro_regional_manager_activations
-    (user_id,file_number,source_role,status)
-    VALUES($1::uuid,$2,$3,'awaiting_signature')
-    RETURNING file_number,status`,[userId,allocated,app.source_role])
+    (user_id,file_number,source_role,status,quoted_fee_usdt,activation_continent,compensation_model,profit_share_bps)
+    VALUES($1::uuid,$2,$3,'awaiting_signature',$4,$5,$6,$7)
+    RETURNING file_number,status`,[userId,allocated,app.source_role,
+      proManagerApprovalState(app)!.feeUSDT,proManagerApprovalState(app)!.continent,
+      proManagerApprovalState(app)!.model,proManagerApprovalState(app)!.profitShareBps])
   await db.query('COMMIT')
   return created.rows[0]
  }catch(e){
@@ -122,7 +131,9 @@ export async function getProManagerApplicant(request:NextRequest){
    a.operating_country,a.operating_region,a.operating_city,a.contact_address,
    a.daily_work_plan,a.status AS application_status,
    a.agreed_monthly_salary_usdt,a.employment_terms_reference,
-   p.file_number,p.status AS activation_status,p.signed_name,p.signed_at,
+   a.compensation_model,a.monthly_profit_share_bps,a.approved_continent,a.approved_activation_fee_usdt,
+   p.quoted_fee_usdt,p.activation_continent,p.compensation_model AS activation_compensation_model,
+   p.profit_share_bps AS activation_profit_share_bps,p.file_number,p.status AS activation_status,p.signed_name,p.signed_at,
    p.terms_version,p.payment_wallet,p.payment_tx_hash,p.payment_submitted_at,
    p.payment_verified_at,p.verified_amount_usdt,p.rejection_reason,p.activated_at,
    u.name AS account_name,u.role,u.is_active
@@ -141,7 +152,9 @@ export async function getActiveProRegionalManager(request:NextRequest){
  const ctx=await getProManagerApplicant(request)
  if(!ctx||ctx.row.application_status!=='approved_pending_verification'||
     ctx.row.activation_status!=='active'||!ctx.row.payment_verified_at||
-    Number(ctx.row.verified_amount_usdt)!==PRO_MANAGER_ACTIVATION_FEE_USDT||
+    !proManagerApprovalState(ctx.row)||
+    Number(ctx.row.verified_amount_usdt)!==proManagerApprovalState(ctx.row)!.feeUSDT||
+    (ctx.row.quoted_fee_usdt!=null && Number(ctx.row.quoted_fee_usdt)!==proManagerApprovalState(ctx.row)!.feeUSDT)||
     !ctx.row.signed_at||!ctx.row.file_number)return null
  const [folder]=await sql`SELECT id FROM client_file_folders
    WHERE client_id=${ctx.user.id}::uuid AND file_number=${ctx.row.file_number}
@@ -154,16 +167,18 @@ export async function signProManagerTerms(userId:string,typedName:string,agreed:
  const name=typedName.trim().replace(/\s+/g,' ')
  if(name.length<3||name.length>255)throw new Error('Enter your full registered name.')
  const [row]=await sql`SELECT a.status AS app_status,a.agreed_monthly_salary_usdt,
-    a.employment_terms_reference,u.name,u.role,u.is_active
+    a.employment_terms_reference,a.compensation_model,a.monthly_profit_share_bps,
+    a.approved_continent,a.approved_activation_fee_usdt,u.name,u.role,u.is_active
     FROM weave_pro_regional_manager_applications a
     JOIN users u ON u.id=a.user_id WHERE a.user_id=${userId}::uuid LIMIT 1`
  if(!row||row.app_status!=='approved_pending_verification'||!row.is_active||
-   !['agent','bridger'].includes(row.role)||Number(row.agreed_monthly_salary_usdt)<=0||
-   !row.employment_terms_reference||name.toLowerCase()!==
+   !['agent','bridger'].includes(row.role)||!proManagerApprovalState(row)||
+   name.toLowerCase()!==
     String(row.name||'').trim().replace(/\s+/g,' ').toLowerCase())
   throw new Error('Your signed name and independently approved company employment record must match.')
  const [signed]=await sql`UPDATE weave_pro_regional_manager_activations
-  SET signed_name=${name},signed_at=now(),terms_version=${PRO_MANAGER_TERMS_VERSION},
+  SET signed_name=${name},signed_at=now(),terms_version=${proManagerApprovalState(row)?.model==='profit_share'
+    ?PRO_MANAGER_PROFIT_TERMS_VERSION:PRO_MANAGER_TERMS_VERSION},
    status='payment_required',updated_at=now()
   WHERE user_id=${userId}::uuid AND status='awaiting_signature'
   RETURNING status,file_number`
