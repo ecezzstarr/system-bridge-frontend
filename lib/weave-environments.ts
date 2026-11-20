@@ -15,6 +15,14 @@ export function weaveWorldForPath(pathname:string):'open-weave'|'file-folder'{
 }
 
 const exact: Record<string, WeaveEnvironmentCopy> = {
+  '/company-grounds': {
+    key: 'company-grounds',
+    title: 'Company Grounds',
+    district: 'Weave of Presence',
+    purpose: 'Explore the company buildings and enter the workspace for your position.',
+    movement: 'Choose a building → follow the Flame → enter your workplace',
+    layer: 'world',
+  },
   '/login': {
     key: 'position-entry',
     title: 'WEAVE Position Gate',
