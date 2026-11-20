@@ -375,7 +375,9 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
     },remaining)
     return ()=>window.clearTimeout(timer)
   },[covered,environmentReady,revealAfterMs,pathname,sequenceId])
-  const openingLabel=destinationPath===\x27/company-grounds\x27\n    ? \x27Opening Company Grounds\x27\n    : returningToWorld
+  const openingLabel=destinationPath==='/company-grounds'
+    ? 'Opening Company Grounds'
+    : returningToWorld
     ? `Returning to ${destinationEnvironment.title}`
     : showAgentBriefing
     ? 'Stability · Your work begins here'
@@ -435,8 +437,8 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
       {/* The Company Loader uses a shared architectural illustration. Flame
           Event destinations keep their original Burning River atmosphere. */}
       <div className="weave-loader-scenery" aria-hidden="true">
-        <div className="weave-loader-scenery-portrait" style={destinationPath===\x27/company-grounds\x27?{backgroundImage:"url(/images/company-grounds-plus.webp)"}:undefined}/>
-        <div className="weave-loader-scenery-landscape" style={destinationPath===\x27/company-grounds\x27?{backgroundImage:"url(/images/company-grounds-plus.webp)"}:undefined}/>
+        <div className="weave-loader-scenery-portrait" style={destinationPath==='/company-grounds'?{backgroundImage:"url(/images/company-grounds-plus.webp)"}:undefined}/>
+        <div className="weave-loader-scenery-landscape" style={destinationPath==='/company-grounds'?{backgroundImage:"url(/images/company-grounds-plus.webp)"}:undefined}/>
         <div className="weave-loader-scenery-shade"/>
       </div>
       <div className="weave-loader-layout relative grid h-full min-h-0 w-full max-w-3xl">
