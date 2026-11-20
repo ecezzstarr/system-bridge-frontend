@@ -40,8 +40,10 @@ export default function BridgerDashboardPage() {
     )}
     <NativeDepartmentRail department="hope"/>
     <ManagerLifestyleEntry/>
-    <Link href="/referrals" data-core-function="referral-movement" className="fixed bottom-24 right-4 z-30 inline-flex items-center gap-2 rounded-full border border-emerald-300/25 bg-[#071711]/95 px-4 py-3 text-[10px] font-black uppercase tracking-[.12em] text-emerald-100 shadow-2xl backdrop-blur md:right-7">
+    <nav aria-label="Department shortcuts" className="mx-auto flex max-w-5xl flex-wrap gap-2 px-4 py-4">
+    <Link href="/referrals" data-core-function="referral-movement" className="inline-flex min-h-11 items-center gap-2 rounded-full border border-emerald-300/25 bg-[#071711]/95 px-4 py-3 text-[10px] font-black uppercase tracking-[.12em] text-emerald-100 shadow-2xl backdrop-blur">
       <Share2 className="h-4 w-4"/>Referral Movement · ₦500
     </Link>
+    </nav>
   </>
 }
