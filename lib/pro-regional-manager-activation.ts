@@ -154,7 +154,12 @@ export async function getActiveProRegionalManager(request:NextRequest){
     ctx.row.activation_status!=='active'||!ctx.row.payment_verified_at||
     !proManagerApprovalState(ctx.row)||
     Number(ctx.row.verified_amount_usdt)!==proManagerApprovalState(ctx.row)!.feeUSDT||
-    (ctx.row.quoted_fee_usdt!=null && Number(ctx.row.quoted_fee_usdt)!==proManagerApprovalState(ctx.row)!.feeUSDT)||
+    (proManagerApprovalState(ctx.row)!.model==='profit_share'&&(
+      Number(ctx.row.quoted_fee_usdt)!==proManagerApprovalState(ctx.row)!.feeUSDT||
+      ctx.row.activation_compensation_model!=='profit_share'||
+      ctx.row.activation_continent!==proManagerApprovalState(ctx.row)!.continent||
+      Number(ctx.row.activation_profit_share_bps)!==2000||
+      ctx.row.terms_version!==PRO_MANAGER_PROFIT_TERMS_VERSION))||
     !ctx.row.signed_at||!ctx.row.file_number)return null
  const [folder]=await sql`SELECT id FROM client_file_folders
    WHERE client_id=${ctx.user.id}::uuid AND file_number=${ctx.row.file_number}
