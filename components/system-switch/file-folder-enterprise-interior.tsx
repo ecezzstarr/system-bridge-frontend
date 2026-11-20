@@ -112,10 +112,13 @@ export function EnterpriseWorkshopInterior({
    <boxGeometry args={[.18,3.45,.2]}/>
    <EnterpriseMaterial tier={tier} surface="metal"/>
   </mesh>))}
-  <mesh position={[0,3.42,0]} castShadow>
-   <boxGeometry args={[6.0,.2,4.5]}/>
-   <EnterpriseMaterial tier={tier} surface="metal"/>
-  </mesh>
+  {/* Perimeter beams leave the glazed roof open to daylight and the orbit camera. */}
+  {[-2.13,2.13].map(z=><mesh key={z} position={[0,3.42,z]} castShadow>
+   <boxGeometry args={[6,.18,.13]}/><EnterpriseMaterial tier={tier} surface="metal"/>
+  </mesh>)}
+  {[-2.9,0,2.9].map(x=><mesh key={x} position={[x,3.42,0]} castShadow>
+   <boxGeometry args={[.13,.18,4.3]}/><EnterpriseMaterial tier={tier} surface="metal"/>
+  </mesh>)}
   <mesh position={[0,3.5,0]}>
    <boxGeometry args={[5.7,.075,4.25]}/>
    <EnterpriseMaterial tier={tier} surface="glass"/>

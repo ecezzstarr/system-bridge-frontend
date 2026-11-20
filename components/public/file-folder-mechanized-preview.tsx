@@ -11,6 +11,8 @@ import {FileFolderLuxuryMaterial} from '@/components/system-switch/file-folder-l
 import {EnterpriseWaterMaterial} from '@/components/system-switch/file-folder-enterprise-surfaces'
 import {EnterpriseWorkshopInterior} from '@/components/system-switch/file-folder-enterprise-interior'
 
+import {FileFolderWorkshopRoom} from '@/components/system-switch/file-folder-workshop-room'
+
 export type PublicFileFolderTier='standard'|'pro'|'premium'|'plus'
 
 type Finish={base:string;roof:string;trim:string;glass:string;sky:string;floor:string;glow:string;height:number;stations:number}
@@ -258,6 +260,7 @@ class SceneRecovery extends Component<{children:ReactNode},{failed:boolean}>{
 }
 
 export default function FileFolderMechanizedPreview({tier}: {tier:PublicFileFolderTier}){
+ const [view,setView]=useState<'estate'|'workshop'>('estate')
  const [reducedMotion,setReducedMotion]=useState(false)
  useEffect(()=>{
   const query=window.matchMedia('(prefers-reduced-motion: reduce)')
@@ -267,17 +270,25 @@ export default function FileFolderMechanizedPreview({tier}: {tier:PublicFileFold
   return ()=>query.removeEventListener('change',update)
  },[])
  return <div className="relative h-full min-h-[280px] w-full" data-public-mechanized-file-folder={tier}>
-  <SceneRecovery>
+  <SceneRecovery key={view}>
    <Suspense fallback={<div className="flex h-full items-center justify-center text-sm text-slate-100">Preparing the 3D model…</div>}>
-    <AdaptiveCanvas camera={{position:[14,12,18],fov:43,near:.1,far:90}}
+    <AdaptiveCanvas camera={{position:view==='estate'?[14,12,18]:[1.5,2.4,3.9],fov:view==='estate'?43:62,near:.1,far:90}}
       gl={{antialias:true,alpha:false,powerPreference:'high-performance'}}
       fallback={<div className="p-5 text-center text-sm">3D unavailable on this device.</div>}>
-     <ExhibitionScene tier={tier} reducedMotion={reducedMotion}/>
+     {view==='estate' ? <ExhibitionScene tier={tier} reducedMotion={reducedMotion}/> : <>
+      <FileFolderWorkshopRoom tier={tier}/>
+      <OrbitControls target={[0,1.2,-3.5]} minDistance={2} maxDistance={14}
+       maxPolarAngle={Math.PI*.49} enablePan={false} makeDefault/>
+     </>}
     </AdaptiveCanvas>
    </Suspense>
   </SceneRecovery>
-  <div className="pointer-events-none absolute inset-x-2 bottom-2 rounded-lg bg-[#091422]/85 px-2.5 py-1.5 text-center text-[11px] leading-4 text-white">
-   Architectural concept · drag to orbit · pinch to zoom · no live business activity
+  <div className="absolute inset-x-2 bottom-2 flex flex-wrap items-center justify-center gap-x-3 rounded-xl bg-[#091422]/95 px-2 text-center text-white">
+   <button type="button" className="min-h-11 px-2 text-xs font-bold underline underline-offset-4"
+    onClick={()=>setView(view==='estate'?'workshop':'estate')}>
+    {view==='estate'?'Inspect owner workshop':'Return to estate model'}
+   </button>
+   <p className="pb-1 text-[11px]">{view==='estate'?'Architectural concept':'Owner workshop · equipment at rest'} · drag to orbit · pinch to zoom</p>
   </div>
  </div>
 }

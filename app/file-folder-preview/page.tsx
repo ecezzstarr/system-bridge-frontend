@@ -110,7 +110,7 @@ export default function FileFolderPreviewPage() {
           <p className="text-[10px] font-black uppercase tracking-[.24em] text-amber-200">The Weave of Presence · System Switch</p>
           <h1 className="mt-3 text-3xl font-black tracking-tight sm:text-5xl">A place for your business to become.</h1>
           <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-300">
-            Standard. Pro. Premium. Plus. Each File Folder carries its own character, working districts and business capabilities. Explore the environment that fits your ambition; systems become operational as they are built and commissioned. Use each model's 3D control to inspect its architecture; models are illustrative and contain no live customer or business records.
+            Explore the estate for each tier, then select “Inspect owner workshop” to look inside the workspace you would enter. The public tour shows the equipment at rest. Inside your own File Folder, the workbench opens your tools, machinery follows your recorded builds, and a commissioned Customer Door lets customers reach your published offers.
           </p>
         </header>
 

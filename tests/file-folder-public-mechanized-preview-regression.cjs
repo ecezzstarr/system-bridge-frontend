@@ -24,7 +24,7 @@ assert(model.includes('SceneRecovery')&&model.includes('fallback='),
  'WebGL recovery and loading fallback must exist')
 assert(model.includes('public architectural models')||model.includes('Public architectural models'),
  'Preview must be explicitly identified as a non-operating concept')
-assert(model.includes('no live business activity'),
+assert(model.includes('equipment at rest')&&model.includes('<FileFolderWorkshopRoom tier={tier}/>'),
  'No public preview may represent fictional sales or active Client systems')
 assert(!model.includes('fetch(')&&!model.includes("'/api/")&&
  !model.includes('localStorage')&&!model.includes('sessionStorage'),

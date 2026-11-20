@@ -64,4 +64,13 @@ assert(plus.includes('buildCount={formation.activeBuilds}')&&
 assert(publicPreview.includes('EnterpriseWorkshopInterior tier={tier}/>')&&
  !publicPreview.includes('buildCount=')&&!publicPreview.includes('liveCount='),
  'Public preview interiors are non-operational architectural examples')
+const room=read('components/system-switch/file-folder-workshop-interior.tsx')
+const owner=read('components/system-switch/client-file-folder-operating-environment.tsx')
+const sharedRoom=read('components/system-switch/file-folder-workshop-room.tsx')
+assert(room.includes('<FileFolderWorkshopRoom tier={tier}')&&sharedRoom.includes('<EnterpriseWorkshopInterior tier={tier} buildCount={buildCount} liveCount={liveCount} progress={progress}/>')&&
+ owner.includes('tier={workshopTier}')&&owner.includes('buildCount={activeBuilds.length} liveCount={activeSystems.length}'),
+ 'The walk-in owner workshop must share the estate equipment and use the purchased finish and recorded activity')
+assert(owner.includes('onOperate={operateWorkbench}')&&owner.includes('ref={districtTools}')&&
+ room.includes('position:FILE_FOLDER_WORKBENCH'),
+ 'The accessible tools shortcut and the physical workbench must lead to the district controls')
 console.log('Client File Folder interiors, PBR glass, textured water and mechanical state: OK')
