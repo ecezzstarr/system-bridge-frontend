@@ -100,13 +100,13 @@ export async function POST(request:NextRequest){
       !row.business_plan)
     throw new Error('A signed, independently approved Agent/Bridger Pro activation awaiting Forensics is required.')
    const contract=proManagerApprovalState({...row,compensation_model:row.application_compensation_model})
-   if(!contract||amount!==contract.feeUSDT||
+   if(action==='approve_payment'&&(!contract||amount!==contract.feeUSDT||
       (contract.model==='profit_share'&&(
         row.compensation_model!=='profit_share'||
         Number(row.quoted_fee_usdt)!==contract.feeUSDT||
         row.activation_continent!==contract.continent||
         Number(row.profit_share_bps)!==contract.profitShareBps||
-        row.terms_version!==PRO_MANAGER_PROFIT_TERMS_VERSION)))
+        row.terms_version!==PRO_MANAGER_PROFIT_TERMS_VERSION))))
     throw new Error('Independently verified amount, recorded continent, signed 20% agreement and original approved quote must match before activation.')
    /* Verified location and the original quote remain immutable in the activation
       snapshot; this prevents a later region or fee change from repricing proof. */
