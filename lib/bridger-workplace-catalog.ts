@@ -2,8 +2,7 @@
  * Bridger Workplace directory.
  *
  * This is navigation over existing Weave pages, not a replacement for those
- * pages, their APIs, records, or access policies. All older district routes
- * remain accessible in the original district world.
+ * pages, their APIs, records, or access policies.
  */
 export type BridgerWorkplaceSpaceId = 'desk' | 'conversations' | 'studio' | 'outreach' | 'employment' | 'records' | 'company'
 export type BridgerWorkplaceAccess = 'core' | 'lifestyle' | 'approval' | 'preview'

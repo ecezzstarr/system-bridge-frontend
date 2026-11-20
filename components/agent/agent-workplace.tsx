@@ -40,7 +40,7 @@ function StationRow({station}: {station: AgentStation}) {
   </li>
 }
 
-export function AgentWorkplace({userName,onOpenDistricts}:{userName?:string|null;onOpenDistricts?:()=>void}){
+export function AgentWorkplace({userName}:{userName?:string|null}){
   const [active,setActive]=useState<AgentSpaceId>('desk')
   const [search,setSearch]=useState('')
   const {isVisible}=useEnvironmentOrganizer()
@@ -99,7 +99,6 @@ export function AgentWorkplace({userName,onOpenDistricts}:{userName?:string|null
     </section>
     <footer className="mt-4 flex flex-wrap gap-x-6 border-t border-[#d6c9ac] text-sm text-[#624c24]">
       <Link href="/search" data-role-company-search="agent" className="inline-flex min-h-11 items-center underline">Search across Weave</Link>
-      {onOpenDistricts && <button type="button" onClick={onOpenDistricts} className="min-h-11 underline">Original districts</button>}
     </footer>
   </main>
 }

@@ -12,7 +12,6 @@ import { TermsAcceptanceModal } from '@/components/terms-acceptance-modal'
 import { Toaster } from '@/components/ui/sonner'
 import { LiveAdSurface } from '@/components/live-ad-surface'
 import { FlameEventRoleAtmosphere } from '@/components/events/flame-event-role-atmosphere'
-import { NormalWeaveRoleAtmosphere } from '@/components/world/normal-weave-role-atmosphere'
 import { FlameEventAd } from '@/components/events/flame-event-ad'
 import { CompanyLoopTwoScroll } from '@/components/events/company-loop-two-scroll'
 import { PresenceCameraSignal, PresenceCameraViewport } from '@/components/world/presence-camera'
@@ -148,9 +147,7 @@ export default function AppLayout({
           <PresenceCameraViewport>
             <WeaveEnvironmentSurface role={user?.role} userName={user?.name}>
               <FlameEventRoleAtmosphere userRole={user?.role} userName={user?.name} pathname={pathname}>
-                <NormalWeaveRoleAtmosphere userRole={user?.role} userName={user?.name} pathname={pathname}>
-                  <EnvironmentPageGuard><WeaveExistingPageImage/>{children}</EnvironmentPageGuard>
-                </NormalWeaveRoleAtmosphere>
+                <EnvironmentPageGuard><WeaveExistingPageImage/>{children}</EnvironmentPageGuard>
               </FlameEventRoleAtmosphere>
             </WeaveEnvironmentSurface>
           </PresenceCameraViewport>

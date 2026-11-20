@@ -8,7 +8,6 @@ const exists = p => fs.existsSync(path.join(root, p))
 const catalog = read('lib/bridger-workplace-catalog.ts')
 const workplace = read('components/bridger/bridger-workplace.tsx')
 const dashboard = read('app/(app)/bridger/dashboard/page.tsx')
-const atmosphere = read('components/world/normal-weave-role-atmosphere.tsx')
 const videoRoom = read('app/(app)/bridger/ai-video-call/page.tsx')
 const liveRoom = read('components/bridger/weave-video-room.tsx')
 
@@ -33,16 +32,8 @@ for (const name of legacy) {
     'Existing Bridger page is preserved: ' + name)
 }
 
-// Original districts stay mounted on demand, while the atmosphere permits
-// the new Bridger-specific dashboard to render. Other role worlds are unchanged.
-assert.ok(dashboard.includes('<BridgerWorkplace'), 'New workplace is the Bridger entrance')
-assert.ok(dashboard.includes('<WeaveDashboardWorld role="bridger"'),
-  'Existing district world can still be opened')
-assert.ok(dashboard.includes('onOpenDistricts'), 'The original world is reachable')
-assert.ok(atmosphere.includes("pathname === '/bridger/dashboard' && userRole === 'bridger'"),
-  'Only Bridger dashboard bypasses the old atmosphere override')
-assert.ok(atmosphere.includes('<WeaveDashboardWorld'),
-  'Agent and Administration world handling remains untouched')
+assert.ok(dashboard.includes('<BridgerWorkplace'), 'Hope opens the Bridger workplace')
+assert.doesNotMatch(dashboard, /WeaveDashboardWorld|onOpenDistricts/)
 
 // No new prospects table or social records are introduced in this rollout.
 assert.ok(catalog.includes("label: 'My Prospects', href: '/weave/market/prospects'"),

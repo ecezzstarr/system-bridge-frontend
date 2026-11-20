@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
 import {
-  ArrowRight, ArrowUpRight, BriefcaseBusiness, Building2, ClipboardCheck,
+  ArrowRight, ArrowUpRight, BriefcaseBusiness, ClipboardCheck,
   Code2, Coins, FileCheck2, Landmark, Megaphone, Search, ShieldCheck,
   Warehouse, type LucideIcon,
 } from 'lucide-react'
@@ -37,7 +37,7 @@ const priorities=[
   {title:'Release authority',href:'/admin/release-workshop',detail:'Inspect the release candidate and deployment status before acting.',icon:FileCheck2},
 ]
 
-export function AdminWorkplace({userName,onOpenDistricts}:{userName?:string|null;onOpenDistricts?:()=>void}){
+export function AdminWorkplace({userName}:{userName?:string|null}){
  const [active,setActive]=useState<AdminSpaceId>('desk')
  const [search,setSearch]=useState('')
  const {isVisible}=useEnvironmentOrganizer()
@@ -70,9 +70,6 @@ export function AdminWorkplace({userName,onOpenDistricts}:{userName?:string|null
            <Link href="/admin/control-center" className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#ccb782] bg-white/85 px-4 py-2 text-sm font-semibold text-[#725322]">
              <ShieldCheck className="h-4 w-4"/> Control Center
            </Link>
-           {onOpenDistricts&&<button type="button" onClick={onOpenDistricts} className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#ccb782] bg-white/85 px-4 py-2 text-sm font-semibold text-[#725322]">
-             <Building2 className="h-4 w-4"/> Original districts
-           </button>}
          </div>
        </div>
      </header>
