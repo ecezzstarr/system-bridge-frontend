@@ -3,6 +3,7 @@ import {sql} from '@/lib/db'
 import {getProManagerApplicant,getActiveProRegionalManager,
  ensureProRegionalManagerActivationSchema} from '@/lib/pro-regional-manager-activation'
 import {proRegionalManagerDepartment} from '@/lib/pro-regional-manager-policy'
+import {proManagerApprovalState} from '@/lib/pro-regional-manager-profit-share'
 import {getFileFolderWorldSnapshot} from '@/lib/client-file-folder-world'
 import {ensureClientBusinessStore} from '@/lib/client-business-store'
 
@@ -19,6 +20,7 @@ export async function GET(request:NextRequest){
   const {row,user}=applicant
   const active=await getActiveProRegionalManager(request)
   const department=proRegionalManagerDepartment(row.source_role)
+  const agreement=proManagerApprovalState(row)
   const position={type:'pro_regional_manager',originalRole:row.source_role,
     department:department?.department,workScope:department?.workScope,
     dailyWork:department?.dailyWork,
@@ -26,7 +28,9 @@ export async function GET(request:NextRequest){
     territory:{country:row.operating_country,region:row.operating_region,
       city:row.operating_city,address:row.contact_address},
     businessPlan:row.business_plan,dailyWorkPlan:row.daily_work_plan,
-    agreedMonthlySalaryUSDT:Number(row.agreed_monthly_salary_usdt||0),
+    agreedMonthlySalaryUSDT:agreement?.model==='legacy_salary'?Number(row.agreed_monthly_salary_usdt||0):null,
+    compensationModel:agreement?.model||null,profitShareBps:agreement?.profitShareBps||0,
+    quotedActivationFeeUSDT:agreement?.feeUSDT||null,approvedContinent:agreement?.continent||null,
     employmentTermsReference:row.employment_terms_reference,
     applicationStatus:row.application_status,activationStatus:row.activation_status||'not_prepared'}
   if(!active)return NextResponse.json({success:true,active:false,position,
@@ -58,7 +62,9 @@ export async function GET(request:NextRequest){
   return NextResponse.json({success:true,active:true,position,world,
     businessStore:{...store,items,orders,customer_door_systems:doorSystems,
       public_url:'/market/'+store.public_slug},
-    activity,notice:'Departmental work, company payroll, customer orders and File Folder purchases are separate records. Customer payments require actual settlement verification.'},{headers})
+    activity,notice:agreement?.model==='profit_share'
+    ?'This Pro manager owns the business and serves WEAVE without a company salary under the 20% of verified monthly net profit agreement. Profit-share assessment and payment require independent reconciliation; no automatic debit is authorized.'
+    :'Existing approved company salary and customer business revenue are separate records.'},{headers})
  }catch(e){console.error('[Pro Regional Manager workspace GET]',e)
   return NextResponse.json({error:'Unable to open Pro Manager workspace; contact Administrations if this Pro File Folder was activated but is not initializing.'},{status:503,headers})}
 }
