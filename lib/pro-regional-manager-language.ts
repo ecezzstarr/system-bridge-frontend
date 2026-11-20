@@ -61,3 +61,23 @@ export const PRO_MANAGER_AGREEMENT_SECTIONS = [
     body:'I will provide truthful identity and business information, operate within applicable rules, protect customer and employee information, and distinguish proposals, reported amounts, verified receipts and completed work. Any pre-existing funds or business claims require independent evidence and are not released by paying the activation charge.'
   },
 ] as const
+
+/** New Agent/Bridger original-role agreement only. Existing Client Pro staff
+ * salary and signed 680 USDT terms are preserved above without alteration. */
+export const PRO_ORIGINAL_ROLE_PROFIT_SHARE_AGREEMENT_SECTIONS = [
+  PRO_MANAGER_AGREEMENT_SECTIONS[0],
+  {
+    title:'2. Reciprocal Weave growth and 20% monthly net-profit participation',
+    body:'I retain ownership and control of my approved business and Pro File Folder while serving Weave in my original Hope or Stability department. Weave may support my business growth through authorized systems, staff and partnerships. In exchange, I accept a company contribution of 20% of my independently verified monthly NET business profit, not gross revenue. If verified net profit is zero or negative, the profit share is zero for that month. Real receipts, refunds, employee compensation, operating expenses and agreed accounting standards must be reconciled before any payable amount is finalized. This agreement does not authorize an automatic wallet debit.'
+  },
+  PRO_MANAGER_AGREEMENT_SECTIONS[2],
+  {
+    title:'4. Employment and company compensation',
+    body:'Under this new original-role Pro Regional Manager arrangement, I will not receive a fixed monthly salary from Weave. My original Agent or Bridger position remains, and I perform assigned authorized company work while operating my individually owned File Folder business. This is distinct from prior legally binding salary appointments and Client Pro staff agreements; no existing signed employment terms are changed without consent.'
+  },
+  {
+    title:'5. Individual continent-based activation quote',
+    body:'My one-time Pro File Folder activation amount is the exact quote approved for my independently verified operating country and continent and shown in my personal activation workspace. Africa activation fees are strictly below 60 USDT; Europe is 680 USDT; other continents are not yet quoted. I will not transfer funds until Administrations has verified my signed business agreement and published the official recipient wallet. Forensics must independently verify the transaction. Payment alone does not confer authority or guarantee profit.'
+  },
+  PRO_MANAGER_AGREEMENT_SECTIONS[5],
+] as const
