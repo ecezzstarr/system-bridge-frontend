@@ -8,7 +8,8 @@ type Application={
  current_role:string;operating_country:string;operating_region:string;operating_city:string;
  contact_address:string;business_name:string;business_plan:Record<string,string>;
  daily_work_plan:string;status:string;submitted_at:string;review_note?:string|null;
- agreed_monthly_salary_usdt?:number|null;employment_terms_reference?:string|null
+ agreed_monthly_salary_usdt?:number|null;employment_terms_reference?:string|null;
+ compensation_model?:string;approved_continent?:string|null;approved_activation_fee_usdt?:number|null
 }
 type Page={total:number;limit:number;offset:number;hasMore:boolean}
 export default function AdminProRegionalManagerApplications(){
@@ -17,7 +18,8 @@ export default function AdminProRegionalManagerApplications(){
  const [filter,setFilter]=useState('pending')
  const [page,setPage]=useState<Page>({total:0,limit:50,offset:0,hasMore:false})
  const [notes,setNotes]=useState<Record<string,string>>({})
- const [salary,setSalary]=useState<Record<string,string>>({})
+ const [continent,setContinent]=useState<Record<string,string>>({})
+ const [fee,setFee]=useState<Record<string,string>>({})
  const [terms,setTerms]=useState<Record<string,string>>({})
  const [confirmed,setConfirmed]=useState<Record<string,boolean>>({})
  const [working,setWorking]=useState('')
@@ -42,8 +44,10 @@ export default function AdminProRegionalManagerApplications(){
    const response=await fetch('/api/admin/pro-regional-manager-applications',{
     method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
     body:JSON.stringify({userId:a.user_id,decision,reviewNote:notes[a.user_id]||'',
-      monthlySalaryUSDT:Number(salary[a.user_id]||0),employmentTermsReference:terms[a.user_id]||'',
-      independentlyVerified:confirmed[a.user_id]===true})})
+      verifiedContinent:continent[a.user_id]||'',
+      approvedFeeUSDT:continent[a.user_id]==='europe'?680:Number(fee[a.user_id]||0),
+      employmentTermsReference:terms[a.user_id]||'',
+      independentlyVerified:confirmed[a.user_id]===true,operatingLocationVerified:confirmed[a.user_id]===true})})
    const result=await response.json()
    if(!response.ok)throw new Error(result.error||'Could not record review')
    setNotice(result.notice||'Decision recorded')
@@ -73,7 +77,7 @@ export default function AdminProRegionalManagerApplications(){
   <header className="space-y-2">
    <p className="text-xs uppercase tracking-widest text-sky-200">A Time · Pro company appointments</p>
    <h1 className="text-3xl font-bold">Pro Regional Manager Applications</h1>
-   <p className="text-sm leading-6 text-slate-300">Review Agent and Bridger applications independently of ordinary Regional Manager. Check identity, department, business plan, operating location and signed employment terms. Approval records agreed salary but does not activate a Pro File Folder or request payment.</p>
+   <p className="text-sm leading-6 text-slate-300">Review Agent and Bridger applications independently of ordinary Regional Manager. Check identity, department, business plan, operating location and signed employment terms. New Agent/Bridger Pro employment uses 20% of verified monthly NET business profit instead of WEAVE salary. Verify operating continent and exact activation quote. Approval does not itself activate the Pro Folder or require payment.</p>
   </header>
   {error&&<p role="alert" className="rounded-lg border border-rose-400/30 p-4 text-rose-200">{error}</p>}
   {notice&&<p role="status" className="rounded-lg border border-sky-400/30 p-4 text-sky-200">{notice}</p>}
@@ -104,7 +108,9 @@ export default function AdminProRegionalManagerApplications(){
     </details>
     {a.review_note&&<p className="text-xs text-slate-300">Review notes: {a.review_note}</p>}
     {a.status==='approved_pending_verification'&&<div className="space-y-2">
-     <p className="text-xs text-sky-200">Agreed salary recorded: {Number(a.agreed_monthly_salary_usdt||0).toLocaleString()} USDT monthly. The applicant must still sign the agreement and obtain independent File Folder activation verification.</p>
+     <p className="text-xs text-sky-200">{a.compensation_model==='profit_share'
+      ?'New agreement: 20% of independently verified monthly net business profit, no WEAVE salary. Fee quote '+Number(a.approved_activation_fee_usdt||0)+' USDT ('+(a.approved_continent||'pending')+').'
+      :'Legacy salary agreement '+Number(a.agreed_monthly_salary_usdt||0).toLocaleString()+' USDT monthly.'} The applicant still must sign and complete independent Pro activation.</p>
      <button disabled={!!working} onClick={()=>void prepare(a.user_id)}
       className="rounded-lg border border-sky-300/30 px-4 py-2 text-xs font-semibold text-sky-100 disabled:opacity-40">Confirm or repair Pro File Number reservation</button>
     </div>}
@@ -125,9 +131,10 @@ export default function AdminProRegionalManagerApplications(){
      </div>
      <label className="flex gap-2 text-xs text-slate-300"><input type="checkbox" checked={confirmed[a.user_id]||false}
       onChange={e=>setConfirmed(current=>({...current,[a.user_id]:e.target.checked}))}/>
-      I independently verified this applicant's identity, company-approved position, actual agreed salary and written employment terms.</label>
+      I independently verified this applicant's identity, operating country and continent, approved fee and written 20% net-profit terms. New appointments do not earn a WEAVE salary.</label>
      <div className="flex flex-wrap gap-3">
-      <button disabled={!!working||!(notes[a.user_id]||'').trim()||!confirmed[a.user_id]}
+      <button disabled={!!working||(notes[a.user_id]||'').trim().length<10||!confirmed[a.user_id]||
+       !continent[a.user_id]||(continent[a.user_id]==='africa'&&!(Number(fee[a.user_id])>0&&Number(fee[a.user_id])<60))}
        onClick={()=>void review(a,'approve')} className="rounded-lg bg-sky-300 px-4 py-2 text-sm font-semibold text-slate-950 disabled:opacity-40">Approve pending verification</button>
       <button disabled={!!working||!(notes[a.user_id]||'').trim()}
        onClick={()=>void review(a,'reject')} className="rounded-lg border border-white/20 px-4 py-2 text-sm disabled:opacity-40">Reject</button>
