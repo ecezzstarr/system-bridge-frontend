@@ -23,6 +23,7 @@ export async function GET(request:NextRequest){
   await ensureProRegionalManagerApplicationsSchema()
   const [application]=await sql`SELECT source_role,operating_country,operating_region,operating_city,
     business_name,business_plan,daily_work_plan,status,agreed_monthly_salary_usdt,
+    compensation_model,monthly_profit_share_bps,approved_continent,approved_activation_fee_usdt,
     employment_terms_reference,review_note,submitted_at,reviewed_at
     FROM weave_pro_regional_manager_applications WHERE user_id=${user.id}::uuid LIMIT 1`
   return NextResponse.json({success:true,positionType:'pro_regional_manager',
@@ -71,6 +72,8 @@ export async function POST(request:NextRequest){
       contact_address=EXCLUDED.contact_address,business_name=EXCLUDED.business_name,
       business_plan=EXCLUDED.business_plan,daily_work_plan=EXCLUDED.daily_work_plan,
       status='pending',agreed_monthly_salary_usdt=NULL,employment_terms_reference=NULL,
+      compensation_model='legacy_salary',monthly_profit_share_bps=0,
+      approved_continent=NULL,approved_activation_fee_usdt=NULL,
       reviewed_by=NULL,reviewed_at=NULL,review_note=NULL,
       submitted_at=now(),updated_at=now()
     WHERE weave_pro_regional_manager_applications.status IN ('rejected','withdrawn')
@@ -86,7 +89,7 @@ export async function POST(request:NextRequest){
     actorId:String(user.id),actorName:String(user.name||user.role),
   })
   return NextResponse.json({success:true,positionType:'pro_regional_manager',application:record,
-    notice:'Application received for Administrations review. No Pro File Folder, activation charge, salary payment or additional permissions have been granted.'},{status:201,headers})
+    notice:'Application submitted for Administrations review. The proposed new employment uses 20% of verified monthly net business profit instead of company salary. No Pro File Folder, charge or additional permissions have been granted.'},{status:201,headers})
  }catch(e){console.error('[Pro Regional Manager application submit]',e)
   return NextResponse.json({error:'Unable to submit the Pro Regional Manager application'},{status:503,headers})}
 }
