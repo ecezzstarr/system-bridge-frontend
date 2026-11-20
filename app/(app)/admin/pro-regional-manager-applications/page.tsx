@@ -120,11 +120,21 @@ export default function AdminProRegionalManagerApplications(){
        onChange={e=>setNotes(current=>({...current,[a.user_id]:e.target.value}))}
        className="mt-2 w-full rounded-lg border border-white/15 bg-slate-900 p-3"/></label>
      <div className="grid gap-3 sm:grid-cols-2">
-      <label className="block text-sm">Agreed monthly company salary (USDT)
-       <input type="number" min="0" step=".01" value={salary[a.user_id]||''}
-        onChange={e=>setSalary(current=>({...current,[a.user_id]:e.target.value}))}
-        className="mt-2 w-full rounded-lg border border-white/15 bg-slate-900 p-3"/></label>
-      <label className="block text-sm">Verified signed employment agreement reference
+      <label className="block text-sm">Independently verified operating continent
+        <select value={continent[a.user_id]||''}
+         onChange={e=>setContinent(current=>({...current,[a.user_id]:e.target.value}))}
+         className="mt-2 w-full rounded-lg border border-white/15 bg-slate-900 p-3">
+         <option value="">Verify country and actual address first</option>
+         <option value="africa">Africa · individual quote under 60 USDT</option>
+         <option value="europe">Europe · 680 USDT</option>
+        </select></label>
+       <label className="block text-sm">Individually approved activation fee (USDT)
+        <input type="number" min=".01" max="59.99" step=".01"
+         value={continent[a.user_id]==='europe'?'680':fee[a.user_id]||''}
+         onChange={e=>setFee(current=>({...current,[a.user_id]:e.target.value}))}
+         disabled={continent[a.user_id]!=='africa'} placeholder="Set Africa fee below 60"
+         className="mt-2 w-full rounded-lg border border-white/15 bg-slate-900 p-3 disabled:opacity-50"/></label>
+       <label className="block text-sm">Verified signed employment agreement reference
        <input value={terms[a.user_id]||''} maxLength={255}
         onChange={e=>setTerms(current=>({...current,[a.user_id]:e.target.value}))}
         className="mt-2 w-full rounded-lg border border-white/15 bg-slate-900 p-3"/></label>
