@@ -23,7 +23,7 @@ export function validateProManagerActivationQuote(continent: unknown, amount: un
     throw new Error('The approved Africa Pro activation fee must be greater than zero and below 60 USDT.')
   if(continent==='europe' && fee!==PRO_MANAGER_EUROPE_ACTIVATION_USDT)
     throw new Error('The Europe Pro activation quote is exactly 680 USDT.')
-  return {continent,feeUSDT:fee}
+  return {continent:continent as ProManagerActivationContinent,feeUSDT:fee}
 }
 
 type AppointmentRecord = {
