@@ -3,14 +3,15 @@ import Link from 'next/link'
 import {useCallback,useEffect,useState} from 'react'
 import {useAuth} from '@/lib/auth-provider'
 import {PRO_MANAGER_COMPANY_PURPOSE,PRO_MANAGER_FILE_FOLDER_DISTINCTION,
- PRO_MANAGER_AGREEMENT_SECTIONS} from '@/lib/pro-regional-manager-language'
+ PRO_MANAGER_AGREEMENT_SECTIONS,PRO_ORIGINAL_ROLE_PROFIT_SHARE_AGREEMENT_SECTIONS} from '@/lib/pro-regional-manager-language'
 type Activation={
  success:boolean;applicationStatus:string;businessName:string;fileNumber:string|null;
  department:string;companyRole:string;country:string;region:string;city:string;
  salary:{monthlyUSDT:number;agreementReference:string};
  activation:{status:string;signedAt:string|null;paymentSubmittedAt:string|null;
   paymentVerifiedAt:string|null;rejectionReason:string|null;activatedAt:string|null};
- walletAddress:string|null;feeUSDT:number;network:string
+ walletAddress:string|null;feeUSDT:number|null;network:string;
+ compensationModel:'profit_share'|'legacy_salary'|null;profitShareBps:number;approvedContinent:string|null
 }
 export default function ProRegionalManagerActivation(){
  const {user,token,isInitialized}=useAuth()
@@ -78,8 +79,11 @@ export default function ProRegionalManagerActivation(){
     <p className="text-sm">Business: {data?.businessName||'Pending company approval'}</p>
     <p className="font-mono text-xs">Pro File Number: {data?.fileNumber||'Pending official allocation'}</p>
     <p className="text-sm">Company position: {data?.applicationStatus||'not submitted'} · Pro activation: {status.replaceAll('_',' ')}</p>
-    <p className="text-sm">Agreed monthly employment salary: {Number(data?.salary?.monthlyUSDT)>0?
-     Number(data?.salary?.monthlyUSDT).toLocaleString()+' USDT':'Awaiting verified agreement'} · not funded by this activation fee.</p>
+    <p className="text-sm">{data?.compensationModel==='profit_share'
+      ?'Your owned business serves WEAVE with 20% of verified monthly net business profit. No monthly WEAVE salary is owed under this new agreement.'
+      :'Legacy agreed company salary: '+(Number(data?.salary?.monthlyUSDT)>0?
+        Number(data?.salary?.monthlyUSDT).toLocaleString()+' USDT':'Awaiting verified agreement')}</p>
+    <p className="text-sm">Verified fee region: {data?.approvedContinent||'Legacy appointment / awaiting review'} · One-time activation quote: {data?.feeUSDT??'Awaiting approval'} USDT.</p>
    </header>
    {error&&<p role="alert" className="rounded-xl border border-rose-400/25 p-4 text-sm text-rose-100">{error}</p>}
    {notice&&<p role="status" className="rounded-xl border border-sky-400/25 p-4 text-sm text-sky-100">{notice}</p>}
@@ -90,19 +94,23 @@ export default function ProRegionalManagerActivation(){
    {approved&&status==='awaiting_signature'&&<section className="space-y-4 rounded-2xl border border-sky-200/25 p-5">
     <h2 className="text-xl font-semibold">1. Confirm signed employment and Pro File Folder terms</h2>
     <p className="text-sm leading-7 text-slate-200">{PRO_MANAGER_FILE_FOLDER_DISTINCTION}</p>
-    <p className="text-sm leading-7 text-slate-200">Before signing, review the terms below alongside your separately approved company employment agreement. The monthly salary is recorded by Administrations and is not funded by, or automatically conditional on, a File Folder activation fee.</p>
+    <p className="text-sm leading-7 text-slate-200">{data?.compensationModel==='profit_share'
+      ?'Before signing, review your individually owned Pro business, 20% of independently verified monthly NET profit contribution to WEAVE, zero fixed company salary, and exact continent-specific activation quote.'
+      :'Before signing, review the existing approved salary appointment and separate Pro activation terms.'}</p>
     <div className="space-y-3" data-pro-manager-reciprocal-agreement="true">
-     {PRO_MANAGER_AGREEMENT_SECTIONS.map(section=><article key={section.title} className="rounded-xl border border-sky-200/20 bg-[#0b2a42] p-4">
+     {(data?.compensationModel==='profit_share'?PRO_ORIGINAL_ROLE_PROFIT_SHARE_AGREEMENT_SECTIONS:PRO_MANAGER_AGREEMENT_SECTIONS).map(section=><article key={section.title} className="rounded-xl border border-sky-200/20 bg-[#0b2a42] p-4">
       <h3 className="text-sm font-semibold text-sky-100">{section.title}</h3>
       <p className="mt-2 text-sm leading-7 text-slate-200">{section.body}</p>
      </article>)}
     </div>
-    <p className="text-sm leading-7 text-slate-200">Your approved Pro Regional Manager appointment includes the agreed monthly salary and recorded business plan. Separately, the Pro File Folder activation charge is a one-time {data?.feeUSDT} USDT on TRON (TRC-20). No payment is due before your signature, and payment is never proof of salary or guaranteed income.</p>
+    <p className="text-sm leading-7 text-slate-200">{data?.compensationModel==='profit_share'
+      ?'I own my approved Pro business and will serve WEAVE through my department, without monthly salary, contributing 20% of independently verified net monthly profit. My exact one-time activation fee is '+data?.feeUSDT+' USDT on TRON (TRC-20).'
+      :'This is an existing salary appointment with separate, one-time Pro activation of '+data?.feeUSDT+' USDT.'} No payment is due before signing; no outcome or income is guaranteed.</p>
     <p className="text-xs text-slate-400">Approved agreement reference: {data?.salary.agreementReference}</p>
     <label className="block text-sm">Your full registered name<input value={signedName} onChange={e=>setSignedName(e.target.value)}
      maxLength={255} className="mt-2 w-full rounded-lg border border-white/20 bg-slate-900 p-3"/></label>
     <label className="flex gap-3 text-sm leading-6 text-slate-200"><input type="checkbox" checked={accepted} onChange={e=>setAccepted(e.target.checked)}
-     className="mt-1"/>I have read the business ownership, Weave participation, employee, salary, company-wallet and verification terms above, and reviewed my separately approved company employment agreement. I accept the one-time Pro File Folder activation terms. My typed name is my electronic signature.</label>
+     className="mt-1"/>I have read the business ownership, employee, WEAVE partnership, applicable monthly profit-share or legacy salary, exact regional fee quote, company-wallet and verification terms. I accept these terms voluntarily. My typed name is my electronic signature.</label>
     <button disabled={busy||!accepted||signedName.trim().length<3} onClick={()=>void act('sign_agreement')}
      className="rounded-lg bg-sky-300 px-5 py-3 font-semibold text-slate-950 disabled:opacity-40">Sign and continue</button>
    </section>}
@@ -127,7 +135,9 @@ export default function ProRegionalManagerActivation(){
    </section>}
    {status==='active'&&<section className="space-y-4 rounded-xl border border-emerald-300/25 p-5">
     <h2 className="text-xl font-semibold">3. Pro File Folder verified and active</h2>
-    <p className="text-sm text-slate-200">The company has independently verified the activation transaction. Continue under your existing {user?.role} login; your department, approved company salary, private Pro File Folder and business Customer Door are separately recorded.</p>
+    <p className="text-sm text-slate-200">The company has verified the activation transaction. Continue with your existing {user?.role} account, own Pro File Folder and Customer Door. {data?.compensationModel==='profit_share'
+      ?'Your written 20% net-profit participation replaces fixed company salary under this new agreement.'
+      :'Your existing salary terms remain separate from business receipts.'}</p>
     <Link href="/weave/lifestyles/pro-regional-manager/workspace"
       className="inline-block rounded-lg bg-sky-300 px-5 py-3 font-semibold text-slate-950">Enter my Pro Regional Manager workspace</Link>
    </section>}
