@@ -49,8 +49,9 @@ assert(admin.includes("status='pending'")&&
  admin.includes("approved_pending_verification"),
  'Administration reviews only eligible Pro candidates and does not activate Folder')
 assert(admin.includes('independentlyVerified')&&admin.includes('employmentTermsReference')&&
- admin.includes('monthlySalaryUSDT'),
- 'Administration records independently agreed company salary and written terms')
+ admin.includes('approvedFeeUSDT')&&admin.includes('verifiedContinent')&&
+ admin.includes('PRO_MANAGER_PROFIT_SHARE_BPS'),
+ 'New Agent/Bridger Pro approvals require verified continent, individual activation quote and written 20% profit-share terms')
 assert(schema.includes('weave_pro_regional_manager_applications')&&
  migration.includes("source_role IN ('agent','bridger')")&&
  !schema.includes('CREATE TABLE IF NOT EXISTS weave_regional_manager_appointments'),
