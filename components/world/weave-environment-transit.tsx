@@ -6,7 +6,6 @@ import Link from 'next/link'
 import { useAuth } from '@/lib/auth-provider'
 import { trainingBriefsForRole, loaderAudienceName, transitTrainingForPath, transitDirectionForPath, type WeaveLoadingRole, type WeaveLoadingBrief } from '@/lib/weave-loading-guidance'
 import { setRuntimeCovered } from './use-adaptive-runtime'
-import { WeaveLogo } from '@/components/weave-logo'
 import { ArrowRight,Flame,Orbit } from 'lucide-react'
 import { resolveWeaveEnvironment } from '@/lib/weave-environments'
 import { WEAVE_SYSTEM_MAP } from '@/lib/weave-system-map'
@@ -449,7 +448,7 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
             <div className="absolute inset-7 animate-pulse rounded-full border border-orange-300/10 bg-orange-400/[.035] motion-reduce:animate-none"/>
             {showFlameBriefing
               ? <Flame className="h-8 w-8 text-orange-200 drop-shadow-[0_0_18px_rgba(249,115,22,.8)]"/>
-              : flameVisual ? <Orbit className="h-7 w-7 text-amber-100"/> : <WeaveLogo size="sm" showText={false}/>
+              : flameVisual ? <Orbit className="h-7 w-7 text-amber-100"/> : <img src="/icon.svg" width={32} height={32} alt="Weave"/>
             }
           </div>
 
