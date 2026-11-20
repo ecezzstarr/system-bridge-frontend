@@ -22,7 +22,8 @@ for(const item of worlds){
  assert.ok(line&&line.includes("label:'"+item.label+"'")&&line.includes("href:'"+item.href+"'")&&line.includes("department:'"+item.dept+"'"),item.role+' links to its own real department world')
  assert.equal(event.split("href:'"+item.href+"'").length-1,1,'Each world appears once in the event page mapping')
  const page=item.role==='admin'?admin:item.role==='agent'?agent:item.role==='bridger'?bridger:client
- assert.ok(page.includes('<WeaveDashboardWorld role="'+item.role+'"'),item.role+' opens its real existing world')
+ const entrance={admin:'<AdminWorkplace',agent:'<AgentWorkplace',bridger:'<BridgerWorkplace',client:'<WeaveDashboardWorld role="client"'}
+ assert.ok(page.includes(entrance[item.role]),item.role+' opens its primary workspace')
 }
 assert.ok(event.includes('data-flame-event-own-world-entry={role}')&&event.includes('href={departmentWorld.href}'),'The role world entrance is bound to the authenticated role')
 assert.ok(event.includes('ROLE_WORK_ENTRANCES[role]'),'Other event work stays role-filtered')

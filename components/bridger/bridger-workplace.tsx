@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
 import {
-  ArrowUpRight, BriefcaseBusiness, Building2, Compass, FolderOpen, House,
+  ArrowUpRight, BriefcaseBusiness, Building2, Compass, House,
   MessageCircle, Network, Palette, Search, WalletCards, type LucideIcon,
 } from 'lucide-react'
 import { WeaveLogo } from '@/components/weave-logo'
@@ -57,15 +57,12 @@ function PlaceLink({place}:{place:BridgerWorkplacePlace}){
 
 /**
  * A clear entrance to pre-existing systems. Records and business operations
- * remain owned by their original pages and APIs. The legacy world is available
- * through the supplied onOpenDistricts action.
+ * remain owned by their original pages and APIs.
  */
 export function BridgerWorkplace({
   userName,
-  onOpenDistricts,
 }:{
   userName?: string | null
-  onOpenDistricts?: () => void
 }){
   const [selected, setSelected] = useState<BridgerWorkplaceSpaceId>('desk')
   const [search, setSearch] = useState('')
@@ -111,12 +108,6 @@ export function BridgerWorkplace({
               <Link href="/bridger/presence" className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#cdb780] bg-white/80 px-4 py-2 text-sm font-semibold text-[#655020]">
                 <Compass className="h-4 w-4"/> Position guidance
               </Link>
-              {onOpenDistricts && (
-                <button type="button" onClick={onOpenDistricts}
-                  className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#cdb780] bg-white/80 px-4 py-2 text-sm font-semibold text-[#655020]">
-                  <FolderOpen className="h-4 w-4"/> Original districts
-                </button>
-              )}
             </div>
           </div>
         </header>

@@ -10,7 +10,6 @@ const agent=read('components/agent/agent-workplace.tsx')
 const admin=read('components/admin/admin-workplace.tsx')
 const agentHome=read('app/(app)/agent/dashboard/page.tsx')
 const adminHome=read('app/(app)/admin/dashboard/page.tsx')
-const atmosphere=read('components/world/normal-weave-role-atmosphere.tsx')
 
 // Every source route remains present. The new pages only navigate to it.
 const originalAgentPages=[
@@ -59,17 +58,12 @@ assert.ok(agent.includes('station.officialImage')&&admin.includes('station.offic
 assert.ok(!agent.includes('unsplash.com')&&!admin.includes('unsplash.com'),
   'No generic remote stock imagery is used')
 
-// Preserve original role worlds without forcing Agent login advertisements.
-for(const [source,role] of [[agentHome,'agent'],[adminHome,'admin']]){
- assert.ok(source.includes('<WeaveDashboardWorld role="'+role+'"'),'Original '+role+' world remains accessible')
- assert.ok(source.includes('onOpenDistricts'),'Workplace permits return to original '+role+' districts')
+for(const [home,workplace] of [[agentHome,'AgentWorkplace'],[adminHome,'AdminWorkplace']]){
+ assert.ok(home.includes('<'+workplace),'Dashboard opens its workplace')
+ assert.doesNotMatch(home,/WeaveDashboardWorld|onOpenDistricts/)
 }
 assert.ok(!agentHome.includes('<Loop1AgentLoginAd')&&!agentHome.includes('<AgilityAgentLoginAd')&&agentHome.includes('href="/agility"'),
  'Agent keeps direct food access and no longer receives automatic login advertisements')
-for(const role of ['bridger','agent','admin']){
- assert.ok(atmosphere.includes("pathname === '/"+role+"/dashboard' && userRole === '"+role+"'"),
-   role+' dashboard is not replaced by the atmosphere wrapper')
-}
 assert.ok(read('app/(app)/weave/market/prospects/page.tsx').includes('My Prospects'),
  'The original Bridger My Prospects remains untouched')
 console.log('Workplace route and official product asset preservation passed: '+
