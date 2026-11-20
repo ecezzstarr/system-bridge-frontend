@@ -6,12 +6,41 @@ function load(file,dependencies={}) {
 }
 const world=load('lib/file-folder-world-runtime.ts'),graph=load('lib/file-folder-capability-graph.ts')
 const platform=load('lib/file-folder-platform-projects.ts')
-assert.equal(Object.keys(platform.FILE_FOLDER_PLATFORM_TEMPLATES).length,14,'Client can start social, institutional, public service and original platform projects')
+assert.equal(Object.keys(platform.FILE_FOLDER_PLATFORM_TEMPLATES).length,17,'Client can start social, institutional, public service and original platform projects')
 for(const kind of ['short_video','microblog','social_community','video_channel','commerce_platform','custom_platform']){
  assert(platform.isFileFolderPlatformKind(kind),'Platform kind must be recognized: '+kind)
  assert(platform.FILE_FOLDER_PLATFORM_TEMPLATES[kind].stages.includes('customer_door'),'Public boundary remains a Client Customer Door')
  assert(platform.FILE_FOLDER_PLATFORM_TEMPLATES[kind].productionGap.length>60,'Unimplemented product capabilities are disclosed to the Client')
 }
+// Academic project plans belong to the same authenticated Client File Folder
+// and do not silently become a business, public Customer Door or degree award.
+for(const kind of ['civil_engineering_project','research_dissertation','software_capstone']){
+  assert(platform.isFileFolderPlatformKind(kind),'School project must be accepted: '+kind)
+  assert(platform.isFileFolderAcademicProjectKind(kind),'School project must be labeled academic: '+kind)
+  assert(!platform.FILE_FOLDER_PLATFORM_TEMPLATES[kind].stages.includes('customer_door'),'School work must not require a public storefront')
+  assert(platform.FILE_FOLDER_PLATFORM_TEMPLATES[kind].productionGap.length>100,'Academic limitations must be explicit')
+}
+assert(!platform.isFileFolderAcademicProjectKind('education_network'),'Managing a school differs from doing a school project')
+const beam=load('lib/file-folder-academic-study.ts')
+const simple=beam.calculateSimpleBeamStudy({spanMetres:12,uniformLoadKnPerMetre:15,midspanPointLoadKn:0})
+assert.equal(simple.totalLoadKn,180)
+assert.equal(simple.reactionAtEachSupportKn,90)
+assert.equal(simple.maximumShearKn,90)
+assert.equal(simple.maximumMomentKnMetres,270)
+const combined=beam.calculateSimpleBeamStudy({spanMetres:12,uniformLoadKnPerMetre:15,midspanPointLoadKn:20})
+assert.equal(combined.maximumMomentKnMetres,330)
+for(const input of [
+  {spanMetres:0,uniformLoadKnPerMetre:15,midspanPointLoadKn:0},
+  {spanMetres:12,uniformLoadKnPerMetre:-1,midspanPointLoadKn:0},
+  {spanMetres:12,uniformLoadKnPerMetre:15,midspanPointLoadKn:NaN},
+])assert.throws(()=>beam.calculateSimpleBeamStudy(input),'Invalid load or span rejected')
+assert(beam.beamStudyNote('River Crossing',{spanMetres:12,uniformLoadKnPerMetre:15,midspanPointLoadKn:20},combined).includes('not a final design')===false ||
+       beam.beamStudyNote('River Crossing',{spanMetres:12,uniformLoadKnPerMetre:15,midspanPointLoadKn:20},combined).includes('Not a final design'),'Note must disclose limitations')
+const academicUI=fs.readFileSync('components/system-switch/file-folder-platform-project-studio.tsx','utf8')
+const academicBeamUI=fs.readFileSync('components/system-switch/file-folder-academic-study.tsx','utf8')
+assert(academicUI.includes("action:'create_platform_project'")===false || academicUI.includes('isFileFolderAcademicProjectKind'),'Academic template must use existing Client-owned project studio')
+assert(academicUI.includes('<FileFolderAcademicStudy')&&academicUI.includes('School & research'),'School pathway and working study are visible')
+assert(academicBeamUI.includes('calculateSimpleBeamStudy')&&academicBeamUI.includes('Educational screening only'),'Worksheet computes and labels assumptions')
 const sectorCatalog=load('lib/file-folder-institutional-catalog.ts')
 const sectorVisual=load('lib/file-folder-institutional-visual.ts')
 assert.equal(sectorCatalog.INSTITUTIONAL_BLUEPRINTS.length,15,'Broad-sector WEAVE institutions are buildable from catalog')
