@@ -22,7 +22,7 @@ type Props={
  customerDoor?:{public_slug?:string|null;formation_status?:string|null}|null;now:number
 }
 const STATIONS=[
- {id:'app',label:'App & Platform',district:'blueprint_foundry',detail:'Create your project and build published blueprints.',x:-11,z:-9},
+ {id:'app',label:'Project Workshop',district:'blueprint_foundry',detail:'Create an engineering school project, research plan or business platform; then inspect authorized WEAVE blueprints.',x:-11,z:-9},
  {id:'plans',label:'Building Plans',district:'blueprint_foundry',detail:'Inspect the plan, actual required kits, prices and formation time before starting.',x:-4,z:-17},
  {id:'materials',label:'Materials Depot',district:'build_market',detail:'Acquire actual construction kits with recorded transactions.',x:-13,z:3},
  {id:'parts',label:'Parts Workshop',district:'parts_workshop',detail:'Purchase and install compatible capability parts.',x:-8,z:12},
@@ -273,7 +273,7 @@ export default function FileFolderProOperatingWorld({
   data-tier-theme={appearance.theme} data-tier-realness={appearance.realness}
   className="overflow-hidden border-y border-sky-300/20 bg-[#081b33] text-white">
   <header className="border-b border-sky-200/15 px-4 py-4 sm:px-6">
-   <p className="text-[10px] font-bold uppercase tracking-wider text-sky-200">Pro File Folder · Working business world</p>
+   <p className="text-[10px] font-bold uppercase tracking-wider text-sky-200">Pro File Folder · Business and project world</p>
    <h2 className="mt-1 text-xl font-bold sm:text-2xl">{businessName||'My Pro Business'}</h2>
    {businessPurpose&&<p className="mt-2 max-w-2xl text-xs leading-5 text-sky-100">{businessPurpose}</p>}
    <p className="mt-2 text-xs text-slate-300">Drag to look · Pinch to zoom · Tap a workshop to enter real tools.</p>
@@ -335,11 +335,11 @@ export default function FileFolderProOperatingWorld({
     className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-xs text-slate-300">
     <span>{building.length} active builds</span>
     <span>{live.length} operating systems</span>
-    <span>{platformProjects.length} platform projects</span>
+    <span>{platformProjects.length} owned project plans</span>
     <span>Customer Door: {doorReady?'published':customerDoor?.formation_status||'not commissioned'}</span>
    </div>
    <p className="mt-3 text-[11px] leading-5 text-slate-400">
-    The campus is the purchased Pro environment. Only actual server records add active construction and commissioned systems. App & Platform opens project formation, not an invented live website.
+    The campus is the purchased Pro environment. Only actual server records add active construction and commissioned systems. Project Workshop opens academic or enterprise project formation, not a certified design or invented live website.
    </p>
   </div>
  </section>

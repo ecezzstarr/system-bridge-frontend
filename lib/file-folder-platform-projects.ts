@@ -70,6 +70,24 @@ export const FILE_FOLDER_PLATFORM_TEMPLATES = {
     stages:['customer_door','education_campus_system','learning_lab','data_room','operations_suite'],
     productionGap:'No accreditation, protected student-information system or government school administration authority is automatically created.',
   },
+  civil_engineering_project: {
+    name:'Civil engineering school project', example:'Bridge, drainage, roads and structural studies',
+    description:'Organize a civil engineering assignment or capstone: project question, research, data, preliminary load studies, design decisions, evidence, documentation and supervisor review. A simplified beam worksheet is available after creation.',
+    stages:['research_room','operations_board','data_room','intelligence_lab','learning_lab'],
+    productionGap:'WEAVE provides a project plan and a bounded educational beam study, not CAD, finite-element analysis, foundation or hydraulic design, a built bridge, code compliance, independent checking, academic marks or professional engineering approval.',
+  },
+  research_dissertation: {
+    name:'Research and dissertation', example:'Literature, methods, data and evidence',
+    description:'Develop an academic question into a documented research plan. Organize sources, methodology, experimental evidence, study records, findings, limitations and the final presentation.',
+    stages:['research_room','data_room','operations_board','learning_lab','intelligence_lab'],
+    productionGap:'These stages provide supporting WEAVE research systems, not verified citations, laboratory experiments, institutional ethics approval, originality clearance, peer review, school submission or an automatically completed thesis.',
+  },
+  software_capstone: {
+    name:'Software and technology project', example:'Prototype, tests and presentation',
+    description:'Break a software capstone into requirements, a system design, prototype records, test evidence and a project report. Connect research and operating tools while retaining the student’s ownership of their work.',
+    stages:['research_room','operations_board','data_room','learning_lab','integration_network'],
+    productionGap:'A project plan is not automatically source code, a deployed app, tested hardware, real connectivity, secure production infrastructure or academic acceptance. Working software and tests require separately verified development.',
+  },
   transportation_network: {
     name:'Transport and mobility platform', example:'Routes, fleets and logistics',
     description:'Create fleet and transport administration software and connect it to distribution and work scheduling.',
@@ -97,6 +115,14 @@ export const FILE_FOLDER_PLATFORM_TEMPLATES = {
   },
 } as const
 
+/** School projects use the existing owned File Folder, not a new public-access tier. */
+export const FILE_FOLDER_ACADEMIC_PROJECT_KINDS=[
+  'civil_engineering_project','research_dissertation','software_capstone',
+] as const
+export type FileFolderAcademicProjectKind=typeof FILE_FOLDER_ACADEMIC_PROJECT_KINDS[number]
+export function isFileFolderAcademicProjectKind(value:unknown):value is FileFolderAcademicProjectKind {
+  return typeof value==='string'&&(FILE_FOLDER_ACADEMIC_PROJECT_KINDS as readonly string[]).includes(value)
+}
 export type FileFolderPlatformKind = keyof typeof FILE_FOLDER_PLATFORM_TEMPLATES
 export type FileFolderPlatformProject = {
   id:string
