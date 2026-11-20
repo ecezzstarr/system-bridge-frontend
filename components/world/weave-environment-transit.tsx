@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useAuth } from '@/lib/auth-provider'
 import { trainingBriefsForRole, loaderAudienceName, transitTrainingForPath, transitDirectionForPath, type WeaveLoadingRole, type WeaveLoadingBrief } from '@/lib/weave-loading-guidance'
 import { setRuntimeCovered } from './use-adaptive-runtime'
+import { WeaveLogo } from '@/components/weave-logo'
 import { ArrowRight,Flame,Orbit } from 'lucide-react'
 import { resolveWeaveEnvironment } from '@/lib/weave-environments'
 import { WEAVE_SYSTEM_MAP } from '@/lib/weave-system-map'
@@ -374,7 +375,7 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
     },remaining)
     return ()=>window.clearTimeout(timer)
   },[covered,environmentReady,revealAfterMs,pathname,sequenceId])
-  const openingLabel=returningToWorld
+  const openingLabel=destinationPath===\x27/company-grounds\x27\n    ? \x27Opening Company Grounds\x27\n    : returningToWorld
     ? `Returning to ${destinationEnvironment.title}`
     : showAgentBriefing
     ? 'Stability · Your work begins here'
@@ -417,7 +418,7 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
       className={'weave-loader-stable fixed inset-0 z-[9999] flex h-[100svh] min-h-[100svh] items-stretch justify-center overflow-hidden '+(flameVisual?'weave-loader-flame bg-[#02050a] text-white':'weave-loader-platform')}
       role="status"
       aria-live="polite"
-      aria-label={booting?'Loading WEAVE environment':'Moving to '+destinationEnvironment.title}
+      aria-label={destinationPath==='/company-grounds'?'Opening Company Grounds':booting?'Loading WEAVE environment':'Moving to '+destinationEnvironment.title}
       data-environment-readiness-gate={booting?'boot':'transit'}
       data-environment-reveal-shell="continuous"
       data-flame-event-loader={showFlameBriefing?'burning-river':undefined}
@@ -434,8 +435,8 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
       {/* The Company Loader uses a shared architectural illustration. Flame
           Event destinations keep their original Burning River atmosphere. */}
       <div className="weave-loader-scenery" aria-hidden="true">
-        <div className="weave-loader-scenery-portrait"/>
-        <div className="weave-loader-scenery-landscape"/>
+        <div className="weave-loader-scenery-portrait" style={destinationPath===\x27/company-grounds\x27?{backgroundImage:"url(/images/company-grounds-plus.webp)"}:undefined}/>
+        <div className="weave-loader-scenery-landscape" style={destinationPath===\x27/company-grounds\x27?{backgroundImage:"url(/images/company-grounds-plus.webp)"}:undefined}/>
         <div className="weave-loader-scenery-shade"/>
       </div>
       <div className="weave-loader-layout relative grid h-full min-h-0 w-full max-w-3xl">
@@ -446,7 +447,7 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
             <div className="absolute inset-7 animate-pulse rounded-full border border-orange-300/10 bg-orange-400/[.035] motion-reduce:animate-none"/>
             {showFlameBriefing
               ? <Flame className="h-8 w-8 text-orange-200 drop-shadow-[0_0_18px_rgba(249,115,22,.8)]"/>
-              : <Orbit className="h-7 w-7 text-amber-100"/>
+              : flameVisual ? <Orbit className="h-7 w-7 text-amber-100"/> : <WeaveLogo size="sm" showText={false}/>
             }
           </div>
 
@@ -457,7 +458,7 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
             {showAgentBriefing?'Know the product · serve the customer · confirm the work':showClientBriefing?'Build with purpose · welcome your customers':showAdminBriefing?'Give direction · support people · preserve the record':showHopeBriefing?'Listen · connect · guide an informed beginning':showFlameBriefing?'Burning River · The River that Burns':'System Switch — Bridge of Radiance'}
           </p>
           <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl">{openingLabel}</h1>
-          {!flameVisual&&<p className="weave-loader-platform-caption">SYSTEMS · PEOPLE · OPERATIONS · EXPANSION</p>}
+          {!flameVisual&&<p className="weave-loader-platform-caption">Weave of Presence · Gate of Awareness</p>}
         </div>
 
         <section

@@ -92,6 +92,7 @@ export default function Home() {
               </h1>
               <p className="weave-home-invitation">Give your work a place. Give your dreams a living form.</p>
               <div className="weave-home-hero-actions">
+                <Link href="/company-grounds" className="weave-action-primary">Enter Company Grounds <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
                 <Link href="/file-folder-preview" className="weave-action-primary">Explore File Folders <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
                 <Link href="/register" className="weave-action-secondary">Join Weave <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
               </div>

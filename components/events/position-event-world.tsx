@@ -106,6 +106,7 @@ export default function PositionEventWorld({
             <Orbit className="h-5 w-5 shrink-0" />
           </Link>
         </nav>
+        <Link href="/company-grounds" className="mx-4 my-2 inline-flex min-h-11 items-center text-sm font-semibold text-amber-100 underline">Explore Company Grounds</Link>
         <BurningRiverOfficialGateway staff staffHref={switchHref} />
       </div>
     </section>
