@@ -12,8 +12,8 @@ import { resolveVerifiedClientFileFolderTier } from '@/lib/client-file-folder-ti
 
 export async function POST(request: NextRequest) {
   try {
+    // A Client may authenticate and hold their existing session under Shield.
     const shield=await getDivineShieldState()
-    if(shield.active) return NextResponse.json({error:'WEAVE is under maintenance. Divine Shield is active.'},{status:423})
 
     const { fileNumber, password } = await request.json()
     if (typeof fileNumber !== 'string' || typeof password !== 'string' || fileNumber.length > 128 || password.length > 1024) return NextResponse.json({error:'Invalid login details'}, {status:400})
@@ -86,6 +86,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       activationRequired,
+      divineShield:{active:shield.active},
       token,
       user: {
         id: user.id,
