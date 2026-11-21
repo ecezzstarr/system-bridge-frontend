@@ -38,15 +38,23 @@ export async function POST(request:NextRequest){
     const state=await setDivineShieldState({active:body.active,title,message,adminId:user.id})
     // Every manual transition has durable actor and release context in the
     // infrastructure ledger, in addition to the persistent active control.
-    await recordDeploymentRequest({
-      action:body.active?'divine_shield_raise':'divine_shield_release',
-      sourceRef:process.env.WEAVE_RELEASE_SHA||null,
-      status:'completed',adminId:user.id,
-      details:{preservedSessions:true,stateUpdatedAt:state.updatedAt},
-    })
+    let recorded=true
+    try{
+      await recordDeploymentRequest({
+        action:body.active?'divine_shield_raise':'divine_shield_release',
+        sourceRef:process.env.WEAVE_RELEASE_SHA||null,
+        status:'completed',adminId:user.id,
+        details:{preservedSessions:true,stateUpdatedAt:state.updatedAt},
+      })
+    }catch(auditError){
+      // Do not pretend a successful state change failed. Surface the separate
+      // audit fault prominently for immediate Administrations reconciliation.
+      recorded=false
+      console.error('[Divine Shield] state changed but transition audit failed:',auditError)
+    }
 
     // Raising the shield never revokes or deletes genuine participant sessions.
-    return NextResponse.json({success:true,state,preservedSessions:true,readiness:await getDivineShieldReadiness()})
+    return NextResponse.json({success:true,state,preservedSessions:true,recorded,readiness:await getDivineShieldReadiness()})
   }catch(error){
     console.error('[Divine Shield] update error:',error)
     return NextResponse.json({success:false,error:error instanceof Error?error.message:'Unable to update Divine Shield'},{status:409})
