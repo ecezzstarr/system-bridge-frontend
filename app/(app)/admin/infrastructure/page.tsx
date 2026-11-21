@@ -60,17 +60,47 @@ export default function InfrastructureWorkshop(){
     }finally{setLoading(false)}
   }
 
-  async function toggleShield(){
-    if(!data) return
-    const next=!data.shield.active
-    if(next && !window.confirm('Raise Divine Shield? Departmental work will pause, but all user sessions remain signed in.')) return
-    if(!next && !data.readiness.ready){toast.error('Run and pass the current release checks before releasing Divine Shield');return}
-    if(!next && !window.confirm('Release Divine Shield after successful checks? All departments will resume work.'))return
-    setShieldBusy(true)
+  /**
+   * A readiness snapshot is informational, not a disabled-button lock.
+   * Every release request obtains fresh, actor-audited checks before changing
+   * the persistent Shield. The server independently verifies the same cycle
+   * and deployment SHA in its atomic release update.
+   */
+  async function verifyRelease(showSuccess:boolean):Promise<boolean>{
+    setCheckBusy(true)
     try{
       const response=await fetch('/api/admin/divine-shield',{
-        method:'POST',
-        headers:headers(),
+        method:'POST',headers:headers(),body:JSON.stringify({action:'check'}),
+        cache:'no-store',
+      })
+      const body=await response.json()
+      if(!response.ok||!body.success)throw Error(body.error||'Unable to verify release')
+      setData(prev=>prev?{...prev,readiness:body.readiness}:prev)
+      if(!body.check?.passed||!body.readiness?.ready){
+        const failures=(body.check?.checks||[]).filter((item:{passed:boolean})=>!item.passed)
+        const detail=failures.map((item:{name:string;detail:string})=>item.name+': '+item.detail).join(' · ')
+        toast.error(detail||'Release verification failed. See the checks below; the Shield remains raised.',{duration:12000})
+        return false
+      }
+      if(showSuccess)toast.success('Release verified. Administrations may release Divine Shield.')
+      return true
+    }catch(error){
+      toast.error(error instanceof Error?error.message:'Release verification failed')
+      return false
+    }finally{setCheckBusy(false)}
+  }
+
+  async function toggleShield(){
+    if(!data)return
+    const next=!data.shield.active
+    if(next && !window.confirm('Raise Divine Shield? Departmental work will pause, but all user sessions remain signed in.'))return
+    if(!next && !window.confirm('Verify the current live release and release Divine Shield only if every check passes?'))return
+    setShieldBusy(true)
+    try{
+      // Do not use a cached 15-minute status to authorize reopening.
+      if(!next && !(await verifyRelease(false)))return
+      const response=await fetch('/api/admin/divine-shield',{
+        method:'POST',headers:headers(),cache:'no-store',
         body:JSON.stringify({
           active:next,
           confirm:next?'RAISE_DIVINE_SHIELD':'RELEASE_DIVINE_SHIELD',
@@ -79,7 +109,7 @@ export default function InfrastructureWorkshop(){
         }),
       })
       const body=await response.json()
-      if(!response.ok || !body.success) throw new Error(body.error || 'Divine Shield update failed')
+      if(!response.ok||!body.success)throw new Error(body.error||'Divine Shield update failed')
       setData(prev=>prev?{...prev,shield:body.state,readiness:body.readiness}:prev)
       if(body.recorded===false)toast.warning('Shield changed, but transition audit did not persist. Reconcile the infrastructure ledger immediately.')
       toast.success(next
@@ -87,24 +117,14 @@ export default function InfrastructureWorkshop(){
         : 'Divine Shield released · departments resumed')
     }catch(error){
       toast.error(error instanceof Error?error.message:'Divine Shield update failed')
+      // A race or expired check must never silently reopen company workrooms.
+      void refresh()
     }finally{setShieldBusy(false)}
   }
 
   async function runReleaseChecks(){
     if(!data?.shield.active)return
-    setCheckBusy(true)
-    try{
-      const response=await fetch('/api/admin/divine-shield',{
-        method:'POST',headers:headers(),body:JSON.stringify({action:'check'}),
-      })
-      const body=await response.json()
-      if(!response.ok||!body.success)throw Error(body.error||'Unable to verify release')
-      setData(prev=>prev?{...prev,readiness:body.readiness}:prev)
-      if(body.check?.passed)toast.success('Release checks passed. Administrations may now release the Shield.')
-      else toast.error('One or more release checks failed. Shield remains raised.')
-    }catch(error){
-      toast.error(error instanceof Error?error.message:'Release verification failed')
-    }finally{setCheckBusy(false)}
+    await verifyRelease(true)
   }
 
   async function webProbe(){
@@ -155,9 +175,9 @@ export default function InfrastructureWorkshop(){
               {data.shield.active&&<Button onClick={()=>void runReleaseChecks()} disabled={checkBusy||shieldBusy} variant="outline" className="border-amber-300/50 text-amber-100">
                 {checkBusy?<Loader2 className="mr-2 h-4 w-4 animate-spin"/>:<Activity className="mr-2 h-4 w-4"/>}Run release checks
               </Button>}
-            <Button onClick={toggleShield} disabled={shieldBusy||(data.shield.active&&!data.readiness.ready)} className={data.shield.active?'bg-emerald-600 hover:bg-emerald-700':'bg-amber-600 hover:bg-amber-700'}>
+            <Button onClick={toggleShield} disabled={shieldBusy||checkBusy} className={data.shield.active?'bg-emerald-600 hover:bg-emerald-700':'bg-amber-600 hover:bg-amber-700'}>
               {shieldBusy?<Loader2 className="mr-2 h-4 w-4 animate-spin"/>:<Shield className="mr-2 h-4 w-4"/>}
-              {data.shield.active?'Release Shield':'Raise Shield'}
+              {data.shield.active?'Verify & Release Shield':'Raise Shield'}
             </Button>
             </div>
           </div>

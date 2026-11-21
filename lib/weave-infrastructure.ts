@@ -105,7 +105,8 @@ export async function getDivineShieldState(): Promise<DivineShieldState> {
   if(shieldCache && shieldCache.expires>Date.now()) return shieldCache.value
   await ensureWeaveInfrastructureSchema()
   const rows=await sql`
-    SELECT enabled,title,message,updated_at
+    SELECT enabled,title,message,updated_at,
+      to_char(updated_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"') AS cycle_id
     FROM weave_platform_controls
     WHERE control_key='divine_shield'
     LIMIT 1
@@ -115,7 +116,9 @@ export async function getDivineShieldState(): Promise<DivineShieldState> {
     active:Boolean(row?.enabled),
     title:row?.title || 'WEAVE is under maintenance',
     message:row?.message || 'The system is being refined. Participation will reopen when Administrations releases the Divine Shield.',
-    updatedAt:row?.updated_at ? new Date(row.updated_at).toISOString() : null,
+    // Preserve PostgreSQL's full 6 fractional digits: JS Date truncates
+    // microseconds, breaking exact-cycle comparisons on Shield release.
+    updatedAt:row?.cycle_id ? String(row.cycle_id) : null,
   }
   shieldCache={value,expires:Date.now()+2000}
   return value
@@ -125,10 +128,14 @@ export async function setDivineShieldState(input:{active:boolean;title?:string;m
   await ensureWeaveInfrastructureSchema()
 
   if(!input.active){
-    const [current]=await sql`SELECT enabled,updated_at FROM weave_platform_controls WHERE control_key='divine_shield' LIMIT 1`
+    const [current]=await sql`
+      SELECT enabled,updated_at,
+        to_char(updated_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"') AS cycle_id
+      FROM weave_platform_controls WHERE control_key='divine_shield' LIMIT 1
+    `
     if(!current?.enabled)return getDivineShieldState()
     const sha=String(process.env.WEAVE_RELEASE_SHA||'').trim().toLowerCase()
-    const raisedAt=new Date(current.updated_at).toISOString()
+    const raisedAt=String(current.cycle_id)
     if(!/^[0-9a-f]{40}$/.test(sha))throw Error('A verified production release SHA is required to lower Divine Shield')
     const rows=await sql`
       UPDATE weave_platform_controls AS control
@@ -144,12 +151,13 @@ export async function setDivineShieldState(input:{active:boolean;title?:string;m
             AND created_at>NOW()-INTERVAL '15 minutes'
           ORDER BY created_at DESC,id DESC LIMIT 1
         )='healthy'
-      RETURNING enabled,title,message,updated_at
+      RETURNING enabled,title,message,updated_at,
+        to_char(updated_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"') AS cycle_id
     `
     if(!rows.length)throw Error('Divine Shield remains raised: run fresh passing release checks in Administrations Infrastructure')
     const row=rows[0]
     const value={active:false,title:row.title,message:row.message,
-      updatedAt:new Date(row.updated_at).toISOString()}
+      updatedAt:String(row.cycle_id)}
     shieldCache={value,expires:Date.now()+2000}
     return value
   }
@@ -170,14 +178,15 @@ export async function setDivineShieldState(input:{active:boolean;title?:string;m
       message=EXCLUDED.message,
       updated_by=EXCLUDED.updated_by,
       updated_at=NOW()
-    RETURNING enabled,title,message,updated_at
+    RETURNING enabled,title,message,updated_at,
+      to_char(updated_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"') AS cycle_id
   `
   const row=rows[0]
   const value={
     active:Boolean(row.enabled),
     title:row.title,
     message:row.message,
-    updatedAt:new Date(row.updated_at).toISOString(),
+    updatedAt:String(row.cycle_id),
   }
   shieldCache={value,expires:Date.now()+2000}
   return value
