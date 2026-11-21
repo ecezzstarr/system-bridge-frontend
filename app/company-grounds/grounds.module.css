@@ -1,5 +1,6 @@
 .grounds {position:relative; isolation:isolate; background:#fcfaf4; color:#302c23}
-.viewport {height:100vh; height:100dvh; overflow:auto; overscroll-behavior:contain; scrollbar-width:none}
+/* Crop the bottom 13% of the original poster, where the obsolete 'Scroll to explore' words and arrow are baked in. */
+.viewport {height:87vh; height:87dvh; overflow:hidden; overscroll-behavior:contain; scrollbar-width:none}
 .viewport::-webkit-scrollbar {display:none}
 .scene {position:relative; width:max(100%, 177.778dvh); aspect-ratio:16/9}
 .scene img {display:block; width:100%; height:100%; max-width:none}
@@ -9,12 +10,18 @@
 .river,.entrances a,.entrances button {display:inline-flex; align-items:center; justify-content:center; min-height:44px; padding:.4rem .85rem; border:1px solid #a18147; border-radius:2rem; text-decoration:none}
 .river {background:#38251a; color:#ffe4b1}
 .grounds :focus-visible {outline:3px solid #174d69; outline-offset:-3px}
-.entrances .zoom {display:none}
-@media (orientation:portrait) {
-  /* The observer travels by touch-scrolling across the image; no avatar or walking camera. */
-  .scene {width:max(100%, 177.778dvh)}
-  .viewport[data-overview="true"] .scene {width:100%}
-  .entrances .zoom {display:inline-flex}
+/* All registration and legal details remain visible below the desktop panorama. */
+.desktopFooter {
+  display:flex; justify-content:center; align-items:center; flex-wrap:wrap; gap:1.1rem;
+  min-height:13dvh; padding:.7rem 1.25rem; border-top:1px solid #e2d1aa; background:#fffcf7
+}
+.desktopFooter p {margin:0; color:#695b48; font-size:.86rem}
+.desktopFooter p a {color:inherit; text-underline-offset:.2rem}
+.desktopJoin {
+  display:inline-flex; justify-content:center; align-items:center; min-height:44px;
+  padding:.6rem 2rem; border-radius:999px; border:1px solid #a97d30;
+  background:linear-gradient(110deg,#ac7e32,#d5aa56); color:#fff;
+  text-decoration:none; font:600 1rem Georgia,serif
 }
 
 .directory {position:fixed; inset:0; margin:auto; width:min(92vw,36rem); max-height:80dvh; overflow:auto; border:1px solid #ad915c; border-radius:1rem; background:#fffaf0; color:#32271a; padding:1rem; box-shadow:0 1rem 4rem #21190f40}
@@ -31,6 +38,7 @@
 .mobileHeader,.mobileIntroduction,.mobileExplore {display:none}
 @media (max-width: 900px), (orientation: portrait) {
   .grounds {min-height:100dvh; overflow-x:hidden; background:#fffcf7}
+  .desktopFooter {display:none}
   .mobileHeader {
     display:flex; align-items:center; justify-content:space-between; gap:.75rem;
     min-height:68px; padding:.65rem clamp(.8rem,3vw,1.5rem);
@@ -57,15 +65,15 @@
     margin:0; color:#704b1c; font:600 clamp(1.65rem,5.6vw,2.5rem)/1.14 Georgia,serif
   }
   .mobileIntroduction p {margin:.45rem 0 0; color:#64594c; font:italic clamp(.9rem,2.8vw,1.1rem) Georgia,serif}
+  /* Retain the exact artwork, fit its width, and clip the lower inscription
+     and down arrow without resampling or creating a replacement image. */
   .viewport {
-    height:auto; overflow:hidden; overscroll-behavior:auto; scrollbar-width:auto
+    width:100%; height:auto; aspect-ratio:1536 / 752;
+    overflow:hidden; overscroll-behavior:auto; scrollbar-width:none
   }
-  .scene,.viewport[data-overview="true"] .scene {
-    width:100%; aspect-ratio:16/9
-  }
+  .scene {width:100%; aspect-ratio:16/9}
   .scene img {display:block; width:100%; max-width:100%; height:auto}
   .viewport .door {display:none}
-  .entrances .zoom {display:none}
   .mobileExplore {display:block; padding:1.2rem clamp(.9rem,4vw,2rem) 2rem; text-align:center}
   .mobileExplore h2 {margin:0 0 .9rem; font:600 clamp(1.45rem,5vw,1.9rem) Georgia,serif; color:#694b26}
   .mobileEntrances {display:grid; gap:.55rem}
