@@ -1,36 +1,25 @@
 'use client'
 
-import { DepartmentBuildings } from '@/components/weave/department-buildings'
+import {useEffect} from 'react'
+import {useRouter} from 'next/navigation'
+import {useAuth} from '@/lib/auth-provider'
+import {BridgerWorkplace} from '@/components/bridger/bridger-workplace'
+import {ManagerLifestyleEntry} from '@/components/manager-lifestyle-entry'
+import {RegionalSystemSwitchGate} from '@/components/weave/regional-system-switch-gate'
 
-import Link from 'next/link'
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { Share2 } from 'lucide-react'
-import { useAuth } from '@/lib/auth-provider'
-import { BridgerWorkplace } from '@/components/bridger/bridger-workplace'
-import { ManagerLifestyleEntry } from '@/components/manager-lifestyle-entry'
-import { RegionalSystemSwitchGate } from '@/components/weave/regional-system-switch-gate'
-
-export default function BridgerDashboardPage() {
-  const { user, isInitialized, isLoading } = useAuth()
-  const router = useRouter()
-
-  useEffect(() => {
-    if (isInitialized && !isLoading && user && user.role!=='bridger') router.replace('/event')
-  }, [isInitialized, isLoading, user?.role, router])
-
-  if (!isInitialized || isLoading || user?.role!=='bridger')return null
-
-  return <>
-    <DepartmentBuildings department="hope" />
-    <div className="mx-auto w-full max-w-5xl px-3 sm:px-5"><RegionalSystemSwitchGate compact /></div>
-    <BridgerWorkplace userName={user?.name}/>
-
-    <ManagerLifestyleEntry/>
-    <nav aria-label="Department shortcuts" className="mx-auto flex max-w-5xl flex-wrap gap-2 px-4 py-4">
-    <Link href="/referrals" data-core-function="referral-movement" className="inline-flex min-h-11 items-center gap-2 rounded-full border border-emerald-300/25 bg-[#071711]/95 px-4 py-3 text-[10px] font-black uppercase tracking-[.12em] text-emerald-100 shadow-2xl backdrop-blur">
-      <Share2 className="h-4 w-4"/>Referral Movement · ₦500
-    </Link>
-    </nav>
-  </>
+export default function BridgerDashboardPage(){
+ const {user,isInitialized,isLoading}=useAuth()
+ const router=useRouter()
+ useEffect(()=>{
+  if(isInitialized&&!isLoading&&user&&user.role!=='bridger')router.replace('/event')
+ },[isInitialized,isLoading,user?.role,router])
+ if(!isInitialized||isLoading||user?.role!=='bridger')return null
+ return <>
+  <BridgerWorkplace userName={user.name}/>
+  <details className="mx-auto my-4 w-full max-w-5xl rounded-xl border border-amber-100/25 bg-[#132b35] p-3 text-white">
+   <summary className="min-h-11 cursor-pointer py-2 text-sm font-semibold">My appointments and System Switch</summary>
+   <RegionalSystemSwitchGate compact/>
+   <ManagerLifestyleEntry/>
+  </details>
+ </>
 }
