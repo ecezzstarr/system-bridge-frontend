@@ -9,6 +9,7 @@ export type VideoAdScene = {
   id: string
   order: number
   durationSeconds: number
+  heading?: string
   beat: string
   text: string
   visualDirection: string
