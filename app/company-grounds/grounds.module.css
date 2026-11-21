@@ -1,5 +1,6 @@
 .grounds {position:relative; isolation:isolate; background:#fcfaf4; color:#302c23}
-.viewport {height:100vh; height:100dvh; overflow:auto; overscroll-behavior:contain; scrollbar-width:none}
+/* Crop the bottom 13% of the original poster, where the obsolete 'Scroll to explore' words and arrow are baked in. */
+.viewport {height:87vh; height:87dvh; overflow:hidden; overscroll-behavior:contain; scrollbar-width:none}
 .viewport::-webkit-scrollbar {display:none}
 .scene {position:relative; width:max(100%, 177.778dvh); aspect-ratio:16/9}
 .scene img {display:block; width:100%; height:100%; max-width:none}
@@ -9,12 +10,18 @@
 .river,.entrances a,.entrances button {display:inline-flex; align-items:center; justify-content:center; min-height:44px; padding:.4rem .85rem; border:1px solid #a18147; border-radius:2rem; text-decoration:none}
 .river {background:#38251a; color:#ffe4b1}
 .grounds :focus-visible {outline:3px solid #174d69; outline-offset:-3px}
-.entrances .zoom {display:none}
-@media (orientation:portrait) {
-  /* The observer travels by touch-scrolling across the image; no avatar or walking camera. */
-  .scene {width:max(100%, 177.778dvh)}
-  .viewport[data-overview="true"] .scene {width:100%}
-  .entrances .zoom {display:inline-flex}
+/* All registration and legal details remain visible below the desktop panorama. */
+.desktopFooter {
+  display:flex; justify-content:center; align-items:center; flex-wrap:wrap; gap:1.1rem;
+  min-height:13dvh; padding:.7rem 1.25rem; border-top:1px solid #e2d1aa; background:#fffcf7
+}
+.desktopFooter p {margin:0; color:#695b48; font-size:.86rem}
+.desktopFooter p a {color:inherit; text-underline-offset:.2rem}
+.desktopJoin {
+  display:inline-flex; justify-content:center; align-items:center; min-height:44px;
+  padding:.6rem 2rem; border-radius:999px; border:1px solid #a97d30;
+  background:linear-gradient(110deg,#ac7e32,#d5aa56); color:#fff;
+  text-decoration:none; font:600 1rem Georgia,serif
 }
 
 .directory {position:fixed; inset:0; margin:auto; width:min(92vw,36rem); max-height:80dvh; overflow:auto; border:1px solid #ad915c; border-radius:1rem; background:#fffaf0; color:#32271a; padding:1rem; box-shadow:0 1rem 4rem #21190f40}
@@ -23,3 +30,80 @@
 .directory h2 {font:600 1.45rem Georgia,serif}
 .directory header button {padding:.5rem; min-height:44px; text-decoration:underline}
 .directory .entrances {justify-content:flex-start; padding:1rem 0 0}
+
+/* The approved Company Grounds artwork remains unchanged. On narrow/portrait
+   displays, fit the entire image to the device instead of forcing a giant
+   height-based, horizontally scrolling panorama. The visible links below it
+   replace tiny image hotspots, using the same role-aware entrance handler. */
+.mobileHeader,.mobileIntroduction,.mobileExplore {display:none}
+@media (max-width: 900px), (orientation: portrait) {
+  .grounds {min-height:100dvh; overflow-x:hidden; background:#fffcf7}
+  .desktopFooter {display:none}
+  .mobileHeader {
+    display:flex; align-items:center; justify-content:space-between; gap:.75rem;
+    min-height:68px; padding:.65rem clamp(.8rem,3vw,1.5rem);
+    border-bottom:1px solid #ddcba7; background:#fffdf9
+  }
+  .mobileBrand {
+    display:inline-flex; align-items:center; gap:.6rem; min-width:0;
+    font:600 clamp(.7rem,2.6vw,.95rem) Georgia,serif; letter-spacing:.07em;
+    color:#49371f; text-decoration:none; white-space:nowrap
+  }
+  .mobileMark {font:italic 2.15rem Georgia,serif; color:#a6782d; border-right:1px solid #d5bb89; padding-right:.65rem}
+  .mobileHeaderActions {display:flex; align-items:center; gap:.6rem; flex:none}
+  .mobileSignIn {
+    display:inline-flex; justify-content:center; align-items:center; padding:.5rem .8rem;
+    min-height:44px; border:1px solid #ab853b; border-radius:999px;
+    color:#51391c; background:#fffdf9; text-decoration:none; font-size:.82rem; white-space:nowrap
+  }
+  .mobileMenu {
+    display:grid; place-items:center; width:44px; height:44px; border:0;
+    border-radius:.7rem; background:transparent; color:#49371f
+  }
+  .mobileIntroduction {display:block; text-align:center; padding:1.15rem 1rem 1rem}
+  .mobileIntroduction h2 {
+    margin:0; color:#704b1c; font:600 clamp(1.65rem,5.6vw,2.5rem)/1.14 Georgia,serif
+  }
+  .mobileIntroduction p {margin:.45rem 0 0; color:#64594c; font:italic clamp(.9rem,2.8vw,1.1rem) Georgia,serif}
+  /* Retain the exact artwork, fit its width, and clip the lower inscription
+     and down arrow without resampling or creating a replacement image. */
+  .viewport {
+    width:100%; height:auto; aspect-ratio:1536 / 752;
+    overflow:hidden; overscroll-behavior:auto; scrollbar-width:none
+  }
+  .scene {width:100%; aspect-ratio:16/9}
+  .scene img {display:block; width:100%; max-width:100%; height:auto}
+  .viewport .door {display:none}
+  .mobileExplore {display:block; padding:1.2rem clamp(.9rem,4vw,2rem) 2rem; text-align:center}
+  .mobileExplore h2 {margin:0 0 .9rem; font:600 clamp(1.45rem,5vw,1.9rem) Georgia,serif; color:#694b26}
+  .mobileEntrances {display:grid; gap:.55rem}
+  .mobileEntrances > a,.mobileEntrances > button {
+    display:flex; justify-content:space-between; align-items:center; width:100%; min-height:54px;
+    padding:.75rem 1rem; border:1px solid #cdb993; border-radius:.8rem;
+    color:#49341e; background:#fff; text-align:left; text-decoration:none;
+    font:600 1rem Georgia,serif; box-shadow:0 3px 9px #3f2d1712
+  }
+  .mobileArrow {color:#a47b38; font:400 1.6rem/1 Georgia,serif}
+  .mobileActions {display:grid; justify-items:stretch; gap:1rem; margin-top:1.15rem}
+  .mobileWorld {
+    display:inline-flex; justify-content:center; align-items:center; gap:.45rem;
+    min-height:44px; color:#335675; text-decoration:underline;
+    text-underline-offset:.2rem; font-size:.94rem
+  }
+  .mobileJoin {
+    display:flex; align-items:center; justify-content:center; gap:.75rem;
+    min-height:52px; border:1px solid #b88c39; border-radius:.9rem;
+    color:#fffdf5; background:linear-gradient(115deg,#b5822a,#dfb962 55%,#a87521);
+    text-decoration:none; font:600 1.1rem Georgia,serif;
+    box-shadow:0 5px 15px #6d4b2226
+  }
+  .mobileLegal {margin:1.6rem 0 0; color:#675f53; font-size:.76rem; line-height:1.5}
+  .mobileLegal a {color:inherit; text-decoration:underline; text-underline-offset:.2rem}
+}
+@media (max-width: 365px) {
+  .mobileBrand {gap:.35rem; letter-spacing:0; font-size:.66rem}
+  .mobileMark {font-size:1.7rem; padding-right:.4rem}
+  .mobileHeader {gap:.35rem; padding-inline:.55rem}
+  .mobileHeaderActions {gap:.2rem}
+  .mobileSignIn {padding-inline:.55rem; font-size:.76rem}
+}
