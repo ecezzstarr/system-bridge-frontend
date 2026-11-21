@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useRef, useState } from 'react'
 import { Flame } from 'lucide-react'
+import { WEAVE_COMPANY } from '@/lib/company-profile'
 import { useAuth } from '@/lib/auth-provider'
 import styles from './grounds.module.css'
 
@@ -48,7 +49,7 @@ export default function CompanyGrounds() {
     { name: 'Open Market', href: '/market', left: 85, top: 51, width: 15, height: 29 },
   ]
 
-  return <section className={styles.grounds} aria-label="Weave Open World">
+  return <section className={styles.grounds} aria-label="Weave Open World" data-weave-company-home="company-grounds">
     <h1 className="sr-only">Weave of Presence · Open World</h1>
     <div id="grounds-panorama" className={styles.viewport} data-overview={overview} tabIndex={0} aria-label="Company Grounds panorama. Scroll sideways to explore on a phone.">
       <div className={styles.scene}>
@@ -70,8 +71,18 @@ export default function CompanyGrounds() {
       {doors.map(door => renderDoor(door, false))}
       {destinations.map(({name,href}) => <Link key={name} href={href}>{name}</Link>)}
       <Link href="/login">Sign in</Link>
+      <Link href="/register">Join as Agent or Bridger</Link>
+      <Link href="/client/register">Client registration</Link>
+      <Link href="/file-folder-preview">Explore File Folders</Link>
+      <Link href="/company-overview">Company services and Reach requests</Link>
       <Link href="/download">Download the Weave app</Link>
     </nav>
+    <footer className={styles.identity}>
+      <span>{WEAVE_COMPANY.legalName} · RC {WEAVE_COMPANY.registrationNumber}</span>
+      <Link href="/company">Company information</Link>
+      <Link href="/terms">Terms</Link>
+      <Link href="/privacy">Privacy</Link>
+    </footer>
     <dialog ref={dialog} aria-labelledby="flame-access-title" aria-describedby="flame-access-message"
       className="fixed inset-0 m-auto w-[min(90vw,26rem)] rounded-2xl border border-[#b69a61] bg-[#fffaf0] p-6 text-[#302c23] shadow-xl backdrop:bg-black/45">
       <p className="flex items-center gap-2 text-sm text-[#805422]"><Flame size={18} aria-hidden="true"/> The Flame</p>
