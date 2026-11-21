@@ -15,6 +15,8 @@ function isContinuityRoute(pathname:string){
     pathname==='/api/deposit/paystack/webhook' ||
     // Deployment worker validates its own dedicated bearer secret and must log rollbacks.
     pathname==='/api/system/deployment-record' ||
+    pathname==='/api/system/release-worker' ||
+    pathname==='/api/system/host-powershell' ||
     // Existing calls must finish/refund even while new departmental work waits.
     /^\/api\/river\/voice\/[0-9a-f-]{36}(?:\/status)?$/i.test(pathname) ||
     pathname==='/api/auth/forgot-password' ||
