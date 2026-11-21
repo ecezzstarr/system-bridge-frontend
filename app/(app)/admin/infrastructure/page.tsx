@@ -81,6 +81,7 @@ export default function InfrastructureWorkshop(){
       const body=await response.json()
       if(!response.ok || !body.success) throw new Error(body.error || 'Divine Shield update failed')
       setData(prev=>prev?{...prev,shield:body.state,readiness:body.readiness}:prev)
+      if(body.recorded===false)toast.warning('Shield changed, but transition audit did not persist. Reconcile the infrastructure ledger immediately.')
       toast.success(next
         ? 'Divine Shield raised · sessions preserved · departments waiting'
         : 'Divine Shield released · departments resumed')
