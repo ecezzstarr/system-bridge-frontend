@@ -51,6 +51,12 @@ export function CompanyDomainMap({buildings,preview=false}:{buildings:Building[]
  const visible=buildings.filter(b=>b.department===zone)
  const selected=visible.find(b=>b.plot===plot)??visible[0]
  if(!selected)return <p>A Time has yet to open the first company plot.</p>
+ // Published metadata is data, not executable navigation. Validate both route segments.
+ const safeDepartment=Object.prototype.hasOwnProperty.call(WEAVE_NATIVE_DEPARTMENTS,selected.department)
+ const safeSlug=/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(selected.slug)
+ const entryHref=safeDepartment&&safeSlug
+  ?'/weave-modules/'+encodeURIComponent(selected.department)+'/'+encodeURIComponent(selected.slug)
+  :null
  return <section className="space-y-4">
   {!preview&&<label className="block">Department
    <select className="ml-3 rounded border border-amber-200/40 bg-[#132b35] p-2" value={zone} onChange={e=>{setDepartment(e.target.value as NativeDepartment);setPlot(undefined)}}>
@@ -74,7 +80,9 @@ export function CompanyDomainMap({buildings,preview=false}:{buildings:Building[]
     <select value={selected.plot} onChange={e=>setPlot(Number(e.target.value))} className="ml-3 max-w-full rounded border border-amber-200/40 bg-[#132b35] p-2">
      {visible.map(b=><option key={b.slug} value={b.plot}>Plot {b.plot} · {b.title}</option>)}
     </select></label>
-   <Link className="inline-block rounded-full bg-amber-100 px-5 py-3 font-semibold text-[#20343c]" href={'/weave-modules/'+selected.department+'/'+selected.slug}>Enter {selected.title}</Link>
+   <p className="text-sm">Selected workshop: {selected.title}</p>
+   {entryHref?<Link className="inline-block rounded-full bg-amber-100 px-5 py-3 font-semibold text-[#20343c]" href={entryHref}>Enter workshop</Link>
+    :<p role="alert">This building entrance is unavailable.</p>}
   </>}
  </section>
 }
