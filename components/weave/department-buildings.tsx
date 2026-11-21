@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { workshopArt } from '@/lib/workshop-art'
 import { useMemo, useRef, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useAuth } from '@/lib/auth-provider'
@@ -49,12 +50,13 @@ export function DepartmentBuildings({ department }: { department: NativeDepartme
         onChange={event => { setQuery(event.target.value); street.current?.scrollTo({ left: 0 }) }} />
     </header>
     {estate && <Link href={estate.href} className={styles.estate} prefetch={false}>
+      <img className={styles.estateImage} src={workshopArt(estate.href)} alt="" width={312} height={312} />
       <strong>My File Folder estate</strong>
       <span>Enter your private grounds to build your mansion, operate your enterprise and open your Customer Door.</span>
     </Link>}
     <nav className={styles.street} ref={street} aria-label={label + ' workshop entrances'}>
       {workshops.map(door => <Link key={door.href} href={door.href} prefetch={false} className={styles.building}>
-        <span aria-hidden="true" className={styles.facade} />
+        <img className={styles.facade} src={workshopArt(door.href)} alt="" width={312} height={312} loading="lazy" />
         <span className={styles.sign}>{door.title}</span>
         {door.access && door.access !== 'available' && <small>{door.access === 'approval' ? 'Approval required' : door.access}</small>}
       </Link>)}

@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { workshopArt } from '@/lib/workshop-art'
 import { usePathname } from 'next/navigation'
 import type { ReactNode } from 'react'
 import { useAuth } from '@/lib/auth-provider'
@@ -24,18 +25,20 @@ export function DepartmentBuildingInterior({ children }: { children: ReactNode }
   }
 
   const prospectDesk = path === '/bridger/my-prospects'
-  const lifestyle = path === '/weave/lifestyles' || path.startsWith('/weave/lifestyles/')
   const name = prospectDesk ? 'My Prospects' : path === '/weave/market/prospects' ? 'Prospect Market' :
     weavePageCopyForPath(path)?.title ?? path.split('/').filter(Boolean).at(-1)?.replace(/-/g, ' ') ?? 'Workshop'
-  const room = lifestyle ? 'lifestyle' : role === 'bridger' ? 'hope' : role === 'client' ? 'enterprise' : 'operations'
 
-  return <section className={styles.interior} data-room={room} aria-label={name + ' building'}>
+  return <section className={styles.interior} aria-label={name + ' building'}>
     <nav className={styles.threshold} aria-label="Building location">
       <Link href={'/' + role + '/dashboard'}>{mansions[role]} mansion</Link>
-      <span aria-hidden="true">›</span><span aria-current="page">{name}</span>
+      <span aria-hidden="true">›</span><a href="#workshop-desk">Work desk</a>
     </nav>
     <div className={styles.workroom}>
-      <div className={styles.desk}>
+      <figure className={styles.workshopFront}>
+        <img className={styles.workshopView} src={workshopArt(path)} alt="" width={312} height={312} />
+        <figcaption>{name}</figcaption>
+      </figure>
+      <div className={styles.desk} id="workshop-desk" tabIndex={-1}>
         {children}
       </div>
     </div>
