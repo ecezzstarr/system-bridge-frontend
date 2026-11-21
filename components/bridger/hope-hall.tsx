@@ -10,7 +10,7 @@ import { useEnvironmentOrganizer } from '@/components/world/environment-organize
 const market = '/weave/market/prospects'
 const studio = '/distribution-studio'
 const rooms = [
-  { label: 'Social studio', href: studio },
+  { label: 'Social Studio', href: studio },
   { label: 'Prospect desk', href: market },
   { label: 'Bridge AI', href: '/bridger/bridge-ai' },
 ]
@@ -30,6 +30,7 @@ export function HopeHall() {
         {isVisible(room.href) && <Link href={room.href} className="inline-flex min-h-11 items-center rounded-full border border-[#e4c995] bg-[#30271e]/95 px-2 text-center text-xs font-semibold text-white focus-visible:outline sm:px-4 sm:text-base">{room.label}</Link>}
       </div>)}
     </nav>
+    <p className="px-4 pt-3 text-sm leading-6 text-[#4c5a61]">Use Social Studio to reach new prospects and amplify a Client’s business. Follow up at the Prospect Desk and open Bridge AI when someone agrees to explore a File Folder.</p>
     <FlameDesk key={String(user?.id)+'-'+canRead} canRead={canRead} studioVisible={isVisible(studio)}/>
   </section>
 }
