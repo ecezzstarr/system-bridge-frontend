@@ -1,6 +1,5 @@
 'use client'
 
-import { WEAVE_COMPANY } from '@/lib/company-profile'
 import Link from 'next/link'
 import { useRef, useState } from 'react'
 import { Flame, Menu } from 'lucide-react'
@@ -29,6 +28,13 @@ export default function CompanyGrounds() {
       style: { left: door.left+'%', top: door.top+'%', width: door.width+'%', height: door.height+'%' },
     } : {}
     const label = panorama ? null : mobile ? <><span>{door.name}</span><span className={styles.mobileArrow} aria-hidden="true">›</span></> : door.name
+    // Public File Folder previews are available to every visitor and employee.
+    // Private File Folder workplaces still require their separate Client boundary.
+    if (door.name === 'File Folder') {
+      return <Link key={door.name} {...appearance}
+        className={panorama ? styles.door : undefined}
+        aria-label="Explore File Folder previews" href="/file-folder-preview">{label}</Link>
+    }
     if (user && user.role !== door.role) {
       return <button key={door.name} type="button" {...appearance}
         className={panorama ? styles.door+' bg-transparent' : 'min-h-11 rounded-full border border-[#a18147] px-4'}
@@ -84,6 +90,10 @@ export default function CompanyGrounds() {
         <button type="button" className={styles.door} aria-label="Company Grounds directory" aria-haspopup="dialog"
           onClick={() => entrances.current?.showModal()} style={{left:'31%',top:'63%',width:'23%',height:'10%'}} />
       </div>
+      <nav className={styles.groundEntrances} aria-label="Join and preview inside Company Grounds">
+        <Link href="/register">Join Weave</Link>
+        <Link href="/file-folder-preview">File Folder previews</Link>
+      </nav>
     </div>
     <section className={styles.mobileExplore} aria-label="Company entrances">
       <h2>Explore the company</h2>
@@ -94,18 +104,8 @@ export default function CompanyGrounds() {
         <Link href="/system-switch/world" className={styles.mobileWorld}>
           Explore Weave Open World <span aria-hidden="true">›</span>
         </Link>
-        <Link href={user ? ownDepartment?.workplace ?? '/dashboard' : '/register'} className={styles.mobileJoin}>
-          {user ? 'Enter my department' : 'Join Weave'} <span aria-hidden="true">›</span>
-        </Link>
       </div>
-      <p className={styles.mobileLegal}><Link href="/company">Company information</Link> · RC {WEAVE_COMPANY.registrationNumber}</p>
     </section>
-    <footer className={styles.desktopFooter}>
-      <Link href={user ? ownDepartment?.workplace ?? '/dashboard' : '/register'} className={styles.desktopJoin}>
-        {user ? 'Enter my department' : 'Join Weave'}
-      </Link>
-      <p><Link href="/company">Company information</Link> · RC {WEAVE_COMPANY.registrationNumber}</p>
-    </footer>
     <dialog ref={entrances} className={styles.directory} aria-labelledby="grounds-directory-title">
       <header><h2 id="grounds-directory-title">Company entrances</h2>
         <button type="button" onClick={() => entrances.current?.close()}>Close</button>
@@ -129,7 +129,6 @@ export default function CompanyGrounds() {
       <Link href="/privacy">Privacy</Link>
       <Link href="/download">Download the Weave app</Link>
     </nav>
-    <p>{WEAVE_COMPANY.legalName} · RC {WEAVE_COMPANY.registrationNumber}</p>
     </dialog>
     <dialog ref={dialog} aria-labelledby="flame-access-title" aria-describedby="flame-access-message"
       className="fixed inset-0 m-auto w-[min(90vw,26rem)] rounded-2xl border border-[#b69a61] bg-[#fffaf0] p-6 text-[#302c23] shadow-xl backdrop:bg-black/45">
