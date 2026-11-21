@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import type { ReactNode } from 'react'
+import { RiverPanorama } from './river-panorama'
 import type { EventRole } from '@/lib/weave-event'
 import styles from './riverfront.module.css'
 
@@ -11,38 +12,20 @@ const halls = {
   admin: { name: 'Administrations', work: 'A Time brings people together through events and workshops. Administrations reviews verified activity so the owner can see what sold, where costs arose and what to improve in the next movement.' },
 } satisfies Record<EventRole, {name:string; work:string}>
 
-const positions: EventRole[] = ['bridger', 'client', 'agent', 'admin']
-
 export function Riverfront({role, children}:{role?:EventRole; children:ReactNode}) {
-  const [choice, setChoice] = useState<EventRole | null>(null)
-  const selected = choice ?? role ?? 'bridger'
-  const viewport = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    const view = viewport.current
-    const building = view?.querySelector<HTMLButtonElement>('[aria-pressed="true"]')
-    if (view && building) view.scrollLeft = building.offsetLeft - (view.clientWidth - building.offsetWidth) / 2
-  }, [selected])
   return <section className={styles.riverfront} aria-label="Burning River event grounds">
     <header className={styles.heading}>
       <p>Flame Event · Company Loop 1</p>
       <h1>Burning River</h1>
       <span>Hosted by Sunshine: Mechanized Wealth</span>
     </header>
-    <div ref={viewport} className={styles.viewport}>
-      <div className={styles.bank} role="group" aria-label="Explore the four department halls">
-        <img src="/weave/flame-event/burning-river-riverfront.webp" width="1600" height="533"
-          alt="An empty Social Studio, a showroom signed Sunshine: Mechanized Wealth, a dispatch bay and a workshop beside the river."/>
-        {positions.map(position => <button type="button" key={position} aria-pressed={selected === position}
-          onClick={() => setChoice(position)}><span>{halls[position].name}</span></button>)}
-      </div>
-    </div>
+    <RiverPanorama />
     <div className={styles.detail}>
-      <div aria-live="polite" aria-atomic="true">
-        <h2>{halls[selected].name}</h2>
-        <p>{halls[selected].work}</p>
-        {selected==='bridger' && <p><strong>Individual event target</strong> · 70,000 USDT in verified File Folder sales across all tiers.</p>}
-        {role && selected!==role && <p className={styles.guidance}>The Flame · Access to this hall is reserved for its department. Your entrance is {halls[role].name}.</p>}
-      </div>
+      {role && <div>
+        <h2>{halls[role].name}</h2>
+        <p>{halls[role].work}</p>
+        {role === 'bridger' && <p><strong>Individual event target</strong> · 70,000 USDT in verified File Folder sales across all tiers.</p>}
+      </div>}
       {children}
     </div>
   </section>
