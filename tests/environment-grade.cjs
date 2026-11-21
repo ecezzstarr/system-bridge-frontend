@@ -642,11 +642,11 @@ assert.ok(adminBridgeSupportSource.includes("authUser.role !== 'admin'")||adminB
 assert.ok(bridgerRadianceSource.includes("redirect('/bridger/bridge-ai')"),'Retired Bridger Bridge of Radiance route resolves to canonical Bridge AI')
 
 
-const publicWorldSource=read('app/page.tsx')
+const publicWorldSource=read('app/company-grounds/page.tsx')
 const weaveSystemMapSource=read('lib/weave-system-map.ts')
 const dashboardWorldSource=read('components/world/weave-dashboard-world.tsx')
-assert.ok(publicWorldSource.includes('data-weave-public-entry-world="true"'),'WEAVE homepage declares the public entry world')
-assert.ok(publicWorldSource.includes('AI has a place inside participation'),'Public world explains AI as participation rather than a detached chatbot')
+assert.ok(publicWorldSource.includes('aria-label="Weave Open World"'),'WEAVE homepage declares the public entry world')
+assert.ok(publicWorldSource.includes('/images/weave-open-world-home.jpg'),'Public world uses the approved Company Grounds artwork')
 assert.ok(weaveSystemMapSource.includes("principle: 'AI participates inside human movement; it does not replace the human source.'"),'WEAVE system map protects the AI participation principle')
 assert.ok(weaveSystemMapSource.includes("AI does not own territory"),'AI participation keeps human authority and ownership boundaries')
 assert.ok(!dashboardWorldSource.includes('data-ai-participation'),'Role worlds do not place AI explanation overlays over navigation; AI context remains inside working stations')

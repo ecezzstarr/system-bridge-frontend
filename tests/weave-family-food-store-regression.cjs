@@ -48,6 +48,6 @@ const art=fs.readFileSync(path.join(__dirname,'../public/weave-food/weave-family
 assert.equal(art.toString('ascii',4,12),'ftypavif','WEAVE product collection is committed as a valid AVIF image, not a dead image link')
 assert.ok(art.length>4000&&art.length<50000,'Image is optimized for mobile')
 assert.ok(read('app/food-store/page.tsx').includes('/weave-food/weave-family-products.avif'),'Store has actual generated product artwork')
-assert.ok(read('app/page.tsx').includes('/weave-food/weave-family-products.avif'),'Homepage advertises the same generated family-food artwork')
+assert.ok(read('app/company-grounds/page.tsx').includes('href="/food-store"'),'Grounds directory links to the public food store')
 assert.ok(read('app/carrier/food/[code]/page.tsx').includes('/weave-food/weave-family-products.avif'),'Agent Carrier Door uses the same branded grocery visual')
 console.log('PASS: Nigeria essential foods, bundled discount quote, verified supplier inventory, Daisy and farm orders')

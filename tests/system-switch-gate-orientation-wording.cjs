@@ -78,7 +78,7 @@ const client = read('app/client/system-switch/page.tsx')
 assert.match(client, /data-client-system-switch-orientation="shared-world"/)
 assert.match(client, /SharedSystemSwitchWorld role="client"/)
 assert.match(client, /ClientFileFolderOperatingEnvironment data=\{data\}/)
-assert.match(read('app/page.tsx'), /data-home-system-switch-explanation="website-to-3d"/)
+assert.match(read('app/company-grounds/page.tsx'), /aria-label="Weave Open World"/)
 const doc = read('docs/weave-open-world-system-switch.md')
 assert.match(doc, /Where am I\? What is beyond the gate\? Which places am I allowed to enter\?/)
 

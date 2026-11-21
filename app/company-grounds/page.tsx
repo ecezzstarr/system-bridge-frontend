@@ -17,6 +17,7 @@ const buildings = [
 export default function CompanyGrounds() {
   const { user, isInitialized } = useAuth()
   const [overview, setOverview] = useState(false)
+  const entrances = useRef<HTMLDialogElement>(null)
   const dialog = useRef<HTMLDialogElement>(null)
   const [attempted, setAttempted] = useState('')
   const ownDepartment = buildings.find(building => building.role === user?.role)
@@ -33,6 +34,7 @@ export default function CompanyGrounds() {
         className={panorama ? styles.door+' bg-transparent' : 'min-h-11 rounded-full border border-[#a18147] px-4'}
         aria-label={'Check access to '+door.name} aria-haspopup="dialog"
         onClick={() => {
+          entrances.current?.close()
           setAttempted(door.name)
           dialog.current?.showModal()
         }}>{label}</button>
@@ -48,12 +50,14 @@ export default function CompanyGrounds() {
     { name: 'Open Market', href: '/market', left: 85, top: 51, width: 15, height: 29 },
   ]
 
-  return <section className={styles.grounds} aria-label="Weave Open World">
+  return <main className={styles.grounds} aria-label="Weave Open World">
     <h1 className="sr-only">Weave of Presence · Open World</h1>
     <div id="grounds-panorama" className={styles.viewport} data-overview={overview} tabIndex={0} aria-label="Company Grounds panorama. Scroll sideways to explore on a phone.">
       <div className={styles.scene}>
         <img src="/images/weave-open-world-home.jpg" width="1536" height="864" fetchPriority="high"
           alt="Aerial view of Weave Company Grounds, the departmental buildings, Client estates and Burning River." />
+        <button type="button" className={styles.door} aria-label="Open Weave directory" aria-haspopup="dialog"
+          onClick={() => entrances.current?.showModal()} style={{left:'2%',top:'1%',width:'31%',height:'9%'}} />
         {doors.map(door => renderDoor(door, true))}
         {destinations.map(({name, href, left, top, width, height}) => (
           <Link key={name} href={href} className={styles.door} aria-label={name}
@@ -61,17 +65,36 @@ export default function CompanyGrounds() {
         ))}
         <Link className={styles.door} style={{right:'1%',top:'1%',width:'10%',height:'8%'}}
           href={user ? ownDepartment?.workplace ?? '/dashboard' : '/login'} aria-label={user ? 'My workspace' : 'Sign in'} />
-        <a className={styles.door} href="#grounds-entrances" aria-label="Scroll to explore" style={{left:'43%',bottom:0,width:'14%',height:'9%'}} />
+        <button type="button" className={styles.door} aria-label="Scroll to explore company entrances" aria-haspopup="dialog"
+          onClick={() => entrances.current?.showModal()} style={{left:'43%',bottom:0,width:'14%',height:'9%'}} />
+        <button type="button" className={styles.door} aria-label="Company Grounds directory" aria-haspopup="dialog"
+          onClick={() => entrances.current?.showModal()} style={{left:'31%',top:'63%',width:'23%',height:'10%'}} />
       </div>
     </div>
+    <dialog ref={entrances} className={styles.directory} aria-labelledby="grounds-directory-title">
+      <header><h2 id="grounds-directory-title">Company entrances</h2>
+        <button type="button" onClick={() => entrances.current?.close()}>Close</button>
+      </header>
     <nav id="grounds-entrances" aria-label="Company entrances" className={styles.entrances}>
       <button type="button" className={styles.zoom} aria-controls="grounds-panorama" aria-pressed={overview}
-        onClick={() => setOverview(!overview)}>{overview ? 'Scroll through grounds' : 'Show entire grounds'}</button>
+        onClick={() => { setOverview(!overview); entrances.current?.close() }}>{overview ? 'Scroll through grounds' : 'Show entire grounds'}</button>
       {doors.map(door => renderDoor(door, false))}
       {destinations.map(({name,href}) => <Link key={name} href={href}>{name}</Link>)}
       <Link href="/login">Sign in</Link>
+      <Link href="/register">Join Weave</Link>
+      <Link href="/client/register">Client registration</Link>
+      <Link href="/file-folder">Purchase a File Folder</Link>
+      <Link href="/food-store">Food Store</Link>
+      <Link href="/reach-delivery">Reach and Delivery</Link>
+      <Link href="/lifestyle">Lifestyle</Link>
+      <Link href="/enterprise">Enterprise</Link>
+      <Link href="/stream">Streaming</Link>
+      <Link href="/company">Company information</Link>
+      <Link href="/terms">Terms</Link>
+      <Link href="/privacy">Privacy</Link>
       <Link href="/download">Download the Weave app</Link>
     </nav>
+    </dialog>
     <dialog ref={dialog} aria-labelledby="flame-access-title" aria-describedby="flame-access-message"
       className="fixed inset-0 m-auto w-[min(90vw,26rem)] rounded-2xl border border-[#b69a61] bg-[#fffaf0] p-6 text-[#302c23] shadow-xl backdrop:bg-black/45">
       <p className="flex items-center gap-2 text-sm text-[#805422]"><Flame size={18} aria-hidden="true"/> The Flame</p>
@@ -84,5 +107,5 @@ export default function CompanyGrounds() {
         <button type="button" className="min-h-11 px-2 underline" onClick={() => dialog.current?.close()}>Stay on the grounds</button>
       </div>
     </dialog>
-  </section>
+  </main>
 }

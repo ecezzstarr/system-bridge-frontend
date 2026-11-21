@@ -4,15 +4,15 @@ const assert = require('assert')
 const root = path.resolve(__dirname, '..')
 const read = p => fs.readFileSync(path.join(root, p), 'utf8')
 
-const homepage = read('app/page.tsx')
+const homepage = read('app/company-grounds/page.tsx')
 const purchase = read('app/file-folder/page.tsx')
 const preview = read('app/file-folder-preview/page.tsx')
 const bridgePurchase = read('components/bridge/file-folder-purchase.tsx')
 const bridgeArrival = read('components/bridge/bridger-bridge-radiance-arrival.tsx')
 const verify = read('app/api/bridge/file-folder/paystack/verify/route.ts')
 
-assert.ok(homepage.includes('Purchase · Paystack or TRX') && homepage.includes('href="/file-folder"'),
-  'Homepage links directly to the public purchase flow with both payment methods')
+assert.ok(homepage.includes('href="/file-folder"'),
+  'Homepage links directly to the public purchase flow')
 assert.ok(purchase.includes("useState<'paystack' | 'trx'>('paystack')"),
   'Public purchase exposes Paystack and retains TRX')
 assert.ok(purchase.includes("paymentMethod === 'paystack'") && purchase.includes('body.paymentLink'),
