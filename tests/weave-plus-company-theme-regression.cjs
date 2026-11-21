@@ -93,10 +93,11 @@ const contrast=(a,b)=>{
   return (bright+.05)/(dark+.05)
 }
 assert.ok(contrast('#845b24','#ffffff')>=4.5,'Gold button labels need 4.5:1 contrast')
-assert.ok(contrast('#253f52','#f7f9fc')>=4.5,'Body text needs 4.5:1 contrast')
+assert.ok(contrast('#382e23','#fbf8f0')>=4.5,'Ivory and gold body text needs 4.5:1 contrast')
 assert.ok(contrast('#637688','#ffffff')>=4.5,'Input placeholders need 4.5:1 contrast')
 
-assert.match(css,/#f7f9fc/)
+assert.match(css,/--background: #fbf8f0;/)
+assert.match(css,/--foreground: #382e23;/)
 assert.match(presets,/plus:\{theme:'plus-white-gold'/)
 assert.match(presets,/standard:\{theme:'standard-living-valley'/)
 assert.match(presets,/premium:\{theme:'ember-gold'/)
