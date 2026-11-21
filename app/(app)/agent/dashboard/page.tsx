@@ -1,11 +1,12 @@
 'use client'
 
+import { DepartmentBuildings } from '@/components/weave/department-buildings'
+
 import Link from 'next/link'
 import { useEffect } from 'react'
 import { BriefcaseBusiness, Share2, Truck } from 'lucide-react'
 import { useAuth } from '@/lib/auth-provider'
 import { AgentWorkplace } from '@/components/agent/agent-workplace'
-import {NativeDepartmentRail} from '@/components/weave/native-department-rail'
 import { ManagerLifestyleEntry } from '@/components/manager-lifestyle-entry'
 import { RegionalSystemSwitchGate } from '@/components/weave/regional-system-switch-gate'
 import { useRouter } from 'next/navigation'
@@ -22,11 +23,12 @@ export default function AgentWorld() {
   if(!user||user.role!=='agent')return null
 
   return <>
+    <DepartmentBuildings department="stability" />
     <AgentWorkplace userName={user.name}/>
     <div className="mx-auto w-full max-w-4xl px-4"><RegionalSystemSwitchGate compact /></div>
     <details className="mx-auto w-full max-w-4xl px-4 py-2 text-white">
       <summary className="min-h-11 cursor-pointer py-3 font-semibold">Company tools and referrals</summary>
-    <NativeDepartmentRail department="stability" />
+
     <ManagerLifestyleEntry inline />
     <div className="sr-only focus-within:not-sr-only">
       <Link href="/agility">Agility home</Link>

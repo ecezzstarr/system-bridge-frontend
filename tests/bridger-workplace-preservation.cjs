@@ -36,8 +36,8 @@ assert.ok(dashboard.includes('<BridgerWorkplace'), 'Hope opens the Bridger workp
 assert.doesNotMatch(dashboard, /WeaveDashboardWorld|onOpenDistricts/)
 
 // No new prospects table or social records are introduced in this rollout.
-assert.ok(catalog.includes("label: 'My Prospects', href: '/weave/market/prospects'"),
-  'My Prospects remains in its existing market tab')
+assert.ok(catalog.includes("label: 'My Prospects', href: '/bridger/my-prospects'"),
+  'My Prospects opens its own building')
 assert.ok(catalog.includes("label: 'Social Outreach', href: '/distribution-studio'"),
   'Social Outreach reuses its own existing studio and records')
 assert.ok(exists('app/(app)/distribution-studio/page.tsx'),

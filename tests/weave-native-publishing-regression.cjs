@@ -122,12 +122,14 @@ assert.match(read('components/weave/native-department-rail.tsx'),/data-weave-nat
 for(const [department,file] of [
  ['hope','app/(app)/bridger/dashboard/page.tsx'],
  ['stability','app/(app)/agent/dashboard/page.tsx'],
- ['dream-lovely','app/client/system-switch/page.tsx'],
+ ['dream-lovely','app/client/dashboard/page.tsx'],
  ['administrations','app/(app)/admin/dashboard/page.tsx'],
 ]){
- assert.ok(read(file).includes('NativeDepartmentRail department="'+department+'"'),
+ assert.ok(read(file).includes('DepartmentBuildings department="'+department+'"'),
   department+' workspace must discover published modules')
 }
+assert.match(read('components/weave/department-buildings.tsx'), /useDepartmentModules\(department\)/)
+assert.match(read('app/client/system-switch/page.tsx'), /NativeDepartmentRail department="dream-lovely"/)
 assert.ok(read('lib/admin-workplace-catalog.ts').includes('"/admin/native-foundry"'))
 assert.ok(read('app/(app)/admin/code-workshop/page.tsx').includes('/admin/native-foundry'))
 const sourceBoundary=read('lib/weave-code-workshop.ts')

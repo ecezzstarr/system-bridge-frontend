@@ -1,0 +1,23 @@
+.campus {margin:1rem auto; width:min(100%,78rem); background:#fcf9f1; color:#342817; border-block:1px solid #cbb48b}
+.header,.controls {display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:.7rem; padding:.8rem clamp(1rem,3vw,2rem)}
+.header a {font-size:.85rem; text-decoration:underline}
+.header h1 {font:500 clamp(1.5rem,3vw,2.6rem)/1.2 Georgia,serif; margin:.3rem 0}
+.header input {border:1px solid #9e8459; background:#fffdfa; color:#302617; border-radius:1.5rem; padding:.65rem 1rem; max-width:100%}
+.street {display:flex; overflow-x:auto; scroll-snap-type:x proximity; overscroll-behavior-x:contain; background:#eee8dc; padding:.4rem .5rem .75rem; gap:.45rem}
+.building {position:relative; display:flex; flex:0 0 clamp(13rem,30vw,21rem); flex-direction:column; align-items:center; text-align:center; scroll-snap-align:start; background:#f8f4e9; color:#302619; text-decoration:none; padding-bottom:.65rem}
+.facade {display:block; width:100%; aspect-ratio:1; background-image:url('/images/department-pavilions.webp'); background-size:200% 200%; background-position:0 0}
+.campus[data-department=stability] .facade {background-position:100% 0}
+.campus[data-department=dream-lovely] .facade {background-position:0 100%}
+.campus[data-department=administrations] .facade {background-position:100% 100%}
+.sign {display:block; padding:.4rem .65rem; font:600 1.05rem/1.25 Georgia,serif}
+.building small {font-size:.8rem; text-transform:capitalize}
+.building:focus-visible,.campus button:focus-visible {outline:3px solid #20586c; outline-offset:-3px}
+.building:hover .sign {text-decoration:underline}
+.controls {font-size:.85rem}
+.controls div {display:flex; gap:.5rem}
+.controls button {display:inline-grid; place-items:center; width:44px; height:44px; border:1px solid #ac9468; border-radius:50%; background:#fff9e9; color:#3e3020}
+
+.estate {display:grid; gap:.35rem; margin:0 clamp(1rem,3vw,2rem) 1rem; padding:1rem 1.2rem; border:1px solid #b59a69; border-inline-start:4px solid #967138; background:#fffdf7; color:#382a1a; text-decoration:none}
+.estate strong {font:600 1.35rem/1.25 Georgia,serif}
+.estate span {max-width:60ch; font-size:.95rem}
+.estate:hover strong,.estate:focus-visible strong {text-decoration:underline}

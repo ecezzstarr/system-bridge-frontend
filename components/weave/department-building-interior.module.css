@@ -1,0 +1,12 @@
+.interior {--room-x:0%; --room-y:0%; min-width:0; margin:0 auto; background:#efe8da; color:#362c20}
+.interior[data-room=lifestyle] {--room-x:100%}
+.interior[data-room=enterprise] {--room-y:100%}
+.interior[data-room=operations] {--room-x:100%; --room-y:100%}
+.threshold {position:relative; z-index:1; display:flex; flex-wrap:wrap; align-items:center; gap:.65rem; min-height:48px; padding:.45rem clamp(.75rem,3vw,3rem); background:#fffaf0; color:#453525; border-block:1px solid #c6ad83}
+.threshold a {display:inline-flex; align-items:center; min-height:44px; color:inherit; text-decoration:underline; text-underline-offset:.2em}
+.threshold span:last-child {font:600 1.15rem/1.3 Georgia,serif; text-transform:capitalize}
+.workroom {position:relative; isolation:isolate; min-height:65svh; padding:clamp(5rem,15vw,12rem) clamp(.5rem,3vw,3rem) 1.5rem}
+.workroom::before {content:""; position:absolute; z-index:-1; inset:0 0 auto; height:clamp(19rem,47vw,42rem); background-image:url('/images/weave-building-interiors.webp'); background-size:200% 200%; background-position:var(--room-x) var(--room-y); mask-image:linear-gradient(#000 82%,transparent)}
+.desk {position:relative; min-width:0; max-width:100rem; margin:auto; background:var(--background,#fffaf3); color:var(--foreground,#382d20); border:1px solid #c8b18c; border-radius:1rem; box-shadow:0 12px 30px #33271422}
+.interior :global(.lifestyle-building-front) {display:block; height:clamp(7rem,19vw,12rem); background:#e8ddc5 url('/images/department-pavilions.webp') 0 100%/200% 200%; border-radius:3rem 3rem .3rem .3rem}
+.interior [data-lifestyle] {scroll-margin-top:5rem}

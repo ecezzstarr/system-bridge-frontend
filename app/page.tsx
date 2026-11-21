@@ -2,8 +2,8 @@
 
 import Link from 'next/link'
 import { WEAVE_COMPANY } from '@/lib/company-profile'
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+import CompanyGrounds from './company-grounds/page'
 import {
   ArrowRight,
   Bot,
@@ -17,7 +17,6 @@ import {
   Store,
   Workflow,
 } from 'lucide-react'
-import { useAuth } from '@/lib/auth-provider'
 import { WeaveLogo } from '@/components/weave-logo'
 import { PublicReachRequestForm } from '@/components/reach-delivery/public-request-form'
 import { ReachRequestTracker } from '@/components/reach-delivery/request-tracker'
@@ -55,20 +54,12 @@ const staffEntrances = [
 ] as const
 
 export default function Home() {
-  const { user } = useAuth()
-  const router = useRouter()
   const [posterMissing, setPosterMissing] = useState(false)
 
-  useEffect(() => {
-    if (!user) return
-    if (user.role === 'client') router.replace('/client/dashboard')
-    else if (user.role === 'agent') router.replace('/agent/dashboard')
-    else if (user.role === 'bridger') router.replace('/bridger/dashboard')
-    else if (user.role === 'admin') router.replace('/admin/dashboard')
-    else router.replace('/dashboard')
-  }, [user, router])
 
   return (
+    <>
+      <CompanyGrounds />
     <div className="weave-public-home relative min-h-screen overflow-x-hidden" data-public-weave-world>
       <div className="relative z-10 min-h-screen">
         <nav className="weave-home-nav sticky top-0 z-50 px-3 py-3 sm:px-5">
@@ -330,5 +321,6 @@ export default function Home() {
         </footer>
       </div>
     </div>
+    </>
   )
 }

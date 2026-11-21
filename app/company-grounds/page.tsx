@@ -1,21 +1,22 @@
 'use client'
 
 import Link from 'next/link'
-import { useRef, useState, type CSSProperties, type FocusEvent, type PointerEvent } from 'react'
+import { useRef, useState } from 'react'
 import { Flame } from 'lucide-react'
 import { useAuth } from '@/lib/auth-provider'
 import styles from './grounds.module.css'
 
 const buildings = [
-  { name: 'Hope', role: 'bridger', workplace: '/bridger/dashboard', entrance: '/login', left: 1, top: 20, width: 17, height: 47 },
-  { name: 'Stability', role: 'agent', workplace: '/agent/dashboard', entrance: '/login', left: 21, top: 28, width: 14, height: 35 },
-  { name: 'Administrations', role: 'admin', workplace: '/admin/dashboard', entrance: '/login?portal=admin', left: 36, top: 11, width: 17, height: 45 },
-  { name: 'Dream Lovely', role: 'client', workplace: '/client/dashboard', entrance: '/client/login', left: 54, top: 30, width: 12, height: 32 },
-  { name: 'File Folder', role: 'client', workplace: '/client/system-switch', entrance: '/file-folder-preview', left: 72, top: 12, width: 27, height: 75 },
+  { name: 'Hope', role: 'bridger', workplace: '/bridger/dashboard', entrance: '/login', left: 0, top: 47, width: 22, height: 21 },
+  { name: 'Stability', role: 'agent', workplace: '/agent/dashboard', entrance: '/login', left: 23, top: 30, width: 15, height: 16 },
+  { name: 'Administrations · A Time', role: 'admin', workplace: '/admin/dashboard', entrance: '/login?portal=admin', left: 37, top: 12, width: 19, height: 13 },
+  { name: 'Dream Lovely', role: 'client', workplace: '/client/dashboard', entrance: '/client/login', left: 62, top: 40, width: 18, height: 16 },
+  { name: 'File Folder', role: 'client', workplace: '/client/system-switch', entrance: '/file-folder-preview', left: 68, top: 12, width: 14, height: 8 },
 ] as const
 
 export default function CompanyGrounds() {
   const { user, isInitialized } = useAuth()
+  const [overview, setOverview] = useState(false)
   const dialog = useRef<HTMLDialogElement>(null)
   const [attempted, setAttempted] = useState('')
   const ownDepartment = buildings.find(building => building.role === user?.role)
@@ -24,10 +25,7 @@ export default function CompanyGrounds() {
 
   function renderDoor(door: (typeof buildings)[number], panorama: boolean) {
     const appearance = panorama ? {
-      style: {left:door.left+'%', top:door.top+'%', width:door.width+'%', height:door.height+'%',
-        '--origin-x':(door.left+door.width/2)+'%', '--origin-y':(door.top+door.height/2)+'%'} as CSSProperties,
-      onFocus: (event: FocusEvent<HTMLElement>) => aimAtDoor(event.currentTarget),
-      onPointerEnter: (event: PointerEvent<HTMLElement>) => aimAtDoor(event.currentTarget),
+      style: { left: door.left+'%', top: door.top+'%', width: door.width+'%', height: door.height+'%' },
     } : {}
     const label = panorama ? null : door.name
     if (user && user.role !== door.role) {
@@ -43,21 +41,36 @@ export default function CompanyGrounds() {
       aria-label={'Enter '+door.name} href={user ? door.workplace : door.entrance}>{label}</Link>
   }
 
-  return <main className={styles.grounds}>
-    <header className={styles.header}>
-      <h1>Company Grounds</h1>
-      <Link href={eventHref} className={styles.river}><Flame aria-hidden="true" size={18}/> Burning River</Link>
-    </header>
-    <div className={styles.viewport} tabIndex={0} aria-label="Company panorama. Scroll sideways on a phone.">
+  const destinations = [
+    { name: 'Company Managements', href: !user ? '/manager/login' : user.role === 'client' ? '/client/staff-workspace' : user.role === 'admin' ? '/admin/dashboard' : '/weave/lifestyles', left: 55, top: 22, width: 23, height: 10 },
+    { name: 'Burning River', href: eventHref, left: 84, top: 18, width: 16, height: 9 },
+    { name: 'Sunshine · Mechanized Wealth', href: '/weave/lifestyles/sunshine', left: 84, top: 34, width: 15, height: 12 },
+    { name: 'Open Market', href: '/market', left: 85, top: 51, width: 15, height: 29 },
+  ]
+
+  return <section className={styles.grounds} aria-label="Weave Open World">
+    <h1 className="sr-only">Weave of Presence · Open World</h1>
+    <div id="grounds-panorama" className={styles.viewport} data-overview={overview} tabIndex={0} aria-label="Company Grounds panorama. Scroll sideways to explore on a phone.">
       <div className={styles.scene}>
-        <img src="/images/company-grounds-plus.webp" width="1536" height="864" alt="Hope and Stability halls, Administrations workshops, and the Dream Lovely entrance beside a Client engineering estate."/>
+        <img src="/images/weave-open-world-home.jpg" width="1536" height="864" fetchPriority="high"
+          alt="Aerial view of Weave Company Grounds, the departmental buildings, Client estates and Burning River." />
         {doors.map(door => renderDoor(door, true))}
-        <Link className={styles.beacon} href={eventHref}><Flame size={16} aria-hidden="true"/> Flame Event</Link>
+        {destinations.map(({name, href, left, top, width, height}) => (
+          <Link key={name} href={href} className={styles.door} aria-label={name}
+            style={{left:left+'%', top:top+'%', width:width+'%', height:height+'%'}} />
+        ))}
+        <Link className={styles.door} style={{right:'1%',top:'1%',width:'10%',height:'8%'}}
+          href={user ? ownDepartment?.workplace ?? '/dashboard' : '/login'} aria-label={user ? 'My workspace' : 'Sign in'} />
+        <a className={styles.door} href="#grounds-entrances" aria-label="Scroll to explore" style={{left:'43%',bottom:0,width:'14%',height:'9%'}} />
       </div>
     </div>
-    <nav aria-label="Company entrances" className={styles.entrances}>
+    <nav id="grounds-entrances" aria-label="Company entrances" className={styles.entrances}>
+      <button type="button" className={styles.zoom} aria-controls="grounds-panorama" aria-pressed={overview}
+        onClick={() => setOverview(!overview)}>{overview ? 'Scroll through grounds' : 'Show entire grounds'}</button>
       {doors.map(door => renderDoor(door, false))}
-      <Link href="/market">Customer Market</Link>
+      {destinations.map(({name,href}) => <Link key={name} href={href}>{name}</Link>)}
+      <Link href="/login">Sign in</Link>
+      <Link href="/download">Download the Weave app</Link>
     </nav>
     <dialog ref={dialog} aria-labelledby="flame-access-title" aria-describedby="flame-access-message"
       className="fixed inset-0 m-auto w-[min(90vw,26rem)] rounded-2xl border border-[#b69a61] bg-[#fffaf0] p-6 text-[#302c23] shadow-xl backdrop:bg-black/45">
@@ -71,11 +84,5 @@ export default function CompanyGrounds() {
         <button type="button" className="min-h-11 px-2 underline" onClick={() => dialog.current?.close()}>Stay on the grounds</button>
       </div>
     </dialog>
-  </main>
-}
-
-function aimAtDoor(link: HTMLElement) {
-  const scene = link.parentElement
-  scene?.style.setProperty('--focus-x', link.style.getPropertyValue('--origin-x'))
-  scene?.style.setProperty('--focus-y', link.style.getPropertyValue('--origin-y'))
+  </section>
 }

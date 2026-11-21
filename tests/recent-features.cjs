@@ -1381,7 +1381,9 @@ assert.equal(guidanceRegistry.length,1,'One existing guidance environment')
 assert.equal(guidanceRegistry[0].scope,'agent-bridger','Guidance registry restricts scope to Agent and Bridger')
 const guidanceLayout=fs.readFileSync(path.join(root,'app/(app)/layout.tsx'),'utf8')
 assert.ok(guidanceLayout.includes('if (!routeAllowed) return null'),'Layout blocks guidance before rendering environment wrappers')
-assert.ok(guidanceLayout.includes("'/admin/agent-channels'"),'Denied Admin returns to channel management')
+assert.ok(guidanceLayout.includes("router.replace(ownDashboard)") &&
+  guidanceLayout.includes("user?.role === 'admin' ? '/admin/dashboard'"),
+  'Denied department entry returns to the user\'s own authorized dashboard')
 const guidanceProvider=fs.readFileSync(path.join(root,'components/world/environment-organizer-provider.tsx'),'utf8')
 assert.ok(guidanceProvider.includes('canAccessEnvironmentRoute(item.route,user?.role)'),'Cached runtime items are filtered by current role')
 assert.ok(guidanceProvider.includes('if(!canAccessEnvironmentRoute(route,user?.role))return false'),'Navigation visibility remains denied without runtime items')

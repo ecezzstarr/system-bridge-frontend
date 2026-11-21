@@ -1,5 +1,6 @@
 'use client'
 import Link from 'next/link'
+import { usePathname, useRouter } from 'next/navigation'
 import { DailyProspectClaim } from '@/components/bridger/daily-prospect-claim'
 import { getAuthHeaders } from '@/lib/auth-client'
 
@@ -44,7 +45,18 @@ const STATUS_LABEL: Record<string, { label: string; color: string }> = {
 
 export default function ProspectMarketPage() {
   const { user, updateBalance } = useAuth()
-  const [tab, setTab] = useState<'browse' | 'mine'>('browse')
+  const router = useRouter()
+  const personalBuilding = usePathname() === '/bridger/my-prospects'
+  const [marketTab, setMarketTab] = useState<'browse' | 'mine'>('browse')
+  const tab = personalBuilding ? 'mine' : marketTab
+
+  function setTab(next: 'browse' | 'mine') {
+    if (user?.role === 'bridger') {
+      router.push(next === 'mine' ? '/bridger/my-prospects' : '/weave/market/prospects')
+    } else {
+      setMarketTab(next)
+    }
+  }
 
   const openedOutreach = useRef('')
   // Browse tab state
@@ -67,9 +79,13 @@ export default function ProspectMarketPage() {
   const [reportingId, setReportingId] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchPackages()
-  }, [])
-  useEffect(()=>{if(new URLSearchParams(window.location.search).get('tab')==='mine')setTab('mine')},[])
+    if (!personalBuilding) void fetchPackages()
+  }, [personalBuilding])
+  useEffect(() => {
+    if (personalBuilding || !user || new URLSearchParams(window.location.search).get('tab') !== 'mine') return
+    if (user.role === 'bridger') router.replace('/bridger/my-prospects')
+    else setMarketTab('mine')
+  }, [personalBuilding, user?.role, router])
   useEffect(()=>{
     if(!user?.id)return
     try{
@@ -270,12 +286,12 @@ export default function ProspectMarketPage() {
 
   return (
     <div className="container mx-auto py-10 space-y-8">
-      {user?.role === 'bridger' && <div id="daily-candidate" className="scroll-mt-24"><DailyProspectClaim onOpenProspects={()=>{
+      {!personalBuilding && user?.role === 'bridger' && <div id="daily-candidate" className="scroll-mt-24"><DailyProspectClaim onOpenProspects={()=>{
         if(tab==='mine') void fetchMine()
         else setTab('mine')
         document.getElementById('prospect-tabs')?.scrollIntoView({block:'start'})
       }}/></div>}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      {!personalBuilding && <><div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex items-center gap-4">
           <div className="bg-blue-600 p-3 rounded-xl shadow-lg shadow-blue-900/20">
             <ShoppingCart className="h-8 w-8 text-white" />
@@ -312,6 +328,7 @@ export default function ProspectMarketPage() {
         <span className="text-xs font-bold text-sky-200">Read the working standard →</span>
       </Link>
 
+      </>}
       <div id="prospect-tabs" className="flex scroll-mt-24 gap-2 border-b border-slate-800">
         <button
           onClick={() => setTab('browse')}
@@ -442,7 +459,7 @@ export default function ProspectMarketPage() {
             <div className="text-center py-20 text-slate-500 text-sm">
               <p>No prospects assigned yet.</p>
               <div className="mt-3 flex flex-wrap justify-center gap-3">
-                {user?.role==='bridger' && <a href="#daily-candidate" className="inline-flex min-h-11 items-center px-3 text-emerald-200 underline">Check today’s free candidate</a>}
+                {user?.role==='bridger' && <a href={personalBuilding ? "/weave/market/prospects#daily-candidate" : "#daily-candidate"} className="inline-flex min-h-11 items-center px-3 text-emerald-200 underline">Check today’s free candidate</a>}
                 <button type="button" onClick={()=>setTab('browse')} className="min-h-11 px-3 text-blue-300 underline">Browse packages</button>
               </div>
             </div>

@@ -36,8 +36,8 @@ assert.ok(visual.includes('data-weave-page-original-visual={pathname}'),'Route v
 assert.ok(visual.includes('visual.eyebrow')&&visual.includes('visual.title')&&visual.includes('visual.meaning'),'Each image carries contextual wording')
 assert.ok(visual.includes('if(!visual)return null'),'Unmapped views keep their existing layout and interactive worlds')
 assert.ok(!visual.includes('Math.random')&&!visual.includes('fake order'),'No invented customer counts or fake ordering in page image')
-assert.ok(app.includes('<EnvironmentPageGuard><WeaveExistingPageImage/>{children}</EnvironmentPageGuard>'),'Operating pages show image only within authorized app guard')
-assert.ok(client.includes('<EnvironmentPageGuard><WeaveExistingPageImage/>{children}</EnvironmentPageGuard>'),'Client Presence can use image without replacing Client File Folder world')
+assert.ok(app.includes('<EnvironmentPageGuard><DepartmentBuildingInterior>{children}</DepartmentBuildingInterior></EnvironmentPageGuard>'),'Operating pages show image only within authorized app guard')
+assert.ok(client.includes('<EnvironmentPageGuard><DepartmentBuildingInterior>{children}</DepartmentBuildingInterior></EnvironmentPageGuard>'),'Client Presence can use image without replacing Client File Folder world')
 for(const image of ['agility.jpeg','electrolyte.jpeg','ember.jpg']){
  assert.ok(agentWork.includes(image),'Agent Work existing product card shows '+image)
 }

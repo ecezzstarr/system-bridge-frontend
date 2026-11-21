@@ -23,7 +23,7 @@ assert(confirmation.includes('keepalive:true'),'The explicit confirmation surviv
 assert(page.includes('I actually sent it'),'Action wording must not claim provider-verified delivery')
 assert(page.includes('Did not send'),'User can cancel an uncompleted handoff')
 assert(page.includes('data-whatsapp-send-requires-confirmation'),'Pending status stays pending until true user confirmation')
-assert(page.includes("URLSearchParams(window.location.search).get('tab')==='mine'"),'Direct My Prospects links select actual records')
+assert(page.includes("URLSearchParams(window.location.search).get('tab') !== 'mine'"),'Direct My Prospects links select actual records')
 assert(page.includes('!bridgePermissionIds.includes(p.outreachId)'),'No Bridge handoff without explicit prospect-permission attestation')
 assert(page.includes('purchaseCompleted'),'Already-completed package purchase is shown separately from commission reconciliation')
 assert(page.includes('Retry package load')&&page.includes('Retry my records'),'Outage never appears as empty inventory')

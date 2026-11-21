@@ -207,8 +207,8 @@ const app=fs.readFileSync(path.join(root,'app/(app)/layout.tsx'),'utf8')
 const client=fs.readFileSync(path.join(root,'app/client/layout.tsx'),'utf8')
 const visual=fs.readFileSync(path.join(root,'components/world/weave-existing-page-image.tsx'),'utf8')
 const work=fs.readFileSync(path.join(root,'app/(app)/agent/work/page.tsx'),'utf8')
-assert.ok(app.includes('<EnvironmentPageGuard><WeaveExistingPageImage/>{children}</EnvironmentPageGuard>'),'App route guard and children are intact')
-assert.ok(client.includes('<EnvironmentPageGuard><WeaveExistingPageImage/>{children}</EnvironmentPageGuard>'),'Client route guard and children are intact')
+assert.ok(app.includes('<EnvironmentPageGuard><DepartmentBuildingInterior>{children}</DepartmentBuildingInterior></EnvironmentPageGuard>'),'App route guard and children are intact')
+assert.ok(client.includes('<EnvironmentPageGuard><DepartmentBuildingInterior>{children}</DepartmentBuildingInterior></EnvironmentPageGuard>'),'Client route guard and children are intact')
 assert.ok(visual.includes('if(!visual)return null'),'Visuals do not replace unmapped working pages')
 assert.ok(visual.includes('usePathname()'),'Correct route chooses its own visual, not a global fake page')
 assert.ok(work.includes('href={item.href}'),'Existing Agent Work cards still open their original destinations')
@@ -234,4 +234,33 @@ const images=[
  '/weave-food/daisy-pastries-original.png',
 ]
 for(const url of images){assert.ok(fs.existsSync(path.join(root,'public',url)),'Existing image retained: '+url)}
+// A direct URL must obey the same department boundary as Company Grounds doors.
+const ts=require('typescript')
+const accessSource=fs.readFileSync(path.join(root,'lib/company-guidance-access.ts'),'utf8')
+const accessModule={exports:{}}
+const accessJs=ts.transpileModule(accessSource,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText
+new Function('exports',accessJs)(accessModule.exports)
+const enter=accessModule.exports.canEnterDepartmentPath
+for(const [route,role] of [
+  ['/bridger/my-prospects','bridger'], ['/agent/work','agent'],
+  ['/admin/native-foundry','admin'], ['/weave/lifestyles','agent'],
+  ['/wallet','client'],
+]) assert.equal(enter(route,role),true,route+' remains authorized')
+for(const [route,role] of [
+  ['/admin/dashboard','bridger'], ['/agent/distribution','admin'],
+  ['/bridger/bridge-ai','agent'], ['/admin/orders','client'],
+  ['/agent/work?tab=stock','bridger'],
+]) assert.equal(enter(route,role),false,route+' rejects crossing from '+role)
+const groundsSource=fs.readFileSync(path.join(root,'app/company-grounds/page.tsx'),'utf8')
+const groundsCss=fs.readFileSync(path.join(root,'app/company-grounds/grounds.module.css'),'utf8')
+for(const name of ['Hope','Stability','Administrations · A Time','Dream Lovely'])
+  assert.ok(groundsSource.includes("name: '"+name+"'"),name+' still has its building')
+assert.doesNotMatch(groundsSource,/name: '(Forensics|Mandate|Attorney)'/,'Oversight positions are not standalone public departments')
+assert.match(groundsCss,/\.scene \{width:max\(100%, 177\.778svh\)\}/,'Phone world defaults to horizontal scrolling')
+assert.match(groundsCss,/data-overview="true"/,'Visitor can still inspect the complete aerial image')
+assert.match(groundsSource,/data-overview=\{overview\}/)
+const layoutBoundary=fs.readFileSync(path.join(root,'app/(app)/layout.tsx'),'utf8')
+assert.match(layoutBoundary,/canEnterDepartmentPath\(pathname, user\?\.role\)/)
+assert.match(layoutBoundary,/router\.replace\(ownDashboard\)/)
+
 console.log('PASS: All '+preservedPages.length+' existing Weave page routes and selected crossing, operating links, media remain available')
