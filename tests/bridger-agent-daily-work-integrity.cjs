@@ -23,8 +23,8 @@ for(const role of ['bridger','agent']){
 const checks=[
  [src.bridger,'data-bridger-daily-job-guide','Bridger onboarding'],
  [src.agent,'data-agent-daily-job-guide','Agent onboarding'],
- [src.bridger,"place.href+'?tab=mine'",'Direct My Prospects link'],
- [src.market,"URLSearchParams(window.location.search).get('tab')==='mine'",'My Prospects tab deep link'],
+ [src.bridger,'href="/bridger/my-prospects"','Direct My Prospects link'],
+ [src.market,"URLSearchParams(window.location.search).get('tab') !== 'mine'",'My Prospects tab deep link'],
  [src.market,'data-whatsapp-send-requires-confirmation','Explicit message confirmation'],
  [src.market,'purchaseCompleted','Completed purchases with pending reconciliation'],
  [src.market,'Retry my records','Prospect load error retry'],

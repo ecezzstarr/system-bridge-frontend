@@ -31,15 +31,12 @@ const ACCESS: Record<Exclude<BridgerWorkplaceAccess, 'core'>, string> = {
   preview: 'Not yet live',
 }
 
-function placeHref(place: BridgerWorkplacePlace) {
-  return place.label==='My Prospects'?place.href+'?tab=mine':place.href
-}
 
 function PlaceLink({place}:{place:BridgerWorkplacePlace}){
   const label = place.access && place.access !== 'core' ? ACCESS[place.access] : null
   return (
     <Link
-      href={placeHref(place)}
+      href={place.href}
       className="group flex h-full min-h-[142px] flex-col justify-between rounded-[1.2rem] border border-[#dccba8]/70 bg-white/85 p-4 text-[#1c2c39] shadow-[0_8px_25px_rgba(90,68,20,.07)] transition duration-200 hover:-translate-y-0.5 hover:border-[#ba9551] hover:shadow-[0_15px_32px_rgba(90,68,20,.13)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9d7124]"
       data-bridger-place={place.href}
     >
@@ -80,7 +77,7 @@ export function BridgerWorkplace({
     // Several destinations intentionally link to the same operating system.
     // A search shows it once while retaining each original route.
     return trimmedSearch ? matched.filter((item, index) =>
-      matched.findIndex(other => placeHref(other) === placeHref(item)) === index) : matched
+      matched.findIndex(other => other.href === item.href) === index) : matched
   }, [isVisible, space, trimmedSearch])
 
   return (
@@ -104,7 +101,7 @@ export function BridgerWorkplace({
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              {isVisible('/weave/market/prospects') && <Link href="/weave/market/prospects?tab=mine" className="inline-flex min-h-11 items-center rounded-full bg-[#283d45] px-4 py-2 text-sm font-semibold text-white">Open my prospects</Link>}
+              {isVisible('/weave/market/prospects') && <Link href="/bridger/my-prospects" className="inline-flex min-h-11 items-center rounded-full bg-[#283d45] px-4 py-2 text-sm font-semibold text-white">Open my prospects</Link>}
               <Link href="/bridger/presence" className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#cdb780] bg-white/80 px-4 py-2 text-sm font-semibold text-[#655020]">
                 <Compass className="h-4 w-4"/> Position guidance
               </Link>

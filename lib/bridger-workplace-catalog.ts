@@ -30,7 +30,7 @@ export const BRIDGER_WORKPLACE_SPACES: readonly BridgerWorkplaceSpace[] = [
     description: 'Contact two prospects each working hour. Start with your assigned targets and return to the people already in your care.',
     places: [
       { label: 'Hope Daily Outreach', href: '/weave/lifestyles/regional-manager/hope-outreach', detail: 'Check your assigned contact and publishing targets, submit post links and read your manager’s review.', access: 'approval' },
-      { label: 'My Prospects', href: '/weave/market/prospects', detail: 'Return to your acquired prospects, previous contacts and the responses you need to follow.' },
+      { label: 'My Prospects', href: '/bridger/my-prospects', detail: 'Return to your acquired prospects, previous contacts and the responses you need to follow.' },
       { label: 'Prospect Market', href: '/weave/market/prospects', detail: 'Claim your daily free candidate or acquire unverified prospect packages.' },
       { label: 'Bridge AI', href: '/bridger/bridge-ai', detail: 'Share your Bridge AI path when a prospect agrees to explore a File Folder.' },
       { label: 'Notifications', href: '/notifications', detail: 'Read company messages, decisions and work updates.' },
@@ -44,7 +44,7 @@ export const BRIDGER_WORKPLACE_SPACES: readonly BridgerWorkplaceSpace[] = [
     description: 'Find someone to contact, follow their response and guide a willing prospect toward a Client File Folder.',
     places: [
       { label: 'Prospect Market', href: '/weave/market/prospects', detail: 'Claim your daily free candidate or acquire unverified prospect packages.' },
-      { label: 'My Prospects', href: '/weave/market/prospects', detail: 'Return to your acquired prospects, previous contacts and the responses you need to follow.' },
+      { label: 'My Prospects', href: '/bridger/my-prospects', detail: 'Return to your acquired prospects, previous contacts and the responses you need to follow.' },
       { label: 'Email Outreach', href: '/bridger/email-outreach', detail: 'Acquire email candidates and review messages and replies separately from My Prospects.' },
       { label: 'Bridge AI', href: '/bridger/bridge-ai', detail: 'Share your Bridge AI path when a prospect agrees to explore a File Folder.' },
       { label: 'Crossing Notebook', href: '/bridger/crossing-notebook', detail: 'Learn the actual steps from first conversation to Client continuity.' },

@@ -9,7 +9,7 @@ import { FlameEventRoleAtmosphere } from '@/components/events/flame-event-role-a
 import { PresenceCameraSignal, PresenceCameraViewport } from '@/components/world/presence-camera'
 import { WeaveEnvironmentSurface } from '@/components/world/weave-environment-surface'
 import { EnvironmentOrganizerProvider, EnvironmentPageGuard } from '@/components/world/environment-organizer-provider'
-import { WeaveExistingPageImage } from '@/components/world/weave-existing-page-image'
+import { DepartmentBuildingInterior } from '@/components/weave/department-building-interior'
 import {KingdomThemeFrame} from '@/components/world/kingdom-theme-frame'
 
 export const metadata: Metadata = {
@@ -49,7 +49,7 @@ export default function ClientLayout({
           <PresenceCameraViewport>
             <WeaveEnvironmentSurface role="client">
               <FlameEventRoleAtmosphere userRole="client">
-                <EnvironmentPageGuard><WeaveExistingPageImage/>{children}</EnvironmentPageGuard>
+                <EnvironmentPageGuard><DepartmentBuildingInterior>{children}</DepartmentBuildingInterior></EnvironmentPageGuard>
               </FlameEventRoleAtmosphere>
             </WeaveEnvironmentSurface>
           </PresenceCameraViewport>

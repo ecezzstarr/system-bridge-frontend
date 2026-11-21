@@ -1,10 +1,11 @@
+import { WEAVE_LIFESTYLE_CATALOG } from '@/lib/weave-lifestyle-catalog'
 import { getWeaveSearchDirectory } from '@/lib/weave-action-search'
 import { weavePageCopyForPath } from '@/lib/weave-page-directory'
 import { WEAVE_NATIVE_DEPARTMENTS, type NativeDepartment } from '@/lib/weave-native-blueprint'
 
 export type DepartmentBuilding = { title: string; href: string; area: string; access?: string }
 const firstDoors: Record<NativeDepartment, string[]> = {
-  hope: ['/weave/market/prospects', '/bridger/bridge-ai', '/distribution-studio'],
+  hope: ['/bridger/my-prospects', '/weave/market/prospects', '/bridger/bridge-ai', '/distribution-studio'],
   stability: ['/agent/work', '/agent/distribution', '/agent/commissions'],
   'dream-lovely': ['/client/system-switch', '/client/system-store', '/client/staff-workspace'],
   administrations: ['/admin/control-center', '/admin/loop-workshop', '/admin/native-foundry'],
@@ -19,6 +20,13 @@ export function departmentBuildings(department: NativeDepartment, pages: readonl
     const path = item.href.split(/[?#]/)[0]
     if (!pageSet.has(path) || entryOnly.test(path) || path === '/' + role) continue
     doors.set(item.href, { title: item.title, href: item.href, area: item.department, access: item.access })
+  }
+  for (const lifestyle of Object.values(WEAVE_LIFESTYLE_CATALOG)) {
+    const roles: readonly string[] = lifestyle.roles
+    if (roles.includes(role) && pageSet.has(lifestyle.route) && !doors.has(lifestyle.route)) {
+      const entrance = '/weave/lifestyles#entrance-' + lifestyle.route.split('/').filter(Boolean).join('-')
+      doors.set(lifestyle.route, { title: lifestyle.label, href: entrance, area: 'Lifestyle', access: 'lifestyle' })
+    }
   }
   for (const path of pages) {
     if (!path.startsWith('/' + role + '/') || entryOnly.test(path) || doors.has(path)) continue

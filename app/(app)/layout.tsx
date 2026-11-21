@@ -17,7 +17,7 @@ import { CompanyLoopTwoScroll } from '@/components/events/company-loop-two-scrol
 import { PresenceCameraSignal, PresenceCameraViewport } from '@/components/world/presence-camera'
 import { WeaveEnvironmentSurface } from '@/components/world/weave-environment-surface'
 import { EnvironmentOrganizerProvider, EnvironmentPageGuard } from '@/components/world/environment-organizer-provider'
-import { WeaveExistingPageImage } from '@/components/world/weave-existing-page-image'
+import { DepartmentBuildingInterior } from '@/components/weave/department-building-interior'
 import { canAccessEnvironmentRoute } from '@/lib/company-guidance-access'
 import {KingdomThemeFrame} from '@/components/world/kingdom-theme-frame'
 
@@ -147,7 +147,7 @@ export default function AppLayout({
           <PresenceCameraViewport>
             <WeaveEnvironmentSurface role={user?.role} userName={user?.name}>
               <FlameEventRoleAtmosphere userRole={user?.role} userName={user?.name} pathname={pathname}>
-                <EnvironmentPageGuard><WeaveExistingPageImage/>{children}</EnvironmentPageGuard>
+                <EnvironmentPageGuard><DepartmentBuildingInterior>{children}</DepartmentBuildingInterior></EnvironmentPageGuard>
               </FlameEventRoleAtmosphere>
             </WeaveEnvironmentSurface>
           </PresenceCameraViewport>

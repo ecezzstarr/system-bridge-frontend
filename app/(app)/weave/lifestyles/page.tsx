@@ -385,7 +385,12 @@ function LifestyleGround({
   tone:'yellow'|'cyan'|'amber'|'violet'
 }){
   const toneClass=tone==='cyan'?'text-cyan-300 border-cyan-300/20 bg-cyan-300/[0.035]':tone==='amber'?'text-amber-300 border-amber-300/20 bg-amber-300/[0.035]':tone==='violet'?'text-violet-300 border-violet-300/20 bg-violet-300/[0.035]':'text-yellow-300 border-yellow-300/20 bg-yellow-300/[0.035]'
-  return <div className={`${nested?'ml-3 border-l-2 pl-4 sm:ml-8':'p-5 sm:p-6'} ${nested?'border-cyan-300/20':'border'} ${nested?'':'rounded-[1.5rem]'} ${nested?'':' '+toneClass.split(' ').filter(item=>item.startsWith('border-')||item.startsWith('bg-')).join(' ')}`} data-lifestyle={title.toLowerCase().replaceAll(' ','_')}>
+  return <div className={`${nested?'ml-3 border-l-2 pl-4 sm:ml-8':'p-5 sm:p-6'} ${nested?'border-cyan-300/20':'border'} ${nested?'':'rounded-[1.5rem]'} ${nested?'':' '+toneClass.split(' ').filter(item=>item.startsWith('border-')||item.startsWith('bg-')).join(' ')}`} id={'entrance-' + href.split('/').filter(Boolean).join('-') + (title === 'ASSISTANT FOOD DISTRIBUTION MANAGER' ? '-assistant' : '')} data-lifestyle={title.toLowerCase().replaceAll(' ','_')}>
+    <div className="mb-3">
+      {open ? <Link href={href} aria-label={action + ' · ' + title} className="block">
+        <span aria-hidden="true" className="lifestyle-building-front" />
+      </Link> : <span aria-hidden="true" className="lifestyle-building-front" />}
+    </div>
     <div className="flex flex-wrap items-start justify-between gap-4">
       <div className="max-w-3xl">
         <div className={`flex items-center gap-2 ${toneClass.split(' ')[0]}`}>{icon}<div><p className="text-[9px] font-black uppercase tracking-[0.22em]">{eyebrow}</p><h2 className="mt-1 text-2xl font-black text-white">{title}</h2></div></div>
