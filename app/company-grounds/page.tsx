@@ -1,5 +1,6 @@
 'use client'
 
+import { WEAVE_COMPANY } from '@/lib/company-profile'
 import Link from 'next/link'
 import { useRef, useState } from 'react'
 import { Flame } from 'lucide-react'
@@ -50,7 +51,7 @@ export default function CompanyGrounds() {
     { name: 'Open Market', href: '/market', left: 85, top: 51, width: 15, height: 29 },
   ]
 
-  return <main className={styles.grounds} aria-label="Weave Open World">
+  return <main className={styles.grounds} aria-label="Weave Open World" data-weave-company-home="company-grounds">
     <h1 className="sr-only">Weave of Presence · Open World</h1>
     <div id="grounds-panorama" className={styles.viewport} data-overview={overview} tabIndex={0} aria-label="Company Grounds panorama. Scroll sideways to explore on a phone.">
       <div className={styles.scene}>
@@ -85,6 +86,8 @@ export default function CompanyGrounds() {
       <Link href="/client/register">Client registration</Link>
       <Link href="/file-folder">Purchase a File Folder</Link>
       <Link href="/food-store">Food Store</Link>
+      <Link href="/file-folder-preview">Explore File Folders</Link>
+      <Link href="/company-overview">Company services and Reach requests</Link>
       <Link href="/reach-delivery">Reach and Delivery</Link>
       <Link href="/lifestyle">Lifestyle</Link>
       <Link href="/enterprise">Enterprise</Link>
@@ -94,6 +97,7 @@ export default function CompanyGrounds() {
       <Link href="/privacy">Privacy</Link>
       <Link href="/download">Download the Weave app</Link>
     </nav>
+    <p>{WEAVE_COMPANY.legalName} · RC {WEAVE_COMPANY.registrationNumber}</p>
     </dialog>
     <dialog ref={dialog} aria-labelledby="flame-access-title" aria-describedby="flame-access-message"
       className="fixed inset-0 m-auto w-[min(90vw,26rem)] rounded-2xl border border-[#b69a61] bg-[#fffaf0] p-6 text-[#302c23] shadow-xl backdrop:bg-black/45">

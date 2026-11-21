@@ -1,6 +1,8 @@
 'use client'
 
 import Link from 'next/link'
+import { departmentNames, firstWorkshops } from '@/lib/department-buildings'
+import { workshopArt } from '@/lib/workshop-art'
 import { usePathname } from 'next/navigation'
 import type { ReactNode } from 'react'
 import { useAuth } from '@/lib/auth-provider'
@@ -9,7 +11,6 @@ import { isFlameEventVisualRoute } from '@/lib/weave-visual-theme'
 import { WeaveExistingPageImage } from '@/components/world/weave-existing-page-image'
 import styles from './department-building-interior.module.css'
 
-const mansions = { bridger: 'Hope', agent: 'Stability', client: 'Dream Lovely', admin: 'Administrations · A Time' }
 const ownWorlds = new Set(['/client', '/client/login', '/client/register', '/client/pro-verification',
   '/client/pro-activation', '/client/system-switch', '/system-switch/world', '/weave/lifestyles/legion',
   '/weave/lifestyles/pro-regional-manager/workspace'])
@@ -23,19 +24,22 @@ export function DepartmentBuildingInterior({ children }: { children: ReactNode }
     return <><WeaveExistingPageImage />{children}</>
   }
 
-  const prospectDesk = path === '/bridger/my-prospects'
-  const lifestyle = path === '/weave/lifestyles' || path.startsWith('/weave/lifestyles/')
-  const name = prospectDesk ? 'My Prospects' : path === '/weave/market/prospects' ? 'Prospect Market' :
-    weavePageCopyForPath(path)?.title ?? path.split('/').filter(Boolean).at(-1)?.replace(/-/g, ' ') ?? 'Workshop'
-  const room = lifestyle ? 'lifestyle' : role === 'bridger' ? 'hope' : role === 'client' ? 'enterprise' : 'operations'
+  const step = Object.values(firstWorkshops).flat().find(workshop => workshop.href === path)
+  const copy = weavePageCopyForPath(path)
+  const name = step?.name ?? copy?.title ?? path.split('/').filter(Boolean).at(-1)?.replace(/-/g, ' ') ?? 'Workshop'
+  const purpose = step?.action ?? copy?.purpose
 
-  return <section className={styles.interior} data-room={room} aria-label={name + ' building'}>
+  return <section className={styles.interior} aria-label={name + ' building'}>
     <nav className={styles.threshold} aria-label="Building location">
-      <Link href={'/' + role + '/dashboard'}>{mansions[role]} mansion</Link>
-      <span aria-hidden="true">›</span><span aria-current="page">{name}</span>
+      <Link href={'/' + role + '/dashboard'}>{departmentNames[role]}</Link>
+      <span aria-hidden="true">›</span><a href="#workshop-desk">Work desk</a>
     </nav>
     <div className={styles.workroom}>
-      <div className={styles.desk}>
+      <figure className={styles.workshopFront}>
+        <img className={styles.workshopView} src={workshopArt(path)} alt="" width={312} height={312} />
+        <figcaption><strong>{name}</strong>{purpose && <p>{purpose}</p>}</figcaption>
+      </figure>
+      <div className={styles.desk} id="workshop-desk" tabIndex={-1}>
         {children}
       </div>
     </div>

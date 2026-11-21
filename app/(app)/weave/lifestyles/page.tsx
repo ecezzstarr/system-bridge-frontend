@@ -1,4 +1,5 @@
 'use client'
+import { workshopArt } from '@/lib/workshop-art'
 
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
@@ -388,8 +389,8 @@ function LifestyleGround({
   return <div className={`${nested?'ml-3 border-l-2 pl-4 sm:ml-8':'p-5 sm:p-6'} ${nested?'border-cyan-300/20':'border'} ${nested?'':'rounded-[1.5rem]'} ${nested?'':' '+toneClass.split(' ').filter(item=>item.startsWith('border-')||item.startsWith('bg-')).join(' ')}`} id={'entrance-' + href.split('/').filter(Boolean).join('-') + (title === 'ASSISTANT FOOD DISTRIBUTION MANAGER' ? '-assistant' : '')} data-lifestyle={title.toLowerCase().replaceAll(' ','_')}>
     <div className="mb-3">
       {open ? <Link href={href} aria-label={action + ' · ' + title} className="block">
-        <span aria-hidden="true" className="lifestyle-building-front" />
-      </Link> : <span aria-hidden="true" className="lifestyle-building-front" />}
+        <img alt="" loading="lazy" src={workshopArt(href)} width={312} height={312} className="lifestyle-building-front" />
+      </Link> : <img alt="" loading="lazy" src={workshopArt(href)} width={312} height={312} className="lifestyle-building-front" />}
     </div>
     <div className="flex flex-wrap items-start justify-between gap-4">
       <div className="max-w-3xl">

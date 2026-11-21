@@ -278,7 +278,8 @@ const djEngineSource=fs.readFileSync(path.join(root,'lib/dj-broadcast.ts'),'utf8
 const djPublicSource=fs.readFileSync(path.join(root,'app/api/dj/broadcast/route.ts'),'utf8')
 const djAdminSource=fs.readFileSync(path.join(root,'app/api/admin/dj/broadcast/route.ts'),'utf8')
 const djPlayerSource=fs.readFileSync(path.join(root,'components/dj-broadcast-player.tsx'),'utf8')
-const homePageSource=fs.readFileSync(path.join(root,'app/company-grounds/page.tsx'),'utf8')
+const homePageSource=fs.readFileSync(path.join(root,'app/company-overview/page.tsx'),'utf8')
+assert.match(fs.readFileSync(path.join(root,'app/page.tsx'),'utf8'),/return <CompanyGrounds\s*\/>/,'Only Company Grounds renders at the root, with old services on their own page')
 const djWorkshopSource=fs.readFileSync(path.join(root,'app/(app)/admin/dj-workshop/page.tsx'),'utf8')
 const djTracksSource=fs.readFileSync(path.join(root,'app/api/admin/dj/tracks/route.ts'),'utf8')
 const djPlaylistsSource=fs.readFileSync(path.join(root,'app/api/admin/dj/playlists/route.ts'),'utf8')
@@ -321,13 +322,13 @@ assert.ok(djPlaylistsSource.includes('ensureDjSchema'),'Playlist library bootstr
 assert.ok(departmentMusicSource.includes('ensureDjSchema'),'Department Entry sound shares the DJ library safely')
 assert.ok(fs.existsSync(path.join(root,'migrations/20260924_dj_live_broadcast.sql')),'DJ live migration exists')
 assert.ok(!homePageSource.includes('<WeaveWorldEnvironment'),'Public homepage does not mount a duplicate WEAVE world')
-assert.ok(homePageSource.includes('/images/weave-open-world-home.jpg') && homePageSource.includes("entrance: '/client/login'"),'The public grounds use the approved image and Client entrance')
+assert.ok(homePageSource.includes('Interaction in Motion presents')&&homePageSource.includes('The Company of Time'),'Homepage uses founder-approved Company of Time introduction')
 const weaveSystemMapSource=fs.readFileSync(path.join(root,'lib/weave-system-map.ts'),'utf8')
-
+assert.ok(homePageSource.includes('One company. Many people. Work moving through time.')&&homePageSource.includes('System Switch — Bridge of Radiance'),'Homepage introduces the four-department institution using its approved wording')
 assert.ok(weaveSystemMapSource.includes('An interactional company where human participation can become organized work, value, systems and opportunity.'),'Canonical system map identifies WEAVE as an interactional company')
-
-
-
+assert.ok(homePageSource.includes("title: 'Services'") && homePageSource.includes("title: 'Instruments'") && homePageSource.includes("title: 'Systems'"),'Homepage explains WEAVE services, instruments and systems')
+assert.ok(homePageSource.includes('Client Access Point'),'Homepage contains a dedicated Client access surface')
+assert.ok(homePageSource.includes('href="/client/login"'),'Homepage directs existing Clients to the Client Portal')
 const clientGuardSource=fs.readFileSync(path.join(root,'components/client/client-route-guard.tsx'),'utf8')
 const clientRegisterSource2=fs.readFileSync(path.join(root,'app/client/register/page.tsx'),'utf8')
 const walletBalanceSource=fs.readFileSync(path.join(root,'app/api/wallet/balance/route.ts'),'utf8')
