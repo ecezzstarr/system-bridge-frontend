@@ -42,8 +42,6 @@ export function CompanyDomainMap({buildings,preview=false}:{buildings:Building[]
  const [department,setDepartment]=useState(buildings[0]?.department)
  const [plot,setPlot]=useState<number|undefined>(buildings[0]?.plot)
  const [moving,setMoving]=useState(false)
- const selectedNameRef=useRef<HTMLParagraphElement>(null)
- const buildingPickerRef=useRef<HTMLSelectElement>(null)
  useEffect(()=>{
   const motion=window.matchMedia('(prefers-reduced-motion: reduce)')
   const update=()=>setMoving(!motion.matches)
@@ -59,20 +57,12 @@ export function CompanyDomainMap({buildings,preview=false}:{buildings:Building[]
  const entryHref=selected&&safeDepartment&&safeSlug
   ?'/weave-modules/'+encodeURIComponent(selected.department)+'/'+encodeURIComponent(selected.slug)
   :null
- // Assign published names only through textContent, never through an HTML parser.
- useEffect(()=>{
-  if(selectedNameRef.current)selectedNameRef.current.textContent='Selected workshop: '+(selected?.title??'')
-  for(const option of Array.from(buildingPickerRef.current?.options??[])){
-   const named=visible.find(item=>String(item.plot)===option.value)
-   if(named)option.textContent='Plot '+named.plot+' · '+named.title
-  }
- },[selected?.title,zone,plot,buildings])
  if(!selected)return <p>A Time has yet to open the first company plot.</p>
  return <section className="space-y-4">
-  {!preview&&<label className="block">Department
-   <select className="ml-3 rounded border border-amber-200/40 bg-[#132b35] p-2" value={zone} onChange={e=>{setDepartment(e.target.value as NativeDepartment);setPlot(undefined)}}>
-    {Object.entries(WEAVE_NATIVE_DEPARTMENTS).filter(([key])=>buildings.some(b=>b.department===key)).map(([key,dep])=><option key={key} value={key}>{dep.label}</option>)}
-   </select></label>}
+  {!preview&&<nav aria-label="Choose a department" className="flex flex-wrap items-center gap-2">
+   {Object.entries(WEAVE_NATIVE_DEPARTMENTS).filter(([key])=>buildings.some(b=>b.department===key)).map(([key,dep])=><button key={key} type="button" aria-pressed={zone===key} onClick={()=>{setDepartment(key as NativeDepartment);setPlot(undefined)}}
+    className="rounded-full border border-amber-200/40 bg-[#132b35] px-3 py-2 text-sm aria-pressed:bg-amber-100 aria-pressed:text-[#20343c]">{dep.label}</button>)}
+  </nav>}
   <div className="h-72 overflow-hidden rounded-2xl border border-amber-100/30 bg-[#192f3a] sm:h-96">
    <MapBoundary><Canvas dpr={[1,1.5]} camera={{position:preview?[5,5,8]:[17,20,23],fov:48}}
     fallback={<p className="p-4">3D view unavailable on this device.</p>}>
@@ -87,11 +77,11 @@ export function CompanyDomainMap({buildings,preview=false}:{buildings:Building[]
    </Canvas></MapBoundary>
   </div>
   {!preview&&<>
-   <label className="block">Building
-    <select ref={buildingPickerRef} value={selected.plot} onChange={e=>setPlot(Number(e.target.value))} className="ml-3 max-w-full rounded border border-amber-200/40 bg-[#132b35] p-2">
-     {visible.map(b=><option key={b.slug} value={b.plot}>Plot {b.plot}</option>)}
-    </select></label>
-   <p ref={selectedNameRef} className="text-sm">Selected workshop</p>
+   <nav className="flex flex-wrap gap-2" aria-label="Choose a building">
+    {visible.map(b=><button key={b.slug} type="button" aria-pressed={b.plot===selected.plot}
+     onClick={()=>setPlot(b.plot)} className="rounded-lg border border-amber-200/40 px-3 py-2 text-sm aria-pressed:bg-amber-100 aria-pressed:text-[#20343c]">Plot {b.plot} · {b.title}</button>)}
+   </nav>
+   <p className="text-sm">Selected workshop: {selected.title}</p>
    {entryHref?<button type="button" className="inline-block rounded-full bg-amber-100 px-5 py-3 font-semibold text-[#20343c]" onClick={()=>router.push(entryHref)}>Enter workshop</button>
     :<p role="alert">This building entrance is unavailable.</p>}
   </>}
