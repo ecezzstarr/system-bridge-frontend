@@ -119,14 +119,17 @@ assert.match(ui,/Prepare restoration/)
 assert.match(ui,/Withdraw current publication/)
 assert.match(read('app/(app)/weave-modules/[department]/[slug]/page.tsx'),/NativeModuleRenderer/)
 assert.match(read('components/weave/native-department-rail.tsx'),/data-weave-native-department-rail/)
-for(const [department,file] of [
- ['hope','app/(app)/bridger/dashboard/page.tsx'],
- ['stability','app/(app)/agent/dashboard/page.tsx'],
- ['dream-lovely','app/client/dashboard/page.tsx'],
- ['administrations','app/(app)/admin/dashboard/page.tsx'],
+for(const [department,page,host] of [
+ ['hope','app/(app)/bridger/dashboard/page.tsx','components/bridger/bridger-workplace.tsx'],
+ ['stability','app/(app)/agent/dashboard/page.tsx','components/agent/agent-workplace.tsx'],
+ ['dream-lovely','app/client/dashboard/page.tsx',null],
+ ['administrations','app/(app)/admin/dashboard/page.tsx','components/admin/admin-workplace.tsx'],
 ]){
- assert.ok(read(file).includes('DepartmentBuildings department="'+department+'"'),
-  department+' workspace must discover published modules')
+ const workspace=host?read(host):read(page)
+ assert.ok(workspace.includes('DepartmentBuildings department="'+department+'"'),
+  department+' existing Work Desk must host published buildings')
+ if(host)assert.match(read(page),new RegExp('<'+(department==='hope'?'BridgerWorkplace':department==='stability'?'AgentWorkplace':'AdminWorkplace')),
+  department+' dashboard enters the original Work Desk host')
 }
 assert.match(read('components/weave/department-buildings.tsx'), /useDepartmentModules\(department\)/)
 assert.match(read('app/client/system-switch/page.tsx'), /NativeDepartmentRail department="dream-lovely"/)
