@@ -18,7 +18,7 @@ import { PresenceCameraSignal, PresenceCameraViewport } from '@/components/world
 import { WeaveEnvironmentSurface } from '@/components/world/weave-environment-surface'
 import { EnvironmentOrganizerProvider, EnvironmentPageGuard } from '@/components/world/environment-organizer-provider'
 import { DepartmentBuildingInterior } from '@/components/weave/department-building-interior'
-import { canAccessEnvironmentRoute } from '@/lib/company-guidance-access'
+import { canAccessEnvironmentRoute, canEnterDepartmentPath } from '@/lib/company-guidance-access'
 import {KingdomThemeFrame} from '@/components/world/kingdom-theme-frame'
 
 export default function AppLayout({
@@ -32,15 +32,17 @@ export default function AppLayout({
   const [isRedirecting, setIsRedirecting] = useState(false)
   const [legionEmployment, setLegionEmployment] = useState<any>(null)
   const [legionChecked, setLegionChecked] = useState(false)
-  const routeAllowed = canAccessEnvironmentRoute(pathname, user?.role)
+  const routeAllowed = canAccessEnvironmentRoute(pathname, user?.role) && canEnterDepartmentPath(pathname, user?.role)
+  const ownDashboard = user?.role === 'admin' ? '/admin/dashboard' : user?.role === 'agent' ? '/agent/dashboard' :
+    user?.role === 'bridger' ? '/bridger/dashboard' : user?.role === 'client' ? '/client/dashboard' : '/dashboard'
   const legionEventRoute = pathname === '/event' || pathname === '/system-switch' || pathname === '/system-switch/flame-event'
   const restoringHope = user?.role === 'bridger' || pathname.startsWith('/bridger') || pathname === '/weave/market/prospects'
 
   useEffect(() => {
     if (isInitialized && !isLoading && isAuthenticated && !routeAllowed) {
-      router.replace(user?.role === 'admin' ? '/admin/agent-channels' : '/client/dashboard')
+      router.replace(ownDashboard)
     }
-  }, [isInitialized, isLoading, isAuthenticated, routeAllowed, user?.role, router])
+  }, [isInitialized, isLoading, isAuthenticated, routeAllowed, ownDashboard, router])
 
   useEffect(() => {
     if (isInitialized && !isLoading && !isAuthenticated && !isRedirecting) {
