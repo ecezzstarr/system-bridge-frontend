@@ -10,6 +10,7 @@ function isContinuityRoute(pathname:string){
   return pathname==='/api/auth/login' ||
     pathname==='/api/client/weave-login' ||
     pathname==='/api/auth/logout' ||
+    pathname==='/api/auth/signout' ||
     pathname==='/api/divine-shield/evacuate' ||
     pathname==='/api/deposit/paystack/webhook' ||
     // Existing calls must finish/refund even while new departmental work waits.
