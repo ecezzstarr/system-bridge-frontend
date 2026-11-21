@@ -38,6 +38,7 @@ jobs:
       - name: Account and authorization security regressions
         run: |
           node tests/security-boundaries.cjs
+          node tests/divine-shield-session-continuity.cjs
           node tests/password-hash-login-regression.cjs
           node tests/host-powershell-security-regression.cjs
           node tests/core-hardening-regression.cjs
