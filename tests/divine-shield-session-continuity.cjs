@@ -79,6 +79,7 @@ async function run(){
   assert.equal((await proxyModule.exports.proxy(request('/api/auth/login'))).status,200)
   assert.equal((await proxyModule.exports.proxy(request('/api/auth/signout'))).status,200)
   assert.equal((await proxyModule.exports.proxy(request('/api/deposit/paystack/webhook'))).status,200)
+  assert.equal((await proxyModule.exports.proxy(request('/api/system/deployment-record'))).status,200)
   assert.equal((await proxyModule.exports.proxy(request('/api/river/voice/123e4567-e89b-42d3-a456-426614174000/status'))).status,200)
   assert.equal((await proxyModule.exports.proxy(request('/api/client/system-switch','GET'))).status,200)
   role='admin'
