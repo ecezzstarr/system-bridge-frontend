@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import {useEffect,useState} from 'react'
 import {useAuth} from '@/lib/auth-provider'
 import {BurningRiverLiveWorld} from '@/components/events/burning-river-live-world'
@@ -33,5 +34,8 @@ export default function WeaveOpenWorldPage(){
     data-file-folder-open-world-entry={fromSwitch?'system-switch':'public'}
     data-system-switch-crossed={fromSwitch?'true':'false'}>
    <BurningRiverLiveWorld role={role} carrierCode={carrierCode} requestedDoor={door} legionCode={legionCode} returnHref={fromSwitch?'/system-switch':'/flame-event'}/>
+   <nav aria-label="Company grounds" className="px-5 py-4 text-center">
+    <Link href="/system-switch/world/company-domain" className="inline-block rounded-full border border-amber-200/40 px-5 py-3 text-amber-100">Explore the company domain</Link>
+   </nav>
  </main>
 }

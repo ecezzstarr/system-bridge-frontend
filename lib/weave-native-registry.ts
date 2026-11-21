@@ -30,6 +30,9 @@ async function ensureNativeRegistry(){
    "created_at timestamptz NOT NULL DEFAULT now(),published_at timestamptz)")
   await db.query("CREATE UNIQUE INDEX IF NOT EXISTS weave_native_one_live_slot ON "+
    "weave_native_module_releases(department,slug) WHERE state='published'")
+  await db.query("CREATE UNIQUE INDEX IF NOT EXISTS weave_company_published_plot ON "+
+   "weave_native_module_releases(department, (blueprint->>'companyPlot')) "+
+   "WHERE state='published' AND blueprint ? 'companyPlot'")
   await db.query("CREATE INDEX IF NOT EXISTS weave_native_slot_history ON "+
    "weave_native_module_releases(department,slug,version DESC)")
   await db.query("CREATE TABLE IF NOT EXISTS weave_native_module_events ("+
@@ -141,7 +144,12 @@ export async function publishNativeModule(input:{
    [input.actorId,release.id])
   await client.query('COMMIT')
   return {id:release.id,department:release.department,slug:release.slug,state:'published'}
- }catch(error){await client.query('ROLLBACK').catch(()=>{});throw error}
+ }catch(error){
+  await client.query('ROLLBACK').catch(()=>{})
+  if(error&&typeof error==='object'&&'constraint' in error&&error.constraint==='weave_company_published_plot')
+   throw Error('Another building occupies this company plot. Choose a free plot and save a new version.')
+  throw error
+ }
  finally{client.release()}
 }
 /** Withdraw a live module while retaining every immutable version for restoration. */
@@ -293,5 +301,19 @@ export async function listNativeSubmissions(department:NativeDepartment,slugValu
   "JOIN users u ON u.id=s.user_id "+
   "WHERE r.department=$1 AND r.slug=$2 ORDER BY s.created_at DESC LIMIT 80",
   [department,slugValue])
+ return result.rows
+}
+
+/** Only exterior information explicitly published to the company grounds. */
+export async function listCompanyPlots(){
+ await ensureNativeRegistry()
+ const result=await getPool().query<{
+  department:NativeDepartment;slug:string;title:string;plot:number;scene:'water'|'mechanized'|'glass-kingdom'
+ }>(`SELECT department, slug, blueprint->>'title' AS title,
+     (blueprint->>'companyPlot')::int AS plot,
+     (SELECT element->>'scene' FROM jsonb_array_elements(blueprint->'blocks') element
+      WHERE element->>'type'='scene' LIMIT 1) AS scene
+    FROM weave_native_module_releases
+    WHERE state='published' AND blueprint ? 'companyPlot' ORDER BY department,plot`)
  return result.rows
 }
