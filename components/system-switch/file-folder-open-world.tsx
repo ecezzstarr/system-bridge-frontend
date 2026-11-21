@@ -419,12 +419,12 @@ export default function FileFolderOpenWorld({
       </details>
 
       {fileFolderTier!=='pro'&&<section data-file-folder-career-journey="choose-acquire-build-parts-boost-operate-earn" className="border-b border-amber-300/25 bg-[radial-gradient(ellipse_at_top_left,rgba(183,134,65,.16),transparent_72%)] p-4 text-white sm:p-6">
-        <p className="text-xs font-bold uppercase tracking-wider text-amber-200">Build your online career · Company of Time</p>
-        <h2 className="mt-2 text-2xl font-black leading-tight sm:text-3xl">Choose a job. Build its system. Start serving customers.</h2>
-        <p className="mt-3 max-w-3xl text-sm leading-7 text-stone-200">Every blueprint is a working capability you can turn into a paid service. See the exact material price and build time before buying. The system builds over real time; Boost Bay is optional. Customers pay for work only after you offer and deliver a real service.</p>
+        <p className="text-xs font-bold uppercase tracking-wider text-amber-200">Build a career or a school project · Company of Time</p>
+        <h2 className="mt-2 text-2xl font-black leading-tight sm:text-3xl">Choose a direction. Build systems for study or work.</h2>
+        <p className="mt-3 max-w-3xl text-sm leading-7 text-stone-200">Build systems for your school project, profession or paid services. Examine real materials, costs and formation times before buying. Boost Bay is optional. A completed system is not automatic academic approval or proof of revenue.</p>
         <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
           {[
-            {step:'01',name:'Choose a career',desc:String((world?.blueprints||[]).length)+' available systems',goto:'blueprint_foundry'},
+            {step:'01',name:'Choose a project',desc:String((world?.blueprints||[]).length)+' available systems',goto:'blueprint_foundry'},
             {step:'02',name:'Get materials',desc:'See actual parts and prices',goto:'build_market'},
             {step:'03',name:'Build over time',desc:activeBuilds.length+' real builds in progress',goto:'formation_yard'},
             {step:'04',name:'Add capability parts',desc:'Extend what your system can do',goto:'parts_workshop'},
@@ -571,7 +571,7 @@ export default function FileFolderOpenWorld({
                 <h4 className="mt-2 text-base font-black text-white">Your idea can begin here.</h4>
                 <p className="mt-2 text-xs leading-5 text-slate-300">Create your own video platform, social network, conversation service, marketplace or entirely new software project. Choose its name, build the underlying systems and keep its development inside your File Folder.</p>
                 <div className="mt-3 flex items-center justify-between gap-3">
-                  <span className="text-[10px] text-cyan-100">{(world?.platformProjects||[]).length} owned platform projects</span>
+                  <span className="text-[10px] text-cyan-100">{(world?.platformProjects||[]).length} owned project plans</span>
                   <button type="button" onClick={()=>setDistrict('blueprint_foundry')} className="rounded-lg border border-cyan-200/45 bg-cyan-200/10 px-3 py-2 text-[10px] font-black text-cyan-100">Start platform project →</button>
                 </div>
               </div>
@@ -646,8 +646,8 @@ export default function FileFolderOpenWorld({
           {district === 'blueprint_foundry' && (
             <div>
               <p className="text-[9px] font-black uppercase tracking-[0.22em] text-violet-300">Blueprint Foundry</p>
-              <h3 className="mt-2 text-2xl font-black">Choose a career system your business can operate.</h3>
-              <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-300">Choose the service you want to provide. Each system shows the material cost, the parts it needs and its real construction duration. After commissioning, use it to serve customers. You set a genuine customer quote for the work you can deliver.</p>
+              <h3 className="mt-2 text-2xl font-black">Build technology for a school project or a business.</h3>
+              <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-300">Choose a project direction above, then inspect real blueprints, kit prices and construction time. Academic project plans can organize research and technical studies privately; business systems can later be operated for verified customer work.</p>
               <div className="mt-5">
                 <FileFolderPlatformProjectStudio
                   projects={world?.platformProjects||[]}
