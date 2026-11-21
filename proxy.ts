@@ -12,6 +12,8 @@ function isContinuityRoute(pathname:string){
     pathname==='/api/auth/logout' ||
     pathname==='/api/divine-shield/evacuate' ||
     pathname==='/api/deposit/paystack/webhook' ||
+    // Existing calls must finish/refund even while new departmental work waits.
+    /^\/api\/river\/voice\/[0-9a-f-]{36}(?:\/status)?$/i.test(pathname) ||
     pathname==='/api/auth/forgot-password' ||
     pathname==='/api/auth/reset-password' ||
     pathname.startsWith('/api/auth/callback/') ||
