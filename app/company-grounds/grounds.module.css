@@ -10,7 +10,8 @@
 .grounds :focus-visible {outline:3px solid #174d69; outline-offset:-3px}
 .entrances .zoom {display:none}
 @media (orientation:portrait) {
-  .scene {width:100%}
-  .viewport[data-expanded="true"] .scene {width:max(100%, 177.778svh)}
+  /* The observer travels by touch-scrolling across the image; no avatar or walking camera. */
+  .scene {width:max(100%, 177.778svh)}
+  .viewport[data-overview="true"] .scene {width:100%}
   .entrances .zoom {display:inline-flex}
 }
