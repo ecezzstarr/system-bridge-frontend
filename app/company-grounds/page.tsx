@@ -16,7 +16,7 @@ const buildings = [
 
 export default function CompanyGrounds() {
   const { user, isInitialized } = useAuth()
-  const [expanded, setExpanded] = useState(false)
+  const [overview, setOverview] = useState(false)
   const dialog = useRef<HTMLDialogElement>(null)
   const [attempted, setAttempted] = useState('')
   const ownDepartment = buildings.find(building => building.role === user?.role)
@@ -50,7 +50,7 @@ export default function CompanyGrounds() {
 
   return <section className={styles.grounds} aria-label="Weave Open World">
     <h1 className="sr-only">Weave of Presence Ltd · Open World</h1>
-    <div id="grounds-panorama" className={styles.viewport} data-expanded={expanded} tabIndex={0} aria-label="Company Grounds panorama. Scroll sideways to explore on a phone.">
+    <div id="grounds-panorama" className={styles.viewport} data-overview={overview} tabIndex={0} aria-label="Company Grounds panorama. Scroll sideways to explore on a phone.">
       <div className={styles.scene}>
         <img src="/images/weave-open-world-home.jpg" width="1536" height="864" fetchPriority="high"
           alt="Aerial view of Weave Company Grounds, the departmental buildings, Client estates and Burning River." />
@@ -65,8 +65,8 @@ export default function CompanyGrounds() {
       </div>
     </div>
     <nav id="grounds-entrances" aria-label="Company entrances" className={styles.entrances}>
-      <button type="button" className={styles.zoom} aria-controls="grounds-panorama" aria-expanded={expanded}
-        onClick={() => setExpanded(!expanded)}>{expanded ? 'Show whole grounds' : 'Explore panorama'}</button>
+      <button type="button" className={styles.zoom} aria-controls="grounds-panorama" aria-pressed={overview}
+        onClick={() => setOverview(!overview)}>{overview ? 'Scroll through grounds' : 'Show entire grounds'}</button>
       {doors.map(door => renderDoor(door, false))}
       {destinations.map(({name,href}) => <Link key={name} href={href}>{name}</Link>)}
       <Link href="/login">Sign in</Link>
