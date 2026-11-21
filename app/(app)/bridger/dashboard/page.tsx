@@ -1,12 +1,13 @@
 'use client'
 
+import { DepartmentBuildings } from '@/components/weave/department-buildings'
+
 import Link from 'next/link'
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Share2 } from 'lucide-react'
 import { useAuth } from '@/lib/auth-provider'
 import { BridgerWorkplace } from '@/components/bridger/bridger-workplace'
-import {NativeDepartmentRail} from '@/components/weave/native-department-rail'
 import { ManagerLifestyleEntry } from '@/components/manager-lifestyle-entry'
 import { RegionalSystemSwitchGate } from '@/components/weave/regional-system-switch-gate'
 
@@ -21,9 +22,10 @@ export default function BridgerDashboardPage() {
   if (!isInitialized || isLoading || user?.role!=='bridger')return null
 
   return <>
+    <DepartmentBuildings department="hope" />
     <div className="mx-auto w-full max-w-5xl px-3 sm:px-5"><RegionalSystemSwitchGate compact /></div>
     <BridgerWorkplace userName={user?.name}/>
-    <NativeDepartmentRail department="hope"/>
+
     <ManagerLifestyleEntry/>
     <nav aria-label="Department shortcuts" className="mx-auto flex max-w-5xl flex-wrap gap-2 px-4 py-4">
     <Link href="/referrals" data-core-function="referral-movement" className="inline-flex min-h-11 items-center gap-2 rounded-full border border-emerald-300/25 bg-[#071711]/95 px-4 py-3 text-[10px] font-black uppercase tracking-[.12em] text-emerald-100 shadow-2xl backdrop-blur">

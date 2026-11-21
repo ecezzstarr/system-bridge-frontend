@@ -1,7 +1,10 @@
+import { departmentWorkPages } from './scripts/department-work-pages.mjs'
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   poweredByHeader: false,
   env: {
+    NEXT_PUBLIC_DEPARTMENT_WORK_PAGES: JSON.stringify(departmentWorkPages()),
     NEXT_PUBLIC_WEAVE_RELEASE_SHA: process.env.WEAVE_RELEASE_SHA || '',
   },
   async headers() {

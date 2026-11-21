@@ -1,5 +1,7 @@
 'use client'
 
+import { DepartmentBuildings } from '@/components/weave/department-buildings'
+
 import { useAuth } from '@/lib/auth-provider'
 import { WeaveDashboardWorld } from '@/components/world/weave-dashboard-world'
 import { LifestyleEntry } from '@/components/manager-lifestyle-entry'
@@ -11,6 +13,7 @@ import ClientSiblingsEventCard from '@/components/client/client-siblings-event-c
 export default function ClientDashboardPage() {
   const { user } = useAuth()
   return <>
+    <DepartmentBuildings department="dream-lovely" />
     <WeaveDashboardWorld role="client" userName={user?.name} />
     <nav aria-label="Find Client business systems" className="mx-auto max-w-5xl px-4 py-3"><Link href="/search" data-role-company-search="client" className="inline-flex min-h-11 items-center rounded-xl border border-sky-300/30 bg-[#062034] px-4 py-2 text-sm font-semibold text-sky-100">Find my next File Folder or business action</Link><Link href="/weave/lifestyles/sunshine" data-client-sunshine-entry="true" className="ml-3 inline-flex min-h-11 items-center rounded-xl border border-amber-300/30 bg-[#172629] px-4 py-2 text-sm font-semibold text-amber-100">Sunshine · TRX to System Switch wealth continuity</Link></nav>
     <LifestyleEntry />
