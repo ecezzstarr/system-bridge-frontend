@@ -61,10 +61,10 @@ const mocks={
   '@/lib/weave-infrastructure':{getDivineShieldState:async()=>{if(failure)throw Error('database offline');return{active}}},
   '@/lib/auth-api':{getAuthUser:async()=>role?{role}:null},
 }
-const module={exports:{}}
+const proxyModule={exports:{}}
 const js=ts.transpileModule(src,{compilerOptions:{module:ts.ModuleKind.CommonJS,
   target:ts.ScriptTarget.ES2022,esModuleInterop:true}}).outputText
-vm.runInNewContext(js,{module,exports:module.exports,console,URL,
+vm.runInNewContext(js,{module:proxyModule,exports:proxyModule.exports,console,URL,
   require:name=>{if(!Object.hasOwn(mocks,name))throw Error('Unexpected module '+name);return mocks[name]}},
   {filename:'proxy.ts'})
 const request=(pathname,method='POST')=>({
@@ -73,20 +73,20 @@ const request=(pathname,method='POST')=>({
   url:'https://weavingsystem.online'+pathname,
 })
 async function run(){
-  assert.equal((await module.exports.proxy(request('/api/client/business-store','PATCH'))).status,423)
-  assert.equal((await module.exports.proxy(request('/api/market/prospects/purchase'))).status,423)
-  assert.equal((await module.exports.proxy(request('/api/client/weave-login'))).status,200)
-  assert.equal((await module.exports.proxy(request('/api/auth/login'))).status,200)
-  assert.equal((await module.exports.proxy(request('/api/deposit/paystack/webhook'))).status,200)
-  assert.equal((await module.exports.proxy(request('/api/client/system-switch','GET'))).status,200)
+  assert.equal((await proxyModule.exports.proxy(request('/api/client/business-store','PATCH'))).status,423)
+  assert.equal((await proxyModule.exports.proxy(request('/api/market/prospects/purchase'))).status,423)
+  assert.equal((await proxyModule.exports.proxy(request('/api/client/weave-login'))).status,200)
+  assert.equal((await proxyModule.exports.proxy(request('/api/auth/login'))).status,200)
+  assert.equal((await proxyModule.exports.proxy(request('/api/deposit/paystack/webhook'))).status,200)
+  assert.equal((await proxyModule.exports.proxy(request('/api/client/system-switch','GET'))).status,200)
   role='admin'
-  assert.equal((await module.exports.proxy(request('/api/admin/divine-shield'))).status,200)
+  assert.equal((await proxyModule.exports.proxy(request('/api/admin/divine-shield'))).status,200)
   role=null
-  assert.equal((await module.exports.proxy(request('/api/admin/divine-shield'))).status,423)
+  assert.equal((await proxyModule.exports.proxy(request('/api/admin/divine-shield'))).status,423)
   active=false
-  assert.equal((await module.exports.proxy(request('/api/client/business-store'))).status,200)
+  assert.equal((await proxyModule.exports.proxy(request('/api/client/business-store'))).status,200)
   active=true;failure=true
-  assert.equal((await module.exports.proxy(request('/api/client/business-store'))).status,503)
+  assert.equal((await proxyModule.exports.proxy(request('/api/client/business-store'))).status,503)
   console.log('PASS Divine Shield: no-logout session continuity, API write boundary, admin authority, webhook and explicit release checks')
 }
 run().catch(error=>{console.error(error);process.exitCode=1})
