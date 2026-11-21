@@ -1,5 +1,7 @@
 'use client'
 
+import { Riverfront } from './riverfront'
+
 import Link from 'next/link'
 import {ArrowLeft,ArrowRight,Flame} from 'lucide-react'
 import {BurningRiverOfficialGateway} from '@/components/events/burning-river-official-gateway'
@@ -24,6 +26,7 @@ export function PublicFlameEventMobile({carrierCode=null}:{carrierCode?:string|n
      <p>Burning River is the company event. Weave Open World, reached through System Switch, contains the Client File Folder land. Food orders remain attributed to the Agent who brought you here.</p>
      <Link href={carrierHref} className="inline-flex min-h-10 shrink-0 items-center gap-2 font-black text-amber-200" data-flame-event-return-carrier><ArrowLeft className="h-4 w-4"/> Order through your Agent</Link>
    </div>}
+   <Riverfront><Link href="/company-grounds">Explore Company Grounds <ArrowRight aria-hidden="true" size={16}/></Link></Riverfront>
    <BurningRiverOfficialGateway carrierCode={carrierCode}/>
    <FlameEventFoodStore carrierCode={carrierCode}/>
    <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-5 text-xs text-slate-200">

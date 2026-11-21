@@ -1,5 +1,7 @@
 'use client'
 
+import { Riverfront } from './riverfront'
+
 import Link from 'next/link'
 import { ArrowRight, Orbit } from 'lucide-react'
 import type { EventRole } from '@/lib/weave-event'
@@ -66,19 +68,12 @@ export default function PositionEventWorld({
     >
       <FlameEventRiverField />
       <div className="relative z-10">
-        <div className="border-b border-amber-300/15 bg-[#061323]/90 px-3 pb-3 pt-4 sm:px-5" data-flame-event-department-world={role}>
-          <Link href={departmentWorld.href}
-            data-flame-event-own-world-entry={role}
-            aria-label={'Enter '+departmentWorld.label}
-            className="group flex min-h-20 w-full items-center justify-between gap-4 rounded-2xl border border-sky-200/35 bg-[linear-gradient(110deg,rgba(15,60,82,.89),rgba(15,30,45,.94)_64%,rgba(88,48,25,.7))] px-4 py-4 text-white shadow-lg transition hover:border-amber-200/65 hover:bg-sky-900/70 sm:max-w-xl sm:px-5">
-            <span className="min-w-0">
-              <span className="block text-[10px] font-black uppercase tracking-[.15em] text-cyan-200">{departmentWorld.department} · My Department</span>
-              <span className="mt-1 block text-lg font-black leading-6 text-white">{departmentWorld.label}</span>
-              <span className="mt-1 block text-xs leading-5 text-sky-100/75">{departmentWorld.detail}</span>
-            </span>
-            <ArrowRight className="h-6 w-6 shrink-0 text-amber-200 transition group-hover:translate-x-1"/>
+        <Riverfront role={role}>
+          <Link href={departmentWorld.href} data-flame-event-department-world={role}
+            data-flame-event-own-world-entry={role} aria-label={'Enter '+departmentWorld.label}>
+            Enter {departmentWorld.department} <ArrowRight size={18} aria-hidden="true"/>
           </Link>
-        </div>
+        </Riverfront>
         <nav
           aria-label="Department work and System Switch"
           data-flame-event-staff-flow="role-directed"
