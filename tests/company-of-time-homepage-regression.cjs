@@ -2,7 +2,13 @@ const assert=require('node:assert/strict')
 const fs=require('node:fs')
 const path=require('node:path')
 
-const source=fs.readFileSync(path.join(__dirname,'../app/page.tsx'),'utf8')
+const root=fs.readFileSync(path.join(__dirname,'../app/page.tsx'),'utf8')
+const grounds=fs.readFileSync(path.join(__dirname,'../app/company-grounds/page.tsx'),'utf8')
+assert.match(root,/return <CompanyGrounds\s*\/>/,'The public root renders Company Grounds as its single entrance')
+assert.doesNotMatch(root,/weave-public-home|weave-home-hero|data-home-plus-file-folder/,'The old long-form homepage must not appear underneath Company Grounds')
+assert.match(grounds,/data-weave-company-home="company-grounds"/,'The only public homepage is the approved Company Grounds')
+assert.ok(grounds.includes('Company services and Reach requests') && grounds.includes('href="/register"'), 'Public services and registration survive the visual replacement')
+const source=fs.readFileSync(path.join(__dirname,'../app/company-overview/page.tsx'),'utf8')
 const required=[
   'The Company of Time',
   'Interaction in Motion presents',
