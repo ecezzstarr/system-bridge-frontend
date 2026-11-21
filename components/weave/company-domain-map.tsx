@@ -52,21 +52,21 @@ export function CompanyDomainMap({buildings,preview=false}:{buildings:Building[]
  const zone=preview?buildings[0]?.department:department
  const visible=buildings.filter(b=>b.department===zone)
  const selected=visible.find(b=>b.plot===plot)??visible[0]
- if(!selected)return <p>A Time has yet to open the first company plot.</p>
  // Published metadata is data, not executable navigation. Validate both route segments.
- const safeDepartment=Object.prototype.hasOwnProperty.call(WEAVE_NATIVE_DEPARTMENTS,selected.department)
- const safeSlug=/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(selected.slug)
- const entryHref=safeDepartment&&safeSlug
+ const safeDepartment=!!selected&&Object.prototype.hasOwnProperty.call(WEAVE_NATIVE_DEPARTMENTS,selected.department)
+ const safeSlug=!!selected&&/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(selected.slug)
+ const entryHref=selected&&safeDepartment&&safeSlug
   ?'/weave-modules/'+encodeURIComponent(selected.department)+'/'+encodeURIComponent(selected.slug)
   :null
  // Assign published names only through textContent, never through an HTML parser.
  useEffect(()=>{
-  if(selectedNameRef.current)selectedNameRef.current.textContent='Selected workshop: '+selected.title
+  if(selectedNameRef.current)selectedNameRef.current.textContent='Selected workshop: '+(selected?.title??'')
   for(const option of Array.from(buildingPickerRef.current?.options??[])){
    const named=visible.find(item=>String(item.plot)===option.value)
    if(named)option.textContent='Plot '+named.plot+' · '+named.title
   }
- },[selected.title,zone,plot,buildings])
+ },[selected?.title,zone,plot,buildings])
+ if(!selected)return <p>A Time has yet to open the first company plot.</p>
  return <section className="space-y-4">
   {!preview&&<label className="block">Department
    <select className="ml-3 rounded border border-amber-200/40 bg-[#132b35] p-2" value={zone} onChange={e=>{setDepartment(e.target.value as NativeDepartment);setPlot(undefined)}}>
