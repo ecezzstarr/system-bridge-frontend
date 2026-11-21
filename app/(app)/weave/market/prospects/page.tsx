@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { DailyProspectClaim } from '@/components/bridger/daily-prospect-claim'
 import { getAuthHeaders } from '@/lib/auth-client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
@@ -46,6 +46,7 @@ export default function ProspectMarketPage() {
   const { user, updateBalance } = useAuth()
   const [tab, setTab] = useState<'browse' | 'mine'>('browse')
 
+  const openedOutreach = useRef('')
   // Browse tab state
   const [packages, setPackages] = useState<ProspectPackage[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -101,6 +102,17 @@ export default function ProspectMarketPage() {
       setIsLoading(false)
     }
   }
+
+  useEffect(() => {
+    if (tab !== 'mine' || mineLoading || prospectsError) return
+    const id = new URLSearchParams(window.location.search).get('outreach')
+    if (!id || openedOutreach.current === id || !myProspects.some(person => person.outreachId === id)) return
+    const record = document.getElementById('outreach-'+id)
+    if (!record) return
+    record.focus({preventScroll:true})
+    record.scrollIntoView({block:'center'})
+    openedOutreach.current = id
+  }, [tab, mineLoading, prospectsError, myProspects])
 
   const fetchMine = async () => {
     setMineLoading(true)
@@ -439,7 +451,7 @@ export default function ProspectMarketPage() {
               {myProspects.map((p) => {
                 const st = STATUS_LABEL[p.status] || STATUS_LABEL.pending
                 return (
-                  <Card key={p.outreachId} className="bg-slate-900/50 border-slate-700">
+                  <Card key={p.outreachId} id={'outreach-'+p.outreachId} tabIndex={-1} className="scroll-mt-20 bg-slate-900/50 border-slate-700 focus:outline focus:outline-2 focus:outline-amber-300">
                     <CardContent className="flex items-center justify-between py-4">
                       <div>
                         <p className="text-white font-medium">{p.name}</p>
