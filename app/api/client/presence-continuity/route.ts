@@ -10,6 +10,17 @@ import {ensureFileFolderPresenceSchema,getOwnerPresenceSnapshot,recognizeOwnerPr
 
 export const dynamic='force-dynamic'
 const privateHeaders={'Cache-Control':'private, no-store'}
+let dependenciesReady:Promise<void>|null=null
+function ensurePresenceDependencies(){
+  if(!dependenciesReady)dependenciesReady=(async()=>{
+    const sql=getFileFolderDb()
+    await ensureFileFolderWorldSchema(sql)
+    await ensureLegionEmploymentSchema(sql)
+    await ensureCustomerDoorSettlementSchema()
+    await ensureFileFolderPresenceSchema()
+  })().catch(error=>{dependenciesReady=null;throw error})
+  return dependenciesReady
+}
 
 async function ownerContext(request:NextRequest){
   const sql=getFileFolderDb()
@@ -33,10 +44,7 @@ export async function GET(request:NextRequest){
   try{
     const ctx=await ownerContext(request)
     if(ctx.error)return ctx.error
-    await ensureFileFolderWorldSchema(getFileFolderDb())
-    await ensureLegionEmploymentSchema(getFileFolderDb())
-    await ensureCustomerDoorSettlementSchema()
-    await ensureFileFolderPresenceSchema()
+    await ensurePresenceDependencies()
     const snapshot=await getOwnerPresenceSnapshot(ctx.clientId!,ctx.fileNumber!)
     return NextResponse.json({success:true,snapshot},{headers:privateHeaders})
   }catch(error){
