@@ -24,7 +24,7 @@ export function DepartmentBuildings({ department }: { department: NativeDepartme
 
   const published: DepartmentBuilding[] = modules.map(module => ({
     title: module.blueprint.title,
-    href: '/weave-modules/' + department + '/' + encodeURIComponent(module.slug),
+    href: `/weave-modules/${department}/${encodeURIComponent(module.slug)}`,
     area: 'Published workshops',
   }))
   const terms = query.toLowerCase().trim().split(/\s+/)
