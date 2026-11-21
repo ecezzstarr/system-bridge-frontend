@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { HopeHall } from './hope-hall'
 import { useMemo, useState } from 'react'
 import {
   ArrowUpRight, BriefcaseBusiness, Building2, Compass, House,
@@ -111,6 +112,7 @@ export function BridgerWorkplace({
             </div>
           </div>
         </header>
+        <HopeHall/>
 
         <nav className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7" aria-label="Bridger workplace destinations">
           {BRIDGER_WORKPLACE_SPACES.map(item => {
