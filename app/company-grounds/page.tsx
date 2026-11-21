@@ -49,7 +49,7 @@ export default function CompanyGrounds() {
   ]
 
   return <section className={styles.grounds} aria-label="Weave Open World">
-    <h1 className="sr-only">Weave of Presence Ltd · Open World</h1>
+    <h1 className="sr-only">Weave of Presence · Open World</h1>
     <div id="grounds-panorama" className={styles.viewport} data-overview={overview} tabIndex={0} aria-label="Company Grounds panorama. Scroll sideways to explore on a phone.">
       <div className={styles.scene}>
         <img src="/images/weave-open-world-home.jpg" width="1536" height="864" fetchPriority="high"
