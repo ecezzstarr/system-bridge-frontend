@@ -24,7 +24,7 @@ function isContinuityRoute(pathname:string){
  * their own File Number token. The Shield does not revoke any session.
  * Administrative calls are authenticated against server-side role evidence.
  */
-export async function proxy(request:NextRequest){
+export function proxy(request:NextRequest){
   const pathname=request.nextUrl.pathname
   if(pathname==='/'){
     const domain=getWeaveDomainRole(request.headers.get('host'))
@@ -36,6 +36,10 @@ export async function proxy(request:NextRequest){
 
   const unsafe=!['GET','HEAD','OPTIONS'].includes(request.method)
   if(!pathname.startsWith('/api/')||!unsafe||isContinuityRoute(pathname))return NextResponse.next()
+  return checkShieldMutation(request)
+}
+
+async function checkShieldMutation(request:NextRequest){
   try{
     const shield=await getDivineShieldState()
     if(!shield.active)return NextResponse.next()
