@@ -29,9 +29,14 @@ export function DepartmentBuildings({ department }: { department: NativeDepartme
   }))
   const terms = query.toLowerCase().trim().split(/\s+/)
   const visible = [...doors, ...published].filter(door => {
-    const text = (door.title + ' ' + door.area + ' ' + door.href).toLowerCase()
+    const estateTerms = role === 'client' && door.href === '/client/system-switch' ? ' my file folder estate mansion enterprise customer door' : ''
+    const text = (door.title + ' ' + door.area + ' ' + door.href + estateTerms).toLowerCase()
     return isVisible(door.href) && terms.every(term => text.includes(term))
   })
+  const estate = role === 'client' ? visible.find(door => door.href === '/client/system-switch') : undefined
+  const workshops = visible.filter(door => door !== estate)
+  const mansion = { hope: 'Hope', stability: 'Stability', 'dream-lovely': 'Dream Lovely', administrations: 'Administrations · A Time' }[department]
+
   function move(direction: number) {
     const row = street.current
     if (row) row.scrollBy({ left: direction * row.clientWidth * 0.85 })
@@ -39,12 +44,16 @@ export function DepartmentBuildings({ department }: { department: NativeDepartme
 
   return <section className={styles.campus} data-department={department} aria-label={label + ' buildings'}>
     <header className={styles.header}>
-      <div><Link href="/">Company Grounds</Link><h1>{label}</h1></div>
+      <div><Link href="/">Company Grounds</Link><h1>{mansion} mansion</h1></div>
       <input type="search" aria-label="Find a building" placeholder="Find a building" value={query}
         onChange={event => { setQuery(event.target.value); street.current?.scrollTo({ left: 0 }) }} />
     </header>
+    {estate && <Link href={estate.href} className={styles.estate} prefetch={false}>
+      <strong>My File Folder estate</strong>
+      <span>Enter your private grounds to build your mansion, operate your enterprise and open your Customer Door.</span>
+    </Link>}
     <nav className={styles.street} ref={street} aria-label={label + ' workshop entrances'}>
-      {visible.map(door => <Link key={door.href} href={door.href} prefetch={false} className={styles.building}>
+      {workshops.map(door => <Link key={door.href} href={door.href} prefetch={false} className={styles.building}>
         <span aria-hidden="true" className={styles.facade} />
         <span className={styles.sign}>{door.title}</span>
         {door.access && door.access !== 'available' && <small>{door.access === 'approval' ? 'Approval required' : door.access}</small>}
@@ -52,7 +61,7 @@ export function DepartmentBuildings({ department }: { department: NativeDepartme
     </nav>
     <footer className={styles.controls}>
       <span role="status">{visible.length ? visible.length + ' buildings' : 'No matching buildings'}</span>
-      {visible.length > 1 && <div>
+      {workshops.length > 1 && <div>
         <button type="button" aria-label="Previous buildings" onClick={() => move(-1)}><ChevronLeft /></button>
         <button type="button" aria-label="Next buildings" onClick={() => move(1)}><ChevronRight /></button>
       </div>}

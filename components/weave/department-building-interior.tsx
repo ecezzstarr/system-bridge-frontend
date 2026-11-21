@@ -11,7 +11,8 @@ import styles from './department-building-interior.module.css'
 
 const mansions = { bridger: 'Hope', agent: 'Stability', client: 'Dream Lovely', admin: 'Administrations · A Time' }
 const ownWorlds = new Set(['/client', '/client/login', '/client/register', '/client/pro-verification',
-  '/client/pro-activation', '/client/system-switch', '/system-switch/world', '/weave/lifestyles/legion'])
+  '/client/pro-activation', '/client/system-switch', '/system-switch/world', '/weave/lifestyles/legion',
+  '/weave/lifestyles/pro-regional-manager/workspace'])
 
 export function DepartmentBuildingInterior({ children }: { children: ReactNode }) {
   const path = usePathname() || '/'

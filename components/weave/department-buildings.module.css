@@ -16,3 +16,8 @@
 .controls {font-size:.85rem}
 .controls div {display:flex; gap:.5rem}
 .controls button {display:inline-grid; place-items:center; width:44px; height:44px; border:1px solid #ac9468; border-radius:50%; background:#fff9e9; color:#3e3020}
+
+.estate {display:grid; gap:.35rem; margin:0 clamp(1rem,3vw,2rem) 1rem; padding:1rem 1.2rem; border:1px solid #b59a69; border-inline-start:4px solid #967138; background:#fffdf7; color:#382a1a; text-decoration:none}
+.estate strong {font:600 1.35rem/1.25 Georgia,serif}
+.estate span {max-width:60ch; font-size:.95rem}
+.estate:hover strong,.estate:focus-visible strong {text-decoration:underline}
