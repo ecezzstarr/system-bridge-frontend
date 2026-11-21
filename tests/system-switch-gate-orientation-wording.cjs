@@ -82,10 +82,10 @@ assert.match(read('app/company-overview/page.tsx'), /data-home-system-switch-exp
 assert.match(read('app/page.tsx'), /return <CompanyGrounds\s*\/>/)
 const grounds = read('app/company-grounds/page.tsx')
 const groundsStyles = read('app/company-grounds/grounds.module.css')
-assert.match(grounds, /src="\\/images\\/weave-open-world-home\\.jpg"/, 'The original Company Grounds panorama stays unchanged')
+assert.match(grounds, /src="\/images\/weave-open-world-home\.jpg"/, 'The original Company Grounds panorama stays unchanged')
 assert.doesNotMatch(grounds, /Scroll sideways to explore on a phone|Scroll to explore company entrances/, 'Do not revive outdated scroll instructions')
-assert.match(groundsStyles, /aspect-ratio:1536 \\/ 752/, 'The full company opens as a compact phone-width image')
-assert.match(grounds, /className=\\{styles\\.mobileExplore\\}/, 'Phone users enter through the department directory')
+assert.match(groundsStyles, /aspect-ratio:1536 \/ 752/, 'The full company opens as a compact phone-width image')
+assert.match(grounds, /className=\{styles\.mobileExplore\}/, 'Phone users enter through the department directory')
 const doc = read('docs/weave-open-world-system-switch.md')
 assert.match(doc, /Where am I\? What is beyond the gate\? Which places am I allowed to enter\?/)
 
