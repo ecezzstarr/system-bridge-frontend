@@ -130,3 +130,9 @@ assert.ok(layout.includes("import './weave-expression.css'"),
   'Premium home finishing rules must load after the original homepage skin')
 
 console.log('The Company of Time homepage source checks passed')
+
+assert.equal(require('node:crypto').createHash('sha256').update(
+  fs.readFileSync(path.join(__dirname,'../public/images/weave-open-world-home.jpg'))
+).digest('hex'),'57b1367249d10e2e9709961cba85073d353943a3a0436c1a614be015cf2fddc1')
+assert.match(grounds,/<dialog ref=\{entrances\}[\s\S]*?<nav id="grounds-entrances"[\s\S]*?<\/nav>[\s\S]*?<\/dialog>/)
+assert.match(grounds,/href="\/reach-delivery"/)

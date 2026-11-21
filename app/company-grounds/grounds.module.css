@@ -1,6 +1,7 @@
 .grounds {position:relative; isolation:isolate; background:#fcfaf4; color:#302c23}
-.viewport {overflow-x:auto; overscroll-behavior-x:contain}
-.scene {position:relative; width:max(100%, 177.778svh); aspect-ratio:16/9}
+.viewport {height:100vh; height:100dvh; overflow:auto; overscroll-behavior:contain; scrollbar-width:none}
+.viewport::-webkit-scrollbar {display:none}
+.scene {position:relative; width:max(100%, 177.778dvh); aspect-ratio:16/9}
 .scene img {display:block; width:100%; height:100%; max-width:none}
 .door {position:absolute; background:transparent; border:0; border-radius:.5rem}
 .door:hover,.door:focus-visible {box-shadow:inset 0 0 0 3px #fff1c9; background:#fff1c917}
@@ -11,10 +12,14 @@
 .entrances .zoom {display:none}
 @media (orientation:portrait) {
   /* The observer travels by touch-scrolling across the image; no avatar or walking camera. */
-  .scene {width:max(100%, 177.778svh)}
+  .scene {width:max(100%, 177.778dvh)}
   .viewport[data-overview="true"] .scene {width:100%}
   .entrances .zoom {display:inline-flex}
 }
 
-.identity {display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:.6rem 1.25rem; padding:.8rem 1rem 1.35rem; border-top:1px solid #e5d6bb; color:#5b4a30; font-size:.8rem; text-align:center}
-.identity a {text-decoration:underline; text-underline-offset:3px; min-height:32px; display:inline-flex; align-items:center}
+.directory {position:fixed; inset:0; margin:auto; width:min(92vw,36rem); max-height:80dvh; overflow:auto; border:1px solid #ad915c; border-radius:1rem; background:#fffaf0; color:#32271a; padding:1rem; box-shadow:0 1rem 4rem #21190f40}
+.directory::backdrop {background:#21190f66}
+.directory header {display:flex; align-items:center; justify-content:space-between; gap:1rem}
+.directory h2 {font:600 1.45rem Georgia,serif}
+.directory header button {padding:.5rem; min-height:44px; text-decoration:underline}
+.directory .entrances {justify-content:flex-start; padding:1rem 0 0}

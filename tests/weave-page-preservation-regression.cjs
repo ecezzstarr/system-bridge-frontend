@@ -256,7 +256,7 @@ const groundsCss=fs.readFileSync(path.join(root,'app/company-grounds/grounds.mod
 for(const name of ['Hope','Stability','Administrations · A Time','Dream Lovely'])
   assert.ok(groundsSource.includes("name: '"+name+"'"),name+' still has its building')
 assert.doesNotMatch(groundsSource,/name: '(Forensics|Mandate|Attorney)'/,'Oversight positions are not standalone public departments')
-assert.match(groundsCss,/\.scene \{width:max\(100%, 177\.778svh\)\}/,'Phone world defaults to horizontal scrolling')
+assert.match(groundsCss,/\.scene \{width:max\(100%, 177\.778dvh\)\}/,'Phone world defaults to horizontal scrolling')
 assert.match(groundsCss,/data-overview="true"/,'Visitor can still inspect the complete aerial image')
 assert.match(groundsSource,/data-overview=\{overview\}/)
 const layoutBoundary=fs.readFileSync(path.join(root,'app/(app)/layout.tsx'),'utf8')
