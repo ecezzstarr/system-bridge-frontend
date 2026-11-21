@@ -499,7 +499,8 @@ assert.ok(clientLayoutSource.includes('bg-transparent'),'Client shell does not c
 assert.ok(!worldEnvironmentSource.includes('<WeaveWorldBackdrop'),'Event no longer replaces the global world backdrop')
 assert.ok(flameAdSource.includes('DASHBOARD_PATHS'),'Event banner stays off role Home dashboards')
 assert.ok(!clientDashboardUnifiedSource.includes('ClientFlameEventDashboard'),'Client dashboard is no longer replaced by a second event application')
-assert.ok(clientDashboardUnifiedSource.includes('<WeaveDashboardWorld'),'Client Home keeps one compact persistent world')
+assert.ok(clientDashboardUnifiedSource.includes('<DepartmentBuildings department="dream-lovely"')&&!clientDashboardUnifiedSource.includes('<WeaveDashboardWorld'),
+  'Client Home has one building entrance; the private File Folder world is inside its existing source route')
 assert.ok(!appEventUnifiedSource.includes('min-h-screen bg-black'),'Staff event ground stays inside the WEAVE shell')
 assert.ok(!clientEventUnifiedSource.includes('min-h-screen bg-black'),'Client event ground stays inside the Client shell')
 assert.ok(roleHas('admin','/admin/flame-event'),'Administrations exposes a separate Flame Event control environment')
@@ -1762,3 +1763,6 @@ assert.ok(bridgerWorkingManualSource.includes('2 × working hours'),'Bridger dai
 assert.ok(bridgerWorkingManualSource.includes('A sent message is an outreach attempt'),'Bridger manual distinguishes outreach from response and conversion')
 assert.ok(roleHas('bridger','/bridger/working-manual'),'Bridger world exposes the Working Manual')
 assert.ok(prospectMarketSource.includes('/bridger/working-manual')||bridgerWorkingManualSource.includes('/weave/market/prospects'),'Prospect Marketplace and Working Manual are connected')
+
+// A departmental Work Desk now hosts the buildings; prevent a second navigation tree.
+require('./company-workdesk-building-unification.cjs')

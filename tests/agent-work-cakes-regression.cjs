@@ -24,8 +24,13 @@ for(const href of ['/agility','/electrolyte','/agent/commissions','/agent/cakes'
 assert.ok(work.includes('Daisy Pastries · official WEAVE cakes'),'Agent Work identifies Cakes as Daisy Pastries')
 
 const dashboard=read('app/(app)/agent/dashboard/page.tsx')
-assert.ok(dashboard.includes('href="/agent/work"'),'Agent dashboard opens Agent Work')
-assert.ok(dashboard.includes('Agility · Electrolyte · Commission · Daisy Pastries'),'Agent dashboard names the four work movements')
+const buildings=read('lib/department-buildings.ts')
+assert.ok(dashboard.includes('<AgentWorkplace')&&
+  buildings.includes("href: '/agent/work'"),
+  'Agent dashboard opens Agent Work through its one Stability building directory')
+assert.ok(work.includes('Agility')&&work.includes('Electrolyte')&&
+  work.includes('Commission')&&work.includes('Daisy Pastries'),
+  'The actual Agent Work interior preserves the four product and income movements')
 
 const catalog=read('lib/cake-catalog.ts')
 for(const id of ['birthday','wedding','anniversary','traditional','baby','graduation','corporate','custom'])assert.ok(catalog.includes(`id:'${id}'`),`cake catalog includes ${id}`)

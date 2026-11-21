@@ -1,9 +1,11 @@
 import { WEAVE_LIFESTYLE_CATALOG } from '@/lib/weave-lifestyle-catalog'
+import { AGENT_SPACES } from '@/lib/agent-workplace-catalog'
+import { ADMIN_SPACES } from '@/lib/admin-workplace-catalog'
 import { getWeaveSearchDirectory } from '@/lib/weave-action-search'
 import { weavePageCopyForPath } from '@/lib/weave-page-directory'
 import { WEAVE_NATIVE_DEPARTMENTS, type NativeDepartment } from '@/lib/weave-native-blueprint'
 
-export type DepartmentBuilding = { title: string; href: string; area: string; access?: string }
+export type DepartmentBuilding = { title: string; href: string; area: string; access?: string; officialImage?: string }
 export const departmentNames = {
   bridger: 'Hope Department', agent: 'Stability Department',
   client: 'Dream Lovely Department', admin: 'Administrations Department · A Time',
@@ -16,12 +18,14 @@ export const firstWorkshops: Record<NativeDepartment, FirstWorkshop[]> = {
     { href: '/bridger/my-prospects', name: 'My Prospects', action: 'Contact your prospect, record their reply and follow up.' },
     { href: '/bridger/bridge-ai', name: 'Bridge AI', action: 'When they agree, guide them toward a Client File Folder.' },
     { href: '/distribution-studio', name: 'Social Studio', action: 'Create posts to reach new prospects or promote a Client’s business.' },
+    { href: '/referrals', name: 'Referral Movement', action: 'Invite staff through your own referral entrance and track verified ₦500 rewards.' },
   ],
   stability: [
     { href: '/agent/outlet-training', name: 'Outlet Training', action: 'Learn how to approach a shop and explain the products.' },
     { href: '/agent/work', name: 'Agent Work', action: 'Choose a product and check how to order stock.' },
     { href: '/agent/distribution', name: 'Distribution', action: 'Supply an outlet and record the sale.' },
     { href: '/agent/commissions', name: 'Commissions', action: 'Check your recorded earnings.' },
+    { href: '/referrals', name: 'Referral Movement', action: 'Invite staff through your own referral entrance and track verified ₦500 rewards.' },
   ],
   'dream-lovely': [
     { href: '/client/system-switch', name: 'My File Folder estate', action: 'Enter your private grounds to build your mansion, operate your enterprise and open your Customer Door.' },
@@ -38,11 +42,20 @@ const entryOnly = /\/(dashboard|login|register|access-recovery|pro-verification)
 export function departmentBuildings(department: NativeDepartment, pages: readonly string[]): DepartmentBuilding[] {
   const role = WEAVE_NATIVE_DEPARTMENTS[department].role
   const pageSet = new Set(pages)
+  // The former Work Desks are catalogs feeding the same building entrances.
+  // Keep original product imagery attached to its real workstation; never
+  // introduce a second navigation tree or new transaction storage.
+  const officialImageByHref = new Map(
+    [...AGENT_SPACES.flatMap(space=>space.stations),
+     ...ADMIN_SPACES.flatMap(space=>space.stations)]
+      .filter(station=>Boolean(station.officialImage))
+      .map(station=>[station.href,station.officialImage!] as const),
+  )
   const doors = new Map<string, DepartmentBuilding>()
   for (const item of getWeaveSearchDirectory(role)) {
     const path = item.href.split(/[?#]/)[0]
     if (!pageSet.has(path) || entryOnly.test(path) || path === '/' + role) continue
-    doors.set(item.href, { title: item.title, href: item.href, area: item.department, access: item.access })
+    doors.set(item.href, { title: item.title, href: item.href, area: item.department, access: item.access, officialImage:officialImageByHref.get(path) })
   }
   for (const lifestyle of Object.values(WEAVE_LIFESTYLE_CATALOG)) {
     const roles: readonly string[] = lifestyle.roles

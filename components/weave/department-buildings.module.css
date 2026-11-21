@@ -29,3 +29,14 @@
 .studio h2 {font:600 1.1rem/1.4 Georgia,serif; margin-bottom:.45rem}
 .studio .building {display:grid; grid-template-columns:5.5rem minmax(0,1fr); align-items:center}
 .studio .facade {aspect-ratio:1}
+
+/* The catalog is now a quiet list of real workstations inside the buildings;
+   a second campus of image cards would recreate the old duplicate Work Desk. */
+.header p {margin:.45rem 0 0; max-width:56ch; font-size:.9rem; line-height:1.5; color:#665742}
+.directoryHelp {margin:.2rem 0 1rem; font-size:.85rem; line-height:1.5; color:#675841}
+.roomGroup {padding:.6rem 0; border-top:1px solid #e4d5b8}
+.roomGroup h3 {font:600 1rem/1.4 Georgia,serif; margin:.2rem 0 .5rem; color:#493c25}
+.rooms {display:grid!important; grid-template-columns:repeat(auto-fit,minmax(min(100%,15rem),1fr))!important; list-style:none; gap:.45rem!important; margin:0!important; padding:0!important}
+.room {display:flex; min-height:44px; align-items:center; justify-content:space-between; gap:.65rem; padding:.65rem .8rem; border:1px solid #ddcfb6; border-radius:.55rem; background:#fffdf7; color:#3e3323; text-decoration:none; overflow-wrap:anywhere}
+.room:hover,.room:focus-visible {border-color:#9a7845; background:#f6ecd7; outline-offset:2px}
+.room small {font-size:.7rem; color:#8b6a38}

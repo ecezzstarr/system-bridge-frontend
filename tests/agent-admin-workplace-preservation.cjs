@@ -53,14 +53,20 @@ for(const image of ['agility.jpeg','electrolyte.jpeg','ember.jpg','daisy-pastrie
  assert.ok(agentCatalog.includes(src),'Agent displays the official '+image)
  assert.ok(adminCatalog.includes(src),'Administration displays the official '+image)
 }
-assert.ok(agent.includes('station.officialImage')&&admin.includes('station.officialImage'),
-  'Workplaces show actual existing product assets')
+const buildingHost=read('components/weave/department-buildings.tsx')
+const buildingCatalog=read('lib/department-buildings.ts')
+assert.ok(buildingHost.includes('door.officialImage||workshopArt')&&
+  buildingCatalog.includes('AGENT_SPACES')&&buildingCatalog.includes('ADMIN_SPACES'),
+  'Building interiors use the original official product assets from the Work Desk catalogs')
+assert.ok(agent.includes('<DepartmentBuildings department="stability"')&&
+  admin.includes('<DepartmentBuildings department="administrations"'),
+  'Legacy Work Desks are now hosts for their department buildings, not duplicate navigations')
 assert.ok(!agent.includes('unsplash.com')&&!admin.includes('unsplash.com'),
   'No generic remote stock imagery is used')
 
 for(const [home,workplace] of [[agentHome,'AgentWorkplace'],[adminHome,'AdminWorkplace']]){
  assert.ok(home.includes('<'+workplace),'Dashboard opens its workplace')
- assert.doesNotMatch(home,/WeaveDashboardWorld|onOpenDistricts/)
+ assert.doesNotMatch(home,/WeaveDashboardWorld|onOpenDistricts|<DepartmentBuildings/,'Old and new navigation must not be mounted together')
 }
 assert.ok(!agentHome.includes('<Loop1AgentLoginAd')&&!agentHome.includes('<AgilityAgentLoginAd')&&agentHome.includes('href="/agility"'),
  'Agent keeps direct food access and no longer receives automatic login advertisements')

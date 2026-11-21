@@ -1,50 +1,31 @@
 'use client'
 
-import { DepartmentBuildings } from '@/components/weave/department-buildings'
-
 import Link from 'next/link'
-import { useEffect } from 'react'
-import { BriefcaseBusiness, Share2, Truck } from 'lucide-react'
-import { useAuth } from '@/lib/auth-provider'
-import { AgentWorkplace } from '@/components/agent/agent-workplace'
-import { ManagerLifestyleEntry } from '@/components/manager-lifestyle-entry'
-import { RegionalSystemSwitchGate } from '@/components/weave/regional-system-switch-gate'
-import { useRouter } from 'next/navigation'
+import {useEffect} from 'react'
+import {useRouter} from 'next/navigation'
+import {useAuth} from '@/lib/auth-provider'
+import {AgentWorkplace} from '@/components/agent/agent-workplace'
+import {ManagerLifestyleEntry} from '@/components/manager-lifestyle-entry'
+import {RegionalSystemSwitchGate} from '@/components/weave/regional-system-switch-gate'
 
-export default function AgentWorld() {
-  const { user } = useAuth()
-  const router = useRouter()
-
-  useEffect(()=>{
-    if(!user)return
-    if(user.role!=='agent'){router.replace('/dashboard');return}
-  },[user,router])
-
-  if(!user||user.role!=='agent')return null
-
-  return <>
-    <DepartmentBuildings department="stability" />
-    <AgentWorkplace userName={user.name}/>
-    <div className="mx-auto w-full max-w-4xl px-4"><RegionalSystemSwitchGate compact /></div>
-    <details className="mx-auto w-full max-w-4xl px-4 py-2 text-white">
-      <summary className="min-h-11 cursor-pointer py-3 font-semibold">Company tools and referrals</summary>
-
-    <ManagerLifestyleEntry inline />
-    <div className="sr-only focus-within:not-sr-only">
-      <Link href="/agility">Agility home</Link>
-      <Link href="/electrolyte">Electrolyte home</Link>
-    </div>
-    <nav aria-label="Department shortcuts" className="mx-auto flex max-w-5xl flex-wrap gap-2 px-4 py-4">
-    <Link href="/agent/work" data-core-function="agent-work" className="inline-flex min-h-11 items-center gap-2 rounded-full border border-pink-300/25 bg-[#160b11]/95 px-4 py-3 text-[10px] font-black uppercase tracking-[.12em] text-pink-100 shadow-2xl backdrop-blur">
-      <BriefcaseBusiness className="h-4 w-4"/>Agent Work · Agility · Electrolyte · Commission · Daisy Pastries
-    </Link>
-    <Link href="/agent/distribution" data-core-function="agent-distribution" className="inline-flex min-h-11 items-center gap-2 rounded-full border border-cyan-300/25 bg-[#07141a]/95 px-4 py-3 text-[10px] font-black uppercase tracking-[.12em] text-cyan-100 shadow-2xl backdrop-blur">
-      <Truck className="h-4 w-4"/>Distribution Route · Supply Outlets
-    </Link>
-    <Link href="/referrals" data-core-function="referral-movement" className="inline-flex min-h-11 items-center gap-2 rounded-full border border-emerald-300/25 bg-[#071711]/95 px-4 py-3 text-[10px] font-black uppercase tracking-[.12em] text-emerald-100 shadow-2xl backdrop-blur">
-      <Share2 className="h-4 w-4"/>Referral Movement · ₦500
-    </Link>
-    </nav>
-    </details>
-  </>
+export default function AgentWorld(){
+ const {user}=useAuth()
+ const router=useRouter()
+ useEffect(()=>{
+  if(!user)return
+  if(user.role!=='agent'){router.replace('/dashboard');return}
+ },[user,router])
+ if(!user||user.role!=='agent')return null
+ return <>
+  <AgentWorkplace userName={user.name}/>
+  <details className="mx-auto my-4 w-full max-w-5xl rounded-xl border border-amber-100/25 bg-[#132b35] p-3 text-white">
+   <summary className="min-h-11 cursor-pointer py-2 text-sm font-semibold">My appointments and System Switch</summary>
+   <RegionalSystemSwitchGate compact />
+   <ManagerLifestyleEntry inline/>
+  </details>
+  <nav className="sr-only focus-within:not-sr-only" aria-label="Direct food access">
+   <Link href="/agility">Agility home</Link>
+   <Link href="/electrolyte">Electrolyte home</Link>
+  </nav>
+ </>
 }
