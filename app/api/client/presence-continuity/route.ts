@@ -4,6 +4,8 @@ import {getFileFolderDb,ensureClientFileFolderSchema} from '@/lib/client-file-fo
 import {resolveClientToken} from '@/lib/client-vault'
 import {trustedMutationOrigin} from '@/lib/request-origin'
 import {ensureLegionEmploymentSchema} from '@/lib/legion-employment'
+import {ensureFileFolderWorldSchema} from '@/lib/client-file-folder-world'
+import {ensureCustomerDoorSettlementSchema} from '@/lib/customer-door-settlement'
 import {ensureFileFolderPresenceSchema,getOwnerPresenceSnapshot,recognizeOwnerPresence} from '@/lib/file-folder-presence-continuity'
 
 export const dynamic='force-dynamic'
@@ -31,6 +33,9 @@ export async function GET(request:NextRequest){
   try{
     const ctx=await ownerContext(request)
     if(ctx.error)return ctx.error
+    await ensureFileFolderWorldSchema(getFileFolderDb())
+    await ensureLegionEmploymentSchema(getFileFolderDb())
+    await ensureCustomerDoorSettlementSchema()
     await ensureFileFolderPresenceSchema()
     const snapshot=await getOwnerPresenceSnapshot(ctx.clientId!,ctx.fileNumber!)
     return NextResponse.json({success:true,snapshot},{headers:privateHeaders})
