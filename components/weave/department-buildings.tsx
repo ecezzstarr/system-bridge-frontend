@@ -33,7 +33,7 @@ export function DepartmentBuildings({department}:{department:NativeDepartment}){
 
  const published:DepartmentBuilding[]=modules.map(module=>({
   title:module.blueprint.title,
-  href:'/weave-modules/'+department+'/'+encodeURIComponent(module.slug),
+  href:`/weave-modules/${department}/${encodeURIComponent(module.slug)}`,
   area:'Published by Administrations',
   access:module.blueprint.companyPlot?'Company plot '+module.blueprint.companyPlot:undefined,
  }))
@@ -60,7 +60,7 @@ export function DepartmentBuildings({department}:{department:NativeDepartment}){
  const primary=first.filter(door=>door!==studio)
  const livePlots=modules.flatMap(module=>{
   const plot=module.blueprint.companyPlot
-  const href='/weave-modules/'+department+'/'+encodeURIComponent(module.slug)
+  const href=`/weave-modules/${department}/${encodeURIComponent(module.slug)}`
   if(!Number.isInteger(plot)||!plot||plot<1||plot>24||!visible.some(door=>door.href===href))return []
   const scene=module.blueprint.blocks.find(block=>block.type==='scene')
   return [{department,slug:module.slug,title:module.blueprint.title,plot,
@@ -68,7 +68,7 @@ export function DepartmentBuildings({department}:{department:NativeDepartment}){
  })
  const newDoors=published.filter(door=>visible.some(item=>item.href===door.href)&&
   !first.some(item=>item.href===door.href)&&
-  !livePlots.some(plot=>door.href==='/weave-modules/'+department+'/'+encodeURIComponent(plot.slug)))
+  !livePlots.some(plot=>door.href===`/weave-modules/${department}/${encodeURIComponent(plot.slug)}`))
  const other=visible.filter(door=>!first.some(item=>item.href===door.href)&&
   !newDoors.some(item=>item.href===door.href))
   .sort((a,b)=>a.area.localeCompare(b.area)||a.title.localeCompare(b.title)||a.href.localeCompare(b.href))
