@@ -1,5 +1,7 @@
 'use client'
 import Link from 'next/link'
+import {usePathname} from 'next/navigation'
+import {CompanyDomainMap} from '@/components/weave/company-domain-map'
 import {useCallback,useEffect,useState} from 'react'
 import {ArrowLeft,ArrowUp,ArrowDown,Eye,Plus,Save,Send,Undo2,Trash2} from 'lucide-react'
 import {useAuth} from '@/lib/auth-provider'
@@ -101,7 +103,16 @@ function NativeBlockEditor({block,onChange}:{block:NativeBlock;onChange:(next:Na
 }
 export default function NativeFoundryPage(){
  const {token,user,isInitialized}=useAuth()
- const [blueprint,setBlueprint]=useState<WeaveNativeBlueprint>(defaultWeaveNativeBlueprint())
+ const domainMode=usePathname()==='/admin/company-domain-workshop'
+ function newDesign(dep:NativeDepartment='administrations',kind:NativeKind='system'){
+  const base=defaultWeaveNativeBlueprint(dep,kind)
+  if(!domainMode)return base
+  return {...base,title:'Production Workshop',slug:'production-workshop',companyPlot:1,
+   description:'Coordinate production work in this department.',
+   blocks:[{type:'scene' as const,heading:'Workshop machinery',scene:'mechanized' as const},
+    ...base.blocks.filter(block=>['steps','action','intake'].includes(block.type))]}
+ }
+ const [blueprint,setBlueprint]=useState<WeaveNativeBlueprint>(()=>domainMode?newDesign():defaultWeaveNativeBlueprint())
  const [releases,setReleases]=useState<Release[]>([])
  const [submissions,setSubmissions]=useState<{id:string;form_id:string;answers:Record<string,string>;author_name:string;created_at:string}[]>([])
  const [submissionsOpen,setSubmissionsOpen]=useState(false)
@@ -152,6 +163,7 @@ export default function NativeFoundryPage(){
  async function saveDraft(){
   setBusy(true);setError('');setNotice('')
   try{
+   if(domainMode&&!blueprint.companyPlot)throw Error('Select a company plot before saving the building.')
    const validated=validateNativeBlueprint(blueprint)
    const data=await send('draft',{blueprint:validated})
    setBlueprint(validated)
@@ -203,9 +215,9 @@ export default function NativeFoundryPage(){
    <Link href="/admin/code-workshop" className="inline-flex items-center gap-2 text-sm text-cyan-200"><ArrowLeft size={16}/>Company Code Workshop</Link>
    <header className="rounded-[2rem] border border-[#ead3a4]/30 bg-[linear-gradient(115deg,#102e47,#0a2031_65%,#262f3a)] p-6 sm:p-10">
     <p className="text-xs font-black uppercase tracking-[.2em] text-[#f4deb4]">Weave · Administrations · A Time</p>
-    <h1 className="mt-4 text-3xl font-bold sm:text-5xl">Native Formation Workshop</h1>
-    <p className="mt-4 max-w-4xl text-sm leading-7 text-slate-200">Create company pages, interactive features and personal operating systems without writing source or deploying a new server image. Choose an installed capability, build its visual and working movement, review, publish and restore versions inside WEAVE.</p>
-    <p className="mt-3 max-w-4xl text-xs leading-6 text-amber-100">This publishes bounded, preinstalled capabilities—not new executable backend code, payments or unrestricted integrations. New software primitives still require reviewed source releases.</p>
+    <h1 className="mt-4 text-3xl font-bold sm:text-5xl">{domainMode?'Company Domain Workshop':'Native Formation Workshop'}</h1>
+    {domainMode?<p className="mt-4 text-sm leading-7">Choose a department and plot, design the work inside, then publish. The building name and exterior become visible in the Open World. Its entrance follows department access.</p>:<><p className="mt-4 max-w-4xl text-sm leading-7 text-slate-200">Create company pages, interactive features and personal operating systems without writing source or deploying a new server image. Choose an installed capability, build its visual and working movement, review, publish and restore versions inside WEAVE.</p>
+    <p className="mt-3 max-w-4xl text-xs leading-6 text-amber-100">This publishes bounded, preinstalled capabilities—not new executable backend code, payments or unrestricted integrations. New software primitives still require reviewed source releases.</p></>}
    </header>
    {error&&<p role="alert" className="rounded-xl border border-rose-300/30 bg-rose-400/10 p-4 text-sm text-rose-100">{error}</p>}
    {notice&&<p role="status" className="rounded-xl border border-cyan-300/30 bg-cyan-400/10 p-4 text-sm text-cyan-100">{notice}</p>}
@@ -218,13 +230,18 @@ export default function NativeFoundryPage(){
      {tab==='design'?<div className="mt-5 space-y-4">
       <div className="grid gap-4 sm:grid-cols-2">
        <label className={label}>Department<select value={department}
-        onChange={e=>setBlueprint(defaultWeaveNativeBlueprint(e.target.value as NativeDepartment,blueprint.kind))}
+        onChange={e=>setBlueprint(newDesign(e.target.value as NativeDepartment,blueprint.kind))}
         className={field}>{Object.entries(WEAVE_NATIVE_DEPARTMENTS).map(([value,x])=><option key={value} value={value}>{x.label}</option>)}</select></label>
        <label className={label}>Creation type<select value={blueprint.kind} className={field}
-        onChange={e=>setBlueprint(defaultWeaveNativeBlueprint(department,e.target.value as NativeKind))}>
+        onChange={e=>setBlueprint(newDesign(department,e.target.value as NativeKind))}>
         <option value="page">Page · published content</option><option value="feature">Feature · content with live navigation</option>
         <option value="system">System · recordable working steps</option></select></label>
       </div>
+      {(domainMode||blueprint.companyPlot!==undefined)&&<label className={label}>Company plot
+       <select value={blueprint.companyPlot??''} className={field} onChange={e=>setField('companyPlot',Number(e.target.value))}>
+        <option value="" disabled>Select a plot</option>
+        {Array.from({length:24},(_,index)=><option key={index} value={index+1}>Plot {index+1}</option>)}
+       </select></label>}
       <label className={label}>Visual quality<select value={blueprint.quality} className={field}
        onChange={e=>setField('quality',e.target.value as WeaveNativeBlueprint['quality'])}>
        <option value="crystal">Crystal · lightweight glass</option>
@@ -262,6 +279,11 @@ export default function NativeFoundryPage(){
     </section>
     <div className="min-w-0 space-y-5">
      <section className="rounded-2xl border border-white/15 p-4 sm:p-6">
+      {blueprint.companyPlot&&<div className="mb-6">
+       <h2 className="mb-3 text-xl font-bold">Exterior preview · Plot {blueprint.companyPlot}</h2>
+       <CompanyDomainMap buildings={[{department,slug:blueprint.slug,title:blueprint.title,plot:blueprint.companyPlot,scene:blueprint.blocks.find(b=>b.type==='scene')?.scene??'mechanized'}]} preview/>
+       <Link href="/system-switch/world/company-domain" className="mt-3 inline-block text-sm text-cyan-200 underline">View occupied company plots</Link>
+      </div>}
       <h2 className="text-xl font-bold">Live module preview</h2>
       <p className="mt-2 text-xs text-slate-400">Physical 3D material atlas and responsive layouts; records and payments are not simulated.</p>
       <div className="mt-4"><NativeModuleRenderer blueprint={blueprint} preview/></div>

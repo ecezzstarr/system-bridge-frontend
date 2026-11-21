@@ -155,3 +155,18 @@ for(const file of ['lib/weave-native-registry.ts','lib/weave-native-blueprint.ts
   assert.ok(!contents.includes(forbidden),file+' must not be able to execute host operations')
 }
 console.log('WEAVE native no-code publishing, role access, physical 3D worlds, atomic release and system movement passed')
+
+
+for(const plot of [1,24]){
+ const building=protocol.validateNativeBlueprint({...valid,companyPlot:plot})
+ assert.equal(building.companyPlot,plot)
+ assert.equal(protocol.validateNativeBlueprint(building).companyPlot,plot)
+}
+assert.equal(Object.hasOwn(protocol.validateNativeBlueprint(valid),'companyPlot'),false)
+for(const plot of [null,0,25,1.5,'1']){
+ assert.throws(()=>protocol.validateNativeBlueprint({...valid,companyPlot:plot}),/company plot/)
+}
+assert.throws(()=>protocol.validateNativeBlueprint({
+ ...valid,companyPlot:1,blocks:valid.blocks.filter(block=>block.type!=='scene'),
+}),/3D scene/)
+console.log('Company plot validation, scene requirement and legacy blueprint compatibility passed')

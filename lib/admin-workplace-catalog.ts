@@ -332,6 +332,11 @@ export const ADMIN_SPACES:readonly AdminSpace[]=[
     "description": "Inspect measured candidate-server readiness while Oracle remains the verified live host. No automatic DNS or data migration."
   },
   {
+    "title": "Company Domain Workshop",
+    "href": "/admin/company-domain-workshop",
+    "description": "Build, preview and publish departmental buildings on the Weave Open World."
+  },
+  {
     "title": "Native Formation Workshop · No-Code Publisher",
     "href": "/admin/native-foundry",
     "description": "Form department pages, glass-tech worlds, features and personal systems in WEAVE. Publish and roll back runtime versions without rebuilding the server."
