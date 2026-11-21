@@ -426,7 +426,7 @@ assert.ok(agentBridgersApiSource.includes('getAuthUser'),'Agent Bridger relation
 assert.ok(!fs.existsSync(path.join(root,'middleware.ts')),'Next.js 16 must have only the domain proxy entry point')
 const {proxy:domainProxy,config:domainProxyConfig}=require('../proxy.ts')
 const {NextRequest:DomainRequest}=require('next/server')
-assert.deepEqual(domainProxyConfig.matcher,['/'])
+assert.deepEqual(domainProxyConfig.matcher,['/','/api/:path*'])
 for(const [host,pathname,target] of [
  ['weavingsystem.online','/',null],
  ['ssbnow.online','/','/login?portal=admin'],
