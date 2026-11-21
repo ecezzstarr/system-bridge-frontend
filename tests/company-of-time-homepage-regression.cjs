@@ -166,5 +166,7 @@ assert.match(grounds,/if \(door\.name === 'File Folder'\)/,
   'The File Folder grounds entrance must remain a public preview, never a private department denial')
 assert.match(phoneCss,/\.groundEntrances \{/,
   'Grounds entrances need integrated picture-overlay styling')
+assert.match(phoneCss,/\.viewport \{position:relative;/,
+  'Public Join Weave and File Folder links must be anchored to the picture viewport on phones and desktop')
 assert.doesNotMatch(phoneCss,/\.desktopFooter|\.mobileJoin|\.mobileLegal/,
   'Deleted homepage footer controls must not retain duplicate CSS')
