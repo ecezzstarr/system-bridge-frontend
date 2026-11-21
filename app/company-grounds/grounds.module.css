@@ -1,6 +1,6 @@
 .grounds {position:relative; isolation:isolate; background:#fcfaf4; color:#302c23}
 /* Crop the bottom 13% of the original poster, where the obsolete 'Scroll to explore' words and arrow are baked in. */
-.viewport {height:87vh; height:87dvh; overflow:hidden; overscroll-behavior:contain; scrollbar-width:none}
+.viewport {position:relative; height:87vh; height:87dvh; overflow:hidden; overscroll-behavior:contain; scrollbar-width:none}
 .viewport::-webkit-scrollbar {display:none}
 .scene {position:relative; width:max(100%, 177.778dvh); aspect-ratio:16/9}
 .scene img {display:block; width:100%; height:100%; max-width:none}
