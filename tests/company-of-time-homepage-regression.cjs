@@ -156,6 +156,15 @@ assert.match(phoneCss,/\.mobileEntrances > a,\.mobileEntrances > button/,'Phones
 assert.match(phoneCss,/aspect-ratio:1536 \/ 752/,'The visible mobile image must crop out the baked-in scroll caption and arrow')
 assert.match(phoneCss,/height:87dvh/,'The desktop image must crop out the same caption and arrow')
 assert.doesNotMatch(grounds,/Scroll to explore company entrances|Scroll through grounds/,'Homepage must not provide obsolete scroll instructions')
-assert.match(grounds,/className=\{styles\.desktopFooter\}/,'The desktop landing must end with company details')
-assert.match(grounds,/className=\{styles\.mobileJoin\}/,'The phone homepage must offer Join Weave')
-assert.match(grounds,/href="\/company">Company information<\/Link> · RC \{WEAVE_COMPANY\.registrationNumber\}/,'Company information and genuine RC must be available at the bottom')
+assert.doesNotMatch(grounds,/className=\{styles\.desktopFooter\}|className=\{styles\.mobileJoin\}|className=\{styles\.mobileLegal\}/,
+  'No second Join Weave or company information footer may appear below the Company Grounds')
+assert.doesNotMatch(grounds,/WEAVE_COMPANY\.registrationNumber/,
+  'The homepage must not repeat the company RC number')
+assert.match(grounds,/<nav className=\{styles\.groundEntrances\}[^>]*>[\s\S]*?<Link href="\/register">Join Weave<\/Link>[\s\S]*?<Link href="\/file-folder-preview">File Folder previews<\/Link>/,
+  'Join Weave and File Folder previews must both live inside the panorama')
+assert.match(grounds,/if \(door\.name === 'File Folder'\)/,
+  'The File Folder grounds entrance must remain a public preview, never a private department denial')
+assert.match(phoneCss,/\.groundEntrances \{/,
+  'Grounds entrances need integrated picture-overlay styling')
+assert.doesNotMatch(phoneCss,/\.desktopFooter|\.mobileJoin|\.mobileLegal/,
+  'Deleted homepage footer controls must not retain duplicate CSS')
