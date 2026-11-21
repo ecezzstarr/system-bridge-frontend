@@ -8,17 +8,17 @@
  * This stylesheet loads after the legacy dark-blue rules.
  */
 html[data-weave-theme="dark-blue"][data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control],[data-kingdom-active="true"])) {
-  --background: #f7f9fc;
-  --foreground: #21394c;
+  --background: #fbf8f0;
+  --foreground: #382e23;
   --card: #ffffff;
-  --card-foreground: #21394c;
+  --card-foreground: #382e23;
   --popover: #fffdf8;
-  --popover-foreground: #21394c;
+  --popover-foreground: #382e23;
   --primary: #845b24;
   --primary-foreground: #ffffff;
-  --secondary: #e6f1f8;
+  --secondary: #f2ead9;
   --secondary-foreground: #24455f;
-  --muted: #edf2f7;
+  --muted: #f5f0e6;
   --muted-foreground: #526a7b;
   --accent: #edd9aa;
   --accent-foreground: #47351d;
@@ -26,7 +26,7 @@ html[data-weave-theme="dark-blue"][data-weave-shell-theme="plus-white-gold"]:not
   --input: #ffffff;
   --ring: #ad7e36;
   --sidebar: #faf9f5;
-  --sidebar-foreground: #21394c;
+  --sidebar-foreground: #382e23;
   --sidebar-primary: #a9782d;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #f4ead3;
@@ -51,7 +51,7 @@ html[data-weave-theme="dark-blue"][data-weave-shell-theme="plus-white-gold"]:not
   background:
     radial-gradient(ellipse 68% 22% at 52% 4%, rgba(179,219,246,.43), transparent 82%),
     radial-gradient(ellipse 55% 35% at 98% 75%, rgba(231,192,115,.16), transparent 82%),
-    linear-gradient(180deg,#f3f8fe,#ffffff 43%,#fcfaf4 100%);
+    linear-gradient(180deg,#f8f2e8,#ffffff 43%,#fcfaf4 100%);
   text-shadow: none;
 }
 
@@ -66,7 +66,7 @@ html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-locati
   background:
     radial-gradient(circle at var(--weave-flame-x) var(--weave-flame-y),
       rgba(248,218,150,.18), transparent 45%),
-    linear-gradient(155deg,#f0f7fd 0%,#ffffff 53%,#faf7ee 100%) !important;
+    linear-gradient(155deg,#f6efe3 0%,#ffffff 53%,#faf7ee 100%) !important;
 }
 html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control],[data-kingdom-active="true"])) .weave-live-flame-canvas {
   filter: grayscale(.3) sepia(.36) hue-rotate(344deg) saturate(.65);
@@ -154,7 +154,7 @@ html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-locati
 
 /* Operating inputs, keyboard focus and hyperlinks remain functional. */
 html[data-weave-shell-theme="plus-white-gold"]:not(:has([data-flame-event-location],[data-public-flame-preview-world],[data-flame-event-control],[data-kingdom-active="true"])) :is(input,textarea,select) {
-  color: #21394c;
+  color: #382e23;
   background-color: rgba(255,255,255,.92);
   border-color: rgba(174,136,77,.32);
 }

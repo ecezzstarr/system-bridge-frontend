@@ -1,19 +1,16 @@
-.grounds {min-height:100svh; background:#fcfaf4; color:#302c23}
-.header,.entrances {max-width:1600px; margin:auto; padding:1rem clamp(1rem,4vw,4rem); display:flex; align-items:center; justify-content:space-between; gap:1rem}
-.header h1 {font:500 clamp(1.45rem,3.5vw,3rem) Georgia,serif; margin:0}
-.river,.beacon,.entrances a {display:inline-flex; align-items:center; justify-content:center; gap:.4rem; min-height:44px; padding:.4rem .85rem; border:1px solid #a18147; border-radius:2rem; text-decoration:none}
-.river,.beacon {background:#38251a; color:#ffe4b1}
-.viewport {overflow-x:auto; max-width:1600px; margin:auto; overscroll-behavior-x:contain}
-.scene {position:relative; isolation:isolate; min-width:780px; overflow:hidden; perspective:1200px}
-.scene img {display:block; width:100%; height:auto; transform-origin:var(--focus-x,50%) var(--focus-y,50%); transition:transform .4s ease}
-.door {position:absolute; border-radius:.8rem}
-.door:hover,.door:focus-visible {box-shadow:inset 0 0 0 3px #f7d486; background:#ffefbe12}
-.beacon {position:absolute; left:31%; top:79%; font-size:.875rem}
-.entrances {justify-content:flex-start; flex-wrap:wrap; gap:.5rem}
-.grounds a:focus-visible,.viewport:focus-visible {outline:3px solid #174d69; outline-offset:-3px}
-@media (hover:hover) and (prefers-reduced-motion:no-preference) {
-  .scene:has(.door:hover) img {transform:translateZ(16px)}
-}
-@media (prefers-reduced-motion:no-preference) {
-  .scene:has(.door:active) img {transform:scale(1.035)}
+.grounds {position:relative; isolation:isolate; background:#fcfaf4; color:#302c23}
+.viewport {overflow-x:auto; overscroll-behavior-x:contain}
+.scene {position:relative; width:max(100%, 177.778svh); aspect-ratio:16/9}
+.scene img {display:block; width:100%; height:100%; max-width:none}
+.door {position:absolute; background:transparent; border:0; border-radius:.5rem}
+.door:hover,.door:focus-visible {box-shadow:inset 0 0 0 3px #fff1c9; background:#fff1c917}
+.entrances {display:flex; flex-wrap:wrap; gap:.5rem; justify-content:center; padding:1rem; scroll-margin-top:1rem}
+.river,.entrances a,.entrances button {display:inline-flex; align-items:center; justify-content:center; min-height:44px; padding:.4rem .85rem; border:1px solid #a18147; border-radius:2rem; text-decoration:none}
+.river {background:#38251a; color:#ffe4b1}
+.grounds :focus-visible {outline:3px solid #174d69; outline-offset:-3px}
+.entrances .zoom {display:none}
+@media (orientation:portrait) {
+  .scene {width:100%}
+  .viewport[data-expanded="true"] .scene {width:max(100%, 177.778svh)}
+  .entrances .zoom {display:inline-flex}
 }

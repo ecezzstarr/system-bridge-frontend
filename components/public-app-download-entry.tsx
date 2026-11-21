@@ -6,7 +6,6 @@ import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 const PUBLIC_ENTRY_ROUTES = new Set([
-  '/',
   '/login',
   '/register',
   '/forgot-password',

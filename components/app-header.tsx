@@ -122,6 +122,7 @@ export function AppHeader({ user }: AppHeaderProps) {
         <p className="truncate text-[10px] font-black text-white">{effectiveUser.name}</p>
         <p className="mt-0.5 text-[8px] font-black uppercase tracking-[.14em] text-slate-500">{positionLabel} position</p>
       </div>
+      <a href="/" className="block rounded-xl px-3 py-2.5 text-sm font-semibold">Open World · Company Grounds</a>
       <button
         type="button"
         onClick={() => { setAccountOpen(false); router.push('/weave/reach-delivery') }}
