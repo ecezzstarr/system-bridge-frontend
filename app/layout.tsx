@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
+import './weave-company-depth.css'
+import { CompanyDepthCamera } from '@/components/world/company-depth-camera'
 import './weave-readability.css'
 import './weave-theme.css'
 import './weave-mobile.css'
@@ -61,6 +63,7 @@ export default function RootLayout({
           <AuthProvider>
             <PresenceCameraProvider>
               <WeaveGlobalVisualTheme />
+              <CompanyDepthCamera />
               <WeaveWorldEnvironment />
               <InteractionMotionLayer />
               <PWARegister />
