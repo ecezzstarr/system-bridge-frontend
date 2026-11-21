@@ -1,7 +1,7 @@
 'use client'
 
 import {Component,Suspense,useEffect,useRef,useState,type ReactNode} from 'react'
-import Link from 'next/link'
+import {useRouter} from 'next/navigation'
 import {Canvas,useFrame} from '@react-three/fiber'
 import {OrbitControls} from '@react-three/drei'
 import type {Group} from 'three'
@@ -38,6 +38,7 @@ function BuildingModel({building,active,onSelect,moving}:{building:Building;acti
 }
 
 export function CompanyDomainMap({buildings,preview=false}:{buildings:Building[];preview?:boolean}){
+ const router=useRouter()
  const [department,setDepartment]=useState(buildings[0]?.department)
  const [plot,setPlot]=useState<number|undefined>(buildings[0]?.plot)
  const [moving,setMoving]=useState(false)
@@ -91,7 +92,7 @@ export function CompanyDomainMap({buildings,preview=false}:{buildings:Building[]
      {visible.map(b=><option key={b.slug} value={b.plot}>Plot {b.plot}</option>)}
     </select></label>
    <p ref={selectedNameRef} className="text-sm">Selected workshop</p>
-   {entryHref?<Link className="inline-block rounded-full bg-amber-100 px-5 py-3 font-semibold text-[#20343c]" href={entryHref}>Enter workshop</Link>
+   {entryHref?<button type="button" className="inline-block rounded-full bg-amber-100 px-5 py-3 font-semibold text-[#20343c]" onClick={()=>router.push(entryHref)}>Enter workshop</button>
     :<p role="alert">This building entrance is unavailable.</p>}
   </>}
  </section>
