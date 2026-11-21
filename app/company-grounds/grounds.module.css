@@ -15,3 +15,6 @@
   .viewport[data-overview="true"] .scene {width:100%}
   .entrances .zoom {display:inline-flex}
 }
+
+.identity {display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:.6rem 1.25rem; padding:.8rem 1rem 1.35rem; border-top:1px solid #e5d6bb; color:#5b4a30; font-size:.8rem; text-align:center}
+.identity a {text-decoration:underline; text-underline-offset:3px; min-height:32px; display:inline-flex; align-items:center}
