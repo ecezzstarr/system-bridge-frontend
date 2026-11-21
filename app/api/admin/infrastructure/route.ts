@@ -6,6 +6,7 @@ import {
   getInfrastructureRegistry,
 } from '@/lib/weave-infrastructure'
 import { listWeaveDeploymentRecords } from '@/lib/weave-deployment-records'
+import { getDivineShieldReadiness } from '@/lib/weave-divine-shield-checks'
 import { safePublicWebRead } from '@/lib/eight-web'
 
 export const dynamic='force-dynamic'
@@ -41,10 +42,11 @@ export async function GET(request:NextRequest){
   if(auth.response) return auth.response
   try{
     await ensureWeaveInfrastructureSchema()
-    const [registry,shield,deployments]=await Promise.all([
+    const [registry,shield,deployments,readiness]=await Promise.all([
       getInfrastructureRegistry(),
       getDivineShieldState(),
       listWeaveDeploymentRecords(20),
+      getDivineShieldReadiness(),
     ])
     const systems=await Promise.all(registry.map(async(system:any)=>({
       ...system,
@@ -64,6 +66,7 @@ export async function GET(request:NextRequest){
         deployAuthority:'verified-main-to-selfhost',
       },
       shield,
+      readiness,
       systems,
       deployments,
     })

@@ -60,6 +60,9 @@ jobs:
       - name: Core recent-feature regression
         run: node tests/recent-features.cjs
 
+      - name: Divine Shield session continuity and operating boundary
+        run: node tests/divine-shield-session-continuity.cjs
+
       - name: Agent and Bridger department entry pricing regression
         run: |
           node tests/department-entry-role-pricing-regression.cjs

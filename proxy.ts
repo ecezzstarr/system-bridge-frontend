@@ -1,19 +1,68 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getWeaveDomainRole } from '@/lib/weave-domains'
+import { getDivineShieldState } from '@/lib/weave-infrastructure'
+import { getAuthUser } from '@/lib/auth-api'
 
-export function proxy(request: NextRequest) {
-  const domain = getWeaveDomainRole(request.headers.get('host'))
-  if (!domain) return NextResponse.next()
-
-  const pathname = request.nextUrl.pathname
-  if (pathname !== '/') return NextResponse.next()
-
-  if (domain.role === 'main') return NextResponse.next()
-
-  const target = new URL(domain.entryPath, request.url)
-  return NextResponse.redirect(target)
+/** Authentication and verified payment callbacks must remain reachable during a release.
+ * Those handlers retain their own identity, permission and signature checks.
+ */
+function isContinuityRoute(pathname:string){
+  return pathname==='/api/auth/login' ||
+    pathname==='/api/client/weave-login' ||
+    pathname==='/api/auth/logout' ||
+    pathname==='/api/auth/signout' ||
+    pathname==='/api/divine-shield/evacuate' ||
+    pathname==='/api/deposit/paystack/webhook' ||
+    // Deployment worker validates its own dedicated bearer secret and must log rollbacks.
+    pathname==='/api/system/deployment-record' ||
+    pathname==='/api/system/release-worker' ||
+    pathname==='/api/system/host-powershell' ||
+    // Existing calls must finish/refund even while new departmental work waits.
+    /^\/api\/river\/voice\/[0-9a-f-]{36}(?:\/status)?$/i.test(pathname) ||
+    pathname==='/api/auth/forgot-password' ||
+    pathname==='/api/auth/reset-password' ||
+    pathname.startsWith('/api/auth/callback/') ||
+    pathname.startsWith('/api/auth/signin/') ||
+    pathname==='/api/auth/csrf' ||
+    pathname==='/api/auth/session'
 }
 
-export const config = {
-  matcher: ['/'],
+/** Guard state-changing API requests, including Client routes that resolve
+ * their own File Number token. The Shield does not revoke any session.
+ * Administrative calls are authenticated against server-side role evidence.
+ */
+export function proxy(request:NextRequest){
+  const pathname=request.nextUrl.pathname
+  if(pathname==='/'){
+    const domain=getWeaveDomainRole(request.headers.get('host'))
+    if(domain&&domain.role!=='main'){
+      return NextResponse.redirect(new URL(domain.entryPath,request.url))
+    }
+    return NextResponse.next()
+  }
+
+  const unsafe=!['GET','HEAD','OPTIONS'].includes(request.method)
+  if(!pathname.startsWith('/api/')||!unsafe||isContinuityRoute(pathname))return NextResponse.next()
+  return checkShieldMutation(request)
 }
+
+async function checkShieldMutation(request:NextRequest){
+  try{
+    const shield=await getDivineShieldState()
+    if(!shield.active)return NextResponse.next()
+    const user=await getAuthUser(request)
+    if(user?.role==='admin')return NextResponse.next()
+    return NextResponse.json({
+      code:'DIVINE_SHIELD_ACTIVE',
+      error:'Divine Shield is raised. Your session is preserved while Administrations verifies the release.',
+    },{status:423,headers:{'Cache-Control':'no-store','Retry-After':'15'}})
+  }catch(error){
+    console.error('[Divine Shield] mutation boundary unavailable:',error)
+    return NextResponse.json({
+      code:'DIVINE_SHIELD_UNAVAILABLE',
+      error:'WEAVE is verifying its operating boundary. No work or payment action was accepted.',
+    },{status:503,headers:{'Cache-Control':'no-store','Retry-After':'15'}})
+  }
+}
+
+export const config={matcher:['/','/api/:path*']}

@@ -21,6 +21,7 @@ type Snapshot={
     deployAuthority:string
   }
   shield:{active:boolean;title:string;message:string;updatedAt:string|null}
+  readiness:{ready:boolean;releaseSha:string|null;checkedAt:string|null;checks:Array<{name:string;passed:boolean;detail:string}>}
   systems:Array<any>
   deployments:Array<any>
 }
@@ -31,6 +32,7 @@ export default function InfrastructureWorkshop(){
   const [data,setData]=useState<Snapshot|null>(null)
   const [loading,setLoading]=useState(true)
   const [shieldBusy,setShieldBusy]=useState(false)
+  const [checkBusy,setCheckBusy]=useState(false)
   const [webBusy,setWebBusy]=useState(false)
   const [webUrl,setWebUrl]=useState('https://weavingsystem.online')
   const [webResult,setWebResult]=useState<any>(null)
@@ -61,7 +63,9 @@ export default function InfrastructureWorkshop(){
   async function toggleShield(){
     if(!data) return
     const next=!data.shield.active
-    if(next && !window.confirm('Raise Divine Shield? Every non-Administrations user will be held outside WEAVE.')) return
+    if(next && !window.confirm('Raise Divine Shield? Departmental work will pause, but all user sessions remain signed in.')) return
+    if(!next && !data.readiness.ready){toast.error('Run and pass the current release checks before releasing Divine Shield');return}
+    if(!next && !window.confirm('Release Divine Shield after successful checks? All departments will resume work.'))return
     setShieldBusy(true)
     try{
       const response=await fetch('/api/admin/divine-shield',{
@@ -69,19 +73,38 @@ export default function InfrastructureWorkshop(){
         headers:headers(),
         body:JSON.stringify({
           active:next,
+          confirm:next?'RAISE_DIVINE_SHIELD':'RELEASE_DIVINE_SHIELD',
           title:data.shield.title,
           message:data.shield.message,
         }),
       })
       const body=await response.json()
       if(!response.ok || !body.success) throw new Error(body.error || 'Divine Shield update failed')
-      setData(prev=>prev?{...prev,shield:body.state}:prev)
+      setData(prev=>prev?{...prev,shield:body.state,readiness:body.readiness}:prev)
+      if(body.recorded===false)toast.warning('Shield changed, but transition audit did not persist. Reconcile the infrastructure ledger immediately.')
       toast.success(next
-        ? `Divine Shield raised · ${Number(body.evacuatedSessions || 0)} non-admin sessions evacuated`
-        : 'Divine Shield released')
+        ? 'Divine Shield raised · sessions preserved · departments waiting'
+        : 'Divine Shield released · departments resumed')
     }catch(error){
       toast.error(error instanceof Error?error.message:'Divine Shield update failed')
     }finally{setShieldBusy(false)}
+  }
+
+  async function runReleaseChecks(){
+    if(!data?.shield.active)return
+    setCheckBusy(true)
+    try{
+      const response=await fetch('/api/admin/divine-shield',{
+        method:'POST',headers:headers(),body:JSON.stringify({action:'check'}),
+      })
+      const body=await response.json()
+      if(!response.ok||!body.success)throw Error(body.error||'Unable to verify release')
+      setData(prev=>prev?{...prev,readiness:body.readiness}:prev)
+      if(body.check?.passed)toast.success('Release checks passed. Administrations may now release the Shield.')
+      else toast.error('One or more release checks failed. Shield remains raised.')
+    }catch(error){
+      toast.error(error instanceof Error?error.message:'Release verification failed')
+    }finally{setCheckBusy(false)}
   }
 
   async function webProbe(){
@@ -123,15 +146,32 @@ export default function InfrastructureWorkshop(){
               <div className="rounded-2xl border border-white/10 bg-black/20 p-3">{data.shield.active?<Shield className="h-7 w-7 text-amber-300"/>:<ShieldCheck className="h-7 w-7 text-emerald-300"/>}</div>
               <div>
                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Divine Shield</p>
-                <h2 className="mt-1 text-xl font-bold text-white">{data.shield.active?'Raised · participants waiting outside':'Released · WEAVE open'}</h2>
+                <h2 className="mt-1 text-xl font-bold text-white">{data.shield.active?'Raised · departments waiting, accounts preserved':'Released · WEAVE open'}</h2>
                 <p className="mt-2 max-w-2xl text-xs leading-5 text-slate-400">{data.shield.message}</p>
+                <p className="mt-2 text-xs text-amber-100">Shield does not log users out or clear their work. Administrations verifies the live release while departmental operations are paused.</p>
               </div>
             </div>
-            <Button onClick={toggleShield} disabled={shieldBusy} className={data.shield.active?'bg-emerald-600 hover:bg-emerald-700':'bg-amber-600 hover:bg-amber-700'}>
+            <div className="flex flex-wrap items-center gap-2">
+              {data.shield.active&&<Button onClick={()=>void runReleaseChecks()} disabled={checkBusy||shieldBusy} variant="outline" className="border-amber-300/50 text-amber-100">
+                {checkBusy?<Loader2 className="mr-2 h-4 w-4 animate-spin"/>:<Activity className="mr-2 h-4 w-4"/>}Run release checks
+              </Button>}
+            <Button onClick={toggleShield} disabled={shieldBusy||(data.shield.active&&!data.readiness.ready)} className={data.shield.active?'bg-emerald-600 hover:bg-emerald-700':'bg-amber-600 hover:bg-amber-700'}>
               {shieldBusy?<Loader2 className="mr-2 h-4 w-4 animate-spin"/>:<Shield className="mr-2 h-4 w-4"/>}
               {data.shield.active?'Release Shield':'Raise Shield'}
             </Button>
+            </div>
           </div>
+          {data.shield.active&&<div className="mt-5 rounded-xl border border-amber-300/25 bg-black/20 p-4" data-divine-shield-checks>
+            <p className="text-sm font-bold text-amber-100">{data.readiness.ready?'Release verified · Administrations can reopen departments':'Awaiting checks · departments remain paused'}</p>
+            <p className="mt-1 text-xs text-slate-300">Release {data.readiness.releaseSha||'not identified'} · Last check {data.readiness.checkedAt?new Date(data.readiness.checkedAt).toLocaleString():'not yet performed'}. Checks expire after 15 minutes.</p>
+            <div className="mt-3 grid gap-2 sm:grid-cols-2">
+              {data.readiness.checks.map(check=><div key={check.name} className="rounded-lg border border-white/10 p-3">
+                <p className={check.passed?'text-xs font-bold text-emerald-200':'text-xs font-bold text-rose-200'}>{check.passed?'Passed':'Needs attention'} · {check.name}</p>
+                <p className="mt-1 text-xs text-slate-300">{check.detail}</p>
+              </div>)}
+            </div>
+            <p className="mt-3 text-xs text-slate-400">If a check fails, keep the Shield raised and use Release Workshop for remediation or rollback. The Shield never deploys code by itself.</p>
+          </div>}
         </section>
 
         <HostPowerShellStatus token={token} />

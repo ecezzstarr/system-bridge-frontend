@@ -111,17 +111,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 })
     }
 
+    // A Shield boundary pauses operating access, not authentication.
     const shield = await getDivineShieldState()
-    if (shield.active && user.role !== 'admin') {
-      return NextResponse.json({ error: 'WEAVE is under maintenance. Divine Shield is active.' }, { status: 423 })
-    }
 
     const referralCode = ['agent', 'bridger', 'client'].includes(user.role)
       ? (user.referral_code || await ensureUserReferralCode(user.id))
       : null
 
     const token = await createSession(user)
-    return NextResponse.json({ token, user: publicUser(user, referralCode) })
+    return NextResponse.json({ token, user: publicUser(user, referralCode), divineShield:{active:shield.active} })
   } catch (error) {
     console.error('[WEAVE] Login error:', error)
     return NextResponse.json({ error: 'Login temporarily unavailable' }, { status: 500 })
