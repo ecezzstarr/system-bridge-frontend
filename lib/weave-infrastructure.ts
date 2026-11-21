@@ -123,6 +123,37 @@ export async function getDivineShieldState(): Promise<DivineShieldState> {
 
 export async function setDivineShieldState(input:{active:boolean;title?:string;message?:string;adminId:string}) {
   await ensureWeaveInfrastructureSchema()
+
+  if(!input.active){
+    const [current]=await sql`SELECT enabled,updated_at FROM weave_platform_controls WHERE control_key='divine_shield' LIMIT 1`
+    if(!current?.enabled)return getDivineShieldState()
+    const sha=String(process.env.WEAVE_RELEASE_SHA||'').trim().toLowerCase()
+    const raisedAt=new Date(current.updated_at).toISOString()
+    if(!/^[0-9a-f]{40}$/.test(sha))throw Error('A verified production release SHA is required to lower Divine Shield')
+    const rows=await sql`
+      UPDATE weave_platform_controls AS control
+      SET enabled=FALSE, updated_by=${input.adminId}::uuid, updated_at=NOW()
+      WHERE control.control_key='divine_shield'
+        AND control.enabled=TRUE
+        AND control.updated_at=${raisedAt}::timestamptz
+        AND (
+          SELECT status FROM weave_deployment_requests
+          WHERE action='divine_shield_check'
+            AND source_ref=${sha}
+            AND details->>'raisedAt'=${raisedAt}
+            AND created_at>NOW()-INTERVAL '15 minutes'
+          ORDER BY created_at DESC,id DESC LIMIT 1
+        )='healthy'
+      RETURNING enabled,title,message,updated_at
+    `
+    if(!rows.length)throw Error('Divine Shield remains raised: run fresh passing release checks in Administrations Infrastructure')
+    const row=rows[0]
+    const value={active:false,title:row.title,message:row.message,
+      updatedAt:new Date(row.updated_at).toISOString()}
+    shieldCache={value,expires:Date.now()+2000}
+    return value
+  }
+
   const rows=await sql`
     INSERT INTO weave_platform_controls(control_key,enabled,title,message,updated_by,updated_at)
     VALUES(
