@@ -18,12 +18,14 @@ export const firstWorkshops: Record<NativeDepartment, FirstWorkshop[]> = {
     { href: '/bridger/my-prospects', name: 'My Prospects', action: 'Contact your prospect, record their reply and follow up.' },
     { href: '/bridger/bridge-ai', name: 'Bridge AI', action: 'When they agree, guide them toward a Client File Folder.' },
     { href: '/distribution-studio', name: 'Social Studio', action: 'Create posts to reach new prospects or promote a Client’s business.' },
+    { href: '/referrals', name: 'Referral Movement', action: 'Invite staff through your own referral entrance and track verified ₦500 rewards.' },
   ],
   stability: [
     { href: '/agent/outlet-training', name: 'Outlet Training', action: 'Learn how to approach a shop and explain the products.' },
     { href: '/agent/work', name: 'Agent Work', action: 'Choose a product and check how to order stock.' },
     { href: '/agent/distribution', name: 'Distribution', action: 'Supply an outlet and record the sale.' },
     { href: '/agent/commissions', name: 'Commissions', action: 'Check your recorded earnings.' },
+    { href: '/referrals', name: 'Referral Movement', action: 'Invite staff through your own referral entrance and track verified ₦500 rewards.' },
   ],
   'dream-lovely': [
     { href: '/client/system-switch', name: 'My File Folder estate', action: 'Enter your private grounds to build your mansion, operate your enterprise and open your Customer Door.' },
