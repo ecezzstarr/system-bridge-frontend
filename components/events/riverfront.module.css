@@ -3,13 +3,12 @@
 .heading p,.heading span{font-size:.9rem;color:#f5d39c;margin:0}
 .heading h1{font:500 clamp(2.6rem,7vw,5.3rem)/1.1 Georgia,serif;margin:.2rem 0 .4rem}
 .viewport{overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin}
-.bank{position:relative;display:grid;grid-template-columns:repeat(4,1fr);min-width:640px;max-width:96rem;aspect-ratio:3/1;margin:auto}
+.bank{position:relative;min-width:640px;max-width:96rem;aspect-ratio:1600/533;margin:auto}
 .bank img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.bank button{position:relative;display:flex;align-items:flex-end;justify-content:center;padding:0 .25rem clamp(.5rem,2vw,1.5rem);background:transparent;cursor:pointer}
-.bank button span,.detail a{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:.45rem .9rem;border-radius:2rem;border:1px solid #bda26d;background:#15222bed;color:#fff6df;font-weight:600}
-.bank button[aria-pressed=true] span,.detail a{background:#ffdfa1;color:#392b1d}
-.bank button:focus-visible{outline:3px solid white;outline-offset:-4px}
+.detail a{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:.45rem .9rem;border-radius:2rem;border:1px solid #bda26d;background:#15222bed;color:#fff6df;font-weight:600}
+.detail a{background:#ffdfa1;color:#392b1d}
 .detail{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}
 .detail h2{font:500 1.65rem Georgia,serif;margin:0}
 .detail p{max-width:66ch;line-height:1.6;margin:.4rem 0;color:#e3e9eb}
-.detail .guidance{color:#ffdc9f}
+.viewport:focus-visible{outline:3px solid #ffdfa1;outline-offset:-3px}
+.bank canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}

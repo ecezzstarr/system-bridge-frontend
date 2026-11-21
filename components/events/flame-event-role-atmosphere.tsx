@@ -17,6 +17,7 @@ export function FlameEventRoleAtmosphere({
 }) {
   const routePath = usePathname()
   const currentPath = pathname || routePath || '/'
+  const riverView = ['/event', '/client/event', '/flame-event', '/system-switch/flame-event', '/client/system-switch/flame-event', '/weave/lifestyles/sunshine'].includes(currentPath)
   const [active,setActive]=useState(false)
   const [loopTwo,setLoopTwo]=useState(false)
   const [loopThree,setLoopThree]=useState(false)
@@ -62,9 +63,9 @@ export function FlameEventRoleAtmosphere({
             <span className="truncate">{loopTwo?"Country Formation · Company Loop 2 · Country Event Live":loopThree?"Self Upliftment · Company Loop 3 · Individual Event · Started January 12, 2027":"Burning River · Flame Event Live · The River that Burns"}</span>
             {!loopTwo&&!loopThree&&<Flame className="h-3 w-3 shrink-0 text-orange-200/80"/>}
           </span>
-          <span className="hidden shrink-0 text-white/30 sm:inline">
+          {!riverView && <span className="hidden shrink-0 text-white/30 sm:inline">
             {roleLabel}{userName ? ` · ${userName}` : ''}
-          </span>
+          </span>}
         </div>
       )}
       <div className="relative min-w-0">{children}</div>
