@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
-import { getDivineShieldState, setDivineShieldState } from '@/lib/weave-infrastructure'
+import { getDivineShieldState, setDivineShieldState, recordDeploymentRequest } from '@/lib/weave-infrastructure'
 import { getDivineShieldReadiness, runDivineShieldChecks } from '@/lib/weave-divine-shield-checks'
 
 export const dynamic='force-dynamic'
@@ -36,6 +36,14 @@ export async function POST(request:NextRequest){
     const title=typeof body.title==='string' ? body.title.trim().slice(0,255) : undefined
     const message=typeof body.message==='string' ? body.message.trim().slice(0,2000) : undefined
     const state=await setDivineShieldState({active:body.active,title,message,adminId:user.id})
+    // Every manual transition has durable actor and release context in the
+    // infrastructure ledger, in addition to the persistent active control.
+    await recordDeploymentRequest({
+      action:body.active?'divine_shield_raise':'divine_shield_release',
+      sourceRef:process.env.WEAVE_RELEASE_SHA||null,
+      status:'completed',adminId:user.id,
+      details:{preservedSessions:true,stateUpdatedAt:state.updatedAt},
+    })
 
     // Raising the shield never revokes or deletes genuine participant sessions.
     return NextResponse.json({success:true,state,preservedSessions:true,readiness:await getDivineShieldReadiness()})
