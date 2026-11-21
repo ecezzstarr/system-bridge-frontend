@@ -10,7 +10,7 @@ const { FLAME_EVENT } = load('lib/weave-event.ts')
 
 const output = path.resolve('presentation-results')
 const origin = process.env.WEAVE_PRESENTATION_ORIGIN || 'http://127.0.0.1:3100'
-const routes = ['/', '/file-folder-preview', '/login', '/client/login', '/client/pro-verification']
+const routes = ['/', '/company-overview', '/file-folder-preview', '/login', '/client/login', '/client/pro-verification']
 const luminance = rgb => rgb.map(v => v / 255).map(v => v <= .04045 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4)
   .reduce((sum, v, i) => sum + v * [.2126, .7152, .0722][i], 0)
 const contrast = (a, b) => {
@@ -114,6 +114,23 @@ async function main() {
         assert.ok(state.loaded.some(font => font.includes('Weave Cormorant')), 'Display font actually loaded')
         assert.deepEqual(errors, [], `${route} runtime errors`)
         if (route === '/') {
+          const company = await page.evaluate(() => {
+            const grounds = document.querySelector('[data-weave-company-home="company-grounds"]')
+            const panorama = grounds?.querySelector('img[src="/images/weave-open-world-home.jpg"]')
+            return {
+              grounds: Boolean(grounds),
+              original: Boolean(document.querySelector('[data-public-weave-world]')),
+              imageLoaded: Boolean(panorama && panorama instanceof HTMLImageElement && panorama.complete && panorama.naturalWidth > 0),
+              registration: Boolean(grounds?.querySelector('a[href="/register"]')),
+              client: Boolean(grounds?.querySelector('a[href="/client/register"]')),
+              services: Boolean(grounds?.querySelector('a[href="/company-overview"]')),
+            }
+          })
+          assert.ok(company.grounds && company.imageLoaded, 'The published company illustration must lead the homepage')
+          assert.equal(company.original, false, 'The former WEAVE homepage must not appear underneath the Company Grounds')
+          assert.ok(company.registration && company.client && company.services, 'Mobile company gates and public services remain reachable')
+        }
+        if (route === '/company-overview') {
           // A scroll to the final station must never reveal dark/black surfaces
           // under the otherwise porcelain public homepage.
           await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight))
@@ -196,7 +213,7 @@ async function main() {
       await context.close()
     }
     fs.writeFileSync(path.join(output, 'results.json'), JSON.stringify(results, null, 2))
-    console.log('PASS: 20 rendered phone/tablet/desktop views, bundled fonts, tier contrast and runtime checks')
+    console.log('PASS: 24 rendered views, new Company Grounds, preserved services, bundled fonts and contrast')
   } finally {
     await browser.close()
   }
