@@ -234,4 +234,25 @@ const images=[
  '/weave-food/daisy-pastries-original.png',
 ]
 for(const url of images){assert.ok(fs.existsSync(path.join(root,'public',url)),'Existing image retained: '+url)}
+// A direct URL must obey the same department boundary as Company Grounds doors.
+const ts=require('typescript')
+const accessSource=fs.readFileSync(path.join(root,'lib/company-guidance-access.ts'),'utf8')
+const accessModule={exports:{}}
+const accessJs=ts.transpileModule(accessSource,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText
+new Function('exports',accessJs)(accessModule.exports)
+const enter=accessModule.exports.canEnterDepartmentPath
+for(const [route,role] of [
+  ['/bridger/my-prospects','bridger'], ['/agent/work','agent'],
+  ['/admin/native-foundry','admin'], ['/weave/lifestyles','agent'],
+  ['/wallet','client'],
+]) assert.equal(enter(route,role),true,route+' remains authorized')
+for(const [route,role] of [
+  ['/admin/dashboard','bridger'], ['/agent/distribution','admin'],
+  ['/bridger/bridge-ai','agent'], ['/admin/orders','client'],
+  ['/agent/work?tab=stock','bridger'],
+]) assert.equal(enter(route,role),false,route+' rejects crossing from '+role)
+const layoutBoundary=fs.readFileSync(path.join(root,'app/(app)/layout.tsx'),'utf8')
+assert.match(layoutBoundary,/canEnterDepartmentPath\(pathname, user\?\.role\)/)
+assert.match(layoutBoundary,/router\.replace\(ownDashboard\)/)
+
 console.log('PASS: All '+preservedPages.length+' existing Weave page routes and selected crossing, operating links, media remain available')
