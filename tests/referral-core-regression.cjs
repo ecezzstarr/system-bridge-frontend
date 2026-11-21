@@ -23,6 +23,9 @@ assert.ok(api.includes('getReferralCoreState')&&api.includes('STAFF_REFERRAL_BON
 assert.ok(page.includes('Referral Movement')&&page.includes('₦500')&&page.includes('successfulReferrals')&&page.includes('pendingBonusCount'),'Agent/Bridger shared Referral Movement exposes live growth and payout state')
 assert.ok(panel.includes('Open Referral Movement')&&panel.includes('Core referral return'),'Referral identity panel keeps the core function one movement away')
 assert.ok(presence.includes('data-core-function="referral-movement"')&&presence.includes('Referral Movement · ₦500'),'Agent and Bridger Presence makes referrals a visible core function')
-assert.ok(agentDashboard.includes('data-core-function="referral-movement"')&&bridgerDashboard.includes('data-core-function="referral-movement"'),'Agent and Bridger home worlds expose Referral Movement as a primary action')
+const firstWorkshops=read('lib/department-buildings.ts')
+assert.ok(agentDashboard.includes('<AgentWorkplace')&&bridgerDashboard.includes('<BridgerWorkplace')&&
+  (firstWorkshops.match(/href: '\/referrals'/g)||[]).length>=2,
+  'Agent and Bridger open one primary Referral Movement building through their existing Work Desk hosts')
 
 console.log('Agent/Bridger ₦500 Referral Movement regression checks passed')
