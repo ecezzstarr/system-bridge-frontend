@@ -37,6 +37,7 @@ const entrances:readonly (readonly [string,string,string])[]=[
   ['/client-interactions','Client Conversations','Open the Client relationship that needs a reply, clarification or a useful next step.'],
   ['/clients','Client Relationships','Keep each Client’s conversations, needs and company support together.'],
   ['/company','Company Registration','Review the registered company identity and open the CAC public search.'],
+  ['/company-overview','Company Services and Reach','Explore the company services, submit or track a public Reach request, and follow links to operating departments and File Folders.'],
   ['/company-chat/[position]','Company Guidance','Speak with the company position responsible for your question and follow the response.'],
   ['/dashboard','Your Weave Workplace','Return to the department, people and working systems attached to your position.'],
   ['/district/[district]','Your Working District','Choose a place in this district and continue the work available to your position.'],

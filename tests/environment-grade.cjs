@@ -642,7 +642,8 @@ assert.ok(adminBridgeSupportSource.includes("authUser.role !== 'admin'")||adminB
 assert.ok(bridgerRadianceSource.includes("redirect('/bridger/bridge-ai')"),'Retired Bridger Bridge of Radiance route resolves to canonical Bridge AI')
 
 
-const publicWorldSource=read('app/page.tsx')
+const publicWorldSource=read('app/company-overview/page.tsx')
+assert.match(read('app/page.tsx'), /return <CompanyGrounds\s*\/>/,'Public home is the Company Grounds alone')
 const weaveSystemMapSource=read('lib/weave-system-map.ts')
 const dashboardWorldSource=read('components/world/weave-dashboard-world.tsx')
 assert.ok(publicWorldSource.includes('data-weave-public-entry-world="true"'),'WEAVE homepage declares the public entry world')
