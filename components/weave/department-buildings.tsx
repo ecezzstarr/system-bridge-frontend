@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
 import {workshopArt} from '@/lib/workshop-art'
 import {useMemo,useState} from 'react'
 import {useAuth} from '@/lib/auth-provider'
@@ -11,6 +12,9 @@ import {useDepartmentModules} from './native-department-rail'
 import styles from './department-buildings.module.css'
 
 const pages:string[]=JSON.parse(process.env.NEXT_PUBLIC_DEPARTMENT_WORK_PAGES??'[]')
+const LiveCompanyMap=dynamic(()=>import('./company-domain-map').then(mod=>mod.CompanyDomainMap),{
+ ssr:false,loading:()=> <p role="status">Opening the company buildings…</p>,
+})
 
 /**
  * One entrance per role. The former Work Desk catalogs supply real operating
@@ -54,8 +58,17 @@ export function DepartmentBuildings({department}:{department:NativeDepartment}){
  })
  const studio=department==='hope'?first.find(door=>door.href==='/distribution-studio'):undefined
  const primary=first.filter(door=>door!==studio)
+ const livePlots=modules.flatMap(module=>{
+  const plot=module.blueprint.companyPlot
+  const href='/weave-modules/'+department+'/'+encodeURIComponent(module.slug)
+  if(!Number.isInteger(plot)||!plot||plot<1||plot>24||!visible.some(door=>door.href===href))return []
+  const scene=module.blueprint.blocks.find(block=>block.type==='scene')
+  return [{department,slug:module.slug,title:module.blueprint.title,plot,
+   scene:scene?.type==='scene'?scene.scene:'glass-kingdom' as const}]
+ })
  const newDoors=published.filter(door=>visible.some(item=>item.href===door.href)&&
-  !first.some(item=>item.href===door.href))
+  !first.some(item=>item.href===door.href)&&
+  !livePlots.some(plot=>door.href==='/weave-modules/'+department+'/'+encodeURIComponent(plot.slug)))
  const other=visible.filter(door=>!first.some(item=>item.href===door.href)&&
   !newDoors.some(item=>item.href===door.href))
   .sort((a,b)=>a.area.localeCompare(b.area)||a.title.localeCompare(b.title)||a.href.localeCompare(b.href))
@@ -93,7 +106,11 @@ export function DepartmentBuildings({department}:{department:NativeDepartment}){
   {studio&&<aside className={styles.studio} aria-label="Available anytime">
    <h2>Available anytime</h2>{entrance(studio,studio.action)}
   </aside>}
-  {newDoors.length>0&&<nav className={styles.route} aria-label="New company buildings" data-published-company-buildings={department}>
+  {livePlots.length>0&&<section className={styles.route} aria-label="Live 3D company buildings" data-published-company-buildings={department}>
+   <h2>Live company buildings</h2>
+   <LiveCompanyMap buildings={livePlots}/>
+  </section>}
+  {newDoors.length>0&&<nav className={styles.route} aria-label="New company workshops">
    <h2>New buildings from Administrations</h2>
    <ul>{newDoors.map(door=><li key={door.href}>{entrance(door)}</li>)}</ul>
   </nav>}
