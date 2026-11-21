@@ -251,6 +251,14 @@ for(const [route,role] of [
   ['/bridger/bridge-ai','agent'], ['/admin/orders','client'],
   ['/agent/work?tab=stock','bridger'],
 ]) assert.equal(enter(route,role),false,route+' rejects crossing from '+role)
+const groundsSource=fs.readFileSync(path.join(root,'app/company-grounds/page.tsx'),'utf8')
+const groundsCss=fs.readFileSync(path.join(root,'app/company-grounds/grounds.module.css'),'utf8')
+for(const name of ['Hope','Stability','Administrations · A Time','Dream Lovely'])
+  assert.ok(groundsSource.includes("name: '"+name+"'"),name+' still has its building')
+assert.doesNotMatch(groundsSource,/name: '(Forensics|Mandate|Attorney)'/,'Oversight positions are not standalone public departments')
+assert.match(groundsCss,/\.scene \{width:max\(100%, 177\.778svh\)\}/,'Phone world defaults to horizontal scrolling')
+assert.match(groundsCss,/data-overview="true"/,'Visitor can still inspect the complete aerial image')
+assert.match(groundsSource,/data-overview=\{overview\}/)
 const layoutBoundary=fs.readFileSync(path.join(root,'app/(app)/layout.tsx'),'utf8')
 assert.match(layoutBoundary,/canEnterDepartmentPath\(pathname, user\?\.role\)/)
 assert.match(layoutBoundary,/router\.replace\(ownDashboard\)/)
