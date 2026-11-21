@@ -1763,3 +1763,6 @@ assert.ok(bridgerWorkingManualSource.includes('2 × working hours'),'Bridger dai
 assert.ok(bridgerWorkingManualSource.includes('A sent message is an outreach attempt'),'Bridger manual distinguishes outreach from response and conversion')
 assert.ok(roleHas('bridger','/bridger/working-manual'),'Bridger world exposes the Working Manual')
 assert.ok(prospectMarketSource.includes('/bridger/working-manual')||bridgerWorkingManualSource.includes('/weave/market/prospects'),'Prospect Marketplace and Working Manual are connected')
+
+// A departmental Work Desk now hosts the buildings; prevent a second navigation tree.
+require('./company-workdesk-building-unification.cjs')
