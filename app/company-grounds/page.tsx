@@ -3,7 +3,7 @@
 import { WEAVE_COMPANY } from '@/lib/company-profile'
 import Link from 'next/link'
 import { useRef, useState } from 'react'
-import { Flame } from 'lucide-react'
+import { Flame, Menu } from 'lucide-react'
 import { useAuth } from '@/lib/auth-provider'
 import styles from './grounds.module.css'
 
@@ -25,11 +25,11 @@ export default function CompanyGrounds() {
   const doors = isInitialized ? buildings : []
   const eventHref = user?.role === 'client' ? '/client/event' : ['admin', 'bridger', 'agent'].includes(user?.role ?? '') ? '/event' : '/flame-event'
 
-  function renderDoor(door: (typeof buildings)[number], panorama: boolean) {
+  function renderDoor(door: (typeof buildings)[number], panorama: boolean, mobile = false) {
     const appearance = panorama ? {
       style: { left: door.left+'%', top: door.top+'%', width: door.width+'%', height: door.height+'%' },
     } : {}
-    const label = panorama ? null : door.name
+    const label = panorama ? null : mobile ? <><span>{door.name}</span><span className={styles.mobileArrow} aria-hidden="true">›</span></> : door.name
     if (user && user.role !== door.role) {
       return <button key={door.name} type="button" {...appearance}
         className={panorama ? styles.door+' bg-transparent' : 'min-h-11 rounded-full border border-[#a18147] px-4'}
@@ -53,7 +53,23 @@ export default function CompanyGrounds() {
 
   return <main className={styles.grounds} aria-label="Weave Open World" data-weave-company-home="company-grounds">
     <h1 className="sr-only">Weave of Presence · Open World</h1>
-    <div id="grounds-panorama" className={styles.viewport} data-overview={overview} tabIndex={0} aria-label="Company Grounds panorama. Scroll sideways to explore on a phone.">
+    <header className={styles.mobileHeader} aria-label="Company navigation">
+      <Link href="/" className={styles.mobileBrand} aria-label="Weave of Presence homepage">
+        <span className={styles.mobileMark} aria-hidden="true">W</span><span>WEAVE OF PRESENCE</span>
+      </Link>
+      <div className={styles.mobileHeaderActions}>
+        <Link className={styles.mobileSignIn} href={user ? ownDepartment?.workplace ?? '/dashboard' : '/login'}>
+          {user ? 'My workspace' : 'Sign in'}
+        </Link>
+        <button type="button" className={styles.mobileMenu} aria-label="Open company directory"
+          aria-haspopup="dialog" onClick={() => entrances.current?.showModal()}><Menu size={22} aria-hidden="true" /></button>
+      </div>
+    </header>
+    <section className={styles.mobileIntroduction} aria-label="Company introduction">
+      <h2>The Company of Time</h2>
+      <p>One company. Many ways to participate.</p>
+    </section>
+    <div id="grounds-panorama" className={styles.viewport} data-overview={overview} tabIndex={0} aria-label="Company Grounds panorama. Explore buildings or use the company directory.">
       <div className={styles.scene}>
         <img src="/images/weave-open-world-home.jpg" width="1536" height="864" fetchPriority="high"
           alt="Aerial view of Weave Company Grounds, the departmental buildings, Client estates and Burning River." />
@@ -72,6 +88,21 @@ export default function CompanyGrounds() {
           onClick={() => entrances.current?.showModal()} style={{left:'31%',top:'63%',width:'23%',height:'10%'}} />
       </div>
     </div>
+    <section className={styles.mobileExplore} aria-label="Company entrances">
+      <h2>Explore the company</h2>
+      <nav className={styles.mobileEntrances} aria-label="Company departments">
+        {doors.filter(door => door.name !== 'File Folder').map(door => renderDoor(door, false, true))}
+      </nav>
+      <div className={styles.mobileActions}>
+        <Link href="/system-switch/world" className={styles.mobileWorld}>
+          Explore Weave Open World <span aria-hidden="true">›</span>
+        </Link>
+        <Link href={user ? ownDepartment?.workplace ?? '/dashboard' : '/register'} className={styles.mobileJoin}>
+          {user ? 'Enter my department' : 'Join Weave'} <span aria-hidden="true">›</span>
+        </Link>
+      </div>
+      <p className={styles.mobileLegal}><Link href="/company">Company information</Link> · RC {WEAVE_COMPANY.registrationNumber}</p>
+    </section>
     <dialog ref={entrances} className={styles.directory} aria-labelledby="grounds-directory-title">
       <header><h2 id="grounds-directory-title">Company entrances</h2>
         <button type="button" onClick={() => entrances.current?.close()}>Close</button>
