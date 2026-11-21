@@ -7,7 +7,9 @@ type RecordRow={
  name:string;email:string;business_name:string;operating_country:string;operating_region:string;
  operating_city:string;payment_wallet:string|null;payment_tx_hash:string|null;
  payment_submitted_at:string|null;signed_at:string|null;verified_amount_usdt:number|null;
- agreed_monthly_salary_usdt:number;employment_terms_reference:string;
+ agreed_monthly_salary_usdt:number|null;employment_terms_reference:string;
+ compensation_model:string|null;quoted_fee_usdt:number|null;activation_continent:string|null;
+ application_compensation_model:string|null;monthly_profit_share_bps:number|null;
  rejection_reason:string|null;is_active:boolean;current_role:string
 }
 export default function AdminProRegionalManagerForensics(){
@@ -67,7 +69,7 @@ export default function AdminProRegionalManagerForensics(){
   <header className="space-y-2">
    <p className="text-xs uppercase tracking-widest text-sky-200">Administrations · A Time · Forensics</p>
    <h1 className="text-3xl font-semibold">Pro Regional Manager · Activation Forensics</h1>
-   <p className="text-sm leading-6 text-slate-300">Review signed Agent/Bridger Pro File Folder activation against independently verified 680 USDT on TRON (TRC-20). Never credit wallets or approve solely because an applicant entered a transaction hash. Company salary is an independently agreed payroll term.</p>
+   <p className="text-sm leading-6 text-slate-300">Verify each applicant's independently approved regional quote on TRON (TRC-20): Africa strictly below 60 USDT at the recorded amount, Europe 680 USDT. New Agent/Bridger Pro contracts contribute 20% of verified monthly net business profit instead of receiving a fixed WEAVE salary. Existing salary agreements remain intact. Do not approve a transaction hash without independent payment evidence.</p>
   </header>
   {error&&<p role="alert" className="rounded-lg border border-rose-300/25 p-4 text-rose-100">{error}</p>}
   {notice&&<p role="status" className="rounded-lg border border-sky-300/25 p-4 text-sky-200">{notice}</p>}
@@ -78,7 +80,9 @@ export default function AdminProRegionalManagerForensics(){
     <span className="text-xs text-sky-200">{a.status.replaceAll('_',' ')}</span>
    </div>
    <p className="break-all font-mono text-xs">Pro File Number: {a.file_number}</p>
-   <p className="text-sm">Business: {a.business_name} · Agreed monthly salary: {Number(a.agreed_monthly_salary_usdt||0).toLocaleString()} USDT</p>
+   <p className="text-sm">Business: {a.business_name} · {a.compensation_model==='profit_share'
+     ?'20% of verified net monthly profit · no salary · approved fee '+Number(a.quoted_fee_usdt||0)+' USDT ('+(a.activation_continent||'unknown')+')'
+     :'Legacy agreed monthly salary '+Number(a.agreed_monthly_salary_usdt||0).toLocaleString()+' USDT · activation 680 USDT'}</p>
    <p className="text-xs text-slate-400">Signed company terms reference: {a.employment_terms_reference} · Electronic signature: {a.signed_at?'Recorded':'Not signed'}</p>
    {a.status==='pending_forensics'&&<>
     <div className="space-y-2 rounded-lg border border-amber-200/25 bg-amber-300/[.05] p-4 text-xs">
@@ -104,9 +108,9 @@ export default function AdminProRegionalManagerForensics(){
     <label className="flex items-start gap-3 text-sm text-slate-300"><input type="checkbox" className="mt-1"
       checked={checked[a.user_id]||false}
       onChange={e=>setChecked(c=>({...c,[a.user_id]:e.target.checked}))}/>
-     I independently confirmed actual cleared 680 USDT on TRON (TRC-20), transaction hash, recipient address, original applicant identity, unique receipt, and approved company position.</label>
+     I independently confirmed the actual cleared {Number(a.quoted_fee_usdt??680)} USDT on TRON (TRC-20), transaction hash, correct receiving wallet, unique receipt, original applicant identity, approved continent quote and signed company position.</label>
     <div className="flex flex-wrap gap-3">
-     <button disabled={!!working||!checked[a.user_id]||Number(amount[a.user_id])!==680||
+     <button disabled={!!working||!checked[a.user_id]||Number(amount[a.user_id])!==Number(a.quoted_fee_usdt??680)||
        (evidence[a.user_id]||'').trim().length<12}
       onClick={()=>void act(a,'approve_payment')}
       className="rounded-lg bg-sky-300 px-4 py-3 text-sm font-semibold text-slate-950 disabled:opacity-40">Verify and activate original-role Pro Folder</button>

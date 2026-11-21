@@ -1,0 +1,35 @@
+const assert=require('node:assert/strict')
+const fs=require('node:fs')
+const path=require('node:path')
+const ts=require('typescript')
+const root=path.join(__dirname,'..')
+const read=p=>fs.readFileSync(path.join(root,p),'utf8')
+const policy='lib/pro-regional-manager-profit-share.ts'
+const source=read(policy)
+const parsed=ts.transpileModule(source,{fileName:policy,compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}})
+const module={exports:{}}
+new Function('module','exports',parsed.outputText)(module,module.exports)
+const m=module.exports
+assert.equal(m.validateProManagerActivationQuote('europe',680).feeUSDT,680)
+assert.equal(m.validateProManagerActivationQuote('africa',59.99).feeUSDT,59.99)
+for(const quote of [['africa',60],['africa',0],['africa',-1],['africa',60.01],['europe',59.99],['asia',680],['africa',1.234]])
+ assert.throws(()=>m.validateProManagerActivationQuote(...quote))
+const modern={compensation_model:'profit_share',agreed_monthly_salary_usdt:null,
+ monthly_profit_share_bps:2000,approved_continent:'africa',approved_activation_fee_usdt:50,
+ employment_terms_reference:'SIGNED-2026-AGENT-PRO'}
+assert.equal(m.proManagerApprovalState(modern).feeUSDT,50)
+assert.equal(m.proManagerApprovalState({...modern,approved_activation_fee_usdt:60}),null)
+assert.equal(m.proManagerApprovalState({...modern,monthly_profit_share_bps:1000}),null)
+assert.equal(m.proManagerApprovalState({...modern,agreed_monthly_salary_usdt:100}),null)
+assert.equal(m.proManagerApprovalState({agreed_monthly_salary_usdt:300,employment_terms_reference:'LEGACY-APPROVED'}).feeUSDT,680)
+assert.equal(m.proManagerMonthlyProfitShare(2500,1500).companyShare,200)
+assert.equal(m.proManagerMonthlyProfitShare(500,600).companyShare,0)
+assert.throws(()=>m.proManagerMonthlyProfitShare(-5,0))
+const applicant=read('app/api/pro-regional-manager/applications/route.ts')
+const admin=read('app/api/admin/pro-regional-manager-applications/route.ts')
+const forensic=read('app/api/admin/pro-regional-manager-activations/route.ts')
+const activation=read('lib/pro-regional-manager-activation.ts')
+assert(applicant.includes('termsAccepted')&&admin.includes('approved_continent'))
+assert(activation.includes('proManagerApprovalState')&&forensic.includes('proManagerApprovalState'))
+assert(forensic.includes('verifiedAmountUSDT'))
+console.log('Pro manager fee ceilings, legacy salaries, 20% net profit and quote contracts passed')

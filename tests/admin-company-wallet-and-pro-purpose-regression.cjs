@@ -89,7 +89,7 @@ assert.ok(clientActivation.includes('PRO_MANAGER_AGREEMENT_SECTIONS.map')&&
  'Authenticated Client terms and business plan have the same Weave purpose and signing controls')
 assert.ok(lifestyle.includes('PRO_MANAGER_PLAN_QUESTIONS')&&
  lifestyle.includes('PRO_MANAGER_COMPANY_PURPOSE')&&
- managerActivation.includes('PRO_MANAGER_AGREEMENT_SECTIONS.map')&&
+ managerActivation.includes('PRO_ORIGINAL_ROLE_PROFIT_SHARE_AGREEMENT_SECTIONS')&&
  managerActivation.includes("action:'sign_agreement'"),
  'Agent and Bridger applications and signed Pro activation share the business-growth principle')
 assert.ok(helper.includes('PRO_ACTIVATION_FEE_USDT = 680')&&

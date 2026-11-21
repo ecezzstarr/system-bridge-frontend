@@ -3,6 +3,7 @@ import {getAuthUser} from '@/lib/auth-api'
 import {sql} from '@/lib/db'
 import {ensureProRegionalManagerApplicationsSchema} from '@/lib/pro-regional-manager-applications'
 import {prepareApprovedProRegionalManager} from '@/lib/pro-regional-manager-activation'
+import {PRO_MANAGER_PROFIT_SHARE_BPS,validateProManagerActivationQuote} from '@/lib/pro-regional-manager-profit-share'
 export const dynamic='force-dynamic'
 const headers={'Cache-Control':'private, no-store'}
 async function reviewer(request:NextRequest){
@@ -47,19 +48,25 @@ export async function POST(request:NextRequest){
   if(!/^[0-9a-f-]{36}$/i.test(id)||!['approve','reject'].includes(decision)||
     reviewNote.length<10||reviewNote.length>2000)
    return NextResponse.json({error:'Valid applicant, decision and documented Administrations review note required.'},{status:400,headers})
-  const salary=Number(body.monthlySalaryUSDT)
+
   const reference=String(body.employmentTermsReference||'').trim()
-  if(decision==='approve'&&(
-   body.independentlyVerified!==true||
-   !Number.isFinite(salary)||salary<=0||salary>100000||
-   Math.round(salary*100)!==salary*100||
-   reference.length<8||reference.length>255))
-   return NextResponse.json({error:'Independently confirm the existing agreed salary and signed company employment terms. Enter actual salary amount and verifiable agreement reference before approving.'},{status:400,headers})
+  if(decision==='approve'&&(body.independentlyVerified!==true||
+    body.operatingLocationVerified!==true||reference.length<8||reference.length>255))
+   return NextResponse.json({error:'Independently verify the company agreement, operating location and signed 20% monthly net-profit participation terms.'},{status:400,headers})
+  let quote:null|{continent:'africa'|'europe';feeUSDT:number}=null
+  if(decision==='approve') {
+    try{quote=validateProManagerActivationQuote(body.verifiedContinent,body.approvedFeeUSDT)}
+    catch(e){return NextResponse.json({error:e instanceof Error?e.message:'Invalid Pro activation fee quote'},{status:400,headers})}
+  }
   await ensureProRegionalManagerApplicationsSchema()
   const status=decision==='approve'?'approved_pending_verification':'rejected'
   // A reviewed application is NOT a Pro File Folder grant or paid/activated position.
   const [approved]=await sql`UPDATE weave_pro_regional_manager_applications a
-   SET status=${status},agreed_monthly_salary_usdt=${decision==='approve'?salary:null},
+   SET status=${status},agreed_monthly_salary_usdt=NULL,
+     compensation_model=${decision==='approve'?'profit_share':'legacy_salary'},
+     monthly_profit_share_bps=${decision==='approve'?PRO_MANAGER_PROFIT_SHARE_BPS:0},
+     approved_continent=${quote?.continent||null},
+     approved_activation_fee_usdt=${quote?.feeUSDT||null},
      employment_terms_reference=${decision==='approve'?reference:null},
      reviewed_by=${admin.id}::uuid,reviewed_at=now(),
      review_note=${reviewNote},updated_at=now()
@@ -67,7 +74,8 @@ export async function POST(request:NextRequest){
    WHERE a.user_id=${id}::uuid AND a.user_id=u.id
      AND a.status='pending' AND u.is_active=true AND u.role=a.source_role
      AND u.role IN ('agent','bridger')
-   RETURNING a.user_id,a.source_role,a.status,a.business_name,a.agreed_monthly_salary_usdt`
+   RETURNING a.user_id,a.source_role,a.status,a.business_name,a.compensation_model,
+    a.monthly_profit_share_bps,a.approved_continent,a.approved_activation_fee_usdt`
   if(!approved)return NextResponse.json({error:'Application was already reviewed or applicant role is no longer eligible.'},{status:409,headers})
   let prepared:null|{file_number:string;status:string}=null
   if(decision==='approve'){
@@ -75,12 +83,12 @@ export async function POST(request:NextRequest){
    catch(e){
     console.error('[Pro Regional Manager File Number preparation]',e)
     return NextResponse.json({success:true,application:approved,activationPrepared:false,
-      notice:'Employment verified and approved, but secure File Number preparation requires Administrations retry. Do not ask the applicant to pay until it is prepared.'},{headers})
+      notice:'Profit-share agreement approved, but secure File Number preparation requires Administrations retry. Do not ask the applicant to pay until it is prepared.'},{headers})
    }
   }
   return NextResponse.json({success:true,application:approved,activationPrepared:Boolean(prepared),
     notice:decision==='approve'
-     ?'Employment terms reviewed. Pro File Folder and activation remain pending independent identity, original-role folder ownership and payment checks.'
+     ?'20% net-profit terms and the territory-specific fee quote approved. Pro File Folder activation still requires signed acceptance and independently verified payment.'
      :'Application rejected with a recorded Administrations reason.'},{headers})
  }catch(e){console.error('[Admin Pro Regional Manager review]',e)
   return NextResponse.json({error:'Unable to review the Pro Regional Manager application'},{status:503,headers})}

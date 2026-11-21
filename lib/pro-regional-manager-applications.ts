@@ -27,6 +27,10 @@ export async function ensureProRegionalManagerApplicationsSchema(){
    submitted_at timestamptz NOT NULL DEFAULT NOW(),
    updated_at timestamptz NOT NULL DEFAULT NOW()
  )`
+ await sql`ALTER TABLE weave_pro_regional_manager_applications ADD COLUMN IF NOT EXISTS compensation_model varchar(32) NOT NULL DEFAULT 'legacy_salary'`
+ await sql`ALTER TABLE weave_pro_regional_manager_applications ADD COLUMN IF NOT EXISTS monthly_profit_share_bps integer NOT NULL DEFAULT 0`
+ await sql`ALTER TABLE weave_pro_regional_manager_applications ADD COLUMN IF NOT EXISTS approved_continent varchar(20)`
+ await sql`ALTER TABLE weave_pro_regional_manager_applications ADD COLUMN IF NOT EXISTS approved_activation_fee_usdt numeric(16,2)`
  await sql`CREATE INDEX IF NOT EXISTS weave_pro_regional_manager_application_status_time
    ON weave_pro_regional_manager_applications(status,submitted_at DESC)`
 }
