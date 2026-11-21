@@ -1,9 +1,11 @@
 import { WEAVE_LIFESTYLE_CATALOG } from '@/lib/weave-lifestyle-catalog'
+import { AGENT_SPACES } from '@/lib/agent-workplace-catalog'
+import { ADMIN_SPACES } from '@/lib/admin-workplace-catalog'
 import { getWeaveSearchDirectory } from '@/lib/weave-action-search'
 import { weavePageCopyForPath } from '@/lib/weave-page-directory'
 import { WEAVE_NATIVE_DEPARTMENTS, type NativeDepartment } from '@/lib/weave-native-blueprint'
 
-export type DepartmentBuilding = { title: string; href: string; area: string; access?: string }
+export type DepartmentBuilding = { title: string; href: string; area: string; access?: string; officialImage?: string }
 export const departmentNames = {
   bridger: 'Hope Department', agent: 'Stability Department',
   client: 'Dream Lovely Department', admin: 'Administrations Department · A Time',
@@ -38,11 +40,20 @@ const entryOnly = /\/(dashboard|login|register|access-recovery|pro-verification)
 export function departmentBuildings(department: NativeDepartment, pages: readonly string[]): DepartmentBuilding[] {
   const role = WEAVE_NATIVE_DEPARTMENTS[department].role
   const pageSet = new Set(pages)
+  // The former Work Desks are catalogs feeding the same building entrances.
+  // Keep original product imagery attached to its real workstation; never
+  // introduce a second navigation tree or new transaction storage.
+  const officialImageByHref = new Map(
+    [...AGENT_SPACES.flatMap(space=>space.stations),
+     ...ADMIN_SPACES.flatMap(space=>space.stations)]
+      .filter(station=>Boolean(station.officialImage))
+      .map(station=>[station.href,station.officialImage!] as const),
+  )
   const doors = new Map<string, DepartmentBuilding>()
   for (const item of getWeaveSearchDirectory(role)) {
     const path = item.href.split(/[?#]/)[0]
     if (!pageSet.has(path) || entryOnly.test(path) || path === '/' + role) continue
-    doors.set(item.href, { title: item.title, href: item.href, area: item.department, access: item.access })
+    doors.set(item.href, { title: item.title, href: item.href, area: item.department, access: item.access, officialImage:officialImageByHref.get(path) })
   }
   for (const lifestyle of Object.values(WEAVE_LIFESTYLE_CATALOG)) {
     const roles: readonly string[] = lifestyle.roles
