@@ -1,6 +1,6 @@
 import { sql } from '@/lib/db'
 import { getDivineShieldState, recordDeploymentRequest } from '@/lib/weave-infrastructure'
-import { listWeaveDeploymentRecords } from '@/lib/weave-deployment-records'
+import { ensureWeaveDeploymentRecordSchema } from '@/lib/weave-deployment-records'
 
 export type ShieldCheckResult={name:string;passed:boolean;detail:string}
 const validSha=(value:string)=>/^[0-9a-f]{40}$/i.test(value)
@@ -56,11 +56,23 @@ export async function runDivineShieldChecks(adminId:string){
   }
 
   try{
-    const records=await listWeaveDeploymentRecords(100)
-    const matched=validSha(sha)&&records.some((r:any)=>String(r.release_sha).toLowerCase()===sha &&
-      ['healthy','rolled_back'].includes(String(r.status)))
-    checks.push({name:'Deployment record',passed:Boolean(matched),
-      detail:matched?'Current release has a recorded healthy deployment':'No verified healthy deployment record for the current release'})
+    // The audit can contain many unrelated releases. Do not lose a genuine
+    // healthy deployment merely because a global last-100 listing overflowed.
+    // Match only the current host and the exact release, including its latest
+    // status; a failed or in-progress attempt must not authorize reopening.
+    await ensureWeaveDeploymentRecordSchema()
+    const host=process.env.WEAVE_DEPLOYMENT_SERVER||'weave-selfhost'
+    const rows=validSha(sha)?await sql`
+      SELECT release_sha,status FROM weave_deployment_records
+      WHERE lower(release_sha)=${sha} AND server_key=${host}
+      ORDER BY created_at DESC,id DESC LIMIT 1
+    `: []
+    const state=String(rows[0]?.status||'')
+    const matched=['healthy','rolled_back'].includes(state)
+    checks.push({name:'Deployment record',passed:matched,
+      detail:matched?'Current server has a recorded healthy deployment of this exact release':
+        state?'Latest recorded deployment status for this release is '+state:
+        'No healthy deployment record for this release on this server. Deploy and verify through Release Workshop.'})
   }catch{
     checks.push({name:'Deployment record',passed:false,detail:'Deployment audit could not be read'})
   }
