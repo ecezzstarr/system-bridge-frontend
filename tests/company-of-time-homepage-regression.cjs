@@ -136,3 +136,19 @@ assert.equal(require('node:crypto').createHash('sha256').update(
 ).digest('hex'),'57b1367249d10e2e9709961cba85073d353943a3a0436c1a614be015cf2fddc1')
 assert.match(grounds,/<dialog ref=\{entrances\}[\s\S]*?<nav id="grounds-entrances"[\s\S]*?<\/nav>[\s\S]*?<\/dialog>/)
 assert.match(grounds,/href="\/reach-delivery"/)
+
+
+/* A compact phone landing must reuse the same approved art. Never replace the
+   image with a generated mockup or enlarge it to several phone widths. */
+const phoneCss=fs.readFileSync(path.join(__dirname,'../app/company-grounds/grounds.module.css'),'utf8')
+assert.match(grounds,/src="\/images\/weave-open-world-home\.jpg"/,'Mobile homepage uses the original Company Grounds image')
+assert.match(grounds,/className=\{styles\.mobileHeader\}/,'A compact phone header must exist')
+assert.match(grounds,/className=\{styles\.mobileIntroduction\}/,'A concise entrance headline must exist')
+assert.match(grounds,/className=\{styles\.mobileExplore\}/,'Phone users need visible department links')
+assert.match(grounds,/renderDoor\(door, false, true\)/,'Mobile entries reuse existing role-aware navigation')
+assert.match(grounds,/user && user\.role !== door\.role/,'Unauthorized department entries must remain protected')
+assert.match(grounds,/href="\/system-switch\/world"/,'Full Weave Open World access must remain')
+assert.match(phoneCss,/@media \(max-width: 900px\), \(orientation: portrait\)/,'Portrait tablets and phones must fit the image')
+assert.match(phoneCss,/\.scene,\.viewport\[data-overview="true"\] \.scene\s*\{\s*width:100%; aspect-ratio:16\/9/,'Phone panorama must use screen width, not viewport height')
+assert.match(phoneCss,/\.viewport \.door \{display:none\}/,'Tiny, invisible panorama hotspots must not take phone taps')
+assert.match(phoneCss,/\.mobileEntrances > a,\.mobileEntrances > button/,'Phones must offer large department targets')
