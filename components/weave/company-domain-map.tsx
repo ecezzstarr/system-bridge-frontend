@@ -41,6 +41,8 @@ export function CompanyDomainMap({buildings,preview=false}:{buildings:Building[]
  const [department,setDepartment]=useState(buildings[0]?.department)
  const [plot,setPlot]=useState<number|undefined>(buildings[0]?.plot)
  const [moving,setMoving]=useState(false)
+ const selectedNameRef=useRef<HTMLParagraphElement>(null)
+ const buildingPickerRef=useRef<HTMLSelectElement>(null)
  useEffect(()=>{
   const motion=window.matchMedia('(prefers-reduced-motion: reduce)')
   const update=()=>setMoving(!motion.matches)
@@ -57,6 +59,14 @@ export function CompanyDomainMap({buildings,preview=false}:{buildings:Building[]
  const entryHref=safeDepartment&&safeSlug
   ?'/weave-modules/'+encodeURIComponent(selected.department)+'/'+encodeURIComponent(selected.slug)
   :null
+ // Assign published names only through textContent, never through an HTML parser.
+ useEffect(()=>{
+  if(selectedNameRef.current)selectedNameRef.current.textContent='Selected workshop: '+selected.title
+  for(const option of Array.from(buildingPickerRef.current?.options??[])){
+   const named=visible.find(item=>String(item.plot)===option.value)
+   if(named)option.textContent='Plot '+named.plot+' · '+named.title
+  }
+ },[selected.title,zone,plot,buildings])
  return <section className="space-y-4">
   {!preview&&<label className="block">Department
    <select className="ml-3 rounded border border-amber-200/40 bg-[#132b35] p-2" value={zone} onChange={e=>{setDepartment(e.target.value as NativeDepartment);setPlot(undefined)}}>
@@ -77,10 +87,10 @@ export function CompanyDomainMap({buildings,preview=false}:{buildings:Building[]
   </div>
   {!preview&&<>
    <label className="block">Building
-    <select value={selected.plot} onChange={e=>setPlot(Number(e.target.value))} className="ml-3 max-w-full rounded border border-amber-200/40 bg-[#132b35] p-2">
-     {visible.map(b=><option key={b.slug} value={b.plot}>Plot {b.plot} · {b.title}</option>)}
+    <select ref={buildingPickerRef} value={selected.plot} onChange={e=>setPlot(Number(e.target.value))} className="ml-3 max-w-full rounded border border-amber-200/40 bg-[#132b35] p-2">
+     {visible.map(b=><option key={b.slug} value={b.plot}>Plot {b.plot}</option>)}
     </select></label>
-   <p className="text-sm">Selected workshop: {selected.title}</p>
+   <p ref={selectedNameRef} className="text-sm">Selected workshop</p>
    {entryHref?<Link className="inline-block rounded-full bg-amber-100 px-5 py-3 font-semibold text-[#20343c]" href={entryHref}>Enter workshop</Link>
     :<p role="alert">This building entrance is unavailable.</p>}
   </>}
