@@ -36,6 +36,7 @@ import EnterpriseDreamPanel from '@/components/system-switch/enterprise-dream-pa
 import ClientGrowthWorld from '@/components/system-switch/client-growth-world'
 import { ClientPremiumDJ } from '@/components/system-switch/client-premium-dj'
 import { ClientBridgeAiSupport } from '@/components/system-switch/client-bridge-ai-support'
+import FileFolderPresenceContinuity from '@/components/system-switch/file-folder-presence-continuity'
 import { FileFolderWorkshopInterior } from './file-folder-workshop-interior'
 import { ClientFileFolder3D } from '@/components/system-switch/client-file-folder-3d'
 import { getClientToken } from '@/lib/client-auth'
@@ -843,6 +844,8 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
                 </div>
               </div>
             </div>
+
+            <FileFolderPresenceContinuity onEnter={next=>{setSurface(next);setPanelOpen(true)}} />
 
             <div className="grid gap-4 xl:grid-cols-2">
               <div className="rounded-3xl border border-amber-300/10 bg-amber-400/[0.025] p-5">
