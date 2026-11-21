@@ -31,7 +31,7 @@ export function Riverfront({role, children}:{role?:EventRole; children:ReactNode
     <div ref={viewport} className={styles.viewport}>
       <div className={styles.bank} role="group" aria-label="Explore the four department halls">
         <img src="/weave/flame-event/burning-river-riverfront.webp" width="1600" height="533"
-          alt="A Bridger films a maker, a Client welcomes a customer, an Agent prepares an order, and Administrations hosts a workshop along one riverbank."/>
+          alt="An empty Social Studio, a showroom signed Sunshine: Mechanized Wealth, a dispatch bay and a workshop beside the river."/>
         {positions.map(position => <button type="button" key={position} aria-pressed={selected === position}
           onClick={() => setChoice(position)}><span>{halls[position].name}</span></button>)}
       </div>
