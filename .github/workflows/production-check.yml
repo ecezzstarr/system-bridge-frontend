@@ -44,6 +44,7 @@ jobs:
         run: |
           node tests/file-folder-world-runtime-regression.cjs
           node tests/file-folder-environment-fidelity.cjs
+          node tests/file-folder-presence-continuity-regression.cjs
 
       - name: Shared System Switch protocol and PostgreSQL multiplayer
         env:
