@@ -82,10 +82,9 @@ const providers: NextAuthOptions['providers'] = [
           return null
         }
 
-        const shield=await getDivineShieldState()
-        if(shield.active && user.role!=='admin') {
-          return null
-        }
+        // Authentication stays available; the shared API runtime access
+        // enforces the Shield for non-Administrations operations.
+        await getDivineShieldState()
 
         // Update last login
         await updateUserLastLogin(user.id)
