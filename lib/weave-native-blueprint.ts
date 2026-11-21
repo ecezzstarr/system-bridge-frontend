@@ -23,6 +23,7 @@ export type NativeBlock=
   |{type:'intake';formId:string;heading:string;description:string;fields:{id:string;label:string;kind:'short'|'long'|'choice';required:boolean;options:string[]}[]}
 
 export type WeaveNativeBlueprint={
+ companyPlot?: number
  department:NativeDepartment
  kind:NativeKind
  slug:string
@@ -143,8 +144,14 @@ export function validateNativeBlueprint(value:unknown):WeaveNativeBlueprint{
  })
  if(value.kind==='system'&&!blocks.some(x=>x.type==='steps'))
   throw Error('A working system needs an operating steps block')
+ const plot=value.companyPlot
+ if(plot!==undefined){
+  if(typeof plot!=='number'||!Number.isInteger(plot)||plot<1||plot>24)
+   throw Error('Choose a company plot from 1 to 24')
+  if(!blocks.some(block=>block.type==='scene'))throw Error('A company building needs a 3D scene')
+ }
  return {department:value.department,kind:value.kind as NativeKind,slug,title,description,
-  quality:value.quality as NativeQuality,blocks}
+  quality:value.quality as NativeQuality,blocks,...(typeof plot==='number'?{companyPlot:plot}:{})}
 }
 
 export function defaultWeaveNativeBlueprint(

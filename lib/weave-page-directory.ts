@@ -44,6 +44,7 @@ const entrances:readonly (readonly [string,string,string])[]=[
   ['/district/[district]','Your Working District','Choose a place in this district and continue the work available to your position.'],
   ['/image-workshop/ai','Your Previous Artwork','Return to saved artwork and review the production options available for each piece.'],
   ['/lounge','Weave Lounge','Meet the people of the company and continue the conversations available to you.'],
+  ['/system-switch/world/company-domain','Company Domain','Explore the company plots and enter a published departmental workshop.'],
   ['/places','Places in Weave','Find the district, workshop or public place you want to enter.'],
   ['/private-ground','Private Conversation','Continue an authorized private conversation with its messages and shared context together.'],
   ['/roles','Your Company Position','Understand your identity, active role and the responsibilities attached to it.'],
