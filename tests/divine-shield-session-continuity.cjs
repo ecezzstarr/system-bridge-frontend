@@ -94,4 +94,56 @@ async function run(){
   assert.equal((await proxyModule.exports.proxy(request('/api/client/business-store'))).status,503)
   console.log('PASS Divine Shield: no-logout session continuity, API write boundary, admin authority, webhook and explicit release checks')
 }
-run().catch(error=>{console.error(error);process.exitCode=1})
+
+const infrastructurePage=read('app/(app)/admin/infrastructure/page.tsx')
+assert.match(infra,/to_char\(updated_at AT TIME ZONE 'UTC'/,
+  'Shield cycle identity must preserve PostgreSQL microseconds')
+assert.doesNotMatch(infra,/new Date\(current\.updated_at\)\.toISOString\(\)/,
+  'Do not truncate the Shield cycle before exact release comparison')
+assert.match(checks,/AND server_key=\$\{host\}/,
+  'Healthy deployment evidence must identify the active server')
+assert.doesNotMatch(checks,/listWeaveDeploymentRecords\(100\)/,
+  'History pagination cannot hide a verified deployed release')
+assert.match(infrastructurePage,/if\(!next && !\(await verifyRelease\(false\)\)\)return/,
+  'The release button verifies fresh checks instead of trusting stale readiness')
+assert.doesNotMatch(infrastructurePage,/disabled=\{shieldBusy\|\|\(data\.shield\.active&&\!data\.readiness\.ready\)\}/,
+  'The release button must remain operable to run checks after a failed or expired check')
+
+async function runMicrosecondReleaseRegression(){
+  const cycle='2026-11-21T14:05:10.123456Z'
+  const sha='a'.repeat(40)
+  let releaseWasUpdated=false
+  const sqlFake=async (strings,...params)=>{
+    const query=strings.join('?')
+    if(query.includes('SELECT enabled,title,message,updated_at'))return [
+      {enabled:true,title:'Maintenance',message:'Checks running',cycle_id:cycle}
+    ]
+    if(query.includes('SELECT enabled,updated_at'))return [{enabled:true,cycle_id:cycle}]
+    if(query.includes('UPDATE weave_platform_controls AS control')){
+      releaseWasUpdated=params.includes(cycle)
+      return releaseWasUpdated?[{enabled:false,title:'Maintenance',message:'Done',
+        cycle_id:'2026-11-21T14:06:00.987654Z'}]:[]
+    }
+    return []
+  }
+  const module={exports:{}}
+  const mocks={'@/lib/db':{sql:sqlFake,query:async()=>[]}}
+  const compiled=ts.transpileModule(infra,{
+    compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,
+      esModuleInterop:true}
+  }).outputText
+  vm.runInNewContext(compiled,{module,exports:module.exports,console,Date,
+    process:{env:{WEAVE_RELEASE_SHA:sha}},
+    require:name=>{if(!Object.hasOwn(mocks,name))throw Error('Unexpected import '+name);return mocks[name]}},
+    {filename:'lib/weave-infrastructure.ts'})
+  const running=await module.exports.getDivineShieldState()
+  assert.equal(running.updatedAt,cycle,'Status preserves precise database cycle identity')
+  const released=await module.exports.setDivineShieldState({
+    active:false,adminId:'123e4567-e89b-42d3-a456-426614174000'
+  })
+  assert.equal(released.active,false)
+  assert.equal(releaseWasUpdated,true,'Exact update compares six-digit cycle time, not rounded JS Date')
+  console.log('PASS Divine Shield full-precision cycle release and actionable one-click checks')
+}
+
+run().then(runMicrosecondReleaseRegression).catch(error=>{console.error(error);process.exitCode=1})
