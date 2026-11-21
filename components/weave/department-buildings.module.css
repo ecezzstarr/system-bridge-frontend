@@ -12,7 +12,7 @@
 .route li::before {content:counter(workshop); position:absolute; z-index:1; pointer-events:none; top:.5rem; left:.5rem; background:#fff9e9; color:#362b1a; border:1px solid #a18655; border-radius:50%; width:1.8rem; height:1.8rem; display:grid; place-items:center; font-weight:700}
 .building {display:flex; flex-direction:column; height:100%; color:#302619; background:#fffcf5; border:1px solid #d3c19e; overflow:hidden; border-radius:.55rem; text-decoration:none}
 .facade {width:100%; height:auto; aspect-ratio:1.5; object-fit:cover}
-.caption {display:grid; gap:.3rem; padding:.6rem .75rem; align-content:center; line-height:1.35}
+.caption {min-width:0; overflow-wrap:anywhere; display:grid; gap:.3rem; padding:.6rem .75rem; align-content:center; line-height:1.35}
 .caption strong {font:600 1.15rem/1.2 Georgia,serif}
 .caption small {text-transform:capitalize}
 .directory summary {cursor:pointer; min-height:44px; padding-block:.65rem}
@@ -20,12 +20,12 @@
 .building:focus-visible,.directory summary:focus-visible {outline:3px solid #20586c; outline-offset:2px}
 @media(max-width:38rem) {
   .route ol,.directory ul {grid-template-columns:1fr; gap:.5rem}
-  .building {display:grid; grid-template-columns:5.5rem 1fr; align-items:center}
+  .building {display:grid; grid-template-columns:5.5rem minmax(0,1fr); align-items:center}
   .facade {aspect-ratio:1}
   .route li::before {top:.18rem; left:.18rem; width:1.4rem; height:1.4rem; font-size:.8rem}
 }
 
 .studio {margin:.5rem clamp(1rem,3vw,2rem) 1rem}
 .studio h2 {font:600 1.1rem/1.4 Georgia,serif; margin-bottom:.45rem}
-.studio .building {display:grid; grid-template-columns:5.5rem 1fr; align-items:center}
+.studio .building {display:grid; grid-template-columns:5.5rem minmax(0,1fr); align-items:center}
 .studio .facade {aspect-ratio:1}

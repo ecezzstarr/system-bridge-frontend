@@ -4,6 +4,11 @@ import { weavePageCopyForPath } from '@/lib/weave-page-directory'
 import { WEAVE_NATIVE_DEPARTMENTS, type NativeDepartment } from '@/lib/weave-native-blueprint'
 
 export type DepartmentBuilding = { title: string; href: string; area: string; access?: string }
+export const departmentNames = {
+  bridger: 'Hope Department', agent: 'Stability Department',
+  client: 'Dream Lovely Department', admin: 'Administrations Department · A Time',
+} as const
+
 type FirstWorkshop = { href: string; name: string; action: string }
 export const firstWorkshops: Record<NativeDepartment, FirstWorkshop[]> = {
   hope: [

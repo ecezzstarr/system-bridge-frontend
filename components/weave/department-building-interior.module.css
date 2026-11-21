@@ -12,7 +12,12 @@
 .interior :global(.lifestyle-building-front) {display:block; height:clamp(7rem,19vw,12rem); width:100%;object-fit:cover;object-position:center 45%; border-radius:3rem 3rem .3rem .3rem}
 .interior [data-lifestyle] {scroll-margin-top:5rem}
 
-.workshopFront {margin:0; display:grid; overflow:hidden; border-radius:.65rem; isolation:isolate}
-.workshopFront img,.workshopFront figcaption {grid-area:1/1}
-.workshopFront figcaption {align-self:end; padding:2rem .85rem .65rem; color:#fffaf0; background:linear-gradient(transparent,#20190bef); font:600 clamp(1.2rem,2vw,1.6rem)/1.2 Georgia,serif; text-shadow:0 1px 3px #171107}
+.workshopFront {margin:0; min-width:0; overflow:hidden; border-radius:.65rem; background:#fffcf5; color:#342817; border:1px solid #cbb48b}
+.workshopFront figcaption {display:grid; gap:.35rem; padding:.75rem 1rem; overflow-wrap:anywhere; line-height:1.45}
+.workshopFront figcaption strong {font:600 clamp(1.2rem,2vw,1.6rem)/1.25 Georgia,serif}
+.workshopFront figcaption p {margin:0; font-size:1rem; max-width:58ch}
+@media (max-width:38rem) {
+  .workshopFront {display:grid; grid-template-columns:min(32%,8rem) minmax(0,1fr); align-items:center}
+  .workshopView {height:auto; aspect-ratio:1; border-radius:0}
+}
 .desk {scroll-margin-block-start:5rem}

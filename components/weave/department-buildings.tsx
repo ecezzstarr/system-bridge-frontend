@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { workshopArt } from '@/lib/workshop-art'
 import { useMemo, useState } from 'react'
 import { useAuth } from '@/lib/auth-provider'
-import { departmentBuildings, firstWorkshops, type DepartmentBuilding } from '@/lib/department-buildings'
+import { departmentBuildings, departmentNames, firstWorkshops, type DepartmentBuilding } from '@/lib/department-buildings'
 import { WEAVE_NATIVE_DEPARTMENTS, type NativeDepartment } from '@/lib/weave-native-blueprint'
 import { useEnvironmentOrganizer } from '@/components/world/environment-organizer-provider'
 import { useDepartmentModules } from './native-department-rail'
@@ -42,7 +42,6 @@ export function DepartmentBuildings({ department }: { department: NativeDepartme
   const route = first.filter(door => door !== studio)
   const rest = visible.filter(door => !first.some(step => step.href === door.href))
     .sort((a,b) => a.title.localeCompare(b.title) || a.href.localeCompare(b.href))
-  const mansion = { hope: 'Hope', stability: 'Stability', 'dream-lovely': 'Dream Lovely', administrations: 'Administrations · A Time' }[department]
 
   function entrance(door: DepartmentBuilding, action?: string) {
     return <Link href={door.href} prefetch={false} className={styles.building}>
@@ -55,7 +54,7 @@ export function DepartmentBuildings({ department }: { department: NativeDepartme
 
   return <section className={styles.campus} data-department={department} aria-label={label + ' buildings'}>
     <header className={styles.header}>
-      <div><Link href="/">Company Grounds</Link><h1>{mansion} mansion</h1></div>
+      <div><Link href="/">Company Grounds</Link><h1>{departmentNames[role]}</h1></div>
       <input type="search" aria-label="Find a building" placeholder="Find a building" value={query}
         onChange={event => { setQuery(event.target.value) }} />
     </header>
