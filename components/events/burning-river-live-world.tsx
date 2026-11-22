@@ -251,7 +251,7 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
    data-weave-open-world="system-switch-file-folder-world"
    data-weave-official-open-world-reference="weave-open-world-official.jpg">
    {view==='map'?<WeaveWorldAtlas domains={feed.domains} status={status} eventLabel={eventLabel} staffHref={staffHref} notice={mapNotice}
-     returnHref={returnHref==='/system-switch'?returnHref:eventHref}
+     returnHref={returnHref==='/system-switch'?returnHref:eventHref} eventHref={eventHref}
      ownWorld={role==='client'&&owner?{domainId:owner.domainId,worldSlot:owner.worldSlot,ownerName:owner.ownerName,tier:owner.ownerTier}:null}
      onFindOwnDomain={findMyCastle} onExplore={explore}
      onDomains={browseDomains} onDomain={selectDomain}
