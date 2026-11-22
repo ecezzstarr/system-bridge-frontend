@@ -38,9 +38,10 @@ assert.ok(source.includes("f.status='active' AND u.role='client'"))
 assert.ok(world.includes("role==='client'&&owner?"))
 assert.ok(world.includes('ownDomainId={role===\'client\'?owner?.domainId:null}'))
 assert.ok(world.includes('ownDomainName={role===\'client\'?owner?.ownerName:null}'))
-assert.ok(atlas.includes('data-client-owned-map-name="verified-only"'))
+assert.ok(atlas.includes('data-client-owned-world-control="verified-only"'))
 assert.ok(atlas.includes('onFindOwnDomain'))
-assert.ok(atlas.includes('worldLocationForSlot(ownWorld.worldSlot).region'))
+assert.ok(!atlas.includes('ownerHere') && !atlas.includes('worldLocationForSlot(ownWorld.worldSlot).region'),
+ 'A private Client domain may never impersonate a fixed illustrated landmark')
 assert.ok(atlasCss.includes('.weave-atlas-owner-label'))
 assert.ok(atlas.includes("/weave/open-world/weave-open-world-official.jpg"))
 
