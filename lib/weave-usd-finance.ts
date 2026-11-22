@@ -1,4 +1,6 @@
 import { getPool } from '@/lib/db'
+import { randomUUID } from 'node:crypto'
+import { ensureWeaveReceiptSchema } from '@/lib/weave-receipts'
 import {
   paystackTransactionMatches,paystackMismatchReason,
   verifyPaystackTransaction,type PaystackTransaction,
@@ -92,10 +94,27 @@ export async function getUsdWalletSnapshot(userId:string):Promise<{
   return {currency:'USD',balanceUsd:amount,status:'available'}
 }
 
+export async function getUsdLedgerEntries(userId:string,limit=50):Promise<Array<{
+  id:string;amountUsd:number;balanceAfterUsd:number;createdAt:string;depositId:string
+}>> {
+  const exists=await getPool().query("SELECT to_regclass('public.weave_usd_ledger') AS relation")
+  if(!exists.rows[0]?.relation)return []
+  const result=await getPool().query(
+    'SELECT id,deposit_id,amount_usd,balance_after_usd,created_at FROM weave_usd_ledger WHERE user_id=$1::uuid ORDER BY created_at DESC,id DESC LIMIT $2',
+    [userId,Math.max(1,Math.min(100,limit))],
+  )
+  return result.rows.map(row=>({
+    id:String(row.id),depositId:String(row.deposit_id),
+    amountUsd:Number(row.amount_usd),balanceAfterUsd:Number(row.balance_after_usd),
+    createdAt:new Date(row.created_at).toISOString(),
+  }))
+}
+
 /** Signed Paystack events or server-verified callbacks converge on one settlement. */
 export async function settleUsdPaystackDeposit(reference:string,signedEvent?:PaystackTransaction){
   const event=signedEvent||await verifyPaystackTransaction(reference)
   await ensureUsdFinanceSchema()
+  await ensureWeaveReceiptSchema()
   const client=await getPool().connect()
   let notice:{userId:string,ngn:number,usd:number,reference:string}|null=null
   try{
@@ -132,7 +151,7 @@ export async function settleUsdPaystackDeposit(reference:string,signedEvent?:Pay
       throw Error('USD credit already exists without approved deposit state; reconciliation required')
     }
     // Approved legacy or manually credited deposits must not gain a second USD credit.
-    if(deposit.status!=='pending'){
+    if(!['pending','rejected'].includes(deposit.status)){
       await client.query('COMMIT')
       return {settled:false,reason:'Deposit already decided or needs independent reconciliation'}
     }
@@ -160,9 +179,21 @@ export async function settleUsdPaystackDeposit(reference:string,signedEvent?:Pay
         rate_updated_at:deposit.rate_updated_at,confirmation_source:signedEvent?'signed_paystack_webhook':'server_verification',
       })],
     )
+    await client.query(
+      `INSERT INTO weave_receipts
+        (receipt_number,user_id,kind,source,source_id,amount,currency,status,description,metadata)
+       VALUES($1,$2::uuid,'deposit','paystack_usd_deposit',$3,$4,'USD','paid',
+         'Verified Naira deposit converted to USD at locked rate',$5::jsonb)`,
+      [
+        'WEAVE-DEP-USD-'+randomUUID().slice(0,12).toUpperCase(),
+        deposit.user_id,String(deposit.id),usd,
+        JSON.stringify({amount_ngn:ngn,ngn_per_usd:Number(deposit.ngn_per_usd),
+          paystack_reference:reference,quote_source:deposit.rate_source}),
+      ],
+    )
     const updated=await client.query(
       `UPDATE deposits SET status='approved',verified_at=NOW(),updated_at=NOW()
-       WHERE id=$1::uuid AND status='pending' RETURNING id`,[deposit.id],
+       WHERE id=$1::uuid AND status IN ('pending','rejected') RETURNING id`,[deposit.id],
     )
     if(updated.rowCount!==1)throw Error('USD deposit settlement conflict')
     await client.query('COMMIT')
