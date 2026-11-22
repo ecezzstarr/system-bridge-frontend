@@ -1,0 +1,29 @@
+name: Import refined Weave 3D Grounds revision three once
+on:
+  push:
+    branches: [feat/official-grounds-immersive-click-20261122]
+    paths: ['.github/workflows/import-weave-campus-glb-v3-once.yml']
+permissions:
+  contents: write
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download and verify revision three GLB
+        env:
+          SIGNED_GLB: "https://695d5a9fc666e505559765690b5db7dd.r2.cloudflarestorage.com/3d-scene-builder/projects/5e64782f-bb07-4cdc-8258-cea657f7d1cd/revisions/00000003-weave-campus-look-animation-corrected-03b/preview.glb?X-Amz-Expires=900&X-Amz-Date=20261122T044906Z&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=f4fb15da414147020cebc9c7007b912d%2F20261122%2Fauto%2Fs3%2Faws4_request&X-Amz-SignedHeaders=host&X-Amz-Signature=105ceef78b3dfac6b25bd1fcf960632ce16f853fc5818b4b41128996de9d0a53"
+        run: |
+          mkdir -p public/models
+          curl --fail --location --retry 2 --connect-timeout 15 "$SIGNED_GLB" -o public/models/weave-company-grounds.glb
+          test "$(stat -c%s public/models/weave-company-grounds.glb)" -eq 2872604
+          test "$(head -c 4 public/models/weave-company-grounds.glb)" = glTF
+      - name: Commit authenticated model replacement
+        run: |
+          git config user.name 'Weave 3D model export'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add public/models/weave-company-grounds.glb
+          git diff --cached --quiet && exit 0
+          git commit -m 'Upgrade Company Grounds GLB to refined geometry and live Sunshine animation'
+          git push origin HEAD:feat/official-grounds-immersive-click-20261122
