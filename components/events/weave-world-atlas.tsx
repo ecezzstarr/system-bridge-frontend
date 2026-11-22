@@ -43,7 +43,7 @@ type AtlasProps = {
   returnHref: string
   notice: string
   /** Server-verified private owner identity, never part of the public world feed. */
-  ownWorld?: {domainId:string;worldSlot:number;ownerName:string}|null
+  ownWorld?: {domainId:string;worldSlot:number;ownerName:string;tier:string}|null
   onFindOwnDomain?: () => void
   onExplore: () => void
   onDomains: (filter?: WorldDomainFilter) => void
@@ -108,7 +108,7 @@ export function WeaveWorldAtlas({
               <span className="weave-atlas-label">{label}</span>
               {ownerHere && ownWorld && <span className="weave-atlas-owner-label" data-client-owned-map-name="verified-only">
                 <strong>{ownWorld.ownerName || 'My File Folder'}</strong>
-                <small>My File Folder · Tap to locate</small>
+                <small>My {ownWorld.tier} File Folder · Tap to locate</small>
               </span>}
               {count > 0 && <span className="weave-atlas-live" aria-hidden="true"><Castle size={12}/> {count} live</span>}
             </button>
