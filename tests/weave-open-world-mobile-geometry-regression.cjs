@@ -33,8 +33,22 @@ for(let i=0;i<areas.length;i++)for(let j=i+1;j<areas.length;j++){
  const oy=Math.min(ay+ah,by+bh)-Math.max(ay,by)
  assert.ok(ox<=0||oy<=0,'Mobile hotspots overlap and can misroute visitors: '+i+','+j)
 }
-for(const width of [320,360,393,430]){
+for(const width of [280,320,360,393,430]){
  const height=width*1536/1024
+ // Pixel boxes after browser applies the 44px mobile minimum, including
+ // the bottom controls' upward shift to stay within the image.
+ const rendered=areas.map(([x,y,w,h])=>{
+  const top=y>=1400?Math.min(y/1536*height,height-44):y/1536*height
+  return {left:x/1024*width,right:(x+w)/1024*width,
+    top,bottom:top+Math.max(44,h/1536*height)}
+ })
+ for(let i=0;i<rendered.length;i++)for(let j=i+1;j<rendered.length;j++){
+  const a=rendered[i],b=rendered[j]
+  const horizontal=Math.min(a.right,b.right)-Math.max(a.left,b.left)
+  const vertical=Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top)
+  assert.ok(horizontal<=0||vertical<=0,
+    'Actual mobile tap targets overlap at '+width+'px: '+i+' and '+j)
+ }
  const mainButtons=areas.filter(([x,y])=>y>=1400)
  assert.equal(mainButtons.length,3,'Three lower entrances are kept')
  for(const [x,y,w,h] of mainButtons){
