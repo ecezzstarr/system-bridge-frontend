@@ -42,7 +42,7 @@ assert.ok(atlas.includes('data-client-owned-world-control="verified-only"'))
 assert.ok(atlas.includes('onFindOwnDomain'))
 assert.ok(!atlas.includes('ownerHere') && !atlas.includes('worldLocationForSlot(ownWorld.worldSlot).region'),
  'A private Client domain may never impersonate a fixed illustrated landmark')
-assert.ok(atlasCss.includes('.weave-atlas-owner-label'))
+assert.ok(atlasCss.includes('.weave-atlas-owner-entry'))
 assert.ok(atlas.includes("/weave/open-world/weave-open-world-official.jpg"))
 
 // Three-dimensional Client structures grow from actual operating-system counts.
