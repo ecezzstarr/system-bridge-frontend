@@ -1,0 +1,39 @@
+name: Install approved WEAVE Open World artwork
+
+on:
+  push:
+    branches:
+      - feature/open-world-client-owned-nameplates-20261122
+    paths:
+      - .github/workflows/install-weave-open-world-art.yml
+
+permissions:
+  contents: write
+
+jobs:
+  install-approved-art:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Retrieve and verify user-approved image bytes
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p public/weave/open-world
+          curl -fL --retry 3 --connect-timeout 20 --max-time 120 \
+            'https://d2ol7oe51mr4n9.cloudfront.net/user_3LoQppjO2FedlOI0UfRH3hpIE03/661cd9b3-58bd-4835-b0f4-9fa52fe18711.png' \
+            -o public/weave/open-world/weave-open-world-official.jpg
+          echo 'c91ed877872ce1176c7c34bdbafb571ea54b1a9f7f5f2c688b161c91f0d83f5e  public/weave/open-world/weave-open-world-official.jpg' | sha256sum -c -
+          test "$(file --mime-type --brief public/weave/open-world/weave-open-world-official.jpg)" = "image/jpeg"
+      - name: Commit verified image to same feature branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'weave-art-bot'
+          git config user.email 'weave-art-bot@users.noreply.github.com'
+          git add public/weave/open-world/weave-open-world-official.jpg
+          if ! git diff --cached --quiet; then
+            git commit -m 'Install official 1024x1536 Weave Open World artwork'
+            git push origin HEAD:feature/open-world-client-owned-nameplates-20261122
+          fi
