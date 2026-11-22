@@ -1,0 +1,29 @@
+name: Import original Blender-rendered 3D Grounds preview once
+on:
+  push:
+    branches: [feat/official-grounds-immersive-click-20261122]
+    paths: ['.github/workflows/import-weave-campus-preview-once.yml']
+permissions:
+  contents: write
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Import unmodified rendered preview from approved 3D scene revision 2
+        env:
+          SIGNED_RENDER_URL: "https://695d5a9fc666e505559765690b5db7dd.r2.cloudflarestorage.com/3d-scene-builder/projects/5e64782f-bb07-4cdc-8258-cea657f7d1cd/queries/weave-campus-refined-aerial-preview-02/artifacts/1600b48730ffaf296c6dfa900231ad65.png?X-Amz-Expires=900&X-Amz-Date=20261122T044435Z&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=f4fb15da414147020cebc9c7007b912d%2F20261122%2Fauto%2Fs3%2Faws4_request&X-Amz-SignedHeaders=host&X-Amz-Signature=f7864255814f295452d9f25626b0a0dcf573d5bfc251039eedad8796ea4d770c"
+        run: |
+          mkdir -p public/images
+          curl --fail --location --retry 2 --connect-timeout 15 "$SIGNED_RENDER_URL" --output public/images/weave-company-grounds-3d-preview.png
+          test "$(stat -c%s public/images/weave-company-grounds-3d-preview.png)" -eq 552051
+          test "$(head -c 8 public/images/weave-company-grounds-3d-preview.png | od -An -tx1 | tr -d ' \n')" = '89504e470d0a1a0a'
+      - name: Commit rendered preview only
+        run: |
+          git config user.name 'Weave 3D preview import'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- public/images/weave-company-grounds-3d-preview.png
+          git diff --cached --quiet && exit 0
+          git commit -m 'Store rendered preview of Weave Company Grounds 3D'
+          git push origin HEAD:feat/official-grounds-immersive-click-20261122
