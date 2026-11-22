@@ -14,6 +14,7 @@ import { departmentEntryTicketPrice } from '@/lib/department-entry-pricing'
 import { WEAVE_WRITING } from '@/lib/weave-writing'
 import { WEAVE_SYSTEM_MAP } from '@/lib/weave-system-map'
 import { FLAME_EVENT_INTRO } from '@/lib/weave-event'
+import { isFlameEventActive } from '@/lib/flame-event-landing'
 
 type Step = 'role' | 'dept-gate' | 'notice' | 'terms' | 'guide' | 'details'
 const BRIDGER_DRAFT_KEY = 'weave:staff:registration-draft:v1'
@@ -209,9 +210,9 @@ function RegisterContent() {
       // entry-ticket token. Never delete another department's application.
       try { sessionStorage.removeItem('weave_department_entry_' + formData.role.toUpperCase()) } catch {}
       try { localStorage.removeItem('weave_department_entry_' + formData.role.toUpperCase() + '_approved_loan_resume') } catch {}
-      // Successful account creation must enter its own working department,
-      // not an event route that may not finish loading on the phone.
-      router.replace(formData.role === 'bridger' ? '/bridger/dashboard' : '/agent/dashboard')
+      // Preserve WEAVE's shared Company Loop arrival while keeping the actual
+      // Agent/Bridger workspaces as the route when the event is not active.
+      router.replace(await isFlameEventActive() ? '/event' : formData.role === 'bridger' ? '/bridger/dashboard' : '/agent/dashboard')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed. Your information remains on this page; you can retry.')
       submissionLock.current = false
