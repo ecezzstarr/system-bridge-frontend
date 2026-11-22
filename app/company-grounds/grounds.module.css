@@ -105,6 +105,24 @@
   .menu {right:0;width:7%;min-width:44px;min-height:44px}
   .bottomAction {min-height:44px;transform:translateY(-45%)}
 }
+/* Portrait phones see a full-height window onto the original panorama. */
+@media (orientation:portrait) {
+  .viewport {
+    height:100vh;
+    height:100dvh;
+    justify-content:flex-start;
+    overflow-x:auto;
+    overflow-y:hidden;
+    touch-action:pan-x;
+    scrollbar-width:none;
+  }
+  .viewport::-webkit-scrollbar {display:none}
+  .viewport::before {content:none}
+  .viewport[data-exploring="true"] {touch-action:none}
+  .scene {width:auto; height:100%; aspect-ratio:16/9}
+  .viewport[data-exploring="false"][data-travelling="false"] .scene {transform:none}
+  .bottomAction {transform:none}
+}
 @media (prefers-reduced-motion:reduce) {
   .scene {transition:none;transform:translate3d(var(--grounds-pan-x,0px),var(--grounds-pan-y,0px),0) scale(var(--grounds-zoom,1))}
 }
