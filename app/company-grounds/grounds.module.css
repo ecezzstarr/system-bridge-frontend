@@ -1,106 +1,48 @@
-.grounds {position:relative; isolation:isolate; background:#fcfaf4; color:#302c23}
-/* Crop the bottom 13% of the original poster, where the obsolete 'Scroll to explore' words and arrow are baked in. */
-.viewport {position:relative; height:87vh; height:87dvh; overflow:hidden; overscroll-behavior:contain; scrollbar-width:none}
-.viewport::-webkit-scrollbar {display:none}
-.scene {position:relative; width:max(100%, 177.778dvh); aspect-ratio:16/9}
+/* The single homepage is the founder-approved Company Grounds image.
+   Do not add editorial headers, entrance strips, cards or crop the art.
+   Image-space hotspots are transparent and keep their role-aware routes. */
+.grounds {
+  position:relative; isolation:isolate; min-height:100dvh;
+  background:#fcfaf4; color:#302c23
+}
+.viewport {
+  width:100%; min-height:100vh; min-height:100dvh;
+  display:flex; align-items:center; justify-content:center;
+  overflow:hidden; overscroll-behavior:contain
+}
+.scene {
+  position:relative; flex:none; width:min(100%,177.778dvh);
+  aspect-ratio:16/9
+}
 .scene img {display:block; width:100%; height:100%; max-width:none}
-.door {position:absolute; background:transparent; border:0; border-radius:.5rem}
+.door {position:absolute; background:transparent; border:0; border-radius:.5rem; touch-action:manipulation}
 .door:hover,.door:focus-visible {box-shadow:inset 0 0 0 3px #fff1c9; background:#fff1c917}
-.entrances {display:flex; flex-wrap:wrap; gap:.5rem; justify-content:center; padding:1rem; scroll-margin-top:1rem}
-.river,.entrances a,.entrances button {display:inline-flex; align-items:center; justify-content:center; min-height:44px; padding:.4rem .85rem; border:1px solid #a18147; border-radius:2rem; text-decoration:none}
-.river {background:#38251a; color:#ffe4b1}
 .grounds :focus-visible {outline:3px solid #174d69; outline-offset:-3px}
-/* Public entrances are physically over the Company Grounds panorama,
-   not another landing section. The official poster image is untouched. */
-.groundEntrances {
-  position:absolute; z-index:4; left:50%; bottom:clamp(.35rem,1.3dvh,1.25rem);
-  transform:translateX(-50%); display:flex; align-items:center; justify-content:center;
-  gap:.6rem; width:max-content; max-width:calc(100% - 1rem)
-}
-.groundEntrances a {
-  display:inline-flex; align-items:center; justify-content:center;
-  min-height:44px; padding:.55rem 1rem; white-space:nowrap;
-  border:1px solid #b29360; border-radius:999px;
-  box-shadow:0 .2rem 1rem #2d241e44;
-  background:rgba(255,251,239,.94); color:#4d351d;
-  font:600 .92rem Georgia,serif; text-decoration:none
-}
-.groundEntrances a:focus-visible,.groundEntrances a:hover {
-  background:#fff8e4; outline:2px solid #8a5b22; outline-offset:2px
+
+/* The picture itself is the introduction on every screen size.
+   Contain the entire panorama on narrow phones rather than enlarging it
+   beyond the viewport or covering any of its buildings. */
+@media (max-width:900px), (orientation:portrait) {
+  .scene {width:100%}
+  .scene > button[aria-label="Company Grounds directory"] {
+    min-height:40px; transform:translateY(-25%)
+  }
 }
 
-.directory {position:fixed; inset:0; margin:auto; width:min(92vw,36rem); max-height:80dvh; overflow:auto; border:1px solid #ad915c; border-radius:1rem; background:#fffaf0; color:#32271a; padding:1rem; box-shadow:0 1rem 4rem #21190f40}
+.directory {
+  position:fixed; inset:0; margin:auto; width:min(92vw,36rem);
+  max-height:80dvh; overflow:auto; border:1px solid #ad915c;
+  border-radius:1rem; background:#fffaf0; color:#32271a;
+  padding:1rem; box-shadow:0 1rem 4rem #21190f40
+}
 .directory::backdrop {background:#21190f66}
 .directory header {display:flex; align-items:center; justify-content:space-between; gap:1rem}
 .directory h2 {font:600 1.45rem Georgia,serif}
 .directory header button {padding:.5rem; min-height:44px; text-decoration:underline}
-.directory .entrances {justify-content:flex-start; padding:1rem 0 0}
-
-/* The approved Company Grounds artwork remains unchanged. On narrow/portrait
-   displays, fit the entire image to the device instead of forcing a giant
-   height-based, horizontally scrolling panorama. The visible links below it
-   replace tiny image hotspots, using the same role-aware entrance handler. */
-.mobileHeader,.mobileIntroduction,.mobileExplore {display:none}
-@media (max-width: 900px), (orientation: portrait) {
-  .grounds {min-height:100dvh; overflow-x:hidden; background:#fffcf7}
-  .mobileHeader {
-    display:flex; align-items:center; justify-content:space-between; gap:.75rem;
-    min-height:68px; padding:.65rem clamp(.8rem,3vw,1.5rem);
-    border-bottom:1px solid #ddcba7; background:#fffdf9
-  }
-  .mobileBrand {
-    display:inline-flex; align-items:center; gap:.6rem; min-width:0;
-    font:600 clamp(.7rem,2.6vw,.95rem) Georgia,serif; letter-spacing:.07em;
-    color:#49371f; text-decoration:none; white-space:nowrap
-  }
-  .mobileMark {font:italic 2.15rem Georgia,serif; color:#a6782d; border-right:1px solid #d5bb89; padding-right:.65rem}
-  .mobileHeaderActions {display:flex; align-items:center; gap:.6rem; flex:none}
-  .mobileSignIn {
-    display:inline-flex; justify-content:center; align-items:center; padding:.5rem .8rem;
-    min-height:44px; border:1px solid #ab853b; border-radius:999px;
-    color:#51391c; background:#fffdf9; text-decoration:none; font-size:.82rem; white-space:nowrap
-  }
-  .mobileMenu {
-    display:grid; place-items:center; width:44px; height:44px; border:0;
-    border-radius:.7rem; background:transparent; color:#49371f
-  }
-  .mobileIntroduction {display:block; text-align:center; padding:1.15rem 1rem 1rem}
-  .mobileIntroduction h2 {
-    margin:0; color:#704b1c; font:600 clamp(1.65rem,5.6vw,2.5rem)/1.14 Georgia,serif
-  }
-  .mobileIntroduction p {margin:.45rem 0 0; color:#64594c; font:italic clamp(.9rem,2.8vw,1.1rem) Georgia,serif}
-  /* Retain the exact artwork, fit its width, and clip the lower inscription
-     and down arrow without resampling or creating a replacement image. */
-  .viewport {
-    width:100%; height:auto; aspect-ratio:1536 / 752;
-    overflow:hidden; overscroll-behavior:auto; scrollbar-width:none
-  }
-  .scene {width:100%; aspect-ratio:16/9}
-  .scene img {display:block; width:100%; max-width:100%; height:auto}
-  .viewport .door {display:none}
-  .mobileExplore {display:block; padding:1.2rem clamp(.9rem,4vw,2rem) 2rem; text-align:center}
-  .mobileExplore h2 {margin:0 0 .9rem; font:600 clamp(1.45rem,5vw,1.9rem) Georgia,serif; color:#694b26}
-  .mobileEntrances {display:grid; gap:.55rem}
-  .mobileEntrances > a,.mobileEntrances > button {
-    display:flex; justify-content:space-between; align-items:center; width:100%; min-height:54px;
-    padding:.75rem 1rem; border:1px solid #cdb993; border-radius:.8rem;
-    color:#49341e; background:#fff; text-align:left; text-decoration:none;
-    font:600 1rem Georgia,serif; box-shadow:0 3px 9px #3f2d1712
-  }
-  .mobileArrow {color:#a47b38; font:400 1.6rem/1 Georgia,serif}
-  .mobileActions {display:grid; justify-items:stretch; gap:1rem; margin-top:1.15rem}
-  .mobileWorld {
-    display:inline-flex; justify-content:center; align-items:center; gap:.45rem;
-    min-height:44px; color:#335675; text-decoration:underline;
-    text-underline-offset:.2rem; font-size:.94rem
-  }
-  .groundEntrances {bottom:.3rem; gap:.35rem; width:calc(100% - .65rem)}
-  .groundEntrances a {flex:1; min-width:0; padding:.45rem .35rem; font-size:.77rem}
+.entrances {display:flex; flex-wrap:wrap; gap:.5rem; justify-content:flex-start; padding:1rem 0 0}
+.entrances a,.entrances button,.river {
+  display:inline-flex; align-items:center; justify-content:center;
+  min-height:44px; padding:.4rem .85rem; border:1px solid #a18147;
+  border-radius:2rem; text-decoration:none
 }
-@media (max-width: 365px) {
-  .mobileBrand {gap:.35rem; letter-spacing:0; font-size:.66rem}
-  .mobileMark {font-size:1.7rem; padding-right:.4rem}
-  .mobileHeader {gap:.35rem; padding-inline:.55rem}
-  .mobileHeaderActions {gap:.2rem}
-  .mobileSignIn {padding-inline:.55rem; font-size:.76rem}
-}
+.river {background:#38251a; color:#ffe4b1}

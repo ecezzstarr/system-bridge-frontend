@@ -138,35 +138,25 @@ assert.match(grounds,/<dialog ref=\{entrances\}[\s\S]*?<nav id="grounds-entrance
 assert.match(grounds,/href="\/reach-delivery"/)
 
 
-/* A compact phone landing must reuse the same approved art. Never replace the
-   image with a generated mockup or enlarge it to several phone widths. */
-const phoneCss=fs.readFileSync(path.join(__dirname,'../app/company-grounds/grounds.module.css'),'utf8')
-assert.match(grounds,/src="\/images\/weave-open-world-home\.jpg"/,'Mobile homepage uses the original Company Grounds image')
-assert.match(grounds,/className=\{styles\.mobileHeader\}/,'A compact phone header must exist')
-assert.match(grounds,/className=\{styles\.mobileIntroduction\}/,'A concise entrance headline must exist')
-assert.match(grounds,/className=\{styles\.mobileExplore\}/,'Phone users need visible department links')
-assert.match(grounds,/renderDoor\(door, false, true\)/,'Mobile entries reuse existing role-aware navigation')
-assert.match(grounds,/user && user\.role !== door\.role/,'Unauthorized department entries must remain protected')
-assert.match(grounds,/href="\/system-switch\/world"/,'Full Weave Open World access must remain')
-assert.match(phoneCss,/@media \(max-width: 900px\), \(orientation: portrait\)/,'Portrait tablets and phones must fit the image')
-assert.match(phoneCss,/\.scene \{width:100%; aspect-ratio:16\/9/,'Phone panorama must use screen width, not viewport height')
-assert.match(phoneCss,/\.viewport \.door \{display:none\}/,'Tiny, invisible panorama hotspots must not take phone taps')
-assert.match(phoneCss,/\.mobileEntrances > a,\.mobileEntrances > button/,'Phones must offer large department targets')
-
-assert.match(phoneCss,/aspect-ratio:1536 \/ 752/,'The visible mobile image must crop out the baked-in scroll caption and arrow')
-assert.match(phoneCss,/height:87dvh/,'The desktop image must crop out the same caption and arrow')
-assert.doesNotMatch(grounds,/Scroll to explore company entrances|Scroll through grounds/,'Homepage must not provide obsolete scroll instructions')
-assert.doesNotMatch(grounds,/className=\{styles\.desktopFooter\}|className=\{styles\.mobileJoin\}|className=\{styles\.mobileLegal\}/,
-  'No second Join Weave or company information footer may appear below the Company Grounds')
-assert.doesNotMatch(grounds,/WEAVE_COMPANY\.registrationNumber/,
-  'The homepage must not repeat the company RC number')
-assert.match(grounds,/<nav className=\{styles\.groundEntrances\}[^>]*>[\s\S]*?<Link href="\/register">Join Weave<\/Link>[\s\S]*?<Link href="\/file-folder-preview">File Folder previews<\/Link>/,
-  'Join Weave and File Folder previews must both live inside the panorama')
-assert.match(grounds,/if \(door\.name === 'File Folder'\)/,
-  'The File Folder grounds entrance must remain a public preview, never a private department denial')
-assert.match(phoneCss,/\.groundEntrances \{/,
-  'Grounds entrances need integrated picture-overlay styling')
-assert.match(phoneCss,/\.viewport \{position:relative;/,
-  'Public Join Weave and File Folder links must be anchored to the picture viewport on phones and desktop')
-assert.doesNotMatch(phoneCss,/\.desktopFooter|\.mobileJoin|\.mobileLegal/,
-  'Deleted homepage footer controls must not retain duplicate CSS')
+/* The artwork, not an added page of buttons, introduces Weave.
+   Its sign-in, departments and Company Grounds sign are invisible hotspots.
+   Registration, File Folder previews and all public services stay in directory. */
+const groundsCss=fs.readFileSync(path.join(__dirname,'../app/company-grounds/grounds.module.css'),'utf8')
+assert.match(grounds,/src="\/images\/weave-open-world-home\.jpg"/,'The official homepage must use the original Company Grounds image')
+assert.match(grounds,/data-weave-company-home="company-grounds"/,'The homepage remains the single Company Grounds entrance')
+assert.match(grounds,/doors\.map\(door => renderDoor\(door, true\)\)/,'Building hotspots must remain navigable')
+assert.match(grounds,/if \(user && user\.role !== door\.role\)/,'Private department crossings remain protected')
+assert.match(grounds,/if \(door\.name === 'File Folder'\)/,'Public File Folder previews must not require Client authentication')
+assert.match(grounds,/<dialog ref=\{entrances\}[\s\S]*?<Link href="\/register">Join Weave<\/Link>[\s\S]*?<Link href="\/file-folder-preview">Explore File Folders<\/Link>/,
+  'Registration and File Folder previews belong in the Company Grounds directory')
+for(const extra of ['mobileHeader','mobileIntroduction','mobileExplore','groundEntrances','desktopFooter','mobileJoin','mobileLegal'])
+  assert.ok(!grounds.includes('styles.'+extra),'Do not add another homepage surface: '+extra)
+assert.doesNotMatch(grounds,/The Company of Time|One company\. Many ways to participate\.|WEAVE_COMPANY\.registrationNumber/,
+  'Company Grounds already communicates company identity; do not repeat it')
+assert.match(groundsCss,/\.viewport \{[\s\S]*?min-height:100dvh/,'The image is the one full-screen homepage')
+assert.match(groundsCss,/\.scene \{[\s\S]*?width:min\(100%,177\.778dvh\);[\s\S]*?aspect-ratio:16\/9/,
+  'Fit the full image to the device without horizontal overflow')
+assert.match(groundsCss,/\.scene img \{display:block; width:100%; height:100%; max-width:none\}/,
+  'The full original image must be visible without resampling/cropping')
+assert.doesNotMatch(groundsCss,/\.mobileHeader|\.mobileIntroduction|\.mobileExplore|\.groundEntrances|\.desktopFooter|height:87dvh|aspect-ratio:1536 \/ 752/,
+  'Retire all previous artificial homepage layers and cropped-image treatment')
