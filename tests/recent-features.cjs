@@ -195,7 +195,7 @@ const departmentEntrySource=fs.readFileSync(path.join(root,'components/departmen
 const departmentTicketLibSource=fs.readFileSync(path.join(root,'lib/department-entry-tickets.ts'),'utf8')
 const departmentRegisterSource=fs.readFileSync(path.join(root,'app/(auth)/register/page.tsx'),'utf8')
 const departmentAdminPanelSource=fs.readFileSync(path.join(root,'components/admin/department-entry-tickets-panel.tsx'),'utf8')
-assert.ok(departmentEntrySource.includes('Enter With Music'),'Department Entry is music-gated')
+assert.ok(departmentEntrySource.includes('Open Entry Ticket') && departmentEntrySource.includes('void startRequiredMusic().catch') && !departmentEntrySource.includes('if (!musicStarted)'), 'Department Entry uses the shared DJ without locking Agent or Bridger loan registration when audio is blocked')
 assert.ok(departmentEntrySource.includes("window.dispatchEvent(new CustomEvent('weave:dj-request-play'")&&departmentEntrySource.includes("'weave:dj-playback-result'"),'Department Entry starts the one persistent WEAVE DJ player through the global sound bus')
 assert.ok(!departmentEntrySource.includes('new Audio(')&&!departmentEntrySource.includes('AudioContextCtor')&&!departmentEntrySource.includes('startFallbackMusic'),'Department Entry never mounts a private song or synthetic fallback that breaks sound continuity')
 assert.ok(departmentEntrySource.includes('{ticket.priceFlameCoin} System Switch'),'Department Entry ticket price shown')
