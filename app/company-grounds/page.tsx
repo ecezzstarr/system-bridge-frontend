@@ -13,10 +13,10 @@ const OFFICIAL_GROUNDS_IMAGE = '/images/weave-official-hybrid-home.jpg'
 const FALLBACK_GROUNDS_IMAGE = '/images/weave-open-world-home.jpg'
 
 const buildings = [
-  {name:'Hope',role:'bridger',workplace:'/bridger/dashboard',entrance:'/login',left:0,top:39,width:25,height:37,x:13,y:55,description:'Bridgers · outreach, prospects and client conversion'},
-  {name:'Stability',role:'agent',workplace:'/agent/dashboard',entrance:'/login',left:6,top:26,width:36,height:28,x:24,y:39,description:'Agents · distribution, stores and everyday support'},
-  {name:'Administrations · A Time',role:'admin',workplace:'/admin/dashboard',entrance:'/login?portal=admin',left:27,top:9,width:29,height:30,x:41,y:23,description:'Administrations · company systems, releases and oversight'},
-  {name:'Dream Lovely',role:'client',workplace:'/client/dashboard',entrance:'/client/login',left:48,top:37,width:38,height:38,x:68,y:56,description:'Clients · File Folders, enterprises and Customer Doors'},
+  {name:'Hope',role:'bridger',workplace:'/bridger/dashboard',entrance:'/login',left:0,top:44,width:25,height:34,x:13,y:57,description:'Bridgers · outreach, prospects and client conversion'},
+  {name:'Stability',role:'agent',workplace:'/agent/dashboard',entrance:'/login',left:18,top:30,width:26,height:24,x:31,y:41,description:'Agents · distribution, stores and everyday support'},
+  {name:'Administrations · A Time',role:'admin',workplace:'/admin/dashboard',entrance:'/login?portal=admin',left:28,top:9,width:28,height:22,x:42,y:20,description:'Administrations · company systems, releases and oversight'},
+  {name:'Dream Lovely',role:'client',workplace:'/client/dashboard',entrance:'/client/login',left:53,top:42,width:34,height:29,x:70,y:54,description:'Clients · File Folders, enterprises and Customer Doors'},
   {name:'File Folder',role:'client',workplace:'/client/system-switch',entrance:'/file-folder-preview',left:60,top:13,width:23,height:13,x:72,y:20,description:'Client estates · public File Folder previews'},
 ] as const
 
