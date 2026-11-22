@@ -9,7 +9,7 @@ import styles from './grounds.module.css'
 
 // The approved 1536 × 864 Company Grounds artwork, including the official logo,
 // department guide and three public entrance labels, is one unedited image.
-const OFFICIAL_GROUNDS_IMAGE = 'https://d2ol7oe51mr4n9.cloudfront.net/user_3LoQppjO2FedlOI0UfRH3hpIE03/cd492df3-5897-4c72-b629-7c4b5edd5ef1.png'
+const OFFICIAL_GROUNDS_IMAGE = '/images/weave-official-hybrid-home.jpg'
 const FALLBACK_GROUNDS_IMAGE = '/images/weave-open-world-home.jpg'
 
 const buildings = [
