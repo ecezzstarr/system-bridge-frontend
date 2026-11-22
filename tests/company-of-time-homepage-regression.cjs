@@ -155,3 +155,20 @@ assert.ok(groundsCss.includes('width:min(100%,177.778dvh)'), 'Full image fits th
 for(const name of ['mobileHeader','mobileIntroduction','mobileExplore','groundEntrances','desktopFooter']) assert.ok(!grounds.includes('styles.'+name), 'No duplicate introduction: '+name)
 
 assert.equal(require('node:crypto').createHash('sha256').update(fs.readFileSync(path.join(__dirname,'../public/images/weave-official-hybrid-home.jpg'))).digest('hex'), 'bbe2056bba2e56dc35479160d9aad03ad2527504a5dbafaf9c34f324167d082b', 'Approved homepage must stay byte-for-byte identical to the user upload')
+
+/* WEAVE 3D campus functional contract — original image stays unchanged. */
+const liveGrounds3d=fs.readFileSync(path.join(__dirname,'../app/company-grounds/3d/page.tsx'),'utf8')
+const modelPath=path.join(__dirname,'../public/models/weave-company-grounds.glb')
+const modelBytes=fs.readFileSync(modelPath)
+assert.equal(modelBytes.subarray(0,4).toString('ascii'),'glTF','Company Grounds must be actual glTF/GLB geometry, not an image')
+assert.equal(modelBytes.readUInt32LE(4),2,'Three.js requires glTF 2.0 format')
+assert.ok(modelBytes.length>100000&&modelBytes.length<8*1024*1024,'3D geometry is present and bounded for mobile devices')
+assert.ok(grounds.includes('href="/company-grounds/3d"'),'Official Company Grounds sign opens real 3D environment')
+assert.ok(grounds.includes("'/images/weave-official-hybrid-home.jpg'"),'Main homepage continues to use approved, exact original image')
+assert.ok(liveGrounds3d.includes("useGLTF('/models/weave-company-grounds.glb')"),'3D view loads committed scene geometry')
+assert.ok(liveGrounds3d.includes('onClick={click}')&&liveGrounds3d.includes('identifyPlace(e.object.name)'),'Interactive buildings resolve to named 3D mesh objects')
+assert.ok(liveGrounds3d.includes('OrbitControls')&&liveGrounds3d.includes('maxDistance'),'Orbit and zoom controls remain available')
+assert.ok(liveGrounds3d.includes('if(role&&user&&role!==user.role)'),'Unauthorized role crossing is denied from 3D model')
+assert.ok(liveGrounds3d.includes('router.push(resolvePath(place))'),'3D entrances navigate to real Weave routes')
+assert.ok(liveGrounds3d.includes('href="/file-folder-preview"')&&liveGrounds3d.includes('href="/register"'),'Public registration and preview entrance remain reachable')
+console.log('WEAVE 3D campus functional contract passed')
