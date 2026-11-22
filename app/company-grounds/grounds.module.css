@@ -93,7 +93,13 @@
 .river {background:#38251a;color:#ffe4b1}
 
 @media (max-width:900px), (orientation:portrait) {
-  .scene {width:100%}
+  .viewport {isolation:isolate}
+  .viewport::before {
+    content:'';position:absolute;inset:-6%;z-index:0;pointer-events:none;
+    background:linear-gradient(180deg,#06122699,#061226b5),url('/images/weave-official-hybrid-home.jpg') center/cover no-repeat;
+    filter:blur(19px) brightness(.8);
+  }
+  .scene {z-index:1;width:100%}
   .companyMark {min-height:44px}
   .signIn {right:8%;width:10%;min-width:55px;min-height:44px}
   .menu {right:0;width:7%;min-width:44px;min-height:44px}
