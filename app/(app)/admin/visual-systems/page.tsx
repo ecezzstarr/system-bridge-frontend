@@ -1,5 +1,7 @@
 'use client'
 
+import {BuildingRelief} from '@/components/world/building-relief'
+import type {CSSProperties} from 'react'
 import { AdaptiveCanvas } from '@/components/world/adaptive-canvas'
 import { OrbitControls } from '@react-three/drei'
 import { useEffect,useState } from 'react'
@@ -91,6 +93,7 @@ export default function VisualSystemsWorkshop(){
   const router=useRouter()
   const [draft,setDraft]=useState<FlameArtifactVisualConfig>(DEFAULT_FLAME_ARTIFACT_CONFIG)
   const [published,setPublished]=useState<FlameArtifactVisualConfig>(DEFAULT_FLAME_ARTIFACT_CONFIG)
+  const [viewpoint,setViewpoint]=useState(.6)
   const [version,setVersion]=useState(1)
   const [publishedAt,setPublishedAt]=useState<string|null>(null)
   const [history,setHistory]=useState<Revision[]>([])
@@ -199,6 +202,21 @@ export default function VisualSystemsWorkshop(){
   </>
 
   const center=loading?<div className="flex min-h-[520px] items-center justify-center"><RefreshCw className="h-7 w-7 animate-spin text-violet-300"/></div>:<>
+    <section id="company-scene-controls" className="rounded-3xl border border-amber-200/25 p-5">
+      <h2 className="text-xl font-semibold">Open World scene workshop</h2>
+      <p className="my-3 text-sm text-slate-300">Move the preview viewpoint to inspect the building. Publish to apply the artwork settings to Company Grounds, department buildings and Sunshine. Machine speed controls company plot rotors, workshop machinery and Client File Folder cranes.</p>
+      <div className="grid items-center gap-4 md:grid-cols-2">
+        <div style={{'--weave-perspective':draft.architecture.perspective,'--weave-relief':draft.architecture.relief,'--weave-observer-x':viewpoint,'--weave-observer-y':viewpoint/2} as CSSProperties}>
+          <BuildingRelief src="/images/workshops/foundry.webp" className="w-full rounded-lg" alt="Foundry building preview"/>
+          <Slider label="Preview viewpoint" value={viewpoint} min={-1} max={1} step={.05} onChange={setViewpoint}/>
+        </div>
+        <div className="grid gap-2">
+          {([['perspective','Viewpoint depth',3],['relief','Foreground relief',3],['machinery','Company machinery speed',2]] as const).map(([key,label,max])=>
+            <Slider key={key} label={label} value={draft.architecture[key]} min={0} max={max} step={.1}
+              onChange={value=>setDraft(v=>({...v,architecture:{...v.architecture,[key]:value}}))}/>)}
+        </div>
+      </div>
+    </section>
     <div className="grid gap-4 xl:grid-cols-[340px_1fr]">
       <section className="overflow-hidden rounded-3xl border border-violet-300/15 bg-[#020711]/75">
         <div className="border-b border-white/10 px-4 py-3">

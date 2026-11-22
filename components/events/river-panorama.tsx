@@ -1,11 +1,14 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
+import {useVisualRuntime} from '@/components/world/use-visual-runtime'
 import styles from './riverfront.module.css'
 
 const artwork = '/weave/flame-event/burning-river-riverfront.webp'
 
 export function RiverPanorama() {
+  const {config}=useVisualRuntime()
+  const {perspective,relief}=config.architecture
   const viewport = useRef<HTMLDivElement>(null)
   const bank = useRef<HTMLDivElement>(null)
   const original = useRef<HTMLImageElement>(null)
@@ -24,7 +27,7 @@ export function RiverPanorama() {
       const version = ++revision
       dispose?.()
       dispose = undefined
-      if (motion.matches || !view || !surface || !img) return
+      if ((!perspective && !relief) || motion.matches || !view || !surface || !img) return
       await img.decode()
       const THREE = await import('three')
       if (cancelled || version !== revision) return
@@ -41,7 +44,7 @@ export function RiverPanorama() {
       // A shallow arc gives the riverbank depth while preserving its original UVs.
       for (let i = 0; i < points.count; i++) {
         const x = points.getX(i) / aspect
-        points.setZ(i, -.08 * x * x)
+        points.setZ(i, -.08 * relief * x * x)
       }
       points.needsUpdate = true
       const material = new THREE.MeshBasicMaterial({ map: texture, toneMapped: false })
@@ -53,7 +56,7 @@ export function RiverPanorama() {
       let frame = 0
       function draw() {
         frame = 0
-        camera.position.x = look * .09
+        camera.position.x = look * .09 * perspective
         camera.lookAt(0, 0, 0)
         renderer.render(scene, camera)
       }
@@ -108,7 +111,7 @@ export function RiverPanorama() {
       motion.removeEventListener('change', change)
       dispose?.()
     }
-  }, [])
+  }, [perspective,relief])
 
   return <div ref={viewport} className={styles.viewport} tabIndex={0} role="region" aria-label="Sunshine riverfront panorama">
     <div ref={bank} className={styles.bank}>

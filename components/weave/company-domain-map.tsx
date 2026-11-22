@@ -1,6 +1,7 @@
 'use client'
 
-import {Component,Suspense,useEffect,useRef,useState,type ReactNode} from 'react'
+import {Component,Suspense,useRef,useState,type ReactNode} from 'react'
+import {useMachinerySpeed} from '@/components/world/use-machinery-speed'
 import {useRouter} from 'next/navigation'
 import {Canvas,useFrame} from '@react-three/fiber'
 import {OrbitControls} from '@react-three/drei'
@@ -15,9 +16,9 @@ class MapBoundary extends Component<{children:ReactNode},{failed:boolean}>{
  render(){return this.state.failed?<p className="p-4">3D view unavailable on this device.</p>:this.props.children}
 }
 
-function BuildingModel({building,active,onSelect,moving}:{building:Building;active:boolean;onSelect:()=>void;moving:boolean}){
+function BuildingModel({building,active,onSelect,speed}:{building:Building;active:boolean;onSelect:()=>void;speed:number}){
  const rotor=useRef<Group>(null)
- useFrame((_,delta)=>{if(rotor.current&&moving)rotor.current.rotation.z+=Math.min(delta,.05)*.7})
+ useFrame((_,delta)=>{if(rotor.current&&speed)rotor.current.rotation.z+=Math.min(delta,.05)*.7*speed})
  const mechanical=building.scene==='mechanized'
  const height=mechanical?2.8:building.scene==='water'?1.65:3.6
  return <group onClick={event=>{event.stopPropagation();onSelect()}}>
@@ -39,15 +40,9 @@ function BuildingModel({building,active,onSelect,moving}:{building:Building;acti
 
 export function CompanyDomainMap({buildings,preview=false}:{buildings:Building[];preview?:boolean}){
  const router=useRouter()
+ const machinery=useMachinerySpeed()
  const [department,setDepartment]=useState(buildings[0]?.department)
  const [plot,setPlot]=useState<number|undefined>(buildings[0]?.plot)
- const [moving,setMoving]=useState(false)
- useEffect(()=>{
-  const motion=window.matchMedia('(prefers-reduced-motion: reduce)')
-  const update=()=>setMoving(!motion.matches)
-  update();motion.addEventListener('change',update)
-  return ()=>motion.removeEventListener('change',update)
- },[])
  const zone=preview?buildings[0]?.department:department
  const visible=buildings.filter(b=>b.department===zone)
  const selected=visible.find(b=>b.plot===plot)??visible[0]
@@ -70,7 +65,7 @@ export function CompanyDomainMap({buildings,preview=false}:{buildings:Building[]
     <Suspense fallback={null}>
      <mesh rotation={[-Math.PI/2,0,0]} position={[0,-.02,0]}><planeGeometry args={preview?[9,9]:[32,22]}/><CityMaterial kind="paving" tileX={8} tileY={6}/></mesh>
      {visible.map(building=><group key={building.slug} position={preview?[0,0,0]:[((building.plot-1)%6-2.5)*5,0,(Math.floor((building.plot-1)/6)-1.5)*5]}>
-      <BuildingModel building={building} moving={moving} active={building===selected} onSelect={()=>setPlot(building.plot)}/>
+      <BuildingModel building={building} speed={machinery} active={building===selected} onSelect={()=>setPlot(building.plot)}/>
      </group>)}
     </Suspense>
     <OrbitControls maxPolarAngle={Math.PI*.47} minDistance={4} maxDistance={48}/>
