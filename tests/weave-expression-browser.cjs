@@ -134,7 +134,7 @@ async function main() {
             assert.equal(await approved.count(), 1, 'The approved image must be served from Weave assets')
             const imageBounds = await approved.boundingBox()
             assert.ok(imageBounds && imageBounds.width <= width + 1, 'Approved image fits the phone width')
-            await page.mouse.click(imageBounds.x + imageBounds.width * .45, imageBounds.y + imageBounds.height * .83)
+            await page.mouse.click(imageBounds.x + imageBounds.width * .91, imageBounds.y + imageBounds.height * .88)
             await page.waitForFunction(() => document.querySelector('#grounds-panorama')?.getAttribute('data-exploring') === 'true')
             await page.locator('#grounds-panorama').focus()
             await page.keyboard.press('Escape')
