@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic'
 import {workshopArt} from '@/lib/workshop-art'
 import {useMemo,useState} from 'react'
 import {useAuth} from '@/lib/auth-provider'
-import {departmentBuildings,departmentNames,firstWorkshops,type DepartmentBuilding} from '@/lib/department-buildings'
+import {departmentBuildings,departmentNames,firstWorkshops,HOPE_TIKTOK_PUBLICATION_HREF,type DepartmentBuilding} from '@/lib/department-buildings'
 import {WEAVE_NATIVE_DEPARTMENTS,type NativeDepartment} from '@/lib/weave-native-blueprint'
 import {useEnvironmentOrganizer} from '@/components/world/environment-organizer-provider'
 import {useDepartmentModules} from './native-department-rail'
@@ -58,7 +58,8 @@ export function DepartmentBuildings({department}:{department:NativeDepartment}){
   return door?[{...door,title:step.name,action:step.action}]:[]
  })
  const studio=department==='hope'?first.find(door=>door.href==='/distribution-studio'):undefined
- const primary=first.filter(door=>door!==studio)
+ const tikTokPublication=department==='hope'?first.find(door=>door.href===HOPE_TIKTOK_PUBLICATION_HREF):undefined
+ const primary=first.filter(door=>door!==studio&&door!==tikTokPublication)
  const livePlots=modules.flatMap(module=>{
   const plot=module.blueprint.companyPlot
   const href=`/weave-modules/${department}/${encodeURIComponent(module.slug)}`
@@ -104,8 +105,12 @@ export function DepartmentBuildings({department}:{department:NativeDepartment}){
    <h2>{query.trim()?'Matching working buildings':'Start here'}</h2>
    <ol>{primary.map(door=><li key={door.href}>{entrance(door,door.action)}</li>)}</ol>
   </nav>}
-  {studio&&<aside className={styles.studio} aria-label="Available anytime">
-   <h2>Available anytime</h2>{entrance(studio,studio.action)}
+  {(studio||tikTokPublication)&&<aside className={styles.studio} aria-label="Hope publishing buildings" data-hope-publication-buildings="existing-channel-entrances">
+   <h2>Publishing · available anytime</h2>
+   <div className={styles.publicationBuildings}>
+    {tikTokPublication&&entrance(tikTokPublication,tikTokPublication.action)}
+    {studio&&entrance(studio,studio.action)}
+   </div>
   </aside>}
   {livePlots.length>0&&<section className={styles.route} aria-label="Live 3D company buildings" data-published-company-buildings={department}>
    <h2>Live company buildings</h2>
