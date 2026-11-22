@@ -29,6 +29,13 @@
 .studio h2 {font:600 1.1rem/1.4 Georgia,serif; margin-bottom:.45rem}
 .studio .building {display:grid; grid-template-columns:5.5rem minmax(0,1fr); align-items:center}
 .studio .facade {aspect-ratio:1}
+.publicationBuildings {display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.65rem}
+.publicationBuildings .building {min-height:6rem}
+.publicationBuildings .building:first-child {border-color:#6c8baf; background:#f0f5fb}
+.publicationBuildings .building:first-child:focus-visible {outline-color:#20586c}
+@media(max-width:38rem) {
+  .publicationBuildings {grid-template-columns:1fr}
+}
 
 /* The catalog is now a quiet list of real workstations inside the buildings;
    a second campus of image cards would recreate the old duplicate Work Desk. */
