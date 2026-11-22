@@ -256,14 +256,22 @@ const groundsCss=fs.readFileSync(path.join(root,'app/company-grounds/grounds.mod
 for(const name of ['Hope','Stability','Administrations · A Time','Dream Lovely'])
   assert.ok(groundsSource.includes("name: '"+name+"'"),name+' still has its building')
 assert.doesNotMatch(groundsSource,/name: '(Forensics|Mandate|Attorney)'/,'Oversight positions are not standalone public departments')
-assert.match(groundsCss,/\.scene \{position:relative; width:max\(100%, 177\.778dvh\)/,'Original desktop panorama geometry is retained')
-assert.match(groundsCss,/aspect-ratio:1536 \/ 752/,'The original company image fits phones and hides the obsolete bottom caption')
-assert.match(groundsCss,/\.scene \{width:100%; aspect-ratio:16\/9/,'Phones do not require horizontal scrolling')
-assert.match(groundsSource,/className=\{styles\.mobileExplore\}/,'Touch-friendly department entrances replace hidden scroll navigation')
-assert.match(groundsSource,/className=\{styles\.groundEntrances\}/,'Join Weave and File Folder previews live inside Company Grounds')
-assert.match(groundsSource,/href="\/file-folder-preview">File Folder previews<\/Link>/,'Public File Folder previews remain easy to find')
-assert.doesNotMatch(groundsSource,/className=\{styles\.desktopFooter\}|WEAVE_COMPANY\.registrationNumber/,'No redundant homepage footer or RC number')
-assert.doesNotMatch(groundsSource,/data-overview=\{overview\}|Scroll to explore company entrances/,'Removed navigation prompts must stay removed')
+assert.match(groundsCss,/\.scene \{[\s\S]*?width:min\(100%,177\.778dvh\);[\s\S]*?aspect-ratio:16\/9/,
+  'The entire official Company Grounds fits both desktop and phone without sideways scrolling')
+assert.match(groundsCss,/\.scene img \{display:block; width:100%; height:100%; max-width:none\}/,
+  'The original picture is never cropped')
+assert.doesNotMatch(groundsCss,/aspect-ratio:1536 \/ 752|height:87dvh|\.mobileExplore|\.groundEntrances/,
+  'Remove former picture cropping and artificial entrance panels')
+assert.doesNotMatch(groundsSource,/className=\{styles\.(mobileHeader|mobileIntroduction|mobileExplore|groundEntrances|desktopFooter)\}/,
+  'The picture itself is the only public introduction')
+assert.match(groundsSource,/href="\/register">Join Weave<\/Link>/,
+  'Join Weave remains available through the Company Grounds directory')
+assert.match(groundsSource,/href="\/file-folder-preview">Explore File Folders<\/Link>/,
+  'Public File Folder previews remain easy to find in the directory')
+assert.doesNotMatch(groundsSource,/WEAVE_COMPANY\.registrationNumber/,
+  'No duplicate RC number is added around the official picture')
+assert.doesNotMatch(groundsSource,/data-overview=\{overview\}|Scroll to explore company entrances/,
+  'Retired duplicate controls stay removed')
 const layoutBoundary=fs.readFileSync(path.join(root,'app/(app)/layout.tsx'),'utf8')
 assert.match(layoutBoundary,/canEnterDepartmentPath\(pathname, user\?\.role\)/)
 assert.match(layoutBoundary,/router\.replace\(ownDashboard\)/)
