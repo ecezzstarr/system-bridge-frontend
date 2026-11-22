@@ -11,6 +11,7 @@ import {FILE_FOLDER_PALETTES} from '@/lib/file-folder-world-presets'
 import type {PublicWorldDomain} from '@/lib/weave-open-world-domains'
 
 type WorldSceneProps={
+  ownDomainId?:string|null;ownDomainName?:string|null
   placing:boolean;onPlace:(point:{x:number;z:number})=>void;preview:{x:number;z:number}|null
   domains:PublicWorldDomain[];links:{from:string;to:string}[];selected:string|null
   onSelect:(id:string)=>void
@@ -82,8 +83,8 @@ function MovingBurningRiver(){
  </group>
 }
 
-function DomainCastle({domain,selected,onSelect}:{
-  domain:PublicWorldDomain;selected:boolean;onSelect:(id:string)=>void
+function DomainCastle({domain,selected,onSelect,ownerName}:{
+  domain:PublicWorldDomain;selected:boolean;onSelect:(id:string)=>void;ownerName?:string|null
 }){
   const [stone,roof,light]=palette[domain.tier]
   const base=domain.tier==='plus'?3:domain.tier==='premium'?2.5:domain.tier==='pro'?2.05:1.6
@@ -91,6 +92,7 @@ function DomainCastle({domain,selected,onSelect}:{
   const height=base+growth+(domain.building?domain.activity.buildProgress/100*.95:0)
   const [x,z]=[domain.location.x,domain.location.z]
   const isBuilding=domain.building
+  const nameplate=ownerName?.trim()||domain.publicName
   const buildHeight=0.3+(domain.activity.buildProgress/100)*(height+.4)
   return <group position={[x,0,z]} onClick={event=>{event.stopPropagation();onSelect(domain.domainId)}}>
     <mesh position={[0,-.16,0]}><cylinderGeometry args={[2.9,3.1,.38,10]}/>
@@ -142,6 +144,31 @@ function DomainCastle({domain,selected,onSelect}:{
         <mesh position={[0,1.42,0]}><coneGeometry args={[1.13,1.22,4]}/>
           <meshStandardMaterial color={roof} metalness={.48}/></mesh>
       </group>):null}
+    {/* These visible workshop wings represent only verified, active systems.
+        They do not claim an income, order, profession or unrecorded service. */}
+    {domain.activity.operatingSystems>0&&<group name="verified-active-business-systems">
+      {Array.from({length:Math.min(3,domain.activity.operatingSystems)},(_,i)=>{
+        const side=i%2===0?-1:1
+        return <group key={i} position={[side*2.5,0,-2.35-Math.floor(i/2)*1.6]}>
+          <mesh castShadow position={[0,.39,0]}>
+            <boxGeometry args={[1.2,.78,1.15]}/>
+            <meshStandardMaterial color={stone} metalness={.25} roughness={.53}/>
+          </mesh>
+          <mesh castShadow position={[0,.88,0]} rotation={[0,Math.PI/4,0]}>
+            <coneGeometry args={[.92,.48,4]}/>
+            <meshStandardMaterial color={roof} metalness={.35} roughness={.44}/>
+          </mesh>
+          <mesh position={[0,.45,.59]}>
+            <boxGeometry args={[.55,.34,.04]}/>
+            <meshPhysicalMaterial color="#94d6de" metalness={.22} roughness={.18} clearcoat={.8}/>
+          </mesh>
+          <mesh position={[0,.98,0]}>
+            <sphereGeometry args={[.1,8,6]}/>
+            <meshStandardMaterial color={light} emissive={light} emissiveIntensity={.7}/>
+          </mesh>
+        </group>
+      })}
+    </group>}
     {isBuilding&&<group name="recorded-domain-construction">
       {[-1,1].map(side=><mesh key={side} position={[side*2.02,buildHeight/2,1.3]}>
         <boxGeometry args={[.1,buildHeight,.14]}/>
@@ -160,17 +187,17 @@ function DomainCastle({domain,selected,onSelect}:{
       <meshBasicMaterial color="#ffd88b" side={THREE.DoubleSide}/></mesh>}
     <Html position={[0,height+2.1,0]} center distanceFactor={26} zIndexRange={[15,2]}>
       <button type="button" onClick={event=>{event.stopPropagation();onSelect(domain.domainId)}}
-        className={`w-32 rounded-lg border px-2 py-2 text-center text-[10px] font-black shadow-xl backdrop-blur-md
+        className={`w-40 max-w-[42vw] rounded-lg border px-2 py-2 text-center text-[10px] font-black shadow-xl backdrop-blur-md
           ${selected?'border-amber-200 bg-[#53341d]/95 text-amber-100':'border-amber-200/45 bg-[#081b34]/90 text-white'}`}
         aria-pressed={selected} data-open-world-domain={domain.domainId}>
-        <span className="block truncate">{domain.publicName}</span>
-        <span className="mt-1 block text-[9px] font-medium capitalize text-amber-200">{domain.tier} · {domain.stage}</span>
+        <span className="block break-words" data-verified-world-nameplate={ownerName?'owner':'public'}>{nameplate}</span>
+        <span className="mt-1 block text-[9px] font-medium capitalize text-amber-200">{ownerName?'My File Folder · ':''}{domain.tier} · {domain.stage}</span>
       </button>
     </Html>
   </group>
 }
 
-function WorldScene({domains,links,selected,onSelect,placing,onPlace,preview}:WorldSceneProps){
+function WorldScene({domains,links,selected,onSelect,placing,onPlace,preview,ownDomainId,ownDomainName}:WorldSceneProps){
   const byId=useMemo(()=>new Map(domains.map(d=>[d.domainId,d])),[domains])
   return <>
     <fog attach="fog" args={['#1a233c',112,260]}/>
@@ -184,6 +211,7 @@ function WorldScene({domains,links,selected,onSelect,placing,onPlace,preview}:Wo
     </mesh>}
     <MovingBurningRiver/>
     {domains.map(d=><DomainCastle key={d.domainId} domain={d}
+      ownerName={ownDomainId===d.domainId?ownDomainName:null}
       selected={selected===d.domainId} onSelect={onSelect}/>)}
     {links.map((link,i)=>{
       const a=byId.get(link.from),b=byId.get(link.to)

@@ -33,7 +33,8 @@ async function clientDomain(request:NextRequest){
   if(!clientId||!uuid.test(clientId))return{sql,domain:null,error:NextResponse.json({error:'Client login required'},{status:401})}
   await ensureWeaveOpenWorldSchema(sql)
   const [domain]=await sql`
-    SELECT d.id,d.world_slot,d.collaboration_open,d.client_id
+    SELECT d.id,d.world_slot,d.tier,d.collaboration_open,d.client_id,
+      f.client_name AS owner_name
     FROM weave_open_world_domains d
     JOIN client_file_folders f ON f.client_id=d.client_id AND f.file_number=d.file_number
     JOIN users u ON u.id=d.client_id
@@ -91,6 +92,9 @@ export async function GET(request:NextRequest){
     `
     return NextResponse.json({
       success:true,domainId:String(domain.id),worldSlot:Number(domain.world_slot),
+      // Owner identity is returned only by this authenticated Client endpoint.
+      ownerName:String(domain.owner_name||'').trim().slice(0,100),
+      ownerTier:String(domain.tier||'unclassified'),
       collaborationOpen:domain.collaboration_open===true,
       projects:projects.map((p:any)=>({
         id:String(p.id),connectionId:String(p.connection_id),kind:p.kind,

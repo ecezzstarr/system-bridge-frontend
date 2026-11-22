@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { Castle, X } from 'lucide-react'
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
-import type { DomainRegion, DomainTier, PublicWorldDomain } from '@/lib/weave-open-world-domains'
+import { worldLocationForSlot, type DomainRegion, type DomainTier, type PublicWorldDomain } from '@/lib/weave-open-world-domains'
 import './weave-world-atlas.css'
 
 const WORLD_ATLAS_ART = '/weave/flame-event/burning-river-open-world-official.webp'
@@ -42,6 +42,9 @@ type AtlasProps = {
   staffHref: string
   returnHref: string
   notice: string
+  /** Server-verified private owner identity, never part of the public world feed. */
+  ownWorld?: {domainId:string;worldSlot:number;ownerName:string;tier:string}|null
+  onFindOwnDomain?: () => void
   onExplore: () => void
   onDomains: (filter?: WorldDomainFilter) => void
   onDomain: (id: string) => void
@@ -51,7 +54,7 @@ type AtlasProps = {
 }
 
 export function WeaveWorldAtlas({
-  domains, status, eventLabel, staffHref, returnHref, notice, onExplore, onDomains, onDomain, onCustomers, onCommunity, onGuide,
+  domains, status, eventLabel, staffHref, returnHref, notice, ownWorld, onFindOwnDomain, onExplore, onDomains, onDomain, onCustomers, onCommunity, onGuide,
 }: AtlasProps) {
   const map = useRef<HTMLDivElement>(null)
   const [artFailed, setArtFailed] = useState(false)
@@ -62,6 +65,10 @@ export function WeaveWorldAtlas({
     if (regionDomains) regionDomains.push(domain)
     else domainsByRegion.set(region, [domain])
   }
+
+  // The founding illustration remains unaltered; this private nameplate is
+  // live and follows the Client's server-confirmed, permanent world slot.
+  const ownerRegion = ownWorld ? worldLocationForSlot(ownWorld.worldSlot).region : null
 
   return <div className="weave-atlas" data-weave-world-atlas="active">
     <div className="weave-atlas-frame">
@@ -90,13 +97,19 @@ export function WeaveWorldAtlas({
             const regionDomains = domainsByRegion.get(region) || []
             const count = regionDomains.length
             const place = REGIONS[region]
-            const action = count === 1 ? () => onDomain(regionDomains[0].domainId) : () => onDomains({region})
-            const label = count === 1
-              ? place.landmark + ' landmark · ' + regionDomains[0].publicName
+            const ownerHere = ownerRegion === region
+            const action = ownerHere && onFindOwnDomain ? onFindOwnDomain
+              : count === 1 ? () => onDomain(regionDomains[0].domainId) : () => onDomains({region})
+            const label = ownerHere && ownWorld ? 'Find my File Folder · ' + (ownWorld.ownerName || place.name)
+              : count === 1 ? place.landmark + ' landmark · ' + regionDomains[0].publicName
               : place.landmark + ' landmark · Browse ' + place.name
             return <button type="button" key={region} data-map-hotspot data-weave-live-region={region}
               style={hotspot(place.rect)} aria-label={label} onClick={action}>
               <span className="weave-atlas-label">{label}</span>
+              {ownerHere && ownWorld && <span className="weave-atlas-owner-label" data-client-owned-map-name="verified-only">
+                <strong>{ownWorld.ownerName || 'My File Folder'}</strong>
+                <small>My {ownWorld.tier} File Folder · Tap to locate</small>
+              </span>}
               {count > 0 && <span className="weave-atlas-live" aria-hidden="true"><Castle size={12}/> {count} live</span>}
             </button>
           })}

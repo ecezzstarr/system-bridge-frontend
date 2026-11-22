@@ -30,7 +30,7 @@ class WorldGraphicsBoundary extends Component<{children:ReactNode;onUnavailable:
 type Connection={id:string;status:'pending'|'accepted'|'declined';otherDomainId:string;direction:'incoming'|'outgoing';requestNote:string}
 type JointProject={id:string;connectionId:string;kind:string;title:string;status:'proposed'|'active';createdBySelf:boolean;otherDomainId:string;ownContribution:boolean;partnerContribution:boolean}
 type OwnOperatingSystem={id:string;name:string;systemType:string}
-type OwnWorld={domainId:string;worldSlot:number;collaborationOpen:boolean;connections:Connection[];projects:JointProject[];ownSystems:OwnOperatingSystem[]}
+type OwnWorld={domainId:string;worldSlot:number;ownerName:string;ownerTier:string;collaborationOpen:boolean;connections:Connection[];projects:JointProject[];ownSystems:OwnOperatingSystem[]}
 type WorldFeed={page:number;domains:PublicWorldDomain[];links:{from:string;to:string}[];hasMore:boolean;event?:{label:string;status:string}}
 const emptyFeed:WorldFeed={page:-1,domains:[],links:[],hasMore:false}
 
@@ -97,6 +97,8 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
    if(!response.ok)return
    const json=await response.json()
    if(json.success)setOwner({domainId:json.domainId,worldSlot:Number(json.worldSlot)||1,
+     ownerName:String(json.ownerName||'').trim().slice(0,100),
+     ownerTier:String(json.ownerTier||'unclassified'),
      collaborationOpen:json.collaborationOpen,connections:json.connections||[],
      projects:json.projects||[],ownSystems:json.ownSystems||[]})
  },[role])
@@ -250,13 +252,15 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
    data-weave-official-open-world-reference="burning-river-open-world-official.webp">
    {view==='map'?<WeaveWorldAtlas domains={feed.domains} status={status} eventLabel={eventLabel} staffHref={staffHref} notice={mapNotice}
      returnHref={returnHref==='/system-switch'?returnHref:eventHref}
-     onExplore={explore}
+     ownWorld={role==='client'&&owner?{domainId:owner.domainId,worldSlot:owner.worldSlot,ownerName:owner.ownerName,tier:owner.ownerTier}:null}
+     onFindOwnDomain={findMyCastle} onExplore={explore}
      onDomains={browseDomains} onDomain={selectDomain}
      onCustomers={()=>setPanel('customers')} onCommunity={()=>setPanel('community')} onGuide={()=>setPanel('guide')}/>
    :<div className="relative h-[100svh] min-h-[430px] overflow-hidden" data-open-world-map="interactive">
      <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_40%,#385c62,#0b2334_68%,#071324)]"/>
      <WorldGraphicsBoundary onUnavailable={graphicsUnavailable}>
        <WeaveWorldScene domains={displayDomains} links={feed.links} selected={selected}
+         ownDomainId={role==='client'?owner?.domainId:null} ownDomainName={role==='client'?owner?.ownerName:null}
          onSelect={tapCastle} placing={placing} onPlace={placeOnLand} preview={candidate}
          onReady={()=>setSceneReady(true)}/>
      </WorldGraphicsBoundary>
