@@ -1,13 +1,15 @@
+/* The approved world picture is a single undistorted, clean illustration.
+   Touch targets follow its intrinsic 1024 x 1536 coordinate system. */
 .weave-atlas {
-  min-height: 100svh;
-  padding-bottom: env(safe-area-inset-bottom);
-  background: radial-gradient(ellipse at 50% 8%, #202f45 0%, #0a1628 47%, #060d1a 85%);
+  background: #071324;
   color: #ffe6aa;
+  padding-bottom: env(safe-area-inset-bottom);
 }
 .weave-atlas-frame {
-  width: min(100%, 34rem);
+  width: 100%;
+  max-width: 40rem;
   margin-inline: auto;
-  background: #060d19;
+  background: #071324;
 }
 .weave-atlas-map {
   position: relative;
@@ -17,6 +19,10 @@
   display: block;
   width: 100%;
   height: auto;
+  object-fit: contain;
+  filter: none !important;
+  opacity: 1 !important;
+  transform: none !important;
 }
 .weave-atlas-illustrated [data-map-hotspot] {
   position: absolute;
@@ -24,34 +30,20 @@
   top: var(--atlas-y);
   width: var(--atlas-w);
   height: var(--atlas-h);
-  min-height: 36px;
-  border-radius: .35rem;
+  min-width: 0;
+  min-height: 44px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: .3rem;
+  background: transparent;
   touch-action: manipulation;
+  cursor: pointer;
 }
-.weave-atlas-illustrated [data-atlas-utility] {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid #e8c487b8;
-  border-radius: .6rem;
-  background: #092132d9;
-  box-shadow: 0 2px 9px #03070d70;
-  color: #fbe7bd;
-  text-decoration: none;
-  font-family: Georgia, serif;
-  font-weight: 700;
-}
-.weave-atlas-illustrated .weave-atlas-utility-text {
-  display: inline-block;
-  max-width: 100%;
-  padding-inline: .15rem;
-  font-size: clamp(8px, 1.1vw, 12px);
-  line-height: 1.08;
-  text-align: center;
-  text-wrap: balance;
-}
-.weave-atlas-map:not(.weave-atlas-illustrated) .weave-atlas-utility-text {
-  display: none;
+/* Keep mobile footer actions finger-sized without letting their clickable
+   rectangles extend below the picture into another navigation element. */
+.weave-atlas-illustrated .weave-atlas-entrances [data-map-hotspot] {
+  top: min(var(--atlas-y),calc(100% - 44px));
 }
 .weave-atlas-illustrated .weave-atlas-label {
   position: absolute;
@@ -62,91 +54,101 @@
   white-space: nowrap;
 }
 .weave-atlas-illustrated [data-map-hotspot]:hover {
-  box-shadow: inset 0 0 0 1px #ffe6aab0;
+  box-shadow: inset 0 0 0 1px #ffe6aa9e;
 }
-.weave-atlas-owner-label {
-  position: absolute;
-  z-index: 2;
-  left: .15rem;
-  top: .15rem;
+.weave-atlas :is(button,a):focus-visible,
+.weave-world-sheet :is(button,a):focus-visible {
+  outline: 2px solid #fff0c4;
+  outline-offset: 2px;
+}
+.weave-atlas-owner-entry {
   display: flex;
-  flex-direction: column;
-  gap: .1rem;
-  max-width: calc(100% - .3rem);
-  padding: .24rem .38rem;
-  border: 1px solid #eac781;
-  border-radius: .4rem;
-  background: #092132f0;
-  box-shadow: 0 3px 12px #0008;
-  color: #ffecb9;
-  text-align: left;
-  pointer-events: none;
-}
-.weave-atlas-owner-label strong {
-  font-size: clamp(.56rem, 1.75vw, .83rem);
-  overflow-wrap: anywhere;
-  line-height: 1.2;
-}
-.weave-atlas-owner-label small { font-size: clamp(.43rem, 1.3vw, .64rem); color: #b6e7e5; }
-.weave-atlas-live {
-  position: absolute;
-  right: .15rem;
-  bottom: .15rem;
-  display: inline-flex;
   align-items: center;
-  gap: .2rem;
-  padding: .16rem .35rem;
-  border: 1px solid #efc475;
-  border-radius: 1rem;
-  background: #0c1b2c;
-  color: #ffe8ab;
-  font-size: .65rem;
-  font-weight: 700;
-  white-space: nowrap;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: .3rem .75rem;
+  margin: .65rem .75rem 0;
+  padding: .65rem .8rem;
+  width: calc(100% - 1.5rem);
+  min-height: 48px;
+  border: 1px solid #d1ad72a6;
+  border-radius: .65rem;
+  background: #0c2638;
+  color: #f9e7bc;
+  text-align: left;
 }
+.weave-atlas-owner-entry > span:first-child {
+  color: #bed9de;
+  font-size: .76rem;
+}
+.weave-atlas-owner-entry strong {
+  flex: 1 1 11rem;
+  font-size: .9rem;
+  overflow-wrap: anywhere;
+}
+.weave-atlas-owner-entry > span:last-child {
+  font-size: .74rem;
+  color: #f9d69c;
+}
+.weave-atlas-support {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0,1fr));
+  gap: 0;
+  padding: .3rem .45rem 0;
+}
+.weave-atlas-support > :is(button,a) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 44px;
+  padding: .3rem;
+  color: #ebd5a5;
+  background: transparent;
+  border: 0;
+  font-size: clamp(.7rem,2.9vw,.85rem);
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+}
+.weave-atlas-support > :is(button,a) + :is(button,a) {
+  border-left: 1px solid #cca76d35;
+}
+.weave-atlas-caption,.weave-atlas-notice {
+  padding: .5rem .75rem .7rem;
+  text-align: center;
+  font-size: .74rem;
+  line-height: 1.45;
+  color: #c6d9eb;
+}
+.weave-atlas-notice { border-bottom: 1px solid #efc47580; color: #ffe6aa; }
+
+/* Text-first recovery if the approved image fails to load. No invisible links. */
 .weave-atlas-map:not(.weave-atlas-illustrated) {
-  padding: 1rem;
+  padding: .75rem;
 }
-.weave-atlas-map:not(.weave-atlas-illustrated) :is(header, section, nav) {
+.weave-atlas-map:not(.weave-atlas-illustrated) :is(header,section,nav) {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: .5rem;
-  margin-block: .7rem;
+  margin-block: .5rem;
+}
+.weave-atlas-map:not(.weave-atlas-illustrated) header {
+  width: 100%;
 }
 .weave-atlas-map:not(.weave-atlas-illustrated) [data-map-hotspot] {
   position: relative;
   display: inline-flex;
   align-items: center;
   min-height: 44px;
-  padding: .5rem;
+  padding: .6rem .75rem;
   border: 1px solid #efc47580;
-  border-radius: .35rem;
+  border-radius: .5rem;
+  color: #fce3ae;
   text-align: left;
-}
-.weave-atlas-map:not(.weave-atlas-illustrated) .weave-atlas-owner-label {
-  position: static;
-  max-width: 100%;
-  margin-left: .4rem;
-}
-.weave-atlas-map:not(.weave-atlas-illustrated) .weave-atlas-live {
-  position: static;
-  margin-left: .45rem;
-}
-.weave-atlas :is(button, a):focus-visible,
-.weave-world-sheet :is(button, a):focus-visible {
-  outline: 2px solid #fff0c4;
-  outline-offset: 2px;
-}
-.weave-atlas-caption, .weave-atlas-notice {
-  padding: .65rem .75rem;
-  text-align: center;
-  font-size: .75rem;
-  color: #c6d9eb;
-}
-.weave-atlas-notice {
-  border-bottom: 1px solid #efc47580;
-  color: #ffe6aa;
+  background: #0b2637;
 }
 .weave-world-sheet {
   position: fixed;

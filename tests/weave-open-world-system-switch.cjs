@@ -25,7 +25,7 @@ const publicDomains=read('lib/weave-open-world-domains.ts')
 assert.ok(world.includes('data-weave-open-world="system-switch"'),'Weave Open World belongs to System Switch')
 assert.ok(world.includes('data-system-switch-container="file-folder-world"'),'System Switch contains Client File Folder worlds')
 assert.ok(world.includes('data-company-loop-event="burning-river"'),'Burning River is company event, not the permanent world name')
-assert.ok(atlas.includes('<h1>Weave Open World</h1>'),'Correct public world name is shown')
+assert.ok(atlas.includes('>Weave Open World</h1>'),'Correct public world name is shown')
 assert.ok(visual.includes('Company Loop 1 · Burning River')&&visual.includes("feed.event?.status==='active'"),'Burning River is a dated event within the world, not the world')
 assert.ok(visual.includes('data-weave-open-world="system-switch-file-folder-world"'),'Shared real-world rendering belongs to System Switch')
 assert.ok(land.includes('name="physical-ground-forest-and-paths"'),'3D geography is real geometry')
@@ -79,7 +79,7 @@ assert.ok(atlas.includes('/weave/open-world/weave-open-world-official.jpg')&&atl
 assert.ok(atlas.includes('data-map-hotspot')&&atlas.includes('Bridge of Radiance · System Switch Gate')&&
   atlas.includes("onDomains({tier:'plus'})")&&atlas.includes("onDomains({tier:'pro'})"),
   'Artwork labels open real region and tier filters or the original gate')
-assert.ok(atlas.includes('onError={() => setArtFailed(true)}')&&visual.includes('WorldGraphicsBoundary')&&
+assert.ok(atlas.includes('onError={()=>setArtFailed(true)}')&&visual.includes('WorldGraphicsBoundary')&&
   visual.includes('onReady={()=>setSceneReady(true)}')&&visual.includes("getContext('webgl2')"),
   'Unavailable artwork retains working controls and unavailable 3D returns to the map')
 assert.ok(visual.includes('feed.page!==page'),'A deep link checks each page before advancing')

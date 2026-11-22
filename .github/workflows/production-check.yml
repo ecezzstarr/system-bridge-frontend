@@ -175,6 +175,7 @@ jobs:
           node tests/weave-open-world-system-switch.cjs
           node tests/weave-open-world-client-nameplates.cjs
           node tests/weave-open-world-official-artwork.cjs
+          node tests/weave-open-world-mobile-geometry-regression.cjs
           node tests/system-switch-gate-orientation-wording.cjs
           node tests/weave-castle-position-and-entry.cjs
 

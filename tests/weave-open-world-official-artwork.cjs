@@ -36,16 +36,16 @@ const css=read('components/events/weave-world-atlas.css')
 const world=read('components/events/burning-river-live-world.tsx')
 assert.ok(atlas.includes("const WORLD_ATLAS_ART = '/weave/open-world/weave-open-world-official.jpg'"))
 assert.ok(atlas.includes('width={1024} height={1536}'))
-assert.ok(atlas.includes('x / 1024 * 100')&&atlas.includes('y / 1536 * 100'))
+assert.ok(atlas.includes('x/ATLAS_WIDTH*100')&&atlas.includes('y/ATLAS_HEIGHT*100') && atlas.includes('const ATLAS_WIDTH = 1024') && atlas.includes('const ATLAS_HEIGHT = 1536'))
 assert.ok(world.includes('data-weave-official-open-world-reference="weave-open-world-official.jpg"'))
-assert.ok(atlas.includes('data-client-owned-map-name="verified-only"'))
+assert.ok(atlas.includes('data-client-owned-world-control="verified-only"'))
 assert.ok(atlas.includes('onFindOwnDomain'))
-assert.ok(css.includes('[data-atlas-utility]'))
+assert.ok(css.includes('.weave-atlas-support'))
 
 // A mis-sized transparent hotspot is a broken mobile entrance even when clickable.
 const hitAreas=[...atlas.matchAll(/(?:rect:\s*|hotspot\()\[\s*(\d+),\s*(\d+),\s*(\d+),\s*(\d+)\s*\]/g)]
   .map(hit=>hit.slice(1,5).map(Number))
-assert.ok(hitAreas.length>=16,'The picture has all landmark and navigation hit areas')
+assert.ok(hitAreas.length>=12,'The picture has all landmark, event and navigation hit areas')
 for(const [x,y,w,h] of hitAreas){
  assert.ok(w>0&&h>0&&x>=0&&y>=0&&x+w<=1024&&y+h<=1536,
   'Image hotspot must remain inside official raster: '+[x,y,w,h])
@@ -56,5 +56,5 @@ for(const landmark of ['Northridge','Verdant Keep','Rivergate Marketplace','Embe
 for(const entrance of ['Visitor Entrance','Staff Entrance','Customer Door','World Map','Domains','Explore','Community','Guide']){
  assert.ok(atlas.includes(entrance),'Navigation continuity: '+entrance)
 }
-assert.ok(atlas.includes('onError={() => setArtFailed(true)}'),'Keep accessible map fallback when image cannot load')
+assert.ok(atlas.includes('onError={()=>setArtFailed(true)}'),'Keep accessible map fallback when image cannot load')
 console.log('PASS: exact official WEAVE Open World image, accurate 1024x1536 hotspots and Client-owned nameplates')
