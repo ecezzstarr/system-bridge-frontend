@@ -31,7 +31,7 @@
   width: var(--atlas-w);
   height: var(--atlas-h);
   min-width: 0;
-  min-height: 0;
+  min-height: 44px;
   margin: 0;
   padding: 0;
   border: 0;
@@ -39,6 +39,11 @@
   background: transparent;
   touch-action: manipulation;
   cursor: pointer;
+}
+/* Keep mobile footer actions finger-sized without letting their clickable
+   rectangles extend below the picture into another navigation element. */
+.weave-atlas-illustrated .weave-atlas-entrances [data-map-hotspot] {
+  top: min(var(--atlas-y),calc(100% - 44px));
 }
 .weave-atlas-illustrated .weave-atlas-label {
   position: absolute;
