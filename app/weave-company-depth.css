@@ -1,32 +1,6 @@
-/* Architectural surfaces use the observer's position. Existing WebGL cameras
-   and operating controls continue to own their own input and geometry. */
+/* The official Company Grounds owns its image-space depth and click camera in
+   grounds.module.css. Do not layer cut-outs from the older homepage artwork. */
 @media (prefers-reduced-motion: no-preference) {
-  #grounds-panorama > div {
-    isolation: isolate;
-    transform: perspective(1500px)
-      rotateY(calc(var(--weave-observer-x, 0) * .37deg))
-      rotateX(calc(var(--weave-observer-y, 0) * -.28deg));
-  }
-  /* Two registered cutouts, sampled from the very same image as the base.
-     The skyline stays at the back, Hope and the fountain sit closer. */
-  #grounds-panorama > div::before,
-  #grounds-panorama > div::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    pointer-events: none;
-    background: url('/images/weave-open-world-home.jpg') center / 100% 100% no-repeat;
-  }
-  #grounds-panorama > div::before {
-    clip-path: polygon(0 41%, 10% 41%, 19% 44%, 23% 48%, 24% 54%, 24% 79%, 18% 83%, 0 91%);
-    transform: translate3d(calc(var(--weave-observer-x, 0) * 1.8px), calc(var(--weave-observer-y, 0) * 1px), 0);
-  }
-  #grounds-panorama > div::after {
-    clip-path: polygon(30% 67%, 34% 64%, 40% 65%, 44% 63%, 53% 63%, 57% 67%, 58% 72%, 68% 76%, 75% 78%, 75% 82%, 68% 87%, 58% 92%, 47% 95%, 30% 93%, 28% 87%);
-    transform: translate3d(calc(var(--weave-observer-x, 0) * 3px), calc(var(--weave-observer-y, 0) * 1.5px), 0);
-  }
-  #grounds-panorama > div > :is(a,button) {z-index:2}
   :is([data-department] nav, [data-department] details, [data-department] aside) a > :first-child:is(img,span),
   [aria-label$=" building"] figure img,
   [data-weave-page-original-visual] img,
