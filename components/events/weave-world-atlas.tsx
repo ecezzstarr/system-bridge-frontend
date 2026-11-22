@@ -118,7 +118,7 @@ export function WeaveWorldAtlas({
               {count > 0 && <span className="weave-atlas-live" aria-hidden="true"><Castle size={12}/> {count} live</span>}
             </button>
           })}
-          <button type="button" data-map-hotspot style={hotspot([402, 365, 316, 212])} onClick={() => onDomains({tier:'pro'})}>
+          <button type="button" data-map-hotspot style={hotspot([480, 399, 190, 68])} onClick={() => onDomains({tier:'pro'})}>
             <span className="weave-atlas-label">Ember Hold landmark · Browse Pro File Folders</span>
           </button>
           <button type="button" data-map-hotspot style={hotspot([729, 105, 286, 294])} onClick={() => onDomains({tier:'plus'})}>
@@ -150,7 +150,7 @@ export function WeaveWorldAtlas({
             <span className="weave-atlas-label">Community</span>
             <span className="weave-atlas-utility-text" aria-hidden="true">Community</span>
           </button>
-          <span className="weave-atlas-label">World Map</span>
+          <span className="weave-atlas-label" aria-current="page">World Map</span>
         </nav>
       </div>
       <p role="status" className="weave-atlas-caption">
