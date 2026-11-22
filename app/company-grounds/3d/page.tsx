@@ -4,7 +4,7 @@ import Link from 'next/link'
 import {Suspense, useCallback, useState, useEffect, type ReactNode} from 'react'
 import {useRouter} from 'next/navigation'
 import {Canvas, type ThreeEvent} from '@react-three/fiber'
-import {OrbitControls, useGLTF} from '@react-three/drei'
+import {OrbitControls, useAnimations, useGLTF} from '@react-three/drei'
 import {Flame, ArrowLeft, Menu, X, RotateCcw} from 'lucide-react'
 import {useAuth} from '@/lib/auth-provider'
 
@@ -40,7 +40,27 @@ function identifyPlace(name:string):PlaceId|null{
 
 function ThreeCampus({onSelect,onHover,onReady}:{onSelect:(place:PlaceId)=>void;onHover:(place:PlaceId|null)=>void;onReady:()=>void}){
   const model=useGLTF('/models/weave-company-grounds.glb')
+  const {actions}=useAnimations(model.animations,model.scene)
   useEffect(()=>{onReady()},[onReady])
+  useEffect(()=>{
+    const media=window.matchMedia('(prefers-reduced-motion: reduce)')
+    const synchronize=()=>{
+      const pause=media.matches||document.hidden
+      for(const action of Object.values(actions)){
+        if(!action)continue
+        if(pause)action.stop()
+        else action.reset().play()
+      }
+    }
+    synchronize()
+    media.addEventListener('change',synchronize)
+    document.addEventListener('visibilitychange',synchronize)
+    return ()=>{
+      media.removeEventListener('change',synchronize)
+      document.removeEventListener('visibilitychange',synchronize)
+      for(const action of Object.values(actions))action?.stop()
+    }
+  },[actions])
   const click=(e:ThreeEvent<MouseEvent>)=>{
     const place=identifyPlace(e.object.name)
     if(place){e.stopPropagation();onSelect(place)}
@@ -98,7 +118,7 @@ export default function CompanyGrounds3D(){
     <h1 className="sr-only">Weave of Presence · Interactive 3D Company Grounds</h1>
     <div className="absolute inset-0" role="application" aria-label="Interactive 3D Weave Company Grounds. Drag to orbit and pinch to zoom. Select a building, then enter through its route.">
       <Canvas dpr={[1,1.5]} camera={{position:[5,143,221],fov:43,near:.5,far:650}}
-        frameloop="demand" gl={{antialias:true,alpha:false,powerPreference:'high-performance'}}
+        frameloop="always" gl={{antialias:true,alpha:false,powerPreference:'high-performance'}}
         onPointerMissed={()=>setSelected(null)}
         style={{cursor:hovered?'pointer':'grab'}}>
         <color attach="background" args={['#8fb5c5']}/>
