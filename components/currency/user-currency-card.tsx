@@ -15,11 +15,12 @@ type FxRate={currency:UserDisplayCurrency,rate:number,updatedAt:string,source:st
  * preferred visible currency never changes balance, ledger, fees or checkout.
  */
 export function UserCurrencyCard({
-  amountUsd, quotedAt, legacyRate, className='',
+  amountUsd, quotedAt, legacyRate, kind='legacy-estimate', className='',
 }:{
   amountUsd:number|null
   quotedAt?:string|null
   legacyRate?:number|null
+  kind?:'usd-wallet'|'legacy-estimate'
   className?:string
 }){
   const {user,token,isInitialized}=useAuth()
@@ -114,7 +115,7 @@ export function UserCurrencyCard({
     data-user-currency-card="true" data-display-currency={currency}>
     <div className="flex flex-wrap items-center justify-between gap-2">
       <div>
-        <p className="text-xs font-semibold text-sky-200">Estimated value</p>
+        <p className="text-xs font-semibold text-sky-200">{kind==='usd-wallet'?'USD account balance':'Estimated value of legacy balance'}</p>
         <p className="mt-1 text-[10px] text-slate-400">Base currency: USD</p>
       </div>
       <label className="flex items-center gap-2 text-xs text-slate-200">
@@ -141,7 +142,9 @@ export function UserCurrencyCard({
         : ''}
       {quotedAt?'TRX/USD reference checked '+new Date(quotedAt).toLocaleString()+'. ':''}
       {legacyRate!=null?'Original wallet units remain TRX-referenced. ':''}
-      Display estimate only; not withdrawable funds or a checkout exchange rate.
+      {kind==='usd-wallet'
+        ? 'This card changes only the display currency. The actual account balance remains in USD. Payouts and spending require enabled USD rails.'
+        : 'Indicative value only; not a withdrawable USD balance or a checkout exchange rate.'}
     </p>
     {currency!=='USD'&&<a href="https://www.exchangerate-api.com"
       target="_blank" rel="noopener noreferrer"
