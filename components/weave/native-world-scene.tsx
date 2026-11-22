@@ -1,5 +1,6 @@
 'use client'
 
+import {useMachinerySpeed} from '@/components/world/use-machinery-speed'
 import {Suspense} from 'react'
 import {Canvas} from '@react-three/fiber'
 import {Float,OrbitControls,Text} from '@react-three/drei'
@@ -7,6 +8,7 @@ import {CityMaterial} from '@/components/system-switch/file-folder-city-material
 import type {NativeQuality,NativeScene} from '@/lib/weave-native-blueprint'
 
 function SceneArchitecture({scene,quality}:{scene:NativeScene;quality:NativeQuality}){
+ const machinery=useMachinerySpeed()
  const detailed=quality!=='crystal'
  const luminous=quality==='plus'
  const accent=scene==='water'?'#79d6ed':scene==='mechanized'?'#e1b875':'#cfe8f5'
@@ -45,7 +47,7 @@ function SceneArchitecture({scene,quality}:{scene:NativeScene;quality:NativeQual
      <boxGeometry args={[2,.055,.08]}/>
      <meshStandardMaterial color={luminous?'#f4d592':'#b6ddec'} emissive={accent} emissiveIntensity={.35}/>
     </mesh>)}
-    {scene==='mechanized'&&<Float speed={1.1} floatIntensity={.2} rotationIntensity={.4}>
+    {scene==='mechanized'&&<Float enabled={machinery>0} speed={1.1*machinery} floatIntensity={.2} rotationIntensity={.4}>
      <mesh position={[0,height+1,0]} rotation={[Math.PI/3,0,0]}>
       <torusGeometry args={[.75,.11,12,detailed?48:24]}/>
       <meshStandardMaterial color={accent} emissive={accent} emissiveIntensity={.7} metalness={.65} roughness={.2}/>
@@ -53,7 +55,7 @@ function SceneArchitecture({scene,quality}:{scene:NativeScene;quality:NativeQual
     </Float>}
    </group>
   })}
-  {luminous&&<Float speed={.6} rotationIntensity={.15} floatIntensity={.2}>
+  {luminous&&<Float enabled={machinery>0} speed={.6*machinery} rotationIntensity={.15} floatIntensity={.2}>
    <mesh position={[0,6,-2]}><icosahedronGeometry args={[.7,1]}/>
     <meshPhysicalMaterial color="#fff3db" metalness={.2} roughness={.05} transmission={.3} clearcoat={1}/>
    </mesh>

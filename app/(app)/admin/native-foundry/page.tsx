@@ -218,6 +218,7 @@ export default function NativeFoundryPage(){
     <h1 className="mt-4 text-3xl font-bold sm:text-5xl">{domainMode?'Company Domain Workshop':'Native Formation Workshop'}</h1>
     {domainMode?<p className="mt-4 text-sm leading-7">Choose a department and plot, design the work inside, then publish. The building name and exterior become visible in the Open World. Its entrance follows department access.</p>:<><p className="mt-4 max-w-4xl text-sm leading-7 text-slate-200">Create company pages, interactive features and personal operating systems without writing source or deploying a new server image. Choose an installed capability, build its visual and working movement, review, publish and restore versions inside WEAVE.</p>
     <p className="mt-3 max-w-4xl text-xs leading-6 text-amber-100">This publishes bounded, preinstalled capabilities—not new executable backend code, payments or unrestricted integrations. New software primitives still require reviewed source releases.</p></>}
+    {domainMode&&<Link href="/admin/visual-systems#company-scene-controls" className="mt-4 inline-block underline">Adjust live Open World depth and machinery</Link>}
    </header>
    {error&&<p role="alert" className="rounded-xl border border-rose-300/30 bg-rose-400/10 p-4 text-sm text-rose-100">{error}</p>}
    {notice&&<p role="status" className="rounded-xl border border-cyan-300/30 bg-cyan-400/10 p-4 text-sm text-cyan-100">{notice}</p>}

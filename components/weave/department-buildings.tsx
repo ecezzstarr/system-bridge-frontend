@@ -1,5 +1,6 @@
 'use client'
 
+import {BuildingRelief} from '@/components/world/building-relief'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import {workshopArt} from '@/lib/workshop-art'
@@ -80,7 +81,7 @@ export function DepartmentBuildings({department}:{department:NativeDepartment}){
 
  function entrance(door:DepartmentBuilding,action?:string){
   return <Link href={door.href} prefetch={false} className={styles.building} data-department-building-door={door.href}>
-   <img className={styles.facade} src={door.officialImage||workshopArt(door.href)}
+   <BuildingRelief className={styles.facade} src={door.officialImage||workshopArt(door.href)}
     alt="" width={312} height={312} loading="lazy"/>
    <span className={styles.caption}>
     <strong>{door.title}</strong>

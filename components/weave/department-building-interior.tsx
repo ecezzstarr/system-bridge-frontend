@@ -1,5 +1,6 @@
 'use client'
 
+import {BuildingRelief} from '@/components/world/building-relief'
 import Link from 'next/link'
 import { departmentNames, firstWorkshops } from '@/lib/department-buildings'
 import { workshopArt } from '@/lib/workshop-art'
@@ -36,7 +37,7 @@ export function DepartmentBuildingInterior({ children }: { children: ReactNode }
     </nav>
     <div className={styles.workroom}>
       <figure className={styles.workshopFront}>
-        <img className={styles.workshopView} src={workshopArt(path)} alt="" width={312} height={312} />
+        <BuildingRelief className={styles.workshopView} src={workshopArt(path)} alt="" width={312} height={312} />
         <figcaption><strong>{name}</strong>{purpose && <p>{purpose}</p>}</figcaption>
       </figure>
       <div className={styles.desk} id="workshop-desk" tabIndex={-1}>

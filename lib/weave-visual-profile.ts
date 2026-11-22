@@ -29,6 +29,7 @@ export type FlameArtifactVisualConfig={
     rotationSpeed:number
     floatStrength:number
   }
+  architecture:{perspective:number;relief:number;machinery:number}
   appearance:{
     coreScale:number
     glow:number
@@ -70,6 +71,7 @@ export const DEFAULT_FLAME_ARTIFACT_CONFIG:FlameArtifactVisualConfig={
     rotationSpeed:1,
     floatStrength:0.055,
   },
+  architecture:{perspective:1,relief:1,machinery:1},
   appearance:{
     coreScale:1,
     glow:1,
@@ -135,6 +137,11 @@ export function normalizeFlameArtifactConfig(input:unknown):FlameArtifactVisualC
       enabled:motion.enabled===undefined?DEFAULT_FLAME_ARTIFACT_CONFIG.motion.enabled:Boolean(motion.enabled),
       rotationSpeed:clamp(motion.rotationSpeed,0,2.5,DEFAULT_FLAME_ARTIFACT_CONFIG.motion.rotationSpeed),
       floatStrength:clamp(motion.floatStrength,0,0.3,DEFAULT_FLAME_ARTIFACT_CONFIG.motion.floatStrength),
+    },
+    architecture:{
+      perspective:clamp(value.architecture?.perspective,0,3,1),
+      relief:clamp(value.architecture?.relief,0,3,1),
+      machinery:clamp(value.architecture?.machinery,0,2,1),
     },
     appearance:{
       coreScale:clamp(appearance.coreScale,0.55,1.7,DEFAULT_FLAME_ARTIFACT_CONFIG.appearance.coreScale),
