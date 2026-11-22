@@ -140,7 +140,7 @@ assert.match(grounds,/href="\/reach-delivery"/)
 
 /* The uploaded artwork is the single official interactive homepage. */
 const groundsCss=fs.readFileSync(path.join(__dirname,'../app/company-grounds/grounds.module.css'),'utf8')
-assert.ok(grounds.includes('OFFICIAL_GROUNDS_IMAGE') && grounds.includes('cd492df3-5897-4c72-b629-7c4b5edd5ef1'), 'Approved official artwork must be used')
+assert.ok(grounds.includes('OFFICIAL_GROUNDS_IMAGE') && grounds.includes('weave-official-hybrid-home.jpg'), 'Approved official artwork must be used')
 assert.ok(grounds.includes('FALLBACK_GROUNDS_IMAGE'), 'Retain a working image fallback')
 assert.ok(grounds.includes('doors.map(door=>renderDoor(door,true))'), 'Department buildings remain interactive')
 assert.ok(grounds.includes('publicActions.map(action=>'), 'Embedded public buttons must function')
@@ -153,3 +153,5 @@ assert.ok(groundsCss.includes('transform:perspective(1600px)'), 'Image camera ha
 assert.ok(groundsCss.includes('prefers-reduced-motion:reduce'), 'Accessible reduced-motion fallback exists')
 assert.ok(groundsCss.includes('width:min(100%,177.778dvh)'), 'Full image fits the viewport')
 for(const name of ['mobileHeader','mobileIntroduction','mobileExplore','groundEntrances','desktopFooter']) assert.ok(!grounds.includes('styles.'+name), 'No duplicate introduction: '+name)
+
+assert.equal(require('node:crypto').createHash('sha256').update(fs.readFileSync(path.join(__dirname,'../public/images/weave-official-hybrid-home.jpg'))).digest('hex'), 'bbe2056bba2e56dc35479160d9aad03ad2527504a5dbafaf9c34f324167d082b', 'Approved homepage must stay byte-for-byte identical to the user upload')
