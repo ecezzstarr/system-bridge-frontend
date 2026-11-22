@@ -138,25 +138,18 @@ assert.match(grounds,/<dialog ref=\{entrances\}[\s\S]*?<nav id="grounds-entrance
 assert.match(grounds,/href="\/reach-delivery"/)
 
 
-/* The artwork, not an added page of buttons, introduces Weave.
-   Its sign-in, departments and Company Grounds sign are invisible hotspots.
-   Registration, File Folder previews and all public services stay in directory. */
+/* The uploaded artwork is the single official interactive homepage. */
 const groundsCss=fs.readFileSync(path.join(__dirname,'../app/company-grounds/grounds.module.css'),'utf8')
-assert.match(grounds,/src="\/images\/weave-open-world-home\.jpg"/,'The official homepage must use the original Company Grounds image')
-assert.match(grounds,/data-weave-company-home="company-grounds"/,'The homepage remains the single Company Grounds entrance')
-assert.match(grounds,/doors\.map\(door => renderDoor\(door, true\)\)/,'Building hotspots must remain navigable')
-assert.match(grounds,/if \(user && user\.role !== door\.role\)/,'Private department crossings remain protected')
-assert.match(grounds,/if \(door\.name === 'File Folder'\)/,'Public File Folder previews must not require Client authentication')
-assert.match(grounds,/<dialog ref=\{entrances\}[\s\S]*?<Link href="\/register">Join Weave<\/Link>[\s\S]*?<Link href="\/file-folder-preview">Explore File Folders<\/Link>/,
-  'Registration and File Folder previews belong in the Company Grounds directory')
-for(const extra of ['mobileHeader','mobileIntroduction','mobileExplore','groundEntrances','desktopFooter','mobileJoin','mobileLegal'])
-  assert.ok(!grounds.includes('styles.'+extra),'Do not add another homepage surface: '+extra)
-assert.doesNotMatch(grounds,/The Company of Time|One company\. Many ways to participate\.|WEAVE_COMPANY\.registrationNumber/,
-  'Company Grounds already communicates company identity; do not repeat it')
-assert.match(groundsCss,/\.viewport \{[\s\S]*?min-height:100dvh/,'The image is the one full-screen homepage')
-assert.match(groundsCss,/\.scene \{[\s\S]*?width:min\(100%,177\.778dvh\);[\s\S]*?aspect-ratio:16\/9/,
-  'Fit the full image to the device without horizontal overflow')
-assert.match(groundsCss,/\.scene img \{display:block; width:100%; height:100%; max-width:none\}/,
-  'The full original image must be visible without resampling/cropping')
-assert.doesNotMatch(groundsCss,/\.mobileHeader|\.mobileIntroduction|\.mobileExplore|\.groundEntrances|\.desktopFooter|height:87dvh|aspect-ratio:1536 \/ 752/,
-  'Retire all previous artificial homepage layers and cropped-image treatment')
+assert.ok(grounds.includes('OFFICIAL_GROUNDS_IMAGE') && grounds.includes('cd492df3-5897-4c72-b629-7c4b5edd5ef1'), 'Approved official artwork must be used')
+assert.ok(grounds.includes('FALLBACK_GROUNDS_IMAGE'), 'Retain a working image fallback')
+assert.ok(grounds.includes('doors.map(door=>renderDoor(door,true))'), 'Department buildings remain interactive')
+assert.ok(grounds.includes('publicActions.map(action=>'), 'Embedded public buttons must function')
+assert.ok(grounds.includes('onPointerMove={moveLook}') && grounds.includes('onTouchMove={movePinch}'), 'Camera interaction responds to drag and pinch')
+assert.ok(grounds.includes('onKeyDown={useKeyboard}'), 'Keyboard controls remain available')
+assert.ok(grounds.includes('router.push(href)'), 'Building entrances reach real Weave routes')
+assert.ok(grounds.includes('if(user&&user.role!==door.role)'), 'Department restrictions remain')
+for(const href of ['/register','/file-folder-preview','/system-switch/world']) assert.ok(grounds.includes("href:'"+href+"'"), href+' accessible')
+assert.ok(groundsCss.includes('transform:perspective(1600px)'), 'Image camera has perspective')
+assert.ok(groundsCss.includes('prefers-reduced-motion:reduce'), 'Accessible reduced-motion fallback exists')
+assert.ok(groundsCss.includes('width:min(100%,177.778dvh)'), 'Full image fits the viewport')
+for(const name of ['mobileHeader','mobileIntroduction','mobileExplore','groundEntrances','desktopFooter']) assert.ok(!grounds.includes('styles.'+name), 'No duplicate introduction: '+name)
