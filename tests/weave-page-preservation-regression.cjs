@@ -254,24 +254,19 @@ for(const [route,role] of [
 const groundsSource=fs.readFileSync(path.join(root,'app/company-grounds/page.tsx'),'utf8')
 const groundsCss=fs.readFileSync(path.join(root,'app/company-grounds/grounds.module.css'),'utf8')
 for(const name of ['Hope','Stability','Administrations · A Time','Dream Lovely'])
-  assert.ok(groundsSource.includes("name: '"+name+"'"),name+' still has its building')
-assert.doesNotMatch(groundsSource,/name: '(Forensics|Mandate|Attorney)'/,'Oversight positions are not standalone public departments')
-assert.match(groundsCss,/\.scene \{[\s\S]*?width:min\(100%,177\.778dvh\);[\s\S]*?aspect-ratio:16\/9/,
-  'The entire official Company Grounds fits both desktop and phone without sideways scrolling')
-assert.match(groundsCss,/\.scene img \{display:block; width:100%; height:100%; max-width:none\}/,
-  'The original picture is never cropped')
-assert.doesNotMatch(groundsCss,/aspect-ratio:1536 \/ 752|height:87dvh|\.mobileExplore|\.groundEntrances/,
-  'Remove former picture cropping and artificial entrance panels')
-assert.doesNotMatch(groundsSource,/className=\{styles\.(mobileHeader|mobileIntroduction|mobileExplore|groundEntrances|desktopFooter)\}/,
-  'The picture itself is the only public introduction')
-assert.match(groundsSource,/href="\/register">Join Weave<\/Link>/,
-  'Join Weave remains available through the Company Grounds directory')
-assert.match(groundsSource,/href="\/file-folder-preview">Explore File Folders<\/Link>/,
-  'Public File Folder previews remain easy to find in the directory')
-assert.doesNotMatch(groundsSource,/WEAVE_COMPANY\.registrationNumber/,
-  'No duplicate RC number is added around the official picture')
-assert.doesNotMatch(groundsSource,/data-overview=\{overview\}|Scroll to explore company entrances/,
-  'Retired duplicate controls stay removed')
+  assert.ok(groundsSource.includes("name:'"+name+"'"),name+' still has its building')
+assert.doesNotMatch(groundsSource,/name:'(Forensics|Mandate|Attorney)'/,'Oversight remains inside Administrations')
+assert.ok(groundsSource.includes('OFFICIAL_GROUNDS_IMAGE') && groundsSource.includes('cd492df3-5897-4c72-b629-7c4b5edd5ef1'), 'User-approved image, not the prior poster')
+assert.ok(groundsSource.includes('FALLBACK_GROUNDS_IMAGE'), 'Existing official picture remains a network fallback')
+assert.ok(groundsCss.includes('width:min(100%,177.778dvh)'), 'Entire artwork remains within viewport')
+assert.ok(groundsCss.includes('aspect-ratio:16/9'), 'Artwork preserves its original proportions')
+assert.ok(groundsCss.includes('transform:perspective(1600px)'), 'Cinematic camera works over same image')
+assert.ok(groundsSource.includes('doors.map(door=>renderDoor(door,true))'), 'Buildings retain working entrances')
+assert.ok(groundsSource.includes('publicActions.map(action=>'), 'Image buttons link to registration and preview pages')
+assert.ok(groundsSource.includes('onTouchMove={movePinch}') && groundsSource.includes('onPointerMove={moveLook}'), 'Mobile pinch and pointer exploration supported')
+assert.ok(groundsSource.includes('if(user&&user.role!==door.role)'), 'Private role permissions unchanged')
+assert.ok(groundsSource.includes('href="/register">Join Weave</Link>') && groundsSource.includes('href="/file-folder-preview">Explore File Folders</Link>'), 'Accessible directory preserved')
+assert.ok(!groundsSource.includes('styles.mobileIntroduction') && !groundsSource.includes('styles.groundEntrances'), 'No second homepage or extra captions')
 const layoutBoundary=fs.readFileSync(path.join(root,'app/(app)/layout.tsx'),'utf8')
 assert.match(layoutBoundary,/canEnterDepartmentPath\(pathname, user\?\.role\)/)
 assert.match(layoutBoundary,/router\.replace\(ownDashboard\)/)
