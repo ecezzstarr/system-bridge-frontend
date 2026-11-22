@@ -1,7 +1,7 @@
 /* Architectural surfaces use the observer's position. Existing WebGL cameras
    and operating controls continue to own their own input and geometry. */
-/* Approved Company Grounds image and 3D camera own their own depth;
-   former cutouts from the old poster must never cover the new official art. */
+/* Exact Company Grounds image and 3D route own their camera and textures.
+   Do not place any fragment of the old artwork above them. */
 @media (prefers-reduced-motion: no-preference) {
   :is([data-department] nav, [data-department] details, [data-department] aside) a > :first-child:is(img,span),
   [data-weave-relief-frame],
