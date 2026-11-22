@@ -82,7 +82,7 @@ assert.match(read('app/company-overview/page.tsx'), /data-home-system-switch-exp
 assert.match(read('app/page.tsx'), /return <CompanyGrounds\s*\/>/)
 const grounds = read('app/company-grounds/page.tsx')
 const groundsStyles = read('app/company-grounds/grounds.module.css')
-assert.ok(grounds.includes('OFFICIAL_GROUNDS_IMAGE') && grounds.includes('cd492df3-5897-4c72-b629-7c4b5edd5ef1'), 'Approved homepage artwork is loaded')
+assert.ok(grounds.includes('OFFICIAL_GROUNDS_IMAGE') && grounds.includes('weave-official-hybrid-home.jpg'), 'Approved homepage artwork is loaded')
 assert.ok(!grounds.includes('Scroll sideways to explore on a phone'), 'No obsolete image-scroll instruction')
 assert.ok(groundsStyles.includes('width:min(100%,177.778dvh)'), 'Company Grounds picture fits phone and desktop')
 assert.ok(groundsStyles.includes('aspect-ratio:16/9'), 'Image shape is not distorted')
