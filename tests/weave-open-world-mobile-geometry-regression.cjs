@@ -21,7 +21,7 @@ assert.ok(atlas.includes('eventHref'),'The Loop 1 event entrance is connected')
 assert.ok(world.includes('eventHref={eventHref}'),'Loop entrance preserves the actual event route')
 assert.ok(css.includes('min-height: 44px'),'Mobile hotspots must be touch sized')
 
-const areas=[...atlas.matchAll(/(?:rect:\\s*|hotspot\\()\\[\\s*(\\d+),\\s*(\\d+),\\s*(\\d+),\\s*(\\d+)\\s*\\]/g)]
+const areas=[...atlas.matchAll(/(?:rect:\s*|hotspot\()\[\s*(\d+),\s*(\d+),\s*(\d+),\s*(\d+)\s*\]/g)]
  .map(m=>m.slice(1,5).map(Number))
 assert.equal(areas.length,12,'Six regions, Plus, Bridge, event and three navigation positions')
 for(const [x,y,w,h] of areas)assert.ok(w>0&&h>0&&x>=0&&y>=0&&x+w<=1024&&y+h<=1536,
