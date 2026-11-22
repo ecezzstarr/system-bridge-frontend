@@ -13,7 +13,7 @@ const room=read('components/bridger/bridger-workplace.tsx')
 const code=ts.transpileModule(source,{compilerOptions:{
  module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,esModuleInterop:true
 }}).outputText
-const exports={}
+const resultExports={}
 const mocked={
  '@/lib/weave-lifestyle-catalog':{WEAVE_LIFESTYLE_CATALOG:{}},
  '@/lib/agent-workplace-catalog':{AGENT_SPACES:[]},
@@ -28,13 +28,13 @@ const mocked={
   'dream-lovely':{role:'client'},administrations:{role:'admin'}
  }}
 }
-vm.runInNewContext(code,{exports,require:key=>{
+vm.runInNewContext(code,{exports:resultExports,require:key=>{
  if(!(key in mocked))throw Error('unexpected import '+key)
  return mocked[key]
 }})
 const href='/distribution-studio?channel=tiktok'
-assert.equal(exports.HOPE_TIKTOK_PUBLICATION_HREF,href)
-const hope=exports.departmentBuildings('hope',['/distribution-studio','/bridger/my-prospects'])
+assert.equal(resultExports.HOPE_TIKTOK_PUBLICATION_HREF,href)
+const hope=resultExports.departmentBuildings('hope',['/distribution-studio','/bridger/my-prospects'])
 const tiktok=hope.filter(x=>x.href===href)
 const social=hope.filter(x=>x.href==='/distribution-studio')
 assert.equal(tiktok.length,1,'Hope receives exactly one dedicated TikTok building')
@@ -42,11 +42,11 @@ assert.equal(social.length,1,'Existing Social Studio remains intact and not dupl
 assert.equal(tiktok[0].title,'TikTok Publication')
 assert.equal(tiktok[0].officialImage,'/images/workshops/stage.webp',
  'TikTok building uses a separate existing facade image')
-assert.equal(exports.departmentBuildings('stability',['/distribution-studio']).some(x=>x.href===href),false,
+assert.equal(resultExports.departmentBuildings('stability',['/distribution-studio']).some(x=>x.href===href),false,
  'A special Hope building must not appear in Stability')
-assert.equal(exports.departmentBuildings('hope',[]).some(x=>x.href===href),false,
+assert.equal(resultExports.departmentBuildings('hope',[]).some(x=>x.href===href),false,
  'Do not show a TikTok building when the original Social Studio is absent')
-assert(exports.firstWorkshops.hope.some(x=>x.href===href))
+assert(resultExports.firstWorkshops.hope.some(x=>x.href===href))
 assert(component.includes('department===\'hope\''),'The dedicated facade is scoped to Hope')
 assert(component.includes('data-hope-publication-buildings="existing-channel-entrances"'))
 assert(component.includes('isVisible(door.href)'),'Company organizer controls building visibility')
