@@ -6,6 +6,7 @@ import { ArrowRight, ArrowDownToLine, ArrowUpFromLine, Wallet, Copy, Check, Shie
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { visiblePoll } from '@/lib/visible-poll'
+import { UserCurrencyCard } from '@/components/currency/user-currency-card'
 
 export default function WalletDepositWithdrawPage() {
   const { user } = useAuth()
@@ -15,6 +16,9 @@ export default function WalletDepositWithdrawPage() {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [balance,setBalance]=useState<number|null>(null)
+  const [usdBalance,setUsdBalance]=useState<number|null>(null)
+  const [usdDepositEnabled,setUsdDepositEnabled]=useState(false)
+  const [ngnPerUsd,setNgnPerUsd]=useState<number|null>(null)
   const [balanceError,setBalanceError]=useState('')
   const [usdEquivalent,setUsdEquivalent]=useState<{
     amountUsd:number;rateUsdPerSystemSwitch:number;quotedAt:string
@@ -27,7 +31,7 @@ export default function WalletDepositWithdrawPage() {
   const [flameCoinRate, setFlameCoinRate] = useState<number | null>(null)
   const [companyTrxWallet, setCompanyTrxWallet] = useState('')
   const [depositTxHash, setDepositTxHash] = useState('')
-  const [clientDeposits,setClientDeposits] = useState<Array<{id:string;amount_trx:number|string;amount_usd?:number|string;method?:string;currency?:string;status:string;receipt_data:string|null;created_at:string;verified_at?:string|null;manual_credited?:boolean}>>([])
+  const [clientDeposits,setClientDeposits] = useState<Array<{id:string;amount_trx:number|string;amount_usd?:number|string;method?:string;currency?:string;usd_credit?:number|string|null;status:string;receipt_data:string|null;created_at:string;verified_at?:string|null;manual_credited?:boolean}>>([])
   const [platformFeePercent, setPlatformFeePercent] = useState(5)
   const [withdrawBankName, setWithdrawBankName] = useState('')
   const [withdrawAccountNumber, setWithdrawAccountNumber] = useState('')
@@ -62,6 +66,8 @@ export default function WalletDepositWithdrawPage() {
 
   useEffect(() => {
     setBalance(null)
+    setUsdBalance(null)
+    setUsdDepositEnabled(false)
     setBalanceError('')
     setBalanceUpdatedAt(null)
     setDepositHistoryLoaded(false)
@@ -71,6 +77,20 @@ export default function WalletDepositWithdrawPage() {
       if (isOpayRole) void fetchConversions()
     }
   }, [user?.id, isOpayRole])
+
+  useEffect(()=>{
+    if(!isOpayRole||!usdDepositEnabled){setNgnPerUsd(null);return}
+    let cancelled=false
+    fetch('/api/rate/usd-ngn',{cache:'no-store'})
+      .then(async response=>{
+        const data=await response.json()
+        if(!response.ok||!data.success||!Number.isFinite(data.ngnPerUsd)||data.ngnPerUsd<=0)
+          throw Error('Live USD/NGN rate unavailable')
+        if(!cancelled)setNgnPerUsd(data.ngnPerUsd)
+      })
+      .catch(()=>{if(!cancelled)setNgnPerUsd(null)})
+    return ()=>{cancelled=true}
+  },[isOpayRole,usdDepositEnabled])
 
   useEffect(() => {
     if (!user || isOpayRole) return
@@ -97,7 +117,7 @@ export default function WalletDepositWithdrawPage() {
     if (!user) return
     const paymentStatus = new URLSearchParams(window.location.search).get('deposit')
     if (paymentStatus === 'verified') {
-      setMessage('Payment verified by Paystack. Your System Switch wallet has been credited.')
+      setMessage('Paystack payment verified. Check your recorded USD or legacy wallet credit below.')
       void fetchBalance()
       void fetchClientDeposits()
     } else if (paymentStatus === 'pending' || paymentStatus === 'verification_pending') {
@@ -140,6 +160,11 @@ export default function WalletDepositWithdrawPage() {
         throw new Error(data?.error || 'Persistent wallet balance could not be loaded')
       }
       setBalance(newValue)
+      setUsdBalance(data.usdWallet?.status==='available' &&
+        typeof data.usdWallet?.balanceUsd==='number' &&
+        Number.isFinite(data.usdWallet.balanceUsd)
+        ? data.usdWallet.balanceUsd:null)
+      setUsdDepositEnabled(data.usdDepositEnabled===true)
       const usd=data.usdEquivalent
       setUsdEquivalent(usd && usd.estimateOnly===true &&
         Number.isFinite(usd.amountUsd) && Number.isFinite(usd.rateUsdPerSystemSwitch) &&
@@ -343,14 +368,15 @@ export default function WalletDepositWithdrawPage() {
 
         <div className="grid gap-4 p-4 md:p-6 lg:grid-cols-[1fr_280px]">
           <section className="min-w-0">
+          <UserCurrencyCard amountUsd={usdBalance} kind="usd-wallet" className="mb-5" />
 
-          {/* Balance Card */}
+          {/* Legacy Balance Card */}
           <div className="group relative mb-6">
             <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-xl opacity-30 blur"></div>
             <div className="relative bg-slate-900/80 backdrop-blur-xl border border-slate-700 rounded-xl p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-slate-400 text-sm mb-1">Current Balance</p>
+                  <p className="text-slate-400 text-sm mb-1">Legacy wallet balance (TRX-referenced)</p>
                   <div className="flex items-baseline gap-2">
                     <span className="text-4xl font-bold text-cyan-400">{balanceLabel}</span>
                     <span className="text-xl text-slate-400">System Switch</span>
@@ -425,22 +451,32 @@ export default function WalletDepositWithdrawPage() {
                   <>
                     <h2 className="text-xl font-bold text-white mb-4">Deposit via Paystack (NGN)</h2>
                     <p className="text-slate-400 text-sm mb-6">
-                      Pay securely through the Company Paystack checkout. Weave verifies the payment server-side and credits the corresponding System Switch to your Main Wallet. No manual receipt submission is required.
+                      {usdDepositEnabled
+                        ? 'Pay Naira through Paystack. Weave locks a verified live NGN/USD rate at checkout and credits USD to your USD account only after server verification.'
+                        : 'Existing Paystack deposit route: verified Naira payments are credited as legacy TRX-referenced System Switch until USD funding is activated. No manual receipt is required.'}
                     </p>
                     <div className="mb-6 grid grid-cols-2 gap-4">
                       <div className="p-4 bg-slate-800/50 border border-slate-700 rounded-xl">
                         <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Exchange Rate</p>
-                        <p className="text-cyan-400 font-bold">{flameCoinRate ? `1 System Switch = ₦${flameCoinRate.toFixed(2)}` : 'Rate confirmed at checkout'}</p>
+                        <p className="text-cyan-400 font-bold">{usdDepositEnabled
+                          ? (ngnPerUsd ? `$1 USD ≈ ₦${ngnPerUsd.toLocaleString(undefined,{maximumFractionDigits:2})}` : 'Live USD rate unavailable')
+                          : flameCoinRate ? `1 legacy System Switch = ₦${flameCoinRate.toFixed(2)}` : 'Rate confirmed at checkout'}</p>
                       </div>
                       <div className="p-4 bg-slate-800/50 border border-slate-700 rounded-xl">
                         <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Target Asset</p>
-                        <p className="text-white font-bold">System Switch</p>
+                        <p className="text-white font-bold">{usdDepositEnabled?'USD':'Legacy System Switch'}</p>
                       </div>
                     </div>
                     <div className="mb-6">
                       <label className="block text-sm font-semibold text-white mb-3">Amount to Deposit (NGN)</label>
                       <input type="number" min="1" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="Enter Naira amount" className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" />
                     </div>
+                    {usdDepositEnabled && ngnPerUsd && amount && Number.isFinite(Number(amount)) && Number(amount)>0 &&
+                      <p className="mb-4 text-sm text-emerald-200">
+                        Estimated USD credit: ${(Math.round(Number(amount)/ngnPerUsd*100)/100).toLocaleString('en-US',{
+                          style:'currency',currency:'USD',
+                        })}. Final quote is locked when checkout opens.
+                      </p>}
                     {message && <div className="p-3 rounded-lg mb-6 text-sm bg-red-500/20 border border-red-500/50 text-red-300">{message}</div>}
                   </>
                   
@@ -468,14 +504,16 @@ export default function WalletDepositWithdrawPage() {
 
                   <Button
                     onClick={handleDeposit}
-                    disabled={loading || !amount}
+                    disabled={loading || !amount || (usdDepositEnabled && !ngnPerUsd)}
                     className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white border-0 py-6 text-lg"
                   >
                     {loading ? 'Opening Paystack...' : 'Continue to Paystack'}
                   </Button>
 
                   <p className="text-xs text-slate-500 text-center mt-4">
-                    Payment is verified by Paystack and Weave before System Switch is credited. Withdrawals remain on their existing method.
+                    {usdDepositEnabled
+                      ? 'Paystack verifies the Naira payment before the quoted USD is credited. USD payouts and service spending remain gated pending migration; TRX rails stay available.'
+                      : 'Paystack verifies the payment before a legacy System Switch credit. Existing withdrawals stay on the original rails.'}
                   </p>
                 </div>
               </div>
@@ -490,10 +528,18 @@ export default function WalletDepositWithdrawPage() {
                    {!depositHistoryLoaded ? <p className="text-sm text-slate-400">Loading deposit records…</p>
                     : clientDeposits.length===0 ? <p className="text-sm text-slate-400">No deposit records yet.</p> : clientDeposits.map(item=>(
                     <div key={item.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-white/10 bg-black/20 p-3">
-                      <div><p className="font-bold text-white">{item.method==='paystack' ? `₦${Number(item.amount_usd||0).toLocaleString()} · ${Number(item.amount_trx).toLocaleString()} System Switch` : `${Number(item.amount_trx).toLocaleString()} TRX`}</p><p className="mt-1 text-xs text-slate-400">{new Date(item.created_at).toLocaleString()}</p>
+                      <div><p className="font-bold text-white">{item.usd_credit!=null
+                        ? `₦${Number(item.amount_usd).toLocaleString()} · ${Number(item.usd_credit).toFixed(2)} USD`
+                        : item.method==='paystack'
+                          ? `₦${Number(item.amount_usd||0).toLocaleString()} · ${Number(item.amount_trx).toLocaleString()} legacy System Switch`
+                          : `${Number(item.amount_trx).toLocaleString()} TRX`}</p><p className="mt-1 text-xs text-slate-400">{new Date(item.created_at).toLocaleString()}</p>
                         <p className="mt-1 max-w-[260px] truncate font-mono text-[10px] text-cyan-200">{item.receipt_data||(item.method==='paystack'?'Missing Paystack reference':'Missing transaction hash')}</p></div>
                       <span className={item.status==='approved'?'text-sm font-bold text-emerald-300':item.status==='rejected'?'text-sm font-bold text-red-300':'text-sm font-bold text-amber-200'}>
-                        {item.status==='approved'?(item.manual_credited?'Administrations-confirmed · System Switch credited':item.method==='paystack'&&!item.verified_at?'Credited · Verification under review':'Verified · System Switch credited'):item.status==='rejected'?'Rejected · No credit':'Awaiting Paystack verification'}
+                        {item.status==='approved'
+                          ? (item.usd_credit!=null?'Verified · USD credited'
+                            : item.manual_credited?'Administrations-confirmed · legacy credit'
+                            : item.method==='paystack'&&!item.verified_at?'Credited · Verification under review':'Verified · legacy credit')
+                          : item.status==='rejected'?'Rejected · No credit':'Awaiting Paystack verification'}
                       </span>
                     </div>
                   ))}
@@ -696,8 +742,8 @@ export default function WalletDepositWithdrawPage() {
 
             <section className="rounded-3xl border border-sky-300/15 bg-sky-400/[0.04] p-4">
               <div className="flex items-center gap-2"><Wallet className="h-4 w-4 text-sky-300"/><p className="text-[9px] font-black uppercase tracking-[0.18em] text-sky-300">Recorded balance</p></div>
-              <p className="mt-3 text-2xl font-black text-white">{balanceLabel}</p>
-              <p className="text-xs font-black text-slate-300">System Switch</p>
+              <p className="mt-3 text-2xl font-black text-white">{usdBalance==null?'Not initialized':usdBalance.toLocaleString('en-US',{style:'currency',currency:'USD'})}</p>
+              <p className="text-xs font-black text-slate-300">USD account (legacy balance kept separately)</p>
               <Link href="/ledger" className="mt-4 inline-flex w-full items-center justify-between rounded-xl border border-sky-300/15 bg-sky-400/[0.06] px-3 py-2.5 text-[10px] font-black uppercase tracking-[0.1em] text-sky-100">Open Record <ArrowRight className="h-3.5 w-3.5"/></Link>
             </section>
 
