@@ -42,7 +42,8 @@ export async function readEntryLoanSupport(accessToken: string) {
   if (!ticket) return null
   await ensureEntryLoanSupportSchema()
   const rows = await sql`
-    SELECT status, admin_note, approved_principal, created_at, updated_at
+    SELECT status, admin_note, approved_principal, applicant_name, applicant_email,
+      created_at, updated_at
     FROM department_entry_loan_requests WHERE ticket_id = ${ticket.id}::uuid LIMIT 1
   `
   return { ticket, request: rows[0] || null }
