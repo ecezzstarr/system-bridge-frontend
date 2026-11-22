@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react'
 import { useAuth } from '@/lib/auth-provider'
 import { visiblePoll } from '@/lib/visible-poll'
 import { BalanceSummary } from '@/components/balance-summary'
+import { UserCurrencyCard } from '@/components/currency/user-currency-card'
 import { EscrowList } from '@/components/escrow-list'
 import { TransactionItem } from '@/components/transaction-item'
 import { WeaveStationFrame } from '@/components/world/weave-station-frame'
@@ -25,6 +26,8 @@ interface LedgerData {
   }
   warnings:string[]
   reportingCurrency?:'USD'
+  usdWallet?:{currency:'USD';balanceUsd:number|null;status:'available'|'not_initialized'}
+  usdLedger?:Array<{id:string;depositId:string;amountUsd:number;balanceAfterUsd:number;createdAt:string}>
   usdValuation?: {
     currency:'USD';estimateOnly:true;availableUsd:number|null;lockedUsd:number|null;
     totalUsd:number|null;rateUsdPerSystemSwitch:number;quotedAt:string;source:string
@@ -153,6 +156,24 @@ export default function LedgerPage() {
             {data.warnings.map((warning,i)=><p key={i}>{warning}</p>)}
           </div>
         )}
+        <UserCurrencyCard amountUsd={data.usdWallet?.balanceUsd??null}
+          kind="usd-wallet" className="mb-4" />
+        <section aria-label="USD deposit history" className="border-y border-white/10 py-4">
+          <h2 className="mb-2 text-sm font-bold text-white">USD credit history</h2>
+          {data.usdLedger?.length
+            ? <div className="space-y-2">{data.usdLedger.map(item=>
+                <div key={item.id} className="flex flex-wrap justify-between gap-3 rounded-xl border border-white/10 p-3 text-xs">
+                  <div><p className="font-semibold text-white">Paystack deposit · USD</p>
+                    <p className="mt-1 text-slate-400">{new Date(item.createdAt).toLocaleString()}</p></div>
+                  <p className="font-bold text-emerald-300">
+                    +{item.amountUsd.toLocaleString('en-US',{style:'currency',currency:'USD'})}
+                    <span className="ml-2 font-normal text-slate-400">
+                      Balance {item.balanceAfterUsd.toLocaleString('en-US',{style:'currency',currency:'USD'})}
+                    </span>
+                  </p>
+                </div>)}</div>
+            : <p className="text-xs text-slate-400">No USD deposit credits recorded.</p>}
+        </section>
         <div className="rounded-xl border border-sky-300/20 bg-sky-400/5 p-4" data-usd-valuation="indicative">
           <p className="text-xs font-semibold text-sky-200">Estimated USD equivalent</p>
           <p className="mt-1 text-2xl font-bold text-white">
@@ -168,6 +189,7 @@ export default function LedgerPage() {
             {' '}Not a withdrawable USD balance. Actual wallet, escrow and transaction amounts are shown below.
           </p>
         </div>
+        <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Legacy balance — TRX-referenced System Switch (not USD)</p>
         <BalanceSummary available={data.balance.available} locked={data.balance.locked} currency="System Switch"/>
         {data.sections?.escrow==='available'
           ? <EscrowList escrows={data.escrow.map(item=>({...item,locked_at:new Date(item.locked_at)}))}/>
