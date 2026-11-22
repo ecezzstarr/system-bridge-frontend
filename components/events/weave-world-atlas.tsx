@@ -33,7 +33,7 @@ const REGIONS = {
  riverlands: {name:'Riverlands',landmark:'Rivergate Marketplace',rect:[72,827,245,153]},
  ember_reach: {name:'Ember Reach',landmark:'Ember Hold · Pro',rect:[448,384,244,163]},
  starfall_ridge: {name:'Starfall Ridge',landmark:'Starfall Spire',rect:[820,578,188,165]},
- tidal_basin: {name:'Tidal Basin',landmark:'Tidemoor',rect:[778,1032,230,190]},
+ tidal_basin: {name:'Tidal Basin',landmark:'Tidemoor',rect:[784,1052,218,161]},
 } satisfies Record<DomainRegion,{name:string;landmark:string;rect:Rectangle}>
 
 export function worldRegionName(region:DomainRegion){return REGIONS[region].name}
@@ -107,7 +107,7 @@ export function WeaveWorldAtlas({
            aria-label="Bridge of Radiance · System Switch Gate">
            <span className="weave-atlas-label">Bridge of Radiance · System Switch Gate</span>
          </Link>
-         <Link href={eventHref} data-map-hotspot style={hotspot([712,896,240,62])}
+         <Link href={eventHref} data-map-hotspot style={hotspot([708,864,246,100])}
            aria-label="Burning River · Company Loop 1">
            <span className="weave-atlas-label">Burning River · Company Loop 1</span>
          </Link>
