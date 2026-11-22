@@ -33,7 +33,7 @@ export async function GET(request:NextRequest) {
       rateUsdPerSystemSwitch:quote.usdPerSystemSwitch,
       quotedAt:quote.checkedAt,source:quote.source,
     } : null
-    return NextResponse.json({success:true,data:{...data,platformCurrency:PLATFORM_CURRENCY_CODE,usdValuation}},{headers:noStore})
+    return NextResponse.json({success:true,data:{...data,reportingCurrency:PLATFORM_CURRENCY_CODE,usdValuation}},{headers:noStore})
   } catch(error) {
     console.error('[WEAVE Record] persistent data retrieval failed:',error)
     const invalid=error instanceof Error && error.message==='Invalid record page cursor'
