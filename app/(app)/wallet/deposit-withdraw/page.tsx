@@ -357,7 +357,7 @@ export default function WalletDepositWithdrawPage() {
               </Link>
               <p className="mt-4 weave-word-presence text-[9px] font-black uppercase tracking-[0.22em] text-cyan-300">Value Movement Engine</p>
               <h1 className="mt-2 text-2xl font-black text-white md:text-3xl">Deposit, verification, conversion and withdrawal are one recorded value lifecycle.</h1>
-              <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-300">Every deposit creates a verifiable movement before System Switch is credited. Every withdrawal moves from recorded balance into an authorized external rail.</p>
+              <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-300">USD is Weave's monetary reference. Each payment is verified before its USD credit; historical System Switch units and existing TRX withdrawal rails remain separate pending reconciliation.</p>
             </div>
             <div className="rounded-xl border border-cyan-300/15 bg-cyan-400/[0.05] px-4 py-3 text-right">
               <p className="text-[8px] font-black uppercase tracking-wider text-cyan-300">Current position</p>
@@ -407,7 +407,7 @@ export default function WalletDepositWithdrawPage() {
                   {isOpayRole && (
                     <p className="text-[10px] text-slate-500 mt-2 flex items-center gap-1">
                       <Check className="h-3 w-3 text-green-500" />
-                      Automatic conversion active
+                      {usdDepositEnabled?'USD Paystack conversion active':'Legacy conversion active'}
                     </p>
                   )}
                 </div>
@@ -473,7 +473,7 @@ export default function WalletDepositWithdrawPage() {
                     </div>
                     {usdDepositEnabled && ngnPerUsd && amount && Number.isFinite(Number(amount)) && Number(amount)>0 &&
                       <p className="mb-4 text-sm text-emerald-200">
-                        Estimated USD credit: ${(Math.round(Number(amount)/ngnPerUsd*100)/100).toLocaleString('en-US',{
+                        Estimated USD credit: {(Math.round(Number(amount)/ngnPerUsd*100)/100).toLocaleString('en-US',{
                           style:'currency',currency:'USD',
                         })}. Final quote is locked when checkout opens.
                       </p>}
@@ -604,7 +604,7 @@ export default function WalletDepositWithdrawPage() {
                 {isOpayRole ? (
                   <>
                     <h2 className="text-xl font-bold text-white mb-4">Withdraw via OPay (NGN)</h2>
-                    <p className="text-slate-400 text-sm mb-6">Cash out your System Switch balance to your bank account via OPay.</p>
+                    <p className="text-slate-400 text-sm mb-6">This existing OPay withdrawal uses only the historical TRX-referenced balance. USD deposits are not withdrawn through this legacy route.</p>
 
                     <div className="mb-6">
                       <label className="block text-sm font-semibold text-white mb-3">Amount (System Switch)</label>
