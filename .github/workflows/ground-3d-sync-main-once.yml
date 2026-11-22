@@ -1,0 +1,39 @@
+name: Safely sync main into official 3D Company Grounds PR
+on:
+  push:
+    branches: [feat/official-grounds-immersive-click-20261122]
+    paths: ['.github/workflows/ground-3d-sync-main-once.yml']
+permissions:
+  contents: write
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: feat/official-grounds-immersive-click-20261122
+      - name: Preserve ongoing company work when reconciling main
+        run: |
+          git config user.name 'Weave safe branch sync'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git fetch origin main
+          git merge -X ours --no-edit origin/main
+          python3 - <<'PY'
+          import subprocess
+          from pathlib import Path
+          source=subprocess.check_output(['git','show','origin/main:app/weave-company-depth.css'],text=True)
+          start=source.find('@media (prefers-reduced-motion: no-preference) {')
+          depart=source.find('  :is([data-department] nav, [data-department] details, [data-department] aside)',start)
+          if start<0 or depart<0:
+              raise SystemExit('Depth styling changed; abort rather than delete unrelated work')
+          preserved=source[:start]+'''/* Exact Company Grounds image and 3D route own their camera and textures.
+             Do not place any fragment of the old artwork above them. */
+          @media (prefers-reduced-motion: no-preference) {
+          '''+source[depart:]
+          Path('app/weave-company-depth.css').write_text(preserved)
+          PY
+          git add app/weave-company-depth.css
+          git diff --cached --quiet || git commit -m 'Preserve main visual systems while removing only old image cutouts'
+          git push origin HEAD:feat/official-grounds-immersive-click-20261122
