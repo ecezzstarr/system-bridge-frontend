@@ -6,20 +6,24 @@ import { Button } from '@/components/ui/button'
 import { visiblePoll } from '@/lib/visible-poll'
 import { Input } from '@/components/ui/input'
 
-type LoanRequest = { status: string; admin_note?: string | null }
+type LoanRequest = { status: string; admin_note?: string | null; applicant_name?: string; applicant_email?: string }
 
 export function DepartmentEntryLoanSupport({
-  accessToken, ticketStatus, ticketValue, onCodeIssued,
+  accessToken, ticketStatus, ticketValue, onCodeIssued, onLoanRequested, onApplicantConfirmed,
 }: {
   accessToken: string
   ticketStatus: string
   ticketValue: number
-  onCodeIssued: () => void
+  onCodeIssued: (code?: string) => void
+  onLoanRequested: () => void
+  onApplicantConfirmed: (applicant: { name: string; email: string }) => void
 }) {
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
   const [request, setRequest] = useState<LoanRequest | null>(null)
   const [error, setError] = useState('')
+  const [codeExpired, setCodeExpired] = useState(false)
+  const [canRenewCode, setCanRenewCode] = useState(false)
   const [acceptsDeduction, setAcceptsDeduction] = useState(false)
   const [form, setForm] = useState({ name: '', email: '', phone: '', statement: '' })
   const canApply = ticketStatus === 'PRESENTED'
@@ -32,12 +36,22 @@ export function DepartmentEntryLoanSupport({
         cache: 'no-store',
       })
       const data = await res.json()
-      if (res.ok && data.success) {
-        setRequest(data.request || null)
-        if (data.request?.status === 'approved' && ticketStatus !== 'CODE_ISSUED') onCodeIssued()
+      if (!res.ok || !data.success) throw new Error(data.error || 'Loan status unavailable')
+      setRequest(data.request || null)
+      setCodeExpired(data.codeExpired === true)
+      setCanRenewCode(data.canRenewCode === true)
+      if (data.request?.applicant_email) onApplicantConfirmed({
+        email: String(data.request.applicant_email).toLowerCase(),
+        name: String(data.request.applicant_name || ''),
+      })
+      if (data.registrationCode) {
+        onCodeIssued(String(data.registrationCode))
+      } else if (data.request?.status === 'approved' && ticketStatus !== 'CODE_ISSUED' && !data.codeExpired) {
+        onCodeIssued()
       }
-    } catch {
-      // Loan support is optional; an unavailable review route must not block payment.
+      setError('')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Loan status unavailable. Retry below.')
     }
   }
 
@@ -60,11 +74,37 @@ export function DepartmentEntryLoanSupport({
       })
       const data = await res.json()
       if (!res.ok || !data.success) throw new Error(data.error || 'Unable to send request')
-      setRequest({ status: data.status })
+      setRequest({ status: data.status, applicant_email: form.email.trim().toLowerCase(), applicant_name: form.name.trim() })
+      onLoanRequested()
+      onApplicantConfirmed({ name: form.name.trim(), email: form.email.trim().toLowerCase() })
       setOpen(false)
       await refresh()
     } catch (error: any) {
       setError(error?.message || 'Loan support is temporarily unavailable')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const renewCode = async () => {
+    if (!accessToken || busy) return
+    setBusy(true)
+    setError('')
+    try {
+      const res = await fetch('/api/department-entry/loan-support', {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json', 'x-entry-ticket-token':accessToken },
+        body: JSON.stringify({ action:'renew_approved_code' }),
+      })
+      const data = await res.json()
+      if (!res.ok || !data.success || !data.registrationCode) {
+        throw new Error(data.error || 'Unable to restore the approved code')
+      }
+      setCodeExpired(false)
+      setCanRenewCode(false)
+      onCodeIssued(String(data.registrationCode))
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Code recovery failed. Contact Administrations.')
     } finally {
       setBusy(false)
     }
@@ -88,13 +128,27 @@ export function DepartmentEntryLoanSupport({
                 Click here to request a loan
               </button>
               <p className="mt-1 text-xs leading-5 text-slate-400">
-                An approved Regional Manager reviews each request. The loan does not waive the ticket fee.
+                An authorized Regional Manager or Administrations reviews each request. The loan does not waive the ticket fee.
               </p>
             </>
           ) : (
             <div aria-live="polite" className="mt-2 text-xs leading-5 text-slate-200">
               <p>Loan-support request: <strong className="capitalize text-sky-200">{request.status}</strong></p>
-              {request.status === 'approved' && <p className="mt-2 text-sky-100">Your Regional Manager approved the ticket loan. A one-use registration code is released; continue registration. Your starting System Switch balance will be −{ticketValue}.</p>}
+              {request.status === 'approved' && <p className="mt-2 text-sky-100">
+                Your entry loan is approved. Your one-use code should appear in the ticket below.
+                Register using <strong>{request.applicant_email || 'the email supplied in your application'}</strong>.
+                Your starting System Switch balance will be −{ticketValue}.
+              </p>}
+              {codeExpired && <div className="mt-2 space-y-2 text-amber-200">
+                <p role="alert">Your previously approved one-use code is no longer available.
+                  Your loan remains recorded; do not pay for another ticket.</p>
+                {canRenewCode
+                  ? <button type="button" disabled={busy} onClick={() => void renewCode()}
+                    className="min-h-11 w-full rounded-lg border border-amber-200/40 px-3 py-2 font-bold text-amber-100 disabled:opacity-50">
+                    {busy ? 'Restoring approved code…' : 'Restore my approved registration code'}
+                    </button>
+                  : <p>Contact Administrations or your Regional Manager for a verified review of the original ticket.</p>}
+              </div>}
               {request.admin_note && <p className="mt-2 whitespace-pre-wrap text-slate-300">{request.admin_note}</p>}
               <button type="button" onClick={() => void refresh()}
                 className="mt-2 font-semibold text-sky-200 underline underline-offset-4">
@@ -104,6 +158,7 @@ export function DepartmentEntryLoanSupport({
           )}
         </div>
       </div>
+      {error && !open && <p role="alert" className="mt-2 text-xs text-red-300">{error}</p>}
       {open && !request && canApply && (
         <form id="entry-loan-form" onSubmit={submit} className="mt-4 space-y-3 border-t border-white/10 pt-4">
           <label className="block text-xs text-slate-300">Full name
@@ -132,7 +187,7 @@ export function DepartmentEntryLoanSupport({
               onChange={event => setAcceptsDeduction(event.target.checked)}
               className="mt-1 accent-sky-300" />
             <span>I request an internal System Switch registration loan of {ticketValue} System Switch.
-              If approved by an authorized Regional Manager, my new account will start
+              If approved by a Regional Manager or Administrations, my new account will start
               at −{ticketValue} System Switch. Future verified System Switch credits will
               offset this debt. No interest is added by this registration flow.</span>
           </label>

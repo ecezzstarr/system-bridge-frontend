@@ -68,6 +68,7 @@ jobs:
         run: |
           node tests/department-entry-role-pricing-regression.cjs
           node tests/department-entry-loan-support-regression.cjs
+          node tests/department-entry-loan-completion-regression.cjs
           node tests/system-switch-currency-display.cjs
           npx tsx --test tests/saturday-free-entry.test.ts
 

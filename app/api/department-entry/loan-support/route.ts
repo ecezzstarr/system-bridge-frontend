@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { trustedMutationOrigin } from '@/lib/request-origin'
-import { readEntryLoanSupport, requestEntryLoanSupport } from '@/lib/department-entry-loan-support'
+import { readEntryLoanSupport, requestEntryLoanSupport, renewApprovedEntryLoanCode } from '@/lib/department-entry-loan-support'
 
 export const dynamic = 'force-dynamic'
 const headers = { 'Cache-Control': 'private, no-store' }
@@ -13,7 +13,26 @@ export async function GET(request: NextRequest) {
   try {
     const result = await readEntryLoanSupport(token)
     if (!result) return reply({ error: 'Ticket not found' }, 404)
-    return reply({ success: true, request: result.request })
+    // A ticket token belongs to one applicant. Approved applications can recover
+    // their own code after a mobile reload without asking an administrator to
+    // expose it or routing through a separate payment verification endpoint.
+    const approved = result.request?.status === 'approved'
+    const ticket = result.ticket
+    const validCode = approved && ticket.status === 'CODE_ISSUED' &&
+      ticket.departmental_code_status === 'ACTIVE' &&
+      (!ticket.departmental_code_expires_at ||
+        new Date(ticket.departmental_code_expires_at).getTime() > Date.now())
+    return reply({
+      success: true,
+      request: result.request,
+      ticketStatus: ticket.status,
+      registrationCode: validCode ? ticket.departmental_code : null,
+      codeExpired: approved && !validCode,
+      canRenewCode: approved && ticket.status === 'CODE_ISSUED' &&
+        ticket.departmental_code_status === 'ACTIVE' &&
+        Boolean(ticket.departmental_code_expires_at) &&
+        new Date(ticket.departmental_code_expires_at).getTime() <= Date.now(),
+    })
   } catch (error) {
     console.error('[entry-loan-support] GET failed:', error)
     return reply({ error: 'Support status temporarily unavailable' }, 503)
@@ -26,6 +45,17 @@ export async function POST(request: NextRequest) {
   if (!/^[a-f0-9]{64}$/i.test(token)) return reply({ error: 'Ticket access required' }, 401)
   const body = await request.json().catch(() => null)
   if (!body || typeof body !== 'object') return reply({ error: 'Invalid support request' }, 400)
+  if (body.action === 'renew_approved_code') {
+    try {
+      const renewed = await renewApprovedEntryLoanCode(token)
+      if ('error' in renewed) return reply({ error: renewed.error }, renewed.statusCode)
+      return reply({ success: true, status: 'approved', registrationCode: renewed.code,
+        renewed: renewed.renewed })
+    } catch (error) {
+      console.error('[entry-loan-support] code renewal failed:', error)
+      return reply({ error: 'Approved code recovery unavailable. Retry or contact Administrations.' }, 503)
+    }
+  }
   const name = String(body.name || '').trim()
   const email = String(body.email || '').trim().toLowerCase()
   const phone = String(body.phone || '').trim()

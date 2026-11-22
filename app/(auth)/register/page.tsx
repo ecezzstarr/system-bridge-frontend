@@ -44,6 +44,7 @@ function RegisterContent() {
   const [isChatOpen, setIsChatOpen] = useState(false)
   const [termsScrolledToEnd, setTermsScrolledToEnd] = useState(false)
   const [fullNameConfirm, setFullNameConfirm] = useState('')
+  const [approvedLoanApplicant, setApprovedLoanApplicant] = useState<{name:string;email:string}|null>(null)
   const [draftReady, setDraftReady] = useState(false)
   const submissionLock = useRef(false)
 
@@ -115,6 +116,7 @@ function RegisterContent() {
 
   const handleRoleSelect = (role: 'agent' | 'bridger') => {
     setError(null)
+    setApprovedLoanApplicant(null)
     setFormData(prev => ({ ...prev, role, departmentalCode: prev.role===role?prev.departmentalCode:'' }))
     setStep('dept-gate')
   }
@@ -178,6 +180,10 @@ function RegisterContent() {
       setError('Please select a role')
       return
     }
+    if (approvedLoanApplicant && formData.email.trim().toLowerCase() !== approvedLoanApplicant.email) {
+      setError('Use the email address on your approved entry-loan application. Your code is assigned to that applicant.')
+      return
+    }
     if (fullNameConfirm.trim().toLowerCase() !== formData.name.trim().toLowerCase()) {
       setError('Your typed name must match the Full Name field exactly to confirm the Terms of Service.')
       return
@@ -200,6 +206,12 @@ function RegisterContent() {
         fullNameConfirmed: fullNameConfirm.trim(),
       } as any)
       try { sessionStorage.removeItem(BRIDGER_DRAFT_KEY) } catch {}
+      // Once the one-use code is committed, remove only this role's cached
+      // entry-ticket token. Never delete another department's application.
+      try { sessionStorage.removeItem('weave_department_entry_' + formData.role.toUpperCase()) } catch {}
+      try { localStorage.removeItem('weave_department_entry_' + formData.role.toUpperCase() + '_approved_loan_resume') } catch {}
+      // Preserve WEAVE's shared Company Loop arrival while keeping the actual
+      // Agent/Bridger workspaces as the route when the event is not active.
       router.replace(await isFlameEventActive() ? '/event' : formData.role === 'bridger' ? '/bridger/dashboard' : '/agent/dashboard')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed. Your information remains on this page; you can retry.')
@@ -274,8 +286,18 @@ function RegisterContent() {
         <CardContent>
           <DepartmentEntryTicketGate
             department={formData.role.toUpperCase() as 'AGENT' | 'BRIDGER'}
-            onCodeReady={(code) => {
-              setFormData(prev => ({ ...prev, departmentalCode: code }))
+            onCodeReady={(code, applicant) => {
+              if (applicant?.email) {
+                const approved = { name: applicant.name.trim(), email: applicant.email.trim().toLowerCase() }
+                setApprovedLoanApplicant(approved)
+                setFormData(prev => ({
+                  ...prev, departmentalCode: code,
+                  email: approved.email, name: approved.name || prev.name,
+                }))
+              } else {
+                setApprovedLoanApplicant(null)
+                setFormData(prev => ({ ...prev, departmentalCode: code }))
+              }
               setError(null)
               setStep('notice')
             }}
@@ -454,6 +476,7 @@ function RegisterContent() {
               className="pl-10 bg-slate-900 border-slate-700 text-white placeholder:text-slate-600 text-xs"
               required
               disabled={isSubmitting || isLoading}
+              readOnly={Boolean(approvedLoanApplicant)}
             />
           </div>
 
