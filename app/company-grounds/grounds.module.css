@@ -1,48 +1,110 @@
-/* The single homepage is the founder-approved Company Grounds image.
-   Do not add editorial headers, entrance strips, cards or crop the art.
-   Image-space hotspots are transparent and keep their role-aware routes. */
+/* The exact official 1536×864 image is the homepage UI.
+   All hit regions scale with the image; no duplicated titles or panels. */
 .grounds {
-  position:relative; isolation:isolate; min-height:100dvh;
-  background:#fcfaf4; color:#302c23
+  position:relative;
+  isolation:isolate;
+  min-height:100dvh;
+  background:radial-gradient(ellipse at 50% 45%,#183658 0%,#0c1c35 56%,#061226 100%);
+  color:#f9edda;
 }
 .viewport {
-  width:100%; min-height:100vh; min-height:100dvh;
-  display:flex; align-items:center; justify-content:center;
-  overflow:hidden; overscroll-behavior:contain
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  min-height:100vh;
+  min-height:100dvh;
+  overflow:hidden;
+  overscroll-behavior:contain;
+  touch-action:none;
+  perspective:1600px;
+  user-select:none;
+  -webkit-user-select:none;
+  cursor:zoom-in;
 }
+.viewport[data-exploring="true"] {cursor:grab}
+.viewport[data-exploring="true"]:active {cursor:grabbing}
 .scene {
-  position:relative; flex:none; width:min(100%,177.778dvh);
-  aspect-ratio:16/9
+  position:relative;
+  flex:none;
+  width:min(100%,177.778dvh);
+  aspect-ratio:16/9;
+  transform-origin:var(--grounds-focus-x,50%) var(--grounds-focus-y,50%);
+  transform-style:preserve-3d;
+  transform:perspective(1600px)
+    translate3d(var(--grounds-pan-x,0px),var(--grounds-pan-y,0px),0)
+    rotateY(var(--grounds-look-x,0deg))
+    rotateX(var(--grounds-look-y,0deg))
+    scale(var(--grounds-zoom,1));
+  transition:transform 340ms cubic-bezier(.2,.75,.22,1),transform-origin 240ms ease;
+  backface-visibility:hidden;
+  will-change:transform;
 }
-.scene img {display:block; width:100%; height:100%; max-width:none}
-.door {position:absolute; background:transparent; border:0; border-radius:.5rem; touch-action:manipulation}
-.door:hover,.door:focus-visible {box-shadow:inset 0 0 0 3px #fff1c9; background:#fff1c917}
-.grounds :focus-visible {outline:3px solid #174d69; outline-offset:-3px}
-
-/* The picture itself is the introduction on every screen size.
-   Contain the entire panorama on narrow phones rather than enlarging it
-   beyond the viewport or covering any of its buildings. */
-@media (max-width:900px), (orientation:portrait) {
-  .scene {width:100%}
-  .scene > button[aria-label="Company Grounds directory"] {
-    min-height:40px; transform:translateY(-25%)
-  }
+.scene > img {display:block;width:100%;height:100%;max-width:none;pointer-events:none}
+.hotspot {
+  position:absolute;
+  z-index:3;
+  display:block;
+  background:transparent;
+  border:0;
+  border-radius:.5rem;
+  touch-action:manipulation;
+  cursor:pointer;
+  outline-offset:-3px;
 }
+.hotspot:hover {box-shadow:inset 0 0 0 2px #ffe7a8aa;background:#fbe5ac11}
+.hotspot:focus-visible {outline:3px solid #ffdc75;background:#eed08a22}
+.companyMark {z-index:4}
+.signIn {right:7.6%;left:auto;width:9.5%;top:.8%;height:7.5%;min-height:36px}
+.menu {right:1%;left:auto;width:5.2%;top:.8%;height:7.5%;min-height:40px}
+.bottomAction {border-radius:2rem}
 
 .directory {
-  position:fixed; inset:0; margin:auto; width:min(92vw,36rem);
-  max-height:80dvh; overflow:auto; border:1px solid #ad915c;
-  border-radius:1rem; background:#fffaf0; color:#32271a;
-  padding:1rem; box-shadow:0 1rem 4rem #21190f40
+  position:fixed;
+  inset:0;
+  z-index:30;
+  margin:auto;
+  width:min(92vw,36rem);
+  max-height:80dvh;
+  overflow:auto;
+  border:1px solid #ad915c;
+  border-radius:1rem;
+  background:#fffaf0;
+  color:#32271a;
+  padding:1rem;
+  box-shadow:0 1rem 4rem #21190f40
 }
 .directory::backdrop {background:#21190f66}
-.directory header {display:flex; align-items:center; justify-content:space-between; gap:1rem}
+.directory header {display:flex;align-items:center;justify-content:space-between;gap:1rem}
 .directory h2 {font:600 1.45rem Georgia,serif}
-.directory header button {padding:.5rem; min-height:44px; text-decoration:underline}
-.entrances {display:flex; flex-wrap:wrap; gap:.5rem; justify-content:flex-start; padding:1rem 0 0}
+.directory header button {padding:.5rem;min-height:44px;text-decoration:underline}
+.entrances {display:flex;flex-wrap:wrap;gap:.5rem;justify-content:flex-start;padding:1rem 0 0}
 .entrances a,.entrances button,.river {
-  display:inline-flex; align-items:center; justify-content:center;
-  min-height:44px; padding:.4rem .85rem; border:1px solid #a18147;
-  border-radius:2rem; text-decoration:none
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:44px;
+  padding:.4rem .85rem;
+  border:1px solid #a18147;
+  border-radius:2rem;
+  text-decoration:none;
 }
-.river {background:#38251a; color:#ffe4b1}
+.river {background:#38251a;color:#ffe4b1}
+
+@media (max-width:900px), (orientation:portrait) {
+  .viewport {isolation:isolate}
+  .viewport::before {
+    content:'';position:absolute;inset:-6%;z-index:0;pointer-events:none;
+    background:linear-gradient(180deg,#06122699,#061226b5),url('/images/weave-official-hybrid-home.jpg') center/cover no-repeat;
+    filter:blur(19px) brightness(.8);
+  }
+  .scene {z-index:1;width:100%}
+  .companyMark {min-height:44px}
+  .signIn {right:8%;width:10%;min-width:55px;min-height:44px}
+  .menu {right:0;width:7%;min-width:44px;min-height:44px}
+  .bottomAction {min-height:44px;transform:translateY(-45%)}
+}
+@media (prefers-reduced-motion:reduce) {
+  .scene {transition:none;transform:translate3d(var(--grounds-pan-x,0px),var(--grounds-pan-y,0px),0) scale(var(--grounds-zoom,1))}
+}

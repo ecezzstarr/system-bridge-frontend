@@ -138,25 +138,45 @@ assert.match(grounds,/<dialog ref=\{entrances\}[\s\S]*?<nav id="grounds-entrance
 assert.match(grounds,/href="\/reach-delivery"/)
 
 
-/* The artwork, not an added page of buttons, introduces Weave.
-   Its sign-in, departments and Company Grounds sign are invisible hotspots.
-   Registration, File Folder previews and all public services stay in directory. */
+/* The uploaded artwork is the single official interactive homepage. */
 const groundsCss=fs.readFileSync(path.join(__dirname,'../app/company-grounds/grounds.module.css'),'utf8')
-assert.match(grounds,/src="\/images\/weave-open-world-home\.jpg"/,'The official homepage must use the original Company Grounds image')
-assert.match(grounds,/data-weave-company-home="company-grounds"/,'The homepage remains the single Company Grounds entrance')
-assert.match(grounds,/doors\.map\(door => renderDoor\(door, true\)\)/,'Building hotspots must remain navigable')
-assert.match(grounds,/if \(user && user\.role !== door\.role\)/,'Private department crossings remain protected')
-assert.match(grounds,/if \(door\.name === 'File Folder'\)/,'Public File Folder previews must not require Client authentication')
-assert.match(grounds,/<dialog ref=\{entrances\}[\s\S]*?<Link href="\/register">Join Weave<\/Link>[\s\S]*?<Link href="\/file-folder-preview">Explore File Folders<\/Link>/,
-  'Registration and File Folder previews belong in the Company Grounds directory')
-for(const extra of ['mobileHeader','mobileIntroduction','mobileExplore','groundEntrances','desktopFooter','mobileJoin','mobileLegal'])
-  assert.ok(!grounds.includes('styles.'+extra),'Do not add another homepage surface: '+extra)
-assert.doesNotMatch(grounds,/The Company of Time|One company\. Many ways to participate\.|WEAVE_COMPANY\.registrationNumber/,
-  'Company Grounds already communicates company identity; do not repeat it')
-assert.match(groundsCss,/\.viewport \{[\s\S]*?min-height:100dvh/,'The image is the one full-screen homepage')
-assert.match(groundsCss,/\.scene \{[\s\S]*?width:min\(100%,177\.778dvh\);[\s\S]*?aspect-ratio:16\/9/,
-  'Fit the full image to the device without horizontal overflow')
-assert.match(groundsCss,/\.scene img \{display:block; width:100%; height:100%; max-width:none\}/,
-  'The full original image must be visible without resampling/cropping')
-assert.doesNotMatch(groundsCss,/\.mobileHeader|\.mobileIntroduction|\.mobileExplore|\.groundEntrances|\.desktopFooter|height:87dvh|aspect-ratio:1536 \/ 752/,
-  'Retire all previous artificial homepage layers and cropped-image treatment')
+assert.ok(grounds.includes('OFFICIAL_GROUNDS_IMAGE') && grounds.includes('weave-official-hybrid-home.jpg'), 'Approved official artwork must be used')
+assert.ok(grounds.includes('FALLBACK_GROUNDS_IMAGE'), 'Retain a working image fallback')
+assert.ok(grounds.includes('doors.map(door=>renderDoor(door,true))'), 'Department buildings remain interactive')
+assert.ok(grounds.includes('publicActions.map(action=>'), 'Embedded public buttons must function')
+assert.ok(grounds.includes('onPointerMove={moveLook}') && grounds.includes('onTouchMove={movePinch}'), 'Camera interaction responds to drag and pinch')
+assert.ok(grounds.includes('onKeyDown={useKeyboard}'), 'Keyboard controls remain available')
+assert.ok(grounds.includes('router.push(href)'), 'Building entrances reach real Weave routes')
+assert.ok(grounds.includes('if(user&&user.role!==door.role)'), 'Department restrictions remain')
+for(const href of ['/register','/file-folder-preview','/system-switch/world']) assert.ok(grounds.includes("href:'"+href+"'"), href+' accessible')
+assert.ok(groundsCss.includes('transform:perspective(1600px)'), 'Image camera has perspective')
+assert.ok(groundsCss.includes('prefers-reduced-motion:reduce'), 'Accessible reduced-motion fallback exists')
+assert.ok(groundsCss.includes('width:min(100%,177.778dvh)'), 'Full image fits the viewport')
+for(const name of ['mobileHeader','mobileIntroduction','mobileExplore','groundEntrances','desktopFooter']) assert.ok(!grounds.includes('styles.'+name), 'No duplicate introduction: '+name)
+
+assert.equal(require('node:crypto').createHash('sha256').update(fs.readFileSync(path.join(__dirname,'../public/images/weave-official-hybrid-home.jpg'))).digest('hex'), 'bbe2056bba2e56dc35479160d9aad03ad2527504a5dbafaf9c34f324167d082b', 'Approved homepage must stay byte-for-byte identical to the user upload')
+
+/* WEAVE 3D campus functional contract — original image stays unchanged. */
+const liveGrounds3d=fs.readFileSync(path.join(__dirname,'../app/company-grounds/3d/page.tsx'),'utf8')
+const modelPath=path.join(__dirname,'../public/models/weave-company-grounds.glb')
+const modelBytes=fs.readFileSync(modelPath)
+assert.equal(modelBytes.subarray(0,4).toString('ascii'),'glTF','Company Grounds must be actual glTF/GLB geometry, not an image')
+assert.equal(modelBytes.readUInt32LE(4),2,'Three.js requires glTF 2.0 format')
+assert.ok(modelBytes.length>100000&&modelBytes.length<8*1024*1024,'3D geometry is present and bounded for mobile devices')
+const glbJsonLength=modelBytes.readUInt32LE(12)
+assert.equal(modelBytes.subarray(16,20).toString('ascii'),'JSON','3D model must include a valid glTF JSON scene chunk')
+const glbScene=JSON.parse(modelBytes.subarray(20,20+glbJsonLength).toString('utf8').trim())
+const glbNames=(glbScene.nodes||[]).map(node=>node.name||'')
+for(const prefix of ['HOPE_','STABILITY_','ADMIN_','DREAM_','MANAGEMENT_','SUNSHINE_','BURNING_RIVER_','ESTATE_','MARKET_'])
+  assert.ok(glbNames.some(name=>name.startsWith(prefix)),'The GLB must contain a selectable real mesh for '+prefix)
+assert.ok(glbNames.some(name=>name.startsWith('RIG_SUNSHINE_MECHANIZED_WHEEL')),'The Sunshine kinetic assembly is present')
+assert.ok((glbScene.animations||[]).length>0,'3D animated machinery must be exported into GLB, not only the Blender editor')
+assert.ok(grounds.includes('href="/company-grounds/3d"'),'Official Company Grounds sign opens real 3D environment')
+assert.ok(grounds.includes("'/images/weave-official-hybrid-home.jpg'"),'Main homepage continues to use approved, exact original image')
+assert.ok(liveGrounds3d.includes("useGLTF('/models/weave-company-grounds.glb')"),'3D view loads committed scene geometry')
+assert.ok(liveGrounds3d.includes('onClick={click}')&&liveGrounds3d.includes('identifyPlace(e.object.name)'),'Interactive buildings resolve to named 3D mesh objects')
+assert.ok(liveGrounds3d.includes('OrbitControls')&&liveGrounds3d.includes('maxDistance'),'Orbit and zoom controls remain available')
+assert.ok(liveGrounds3d.includes('if(role&&user&&role!==user.role)'),'Unauthorized role crossing is denied from 3D model')
+assert.ok(liveGrounds3d.includes('router.push(resolvePath(place))'),'3D entrances navigate to real Weave routes')
+assert.ok(liveGrounds3d.includes('href="/file-folder-preview"')&&liveGrounds3d.includes('href="/register"'),'Public registration and preview entrance remain reachable')
+console.log('WEAVE 3D campus functional contract passed')

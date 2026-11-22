@@ -116,7 +116,7 @@ async function main() {
         if (route === '/') {
           const company = await page.evaluate(() => {
             const grounds = document.querySelector('[data-weave-company-home="company-grounds"]')
-            const panorama = grounds?.querySelector('img[src="/images/weave-open-world-home.jpg"]')
+            const panorama = grounds?.querySelector('img[src="/images/weave-official-hybrid-home.jpg"]')
             return {
               grounds: Boolean(grounds),
               original: Boolean(document.querySelector('[data-public-weave-world]')),
@@ -129,6 +129,20 @@ async function main() {
           assert.ok(company.grounds && company.imageLoaded, 'The published company illustration must lead the homepage')
           assert.equal(company.original, false, 'The former WEAVE homepage must not appear underneath the Company Grounds')
           assert.ok(company.registration && company.client && company.services, 'Mobile company gates and public services remain reachable')
+          if (width === 390) {
+            const approved = page.locator('#grounds-panorama img[src="/images/weave-official-hybrid-home.jpg"]')
+            assert.equal(await approved.count(), 1, 'The approved image must be served from Weave assets')
+            const imageBounds = await approved.boundingBox()
+            assert.ok(imageBounds && imageBounds.width <= width + 1, 'Approved image fits the phone width')
+            await page.mouse.click(imageBounds.x + imageBounds.width * .91, imageBounds.y + imageBounds.height * .88)
+            await page.waitForFunction(() => document.querySelector('#grounds-panorama')?.getAttribute('data-exploring') === 'true')
+            await page.locator('#grounds-panorama').focus()
+            await page.keyboard.press('Escape')
+            await page.waitForFunction(() => document.querySelector('#grounds-panorama')?.getAttribute('data-exploring') === 'false')
+            await page.locator('#grounds-panorama a[aria-label="File Folder previews"]').click()
+            await page.waitForURL('**/file-folder-preview', { timeout: 15000 })
+          }
+
         }
         if (route === '/company-overview') {
           // A scroll to the final station must never reveal dark/black surfaces
