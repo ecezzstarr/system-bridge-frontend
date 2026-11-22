@@ -256,7 +256,7 @@ const groundsCss=fs.readFileSync(path.join(root,'app/company-grounds/grounds.mod
 for(const name of ['Hope','Stability','Administrations · A Time','Dream Lovely'])
   assert.ok(groundsSource.includes("name:'"+name+"'"),name+' still has its building')
 assert.doesNotMatch(groundsSource,/name:'(Forensics|Mandate|Attorney)'/,'Oversight remains inside Administrations')
-assert.ok(groundsSource.includes('OFFICIAL_GROUNDS_IMAGE') && groundsSource.includes('cd492df3-5897-4c72-b629-7c4b5edd5ef1'), 'User-approved image, not the prior poster')
+assert.ok(groundsSource.includes('OFFICIAL_GROUNDS_IMAGE') && groundsSource.includes('weave-official-hybrid-home.jpg'), 'User-approved image, not the prior poster')
 assert.ok(groundsSource.includes('FALLBACK_GROUNDS_IMAGE'), 'Existing official picture remains a network fallback')
 assert.ok(groundsCss.includes('width:min(100%,177.778dvh)'), 'Entire artwork remains within viewport')
 assert.ok(groundsCss.includes('aspect-ratio:16/9'), 'Artwork preserves its original proportions')
