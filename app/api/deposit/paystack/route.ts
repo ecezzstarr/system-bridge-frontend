@@ -15,9 +15,24 @@ export async function GET(request: NextRequest) {
   const user = await getAuthUser(request)
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   try {
-    const result = await getPool().query(
+    const pool=getPool()
+    const usdTable=await pool.query("SELECT to_regclass('public.weave_usd_deposit_quotes') AS relation")
+    const withUsdQuotes=Boolean(usdTable.rows[0]?.relation)
+    const result = await pool.query(
+      withUsdQuotes ?
       `SELECT d.id,d.amount_usd,d.amount_trx,d.method,d.currency,d.status,d.receipt_data,
-         d.created_at,d.verified_at,
+         d.created_at,d.verified_at,q.amount_usd AS usd_credit,
+         EXISTS(
+           SELECT 1 FROM ledger_entries l
+           WHERE l.user_id=d.user_id AND l.entry_type='deposit' AND l.amount>0
+             AND l.metadata->>'deposit_id'=d.id::text
+             AND l.metadata->>'event_type'='paystack.manual_admin_credit'
+         ) AS manual_credited
+       FROM deposits d LEFT JOIN weave_usd_deposit_quotes q ON q.deposit_id=d.id
+       WHERE d.user_id=$1::uuid AND d.method='paystack'
+       ORDER BY d.created_at DESC LIMIT 30` :
+      `SELECT d.id,d.amount_usd,d.amount_trx,d.method,d.currency,d.status,d.receipt_data,
+         d.created_at,d.verified_at,NULL::numeric AS usd_credit,
          EXISTS(
            SELECT 1 FROM ledger_entries l
            WHERE l.user_id=d.user_id AND l.entry_type='deposit' AND l.amount>0
