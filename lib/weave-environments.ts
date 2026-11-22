@@ -23,6 +23,14 @@ const exact: Record<string, WeaveEnvironmentCopy> = {
     movement: 'Choose a building → follow the Flame → enter your workplace',
     layer: 'world',
   },
+  '/company-grounds/3d': {
+    key: 'company-grounds-real-3d',
+    title: 'Company Grounds · Live 3D',
+    district: 'Weave of Presence',
+    purpose: 'Explore the actual 3D company buildings, recognize the work of each department, and enter only the public or authorized workplaces connected to your account.',
+    movement: 'Orbit → select building → verify access → enter workplace',
+    layer: 'world',
+  },
   '/login': {
     key: 'position-entry',
     title: 'WEAVE Position Gate',
