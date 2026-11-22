@@ -1,4 +1,6 @@
-# System Switch — WEAVE platform currency and future digital-asset roadmap
+# System Switch — legacy currency roadmap and future digital-asset proposal
+
+> **Superseded monetary naming (November 22, 2026):** USD is now the intended primary WEAVE monetary accounting currency. System Switch remains the world/gateway name and a historical TRX-referenced internal unit for pre-migration balances. This document describes legacy financial behavior and future token analysis; see [platform-usd-transition.md](./platform-usd-transition.md) for the active transition. **Do not treat historical System Switch units as USD without reconciliation and a verified conversion.**
 
 ## Current status
 
