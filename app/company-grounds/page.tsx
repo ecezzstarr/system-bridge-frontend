@@ -208,10 +208,10 @@ export default function CompanyGrounds(){
           width={1536} height={864} draggable={false} fetchPriority="high"
           alt="Official WEAVE of Presence campus: Hope for Bridgers, Stability for Agents, Administrations as A Time and Dream Lovely for Clients. Company Grounds, Flame Event, market, Client estates and public entrances."
           onError={()=>setImageUnavailable(true)}/>
-        <button type="button" className={styles.hotspot+' '+styles.companyMark}
-          aria-label="Open Weave Company Grounds directory" aria-haspopup="dialog"
+        <Link href="/company-grounds/3d" className={styles.hotspot+' '+styles.companyMark}
+          aria-label="Enter the real 3D Company Grounds"
           style={{left:'38%',top:'68%',width:'24%',height:'12%'}}
-          onClick={()=>entrances.current?.showModal()}/>
+          onClick={event=>moveTo(event,'/company-grounds/3d',50,74)}/>
         {doors.map(door=>renderDoor(door,true))}
         {destinations.map(place=><Link key={place.name} href={place.href}
           className={styles.hotspot} style={hotspotStyle(place)}
@@ -245,6 +245,7 @@ export default function CompanyGrounds(){
         <Link href="/client/register">Client registration</Link>
         <Link href="/file-folder">Purchase a File Folder</Link>
         <Link href="/file-folder-preview">Explore File Folders</Link>
+        <Link href="/company-grounds/3d">Walk through Company Grounds in 3D</Link>
         <Link href="/system-switch/world">Explore Weave Open World in 3D</Link>
         <Link href="/food-store">Food Store</Link>
         <Link href="/company-overview">Company services and Reach requests</Link>
