@@ -13,7 +13,22 @@ export async function GET(request: NextRequest) {
   try {
     const result = await readEntryLoanSupport(token)
     if (!result) return reply({ error: 'Ticket not found' }, 404)
-    return reply({ success: true, request: result.request })
+    // A ticket token belongs to one applicant. Approved applications can recover
+    // their own code after a mobile reload without asking an administrator to
+    // expose it or routing through a separate payment verification endpoint.
+    const approved = result.request?.status === 'approved'
+    const ticket = result.ticket
+    const validCode = approved && ticket.status === 'CODE_ISSUED' &&
+      ticket.departmental_code_status === 'ACTIVE' &&
+      (!ticket.departmental_code_expires_at ||
+        new Date(ticket.departmental_code_expires_at).getTime() > Date.now())
+    return reply({
+      success: true,
+      request: result.request,
+      ticketStatus: ticket.status,
+      registrationCode: validCode ? ticket.departmental_code : null,
+      codeExpired: approved && !validCode,
+    })
   } catch (error) {
     console.error('[entry-loan-support] GET failed:', error)
     return reply({ error: 'Support status temporarily unavailable' }, 503)
