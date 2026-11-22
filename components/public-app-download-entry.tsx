@@ -38,7 +38,7 @@ export function PublicAppDownloadEntry() {
   if (!pathname || pathname === '/download' || !PUBLIC_ENTRY_ROUTES.has(pathname) || installed) return null
 
   return (
-    <div className="fixed bottom-3 right-3 z-[80] max-w-[calc(100vw-1.5rem)] sm:bottom-5 sm:right-5" data-weave-public-download-entry>
+    <div className={`fixed bottom-3 right-3 z-[80] max-w-[calc(100vw-1.5rem)] sm:bottom-5 sm:right-5 ${pathname === '/' ? 'portrait:hidden' : ''}`} data-weave-public-download-entry>
       <Link
         href="/download"
         className="group flex min-h-12 items-center gap-3 rounded-2xl border border-cyan-200/20 bg-[#04111f]/95 px-4 py-3 shadow-[0_18px_50px_rgba(0,0,0,.45)] backdrop-blur-xl transition hover:border-cyan-200/35 hover:bg-[#07192a] active:scale-[.99]"
