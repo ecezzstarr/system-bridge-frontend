@@ -22,3 +22,21 @@ The active backend does **not** hold all wallet money in USD. Its operational `w
 6. Reconcile actual reserves and withdrawal rails, ensure any necessary financial compliance, test parallel transactions/refunds and migrations against production-like data, run controlled rollout, and only then switch wallet APIs and all buying interfaces to actual USD units.
 
 **Release rule:** the USD read-only valuation is safe to ship ahead of the accounting conversion. A global one-step label replacement is forbidden.
+
+
+## November 22 clarification: USD money, TRX payment rail, local currency cards
+
+USD is the **platform's canonical monetary currency** for new USD-ledger functionality. "System Switch" remains the name of the Weave world/gateway and a **historical legacy balance unit** only; it is not a dollar-denominated monetary name. Do **not** replace stored historical System Switch amounts with their number in USD.
+
+- User finance cards allow an individual account to choose USD, NGN, EUR, GBP, GHS, KES, ZAR, UGX, CAD, AUD, AED, INR, JPY, CHF, CNY or BRL. The choice is stored server-side per user and is applied to reporting estimates only; account authority and actual balances do not change.
+- The new staff USD account has an immutable USD credit ledger and receipts. Its balance is independent of legacy TRX-referenced System Switch and external TRX/USDT wallets. The USD balance appears first on Wallet and Record. Legacy balances remain available separately with their historical labels.
+- For an Agent, Bridger or Administration **when USD deposit rollout is enabled**, the Paystack deposit pays **NGN** and Weave locks a recent, provider-timestamped **NGN per USD** rate at checkout. Server-side Paystack verification checks the exact NGN kobo, deposit ID, user ID and reference; a successful check atomically credits only the USD wallet and records the locked rate, deposit and receipt. Repeated webhooks/callbacks are idempotent.
+- **TRX remains** a separately recorded external funding and settlement rail for existing Client flows. It is not renamed USD, and the existing TRX wallet is not deleted or set to zero.
+- Existing Paystack deposits without a USD quote continue through the legacy credit path. Emergency manual TRX credit explicitly refuses new USD-quoted deposits.
+- USD-to-local display rates are estimates. Staff NGN-to-USD checkout conversion requires a fresh, authenticated provider response and fails closed when no usable rate exists; no hardcoded exchange rate is used.
+
+### Rollout safety
+
+`WEAVE_USD_DEPOSIT_ENABLED=true` enables **new** USD quoting and verified USD credits for Administrations, Agents and Bridgers; default is **false**. Apply `migrations/20261122_weave_usd_staff_accounts.sql` and verify Paystack webhooks, approval replay, refunds, reserves and risk controls before enabling. Until the remaining spending, commission, loans, invoices and payout workflows are migrated from `balance_trx` to true USD subaccounts, this USD credit balance cannot be used to execute those legacy actions. An account display selector is not a currency exchange or a payout instruction.
+
+The full company financial cutover must include transactional settlement accounting, liabilities, old balances, client TRX funding, product prices and worker loans. Do not claim these have been converted merely because USD is the canonical new unit.
