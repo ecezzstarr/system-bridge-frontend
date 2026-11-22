@@ -212,7 +212,8 @@ export async function getDepartmentEntryTicket(accessToken: string) {
     SELECT
       t.*,
       dc.code AS departmental_code,
-      dc.status AS departmental_code_status
+      dc.status AS departmental_code_status,
+      dc.expires_at AS departmental_code_expires_at
     FROM departmental_entry_tickets t
     LEFT JOIN departmental_codes dc
       ON dc.registration_request_id = t.id
