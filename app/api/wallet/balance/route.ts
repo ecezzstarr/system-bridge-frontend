@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
       recordedAt:new Date().toISOString(),
       playFlameCoin: Number(wallet?.play_balance || 0),
       currency: 'System Switch', // Actual current spendable-account unit; never relabel as USD.
-      platformCurrency: PLATFORM_CURRENCY_CODE,
+      reportingCurrency: PLATFORM_CURRENCY_CODE,
       usdEquivalent: usdRate && amountUsd !== null ? {
         amountUsd, currency: PLATFORM_CURRENCY_CODE, estimateOnly: true,
         rateUsdPerSystemSwitch: usdRate.usdPerSystemSwitch,
