@@ -19,6 +19,7 @@ for(const role of ['agent','bridger','client','admin'])for(const item of getRole
 
 const entrances:readonly (readonly [string,string,string])[]=[
   ['/','The Company of Time','Give your work a place and your dreams a living form through the people, services and systems of Weave.'],
+  ['/company-grounds/3d','Company Grounds · Live 3D','Orbit the company buildings, select a department or public place, and follow its authorized entrance without losing the official homepage.'],
   ['/admin','Administrations · A Time','Return to your company responsibilities, decisions and working records.'],
   ['/agent/dashboard','Stability · Your Workplace','Serve customers, supply outlets and carry today’s work forward through your Agent systems.'],
   ['/agent/functions','Stability · Working Systems','Find the product, service or record you need for the next part of your work.'],
