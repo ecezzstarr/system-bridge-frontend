@@ -1,16 +1,31 @@
-/* The official Company Grounds owns its image-space depth and click camera in
-   grounds.module.css. Do not layer cut-outs from the older homepage artwork. */
+/* Architectural surfaces use the observer's position. Existing WebGL cameras
+   and operating controls continue to own their own input and geometry. */
+/* Approved Company Grounds image and 3D camera own their own depth;
+   former cutouts from the old poster must never cover the new official art. */
 @media (prefers-reduced-motion: no-preference) {
   :is([data-department] nav, [data-department] details, [data-department] aside) a > :first-child:is(img,span),
-  [aria-label$=" building"] figure img,
+  [data-weave-relief-frame],
   [data-weave-page-original-visual] img,
   [data-sunshine-approved-poster] img,
   .lifestyle-building-front {
     transform: perspective(850px)
-      rotateY(calc(var(--weave-observer-x, 0) * 1.4deg))
-      rotateX(calc(var(--weave-observer-y, 0) * -1deg));
+      rotateY(calc(var(--weave-observer-x, 0) * var(--weave-perspective, 1) * 1.4deg))
+      rotateX(calc(var(--weave-observer-y, 0) * var(--weave-perspective, 1) * -1deg));
   }
   .weave-live-flame-field .weave-live-flame-core {
-    translate: calc(var(--weave-observer-x, 0) * 5px) calc(var(--weave-observer-y, 0) * 3px);
+    translate: calc(var(--weave-observer-x, 0) * var(--weave-relief, 1) * 5px) calc(var(--weave-observer-y, 0) * var(--weave-relief, 1) * 3px);
+  }
+}
+
+/* The lower face samples the original artwork at the same scale and crop. */
+[data-weave-relief-frame] {display:block; position:relative; overflow:hidden; isolation:isolate}
+[data-weave-relief-frame] > img {display:block}
+[data-weave-relief-frame] > [data-weave-near-face] {display:none}
+@media (prefers-reduced-motion: no-preference) {
+  [data-weave-relief-frame] > [data-weave-near-face] {
+    display:block; position:absolute; inset:0; pointer-events:none;
+    mask-image:linear-gradient(to bottom,transparent 42%,black 83%);
+    translate:calc(var(--weave-observer-x,0) * var(--weave-relief,1) * 3px)
+              calc(var(--weave-observer-y,0) * var(--weave-relief,1) * 2px);
   }
 }
