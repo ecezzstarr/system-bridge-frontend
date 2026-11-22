@@ -162,42 +162,10 @@ export default function LedgerPage() {
           </p>
           <p className="mt-1 text-xs leading-5 text-slate-300">
             {data.usdValuation
-              ? 'Indicative TRX/USD conversion at 
-        {data.sections?.escrow==='available'
-          ? <EscrowList escrows={data.escrow.map(item=>({...item,locked_at:new Date(item.locked_at)}))}/>
-          : <p className="text-sm text-amber-200">Escrow history unavailable. No locked-balance value has been assumed.</p>}
-        <section className="border-y border-white/10 bg-black/15 py-4" data-record-rail="transactions">
-          <div className="mb-4 border-l border-sky-300/25 pl-3">
-            <h2 className="text-sm font-black text-white">Transaction movement</h2>
-            <p className="mt-1 text-[10px] text-slate-500">
-              Permanent ledger entries in newest-first order. Older records are available below.
-            </p>
-          </div>
-          <div className="space-y-2">
-            {data.sections?.ledger==='unavailable'
-              ? <p className="py-6 text-center text-amber-200">Transaction history could not be retrieved. This does not mean the account has no transactions.</p>
-              : data.ledger.length ? data.ledger.map(entry=>(
-              <TransactionItem key={entry.id} type={entry.entry_type}
-                amount={Number(entry.amount)} currency={displayCurrencyName(entry.currency)}
-                description={entry.description||'Recorded transaction'}
-                date={new Date(entry.created_at)}
-                balanceAfter={entry.balance_after == null?undefined:Number(entry.balance_after)}/>
-            )) : <p className="py-8 text-center text-slate-400">No recorded transactions yet.</p>}
-          </div>
-          {cursor && <button type="button" disabled={loadingMore}
-            onClick={()=>void loadMore()}
-            className="mt-4 rounded-xl border border-sky-300/30 px-4 py-2 text-sm font-semibold text-sky-100 disabled:opacity-50">
-            {loadingMore?'Loading older records…':'Load older transactions'}
-          </button>}
-        </section>
-      </div>
-    </WeaveStationFrame>
-  )
-}
-+data.usdValuation.rateUsdPerSystemSwitch.toFixed(6)+
-                ' per legacy System Switch · checked '+new Date(data.usdValuation.quotedAt).toLocaleString()
-              : 'Current TRX/USD quote unavailable.'}
-            {' '}Not a withdrawable USD balance. The actual available, escrow and transaction figures remain in recorded units below.
+              ? 'Indicative conversion: '+data.usdValuation.rateUsdPerSystemSwitch.toFixed(6)+
+                ' USD per TRX-referenced System Switch, checked '+new Date(data.usdValuation.quotedAt).toLocaleString()
+              : 'A live TRX/USD quote could not be verified.'}
+            {' '}Not a withdrawable USD balance. Actual wallet, escrow and transaction amounts are shown below.
           </p>
         </div>
         <BalanceSummary available={data.balance.available} locked={data.balance.locked} currency="System Switch"/>
