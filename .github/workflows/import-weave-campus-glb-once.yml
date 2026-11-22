@@ -1,0 +1,29 @@
+name: Import refined 3D Company Grounds GLB once
+on:
+  push:
+    branches: [feat/official-grounds-immersive-click-20261122]
+    paths: ['.github/workflows/import-weave-campus-glb-once.yml']
+permissions:
+  contents: write
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - name: Import exact committed Weave 3D Jutsu revision 2
+        env:
+          GLB_SIGNED_URL: "https://695d5a9fc666e505559765690b5db7dd.r2.cloudflarestorage.com/3d-scene-builder/projects/5e64782f-bb07-4cdc-8258-cea657f7d1cd/revisions/00000002-weave-campus-refinement-geometry-02/preview.glb?X-Amz-Expires=900&X-Amz-Date=20261122T044354Z&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=f4fb15da414147020cebc9c7007b912d%2F20261122%2Fauto%2Fs3%2Faws4_request&X-Amz-SignedHeaders=host&X-Amz-Signature=cf313a2563685c5a4ae727225a3e619ac84edf287bbf198fb8f933944c0a1453"
+        run: |
+          mkdir -p public/models
+          curl --fail --location --retry 2 --connect-timeout 15 "$GLB_SIGNED_URL" --output public/models/weave-company-grounds.glb
+          test "$(stat -c%s public/models/weave-company-grounds.glb)" -eq 2456448
+          test "$(head -c 4 public/models/weave-company-grounds.glb)" = 'glTF'
+      - name: Commit only confirmed 3D model
+        run: |
+          git config user.name 'Weave 3D model import'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- public/models/weave-company-grounds.glb
+          git diff --cached --quiet && exit 0
+          git commit -m 'Import editable-scene 3D Company Grounds revision 2 as GLB'
+          git push origin HEAD:feat/official-grounds-immersive-click-20261122
