@@ -37,6 +37,7 @@ type EntryTicket = {
   departmentalCode?: string | null
   rejectedReason?: string | null
   expiresAt: string
+  codeExpired?: boolean
 }
 
 export function DepartmentEntryTicketGate({
@@ -478,6 +479,24 @@ export function DepartmentEntryTicketGate({
             className="mt-5 h-11 w-full bg-green-600 font-black uppercase tracking-widest hover:bg-green-500"
           >
             <ShieldCheck className="mr-2 h-4 w-4" /> {freeTicket ? 'Continue Free Registration' : 'Use Code & Continue Registration'}
+          </Button>
+        </div>
+      )}
+
+      {ticket.status === 'CODE_ISSUED' && !codeIssued && (
+        <div role="alert" className="space-y-3 rounded-xl border border-amber-300/30 bg-amber-300/5 p-4 text-center">
+          <p className="text-sm font-bold text-amber-100">
+            Your registration was authorized, but its one-use code is currently unavailable.
+          </p>
+          <p className="text-xs leading-5 text-slate-200">
+            {ticket.codeExpired
+              ? 'The code has expired. If your entry loan was approved, use Restore my approved registration code above.'
+              : 'Please check your ticket status again. If it remains unavailable, contact Administrations with your ticket number.'}
+            Do not create another loan or pay for the same approved ticket.
+          </p>
+          <Button type="button" variant="outline" onClick={() => void refreshTicket()}
+            className="min-h-11 w-full border-amber-200/40 text-amber-100">
+            Check released code again
           </Button>
         </div>
       )}
