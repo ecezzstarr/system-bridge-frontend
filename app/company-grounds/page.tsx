@@ -37,6 +37,25 @@ export default function CompanyGrounds(){
   const entrances=useRef<HTMLDialogElement>(null)
   const denial=useRef<HTMLDialogElement>(null)
   const sceneRef=useRef<HTMLDivElement>(null)
+  useEffect(()=>{
+    const scene=sceneRef.current
+    const view=scene?.parentElement
+    if(!scene||!view)return
+    let lastRange=-1
+    const frameView=()=>{
+      const range=Math.max(0,scene.offsetWidth-view.clientWidth)
+      if(range!==lastRange){
+        const fraction=lastRange>0?view.scrollLeft/lastRange:.5
+        view.scrollLeft=range*clamp(fraction,0,1)
+        lastRange=range
+      }
+    }
+    frameView()
+    const observer=new ResizeObserver(frameView)
+    observer.observe(view)
+    observer.observe(scene)
+    return ()=>observer.disconnect()
+  },[])
   const pointer=useRef<PointerStart|null>(null)
   const pinch=useRef<{distance:number;zoom:number}|null>(null)
   const travelTimer=useRef<ReturnType<typeof setTimeout>|null>(null)
