@@ -24,7 +24,7 @@ interface LedgerData {
     ledger:'available'|'unavailable'
   }
   warnings:string[]
-  platformCurrency?:'USD'
+  reportingCurrency?:'USD'
   usdValuation?: {
     currency:'USD';estimateOnly:true;availableUsd:number|null;lockedUsd:number|null;
     totalUsd:number|null;rateUsdPerSystemSwitch:number;quotedAt:string;source:string
