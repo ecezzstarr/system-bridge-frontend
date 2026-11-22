@@ -116,7 +116,7 @@ async function main() {
         if (route === '/') {
           const company = await page.evaluate(() => {
             const grounds = document.querySelector('[data-weave-company-home="company-grounds"]')
-            const panorama = grounds?.querySelector('img[src="/images/weave-open-world-home.jpg"]')
+            const panorama = grounds?.querySelector('img[src="/images/weave-official-hybrid-home.jpg"]')
             return {
               grounds: Boolean(grounds),
               original: Boolean(document.querySelector('[data-public-weave-world]')),
