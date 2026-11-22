@@ -45,7 +45,7 @@ export function DepartmentEntryTicketGate({
   onBack,
 }: {
   department: Department
-  onCodeReady: (code: string) => void
+  onCodeReady: (code: string, applicant?: { name: string; email: string }) => void
   onBack: () => void
 }) {
   const [entered, setEntered] = useState(false)
@@ -55,6 +55,7 @@ export function DepartmentEntryTicketGate({
   const [ticket, setTicket] = useState<EntryTicket | null>(null)
   const [promotionActive, setPromotionActive] = useState(false)
   const [accessToken, setAccessToken] = useState('')
+  const [loanApplicant, setLoanApplicant] = useState<{name:string;email:string}|null>(null)
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [copied, setCopied] = useState('')
@@ -65,6 +66,20 @@ export function DepartmentEntryTicketGate({
   })
 
   const storageKey = `weave_department_entry_${department}`
+  const loanStorageKey = `${storageKey}_approved_loan_resume`
+  const persistedTicket = () => {
+    try { return localStorage.getItem(loanStorageKey) || sessionStorage.getItem(storageKey) } catch { return '' }
+  }
+  const saveLoanResume = () => {
+    if (!accessToken) return
+    try { localStorage.setItem(loanStorageKey, accessToken) } catch {
+      // Storage can be restricted by private-browser settings; current tab still works.
+    }
+  }
+  const clearStoredTicket = () => {
+    try { sessionStorage.removeItem(storageKey) } catch {}
+    try { localStorage.removeItem(loanStorageKey) } catch {}
+  }
 
   const refreshPromotion = async () => {
     try {
@@ -155,34 +170,38 @@ export function DepartmentEntryTicketGate({
     const data = await res.json()
     if (!res.ok || !data.success) throw new Error(data.error || 'Unable to present ticket')
 
-    sessionStorage.setItem(storageKey, data.accessToken)
     setAccessToken(data.accessToken)
     setTicket(data.ticket)
+    try { sessionStorage.setItem(storageKey, data.accessToken) } catch {}
   }
 
   const enterDepartment = async () => {
     setEntering(true)
     setError('')
     try {
-      const musicStarted = await startRequiredMusic()
-      if (!musicStarted) {
-        throw new Error('Sound must start before Department Entry can open. Check your device audio and try again.')
-      }
-
-      setEntered(true)
+      // Music accompanies Department Entry but cannot veto a registration.
+      // Audio is often blocked in browser WebViews, background tabs and muted phones.
+      void startRequiredMusic().catch(() => {})
       const offerActive = await refreshPromotion()
-      const saved = sessionStorage.getItem(storageKey)
+      const saved = persistedTicket()
       if (saved) {
         const existing = await loadTicket(saved)
         if (existing && existing.status !== 'EXPIRED') {
-          // A previously presented, unpaid ticket must not hide the Saturday offer.
-          // Never replace a ticket with payment already submitted or verified.
-          if (!offerActive || existing.status !== 'PRESENTED' || existing.priceFlameCoin === 0) return
+          // Once a visitor has requested a loan, keep their original ticket
+          // even if the Saturday promotion starts during human review.
+          let loanResume = false
+          try { loanResume = localStorage.getItem(loanStorageKey) === saved } catch {}
+          if (loanResume || !offerActive || existing.status !== 'PRESENTED' || existing.priceFlameCoin === 0) {
+            setEntered(true)
+            return
+          }
         }
-        sessionStorage.removeItem(storageKey)
+        clearStoredTicket()
       }
       await createTicket()
+      setEntered(true)
     } catch (err: any) {
+      setEntered(false)
       setError(err?.message || 'Unable to enter Department Ticket Center')
     } finally {
       setEntering(false)
@@ -193,10 +212,12 @@ export function DepartmentEntryTicketGate({
     if (!accessToken) return
     try {
       const latest = await loadTicket(accessToken)
-      if (latest?.status === 'CODE_ISSUED' && latest.departmentalCode) {
-        setError('')
-      }
-    } catch {}
+      if (!latest) throw new Error('Ticket not found. Reopen your saved application or contact Administrations.')
+      if (latest.status === 'CODE_ISSUED' && latest.departmentalCode) setError('')
+      else if (latest.status === 'CODE_ISSUED') setError('This issued code is no longer available. Check loan status and request a verified reissue.')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Ticket status temporarily unavailable. Retry.')
+    }
   }
 
   useEffect(() => {
@@ -237,7 +258,8 @@ export function DepartmentEntryTicketGate({
   }
 
   const resetTicket = () => {
-    sessionStorage.removeItem(storageKey)
+    clearStoredTicket()
+    setLoanApplicant(null)
     setTicket(null)
     setAccessToken('')
     setForm({ payerName: '', payerEmail: '', payerPhone: '' })
@@ -256,7 +278,7 @@ export function DepartmentEntryTicketGate({
             {department === 'AGENT' ? 'Agent' : 'Bridger'} Department Entry
           </h3>
           <p className="mt-2 text-sm leading-6 text-slate-400">
-            Department Entry begins with sound. Once the music starts, your ticket is presented and Administrations is notified of your arrival.
+            Open your ticket to apply, check a loan decision, or complete registration. Sound plays when available but does not block entry.
           </p>
         </div>
 
@@ -271,7 +293,7 @@ export function DepartmentEntryTicketGate({
           disabled={entering}
           className="h-12 w-full bg-cyan-600 font-black uppercase tracking-widest hover:bg-cyan-500"
         >
-          {entering ? <Loader2 className="h-5 w-5 animate-spin" /> : <><Volume2 className="mr-2 h-4 w-4" /> Enter With Music</>}
+          {entering ? <Loader2 className="h-5 w-5 animate-spin" /> : <><Volume2 className="mr-2 h-4 w-4" /> Open Entry Ticket</>}
         </Button>
         <Button type="button" variant="ghost" onClick={onBack} className="w-full text-slate-500">
           <ArrowLeft className="mr-2 h-3 w-3" /> Select Different Role
@@ -353,7 +375,13 @@ export function DepartmentEntryTicketGate({
         )}
       </div>
 
-      {!freeTicket && <DepartmentEntryLoanSupport key={ticket.id} accessToken={accessToken} ticketStatus={ticket.status} ticketValue={ticket.priceFlameCoin} onCodeIssued={() => void refreshTicket()} />}
+      {!freeTicket && <DepartmentEntryLoanSupport key={ticket.id} accessToken={accessToken}
+        ticketStatus={ticket.status} ticketValue={ticket.priceFlameCoin}
+        onLoanRequested={saveLoanResume} onApplicantConfirmed={setLoanApplicant}
+        onCodeIssued={code => {
+          if (code) { setTicket(prev => prev ? { ...prev, status:'CODE_ISSUED', departmentalCode:code } : prev); setError('') }
+          else void refreshTicket()
+        }} />}
 
       {ticket.status === 'PRESENTED' && !freeTicket && (
         <div className="space-y-3 rounded-2xl border border-white/10 bg-slate-950/60 p-5">
@@ -417,7 +445,7 @@ export function DepartmentEntryTicketGate({
           <p className="mt-3 text-xs text-slate-400">This code is one-use and belongs to the {department} department.{freeTicket ? ' Free Saturday codes expire at 10:00 a.m. WAT.' : ''}</p>
           <Button
             type="button"
-            onClick={() => onCodeReady(ticket.departmentalCode!)}
+            onClick={() => onCodeReady(ticket.departmentalCode!, loanApplicant || undefined)}
             className="mt-5 h-11 w-full bg-green-600 font-black uppercase tracking-widest hover:bg-green-500"
           >
             <ShieldCheck className="mr-2 h-4 w-4" /> {freeTicket ? 'Continue Free Registration' : 'Use Code & Continue Registration'}
