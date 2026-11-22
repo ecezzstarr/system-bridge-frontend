@@ -31,7 +31,7 @@ async function runFlow(department,actor){
  const commands=[]
  const sql=async(parts,...values)=>{
   const query=Array.isArray(parts)?parts.join('?'):String(parts)
-  const compact=query.replace(/\\s+/g,' ').trim()
+  const compact=query.replace(/\s+/g,' ').trim()
   if(compact.includes('SELECT id, status FROM department_entry_loan_requests')){
    return loan?[{id:loan.id,status:loan.status}]:[]
   }
@@ -48,7 +48,7 @@ async function runFlow(department,actor){
  }
  const client={
   async query(stmt,params=[]){
-   const command=String(stmt).replace(/\\s+/g,' ').trim()
+   const command=String(stmt).replace(/\s+/g,' ').trim()
    commands.push(command)
    if(command==='BEGIN')return {rows:[],rowCount:0}
    if(command==='COMMIT'){commits++;return {rows:[],rowCount:0}}
