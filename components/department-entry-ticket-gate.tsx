@@ -68,7 +68,12 @@ export function DepartmentEntryTicketGate({
   const storageKey = `weave_department_entry_${department}`
   const loanStorageKey = `${storageKey}_approved_loan_resume`
   const persistedTicket = () => {
-    try { return localStorage.getItem(loanStorageKey) || sessionStorage.getItem(storageKey) } catch { return '' }
+    // An unavailable storage area must not prevent reading the other one.
+    let loanToken = ''
+    let tabToken = ''
+    try { loanToken = localStorage.getItem(loanStorageKey) || '' } catch {}
+    try { tabToken = sessionStorage.getItem(storageKey) || '' } catch {}
+    return loanToken || tabToken
   }
   const saveLoanResume = () => {
     if (!accessToken) return
@@ -175,6 +180,27 @@ export function DepartmentEntryTicketGate({
     try { sessionStorage.setItem(storageKey, data.accessToken) } catch {}
   }
 
+  // On a returning phone session, reopen the original application automatically.
+  // Approval is never tied to the audio player's success or a fresh ticket.
+  useEffect(() => {
+    const saved = persistedTicket()
+    if (!saved) return
+    let mounted = true
+    void (async () => {
+      try {
+        const existing = await loadTicket(saved)
+        if (!mounted) return
+        if (existing && existing.status !== 'EXPIRED') setEntered(true)
+        else if (existing?.status === 'EXPIRED') clearStoredTicket()
+      } catch {
+        // Keep the ticket credential: network errors must not erase an approved loan.
+      }
+    })()
+    return () => { mounted = false }
+  // Reopen on role changes only; no new ticket is created by this effect.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [department])
+
   const enterDepartment = async () => {
     setEntering(true)
     setError('')
@@ -264,7 +290,10 @@ export function DepartmentEntryTicketGate({
     setAccessToken('')
     setForm({ payerName: '', payerEmail: '', payerPhone: '' })
     setError('')
-    createTicket().catch((err: any) => setError(err?.message || 'Unable to present new ticket'))
+    createTicket().catch((err: any) => {
+      setEntered(false)
+      setError(err?.message || 'Unable to present new ticket. Try opening the gate again.')
+    })
   }
 
   if (!entered) {
