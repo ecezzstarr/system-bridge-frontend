@@ -166,8 +166,8 @@ async function runFlow(department,actor){
  assert(gate.includes('setTicket(prev => prev ? { ...prev, status:'), 'Loan approval must show a real code in the existing ticket')
  assert(support.includes('Restore my approved registration code'), 'Expired code must have a recovery path')
  assert(register.includes('readOnly={Boolean(approvedLoanApplicant)}'), 'Loan identity must stay bound to the approved email')
- assert(register.includes("router.replace(formData.role === 'bridger' ? '/bridger/dashboard' : '/agent/dashboard')"),
-  'New Agent/Bridger accounts open their department after commit')
+ assert(register.includes("router.replace(await isFlameEventActive() ? '/event' : formData.role === 'bridger' ? '/bridger/dashboard' : '/agent/dashboard')"),
+  'New Agent/Bridger accounts preserve Company Loop arrival and their department when the event is inactive')
  assert(ticketApi.includes('!ticketExpired && !codeExpired'),'Expired codes must not be presented as usable')
  await runFlow('AGENT','manager')
  await runFlow('BRIDGER','administrations')
