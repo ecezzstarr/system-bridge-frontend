@@ -31,6 +31,7 @@ export function ensureEntryLoanSupportSchema(): Promise<void> {
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `
+  await sql`ALTER TABLE department_entry_loan_requests ADD COLUMN IF NOT EXISTS code_renewals INTEGER NOT NULL DEFAULT 0`
   await sql`CREATE INDEX IF NOT EXISTS idx_entry_loan_requests_review
     ON department_entry_loan_requests(status, created_at DESC)`
   })().catch(error => { entryLoanSchemaReady = null; throw error })
@@ -228,3 +229,68 @@ async function decideEntryLoan(input: EntryLoanDecisionInput) {
   }
 }
 
+
+
+/** Allow the original bearer ticket to renew only an expired, never-used code
+ * from its already approved loan. This does not approve a new loan, create
+ * paid revenue, change principal or register anyone. Concurrent requests lock
+ * the original code and cannot mint multiple active credentials. */
+export async function renewApprovedEntryLoanCode(accessToken: string) {
+  const ticket = await getDepartmentEntryTicket(accessToken)
+  if (!ticket) return { error: 'Original ticket not found. Contact Administrations.', statusCode: 404 } as const
+  await ensureEntryLoanSupportSchema()
+  const db = await getPool().connect()
+  try {
+    await db.query('BEGIN')
+    const selected = await db.query(`
+      SELECT r.id AS loan_id, r.status AS loan_status, r.approved_at, r.code_renewals,
+        r.registered_user_id, r.applicant_balance_consent, r.approved_principal,
+        t.department, t.status AS ticket_status, t.price_flame_coin,
+        dc.id AS code_id, dc.code, dc.status AS code_status,
+        dc.expires_at AS code_expires_at, dc.used_by
+      FROM departmental_entry_tickets t
+      JOIN department_entry_loan_requests r ON r.ticket_id=t.id
+      JOIN departmental_codes dc ON dc.registration_request_id=t.id
+      WHERE t.id=$1::uuid
+      FOR UPDATE OF t,r,dc
+    `, [ticket.id])
+    const row = selected.rows[0]
+    if (!row || row.loan_status !== 'approved' || row.ticket_status !== 'CODE_ISSUED' ||
+        row.code_status !== 'ACTIVE' || row.used_by || row.registered_user_id ||
+        row.applicant_balance_consent !== true ||
+        Number(row.approved_principal) !== Number(row.price_flame_coin)) {
+      await db.query('ROLLBACK')
+      return { error: 'Only an unused code belonging to the original approved loan can be renewed.', statusCode: 409 } as const
+    }
+    if (!row.code_expires_at || new Date(row.code_expires_at).getTime() > Date.now()) {
+      await db.query('COMMIT')
+      return { success: true, code: String(row.code), renewed: false } as const
+    }
+    const approvedAt = new Date(row.approved_at).getTime()
+    if (!Number.isFinite(approvedAt) || approvedAt < Date.now()-28*24*60*60*1000 ||
+        Number(row.code_renewals) >= 2) {
+      await db.query('ROLLBACK')
+      return { error: 'The loan code renewal window is closed. Administrations must review the original ticket; do not pay again.', statusCode: 409 } as const
+    }
+    const code = generateCode(row.department)
+    await db.query(`
+      UPDATE departmental_codes SET code=$1,expires_at=NOW()+INTERVAL '7 days',updated_at=NOW()
+      WHERE id=$2::uuid AND status='ACTIVE' AND used_by IS NULL
+    `, [code,row.code_id])
+    await db.query(`
+      UPDATE department_entry_loan_requests SET code_renewals=code_renewals+1,updated_at=NOW()
+      WHERE id=$1::uuid AND status='approved'
+    `,[row.loan_id])
+    await db.query(`
+      INSERT INTO departmental_audit_log(event,department,code_id,result,metadata)
+      VALUES ('ISSUE_CODE',$1,$2::uuid,'SUCCESS',$3::jsonb)
+    `, [row.department,row.code_id,JSON.stringify({source:'approved_entry_loan_code_renewal',loanRequestId:row.loan_id})])
+    await db.query('COMMIT')
+    return { success: true, code, renewed: true } as const
+  } catch (error) {
+    await db.query('ROLLBACK').catch(()=>{})
+    throw error
+  } finally {
+    db.release()
+  }
+}
