@@ -6,6 +6,7 @@ import { ngnToFlameCoin } from '@/lib/flame-coin'
 import { createPaystackReference, initializePaystackTransaction } from '@/lib/paystack'
 import { getPaystackConfig } from '@/lib/paystack-config'
 import { notifyDepositSubmitted } from '@/lib/deposit-notifications'
+import { ensureUsdFinanceSchema,getUsdNgnDepositQuote,quoteNgnToUsd } from '@/lib/weave-usd-finance'
 
 export const dynamic = 'force-dynamic'
 
@@ -39,7 +40,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const user = await getAuthUser(request)
   if (!user) return NextResponse.json({error:'Unauthorized'},{status:401})
-  if (!['admin','agent','bridger','client'].includes(user.role)) return NextResponse.json({error:'This role cannot fund a System Switch wallet.'},{status:403})
+  if (!['admin','agent','bridger','client'].includes(user.role)) return NextResponse.json({error:'This role cannot fund a Weave wallet.'},{status:403})
   try {
     const body = await request.json()
     const amountNgn = Number(body?.amount)
@@ -49,6 +50,115 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({error:'Enter a valid NGN amount (minimum ₦1, maximum ₦100,000,000, up to two decimals).'}, {status:400})
     }
     if (!user.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(user.email)) return NextResponse.json({error:'A valid email is required on your Weave account for Paystack checkout.'},{status:400})
+    // New USD funding is feature-gated until the main USD spending and payout
+    // systems have completed their ledger migration. Existing TRX flows stay intact.
+    if(process.env.WEAVE_USD_DEPOSIT_ENABLED==='true' &&
+      ['admin','agent','bridger'].includes(user.role)){
+      await ensureUsdFinanceSchema()
+      const quote=await getUsdNgnDepositQuote()
+      const amountUsd=quoteNgnToUsd(amountNgn,quote.ngnPerUsd)
+      if(amountUsd===null)return NextResponse.json(
+        {error:'This deposit cannot be credited to at least $0.01 at the verified USD/NGN rate.'},
+        {status:400},
+      )
+      const reference=createPaystackReference(user.role.toUpperCase())
+      const pool=getPool()
+      const connection=await pool.connect()
+      let depositId:string
+      try{
+        await connection.query('BEGIN')
+        const inserted=await connection.query(
+          "INSERT INTO deposits(user_id,amount_usd,amount_trx,status,method,currency,receipt_data,created_at,updated_at) VALUES($1::uuid,$2,0,'pending','paystack','NGN',$3,NOW(),NOW()) RETURNING id",
+          [user.id,amountNgn,reference],
+        )
+        depositId=String(inserted.rows[0].id)
+        await connection.query(
+          `INSERT INTO weave_usd_deposit_quotes
+           (deposit_id,user_id,amount_ngn,amount_usd,ngn_per_usd,rate_source,rate_updated_at)
+           VALUES($1::uuid,$2::uuid,$3,$4,$5,$6,$7::timestamptz)`,
+          [depositId,user.id,amountNgn,amountUsd,quote.ngnPerUsd,quote.source,quote.updatedAt],
+        )
+        await connection.query('COMMIT')
+      }catch(error){await connection.query('ROLLBACK').catch(()=>{});throw error}
+      finally{connection.release()}
+      try{
+        const config=await getPaystackConfig()
+        const origin=(config.publicOrigin||process.env.WEAVE_PUBLIC_ORIGIN||new URL(request.url).origin).replace(/\/$/,'')
+        if(!origin.startsWith('https://'))throw Error('WEAVE_PUBLIC_ORIGIN must use HTTPS')
+        const checkout=await initializePaystackTransaction({
+          email:user.email,amountKobo,reference,
+          callbackUrl:origin+'/api/deposit/paystack/verify',
+          metadata:{
+            deposit_id:depositId,user_id:user.id,user_role:user.role,
+            settlement_currency:'USD',usd_amount:amountUsd,ngn_amount:amountNgn,
+            ngn_per_usd:quote.ngnPerUsd,rate_source:quote.source,
+          },
+        })
+        await notifyDepositSubmitted({
+          depositorId:user.id,depositorName:user.name||user.username||user.email,
+          role:user.role==='bridger'?'Bridger':user.role==='agent'?'Agent':'Administrations',
+          depositId,rail:'PAYSTACK',amountLabel:'₦'+amountNgn.toLocaleString(),
+          secondaryLabel:'
+    const flameCoin=ngnToFlameCoin(amountNgn,rateNgnPerTrx)
+    if (!Number.isFinite(flameCoin)||flameCoin<=0) return NextResponse.json({error:'This amount cannot produce a valid System Switch credit.'},{status:400})
+    const reference=createPaystackReference(user.role.toUpperCase())
+    const pool=getPool()
+    const inserted=await pool.query(
+      "INSERT INTO deposits(user_id,amount_usd,amount_trx,status,method,currency,receipt_data,created_at,updated_at) VALUES($1::uuid,$2,$3,'pending','paystack','NGN',$4,NOW(),NOW()) RETURNING id",
+      [user.id,amountNgn,flameCoin,reference],
+    )
+    await pool.query(
+      "INSERT INTO ledger_entries(user_id,entry_type,amount,currency,description,metadata) VALUES($1::uuid,'deposit',0,'Flame Coin','Paystack deposit pending payment verification',$2::jsonb)",
+      [user.id,JSON.stringify({deposit_id:inserted.rows[0].id,payment_method:'Paystack',reference,ngn_amount:amountNgn,amount_kobo:amountKobo,rate_ngn_per_trx:rateNgnPerTrx,rate_source:rateSource,status:'pending'})],
+    )
+    try {
+      const config=await getPaystackConfig()
+      const origin=(config.publicOrigin||process.env.WEAVE_PUBLIC_ORIGIN||new URL(request.url).origin).replace(/\/$/,'')
+      if (!origin.startsWith('https://')) throw new Error('WEAVE_PUBLIC_ORIGIN must be the canonical HTTPS production origin')
+      const checkout=await initializePaystackTransaction({
+        email:user.email,amountKobo:amountKobo,reference,
+        callbackUrl:origin+'/api/deposit/paystack/verify',
+        metadata:{deposit_id:inserted.rows[0].id,user_id:user.id,user_role:user.role,flame_coin_amount:flameCoin,rate_ngn_per_trx:rateNgnPerTrx,rate_source:rateSource,custom_fields:[{display_name:'Weave deposit ID',variable_name:'weave_deposit_id',value:inserted.rows[0].id},{display_name:'System Switch credit',variable_name:'flame_coin_amount',value:String(flameCoin)}]},
+      })
+      await notifyDepositSubmitted({
+        depositorId:user.id,
+        depositorName:user.name||user.username||user.email,
+        role:user.role==='admin'?'Administrations':user.role==='client'?'Client':user.role==='bridger'?'Bridger':'Agent',
+        depositId:String(inserted.rows[0].id),
+        rail:'PAYSTACK',
+        amountLabel:'₦'+amountNgn.toLocaleString(),
+        secondaryLabel:flameCoin.toLocaleString()+' System Switch pending Paystack confirmation',
+        adminLink:'/admin/control-center#deposits',
+      })
+      return NextResponse.json({success:true,depositId:inserted.rows[0].id,reference,amountNgn,flameCoin,paymentLink:checkout.authorizationUrl,status:'pending'})
+    } catch(error) {
+      await pool.query("UPDATE deposits SET status='rejected',updated_at=NOW() WHERE id=$1::uuid AND status='pending'",[inserted.rows[0].id])
+      await pool.query(
+        "INSERT INTO ledger_entries(user_id,entry_type,amount,currency,description,metadata) VALUES($1::uuid,'deposit',0,'Flame Coin','Paystack checkout initialization failed',$2::jsonb)",
+        [user.id,JSON.stringify({deposit_id:inserted.rows[0].id,payment_method:'Paystack',reference,ngn_amount:amountNgn,amount_kobo:amountKobo,status:'initialization_failed'})],
+      )
+      throw error
+    }
+  } catch(error) {
+    console.error('[Paystack deposit initialization]',error)
+    return NextResponse.json({error:error instanceof Error?error.message:'Paystack checkout could not be initialized.'},{status:503})
+  }
+}
++amountUsd.toFixed(2)+' USD quoted at '+quote.ngnPerUsd+' NGN/USD',
+        })
+        return NextResponse.json({
+          success:true,depositId,reference,amountNgn,amountUsd,currency:'USD',
+          rateNgnPerUsd:quote.ngnPerUsd,rateUpdatedAt:quote.updatedAt,
+          paymentLink:checkout.authorizationUrl,status:'pending',
+        })
+      }catch(error){
+        await pool.query(
+          "UPDATE deposits SET status='rejected',updated_at=NOW() WHERE id=$1::uuid AND status='pending'",
+          [depositId],
+        )
+        throw error
+      }
+    }
     const {rateNgnPerTrx,source:rateSource}=await getTrxPaymentNgnRate()
     const flameCoin=ngnToFlameCoin(amountNgn,rateNgnPerTrx)
     if (!Number.isFinite(flameCoin)||flameCoin<=0) return NextResponse.json({error:'This amount cannot produce a valid System Switch credit.'},{status:400})
