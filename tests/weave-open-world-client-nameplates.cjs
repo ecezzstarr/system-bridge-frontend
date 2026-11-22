@@ -42,7 +42,7 @@ assert.ok(atlas.includes('data-client-owned-map-name="verified-only"'))
 assert.ok(atlas.includes('onFindOwnDomain'))
 assert.ok(atlas.includes('worldLocationForSlot(ownWorld.worldSlot).region'))
 assert.ok(atlasCss.includes('.weave-atlas-owner-label'))
-assert.ok(atlas.includes("/weave/flame-event/burning-river-open-world-official.webp"))
+assert.ok(atlas.includes("/weave/open-world/weave-open-world-official.jpg"))
 
 // Three-dimensional Client structures grow from actual operating-system counts.
 assert.ok(scene.includes('ownDomainId===d.domainId?ownDomainName:null'))

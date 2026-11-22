@@ -1,5 +1,15 @@
 # Official Burning River image references and live multiplayer world
 
+## Current official Weave Open World image · 22 November 2026
+
+The Sovereign provided and explicitly selected the replacement artwork `431933.png` in the conversation (the supplied file actually contains JPEG pixels). The 1024 × 1536 image is now the **official WEAVE Open World atlas** at `public/weave/open-world/weave-open-world-official.jpg`, SHA-256 `c91ed877872ce1176c7c34bdbafb571ea54b1a9f7f5f2c688b161c91f0d83f5e`.
+
+The prior tall `burning-river-open-world-official.webp` remains in the repository as a historical approved image and for non-Open-World contexts; it is **superseded as the primary atlas**, not deleted. Burning River remains Loop 1 inside the permanent WEAVE Open World.
+
+The currently authorized Open World renderer is `components/events/weave-world-atlas.tsx`, which uses the new image dimensions and new hit areas. Its three visible lower entrances are **Explore**, **Domains**, and **Customer Doors**. The small utility links preserve Return, Staff Entrance, Community and Guide. Dynamic Client owner nameplates are separate overlays, never burned into the approved artwork. No real Client is assigned a fictional named landmark; the map is a navigable index into real verified File Folder records.
+
+The binary was transferred into the branch with a one-time, SHA-256-verified GitHub workflow. Future image changes require a fresh approved asset and the corresponding hotspot regression check.
+
 ## Founder-approved pictures
 
 These are the **exact source artworks** provided/approved in the October 23, 2026 conversation.

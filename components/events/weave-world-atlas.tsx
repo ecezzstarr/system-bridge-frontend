@@ -6,27 +6,28 @@ import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 
 import { worldLocationForSlot, type DomainRegion, type DomainTier, type PublicWorldDomain } from '@/lib/weave-open-world-domains'
 import './weave-world-atlas.css'
 
-const WORLD_ATLAS_ART = '/weave/flame-event/burning-river-open-world-official.webp'
+const WORLD_ATLAS_ART = '/weave/open-world/weave-open-world-official.jpg'
 
-// Positions are measured against the 864 × 1536 reference. The installed art
-// has the same proportions. Hotspots stay attached to the art at every width.
+// The 22 November 2026 official Open World artwork is 1024 x 1536.
+// Hit areas are measured on that exact image, not the superseded map. They
+// remain attached to the image while resizing on small phone screens.
 type Rectangle = readonly [x: number, y: number, width: number, height: number]
 function hotspot([x, y, width, height]: Rectangle): CSSProperties {
   return {
-    '--atlas-x': x / 864 * 100 + '%',
+    '--atlas-x': x / 1024 * 100 + '%',
     '--atlas-y': y / 1536 * 100 + '%',
-    '--atlas-w': width / 864 * 100 + '%',
+    '--atlas-w': width / 1024 * 100 + '%',
     '--atlas-h': height / 1536 * 100 + '%',
   } as CSSProperties
 }
 
 const REGIONS = {
-  radiant_heights: { name: 'Radiant Heights', landmark: 'Northridge Folder', rect: [26, 235, 242, 185] },
-  green_valley: { name: 'Green Valley', landmark: 'Verdant Keep', rect: [29, 514, 247, 200] },
-  riverlands: { name: 'Riverlands', landmark: 'Rivergate', rect: [274, 655, 230, 181] },
-  ember_reach: { name: 'Ember Reach', landmark: 'Ashen Bastion', rect: [35, 849, 254, 199] },
-  starfall_ridge: { name: 'Starfall Ridge', landmark: 'Starfall Spire', rect: [630, 796, 232, 180] },
-  tidal_basin: { name: 'Tidal Basin', landmark: 'Tidemoor', rect: [566, 995, 273, 190] },
+  radiant_heights: { name: 'Radiant Heights', landmark: 'Northridge', rect: [28, 175, 270, 235] },
+  green_valley: { name: 'Green Valley', landmark: 'Verdant Keep', rect: [18, 448, 310, 285] },
+  riverlands: { name: 'Riverlands', landmark: 'Rivergate Marketplace', rect: [8, 790, 329, 375] },
+  ember_reach: { name: 'Ember Reach', landmark: 'Ember Hold', rect: [385, 270, 315, 329] },
+  starfall_ridge: { name: 'Starfall Ridge', landmark: 'Starfall Spire', rect: [805, 490, 208, 337] },
+  tidal_basin: { name: 'Tidal Basin', landmark: 'Tidemoor', rect: [706, 1047, 308, 290] },
 } satisfies Record<DomainRegion, { name: string; landmark: string; rect: Rectangle }>
 
 export function worldRegionName(region: DomainRegion) {
@@ -74,23 +75,27 @@ export function WeaveWorldAtlas({
     <div className="weave-atlas-frame">
       {notice && <p role="status" className="weave-atlas-notice">{notice}</p>}
       <div className={artFailed ? 'weave-atlas-map' : 'weave-atlas-map weave-atlas-illustrated'} ref={map} tabIndex={-1}>
-        {!artFailed && <img src={WORLD_ATLAS_ART} width={941} height={1672} fetchPriority="high" onError={() => setArtFailed(true)}
-          alt="Burning River landscape with mountain kingdoms, bridges, and a river of fire and water."/>}
+        {!artFailed && <img src={WORLD_ATLAS_ART} width={1024} height={1536} fetchPriority="high" onError={() => setArtFailed(true)}
+          alt="WEAVE Open World: mountains, verified Client File Folder landmarks, Bridge of Radiance, Rivergate Marketplace, Tidemoor and the Burning River event."/>}
         <header className="weave-atlas-header">
-          <Link href={returnHref} data-map-hotspot style={hotspot([0, 0, 110, 105])}
+          <Link href={returnHref} data-map-hotspot data-atlas-utility="true"
+            style={hotspot([8, 18, 120, 48])}
             aria-label={returnHref === '/system-switch' ? 'Return to System Switch Gate' : 'Return to Burning River'}>
             <span className="weave-atlas-label">Return</span>
+            <span className="weave-atlas-utility-text" aria-hidden="true">‹ Back</span>
           </Link>
           <div className="weave-atlas-label">
             <p>The Company of Time</p>
             <h1>Weave Open World</h1>
           </div>
-          <button type="button" data-map-hotspot style={hotspot([758, 0, 106, 110])} onClick={onGuide}>
+          <button type="button" data-map-hotspot data-atlas-utility="true"
+            style={hotspot([893, 18, 123, 48])} onClick={onGuide}>
             <span className="weave-atlas-label">Open world guide</span>
+            <span className="weave-atlas-utility-text" aria-hidden="true">Guide</span>
           </button>
         </header>
         <section className="weave-atlas-landmarks" aria-label="World landmarks">
-          <Link href="/system-switch" data-map-hotspot style={hotspot([548, 157, 306, 180])}>
+          <Link href="/system-switch" data-map-hotspot style={hotspot([350, 650, 374, 206])}>
             <span className="weave-atlas-label">Bridge of Radiance · System Switch Gate</span>
           </Link>
           {(Object.keys(REGIONS) as DomainRegion[]).map(region => {
@@ -113,27 +118,39 @@ export function WeaveWorldAtlas({
               {count > 0 && <span className="weave-atlas-live" aria-hidden="true"><Castle size={12}/> {count} live</span>}
             </button>
           })}
-          <button type="button" data-map-hotspot style={hotspot([294, 330, 245, 190])} onClick={() => onDomains({tier:'pro'})}>
+          <button type="button" data-map-hotspot style={hotspot([480, 399, 190, 68])} onClick={() => onDomains({tier:'pro'})}>
             <span className="weave-atlas-label">Ember Hold landmark · Browse Pro File Folders</span>
           </button>
-          <button type="button" data-map-hotspot style={hotspot([620, 402, 240, 302])} onClick={() => onDomains({tier:'plus'})}>
+          <button type="button" data-map-hotspot style={hotspot([729, 105, 286, 294])} onClick={() => onDomains({tier:'plus'})}>
             <span className="weave-atlas-label">The Plus Citadel landmark · Browse Plus File Folders</span>
           </button>
         </section>
         <nav className="weave-atlas-entrances" aria-label="Open World entrances">
-          <Link href={staffHref} data-map-hotspot style={hotspot([18, 1260, 270, 115])}><span className="weave-atlas-label">Staff Entrance</span></Link>
-          <button type="button" data-map-hotspot style={hotspot([296, 1260, 275, 115])} onClick={onExplore}><span className="weave-atlas-label">Visitor Entrance</span></button>
-          <button type="button" data-map-hotspot style={hotspot([579, 1260, 270, 115])} onClick={onCustomers}><span className="weave-atlas-label">Customer Door</span></button>
+          <Link href={staffHref} data-map-hotspot data-atlas-utility="true"
+            style={hotspot([10, 129, 174, 49])}>
+            <span className="weave-atlas-label">Staff Entrance</span>
+            <span className="weave-atlas-utility-text" aria-hidden="true">Staff Entrance</span>
+          </Link>
+          <button type="button" data-map-hotspot style={hotspot([42, 1417, 290, 101])}
+            onClick={onExplore} aria-label="Visitor Entrance · Explore the live 3D world">
+            <span className="weave-atlas-label">Visitor Entrance · Explore</span>
+          </button>
+          <button type="button" data-map-hotspot style={hotspot([642, 1417, 369, 101])}
+            onClick={onCustomers} aria-label="Customer Door · View commissioned businesses">
+            <span className="weave-atlas-label">Customer Door</span>
+          </button>
         </nav>
         <nav className="weave-atlas-tools" aria-label="Open World navigation">
-          <button type="button" data-map-hotspot style={hotspot([18, 1396, 166, 101])} aria-current="page" onClick={() => {
-            map.current?.scrollIntoView({ block: 'start' })
-            map.current?.focus({ preventScroll: true })
-          }}><span className="weave-atlas-label">World Map</span></button>
-          <button type="button" data-map-hotspot style={hotspot([184, 1396, 169, 101])} onClick={() => onDomains()}><span className="weave-atlas-label">Domains</span></button>
-          <button type="button" data-map-hotspot style={hotspot([353, 1396, 167, 101])} onClick={onExplore}><span className="weave-atlas-label">Explore</span></button>
-          <button type="button" data-map-hotspot style={hotspot([520, 1396, 168, 101])} onClick={onCommunity}><span className="weave-atlas-label">Community</span></button>
-          <button type="button" data-map-hotspot style={hotspot([688, 1396, 161, 101])} onClick={onGuide}><span className="weave-atlas-label">Guide</span></button>
+          <button type="button" data-map-hotspot style={hotspot([349, 1417, 282, 101])}
+            aria-label="Domains · Browse verified Client File Folders" onClick={() => onDomains()}>
+            <span className="weave-atlas-label">Domains</span>
+          </button>
+          <button type="button" data-map-hotspot data-atlas-utility="true"
+            style={hotspot([833, 131, 174, 49])} onClick={onCommunity}>
+            <span className="weave-atlas-label">Community</span>
+            <span className="weave-atlas-utility-text" aria-hidden="true">Community</span>
+          </button>
+          <span className="weave-atlas-label" aria-current="page">World Map</span>
         </nav>
       </div>
       <p role="status" className="weave-atlas-caption">
