@@ -122,9 +122,9 @@ export default function CompanyGrounds3D(){
         onPointerMissed={()=>setSelected(null)}
         style={{cursor:hovered?'pointer':'grab'}}>
         <color attach="background" args={['#8fb5c5']}/>
-        <ambientLight intensity={2.1}/>
-        <hemisphereLight args={['#d7f0ff','#b69c68',2.2]}/>
-        <directionalLight position={[-90,125,70]} intensity={3} color="#fff2d5"/>
+        <ambientLight intensity={.85}/>
+        <hemisphereLight args={['#d7f0ff','#b69c68',.8]}/>
+        <directionalLight position={[-90,125,70]} intensity={.95} color="#fff2d5"/>
         <Suspense fallback={null}>
           <ThreeCampus onSelect={setSelected} onHover={setHovered} onReady={sceneReady}/>
         </Suspense>
