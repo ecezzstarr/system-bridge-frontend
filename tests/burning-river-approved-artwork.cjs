@@ -9,6 +9,10 @@ const approvedArt=[
    'f032c305f89519df5c7c5156bbf02ee62fef46fe1030fe39dd983118f3074f50'],
   ['public/weave/flame-event/burning-river-open-world-official.webp',
    'c72c1ba20c3436cb0e808b3523080a9928e5901f694db5adc9b0b8a5d5f3ba99'],
+  // 22 November 2026: the new official Open World atlas supersedes the earlier map.
+  // The former original remains an archived historical reference.
+  ['public/weave/open-world/weave-open-world-official.jpg',
+   'c91ed877872ce1176c7c34bdbafb571ea54b1a9f7f5f2c688b161c91f0d83f5e'],
 ]
 for(const [asset,expectedSha] of approvedArt){
   const filepath=path.join(__dirname,'..',asset)

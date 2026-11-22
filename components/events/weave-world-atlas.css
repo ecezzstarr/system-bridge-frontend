@@ -28,6 +28,31 @@
   border-radius: .35rem;
   touch-action: manipulation;
 }
+.weave-atlas-illustrated [data-atlas-utility] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e8c487b8;
+  border-radius: .6rem;
+  background: #092132d9;
+  box-shadow: 0 2px 9px #03070d70;
+  color: #fbe7bd;
+  text-decoration: none;
+  font-family: Georgia, serif;
+  font-weight: 700;
+}
+.weave-atlas-illustrated .weave-atlas-utility-text {
+  display: inline-block;
+  max-width: 100%;
+  padding-inline: .15rem;
+  font-size: clamp(8px, 1.1vw, 12px);
+  line-height: 1.08;
+  text-align: center;
+  text-wrap: balance;
+}
+.weave-atlas-map:not(.weave-atlas-illustrated) .weave-atlas-utility-text {
+  display: none;
+}
 .weave-atlas-illustrated .weave-atlas-label {
   position: absolute;
   width: 1px;

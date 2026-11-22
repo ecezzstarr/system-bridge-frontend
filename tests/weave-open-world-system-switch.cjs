@@ -33,9 +33,9 @@ assert.ok(land.includes('CanvasTexture')&&land.includes('LandMaterial')&&land.in
 assert.ok(land.includes('function WorldRidge')&&land.includes('snow-peaks')&&land.includes('ember-highlands'),'Burning River reference informs real snowy and ember terrain geometry')
 assert.ok(land.includes('function RiverCrossing')&&land.includes('name="bridge-of-radiance"'),'Bridge of Radiance crossings are physical geometry in the shared world')
 assert.ok(land.includes('Approved Burning River art guides the real scene')&&!land.includes('backgroundImage'),'Approved world-map art guides live geography without replacing it with wallpaper')
-assert.ok(exists('public/weave/flame-event/burning-river-open-world-official.webp'),'Approved File Folder world-map artwork is installed in the repository')
+assert.ok(exists('public/weave/open-world/weave-open-world-official.jpg'),'Approved replacement Open World artwork is installed in the repository')
 assert.ok(scene.includes('<WeaveOpenWorldLandscape domains={domains} placing={placing} onPlace={onPlace}/>'),'Physical landscape is mounted under Client domains')
-assert.ok(!visual.includes("backgroundImage:\"url('/weave/flame-event/burning-river-open-world-official.webp')"),'The reference image is not rendered as an image wallpaper behind fake world geometry')
+assert.ok(!visual.includes("backgroundImage:\"url('/weave/open-world/weave-open-world-official.jpg')"),'The reference image is not rendered as an image wallpaper behind fake world geometry')
 assert.ok(scene.includes('new THREE.ShaderMaterial')&&scene.includes('water.uniforms.time.value'),'Event water and fire move on actual 3D surfaces')
 assert.ok(scene.includes('<DomainCastle')&&visual.includes('publicHref(selectedDomain)')&&visual.includes('tapCastle'),'Real Client-built world and commissioned Customer Door gates remain clickable')
 assert.ok(visual.includes('requestedDoor')&&visual.includes('setSelected(match.domainId)'),'A direct Client link focuses the actual public building')
@@ -74,7 +74,7 @@ assert.ok(world.includes("import {BurningRiverLiveWorld} from '@/components/even
   'The interactive atlas must be part of the first route render')
 assert.ok(visual.includes("useState<'map'|'world'>('map')")&&visual.includes("import('./weave-world-scene')"),
   'Open with the atlas and download the 3D scene only when entered')
-assert.ok(atlas.includes('/weave/flame-event/burning-river-open-world-official.webp')&&atlas.includes('data-weave-live-region={region}'),
+assert.ok(atlas.includes('/weave/open-world/weave-open-world-official.jpg')&&atlas.includes('data-weave-live-region={region}'),
   'The approved art frames live geographic markers')
 assert.ok(atlas.includes('data-map-hotspot')&&atlas.includes('Bridge of Radiance · System Switch Gate')&&
   atlas.includes("onDomains({tier:'plus'})")&&atlas.includes("onDomains({tier:'pro'})"),
