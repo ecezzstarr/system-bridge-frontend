@@ -196,7 +196,7 @@ export default function CompanyGrounds(){
   return <main className={styles.grounds} aria-label="Weave Open World" data-weave-company-home="company-grounds"
     data-grounds-immersive="official-image-click-to-explore">
     <h1 className="sr-only">Weave of Presence · Company Grounds</h1>
-    <div id="grounds-panorama" ref={undefined} className={styles.viewport} tabIndex={0}
+    <div id="grounds-panorama" className={styles.viewport} tabIndex={0}
       data-exploring={exploring?'true':'false'} data-travelling={travelling?'true':'false'}
       aria-label="Weave Company Grounds. Tap a building to enter, or tap the landscape to zoom. Drag to look and pinch to zoom. Escape restores the full view."
       onPointerDown={beginLook} onPointerMove={moveLook} onPointerUp={endLook}
