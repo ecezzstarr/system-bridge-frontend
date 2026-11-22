@@ -23,6 +23,7 @@ export function DepartmentEntryLoanSupport({
   const [request, setRequest] = useState<LoanRequest | null>(null)
   const [error, setError] = useState('')
   const [codeExpired, setCodeExpired] = useState(false)
+  const [canRenewCode, setCanRenewCode] = useState(false)
   const [acceptsDeduction, setAcceptsDeduction] = useState(false)
   const [form, setForm] = useState({ name: '', email: '', phone: '', statement: '' })
   const canApply = ticketStatus === 'PRESENTED'
@@ -38,6 +39,7 @@ export function DepartmentEntryLoanSupport({
       if (!res.ok || !data.success) throw new Error(data.error || 'Loan status unavailable')
       setRequest(data.request || null)
       setCodeExpired(data.codeExpired === true)
+      setCanRenewCode(data.canRenewCode === true)
       if (data.request?.applicant_email) onApplicantConfirmed({
         email: String(data.request.applicant_email).toLowerCase(),
         name: String(data.request.applicant_name || ''),
@@ -84,6 +86,30 @@ export function DepartmentEntryLoanSupport({
     }
   }
 
+  const renewCode = async () => {
+    if (!accessToken || busy) return
+    setBusy(true)
+    setError('')
+    try {
+      const res = await fetch('/api/department-entry/loan-support', {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json', 'x-entry-ticket-token':accessToken },
+        body: JSON.stringify({ action:'renew_approved_code' }),
+      })
+      const data = await res.json()
+      if (!res.ok || !data.success || !data.registrationCode) {
+        throw new Error(data.error || 'Unable to restore the approved code')
+      }
+      setCodeExpired(false)
+      setCanRenewCode(false)
+      onCodeIssued(String(data.registrationCode))
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Code recovery failed. Contact Administrations.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
   if (!canApply && !request) return null
 
   return (
@@ -113,10 +139,16 @@ export function DepartmentEntryLoanSupport({
                 Register using <strong>{request.applicant_email || 'the email supplied in your application'}</strong>.
                 Your starting System Switch balance will be −{ticketValue}.
               </p>}
-              {codeExpired && <p role="alert" className="mt-2 text-amber-200">
-                Your approved registration code has expired or is unavailable. Your loan approval remains recorded.
-                Contact Administrations or your Regional Manager for a verified reissue; do not pay for another ticket.
-              </p>}
+              {codeExpired && <div className="mt-2 space-y-2 text-amber-200">
+                <p role="alert">Your previously approved one-use code is no longer available.
+                  Your loan remains recorded; do not pay for another ticket.</p>
+                {canRenewCode
+                  ? <button type="button" disabled={busy} onClick={() => void renewCode()}
+                    className="min-h-11 w-full rounded-lg border border-amber-200/40 px-3 py-2 font-bold text-amber-100 disabled:opacity-50">
+                    {busy ? 'Restoring approved code…' : 'Restore my approved registration code'}
+                    </button>
+                  : <p>Contact Administrations or your Regional Manager for a verified review of the original ticket.</p>}
+              </div>}
               {request.admin_note && <p className="mt-2 whitespace-pre-wrap text-slate-300">{request.admin_note}</p>}
               <button type="button" onClick={() => void refresh()}
                 className="mt-2 font-semibold text-sky-200 underline underline-offset-4">
