@@ -4,8 +4,8 @@
   #grounds-panorama > div {
     isolation: isolate;
     transform: perspective(1500px)
-      rotateY(calc(var(--weave-observer-x, 0) * .37deg))
-      rotateX(calc(var(--weave-observer-y, 0) * -.28deg));
+      rotateY(calc(var(--weave-observer-x, 0) * var(--weave-perspective, 1) * .37deg))
+      rotateX(calc(var(--weave-observer-y, 0) * var(--weave-perspective, 1) * -.28deg));
   }
   /* Two registered cutouts, sampled from the very same image as the base.
      The skyline stays at the back, Hope and the fountain sit closer. */
@@ -20,23 +20,36 @@
   }
   #grounds-panorama > div::before {
     clip-path: polygon(0 41%, 10% 41%, 19% 44%, 23% 48%, 24% 54%, 24% 79%, 18% 83%, 0 91%);
-    transform: translate3d(calc(var(--weave-observer-x, 0) * 1.8px), calc(var(--weave-observer-y, 0) * 1px), 0);
+    transform: translate3d(calc(var(--weave-observer-x, 0) * var(--weave-relief, 1) * 1.8px), calc(var(--weave-observer-y, 0) * var(--weave-relief, 1) * 1px), 0);
   }
   #grounds-panorama > div::after {
     clip-path: polygon(30% 67%, 34% 64%, 40% 65%, 44% 63%, 53% 63%, 57% 67%, 58% 72%, 68% 76%, 75% 78%, 75% 82%, 68% 87%, 58% 92%, 47% 95%, 30% 93%, 28% 87%);
-    transform: translate3d(calc(var(--weave-observer-x, 0) * 3px), calc(var(--weave-observer-y, 0) * 1.5px), 0);
+    transform: translate3d(calc(var(--weave-observer-x, 0) * var(--weave-relief, 1) * 3px), calc(var(--weave-observer-y, 0) * var(--weave-relief, 1) * 1.5px), 0);
   }
   #grounds-panorama > div > :is(a,button) {z-index:2}
   :is([data-department] nav, [data-department] details, [data-department] aside) a > :first-child:is(img,span),
-  [aria-label$=" building"] figure img,
+  [data-weave-relief-frame],
   [data-weave-page-original-visual] img,
   [data-sunshine-approved-poster] img,
   .lifestyle-building-front {
     transform: perspective(850px)
-      rotateY(calc(var(--weave-observer-x, 0) * 1.4deg))
-      rotateX(calc(var(--weave-observer-y, 0) * -1deg));
+      rotateY(calc(var(--weave-observer-x, 0) * var(--weave-perspective, 1) * 1.4deg))
+      rotateX(calc(var(--weave-observer-y, 0) * var(--weave-perspective, 1) * -1deg));
   }
   .weave-live-flame-field .weave-live-flame-core {
-    translate: calc(var(--weave-observer-x, 0) * 5px) calc(var(--weave-observer-y, 0) * 3px);
+    translate: calc(var(--weave-observer-x, 0) * var(--weave-relief, 1) * 5px) calc(var(--weave-observer-y, 0) * var(--weave-relief, 1) * 3px);
+  }
+}
+
+/* The lower face samples the original artwork at the same scale and crop. */
+[data-weave-relief-frame] {display:block; position:relative; overflow:hidden; isolation:isolate}
+[data-weave-relief-frame] > img {display:block}
+[data-weave-relief-frame] > [data-weave-near-face] {display:none}
+@media (prefers-reduced-motion: no-preference) {
+  [data-weave-relief-frame] > [data-weave-near-face] {
+    display:block; position:absolute; inset:0; pointer-events:none;
+    mask-image:linear-gradient(to bottom,transparent 42%,black 83%);
+    translate:calc(var(--weave-observer-x,0) * var(--weave-relief,1) * 3px)
+              calc(var(--weave-observer-y,0) * var(--weave-relief,1) * 2px);
   }
 }

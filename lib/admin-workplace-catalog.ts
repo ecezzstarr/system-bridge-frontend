@@ -382,9 +382,9 @@ export const ADMIN_SPACES:readonly AdminSpace[]=[
     "description": "Curate original image and material templates, review Agent/Bridger/Client business formation, ads and verified System Switch license earnings."
   },
   {
-    "title": "Visual Systems",
+    "title": "Visual Systems · Open World Scene Workshop",
     "href": "/admin/visual-systems",
-    "description": "Control approved visual systems and environments."
+    "description": "Preview and publish building depth, texture relief and machinery speed across the company."
   },
   {
     "title": "File Folder World Releases",

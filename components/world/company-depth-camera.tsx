@@ -1,10 +1,22 @@
 'use client'
 
 import { useEffect } from 'react'
+import { useVisualRuntime } from './use-visual-runtime'
 import { usePathname } from 'next/navigation'
 
 // The observer moves with the pointer or a native scroll. Input is never captured.
 export function CompanyDepthCamera() {
+  const {config}=useVisualRuntime()
+  const {perspective,relief}=config.architecture
+  useEffect(()=>{
+    const style=document.documentElement.style
+    style.setProperty('--weave-perspective',String(perspective))
+    style.setProperty('--weave-relief',String(relief))
+    return ()=>{
+      style.removeProperty('--weave-perspective')
+      style.removeProperty('--weave-relief')
+    }
+  },[perspective,relief])
   const pathname = usePathname()
   useEffect(() => {
     const root = document.documentElement
@@ -41,6 +53,7 @@ export function CompanyDepthCamera() {
       update(range > 1 ? 2 * el.scrollLeft / range - 1 : 0, Math.sin(el.scrollTop / Math.max(1, window.innerHeight)))
     }
     function leave(event: PointerEvent) { if (!event.relatedTarget) clear() }
+    document.addEventListener('pointerdown', point, { passive: true })
     document.addEventListener('pointermove', point, { passive: true })
     document.addEventListener('pointerout', leave)
     document.addEventListener('scroll', scroll, { capture: true, passive: true })
@@ -48,6 +61,7 @@ export function CompanyDepthCamera() {
     window.addEventListener('blur', clear)
     quiet.addEventListener('change', clear)
     return () => {
+      document.removeEventListener('pointerdown', point)
       document.removeEventListener('pointermove', point)
       document.removeEventListener('pointerout', leave)
       document.removeEventListener('scroll', scroll, true)

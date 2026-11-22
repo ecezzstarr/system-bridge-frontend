@@ -12,6 +12,7 @@ import { ContactShadows,Text,useTexture,Sky } from '@react-three/drei'
 import * as THREE from 'three'
 import { EmbodiedWorldRuntime, type WorldInput } from './embodied-world-runtime'
 import { systemWorldPosition, aiTerritoryWorldPosition, FILE_FOLDER_PARK_TREES, FILE_FOLDER_DISTRICT_POSITIONS, FILE_FOLDER_WORLD_RADIUS, FILE_FOLDER_CITY_OBSTACLES, FILE_FOLDER_STREET_COLUMNS, FILE_FOLDER_STREET_ROWS, DISTRICT_BODY_RADIUS, type Presence } from '@/lib/file-folder-world-runtime'
+import {useMachinerySpeed} from '@/components/world/use-machinery-speed'
 import { useVisualRuntime } from '@/components/world/use-visual-runtime'
 import { FileFolderScenery,FileFolderFacilities,FileFolderPresenceAvatar,FILE_FOLDER_STATION_POSITIONS,type FormationStation } from './file-folder-world-art'
 import { institutionalArchetype } from '@/lib/file-folder-institutional-visual'
@@ -214,7 +215,13 @@ function ScaffoldEnvelope({width,depth,height,progress}:{width:number;depth:numb
 
 function Crane({height=2.6,speed=1}:{height?:number;speed?:number}){
   const arm=useRef<THREE.Group>(null)
-  useFrame(({clock})=>{if(arm.current)arm.current.rotation.y=Math.sin(clock.getElapsedTime()*.18*Math.min(4,Math.max(1,speed)))*.4})
+  const machinery=useMachinerySpeed()
+  const phase=useRef(0)
+  useFrame((_,delta)=>{
+    if(!arm.current||!machinery)return
+    phase.current+=Math.min(delta,.05)*.18*Math.min(4,Math.max(1,speed))*machinery
+    arm.current.rotation.y=Math.sin(phase.current)*.4
+  })
   return <group position={[1.3,.02,-.95]}>
     {[-.08,.08].flatMap(x=>[-.08,.08].map(z=><mesh key={x+':'+z} position={[x,height/2,z]}><boxGeometry args={[.035,height,.035]}/><meshStandardMaterial color="#efb949" metalness={.55} roughness={.4}/></mesh>))}
     {Array.from({length:8},(_,i)=><group key={i} position={[0,i*height/8,0]}>
