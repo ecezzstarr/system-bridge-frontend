@@ -2,6 +2,11 @@
 -- Original System Switch / TRX accounts and historical deposits are preserved.
 -- Apply before activating WEAVE_USD_DEPOSIT_ENABLED. No balance rewrites.
 BEGIN;
+CREATE TABLE IF NOT EXISTS weave_user_currency_preferences(
+  user_id uuid PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  display_currency varchar(3) NOT NULL DEFAULT 'USD',
+  updated_at timestamptz NOT NULL DEFAULT NOW()
+);
 CREATE TABLE IF NOT EXISTS weave_usd_deposit_quotes(
   deposit_id uuid PRIMARY KEY REFERENCES deposits(id),
   user_id uuid NOT NULL REFERENCES users(id),
