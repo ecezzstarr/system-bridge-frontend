@@ -18,12 +18,7 @@ const action='inline-flex min-h-10 shrink-0 items-center justify-center gap-2 ro
 const number=(value:number)=>Number(value||0).toLocaleString('en-NG')
 
 export function RegionalManagerCommandCenter({team,tasks,summary,todayCheckins,missingCheckins,supportCases,supportAvailable,metrics,selected,onSelect,onRefresh}:Props){
- const direct=team.filter(m=>m.level==='direct')
- const bridgers=team.filter(m=>m.role==='bridger')
- const agents=team.filter(m=>m.role==='agent')
  const reviewCount=summary?.awaitingTaskReviews??0
- const openTasks=summary?.tasksOpen??0
- const pendingHelp=summary?.needsHelp??0
  const reports=[
   {name:'My Team',value:number(team.length),detail:'Verified assigned staff',icon:Users,tint:'text-blue-700',panel:'team' as RegionalPanel},
   {name:'Check-ins Today',value:number(todayCheckins)+' / '+number(team.length),detail:team.length?number(Math.round(todayCheckins/team.length*100))+'% recorded':'No assigned staff',icon:CalendarCheck2,tint:'text-emerald-700',panel:'attention' as RegionalPanel},
@@ -48,7 +43,7 @@ export function RegionalManagerCommandCenter({team,tasks,summary,todayCheckins,m
   {name:'Training',icon:GraduationCap,panel:'guide' as RegionalPanel},
   {name:'Resources',icon:BookOpen,href:'/weave/lifestyles/work'},
  ]
- return <section data-regional-manager-command-center="first-day-ready" className="overflow-hidden rounded-[26px] border border-[#bed2ea] bg-[#f5f9ff] text-[#102956] shadow-[0_24px_80px_rgba(0,36,86,.16)]">
+ return <section id="regional-manager-command-center" data-regional-manager-command-center="first-day-ready" className="overflow-hidden rounded-[26px] border border-[#bed2ea] bg-[#f5f9ff] text-[#102956] shadow-[0_24px_80px_rgba(0,36,86,.16)]">
   <div className="grid lg:grid-cols-[210px_minmax(0,1fr)]">
    <aside className="border-b border-[#d1ddef] bg-gradient-to-b from-white to-[#e8f2ff] p-3 lg:border-b-0 lg:border-r lg:p-4">
     <Link href="/weave/lifestyles/work" className="mb-4 hidden text-center lg:block">
@@ -97,6 +92,8 @@ export function RegionalManagerCommandCenter({team,tasks,summary,todayCheckins,m
      </div>
      <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1.55fr)_minmax(290px,1fr)]">
       <div className="space-y-4">
+       {!team.length&&<p className="rounded-xl border border-amber-300/60 bg-amber-50 p-3 text-xs font-semibold text-amber-950">No staff assigned to this region yet. Administrations must assign verified staff before task management can begin.</p>}
+       {reviewCount>0&&<button type="button" onClick={()=>go('tasks')} className="w-full rounded-xl border border-amber-400 bg-amber-100 p-3 text-left text-sm font-bold text-amber-950">Review {reviewCount} submitted team task{reviewCount===1?'':'s'} awaiting your decision</button>}
        <section className={shell+' p-3 sm:p-4'}>
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2"><h2 className="flex items-center gap-2 text-lg font-extrabold"><ClipboardCheck size={21} className="text-[#ad760a]"/> Today's Work</h2><span className="rounded-full bg-[#fff0cb] px-3 py-1 text-[11px] font-bold text-[#8a5400]">Follow these 5 steps each day</span></div>
         <div className="space-y-2">{steps.map((s,i)=>{const Icon=s.icon;return <div key={s.name} className="flex flex-wrap items-center gap-2 rounded-xl border border-[#dbe4f2] bg-[#fafdff] p-2.5 sm:flex-nowrap">
@@ -106,17 +103,7 @@ export function RegionalManagerCommandCenter({team,tasks,summary,todayCheckins,m
           <button type="button" onClick={()=>go(s.panel!)} className={action+' ml-auto'}>{s.button}<ArrowRight size={14}/></button>}
         </div>})}</div>
        </section>
-       <section className={shell+' border-amber-200 bg-gradient-to-br from-[#fffef9] to-[#fff2d6] p-3 sm:p-4'}>
-        <h2 className="mb-3 flex items-center gap-2 text-lg font-extrabold"><Sparkles size={20} className="text-[#b0780b]"/> First Day Setup <span className="text-xs font-medium text-[#6b7082]">(3 simple steps)</span></h2>
-        <div className="grid gap-2 sm:grid-cols-3">
-         {[{name:'1 · See My Region',detail:'Review your authorized team and leadership chain.',panel:'team' as RegionalPanel},
-           {name:'2 · Learn My Work',detail:'Read the daily instructions before directing staff.',panel:'guide' as RegionalPanel},
-           {name:'3 · Set Daily Work',detail:'Assign clear tasks and Hope outreach targets.',panel:'tasks' as RegionalPanel}].map(x=>
-           <button key={x.name} type="button" onClick={()=>go(x.panel)} className="rounded-xl border border-[#bcd1e6] bg-white/90 p-3 text-left hover:border-[#d6a343]">
-            <h3 className="text-sm font-bold">{x.name}</h3><p className="mt-1 text-xs leading-5 text-[#536b8a]">{x.detail}</p><span className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-[#125a9a]">Open <ArrowRight size={13}/></span>
-           </button>)}
-        </div>
-       </section>
+       
       </div>
       <div className="space-y-4">
        <section className={shell+' p-3 sm:p-4'}>
@@ -137,26 +124,7 @@ export function RegionalManagerCommandCenter({team,tasks,summary,todayCheckins,m
        </section>
       </div>
      </div>
-     <section className={shell+' p-3 sm:p-4'}>
-      <h2 className="mb-3 text-lg font-extrabold">Live Regional Workspace</h2>
-      <div className="grid gap-3 lg:grid-cols-3">
-       <button type="button" onClick={()=>go('team')} className="rounded-xl border border-[#c8d8ec] bg-[#f7fbff] p-3 text-left hover:border-[#659dd6]">
-        <h3 className="mb-2 flex items-center gap-2 text-sm font-bold"><Users size={18}/> Team and Authority</h3>
-        <p className="text-xs text-[#506786]">Regional Manager → direct staff → assistants through their leads</p>
-        <div className="mt-2 flex flex-wrap gap-2 text-xs font-bold"><span>{bridgers.length} Bridgers</span><span>{agents.length} Agents</span><span>{direct.length} direct</span></div>
-       </button>
-       <button type="button" onClick={()=>go('attention')} className="rounded-xl border border-[#c8d8ec] bg-[#f7fbff] p-3 text-left hover:border-[#659dd6]">
-        <h3 className="mb-2 flex items-center gap-2 text-sm font-bold"><AlertCircle size={18} className="text-amber-600"/> Daily Attention</h3>
-        <p className="text-xs leading-6 text-[#506786]">Missing check-ins: <b>{number(missingCheckins)}</b> · Help requested: <b>{number(pendingHelp)}</b></p>
-        <p className="text-xs text-[#506786]">Submitted tasks: <b>{number(reviewCount)}</b></p>
-       </button>
-       <button type="button" onClick={()=>go('tasks')} className="rounded-xl border border-[#c8d8ec] bg-[#f7fbff] p-3 text-left hover:border-[#659dd6]">
-        <h3 className="mb-2 flex items-center gap-2 text-sm font-bold"><ClipboardList size={18}/> Assignments and Evidence</h3>
-        <p className="text-xs leading-6 text-[#506786]">Open: <b>{number(openTasks)}</b> · Completed: <b>{number(summary?.tasksCompleted??0)}</b></p>
-        <p className="text-xs text-[#506786]">Select to assign work or review a submission.</p>
-       </button>
-      </div>
-     </section>
+     
      <p className="flex items-start gap-2 rounded-xl bg-[#fdf5e5] p-3 text-[11px] leading-5 text-[#715929]"><ShieldCheck size={16} className="shrink-0"/> Regional Managers direct verified work and request authorized support. Administrations retains appointment, payment verification and payroll authority. Sunshine is a livelihood mechanism, not a department.</p>
     </div>
    </div>
