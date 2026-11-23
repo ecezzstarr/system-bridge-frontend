@@ -40,3 +40,18 @@ USD is the **platform's canonical monetary currency** for new USD-ledger functio
 `WEAVE_USD_DEPOSIT_ENABLED=true` enables **new** USD quoting and verified USD credits for Administrations, Agents and Bridgers; default is **false**. Apply `migrations/20261122_weave_usd_staff_accounts.sql` and verify Paystack webhooks, approval replay, refunds, reserves and risk controls before enabling. Until the remaining spending, commission, loans, invoices and payout workflows are migrated from `balance_trx` to true USD subaccounts, this USD credit balance cannot be used to execute those legacy actions. An account display selector is not a currency exchange or a payout instruction.
 
 The full company financial cutover must include transactional settlement accounting, liabilities, old balances, client TRX funding, product prices and worker loans. Do not claim these have been converted merely because USD is the canonical new unit.
+
+## Exchange-rate source and activation prerequisites
+
+The free **Open ExchangeRate-API** feed is suitable for the user-visible comparison card only; its rates update daily and its terms do not recommend using them to settle actual financial transactions. It is **not** a valid funding quote source.
+
+The funding route therefore requires all of these independent conditions:
+
+- `WEAVE_USD_DEPOSIT_ENABLED=true` and `WEAVE_USD_SETTLEMENT_AUTHORIZED=true`, only after release checks and financial approvals.
+- `WEAVE_SETTLEMENT_FX_ENDPOINT`: an HTTPS endpoint belonging to an approved, contracted institutional FX quotation provider (or an approved WEAVE adapter).
+- `WEAVE_SETTLEMENT_FX_TOKEN`: secret server-side provider access token. No browser exposure.
+- The endpoint must return JSON `{baseCurrency:"USD",quoteCurrency:"NGN",rateType:"firm",ngnPerUsd:number,quotedAt:ISO8601,expiresAt:ISO8601,provider:string,quoteId:string}`. The quote must be less than five minutes old, not expired, and valid for the relevant checkout; changing rates do not rewrite a stored deposit.
+- Separately establish which entity legally holds or converts the actual NGN funds, its USD liability reserves, the executable quote/spread/fees, the applicable bank payout and the refund/chargeback reconciliation flow.
+
+**Important:** Even with a valid quote, the full company USD system has NOT reached readiness: direct legacy `balance_trx` debits/credits remain across purchases, Agents, Bridgers, Client stores, loan deductions, commissions, escrow and withdrawals. Finance must finish and test those paths before switching on USD deposits. This PR remains a guarded migration foundation, not an authorization to collect stranded USD-denominated liabilities.
+
