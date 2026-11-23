@@ -5,6 +5,7 @@ import {useCallback,useEffect,useState} from 'react'
 import {RegionalSystemSwitchGate} from '@/components/weave/regional-system-switch-gate'
 import {RegionalManagerCommandCenter,type RegionalPanel} from '@/components/weave/regional-manager-command-center'
 import {RegionalEntryLoanDesk} from '@/components/weave/regional-entry-loan-desk'
+import {visiblePoll} from '@/lib/visible-poll'
 
 type Member={user_id:string;name:string;role:string;position:string;level:'direct'|'assistant';lead_user_id:string|null}
 type Task={id:string;assigned_user_id:string;assigned_name:string;title:string;instructions:string;status:string;
@@ -34,10 +35,10 @@ export default function RegionalDailyWorkspace(){
   const [message,setMessage]=useState('')
   const [activePanel,setActivePanel]=useState<RegionalPanel>('overview')
   useEffect(()=>{
-    if(activePanel==='overview')return
-    const frame=requestAnimationFrame(()=>document.getElementById('regional-panel-'+activePanel)?.scrollIntoView({behavior:'smooth',block:'start'}))
+    if(!data||data.mode!=='manager')return
+    const frame=requestAnimationFrame(()=>document.getElementById(activePanel==='overview'?'regional-manager-command-center':'regional-panel-'+activePanel)?.scrollIntoView({behavior:'smooth',block:'start'}))
     return ()=>cancelAnimationFrame(frame)
-  },[activePanel])
+  },[activePanel,data?.mode])
   const [target,setTarget]=useState('')
   const [title,setTitle]=useState('')
   const [instructions,setInstructions]=useState('')
@@ -57,9 +58,7 @@ export default function RegionalDailyWorkspace(){
   },[token])
   useEffect(()=>{
     if(!isInitialized||!token||!['agent','bridger'].includes(user?.role||''))return
-    void load()
-    const interval=setInterval(()=>void load(),20000)
-    return ()=>clearInterval(interval)
+    return visiblePoll(()=>load(),20000)
   },[isInitialized,token,user?.role,load])
   const send=async(body:Record<string,unknown>)=>{
     if(!token)return
@@ -71,6 +70,9 @@ export default function RegionalDailyWorkspace(){
       const result=await r.json()
       if(!r.ok)throw new Error(result.error||'Company record was not accepted')
       setMessage('Company record saved and available for review.')
+      if(body.action==='assign'){setTitle('');setInstructions('');setTarget('')}
+      if(body.action==='check_in')setSummary('')
+      if(typeof body.taskId==='string'||typeof body.memberId==='string')setNotes({})
       await load()
     }catch(e){setError(e instanceof Error?e.message:'Unable to record work')}
     finally{setWorking(false)}
@@ -123,7 +125,6 @@ export default function RegionalDailyWorkspace(){
       supportCases={data.supportAvailable?waitingSupport.length:null} supportAvailable={data.supportAvailable}
       metrics={data.metrics} selected={activePanel} onSelect={setActivePanel} onRefresh={()=>void load()}/>}
     {(!isManager||activePanel==='gate')&&<div id="regional-panel-gate"><RegionalSystemSwitchGate /></div>}
-    {isManager&&activePanel==='support'&&<RegionalEntryLoanDesk token={token || ''} />}
     {isManager&&<>
       <section id="regional-panel-guide" data-regional-manager-daily-cycle="verify-direct-delegate-support-record" className={activePanel==='guide'?'rounded-2xl border border-amber-200/25 bg-gradient-to-br from-[#152531] to-[#0b1722] p-5 sm:p-6':'hidden'}>
         <h2 className="text-2xl font-bold">Regional Manager · A complete working day</h2>
@@ -150,6 +151,7 @@ export default function RegionalDailyWorkspace(){
           <div className="rounded-xl border border-white/10 p-4"><p className="text-sm text-slate-300">Tasks submitted for your decision</p><p className="mt-2 text-3xl font-bold">{pendingReviews.length}</p></div>
           <div className="rounded-xl border border-white/10 p-4"><p className="text-sm text-slate-300">Private support cases awaiting follow-up</p><p className="mt-2 text-3xl font-bold">{data.supportAvailable?waitingSupport.length:'Unavailable'}</p></div>
         </div>
+        <div className="mt-4 flex flex-wrap gap-2"><button type="button" onClick={()=>setActivePanel('team')} className="min-h-11 rounded-lg border border-cyan-300/30 px-4 py-2 text-sm font-semibold text-cyan-100">Review team check-ins</button><button type="button" onClick={()=>setActivePanel('tasks')} className="min-h-11 rounded-lg border border-cyan-300/30 px-4 py-2 text-sm font-semibold text-cyan-100">Review submitted tasks</button><button type="button" onClick={()=>setActivePanel('support')} className="min-h-11 rounded-lg border border-cyan-300/30 px-4 py-2 text-sm font-semibold text-cyan-100">Handle support requests</button></div>
         {missingCheckins.length>0&&<div className="mt-4 rounded-xl border border-amber-300/20 p-4"><h3 className="font-semibold text-amber-100">Contact and assist absent workers</h3><p className="mt-2 text-sm leading-6 text-slate-200">{missingCheckins.map(m=>m.name+' ('+m.position+')').join(' · ')}</p><p className="mt-2 text-xs text-slate-400">Missing a check-in is not proof of misconduct. Contact the person or their lead before interpreting the absence.</p></div>}
         {!data.supportAvailable&&<p role="alert" className="mt-4 text-sm text-amber-200">Work Support records are unavailable. No zero balance or absence of requests is assumed. Open the support workspace and retry.</p>}
       </section>
@@ -202,9 +204,11 @@ export default function RegionalDailyWorkspace(){
         </div>
         {data.supportAvailable&&waitingSupport.length===0&&<p className="mt-4 text-sm text-slate-400">No pending support cases for the currently assigned team. Staff may still submit a new request.</p>}
         <Link href="/weave/lifestyles/support" className="mt-4 inline-flex min-h-11 items-center rounded-lg bg-amber-200 px-5 py-3 text-sm font-bold text-[#172633]">Open private Support Workshop</Link>
+        <div className="mt-5 border-t border-amber-300/20 pt-5"><h3 className="mb-3 text-base font-bold">Entry-ticket loan decisions</h3><p className="mb-3 text-sm text-slate-300">Review applicants within authorized loan limits; registration remains a separate verified step.</p><RegionalEntryLoanDesk token={token || ''}/></div>
       </section>
       <section id="regional-panel-tasks" className={activePanel==='tasks'?'space-y-3 rounded-xl border border-white/15 bg-slate-950/70 p-4':'hidden'}>
         <h2 className="text-xl font-black">Assign today's work</h2>
+        {!direct.length&&<p className="rounded-lg border border-amber-300/30 p-3 text-sm text-amber-100">No direct workers assigned. Administrations must assign an approved Bridger, Agent or lead manager before you can issue regional tasks.</p>}
         <label className="block text-xs text-slate-300">Approved direct report
           <select value={target} onChange={e=>setTarget(e.target.value)} className="mt-2 w-full rounded-lg border border-white/20 bg-slate-950 p-3 text-white">
             <option value="">Select a Bridger or lead manager</option>
@@ -276,7 +280,10 @@ export default function RegionalDailyWorkspace(){
     <section className={!isManager||activePanel==='tasks'?'space-y-3 rounded-xl border border-white/15 bg-slate-950/70 p-4':'hidden'}>
       <h2 className="text-xl font-black">Assignments · Evidence · Review</h2>
       {!data.tasks.length?<p className="text-sm text-slate-400">No regional assignments in the current work period.</p>:
-      data.tasks.map(t=><article key={t.id} className="space-y-2 border-b border-white/10 pb-4">
+      data.tasks.slice().sort((a,b)=>{
+        const rank=(status:string)=>status==='submitted'?0:status==='returned'?1:status==='in_progress'?2:status==='assigned'?3:4
+        return rank(a.status)-rank(b.status)
+      }).map(t=><article key={t.id} className="space-y-2 border-b border-white/10 pb-4">
         <p className="font-semibold">{t.title}</p>
         <p className="text-xs text-slate-400">{t.assigned_name} · {date(t.work_date)} · {label(t.status)}</p>
         <p className="text-sm text-slate-300">{t.instructions}</p>

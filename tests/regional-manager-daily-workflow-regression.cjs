@@ -43,7 +43,7 @@ assert(appointed.includes("UPDATE weave_regional_manager_agents SET status='ende
   'Ending a region appointment terminates direct Agent assignments')
 assert(appointed.includes("UPDATE weave_regional_manager_food_distribution_leads SET status='ended'"),
   'Ending a region appointment terminates food oversight')
-assert(page.includes('setInterval(()=>void load(),20000)'),'Staff view refreshes every 20 sec')
+assert(page.includes('visiblePoll(()=>load(),20000)'),'Staff view refreshes every 20 sec while visible, without hidden-tab polling')
 assert(adminPage.includes('setInterval(()=>void load(),20000)'),'Admin view refreshes every 20 sec')
 assert(catalog.includes('"/admin/regional-operations"'),'Preserve Administration workplace navigation')
 assert(staff.includes('/weave/lifestyles/regional-manager/workspace'),'Keep Staff Workspace route')

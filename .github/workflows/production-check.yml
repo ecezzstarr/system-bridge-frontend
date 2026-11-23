@@ -76,6 +76,7 @@ jobs:
         run: |
           node tests/admin-company-movement-regression.cjs
           node tests/regional-manager-daily-workflow-regression.cjs
+          node tests/manager-lifestyle-daily-work-regression.cjs
           node tests/company-formation-four-departments.cjs
           node tests/regional-hope-outreach-regression.cjs
           node tests/regional-manager-work-support-integrity.cjs
