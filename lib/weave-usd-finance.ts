@@ -54,24 +54,46 @@ export function ensureUsdFinanceSchema(){
 export type UsdNgnQuote={
   ngnPerUsd:number
   updatedAt:string
-  source:'open_er_api_usd'
+  source:string
+  quoteId:string
+  expiresAt:string
 }
-/** A live, timestamped USD/NGN reference. Fail closed when rate is stale. */
+/**
+ * Funding quotes require a separately contracted, authenticated settlement FX
+ * provider. Free public reference FX data is informational only and MUST NOT
+ * be relied upon to determine actual liabilities from verified NGN receipts.
+ * The settlement integration remains intentionally disabled until a provider
+ * and its quote contract have been configured and independently verified.
+ */
 export async function getUsdNgnDepositQuote():Promise<UsdNgnQuote>{
-  const res=await fetch('https://open.er-api.com/v6/latest/USD',{
+  const endpoint=process.env.WEAVE_SETTLEMENT_FX_ENDPOINT?.trim()||''
+  const token=process.env.WEAVE_SETTLEMENT_FX_TOKEN?.trim()||''
+  if(process.env.WEAVE_USD_SETTLEMENT_AUTHORIZED!=='true'||!endpoint||!token){
+    throw Error('WEAVE USD settlement FX requires an approved authorized provider configuration')
+  }
+  const url=new URL(endpoint)
+  if(url.protocol!=='https:'||url.username||url.password)throw Error('USD settlement quote provider must use HTTPS')
+  const res=await fetch(url.toString(),{
+    headers:{Authorization:'Bearer '+token,Accept:'application/json'},
     cache:'no-store',signal:AbortSignal.timeout(6000),
   })
-  if(!res.ok)throw Error('Live USD/NGN exchange rate unavailable')
+  if(!res.ok)throw Error('Authorized USD/NGN quote provider unavailable')
   const data=await res.json()
-  const rate=Number(data?.rates?.NGN)
-  const timestamp=Number(data?.time_last_update_unix)*1000
-  const age=Date.now()-timestamp
-  if(data?.result!=='success'||data?.base_code!=='USD'||!Number.isFinite(rate)||
-    rate<=0||rate>1_000_000||!Number.isFinite(timestamp)||
-    age< -3600_000||age>36*3600_000)throw Error('Verified recent USD/NGN rate unavailable')
-  return {ngnPerUsd:rate,updatedAt:new Date(timestamp).toISOString(),source:'open_er_api_usd'}
+  const rate=Number(data?.ngnPerUsd)
+  const quoted=Date.parse(String(data?.quotedAt||''))
+  const expires=Date.parse(String(data?.expiresAt||''))
+  const now=Date.now()
+  const quoteId=String(data?.quoteId||'')
+  const provider=String(data?.provider||'')
+  if(data?.baseCurrency!=='USD'||data?.quoteCurrency!=='NGN'||data?.rateType!=='firm'||
+    !Number.isFinite(rate)||rate<=0||rate>1_000_000||
+    !Number.isFinite(quoted)||quoted>now+30_000||now-quoted>300_000||
+    !Number.isFinite(expires)||expires<now+30_000||expires>now+900_000||
+    !/^[A-Za-z0-9._-]{8,60}$/.test(quoteId)||
+    !/^[A-Za-z0-9._-]{2,24}$/.test(provider))throw Error('Valid, recent, firm USD/NGN funding quote unavailable')
+  return {ngnPerUsd:rate,updatedAt:new Date(quoted).toISOString(),
+    source:provider,quoteId,expiresAt:new Date(expires).toISOString()}
 }
-
 export function quoteNgnToUsd(amountNgn:number,rateNgnPerUsd:number):number|null{
   if(!Number.isFinite(amountNgn)||amountNgn<=0||amountNgn>100_000_000||
     !Number.isFinite(rateNgnPerUsd)||rateNgnPerUsd<=0)return null
