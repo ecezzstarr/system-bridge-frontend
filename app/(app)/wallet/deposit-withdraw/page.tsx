@@ -81,7 +81,8 @@ export default function WalletDepositWithdrawPage() {
   useEffect(()=>{
     if(!isOpayRole||!usdDepositEnabled){setNgnPerUsd(null);return}
     let cancelled=false
-    fetch('/api/rate/usd-ngn',{cache:'no-store'})
+    const authToken=localStorage.getItem('ssb_auth_token')
+    fetch('/api/rate/usd-ngn',{cache:'no-store',headers:authToken?{Authorization:'Bearer '+authToken}:{}})
       .then(async response=>{
         const data=await response.json()
         if(!response.ok||!data.success||!Number.isFinite(data.ngnPerUsd)||data.ngnPerUsd<=0)
