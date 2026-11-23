@@ -111,7 +111,8 @@ export async function getUsdWalletSnapshot(userId:string):Promise<{
   const row=await db.query(
     'SELECT balance_usd FROM weave_usd_wallets WHERE user_id=$1::uuid',[userId],
   )
-  const amount=row.rows[0] ? Number(row.rows[0].balance_usd) : 0
+  if(!row.rows[0])return {currency:'USD',balanceUsd:null,status:'not_initialized'}
+  const amount=Number(row.rows[0].balance_usd)
   if(!Number.isFinite(amount)||amount<0)throw Error('Invalid USD account')
   return {currency:'USD',balanceUsd:amount,status:'available'}
 }
