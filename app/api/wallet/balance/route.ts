@@ -3,7 +3,7 @@ import { sql } from '@/lib/db'
 import { getAuthUser } from '@/lib/auth-api'
 import { ensureClientMoneyEnvironment } from '@/lib/client-money-environment'
 import { getLegacyUsdRate, legacyUnitsToUsd, PLATFORM_CURRENCY_CODE } from '@/lib/platform-currency'
-import { getUsdWalletSnapshot } from '@/lib/weave-usd-finance'
+import { getUsdWalletSnapshot,USD_END_TO_END_CUTOVER_READY } from '@/lib/weave-usd-finance'
 
 export async function GET(request: NextRequest) {
   try {
@@ -65,7 +65,8 @@ export async function GET(request: NextRequest) {
       currency: 'System Switch', // Actual current spendable-account unit; never relabel as USD.
       reportingCurrency: PLATFORM_CURRENCY_CODE,
       usdWallet,
-      usdDepositEnabled:process.env.WEAVE_USD_DEPOSIT_ENABLED==='true' && ['admin','agent','bridger'].includes(user.role),
+      usdDepositEnabled:USD_END_TO_END_CUTOVER_READY && process.env.WEAVE_USD_DEPOSIT_ENABLED==='true' && ['admin','agent','bridger'].includes(user.role),
+      usdDepositSuspended:!USD_END_TO_END_CUTOVER_READY && process.env.WEAVE_USD_DEPOSIT_ENABLED==='true',
       usdEquivalent: usdRate && amountUsd !== null ? {
         amountUsd, currency: PLATFORM_CURRENCY_CODE, estimateOnly: true,
         rateUsdPerSystemSwitch: usdRate.usdPerSystemSwitch,
