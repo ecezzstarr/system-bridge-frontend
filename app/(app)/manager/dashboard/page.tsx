@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { ArrowRight, BriefcaseBusiness, CalendarClock, CheckCircle2, Copy, FileSignature, LockKeyhole, Megaphone, Share2, Target, Users } from 'lucide-react'
@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { DistributionTeamWorkspace } from '@/components/distribution/team-workspace'
 import { EmploymentActions } from '@/components/employment/employment-actions'
+import {visiblePoll} from '@/lib/visible-poll'
 
 export default function ManagerDashboardPage(){
   const {user,token,isInitialized,isLoading}=useAuth()
@@ -17,30 +18,31 @@ export default function ManagerDashboardPage(){
   const [assistantState,setAssistantState]=useState<any>(null)
   const [terms,setTerms]=useState<any>(null)
   const [error,setError]=useState('')
+  const [assistantError,setAssistantError]=useState('')
   const [busy,setBusy]=useState(false)
   const [accepted,setAccepted]=useState(false)
   const [signature,setSignature]=useState('')
   const [copied,setCopied]=useState(false)
 
-  const load=async()=>{
+  const load=useCallback(async()=>{
     if(!token)return
     const response=await fetch('/api/manager/employment',{headers:{Authorization:`Bearer ${token}`},cache:'no-store'})
     const data=await response.json()
     if(!response.ok)throw new Error(data.error||'Unable to load Distribution Manager Lifestyle.')
-    setState(data.state);setTerms(data.terms||null)
-    const assistants=await fetch('/api/manager/assistant',{headers:{Authorization:`Bearer ${token}`},cache:'no-store'}).catch(()=>null)
-    if(assistants?.ok){
-      try{const body=await assistants.json();setAssistantState(body.state)}
-      catch(error){console.error('[distribution-manager] assistant report unavailable',error)}
-    }
-  }
+    setState(data.state);setTerms(data.terms||null);setError('')
+    try{
+      const assistants=await fetch('/api/manager/assistant',{headers:{Authorization:`Bearer ${token}`},cache:'no-store'})
+      const body=await assistants.json()
+      if(!assistants.ok)throw new Error(body.error||'Assistant appointment records unavailable')
+      setAssistantState(body.state);setAssistantError('')
+    }catch(err){setAssistantError(err instanceof Error?err.message:'Assistant appointments unavailable; retry to see verified applicants.')}
+  },[token])
 
   useEffect(()=>{
     if(!isInitialized||isLoading)return
     if(!user||!['agent','bridger'].includes(user.role||'')){router.replace('/login');return}
-    load().catch(err=>setError(err instanceof Error?err.message:'Unable to load Distribution Manager Lifestyle.'))
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[user,token,isInitialized,isLoading,router])
+    return visiblePoll(()=>load().catch(err=>setError(err instanceof Error?err.message:'Unable to load Distribution Manager Lifestyle.')),20000)
+  },[user?.id,user?.role,token,isInitialized,isLoading,router,load])
 
   const subscribe=async()=>{
     if(!token)return
@@ -94,7 +96,7 @@ export default function ManagerDashboardPage(){
   const agentFree=user?.role==='agent'
 
   if(!isInitialized||isLoading||(!state&&!error))return <div className="flex min-h-[520px] items-center justify-center text-xs font-black uppercase tracking-widest text-amber-200">Restoring Distribution Manager Lifestyle…</div>
-  if(error&&!state)return <main className="mx-auto max-w-3xl px-4 py-12"><div className="rounded-2xl border border-rose-500/30 bg-rose-500/10 p-5 text-sm text-rose-200">{error}</div></main>
+  if(error&&!state)return <main className="mx-auto max-w-3xl space-y-4 px-4 py-12"><div role="alert" className="rounded-2xl border border-rose-500/30 bg-rose-500/10 p-5 text-sm text-rose-200">{error}</div><Button onClick={()=>void load().catch(err=>setError(String(err)))}>Retry workspace connection</Button><Link href="/weave/lifestyles/work" className="block text-sm text-cyan-200">Return to approved workspaces</Link></main>
 
   if(!state?.continuance?.active){
     const roleLabel=agentFree?'Agent':'Bridger'
@@ -158,15 +160,28 @@ export default function ManagerDashboardPage(){
   const statusLabel=employment.status==='probation'?'Probation':employment.status==='active'?'Active Distribution Manager':'Ended'
   return <main className="mx-auto max-w-6xl px-4 py-8 md:px-7 md:py-12" data-distribution-manager-lifestyle-room="true">
     <header className="border-b border-white/10 pb-6"><div className="flex flex-wrap items-start justify-between gap-5"><div><div className="flex items-center gap-2 text-amber-300"><BriefcaseBusiness className="h-5 w-5"/><p className="text-[10px] font-black uppercase tracking-[.2em]">WEAVE Distribution Manager Lifestyle</p></div><h1 className="mt-2 text-3xl font-black text-white">{user?.name}</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">Distribution Manager carries outward company distribution while your original {String(employment.source_role||user?.role).toUpperCase()} identity, referral movement and base-role responsibilities remain intact.</p></div><div className="rounded-2xl border border-amber-300/20 bg-amber-300/[.05] px-4 py-3 text-right"><p className="text-[9px] font-black uppercase tracking-widest text-slate-500">Lifestyle standing</p><p className="mt-1 font-black text-amber-200">{statusLabel}</p><p className="mt-1 text-[9px] text-emerald-300">{agentFree?'Agent position access · no subscription':'Agentic-Bridger owned'}</p></div></div></header>
+    <section id="distribution-manager-workday" data-distribution-manager-first-day="verified-actions" className="mt-5 scroll-mt-6 rounded-2xl border border-amber-300/25 bg-amber-300/[.04] p-4 sm:p-5">
+      <div className="flex flex-wrap items-start justify-between gap-3"><div><h2 className="text-xl font-black text-white">My distribution work today</h2><p className="mt-1 text-sm text-slate-300">Follow these four actions in order. Use real assignments and verified registrations.</p></div><Button type="button" size="sm" variant="outline" disabled={busy} onClick={()=>void load().catch(err=>setError(String(err)))}>Refresh work</Button></div>
+      <div className="mt-4 grid gap-2 sm:grid-cols-2">
+        {[
+          {number:'1',title:'Set up my team',detail:`${assistantState?.team?.length??0} of 2 assistants appointed · ${assistantState?.pending?.length??0} verified applications to review`,href:'#distribution-assistant-appointments'},
+          {number:'2',title:'Assign and verify work',detail:'Give each member a task, review submitted evidence and record completion.',href:'#distribution-task-workshop'},
+          {number:'3',title:'Distribute across public channels',detail:'Use the existing Distribution Studio, social campaigns and referral link.',href:'#distribution-campaign-tools'},
+          {number:'4',title:'Check results and pay eligibility',detail:`${state.successfulReferrals} of ${state.target} shared referrals · salary needs payroll approval`,href:'#distribution-manager-pay'},
+        ].map(step=><a key={step.number} href={step.href} className="flex min-h-20 items-start gap-3 rounded-xl border border-white/15 bg-slate-950/45 p-3 hover:border-cyan-300/50"><span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-amber-200 text-sm font-black text-slate-950">{step.number}</span><span><strong className="block text-sm text-white">{step.title}</strong><span className="mt-1 block text-xs leading-5 text-slate-300">{step.detail}</span></span></a>)}
+      </div>
+      {assistantError&&<p role="alert" className="mt-3 text-xs text-amber-200">Assistant records unavailable: {assistantError}. Refresh before deciding appointments.</p>}
+      {error&&<p role="alert" className="mt-3 text-xs text-rose-200">{error}</p>}
+    </section>
     {state.metricsAvailable===false&&<p role="status" className="mt-5 rounded-xl border border-amber-300/25 p-3 text-xs text-amber-100">The referral report is temporarily unavailable. Your Distribution Manager appointment remains recorded; figures below are not verified until the report returns.</p>}
     <section className="mt-7 grid gap-4 md:grid-cols-4"><Metric icon={<CalendarClock className="h-4 w-4"/>} label="Probation remaining" value={employment.status==='probation'?`${daysRemaining} days`:statusLabel}/><Metric icon={<Target className="h-4 w-4"/>} label={state.probationPeriod?"Probation team referrals":"Monthly team referrals"} value={`${state.successfulReferrals} / ${state.target}`}/><Metric icon={<Users className="h-4 w-4"/>} label="Team referrals remaining" value={String(state.remaining)}/><Metric icon={<BriefcaseBusiness className="h-4 w-4"/>} label="Potential full salary" value={`₦${Number(state.monthlySalaryNgn||70000).toLocaleString('en-NG')}`}/></section>
     <section className="mt-6 rounded-2xl border border-emerald-300/15 bg-emerald-300/[.035] p-5"><div className="flex flex-wrap items-center justify-between gap-4"><div><p className="text-[9px] font-black uppercase tracking-[.18em] text-emerald-300">Core duty · Distribute WEAVE</p><h2 className="mt-1 text-xl font-black text-white">Carry WEAVE outward and return the movement.</h2><p className="mt-2 max-w-2xl text-xs leading-5 text-slate-400">Use public distribution, campaign tools and field coordination to create measurable movement. The shared target is 300 referrals in your first probation month and 500 every subsequent team employment month, across you and your two assigned Assistant Distribution Managers. Each qualifying referral counts once, credited to the person who referred them after starting the position.</p></div><div className="min-w-[180px]"><div className="h-2 overflow-hidden rounded-full bg-white/10"><div className="h-full bg-emerald-300" style={{width:`${state.progressPercent}%`}}/></div><p className="mt-2 text-right text-xs font-black text-emerald-200">{state.progressPercent}%</p></div></div></section>
-    <section className="mt-6 rounded-2xl border border-cyan-300/20 bg-cyan-300/[.035] p-5" data-distribution-manager-pay-rule="team-performance"><h2 className="text-sm font-black text-white">Current month · Payment qualification</h2><p className="mt-2 text-sm text-slate-300">{state.compensation?.teamQualified?'Your team has reached its applicable monthly target. Full Manager salary of ₦70,000 is provisionally eligible, subject to month-end verification and payroll approval.':'Your team has not yet reached its applicable monthly target. No full Manager salary is currently eligible; you receive only the existing ₦500 bonus for each qualifying referral you brought.'}</p><div className="mt-3 grid grid-cols-2 gap-3"><Metric icon={<BriefcaseBusiness className="h-4 w-4"/>} label="Salary eligibility (provisional)" value={`₦${Number(state.compensation?.salaryEntitlementNgn||0).toLocaleString('en-NG')}`}/><Metric icon={<Users className="h-4 w-4"/>} label="Your referral bonus value" value={`₦${Number(state.compensation?.individualReferralBonusNgn||0).toLocaleString('en-NG')}`}/></div><p className="mt-3 text-xs text-slate-500">This is a performance preview, not confirmation of a salary transfer. Referral bonus settlement is handled separately by Weave’s existing referral ledger.</p></section>
+    <section className="mt-6 rounded-2xl border border-cyan-300/20 bg-cyan-300/[.035] p-5" id="distribution-manager-pay" data-distribution-manager-pay-rule="team-performance"><h2 className="text-sm font-black text-white">Current month · Payment qualification</h2><p className="mt-2 text-sm text-slate-300">{state.compensation?.teamQualified?'Your team has reached its applicable monthly target. Full Manager salary of ₦70,000 is provisionally eligible, subject to month-end verification and payroll approval.':'Your team has not yet reached its applicable monthly target. No full Manager salary is currently eligible; you receive only the existing ₦500 bonus for each qualifying referral you brought.'}</p><div className="mt-3 grid grid-cols-2 gap-3"><Metric icon={<BriefcaseBusiness className="h-4 w-4"/>} label="Salary eligibility (provisional)" value={`₦${Number(state.compensation?.salaryEntitlementNgn||0).toLocaleString('en-NG')}`}/><Metric icon={<Users className="h-4 w-4"/>} label="Your referral bonus value" value={`₦${Number(state.compensation?.individualReferralBonusNgn||0).toLocaleString('en-NG')}`}/></div><p className="mt-3 text-xs text-slate-500">This is a performance preview, not confirmation of a salary transfer. Referral bonus settlement is handled separately by Weave’s existing referral ledger.</p></section>
     {companySupportLink}
         <Link href="/weave/lifestyles/work" className="my-4 inline-flex min-h-11 items-center border border-cyan-300/25 px-4 py-2 text-xs font-black text-cyan-200">My approved company workspaces →</Link>
-    <DistributionTeamWorkspace/>
+    <div id="distribution-team-communications"><DistributionTeamWorkspace/></div>
     <EmploymentActions position="distribution_manager" onStatusChange={()=>void load()}/>
-    {assistantState?.canReview&&<section className="mt-6 rounded-2xl border border-amber-300/15 bg-amber-300/[.03] p-5" data-distribution-assistant-review="true">
+    {assistantState?.canReview&&<section id="distribution-assistant-appointments" className="mt-6 scroll-mt-6 rounded-2xl border border-amber-300/15 bg-amber-300/[.03] p-5" data-distribution-assistant-review="true">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div><p className="text-[10px] font-black uppercase tracking-widest text-amber-300">Assistant Distribution Managers</p><h2 className="mt-2 text-xl font-black text-white">Your distribution support team</h2><p className="mt-2 text-sm text-slate-400">Up to twenty assistant appointments across WEAVE, with two reporting to each of up to ten Distribution Managers. Each receives a ₦40,000 monthly salary term after appointment. Your full three-person team shares one target of 300 verified Agent/Bridger referrals in the first probation month, then 500 in subsequent team employment months. Full salaries apply only when the applicable target is met; otherwise individuals receive only their qualifying ₦500 referral bonuses.</p></div>
         <div className="rounded-xl border border-white/10 p-3 text-right text-sm font-black text-white">{assistantState.team?.length||0} / {assistantState.assistantPositionsPerManager} your team · {assistantState.employed} / {assistantState.positions} company-wide</div>
@@ -191,7 +206,7 @@ export default function ManagerDashboardPage(){
         {!assistantState.pending?.length&&<p className="text-sm text-slate-400">No applications are awaiting review.</p>}
       </div>
     </section>}
-    <section className="mt-6 grid gap-4 lg:grid-cols-[1.2fr_.8fr]"><div className="rounded-2xl border border-cyan-300/15 bg-cyan-300/[.035] p-5"><div className="flex items-center gap-2"><Share2 className="h-4 w-4 text-cyan-300"/><p className="text-[9px] font-black uppercase tracking-[.18em] text-cyan-300">Distribution acquisition record</p></div><p className="mt-3 text-xs text-slate-400">Each qualifying verified Agent or Bridger referral keeps the staff referral bonus. Salary and referral bonus are separate; referral attribution is one measurable part of the broader Distribution Manager work.</p><div className="mt-3 rounded-xl border border-white/10 bg-black/25 p-3"><p className="break-all font-mono text-sm font-black text-white">{state.referralCode||'Resolving referral identity'}</p></div><div className="mt-3 grid gap-2 sm:grid-cols-2"><Button onClick={copyReferral} variant="outline" className="border-cyan-300/20 bg-cyan-300/[.04] text-cyan-100"><Copy className="mr-2 h-4 w-4"/>{copied?'Referral link copied':'Copy referral link'}</Button><Button asChild variant="outline" className="border-cyan-300/20 bg-cyan-300/[.04] text-cyan-100"><Link href="/referrals">Open Referral Record<ArrowRight className="ml-2 h-4 w-4"/></Link></Button></div><div className="mt-4 grid grid-cols-2 gap-3"><div className="rounded-xl border border-white/10 p-3"><p className="text-[9px] uppercase tracking-widest text-slate-500">Per verified referral</p><p className="mt-1 text-lg font-black text-white">₦{Number(state.referralBonusNgn||500).toLocaleString('en-NG')}</p></div><div className="rounded-xl border border-white/10 p-3"><p className="text-[9px] uppercase tracking-widest text-slate-500">Referral bonus record</p><p className="mt-1 text-lg font-black text-white">₦{Number(state.totalReferralBonusNgn||0).toLocaleString('en-NG')}</p></div></div></div><div className="rounded-2xl border border-amber-300/15 bg-amber-300/[.035] p-5"><div className="flex items-center gap-2"><Megaphone className="h-4 w-4 text-amber-300"/><p className="text-[9px] font-black uppercase tracking-[.18em] text-amber-300">Distribution instruments</p></div><div className="mt-4 divide-y divide-white/10">{[['/distribution-studio','Distribution Studio','Plan and operate outward social distribution.'],['/video-ad-studio','Video Ad Studio','Produce WEAVE and customer campaign video.'],['/referrals','Referral Movement','Track attributed Agent and Bridger acquisition.'],['/event','Flame Event','Carry the current live WEAVE movement outward.']].map(([href,label,detail])=><Link key={href} href={href} className="group flex items-center justify-between gap-3 py-3"><span><span className="block text-sm font-black text-white">{label}</span><span className="mt-1 block text-[10px] text-slate-500">{detail}</span></span><ArrowRight className="h-4 w-4 text-slate-600 transition group-hover:translate-x-1 group-hover:text-amber-200"/></Link>)}</div></div></section>
+    <section id="distribution-campaign-tools" className="mt-6 scroll-mt-6 grid gap-4 lg:grid-cols-[1.2fr_.8fr]"><div className="rounded-2xl border border-cyan-300/15 bg-cyan-300/[.035] p-5"><div className="flex items-center gap-2"><Share2 className="h-4 w-4 text-cyan-300"/><p className="text-[9px] font-black uppercase tracking-[.18em] text-cyan-300">Distribution acquisition record</p></div><p className="mt-3 text-xs text-slate-400">Each qualifying verified Agent or Bridger referral keeps the staff referral bonus. Salary and referral bonus are separate; referral attribution is one measurable part of the broader Distribution Manager work.</p><div className="mt-3 rounded-xl border border-white/10 bg-black/25 p-3"><p className="break-all font-mono text-sm font-black text-white">{state.referralCode||'Resolving referral identity'}</p></div><div className="mt-3 grid gap-2 sm:grid-cols-2"><Button onClick={copyReferral} variant="outline" className="border-cyan-300/20 bg-cyan-300/[.04] text-cyan-100"><Copy className="mr-2 h-4 w-4"/>{copied?'Referral link copied':'Copy referral link'}</Button><Button asChild variant="outline" className="border-cyan-300/20 bg-cyan-300/[.04] text-cyan-100"><Link href="/referrals">Open Referral Record<ArrowRight className="ml-2 h-4 w-4"/></Link></Button></div><div className="mt-4 grid grid-cols-2 gap-3"><div className="rounded-xl border border-white/10 p-3"><p className="text-[9px] uppercase tracking-widest text-slate-500">Per verified referral</p><p className="mt-1 text-lg font-black text-white">₦{Number(state.referralBonusNgn||500).toLocaleString('en-NG')}</p></div><div className="rounded-xl border border-white/10 p-3"><p className="text-[9px] uppercase tracking-widest text-slate-500">Referral bonus record</p><p className="mt-1 text-lg font-black text-white">₦{Number(state.totalReferralBonusNgn||0).toLocaleString('en-NG')}</p></div></div></div><div className="rounded-2xl border border-amber-300/15 bg-amber-300/[.035] p-5"><div className="flex items-center gap-2"><Megaphone className="h-4 w-4 text-amber-300"/><p className="text-[9px] font-black uppercase tracking-[.18em] text-amber-300">Distribution instruments</p></div><div className="mt-4 divide-y divide-white/10">{[['/distribution-studio','Distribution Studio','Plan and operate outward social distribution.'],['/video-ad-studio','Video Ad Studio','Produce WEAVE and customer campaign video.'],['/referrals','Referral Movement','Track attributed Agent and Bridger acquisition.'],['/event','Flame Event','Carry the current live WEAVE movement outward.']].map(([href,label,detail])=><Link key={href} href={href} className="group flex items-center justify-between gap-3 py-3"><span><span className="block text-sm font-black text-white">{label}</span><span className="mt-1 block text-[10px] text-slate-500">{detail}</span></span><ArrowRight className="h-4 w-4 text-slate-600 transition group-hover:translate-x-1 group-hover:text-amber-200"/></Link>)}</div></div></section>
     <footer className="mt-8 flex flex-wrap gap-3 border-t border-white/10 pt-5 text-xs"><Link href={user?.role==='agent'?'/agent/dashboard':'/bridger/dashboard'} className="text-sky-300">Return to {user?.role==='agent'?'Agent':'Bridger'} world</Link><span className="text-slate-700">·</span><Link href="/weave/lifestyles" className="text-yellow-300">Lifestyle</Link><span className="text-slate-700">·</span><span className="text-slate-500">Document accepted {new Date(employment.document_accepted_at).toLocaleDateString('en-NG')} · Probation ends {new Date(employment.probation_ends_at).toLocaleDateString('en-NG')}</span></footer>
   </main>
 }
