@@ -51,7 +51,10 @@ export function DistributionTeamTaskBoard({members}:{members:Member[]}){
     Reading team assignments… {error&&<span className="text-rose-200">{error}</span>}
   </section>
   const isLead=data.memberPosition==='manager'
-  return <section className="mt-6 space-y-4 border-y border-amber-300/20 py-5" data-distribution-task-workshop="role-restricted">
+  const visibleTasks=isLead?data.tasks:data.tasks.filter(task=>task.assigned_user_id===user?.id)
+  const awaitingReview=isLead?visibleTasks.filter(task=>task.status==='submitted').length:0
+  const myOpen=visibleTasks.filter(task=>task.assigned_user_id===user?.id&&task.status!=='completed').length
+  return <section id="distribution-task-workshop" className="mt-6 scroll-mt-6 space-y-4 border-y border-amber-300/20 py-5" data-distribution-task-workshop="role-restricted">
     <header className="flex flex-wrap items-center justify-between gap-3">
       <div><h3 className="text-base font-black text-white">Distribution Assignment Workshop</h3>
         <p className="mt-2 text-xs leading-6 text-slate-300">{isLead?
@@ -60,6 +63,7 @@ export function DistributionTeamTaskBoard({members}:{members:Member[]}){
       </div>
       <Button type="button" size="sm" variant="outline" onClick={()=>void load()}>Refresh tasks</Button>
     </header>
+    <div className="grid grid-cols-2 gap-2 sm:max-w-lg"><div className="rounded-xl border border-white/15 p-3"><p className="text-xs text-slate-400">My unfinished tasks</p><p className="mt-1 text-xl font-black text-white">{myOpen}</p></div><div className="rounded-xl border border-white/15 p-3"><p className="text-xs text-slate-400">{isLead?'Team submissions to review':'My tasks submitted'}</p><p className="mt-1 text-xl font-black text-white">{isLead?awaitingReview:visibleTasks.filter(task=>task.status==='submitted').length}</p></div></div>
     {message&&<p role="status" className="border border-emerald-300/20 p-3 text-xs text-emerald-200">{message}</p>}
     {error&&<p role="alert" className="border border-rose-300/20 p-3 text-xs text-rose-200">{error}</p>}
     {isLead&&<div className="space-y-3 border border-cyan-200/15 bg-cyan-200/[.025] p-4">
@@ -72,7 +76,7 @@ export function DistributionTeamTaskBoard({members}:{members:Member[]}){
       </select>
       <label htmlFor="team-task-title" className="block text-xs text-slate-300">Assignment title</label>
       <input id="team-task-title" maxLength={140} value={title} onChange={e=>setTitle(e.target.value)}
-        placeholder="e.g. Visit five outlets for WEAVE food distribution"
+        placeholder="e.g. Publish the approved WEAVE campaign and report verified outreach"
         className="w-full border border-white/20 bg-slate-950 p-3 text-sm text-white"/>
       <label htmlFor="team-task-instructions" className="block text-xs text-slate-300">Instructions and verifiable outcome</label>
       <textarea id="team-task-instructions" rows={3} maxLength={2000} value={instructions}
@@ -84,10 +88,10 @@ export function DistributionTeamTaskBoard({members}:{members:Member[]}){
         className="bg-cyan-700 text-white">Assign to team member</Button>
     </div>}
     <div className="grid gap-3 md:grid-cols-2">
-      {data.tasks.map(task=>{
+      {visibleTasks.map(task=>{
         const mine=task.assigned_user_id===user?.id
         const leadAction=isLead&&task.status==='submitted'
-        const canStart=(isLead||mine)&&task.status==='assigned'
+        const canStart=mine&&task.status==='assigned'
         const canSubmit=mine&&task.status==='in_progress'
         const next=canStart?'in_progress':canSubmit?'submitted':leadAction?'completed':null
         return <article key={task.id} className="min-w-0 border border-white/10 bg-white/[.025] p-4" data-distribution-task={task.status}>
@@ -132,7 +136,7 @@ export function DistributionTeamTaskBoard({members}:{members:Member[]}){
           </details>
         </article>
       })}
-      {!data.tasks.length&&<p className="text-sm text-slate-400">No assignments yet. A verified lead Manager can issue the first real distribution task.</p>}
+      {!visibleTasks.length&&<p className="text-sm text-slate-400">{isLead?'No team assignments yet. Assign the first campaign task above.':'No tasks have been assigned to you yet. Ask your lead Manager for an assignment.'}</p>}
     </div>
   </section>
 }
