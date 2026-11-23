@@ -10,7 +10,10 @@ import { settleUsdPaystackDeposit } from '@/lib/weave-usd-finance'
  * still require Paystack's server-to-server verification API.
  * The webhook route must authenticate its HMAC BEFORE passing signedEvent.
  */
-export async function settlePaystackDeposit(reference: string, signedEvent?: PaystackTransaction) {
+export async function settlePaystackDeposit(reference: string, signedEvent?: PaystackTransaction):Promise<{
+  settled:boolean; duplicate?:boolean; reason?:string; depositId?:string;
+  evidenceReconciled?:boolean; flameCoin?:number; amountUsd?:number; currency?:'USD'
+}> {
   // New, dollar-denominated credits use their own ledger. Legacy deposits
   // without a locked USD quote retain the exact original TRX settlement.
   const quoteTable=await getPool().query(
