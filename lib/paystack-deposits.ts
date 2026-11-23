@@ -1,6 +1,7 @@
 import { getPool } from '@/lib/db'
 import { verifyPaystackTransaction, paystackTransactionMatches, paystackMismatchReason, type PaystackTransaction } from '@/lib/paystack'
 import { notifyDepositDecision, notifyAdministrators } from '@/lib/deposit-notifications'
+import { settleUsdPaystackDeposit } from '@/lib/weave-usd-finance'
 
 /**
  * Credit a confirmed Paystack wallet deposit in a locked, idempotent DB transaction.
@@ -9,7 +10,23 @@ import { notifyDepositDecision, notifyAdministrators } from '@/lib/deposit-notif
  * still require Paystack's server-to-server verification API.
  * The webhook route must authenticate its HMAC BEFORE passing signedEvent.
  */
-export async function settlePaystackDeposit(reference: string, signedEvent?: PaystackTransaction) {
+export async function settlePaystackDeposit(reference: string, signedEvent?: PaystackTransaction):Promise<{
+  settled:boolean; duplicate?:boolean; reason?:string; depositId?:string;
+  evidenceReconciled?:boolean; flameCoin?:number; amountUsd?:number; currency?:'USD'
+}> {
+  // New, dollar-denominated credits use their own ledger. Legacy deposits
+  // without a locked USD quote retain the exact original TRX settlement.
+  const quoteTable=await getPool().query(
+    "SELECT to_regclass('public.weave_usd_deposit_quotes') AS relation",
+  )
+  if(quoteTable.rows[0]?.relation){
+    const quoted=await getPool().query(
+      `SELECT q.deposit_id FROM weave_usd_deposit_quotes q
+       JOIN deposits d ON d.id=q.deposit_id
+       WHERE d.method='paystack' AND d.receipt_data=$1 LIMIT 1`,[reference],
+    )
+    if(quoted.rowCount)return settleUsdPaystackDeposit(reference,signedEvent)
+  }
   const transaction = signedEvent || await verifyPaystackTransaction(reference)
   const confirmationSource = signedEvent ? 'signed_paystack_webhook' : 'paystack_server_verification'
   const client = await getPool().connect()

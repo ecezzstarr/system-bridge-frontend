@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 import { getAuthUser } from '@/lib/auth-api'
 import { ensureClientMoneyEnvironment } from '@/lib/client-money-environment'
+import { getLegacyUsdRate, legacyUnitsToUsd, PLATFORM_CURRENCY_CODE } from '@/lib/platform-currency'
+import { getUsdWalletSnapshot,USD_END_TO_END_CUTOVER_READY } from '@/lib/weave-usd-finance'
 
 export async function GET(request: NextRequest) {
   try {
@@ -50,6 +52,9 @@ export async function GET(request: NextRequest) {
         }
       }
     }
+    const usdWallet=await getUsdWalletSnapshot(user.id)
+    const usdRate = await getLegacyUsdRate()
+    const amountUsd = usdRate ? legacyUnitsToUsd(actualBalance, usdRate.usdPerSystemSwitch) : null
     return NextResponse.json({
       success: true,
       ...(entryLoan ? { entryLoan } : {}),
@@ -57,7 +62,16 @@ export async function GET(request: NextRequest) {
       flameCoinBalance: actualBalance,
       recordedAt:new Date().toISOString(),
       playFlameCoin: Number(wallet?.play_balance || 0),
-      currency: 'System Switch',
+      currency: 'System Switch', // Actual current spendable-account unit; never relabel as USD.
+      reportingCurrency: PLATFORM_CURRENCY_CODE,
+      usdWallet,
+      usdDepositEnabled:USD_END_TO_END_CUTOVER_READY && process.env.WEAVE_USD_DEPOSIT_ENABLED==='true' && ['admin','agent','bridger'].includes(user.role),
+      usdDepositSuspended:!USD_END_TO_END_CUTOVER_READY && process.env.WEAVE_USD_DEPOSIT_ENABLED==='true',
+      usdEquivalent: usdRate && amountUsd !== null ? {
+        amountUsd, currency: PLATFORM_CURRENCY_CODE, estimateOnly: true,
+        rateUsdPerSystemSwitch: usdRate.usdPerSystemSwitch,
+        quotedAt: usdRate.checkedAt, source: usdRate.source,
+      } : null,
       legacyCurrencyCode: 'FLAME_COIN',
       peg: '1 System Switch = 1 TRX',
       ...(clientMoney ? {

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { getFinancialRecordPage } from '@/lib/ledger'
+import { getLegacyUsdRate, legacyUnitsToUsd, PLATFORM_CURRENCY_CODE } from '@/lib/platform-currency'
+import { getUsdWalletSnapshot,getUsdLedgerEntries } from '@/lib/weave-usd-finance'
 
 export const dynamic = 'force-dynamic'
 const noStore={ 'Cache-Control':'private, no-store, max-age=0', Vary:'Authorization' }
@@ -21,7 +23,20 @@ export async function GET(request:NextRequest) {
     }
     const cursor=request.nextUrl.searchParams.get('cursor')
     const data=await getFinancialRecordPage(authUser.id,limit,cursor)
-    return NextResponse.json({success:true,data},{headers:noStore})
+    const usdWallet=await getUsdWalletSnapshot(authUser.id)
+    const usdLedger=await getUsdLedgerEntries(authUser.id,50)
+    const quote=await getLegacyUsdRate()
+    const equivalent=(amount:number|null)=>quote && amount!==null
+      ? legacyUnitsToUsd(amount,quote.usdPerSystemSwitch) : null
+    const usdValuation=quote ? {
+      currency:PLATFORM_CURRENCY_CODE,estimateOnly:true,
+      availableUsd:equivalent(data.balance.available),
+      lockedUsd:equivalent(data.balance.locked),
+      totalUsd:equivalent(data.balance.total),
+      rateUsdPerSystemSwitch:quote.usdPerSystemSwitch,
+      quotedAt:quote.checkedAt,source:quote.source,
+    } : null
+    return NextResponse.json({success:true,data:{...data,reportingCurrency:PLATFORM_CURRENCY_CODE,usdValuation,usdWallet,usdLedger}},{headers:noStore})
   } catch(error) {
     console.error('[WEAVE Record] persistent data retrieval failed:',error)
     const invalid=error instanceof Error && error.message==='Invalid record page cursor'

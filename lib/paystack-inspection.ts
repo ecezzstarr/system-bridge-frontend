@@ -41,6 +41,34 @@ export async function inspectPaystackDeposit(depositId: string) {
     reason = error instanceof Error ? error.message : 'Paystack could not verify this reference.'
   }
   const matched = paymentStatus === 'success' && !reason
+  // USD Paystack settlements use a different balance and immutable USD ledger.
+  const usdTable=await getPool().query("SELECT to_regclass('public.weave_usd_deposit_quotes') AS relation")
+  if(usdTable.rows[0]?.relation){
+    const quoted=await getPool().query(
+      'SELECT amount_usd FROM weave_usd_deposit_quotes WHERE deposit_id=$1::uuid',
+      [deposit.id],
+    )
+    if(quoted.rowCount){
+      const ledgerTable=await getPool().query("SELECT to_regclass('public.weave_usd_ledger') AS relation")
+      const usdCredits=ledgerTable.rows[0]?.relation
+        ? await getPool().query(
+          'SELECT COUNT(*)::integer AS credits,COALESCE(SUM(amount_usd),0) AS credited FROM weave_usd_ledger WHERE deposit_id=$1::uuid',
+          [deposit.id],
+        ) : null
+      const creditsUsd=Number(usdCredits?.rows[0]?.credits||0)
+      const creditedUsd=Number(usdCredits?.rows[0]?.credited||0)
+      const quoteUsd=Number(quoted.rows[0].amount_usd)
+      const canResolve=matched&&refunds===0&&creditsUsd===0&&
+        ['pending','rejected'].includes(deposit.status)
+      const guidance=!matched?reason||'Paystack has not confirmed this USD deposit.'
+        : refunds>0?'A refund was recorded. Review before any further credit.'
+        : creditsUsd>0?'USD ledger already contains a credit; do not credit twice.'
+        : canResolve?'Paystack verified the Naira payment. Resolve the locked USD '+quoteUsd.toFixed(2)+' amount once.'
+        :'USD deposit requires Administrations review before further action.'
+      return {paymentStatus,mode,matched,canResolve,credits:creditsUsd,
+        creditedAmount:creditedUsd,refunds,currency:'USD',guidance}
+    }
+  }
   const legacy = deposit.status === 'approved' && !deposit.verified_at
   const ledgerMatches = credits === 1 && Math.abs(creditedAmount - Number(deposit.amount_trx)) < 0.000001
   const canResolve = matched && refunds === 0 && (

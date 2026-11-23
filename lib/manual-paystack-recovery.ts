@@ -64,6 +64,16 @@ export async function manualCreditStuckPaystack(input: ManualPaystackInput) {
     )
     const deposit = result.rows[0]
     if (!deposit) refuse('The Paystack deposit is no longer in Weave.')
+    // Emergency legacy TRX credit must NEVER process a USD-quoted deposit.
+    // USD deposits are reconciled only through the verified USD settlement path.
+    const usdTable=await client.query("SELECT to_regclass('public.weave_usd_deposit_quotes') AS relation")
+    if(usdTable.rows[0]?.relation){
+      const usdQuote=await client.query(
+        'SELECT deposit_id FROM weave_usd_deposit_quotes WHERE deposit_id=$1::uuid',
+        [input.depositId],
+      )
+      if(usdQuote.rowCount)refuse('This payment is quoted in USD. Use verified USD Paystack reconciliation; legacy System Switch manual credit is forbidden.')
+    }
     if (deposit.status !== 'pending' && deposit.status !== 'rejected') {
       refuse('This deposit is already processed. Refresh the page; no second credit is permitted.')
     }
