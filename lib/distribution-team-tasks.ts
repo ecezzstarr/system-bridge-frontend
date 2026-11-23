@@ -48,13 +48,17 @@ export async function readDistributionTeamTasks(userId:string){
     pool.query(`SELECT t.id,t.manager_user_id,t.assigned_user_id,t.title,t.instructions,t.status,
       t.created_at,t.updated_at,t.completed_at,u.name AS assignee_name
       FROM weave_distribution_team_tasks t JOIN users u ON u.id=t.assigned_user_id
-      WHERE t.manager_user_id=$1::uuid ORDER BY CASE WHEN t.status='completed' THEN 1 ELSE 0 END,
-      t.updated_at DESC LIMIT 120`,[member.manager_id]),
+      WHERE t.manager_user_id=$1::uuid
+        AND ($2::boolean OR t.assigned_user_id=$3::uuid)
+      ORDER BY CASE WHEN t.status='submitted' THEN 0 WHEN t.status='completed' THEN 2 ELSE 1 END,
+      t.updated_at DESC LIMIT 120`,[member.manager_id,member.member_position==='manager',userId]),
     pool.query(`SELECT h.task_id,h.actor_user_id,h.from_status,h.to_status,h.note,h.recorded_at,
       u.name AS actor_name FROM weave_distribution_team_task_history h
       JOIN weave_distribution_team_tasks t ON t.id=h.task_id
       JOIN users u ON u.id=h.actor_user_id
-      WHERE t.manager_user_id=$1::uuid ORDER BY h.recorded_at DESC LIMIT 120`,[member.manager_id]),
+      WHERE t.manager_user_id=$1::uuid
+        AND ($2::boolean OR t.assigned_user_id=$3::uuid)
+      ORDER BY h.recorded_at DESC LIMIT 120`,[member.manager_id,member.member_position==='manager',userId]),
   ])
   return {managerId:String(member.manager_id),memberPosition:member.member_position,
     tasks:tasks.rows,history:history.rows}
@@ -119,7 +123,7 @@ export async function moveDistributionTeamTask(
     const isLead=userId===task.manager_user_id
     const isAssignee=userId===task.assigned_user_id
     const permitted=(
-      (task.status==='assigned'&&next==='in_progress'&&(isAssignee||isLead))||
+      (task.status==='assigned'&&next==='in_progress'&&isAssignee)||
       (task.status==='in_progress'&&next==='submitted'&&isAssignee)||
       (task.status==='submitted'&&next==='completed'&&isLead)||
       (task.status==='submitted'&&next==='in_progress'&&isLead)
