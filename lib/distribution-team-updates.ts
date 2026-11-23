@@ -1,4 +1,5 @@
-import { getPool } from '@/lib/db'
+import { getPool,sql } from '@/lib/db'
+import { getActiveLegionEmployment } from '@/lib/legion-employment'
 import { getLifestyleAccess } from '@/lib/weave-lifestyle'
 import { ensureManagerEmploymentTable } from '@/lib/manager-employment'
 import { ensureDistributionAssistantSchema } from '@/lib/distribution-assistants'
@@ -48,17 +49,17 @@ export async function readDistributionTeam(userId:string){
   const member=await resolveDistributionTeamMember(userId)
   if(!member)return null
   const access=await getLifestyleAccess(userId)
-  if(!access.active)return null
+  if(!access.active||(await getActiveLegionEmployment(sql,userId)).active)return null
   const managerId=String(member.manager_id)
   const pool=getPool()
   const [people,feed]=await Promise.all([
     pool.query(`SELECT u.id,u.name,u.role,'manager'::text AS position
       FROM manager_employment me JOIN users u ON u.id=me.user_id
-      WHERE me.user_id=$1::uuid AND me.status IN ('probation','active')
+      WHERE me.user_id=$1::uuid AND me.status IN ('probation','active') AND u.is_active=true
       UNION ALL
       SELECT u.id,u.name,u.role,'assistant'::text AS position
       FROM weave_distribution_assistants a JOIN users u ON u.id=a.user_id
-      WHERE a.manager_user_id=$1::uuid AND a.status='approved'
+      WHERE a.manager_user_id=$1::uuid AND a.status='approved' AND u.is_active=true
       ORDER BY position DESC,name LIMIT 3`,[managerId]),
     pool.query(`SELECT t.id,t.kind,t.content,t.created_at,u.name AS author_name,
       CASE WHEN t.author_user_id=t.manager_user_id THEN 'manager' ELSE 'assistant' END AS author_position
@@ -76,7 +77,7 @@ export async function postDistributionTeamUpdate(userId:string,kind:Distribution
   const member=await resolveDistributionTeamMember(userId)
   if(!member)return {success:false as const,reason:'not_employed' as const}
   const access=await getLifestyleAccess(userId)
-  if(!access.active)return {success:false as const,reason:'position_inactive' as const}
+  if(!access.active||(await getActiveLegionEmployment(sql,userId)).active)return {success:false as const,reason:'position_inactive' as const}
   // Revalidate the job inside the insertion; a revoked appointment cannot post.
   const {rows}=await getPool().query(`
     INSERT INTO weave_distribution_team_updates(manager_user_id,author_user_id,kind,content)
