@@ -537,7 +537,7 @@ export default function WalletDepositWithdrawPage() {
                       <span className={item.status==='approved'?'text-sm font-bold text-emerald-300':item.status==='rejected'?'text-sm font-bold text-red-300':'text-sm font-bold text-amber-200'}>
                         {item.status==='approved'
                           ? (item.usd_credit!=null?'Verified · USD credited'
-                            : item.manual_credited?'Administrations-confirmed · legacy credit'
+                            : item.manual_credited?'Administrations-confirmed · System Switch credited'
                             : item.method==='paystack'&&!item.verified_at?'Credited · Verification under review':'Verified · legacy credit')
                           : item.status==='rejected'?'Rejected · No credit':'Awaiting Paystack verification'}
                       </span>
