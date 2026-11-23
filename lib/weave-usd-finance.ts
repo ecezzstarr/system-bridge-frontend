@@ -111,7 +111,10 @@ export async function getUsdLedgerEntries(userId:string,limit=50):Promise<Array<
 }
 
 /** Signed Paystack events or server-verified callbacks converge on one settlement. */
-export async function settleUsdPaystackDeposit(reference:string,signedEvent?:PaystackTransaction){
+export async function settleUsdPaystackDeposit(reference:string,signedEvent?:PaystackTransaction):Promise<{
+  settled:boolean; duplicate?:boolean; depositId?:string; amountUsd?:number;
+  currency?:'USD'; reason?:string; evidenceReconciled?:boolean
+}>{
   const event=signedEvent||await verifyPaystackTransaction(reference)
   await ensureUsdFinanceSchema()
   await ensureWeaveReceiptSchema()
@@ -143,7 +146,7 @@ export async function settleUsdPaystackDeposit(reference:string,signedEvent?:Pay
     if(!Number.isSafeInteger(kobo)||!Number.isFinite(usd)||usd<=0 ||
       Number(deposit.amount_usd)!==ngn||deposit.currency!=='NGN')throw Error('Original USD quote does not match recorded Naira checkout')
     const past=await client.query('SELECT id FROM weave_usd_ledger WHERE deposit_id=$1::uuid',[deposit.id])
-    if(past.rowCount>0){
+    if(Number(past.rowCount||0)>0){
       if(deposit.status==='approved'){
         await client.query('COMMIT')
         return {settled:true,duplicate:true,depositId:deposit.id}
