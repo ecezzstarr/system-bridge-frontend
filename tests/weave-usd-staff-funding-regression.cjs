@@ -47,8 +47,9 @@ assert.equal(financeFunctions.quoteNgnToUsd(1,1500),null)
 assert.equal(financeFunctions.quoteNgnToUsd(0,1500),null)
 assert.equal(financeFunctions.quoteNgnToUsd(1500,0),null)
 
-assert(finance.includes("cache:'no-store'")&&finance.includes('time_last_update_unix'))
-assert(finance.includes('age>36*3600_000'), 'Stale FX rates rejected')
+assert(finance.includes("cache:'no-store'")&&finance.includes('WEAVE_SETTLEMENT_FX_ENDPOINT'))
+assert(finance.includes("data?.rateType!=='firm'"), 'Only firm quotes may fund USD liabilities')
+assert(finance.includes("WEAVE_USD_SETTLEMENT_AUTHORIZED!=='true'"), 'Unapproved FX sources must fail closed')
 assert(finance.includes('FOR UPDATE OF d'), 'Settlement serializes Paystack duplicates')
 assert(finance.includes('weave_usd_wallets SET balance_usd=balance_usd+'), 'USD wallet actually credited')
 assert(finance.includes('INSERT INTO weave_usd_ledger'), 'USD ledger entry persisted')
@@ -69,19 +70,37 @@ assert(read('app/api/rate/usd-ngn/route.ts').includes('getUsdNgnDepositQuote'))
 assert(read('lib/client-trx-deposits.ts').includes('trxPaymentToFlameCoin'),'TRX external deposit path preserved')
 
 const oldFetch=global.fetch
+const oldEnv={
+  WEAVE_USD_SETTLEMENT_AUTHORIZED:process.env.WEAVE_USD_SETTLEMENT_AUTHORIZED,
+  WEAVE_SETTLEMENT_FX_ENDPOINT:process.env.WEAVE_SETTLEMENT_FX_ENDPOINT,
+  WEAVE_SETTLEMENT_FX_TOKEN:process.env.WEAVE_SETTLEMENT_FX_TOKEN,
+}
 ;(async()=>{
-  try {
+  try{
+    delete process.env.WEAVE_USD_SETTLEMENT_AUTHORIZED
+    delete process.env.WEAVE_SETTLEMENT_FX_ENDPOINT
+    delete process.env.WEAVE_SETTLEMENT_FX_TOKEN
+    await assert.rejects(financeFunctions.getUsdNgnDepositQuote(),/approved authorized provider/)
+    process.env.WEAVE_USD_SETTLEMENT_AUTHORIZED='true'
+    process.env.WEAVE_SETTLEMENT_FX_ENDPOINT='https://approved-fx.example/quote'
+    process.env.WEAVE_SETTLEMENT_FX_TOKEN='test-service-token'
+    let updated=Date.now()
     global.fetch=async()=>({ok:true,json:async()=>({
-      result:'success',base_code:'USD',rates:{NGN:1500},
-      time_last_update_unix:Math.floor(Date.now()/1000),
+      baseCurrency:'USD',quoteCurrency:'NGN',rateType:'firm',
+      ngnPerUsd:1500,provider:'approved-fx',quoteId:'locked-quote-123',
+      quotedAt:new Date(updated).toISOString(),
+      expiresAt:new Date(updated+120_000).toISOString(),
     })})
     const quote=await financeFunctions.getUsdNgnDepositQuote()
     assert.equal(quote.ngnPerUsd,1500)
-    global.fetch=async()=>({ok:true,json:async()=>({
-      result:'success',base_code:'USD',rates:{NGN:1500},
-      time_last_update_unix:Math.floor(Date.now()/1000)-4*86400,
-    })})
-    await assert.rejects(financeFunctions.getUsdNgnDepositQuote(),/rate unavailable/i)
-    console.log('WEAVE USD/NGN staff funding, user card currency selection and legacy TRX isolation: passed')
-  }finally{global.fetch=oldFetch}
+    updated=Date.now()-600_000
+    await assert.rejects(financeFunctions.getUsdNgnDepositQuote(),/quote unavailable/i)
+    console.log('WEAVE USD funding, firm quote guards, account FX cards and TRX isolation: passed')
+  }finally{
+    global.fetch=oldFetch
+    for(const [key,value] of Object.entries(oldEnv)){
+      if(value===undefined)delete process.env[key]
+      else process.env[key]=value
+    }
+  }
 })().catch(error=>{global.fetch=oldFetch;console.error(error);process.exitCode=1})
