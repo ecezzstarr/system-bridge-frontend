@@ -13,9 +13,13 @@ export async function GET(request: NextRequest) {
   if (!admin || admin.role !== 'admin') return NextResponse.json({ error: 'Administrations only' }, { status: 403 })
 
   try {
-    const result = await getPool().query(`
+    const pool=getPool()
+    const quoteRelation=await pool.query("SELECT to_regclass('public.weave_usd_deposit_quotes') AS relation")
+    const usdQuoted=Boolean(quoteRelation.rows[0]?.relation)
+    const result = await pool.query(`
       SELECT d.id, d.user_id, d.status, d.receipt_data AS reference,
              d.amount_usd AS amount_ngn, d.amount_trx AS flame_coin,
+             ${usdQuoted?"q.amount_usd AS usd_credit":"NULL::numeric AS usd_credit"},
              d.created_at, d.verified_at, u.name, u.email, u.role,
              EXISTS(
                SELECT 1 FROM ledger_entries l
@@ -25,6 +29,7 @@ export async function GET(request: NextRequest) {
              ) AS manual_credited
       FROM deposits d
       JOIN users u ON u.id = d.user_id
+      ${usdQuoted?"LEFT JOIN weave_usd_deposit_quotes q ON q.deposit_id=d.id":""}
       WHERE d.method = 'paystack'
         AND u.role IN ('agent', 'bridger', 'admin', 'client')
       ORDER BY CASE WHEN d.status='approved' AND d.verified_at IS NULL THEN 0 WHEN d.status='rejected' THEN 1 WHEN d.status='pending' THEN 2 ELSE 3 END,
