@@ -6,7 +6,7 @@ import { ngnToFlameCoin } from '@/lib/flame-coin'
 import { createPaystackReference, initializePaystackTransaction } from '@/lib/paystack'
 import { getPaystackConfig } from '@/lib/paystack-config'
 import { notifyDepositSubmitted } from '@/lib/deposit-notifications'
-import { ensureUsdFinanceSchema,getUsdNgnDepositQuote,quoteNgnToUsd } from '@/lib/weave-usd-finance'
+import { ensureUsdFinanceSchema,getUsdNgnDepositQuote,quoteNgnToUsd,USD_END_TO_END_CUTOVER_READY } from '@/lib/weave-usd-finance'
 
 export const dynamic = 'force-dynamic'
 
@@ -68,6 +68,9 @@ export async function POST(request: NextRequest) {
     // USD funding is a staged accounting feature; do not remap old TRX balances.
     if(process.env.WEAVE_USD_DEPOSIT_ENABLED==='true' &&
       ['admin','agent','bridger'].includes(user.role)){
+      if(!USD_END_TO_END_CUTOVER_READY) return NextResponse.json({
+        error:'USD deposits are suspended until dollar spending, repayments, withdrawals and reconciliation are operational.'
+      },{status:503})
       await ensureUsdFinanceSchema()
       const quote=await getUsdNgnDepositQuote()
       const amountUsd=quoteNgnToUsd(amountNgn,quote.ngnPerUsd)
