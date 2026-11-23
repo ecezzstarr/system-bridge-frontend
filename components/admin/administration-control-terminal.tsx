@@ -1172,7 +1172,7 @@ function AnnouncementSection() {
                       <Button size="sm" disabled={processingId === deposit.id} onClick={() => void verifyDeposit(deposit.id)}>
                         {processingId === deposit.id ? 'Verifying...' : deposit.status === 'pending' ? 'Verify with Paystack' : deposit.status === 'rejected' ? 'Retry verified recovery' : 'Attach verified proof'}
                       </Button>
-                      {(deposit.status === 'pending' || deposit.status === 'rejected') && Number(deposit.amount_ngn) <= 10000 && (
+                      {(deposit.status === 'pending' || deposit.status === 'rejected') && Number(deposit.amount_ngn) <= 10000 && deposit.usd_credit==null && (
                         <Button size="sm" variant="outline"
                           disabled={manualBusy}
                           onClick={() => openManualCredit(deposit)}>
