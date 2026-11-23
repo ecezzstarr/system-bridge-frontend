@@ -574,6 +574,7 @@ function DepositApprovalSection({ user }: { user: any }) {
     reference: string
     amount_ngn: number | string
     flame_coin: number | string
+    usd_credit?:number|string|null
     created_at: string
     verified_at: string | null
     manual_credited?: boolean
@@ -762,7 +763,400 @@ function DepositApprovalSection({ user }: { user: any }) {
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div className="min-w-0">
                   <p className="font-semibold text-white">{deposit.name || deposit.email} <span className="text-xs font-normal text-slate-400">· {deposit.role}</span></p>
-                  <p className="text-sm text-cyan-200">₦{Number(deposit.amount_ngn).toLocaleString()} · {Number(deposit.flame_coin).toLocaleString()} System Switch</p>
+                  <p className="text-sm text-cyan-200">₦{Number(deposit.amount_ngn).toLocaleString()} · {deposit.usd_credit!=null?'
+                  <p className="mt-1 break-all font-mono text-[10px] text-slate-400">Reference: {deposit.reference}</p>
+                  <p className="mt-1 text-[10px] text-slate-500">{new Date(deposit.created_at).toLocaleString()}</p>
+                </div>
+                <div className="flex flex-col items-end gap-2">
+                  <span className={deposit.status === 'approved' && deposit.verified_at ? 'text-xs font-bold text-emerald-300' : deposit.status === 'rejected' ? 'text-xs font-bold text-red-300' : 'text-xs font-bold text-amber-300'}>
+                    {deposit.status === 'approved' ? (deposit.manual_credited ? 'Administrations-confirmed · Wallet credited' : deposit.verified_at ? 'Paystack verified · Wallet credited' : 'Approval without Paystack proof · Investigate') : deposit.status === 'rejected' ? 'Verification failed · Review' : 'Awaiting Paystack verification'}
+                  </span>
+                  {(deposit.status === 'pending' || deposit.status === 'rejected' || (deposit.status === 'approved' && !deposit.verified_at)) && (
+                    <div className="flex flex-wrap justify-end gap-2">
+                      <Button variant="outline" size="sm" disabled={inspectingId === deposit.id} onClick={() => void inspectDeposit(deposit.id)}>
+                        {inspectingId === deposit.id ? 'Inspecting...' : 'Inspect Paystack'}
+                      </Button>
+                      <Button size="sm" disabled={processingId === deposit.id} onClick={() => void verifyDeposit(deposit.id)}>
+                        {processingId === deposit.id ? 'Verifying...' : deposit.status === 'pending' ? 'Verify with Paystack' : deposit.status === 'rejected' ? 'Retry verified recovery' : 'Attach verified proof'}
+                      </Button>
+                      {(deposit.status === 'pending' || deposit.status === 'rejected') && Number(deposit.amount_ngn) <= 10000 && deposit.usd_credit==null && (
+                        <Button size="sm" variant="outline"
+                          disabled={manualBusy}
+                          onClick={() => openManualCredit(deposit)}>
+                          Manual credit after Paystack confirmation
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+              {manualId === deposit.id && (
+                <div className="mt-4 space-y-3 rounded-xl border border-amber-300/25 bg-black/30 p-4" role="region" aria-label="Manual Paystack wallet approval">
+                  <p className="text-sm font-bold text-amber-100">Confirm successful payment · Credit wallet</p>
+                  <p className="text-xs leading-5 text-slate-300">
+                    Confirm this specific transaction shows Success in your original Paystack merchant dashboard.
+                    Weave will credit the recorded amount once; it will not ask you to re-enter the reference or amount.
+                  </p>
+                  <div className="rounded-lg border border-white/10 bg-slate-900/60 p-3 text-sm text-white">
+                    <p className="font-semibold">{deposit.name || deposit.email} · {deposit.role}</p>
+                    <p>₦{Number(deposit.amount_ngn).toLocaleString()} → {Number(deposit.flame_coin).toLocaleString()} System Switch</p>
+                    <p className="mt-1 break-all font-mono text-xs text-cyan-200">{deposit.reference}</p>
+                  </div>
+                  <a href="https://dashboard.paystack.com/" target="_blank" rel="noreferrer noopener"
+                    className="inline-block rounded-lg border border-white/20 px-3 py-2 text-xs text-cyan-200 underline">
+                    Open Paystack merchant dashboard
+                  </a>
+                  <label className="block text-xs text-slate-200">
+                    Optional Paystack numeric transaction ID (for additional duplicate checking)
+                    <input type="text" inputMode="numeric" autoComplete="off" value={manualTransactionId}
+                      onChange={event => setManualTransactionId(event.target.value)}
+                      placeholder="Leave blank if not shown in Paystack"
+                      className="mt-1 w-full rounded-lg border border-white/20 bg-[#0a1a25] p-3 text-sm text-white" />
+                  </label>
+                  <label className="block text-xs text-slate-200">
+                    Verification note
+                    <textarea rows={2} maxLength={800} value={manualNote}
+                      onChange={event => setManualNote(event.target.value)}
+                      className="mt-1 w-full rounded-lg border border-white/20 bg-[#0a1a25] p-3 text-sm text-white" />
+                  </label>
+                  <label className="flex items-start gap-3 rounded-lg border border-amber-300/20 p-3 text-xs leading-5 text-amber-100">
+                    <input type="checkbox" checked={manualConfirmed}
+                      onChange={event => setManualConfirmed(event.target.checked)} className="mt-1" />
+                    I independently checked Paystack and confirm this reference was successfully paid, in full, without a refund or reversal. I authorize the exact stored wallet credit.
+                  </label>
+                  {manualError && <p role="alert" className="rounded-lg border border-red-400/30 p-3 text-xs text-red-200">{manualError}</p>}
+                  <div className="flex flex-wrap gap-2">
+                    <Button size="sm" disabled={manualBusy || !manualConfirmed || manualNote.trim().length < 12 ||
+                      (manualTransactionId.trim() !== '' && !/^[0-9]{1,40}$/.test(manualTransactionId.trim()))}
+                      onClick={() => void creditAfterManualConfirmation(deposit)}>
+                      {manualBusy ? 'Crediting wallet...' : 'Approve and credit ' + Number(deposit.flame_coin).toLocaleString() + ' System Switch'}
+                    </Button>
+                    <Button size="sm" variant="outline" disabled={manualBusy} onClick={closeManualCredit}>Cancel</Button>
+                  </div>
+                </div>
+              )}
+              {inspections[deposit.id] && (
+                <div className="mt-3 rounded-lg border border-sky-300/15 bg-black/25 p-3 text-xs leading-5 text-slate-300" role="status">
+                  <p className="font-bold text-sky-100">Paystack evidence · {inspections[deposit.id].paymentStatus} · {inspections[deposit.id].mode} mode</p>
+                  <p className="mt-1">{inspections[deposit.id].guidance}</p>
+                  <p className="mt-1">Prior ledger credits: {inspections[deposit.id].credits} · Recorded System Switch: {inspections[deposit.id].creditedAmount.toLocaleString()} · Refund events: {inspections[deposit.id].refunds}</p>
+                  <p className="mt-1 font-semibold">{inspections[deposit.id].canResolve ? 'Eligible for Paystack-verified reconciliation.' : 'No automatic wallet credit permitted until evidence is resolved.'}</p>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function BridgeDepositApprovalSection({ user }: { user: any }) {
+  const [deposits, setDeposits] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [processingId, setProcessingId] = useState<string | null>(null)
+
+  useEffect(() => {
+    void fetchPendingDeposits()
+    const stop = visiblePoll(() => fetchPendingDeposits(true), 8000, false)
+    return stop
+  }, [])
+
+  const fetchPendingDeposits = async (silent = false) => {
+    if (!silent) setLoading(true)
+    try {
+      const token = localStorage.getItem('ssb_auth_token')
+      const response = await fetch('/api/admin/bridge-deposits/pending', {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+      })
+      const data = await response.json()
+      setDeposits(Array.isArray(data.deposits) ? data.deposits : [])
+    } catch (error) {
+      console.error('Error fetching pending bridge deposits:', error)
+    } finally {
+      if (!silent) setLoading(false)
+    }
+  }
+
+  const verifyDeposit = async (depositId: string, status: 'approved' | 'rejected', source?: string) => {
+    setProcessingId(depositId)
+    try {
+      const token = localStorage.getItem('ssb_auth_token')
+      const response = await fetch('/api/admin/bridge-deposits/verify', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ depositId, status, source }),
+      })
+      const data = await response.json()
+      if (data.success) {
+        toast.success(status === 'approved' ? `Received — file number ${data.fileNumber}` : 'Declined')
+      } else {
+        toast.error(data.error || "That didn't update")
+      }
+      await fetchPendingDeposits(true)
+    } catch (error) {
+      console.error('Error verifying bridge deposit:', error)
+      toast.error("That didn't go through")
+    } finally {
+      setProcessingId(null)
+    }
+  }
+
+  return (
+    <div className="p-4">
+      <h3 className="font-bold text-white mb-1">Pending File Folder Crossings</h3>
+      <p className="mb-4 text-[10px] leading-5 text-slate-500">Like Department Entry Tickets: payment arrives here, Administrations verifies it, and that verification issues the File Number and opens the Client crossing into System Switch.</p>
+
+      {loading ? (
+        <p className="text-slate-500 text-center py-8 text-xs">Loading deposits...</p>
+      ) : deposits.length === 0 ? (
+        <p className="text-slate-500 text-center py-8 text-xs">No pending deposits</p>
+      ) : (
+        <div className="space-y-3">
+          {deposits.map((deposit: any) => (
+            <div key={deposit.id} className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
+              <div className="flex items-start justify-between mb-2">
+                <div className="flex-1">
+                  <p className="font-semibold text-white text-sm">{deposit.prospect_name} <span className="text-slate-500 font-normal">({deposit.prospect_phone})</span></p>
+                  <p className="text-[10px] text-slate-400 mt-1">
+                    {Number(deposit.tier_trx).toLocaleString()} TRX · {deposit.source === 'file_folder_purchase'
+                      ? `Bridge of Radiance purchase${deposit.bridge_code ? ` · /bridge/${deposit.bridge_code}` : ''}`
+                      : `via ${deposit.bridger_name || 'Bridger'}'s Bridge AI${deposit.bridge_code ? ` · /bridge/${deposit.bridge_code}` : ''}`}
+                  </p>
+                  <p className="text-[10px] text-slate-500 mt-1">
+                    {new Date(deposit.created_at).toLocaleString()}
+                  </p>
+                </div>
+                <span className="text-[10px] font-semibold text-yellow-400 uppercase">{deposit.status === 'pending_admin_confirmation' ? 'awaiting verification' : deposit.status}</span>
+              </div>
+              {deposit.tx_hash && (
+                <div className="mt-2 p-2 bg-slate-900/50 rounded border border-slate-700">
+                  <p className="text-[10px] text-slate-500 uppercase mb-1">Tx Hash</p>
+                  <p className="text-xs text-slate-300 break-all">{deposit.tx_hash}</p>
+                </div>
+              )}
+              <div className="flex gap-2 mt-3">
+                <Button
+                  size="sm"
+                  disabled={processingId === deposit.id}
+                  onClick={() => verifyDeposit(deposit.id, 'approved', deposit.source)}
+                  className="bg-green-600 hover:bg-green-700 h-8 text-xs"
+                >
+                  {processingId === deposit.id ? 'Verifying…' : 'Verify · Issue File Number · Open Crossing'}
+                </Button>
+                <Button
+                  size="sm"
+                  disabled={processingId === deposit.id}
+                  onClick={() => verifyDeposit(deposit.id, 'rejected', deposit.source)}
+                  className="bg-red-600 hover:bg-red-700 h-8 text-xs"
+                >
+                  Reject
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function WithdrawalApprovalSection({ user }: { user: any }) {
+  const [withdrawals, setWithdrawals] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [processingId, setProcessingId] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetchPendingWithdrawals()
+  }, [])
+
+  const fetchPendingWithdrawals = async () => {
+    try {
+      const token = localStorage.getItem('ssb_auth_token')
+      const response = await fetch('/api/admin/withdrawal/pending', {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+      })
+      const data = await response.json()
+      setWithdrawals(Array.isArray(data) ? data : [])
+    } catch (error) {
+      console.error('Error fetching pending withdrawals:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const verifyWithdrawal = async (withdrawalId: string, status: 'approved' | 'rejected') => {
+    setProcessingId(withdrawalId)
+    try {
+      const token = localStorage.getItem('ssb_auth_token')
+      const response = await fetch('/api/admin/withdrawal/verify', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ withdrawalId, status }),
+      })
+      const data = await response.json()
+      if (data.success) {
+        toast.success(data.message || `Withdrawal ${status === 'approved' ? 'released' : 'declined'}`)
+      } else {
+        toast.error(data.error || "That didn't update")
+      }
+      fetchPendingWithdrawals()
+    } catch (error) {
+      console.error('Error verifying withdrawal:', error)
+      toast.error("That didn't go through")
+    } finally {
+      setProcessingId(null)
+    }
+  }
+
+  return (
+    <div className="p-4">
+      <h3 className="font-bold text-white mb-4">Pending Withdrawals</h3>
+
+      {loading ? (
+        <p className="text-slate-500 text-center py-8 text-xs">Loading withdrawals...</p>
+      ) : withdrawals.length === 0 ? (
+        <p className="text-slate-500 text-center py-8 text-xs">No pending withdrawals</p>
+      ) : (
+        <div className="space-y-3">
+          {withdrawals.map((w: any) => (
+            <div key={w.id} className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
+              <div className="flex items-start justify-between mb-2">
+                <div className="flex-1">
+                  <p className="font-semibold text-white text-sm">{w.name} <span className="text-slate-500 font-normal">({w.email})</span> <span className="text-slate-600 text-[10px] uppercase">{w.user_role}</span></p>
+                  <p className="text-[10px] text-slate-400 mt-1">
+                    {Number(w.amount_trx).toFixed(6)} TRX → {w.wallet_address}
+                  </p>
+                  {w.payout_details && (() => {
+                    try {
+                      const details = typeof w.payout_details === 'string' ? JSON.parse(w.payout_details) : w.payout_details
+                      if (!details || (!details.bankName && !details.accountNumber && !details.accountName)) return null
+                      return (
+                        <p className="text-[10px] text-cyan-400 mt-1">
+                          {details.bankName} • {details.accountNumber} • {details.accountName}
+                        </p>
+                      )
+                    } catch {
+                      return null
+                    }
+                  })()}
+                  <p className="text-[10px] text-slate-500 mt-1">
+                    {new Date(w.created_at).toLocaleString()}
+                  </p>
+                </div>
+                <span className="text-[10px] font-semibold text-yellow-400 uppercase">{w.status}</span>
+              </div>
+              <div className="flex gap-2 mt-3">
+                <Button
+                  size="sm"
+                  disabled={processingId === w.id}
+                  onClick={() => verifyWithdrawal(w.id, 'approved')}
+                  className="bg-green-600 hover:bg-green-700 h-8 text-xs"
+                >
+                  {processingId === w.id ? 'Processing...' : 'Approve'}
+                </Button>
+                <Button
+                  size="sm"
+                  disabled={processingId === w.id}
+                  onClick={() => verifyWithdrawal(w.id, 'rejected')}
+                  className="bg-red-600 hover:bg-red-700 h-8 text-xs"
+                >
+                  Reject
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function AnnouncementSection() {
+  const [title, setTitle] = useState('')
+  const [message, setMessage] = useState('')
+  const [targetRole, setTargetRole] = useState('all')
+  const [sending, setSending] = useState(false)
+  const [result, setResult] = useState<string | null>(null)
+
+  const sendAnnouncement = async () => {
+    if (!title.trim() || !message.trim()) {
+      setResult('Title and message are required')
+      return
+    }
+    setSending(true)
+    setResult(null)
+    try {
+      const token = localStorage.getItem('ssb_auth_token')
+      const roles = targetRole === 'all' ? undefined : [targetRole]
+      const response = await fetch('/api/admin/broadcast', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token || ''}`,
+        },
+        body: JSON.stringify({ title, content: message, type: 'announcement', roles }),
+      })
+      const data = await response.json()
+      if (response.ok && data.success) {
+        setResult(data.message)
+        setTitle('')
+        setMessage('')
+      } else {
+        setResult(data.error || 'Failed to send')
+      }
+    } catch (error) {
+      setResult('Failed to send announcement')
+    } finally {
+      setSending(false)
+    }
+  }
+
+  return (
+    <div className="p-4 space-y-4 max-w-lg">
+      <h3 className="font-bold text-white">Send Announcement / App Update Notice</h3>
+      {result && (
+        <div className="px-3 py-2 rounded-lg text-xs bg-cyan-500/20 text-cyan-300">{result}</div>
+      )}
+      <div className="space-y-1">
+        <label className="text-[10px] text-slate-500 uppercase font-bold">Send To</label>
+        <select
+          value={targetRole}
+          onChange={(e) => setTargetRole(e.target.value)}
+          className="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-white text-xs"
+        >
+          <option value="all">All Users</option>
+          <option value="agent">Agents Only</option>
+          <option value="bridger">Bridgers Only</option>
+        </select>
+      </div>
+      <input
+        type="text"
+        placeholder="Title (e.g. App Update Available)"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        className="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-white text-sm"
+      />
+      <textarea
+        placeholder="Message"
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+        rows={4}
+        className="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-white text-sm"
+      />
+      <Button onClick={sendAnnouncement} disabled={sending} className="bg-cyan-600 hover:bg-cyan-700">
+        {sending ? 'Sending...' : 'Send Notification'}
+      </Button>
+    </div>
+  )
+}
++Number(deposit.usd_credit).toFixed(2)+' USD':Number(deposit.flame_coin).toLocaleString()+' legacy System Switch'}</p>
                   <p className="mt-1 break-all font-mono text-[10px] text-slate-400">Reference: {deposit.reference}</p>
                   <p className="mt-1 text-[10px] text-slate-500">{new Date(deposit.created_at).toLocaleString()}</p>
                 </div>
