@@ -8,6 +8,14 @@ import {
 import { notifyUser,notifyAdministrators } from '@/lib/deposit-notifications'
 
 /**
+ * Financial safety interlock. Changing an env flag must never authorize USD
+ * deposits while purchases, fees, loans, escrow, payouts, chargebacks and
+ * Client money routes still depend on the historical TRX-referenced ledger.
+ * Promote only with audited end-to-end USD money movement and reserves.
+ */
+export const USD_END_TO_END_CUTOVER_READY = false as boolean
+
+/**
  * A new independent USD ledger for deposits.
  * Historical balance_trx accounts are NEVER reinterpreted as dollars.
  */
