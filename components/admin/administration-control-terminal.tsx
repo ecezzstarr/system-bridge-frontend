@@ -763,7 +763,7 @@ function DepositApprovalSection({ user }: { user: any }) {
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div className="min-w-0">
                   <p className="font-semibold text-white">{deposit.name || deposit.email} <span className="text-xs font-normal text-slate-400">· {deposit.role}</span></p>
-                  <p className="text-sm text-cyan-200">₦{Number(deposit.amount_ngn).toLocaleString()} · {deposit.usd_credit!=null?'
+                  <p className="text-sm text-cyan-200">₦{Number(deposit.amount_ngn).toLocaleString()} · {deposit.usd_credit!=null?'USD '+Number(deposit.usd_credit).toFixed(2):Number(deposit.flame_coin).toLocaleString()+' legacy System Switch'}</p>
                   <p className="mt-1 break-all font-mono text-[10px] text-slate-400">Reference: {deposit.reference}</p>
                   <p className="mt-1 text-[10px] text-slate-500">{new Date(deposit.created_at).toLocaleString()}</p>
                 </div>
