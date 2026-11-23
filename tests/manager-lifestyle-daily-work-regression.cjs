@@ -25,7 +25,7 @@ const tasks=sources[paths[4]]
 const team=sources[paths[5]]
 const catalog=read('lib/weave-lifestyle-catalog.ts')
 assert(manager.includes('data-distribution-manager-first-day="verified-actions"'),'Verified lead sees clear daily workflow')
-for(const id of ['distribution-assistant-appointments','distribution-task-workshop','distribution-campaign-tools','distribution-manager-pay']){
+for(const id of ['distribution-assistant-appointments','distribution-team-communications','distribution-campaign-tools','distribution-manager-pay']){
   assert(manager.includes('#'+id),'Daily actions reach working area: '+id)
 }
 assert(manager.includes('visiblePoll(')&&manager.includes('20000'),'Lead reads fresh appointment and performance state while visible')
