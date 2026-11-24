@@ -20,9 +20,10 @@ const ticketToken='a'.repeat(64)
 const falseToken='b'.repeat(64)
 
 async function runFlow(department,actor){
- const principal=department==='AGENT'?5:8
+ const rawPrincipal=department==='AGENT'?19.12345678:38.24691356
+ const principal=Math.round(rawPrincipal*1e6)/1e6
  const ticket={
-  id:uuid,department,ticket_number:'ENTRY-'+department,price_flame_coin:principal,
+  id:uuid,department,ticket_number:'ENTRY-'+department,price_flame_coin:rawPrincipal,
   status:'PRESENTED',expires_at:new Date(Date.now()+7*86400000).toISOString(),
   payer_name:null,payer_email:null,trx_ngn_rate:1,amount_ngn:principal*1000,
   opay_account_number:'',departmental_code:null,departmental_code_status:null,
@@ -57,6 +58,7 @@ async function runFlow(department,actor){
     return {rows:[{yes:1}],rowCount:1}
    }
    if(command.includes('SELECT r.*, t.ticket_number')){
+    assert(command.includes('ROUND(t.price_flame_coin, 6)'))
     return {rows:[{...loan,ticket_number:ticket.ticket_number,ticket_status:ticket.status,
       expires_at:ticket.expires_at,price_flame_coin:principal,ticket_department:department,department}]}
    }
@@ -65,12 +67,13 @@ async function runFlow(department,actor){
    }
    if(command.includes("UPDATE departmental_entry_tickets SET status='CODE_ISSUED'"))ticket.status='CODE_ISSUED'
    if(command.includes("SET status='approved'")){
-    loan.status='approved';loan.approved_principal=principal;loan.approved_at=new Date().toISOString()
+    loan.status='approved';loan.approved_principal=params[1];loan.approved_at=new Date().toISOString()
    }
    if(command.includes('SELECT r.id AS loan_id')){
+    assert(command.includes('ROUND(t.price_flame_coin, 6)'))
     return {rows:[{loan_id:uuid,loan_status:loan.status,approved_at:loan.approved_at,
       code_renewals:codeRenewals,registered_user_id:null,applicant_balance_consent:true,
-      approved_principal:principal,department,ticket_status:ticket.status,price_flame_coin:principal,
+      approved_principal:loan.approved_principal,department,ticket_status:ticket.status,price_flame_coin:principal,
       code_id:uuid,code,code_status:'ACTIVE',code_expires_at:codeExpiresAt,used_by:null}]}
    }
    if(command.startsWith('UPDATE departmental_codes SET code=')){
@@ -157,6 +160,7 @@ async function runFlow(department,actor){
  const gate=read('components/department-entry-ticket-gate.tsx')
  const support=read('components/department-entry-loan-support.tsx')
  const register=read('app/(auth)/register/page.tsx')
+ assert(read('app/api/auth/register/route.ts').includes('ROUND(t.price_flame_coin, 6) AS price_flame_coin'), 'Registration compares at approved principal precision')
  const ticketApi=read('app/api/department-entry/ticket/route.ts')
  assert(!gate.includes('if (!musicStarted)'), 'Audio failure must not block ticket entry')
  assert(gate.includes('void startRequiredMusic().catch'), 'Music may accompany entry without becoming an access gate')

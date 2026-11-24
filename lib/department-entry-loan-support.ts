@@ -168,7 +168,7 @@ async function decideEntryLoan(input: EntryLoanDecisionInput) {
         `, [input.actorId])
     if (!authorized.rowCount) throw new Error('Authorized Administrations or an active Regional Manager appointment is required.')
     const selected = await db.query(`
-      SELECT r.*, t.ticket_number, t.status AS ticket_status, t.expires_at, t.price_flame_coin,
+      SELECT r.*, t.ticket_number, t.status AS ticket_status, t.expires_at, ROUND(t.price_flame_coin, 6) AS price_flame_coin,
         t.department AS ticket_department
       FROM department_entry_loan_requests r
       JOIN departmental_entry_tickets t ON t.id=r.ticket_id
@@ -245,7 +245,7 @@ export async function renewApprovedEntryLoanCode(accessToken: string) {
     const selected = await db.query(`
       SELECT r.id AS loan_id, r.status AS loan_status, r.approved_at, r.code_renewals,
         r.registered_user_id, r.applicant_balance_consent, r.approved_principal,
-        t.department, t.status AS ticket_status, t.price_flame_coin,
+        t.department, t.status AS ticket_status, ROUND(t.price_flame_coin, 6) AS price_flame_coin,
         dc.id AS code_id, dc.code, dc.status AS code_status,
         dc.expires_at AS code_expires_at, dc.used_by
       FROM departmental_entry_tickets t
