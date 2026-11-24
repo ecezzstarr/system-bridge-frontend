@@ -13,6 +13,7 @@ import { buildUserReferralCode, resolveReferralOwnerByCode } from '@/lib/user-re
 import { queueReferralSignupBonus } from '@/lib/referral-bonus'
 import { publicFlameMovementCodeFromRequest, recordPublicFlameMovementEvent } from '@/lib/public-flame-movement'
 import { notifyAdministrationsActivity } from '@/lib/administrations-activity-notifications'
+import { ensureDepartmentEntryTicketSchema } from '@/lib/department-entry-tickets'
 import { ensureEntryLoanSupportSchema } from '@/lib/department-entry-loan-support'
 
 // A client may lose the HTTP response after a successful DB commit on mobile.
@@ -157,6 +158,7 @@ export async function POST(request: NextRequest) {
     if (bridgerReferrerId) await ensureBridgerReferralColumns()
 
     // Ensure the optional registration-loan ledger exists before starting the account transaction.
+    await ensureDepartmentEntryTicketSchema()
     await ensureEntryLoanSupportSchema()
     let distributionRegionId: string | null = null
     if (genericReferrerId) {
@@ -220,6 +222,15 @@ export async function POST(request: NextRequest) {
       }
       // A Regional Manager's approved ticket loan is tied to the original applicant,
       // not a general-purpose code. Debt and user creation must be atomic.
+      const reconciled = await tx`
+        SELECT t.payer_email FROM departmental_codes dc
+        JOIN departmental_entry_tickets t ON t.id=dc.registration_request_id
+        WHERE dc.id=${used[0].id}::uuid AND t.reconciliation_original_reference IS NOT NULL
+      `
+      if (reconciled.length && String(reconciled[0].payer_email || '').toLowerCase() !== email) {
+        await connection.query('ROLLBACK')
+        return NextResponse.json({error:'Use the original verified payer email to register with this reconciliation code.'},{status:409})
+      }
       const matchingLoans = await tx`
         SELECT r.id,r.status,r.applicant_email,r.applicant_balance_consent,
           r.approved_principal,ROUND(t.price_flame_coin, 6) AS price_flame_coin

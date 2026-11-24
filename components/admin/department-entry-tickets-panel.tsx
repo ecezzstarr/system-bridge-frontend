@@ -19,6 +19,8 @@ type EntryTicket = {
   payer_email?: string | null
   payer_phone?: string | null
   payment_reference?: string | null
+  reconciliation_original_reference?: string | null
+  reconciliation_credit_ngn?: number | string | null
   entry_loan_status?: string | null
   entry_loan_principal?: number | string | null
   payment_submitted_at?: string | null
@@ -31,6 +33,7 @@ export function DepartmentEntryTicketsPanel() {
   const [reference,setReference] = useState('')
   const [tickets, setTickets] = useState<EntryTicket[]>([])
   const [loading, setLoading] = useState(true)
+  const [privateLink,setPrivateLink] = useState<{ticketId:string;url:string}|null>(null)
   const [workingId, setWorkingId] = useState<string | null>(null)
 
   const authHeaders = (): Record<string,string> => {
@@ -57,16 +60,17 @@ export function DepartmentEntryTicketsPanel() {
     return stop
   }, [reference])
 
-  const verify = async (ticketId: string, action: 'approve' | 'reject' | 'check_payment') => {
+  const verify = async (ticketId: string, action: 'approve' | 'reject' | 'check_payment' | 'authorize_reconciliation' | 'reissue_reconciliation', totalNgn?:number) => {
     setWorkingId(ticketId)
     try {
       const res = await fetch('/api/admin/department-entry/tickets', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', ...authHeaders() },
-        body: JSON.stringify({ ticketId, action }),
+        body: JSON.stringify({ ticketId, action, totalNgn }),
       })
       const data = await res.json()
       if (!res.ok || !data.success) throw new Error(data.error || 'Unable to verify ticket')
+      if (data.path) setPrivateLink({ticketId,url:window.location.origin+data.path})
       toast.success(data.message)
       await load(true)
     } catch (error: any) {
@@ -112,6 +116,10 @@ export function DepartmentEntryTicketsPanel() {
             )}
             <p>{ticket.payer_name || (ticket.entry_loan_status ? 'Loan application is recorded in Administrations support review.' : 'Visitor has not submitted payment details yet.')}</p>
             {(ticket.payer_phone || ticket.payer_email) && <p>{ticket.payer_phone || ticket.payer_email}</p>}
+            {ticket.reconciliation_original_reference && <>
+              <p>Original verified reference: <span className="break-all font-mono">{ticket.reconciliation_original_reference}</span></p>
+              <p>Verified credit: ₦{Number(ticket.reconciliation_credit_ngn).toFixed(2)} · Balance: ₦{(Number(ticket.amount_ngn)-Number(ticket.reconciliation_credit_ngn)).toFixed(2)}</p>
+            </>}
             {ticket.payment_reference && (
               <div className="flex items-center gap-2">
                 <span>Payment ref: <span className="font-mono text-slate-200">{ticket.payment_reference}</span></span>
@@ -131,6 +139,24 @@ export function DepartmentEntryTicketsPanel() {
           </div>
         </div>
 
+        {!ticket.reconciliation_original_reference && !ticket.entry_loan_status && !ticket.departmental_code && ticket.payment_reference &&
+          ['PAYMENT_PENDING','VERIFYING','EXPIRED'].includes(ticket.status) && (
+          <Button size="sm" variant="outline" disabled={workingId === ticket.id} onClick={()=>{
+            const value=window.prompt('Agreed FULL ticket value in naira (including the original payment). The original Paystack charge will be verified and deducted.')
+            if (value===null) return
+            const total=Number(value)
+            if (!Number.isFinite(total)||total<=Number(ticket.amount_ngn)) {toast.error('Enter a total above the original payment.');return}
+            if (window.confirm('Authorize the applicant to pay only the outstanding balance?')) void verify(ticket.id,'authorize_reconciliation',total)
+          }}>Authorize remaining payment</Button>
+        )}
+        {ticket.reconciliation_original_reference && ['PRESENTED','VERIFYING','PAYMENT_PENDING','CODE_ISSUED'].includes(ticket.status) && (
+          <Button size="sm" variant="outline" disabled={workingId===ticket.id} onClick={()=>{if(window.confirm('Generate a new private link and invalidate the previous one?')) void verify(ticket.id,'reissue_reconciliation')}}>Renew private link</Button>
+        )}
+        {privateLink?.ticketId===ticket.id && <div className="max-w-sm space-y-2">
+          <p className="text-xs text-amber-200">Private applicant link. Send only to the verified payer email.</p>
+          <input readOnly value={privateLink.url} className="w-full rounded border border-slate-700 bg-slate-950 p-2 text-xs" />
+          <Button size="sm" onClick={()=>copy(privateLink.url)}>Copy reconciliation link</Button>
+        </div>}
         {ticket.status === 'VERIFYING' && !ticket.verified_at && ticket.payment_reference && (
           <Button size="sm" onClick={() => verify(ticket.id, 'check_payment')} disabled={workingId === ticket.id}>
             Check Paystack payment

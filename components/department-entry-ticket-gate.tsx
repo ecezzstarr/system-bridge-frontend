@@ -32,6 +32,8 @@ type EntryTicket = {
   saturdayFreeEntry?: boolean
   trxNgnRate: number
   amountNgn: number
+  reconciliationCreditNgn?: number | null
+  reconciliationBalanceNgn?: number | null
   opayAccountNumber: string
   payerName?: string | null
   payerEmail?: string | null
@@ -71,7 +73,12 @@ export function DepartmentEntryTicketGate({
 
   const storageKey = `weave_department_entry_${department}`
   const loanStorageKey = `${storageKey}_approved_loan_resume`
+  const reconciliationStorageKey = storageKey + '_reconciliation_resume'
+  const linkToken = () => new URLSearchParams(window.location.hash.slice(1)).get('entry-reconciliation') || ''
   const persistedTicket = () => {
+    const linked = linkToken()
+    if (linked) return linked
+    try { const token = localStorage.getItem(reconciliationStorageKey); if (token) return token } catch {}
     // An unavailable storage area must not prevent reading the other one.
     let loanToken = ''
     let tabToken = ''
@@ -87,7 +94,7 @@ export function DepartmentEntryTicketGate({
   }
   const clearStoredTicket = () => {
     try { sessionStorage.removeItem(storageKey) } catch {}
-    try { localStorage.removeItem(loanStorageKey) } catch {}
+    try { localStorage.removeItem(loanStorageKey); localStorage.removeItem(reconciliationStorageKey) } catch {}
   }
 
   const refreshPromotion = async () => {
@@ -160,6 +167,10 @@ export function DepartmentEntryTicketGate({
     })
     const data = await res.json()
     if (!res.ok || !data.success || data.ticket?.department !== department) return null
+    if (data.ticket.reconciliationCreditNgn != null) {
+      try { sessionStorage.setItem(storageKey, token); localStorage.setItem(reconciliationStorageKey, token) } catch {}
+      if (linkToken()) window.history.replaceState(null, '', window.location.pathname + window.location.search)
+    }
     setAccessToken(token)
     setTicket(data.ticket)
     setForm(prev => ({
@@ -196,6 +207,7 @@ export function DepartmentEntryTicketGate({
         if (!mounted) return
         if (existing && existing.status !== 'EXPIRED') setEntered(true)
         else if (existing?.status === 'EXPIRED') clearStoredTicket()
+        else if (linkToken()) setError('This reconciliation link is unavailable. Contact Administrations for a renewed link; do not buy another ticket.')
       } catch {
         // Keep the ticket credential: network errors must not erase an approved loan.
       }
@@ -221,11 +233,12 @@ export function DepartmentEntryTicketGate({
           // even if the Saturday promotion starts during human review.
           let loanResume = false
           try { loanResume = localStorage.getItem(loanStorageKey) === saved } catch {}
-          if (loanResume || !offerActive || existing.status !== 'PRESENTED' || existing.priceFlameCoin === 0) {
+          if (existing.reconciliationCreditNgn != null || loanResume || !offerActive || existing.status !== 'PRESENTED' || existing.priceFlameCoin === 0) {
             setEntered(true)
             return
           }
         }
+        if (linkToken() || localStorage.getItem(reconciliationStorageKey)) throw new Error('Reconciliation link unavailable. Contact Administrations; do not buy another ticket.')
         clearStoredTicket()
       }
       await createTicket()
@@ -347,6 +360,7 @@ export function DepartmentEntryTicketGate({
   const awaitingVerification = ['PAYMENT_PENDING', 'VERIFYING'].includes(ticket.status)
   const codeIssued = ticket.status === 'CODE_ISSUED' && Boolean(ticket.departmentalCode)
   const freeTicket = ticket.priceFlameCoin === 0
+  const reconciled = ticket.reconciliationCreditNgn != null
 
   return (
     <div className="space-y-5">
@@ -395,20 +409,26 @@ export function DepartmentEntryTicketGate({
           </div>
         </div>
 
+        {reconciled && <div className="mt-4 space-y-2 rounded-xl border border-emerald-400/30 bg-emerald-400/5 p-4">
+          <p className="text-sm font-bold text-emerald-200">Administrations-authorized reconciliation</p>
+          <p className="text-xs text-slate-200">Original verified payment: ₦{ticket.reconciliationCreditNgn!.toFixed(2)}</p>
+          <p className="text-lg font-bold text-white">Remaining payment: ₦{ticket.reconciliationBalanceNgn!.toFixed(2)}</p>
+          <p className="text-xs text-slate-400">Only the outstanding balance is charged. Both payments must be verified before your registration code is released.</p>
+        </div>}
         <div className="mt-4 rounded-xl border border-white/10 bg-black/30 p-4">
           <div className="flex items-center gap-2">
             <CreditCard className="h-4 w-4 text-green-400" />
             <p className="text-xs font-black uppercase tracking-widest text-white">WEAVE Payment Center · Paystack</p>
           </div>
           <p className="mt-3 text-xs leading-5 text-slate-400">
-            Pay securely through Paystack checkout. The amount is for this {ticket.department === 'AGENT' ? 'Agent' : 'Bridger'} Department Entry Ticket ({ticket.priceFlameCoin} System Switch), not a wallet top-up.
+            Pay securely through Paystack checkout. {reconciled ? 'You will only be charged the authorized outstanding balance.' : 'This is your Department Entry Ticket, not a wallet top-up.'}
           </p>
         </div>
           </>
         )}
       </div>
 
-      {!freeTicket && <DepartmentEntryLoanSupport key={ticket.id} accessToken={accessToken}
+      {!freeTicket && !reconciled && <DepartmentEntryLoanSupport key={ticket.id} accessToken={accessToken}
         ticketStatus={ticket.status} ticketValue={ticket.loanPrincipal ?? ticket.priceFlameCoin}
         ticketPriceUsd={ticket.priceUsd} ticketAmountNgn={ticket.amountNgn}
         onLoanRequested={saveLoanResume} onApplicantConfirmed={setLoanApplicant}
@@ -429,6 +449,7 @@ export function DepartmentEntryTicketGate({
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Input
               value={form.payerEmail}
+              readOnly={reconciled}
               onChange={e => setForm(prev => ({ ...prev, payerEmail: e.target.value }))}
               placeholder="Email"
               type="email"
@@ -447,7 +468,7 @@ export function DepartmentEntryTicketGate({
             disabled={submitting}
             className="h-11 w-full bg-green-600 font-black uppercase tracking-widest hover:bg-green-500"
           >
-            {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Submit Payment'}
+            {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : reconciled ? 'Pay Outstanding Balance' : 'Submit Payment'}
           </Button>
         </div>
       )}
@@ -479,7 +500,7 @@ export function DepartmentEntryTicketGate({
           <p className="mt-3 text-xs text-slate-400">This code is one-use and belongs to the {department} department.{freeTicket ? ' Free Saturday codes expire at 10:00 a.m. WAT.' : ''}</p>
           <Button
             type="button"
-            onClick={() => onCodeReady(ticket.departmentalCode!, loanApplicant || undefined)}
+            onClick={() => onCodeReady(ticket.departmentalCode!, reconciled && ticket.payerEmail ? {name:ticket.payerName || '',email:ticket.payerEmail} : loanApplicant || undefined)}
             className="mt-5 h-11 w-full bg-green-600 font-black uppercase tracking-widest hover:bg-green-500"
           >
             <ShieldCheck className="mr-2 h-4 w-4" /> {freeTicket ? 'Continue Free Registration' : 'Use Code & Continue Registration'}
@@ -509,7 +530,7 @@ export function DepartmentEntryTicketGate({
         <div className="rounded-2xl border border-red-400/20 bg-red-400/5 p-5 text-center">
           <p className="text-sm font-black uppercase tracking-widest text-red-300">Payment Not Verified</p>
           <p className="mt-2 text-xs text-slate-400">{ticket.rejectedReason || 'Administrations could not verify this payment.'}</p>
-          <Button type="button" onClick={resetTicket} className="mt-4 bg-slate-700 hover:bg-slate-600">Present a New Ticket</Button>
+          {reconciled ? <p className="mt-3 text-xs text-slate-300">Contact Administrations before making any further payment.</p> : <Button type="button" onClick={resetTicket} className="mt-4 bg-slate-700 hover:bg-slate-600">Present a New Ticket</Button>}
         </div>
       )}
 

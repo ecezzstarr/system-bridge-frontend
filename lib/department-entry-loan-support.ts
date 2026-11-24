@@ -55,7 +55,7 @@ export async function requestEntryLoanSupport(accessToken: string, input: {
 }) {
   const ticket = await getDepartmentEntryTicket(accessToken)
   if (!ticket) return { error: 'Ticket not found', statusCode: 404 } as const
-  if (ticket.status !== 'PRESENTED' || Number(ticket.price_flame_coin) <= 0 ||
+  if (ticket.reconciliation_original_reference || ticket.status !== 'PRESENTED' || Number(ticket.price_flame_coin) <= 0 ||
       new Date(ticket.expires_at).getTime() <= Date.now()) {
     return { error: 'Loan support is only available for an unpaid, active entry ticket.', statusCode: 409 } as const
   }
@@ -169,7 +169,7 @@ async function decideEntryLoan(input: EntryLoanDecisionInput) {
     if (!authorized.rowCount) throw new Error('Authorized Administrations or an active Regional Manager appointment is required.')
     const selected = await db.query(`
       SELECT r.*, t.ticket_number, t.status AS ticket_status, t.expires_at, ROUND(t.price_flame_coin, 6) AS price_flame_coin,
-        t.department AS ticket_department
+        t.department AS ticket_department, t.reconciliation_original_reference
       FROM department_entry_loan_requests r
       JOIN departmental_entry_tickets t ON t.id=r.ticket_id
       WHERE r.id=$1::uuid FOR UPDATE OF t, r
@@ -179,7 +179,7 @@ async function decideEntryLoan(input: EntryLoanDecisionInput) {
     if (!['pending', 'reviewing', 'contacted'].includes(record.status))
       return await db.query('ROLLBACK').then(() => ({ error: 'This request already has a final decision.', statusCode: 409 } as const))
     if (input.action === 'approve') {
-      if (record.ticket_status !== 'PRESENTED' || new Date(record.expires_at).getTime() <= Date.now() ||
+      if (record.reconciliation_original_reference || record.ticket_status !== 'PRESENTED' || new Date(record.expires_at).getTime() <= Date.now() ||
           Number(record.price_flame_coin) <= 0 || record.department !== record.ticket_department ||
           record.applicant_balance_consent !== true) {
         return await db.query('ROLLBACK').then(() => ({ error: 'Ticket is no longer eligible for an entry-fee loan. No code issued.', statusCode: 409 } as const))

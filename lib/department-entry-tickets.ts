@@ -42,7 +42,15 @@ export async function ensureDepartmentEntryTicketSchema() {
   `
   await sql`ALTER TABLE departmental_entry_tickets
     ADD COLUMN IF NOT EXISTS price_usd NUMERIC(30,2),
-    ADD COLUMN IF NOT EXISTS usd_ngn_rate NUMERIC(30,8)`
+    ADD COLUMN IF NOT EXISTS usd_ngn_rate NUMERIC(30,8),
+    ADD COLUMN IF NOT EXISTS reconciliation_original_reference VARCHAR(255),
+    ADD COLUMN IF NOT EXISTS reconciliation_credit_ngn NUMERIC(30,2),
+    ADD COLUMN IF NOT EXISTS reconciliation_original_quote JSONB,
+    ADD COLUMN IF NOT EXISTS reconciliation_authorized_by UUID,
+    ADD COLUMN IF NOT EXISTS reconciliation_authorized_at TIMESTAMPTZ`
+  await sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_entry_reconciliation_original_reference
+    ON departmental_entry_tickets(reconciliation_original_reference)
+    WHERE reconciliation_original_reference IS NOT NULL`
   await sql`ALTER TABLE departmental_codes ADD COLUMN IF NOT EXISTS registration_request_id UUID`
   await sql`
     CREATE UNIQUE INDEX IF NOT EXISTS idx_departmental_codes_registration_request
@@ -242,12 +250,12 @@ export async function getDepartmentEntryTicket(accessToken: string) {
   if (!rows[0]) return null
 
   const ticket = rows[0]
-  if (new Date(ticket.expires_at).getTime() < Date.now() && !['CODE_ISSUED', 'REJECTED'].includes(ticket.status)) {
+  if (!ticket.reconciliation_original_reference && new Date(ticket.expires_at).getTime() < Date.now() && !['CODE_ISSUED', 'REJECTED'].includes(ticket.status)) {
     await sql`
       UPDATE departmental_entry_tickets
       SET status = 'EXPIRED', updated_at = NOW()
       WHERE id = ${ticket.id}::uuid
-        AND status NOT IN ('CODE_ISSUED', 'REJECTED')
+        AND status NOT IN ('CODE_ISSUED', 'REJECTED') AND reconciliation_original_reference IS NULL AND expires_at < NOW()
     `
     ticket.status = 'EXPIRED'
   }
@@ -311,7 +319,7 @@ export async function listDepartmentEntryTickets(reference = '') {
       ON u.id = t.verified_by
     LEFT JOIN department_entry_loan_requests loan
       ON loan.ticket_id = t.id
-    WHERE (${reference} = '' OR t.payment_reference = ${reference} OR t.ticket_number = ${reference})
+    WHERE (${reference} = '' OR t.payment_reference = ${reference} OR t.reconciliation_original_reference = ${reference} OR t.ticket_number = ${reference})
     ORDER BY
       CASE t.status
         WHEN 'PAYMENT_PENDING' THEN 0
@@ -335,6 +343,7 @@ export async function approveDepartmentEntryTicket(ticketId: string, adminId: st
     const { rows: [ticket] } = await db.query(`
       SELECT * FROM departmental_entry_tickets WHERE id=$1::uuid
         AND verified_at IS NOT NULL
+        AND (reconciliation_original_reference IS NULL OR (reconciliation_credit_ngn > 0 AND reconciliation_credit_ngn < amount_ngn AND payment_reference IS NOT NULL AND reconciliation_authorized_by IS NOT NULL))
         AND (status='PAYMENT_PENDING' OR (status='VERIFYING' AND verified_by IS NOT NULL))
       FOR UPDATE
     `, [ticketId])
