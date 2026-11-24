@@ -9,6 +9,7 @@ export async function GET(request: NextRequest) {
   if (!reference) { target.searchParams.set('departmentEntryPayment', 'missing_reference'); return NextResponse.redirect(target) }
   try {
     const result = await settleDepartmentEntryPaystackTicket(reference)
+    if (result.department === 'agent' || result.department === 'bridger') target.searchParams.set('role',result.department)
     target.searchParams.set('departmentEntryPayment', result.matched && result.settled ? 'verified' : 'pending')
   } catch (error) {
     console.error('[department-entry Paystack callback verification]', error)

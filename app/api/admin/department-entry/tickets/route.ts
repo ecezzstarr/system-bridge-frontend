@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
-import { settleDepartmentEntryPaystackTicket } from '@/lib/department-entry-paystack'
+import { settleDepartmentEntryPaystackTicket, authorizeDepartmentEntryReconciliation, reissueDepartmentEntryReconciliationLink } from '@/lib/department-entry-paystack'
 import { getAuthUser } from '@/lib/auth-api'
 import { ensureEntryLoanSupportSchema } from '@/lib/department-entry-loan-support'
 import {
@@ -40,11 +40,20 @@ export async function PATCH(request: NextRequest) {
     const ticketId = String(body.ticketId || '')
     const action = String(body.action || '').toLowerCase()
 
-    if (!ticketId || !['approve', 'reject', 'check_payment'].includes(action)) {
+    if (!ticketId || !['approve', 'reject', 'check_payment', 'authorize_reconciliation', 'reissue_reconciliation'].includes(action)) {
       return NextResponse.json(
         { error: 'ticketId and action (approve|reject|check_payment) are required' },
         { status: 400 }
       )
+    }
+
+    if (action === 'authorize_reconciliation') {
+      const result = await authorizeDepartmentEntryReconciliation(ticketId, auth.user!.id, Number(body.totalNgn))
+      return NextResponse.json({success:true, ...result, message:'Original payment verified. Outstanding balance authorized.'})
+    }
+    if (action === 'reissue_reconciliation') {
+      const result = await reissueDepartmentEntryReconciliationLink(ticketId)
+      return NextResponse.json({success:true, ...result, message:'Private reconciliation link renewed. Previous link invalidated.'})
     }
 
     if (action === 'check_payment') {
