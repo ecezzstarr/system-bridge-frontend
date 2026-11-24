@@ -48,7 +48,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     if (action === 'authorize_reconciliation') {
-      const result = await authorizeDepartmentEntryReconciliation(ticketId, auth.user!.id, Number(body.totalNgn))
+      const result = await authorizeDepartmentEntryReconciliation(ticketId, auth.user!.id, Number(body.totalNgn), Number(body.originalPaidNgn))
       return NextResponse.json({success:true, ...result, message:'Original payment verified. Outstanding balance authorized.'})
     }
     if (action === 'reissue_reconciliation') {

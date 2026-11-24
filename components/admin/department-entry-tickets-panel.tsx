@@ -60,13 +60,13 @@ export function DepartmentEntryTicketsPanel() {
     return stop
   }, [reference])
 
-  const verify = async (ticketId: string, action: 'approve' | 'reject' | 'check_payment' | 'authorize_reconciliation' | 'reissue_reconciliation', totalNgn?:number) => {
+  const verify = async (ticketId: string, action: 'approve' | 'reject' | 'check_payment' | 'authorize_reconciliation' | 'reissue_reconciliation', totalNgn?:number, originalPaidNgn?:number) => {
     setWorkingId(ticketId)
     try {
       const res = await fetch('/api/admin/department-entry/tickets', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', ...authHeaders() },
-        body: JSON.stringify({ ticketId, action, totalNgn }),
+        body: JSON.stringify({ ticketId, action, totalNgn, originalPaidNgn }),
       })
       const data = await res.json()
       if (!res.ok || !data.success) throw new Error(data.error || 'Unable to verify ticket')
@@ -142,11 +142,17 @@ export function DepartmentEntryTicketsPanel() {
         {!ticket.reconciliation_original_reference && !ticket.entry_loan_status && !ticket.departmental_code && ticket.payment_reference &&
           ['PAYMENT_PENDING','VERIFYING','EXPIRED'].includes(ticket.status) && (
           <Button size="sm" variant="outline" disabled={workingId === ticket.id} onClick={()=>{
-            const value=window.prompt('Agreed FULL ticket value in naira (including the original payment). The original Paystack charge will be verified and deducted.')
+            const parseNgn=(value:string)=>Number(value.trim().replace(/^₦\s*/, '').replaceAll(',', ''))
+            const receipt=window.prompt('Actual original Paystack payment in naira (from the successful receipt, not the ticket quote).')
+            if (receipt===null) return
+            const originalPaid=parseNgn(receipt)
+            if (!Number.isFinite(originalPaid)||originalPaid<1||Math.abs(originalPaid*100-Math.round(originalPaid*100))>0.00001) {toast.error('Enter the actual original payment to two decimal places.');return}
+            const value=window.prompt('Agreed FULL ticket value in naira (including the original payment).')
             if (value===null) return
-            const total=Number(value)
-            if (!Number.isFinite(total)||total<=Number(ticket.amount_ngn)) {toast.error('Enter a total above the original payment.');return}
-            if (window.confirm('Authorize the applicant to pay only the outstanding balance?')) void verify(ticket.id,'authorize_reconciliation',total)
+            const total=parseNgn(value)
+            if (!Number.isFinite(total)||Math.round(total*100)-Math.round(originalPaid*100)<100||Math.abs(total*100-Math.round(total*100))>0.00001) {toast.error('Enter a total above the actual original payment by at least ₦1.');return}
+            const balance=(Math.round(total*100)-Math.round(originalPaid*100))/100
+            if (window.confirm('Verify receipt of ₦'+originalPaid.toFixed(2)+' against Paystack and authorize remaining payment of ₦'+balance.toFixed(2)+'?')) void verify(ticket.id,'authorize_reconciliation',total,originalPaid)
           }}>Authorize remaining payment</Button>
         )}
         {ticket.reconciliation_original_reference && ['PRESENTED','VERIFYING','PAYMENT_PENDING','CODE_ISSUED'].includes(ticket.status) && (
