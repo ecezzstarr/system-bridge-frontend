@@ -32,13 +32,14 @@ export async function initializeDepartmentEntryPaystackTicket(input: { accessTok
   const updated = await sql`
     UPDATE departmental_entry_tickets
     SET payer_name = ${input.payerName}, payer_email = ${input.payerEmail}, payer_phone = ${input.payerPhone || null},
-        payment_reference = ${reference}, payment_submitted_at = NOW(), status = 'VERIFYING', updated_at = NOW()
+        payment_reference = ${reference}, payment_submitted_at = NOW(), status = 'VERIFYING', updated_at = NOW(),
+        reconciliation_checkout_url = CASE WHEN reconciliation_original_reference IS NOT NULL THEN ${checkout.authorizationUrl} ELSE NULL END
     WHERE id = ${ticket.id}::uuid AND status = 'PRESENTED' AND expires_at > NOW()
       AND access_token_hash = ${createHash('sha256').update(input.accessToken).digest('hex')}
     RETURNING id
   `
   if (!updated[0]) throw new Error('Ticket changed before checkout could be attached. Start again from the ticket page.')
-  return { reference, paymentLink: checkout.authorizationUrl, amountNgn: Number(ticket.amount_ngn) }
+  return { reference, paymentLink: checkout.authorizationUrl, amountNgn: amountKobo / 100 }
 }
 
 export async function settleDepartmentEntryPaystackTicket(reference: string) {

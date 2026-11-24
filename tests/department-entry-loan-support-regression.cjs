@@ -16,7 +16,7 @@ const managerDesk = read('components/weave/regional-entry-loan-desk.tsx')
 const registration = read('app/api/auth/register/route.ts')
 const walletApi = read('app/api/wallet/balance/route.ts')
 
-assert.match(gate, /!freeTicket && <DepartmentEntryLoanSupport/)
+assert.match(gate, /!freeTicket && !reconciled && <DepartmentEntryLoanSupport/)
 assert.match(form, /Click here to request a loan/)
 assert.match(form, /data-entry-loan-support/)
 assert.match(form, /starts?/); assert.match(form, /acceptsDeduction/)

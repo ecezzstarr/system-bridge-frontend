@@ -75,6 +75,7 @@ async function runSignup({role='bridger',fail='',codeUsed=false,duplicate=false,
     '@/lib/regional-manager-operations':{ensureRegionalOperationsSchema:async()=>{},regionalTeam:async()=>[]},
     '@/lib/distribution-entry-bonuses':{ensureDistributionEntryBonusSchema:async()=>{},recordDistributionEntryBonus:async()=>{}},
     '@/lib/department-entry-loan-support':{ensureEntryLoanSupportSchema:async()=>{}},
+    '@/lib/department-entry-tickets':{ensureDepartmentEntryTicketSchema:async()=>{}},
   }
   const module={exports:{}}
   const sandbox={module,exports:module.exports,require:key=>{

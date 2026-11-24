@@ -24,6 +24,7 @@ function safeTicket(ticket: any) {
     usdNgnRate: ticket.usd_ngn_rate == null ? null : Number(ticket.usd_ngn_rate),
     amountNgn: Number(ticket.amount_ngn),
     reconciliationCreditNgn: ticket.reconciliation_original_reference ? Number(ticket.reconciliation_credit_ngn) : null,
+    reconciliationCheckoutUrl: ticket.reconciliation_original_reference && ticket.status === 'VERIFYING' ? ticket.reconciliation_checkout_url || null : null,
     reconciliationBalanceNgn: ticket.reconciliation_original_reference ? (Math.round(Number(ticket.amount_ngn)*100)-Math.round(Number(ticket.reconciliation_credit_ngn)*100))/100 : null,
     opayAccountNumber: ticket.opay_account_number,
     payerName: ticket.payer_name || null,

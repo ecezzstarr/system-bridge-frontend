@@ -34,6 +34,7 @@ type EntryTicket = {
   amountNgn: number
   reconciliationCreditNgn?: number | null
   reconciliationBalanceNgn?: number | null
+  reconciliationCheckoutUrl?: string | null
   opayAccountNumber: string
   payerName?: string | null
   payerEmail?: string | null
@@ -238,7 +239,9 @@ export function DepartmentEntryTicketGate({
             return
           }
         }
-        if (linkToken() || localStorage.getItem(reconciliationStorageKey)) throw new Error('Reconciliation link unavailable. Contact Administrations; do not buy another ticket.')
+        let savedReconciliation = false
+        try { savedReconciliation = Boolean(localStorage.getItem(reconciliationStorageKey)) } catch {}
+        if (linkToken() || savedReconciliation) throw new Error('Reconciliation link unavailable. Contact Administrations; do not buy another ticket.')
         clearStoredTicket()
       }
       await createTicket()
@@ -421,7 +424,7 @@ export function DepartmentEntryTicketGate({
             <p className="text-xs font-black uppercase tracking-widest text-white">WEAVE Payment Center · Paystack</p>
           </div>
           <p className="mt-3 text-xs leading-5 text-slate-400">
-            Pay securely through Paystack checkout. {reconciled ? 'You will only be charged the authorized outstanding balance.' : 'This is your Department Entry Ticket, not a wallet top-up.'}
+            Pay securely through Paystack checkout. {reconciled ? 'You will only be charged the authorized outstanding balance.' : 'This is your ' + (ticket.department === 'AGENT' ? 'Agent' : 'Bridger') + ' Department Entry Ticket, not a wallet top-up.'}
           </p>
         </div>
           </>
@@ -478,8 +481,9 @@ export function DepartmentEntryTicketGate({
           <Loader2 className="mx-auto h-7 w-7 animate-spin text-purple-300" />
           <p className="mt-3 text-sm font-black uppercase tracking-widest text-white">Administrations Verification</p>
           <p className="mt-2 text-xs leading-5 text-slate-400">
-            Administrations has been notified. This page checks automatically; your departmental code will appear here after the payment is approved.
+            {ticket.status === 'VERIFYING' ? 'Waiting for Paystack to confirm your payment.' : 'Administrations has been notified.'}  This page checks automatically; your departmental code will appear here after the payment is approved.
           </p>
+          {ticket.status === 'VERIFYING' && reconciled && ticket.reconciliationCheckoutUrl && <Button type="button" variant="outline" className="mt-3 w-full" onClick={()=>window.location.assign(ticket.reconciliationCheckoutUrl!)}>Resume existing Paystack checkout</Button>}
           <Button type="button" variant="ghost" onClick={refreshTicket} className="mt-3 text-xs text-purple-300">
             Check now
           </Button>

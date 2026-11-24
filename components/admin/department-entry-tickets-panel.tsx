@@ -201,7 +201,7 @@ export function DepartmentEntryTicketsPanel() {
             <h2 className="text-sm font-black uppercase tracking-widest">Department Entry Tickets</h2>
           </div>
           <p className="mt-1 text-xs text-slate-500">
-            New Agent tickets cost $5 and new Bridger tickets cost $10. Existing ticket amounts stay unchanged. Verify the recorded payment before releasing a one-use departmental code.
+            New Agent tickets cost $5 and new Bridger tickets cost $10. Existing ticket amounts stay unchanged unless Administrations verifies the original receipt and explicitly authorizes reconciliation. Verify the recorded payment before releasing a one-use departmental code.
           </p>
         </div>
         <Button size="sm" variant="ghost" onClick={() => load()} disabled={loading} className="text-slate-400">
