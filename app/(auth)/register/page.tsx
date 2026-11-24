@@ -259,7 +259,7 @@ function RegisterContent() {
             <p className="text-xs font-bold text-slate-200">{FLAME_EVENT_INTRO.period} · Same event for both departments</p>
             <p className="text-xs leading-5 text-slate-300">{FLAME_EVENT_INTRO.summary}</p>
             <p className="text-xs leading-5 text-slate-400">{FLAME_EVENT_INTRO.next}</p>
-            <p className="text-[11px] font-semibold text-amber-100">Agent entry: 5 System Switch · Bridger entry: 8 System Switch outside the offer. Every Saturday during Burning River, both are FREE from 8:00–10:00 a.m. WAT. Their daily work differs. Entry alone does not create earnings.</p>
+            <p className="text-[11px] font-semibold text-amber-100">Agent entry: $5 · Bridger entry: $10 outside the offer. Every Saturday during Burning River, both are FREE from 8:00–10:00 a.m. WAT. Their daily work differs. Entry alone does not create earnings.</p>
           </section>
           <div className="text-center text-sm pt-2">
             <span className="text-slate-500">{WEAVE_WRITING.positionAccess.existing} </span>
@@ -280,7 +280,7 @@ function RegisterContent() {
           <CardDescription>
             {saturdayFreeOpen
               ? 'Saturday free entry is open now (8:00–10:00 a.m. WAT). No entry payment is required.'
-              : <>{formData.role === 'agent' ? 'Agent' : 'Bridger'} entry is released through a verified {departmentEntryTicketPrice(formData.role === 'agent' ? 'AGENT' : 'BRIDGER')} System Switch ticket. Saturday entry is free from 8:00–10:00 a.m. WAT during Burning River.</>}
+              : <>{formData.role === 'agent' ? 'Agent' : 'Bridger'} entry is released through a verified ${departmentEntryTicketPrice(formData.role === 'agent' ? 'AGENT' : 'BRIDGER')} USD ticket. Saturday entry is free from 8:00–10:00 a.m. WAT during Burning River.</>}
           </CardDescription>
         </CardHeader>
         <CardContent>

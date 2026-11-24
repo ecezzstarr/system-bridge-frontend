@@ -72,6 +72,8 @@ async function runSignup({role='bridger',fail='',codeUsed=false,duplicate=false,
     '@/lib/client-monthly-subscription':{normalizeRegisteredGender:value=>['male','female'].includes(value)?value:null,ensureClientMonthlySchema:async()=>{}},
     '@/lib/public-flame-movement':{publicFlameMovementCodeFromRequest:()=>null,recordPublicFlameMovementEvent:async()=>{}},
     '@/lib/administrations-activity-notifications':{notifyAdministrationsActivity:async activity=>{adminAlerts.push(activity);return true}},
+    '@/lib/regional-manager-operations':{ensureRegionalOperationsSchema:async()=>{},regionalTeam:async()=>[]},
+    '@/lib/distribution-entry-bonuses':{ensureDistributionEntryBonusSchema:async()=>{},recordDistributionEntryBonus:async()=>{}},
     '@/lib/department-entry-loan-support':{ensureEntryLoanSupportSchema:async()=>{}},
   }
   const module={exports:{}}

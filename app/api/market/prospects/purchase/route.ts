@@ -3,7 +3,6 @@ import { notifyAdminOrder } from '@/lib/admin-order-notifications'
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { getPool } from '@/lib/db'
-import { consumeProspectSupport } from '@/lib/company-support'
 import { creditBridgerActivityCommission } from '@/lib/bridger-commission-router'
 import { ensureMarketTables } from '@/lib/market'
 import { ensureWeaveReceiptSchema, issueWeaveReceipt } from '@/lib/weave-receipts'
@@ -21,15 +20,15 @@ async function finalizeProspectPurchase(input:{
     await lockClient.query('BEGIN')
     await lockClient.query('SELECT pg_advisory_xact_lock(hashtext($1))',[`prospect-finalize:${input.packageId}`])
 
-    const commissionMovement=await creditBridgerActivityCommission({
+    const commissionMovement=input.priceTrx>0?await creditBridgerActivityCommission({
       bridgerId:input.userId,
       activity:'prospect_package_purchase',
       baseAmount:input.priceTrx,
       sourceId:input.packageId,
       description:`Agent Prospect share from Bridger purchase of ${input.priceTrx} System Switch`,
-    })
+    }):null
 
-    if(commissionMovement.agentExpected&&!commissionMovement.agentShare){
+    if(commissionMovement?.agentExpected&&!commissionMovement.agentShare){
       await lockClient.query('COMMIT')
       return {commissionMovement,receipt:null,complete:false}
     }
@@ -52,9 +51,9 @@ async function finalizeProspectPurchase(input:{
       source:'prospect_package',
       sourceId:input.packageId,
       amount:input.priceTrx,
-      currency:'Flame Coin',
+      currency:input.priceTrx>0?'Flame Coin':'USD',
       status:'completed',
-      description:'Bridger prospect package purchase',
+      description:input.priceTrx>0?'Bridger prospect package purchase':'Free Bridger prospect claim',
       metadata:{packageId:input.packageId,contactCount:input.contactCount,balanceAfter:input.balanceAfter},
     })
 
@@ -157,41 +156,14 @@ export async function POST(request: NextRequest) {
     }
 
     const walletResult=await client.query(
-      `SELECT balance_trx FROM wallets WHERE user_id=$1::uuid AND is_primary=true FOR UPDATE`,
+      `SELECT balance_trx FROM wallets WHERE user_id=$1::uuid AND is_primary=true LIMIT 1`,
       [userId],
     )
-    const wallet=walletResult.rows[0]
-    if(!wallet){
-      await client.query('ROLLBACK')
-      return NextResponse.json({error:'Wallet not found'},{status:404})
-    }
-    const currentBalance=Number(wallet.balance_trx)||0
-    // Manager-funded support is held outside the spendable wallet. It can
-    // ONLY pay for an actual published prospect package, not withdrawals,
-    // gaming, unapproved subscriptions or unrelated wallet transfers.
-    const supported=currentBalance<priceTrx
-      ?await consumeProspectSupport(client,String(userId),priceTrx,packageId)
-      :null
-    if(currentBalance<priceTrx&&!supported){
-      await client.query('ROLLBACK')
-      return NextResponse.json({error:'Insufficient System Switch wallet and approved work support balance',currentBalance,required:priceTrx},{status:400})
-    }
-    const newBalance=supported?currentBalance:currentBalance-priceTrx
-    if(!supported)await client.query(
-      `UPDATE wallets SET balance_trx=$1,updated_at=NOW() WHERE user_id=$2::uuid AND is_primary=true`,
-      [newBalance,userId],
-    )
-    await client.query(
-      `INSERT INTO ledger_entries
-       (id,user_id,entry_type,amount,currency,description,balance_before,balance_after,metadata,created_at)
-       VALUES (gen_random_uuid(),$1::uuid,'prospect_package_purchase',$2,'System Switch',$3,$4,$5,$6::jsonb,NOW())`,
-      [userId,priceTrx,`Purchased prospect package ${packageId}`,currentBalance,newBalance,
-       JSON.stringify({commerce_type:'prospect_package_purchase',support_advance_id:supported?.advanceId||null,source_key:'prospect:'+packageId})],
-    )
+    const newBalance=Number(walletResult.rows[0]?.balance_trx||0)
 
     const soldResult=await client.query(
       `UPDATE market_prospect_packages
-       SET status='sold',purchased_by=$1::uuid,purchased_at=NOW(),updated_at=NOW()
+       SET status='sold',price_trx=0,purchased_by=$1::uuid,purchased_at=NOW(),updated_at=NOW()
        WHERE id=$2::uuid AND status='published'
        RETURNING *`,
       [userId,packageId],
@@ -201,7 +173,7 @@ export async function POST(request: NextRequest) {
     await client.query(
       `INSERT INTO market_prospect_audit (package_id,actor_id,action,details)
        VALUES ($1::uuid,$2::uuid,'purchased',$3::jsonb)`,
-      [packageId,userId,JSON.stringify({priceTrx})],
+      [packageId,userId,JSON.stringify({priceTrx:0,claimType:"free"})],
     )
 
     const contactsResult=await client.query(
@@ -232,7 +204,7 @@ export async function POST(request: NextRequest) {
 
     await client.query('COMMIT')
     primaryCommitted=true
-    await notifyAdminOrder({orderId:String(packageId),event:'paid',department:'bridger',subject:'Bridger prospect package purchase',detail:`Bridger purchased prospect package ${packageId} for ${priceTrx} System Switch with ${contactsResult.rows.length} prospects; Agent share reconciliation follows`,adminPath:'/admin/orders',actorId:userId,actorName:'Bridger'})
+    await notifyAdminOrder({orderId:String(packageId),event:'paid',department:'bridger',subject:'Bridger prospect package claimed',detail:`Bridger claimed free prospect package ${packageId} with ${contactsResult.rows.length} prospects`,adminPath:'/admin/orders',actorId:userId,actorName:'Bridger'})
 
     await recordCompanyFormationMovement('prospect_purchased',String(packageId)).catch(error=>
       console.error('[Hope company formation notification]',error))
@@ -242,7 +214,7 @@ export async function POST(request: NextRequest) {
     })
 
     const finalized=await finalizeProspectPurchase({
-      packageId,userId,priceTrx,contactCount:contactsResult.rows.length,balanceAfter:newBalance,
+      packageId,userId,priceTrx:0,contactCount:contactsResult.rows.length,balanceAfter:newBalance,
     })
     if(!finalized.complete){
       return NextResponse.json({

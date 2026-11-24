@@ -25,6 +25,8 @@ type EntryTicket = {
   ticketNumber: string
   department: Department
   status: 'PRESENTED' | 'PAYMENT_PENDING' | 'VERIFYING' | 'CODE_ISSUED' | 'REJECTED' | 'EXPIRED'
+  priceUsd?: number | null
+  usdNgnRate?: number | null
   priceFlameCoin: number
   saturdayFreeEntry?: boolean
   trxNgnRate: number
@@ -372,7 +374,7 @@ export function DepartmentEntryTicketGate({
 
         {freeTicket ? (
           <div className="mt-5 rounded-xl border border-green-400/30 bg-green-400/10 p-4">
-            <p className="text-base font-black text-green-200">Free Saturday Entry · 0 System Switch</p>
+            <p className="text-base font-black text-green-200">Free Saturday Entry</p>
             <p className="mt-2 text-xs leading-5 text-slate-200">
               No payment is required. Your one-use registration code is ready. Complete registration before 10:00 a.m. West Africa Time.
             </p>
@@ -382,13 +384,13 @@ export function DepartmentEntryTicketGate({
         <div className="mt-5 grid grid-cols-2 gap-3">
           <div className="rounded-xl border border-white/10 bg-black/25 p-3">
             <p className="text-[9px] uppercase tracking-widest text-slate-500">Ticket Price</p>
-            <p className="mt-1 text-xl font-black text-white">{ticket.priceFlameCoin} System Switch</p>
-            <p className="mt-1 text-[10px] text-slate-500">{ticket.priceFlameCoin} TRX value</p>
+            <p className="mt-1 text-xl font-black text-white">{ticket.priceUsd != null ? '$'+ticket.priceUsd.toFixed(2)+' USD' : ticket.priceFlameCoin+' System Switch'}</p>
+            <p className="mt-1 text-[10px] text-slate-500">{ticket.priceUsd == null ? ticket.priceFlameCoin+' TRX value' : 'Payable in naira'}</p>
           </div>
           <div className="rounded-xl border border-white/10 bg-black/25 p-3">
             <p className="text-[9px] uppercase tracking-widest text-slate-500">Pay in Naira</p>
             <p className="mt-1 text-xl font-black text-white">₦{ticket.amountNgn.toLocaleString()}</p>
-            <p className="mt-1 text-[10px] text-slate-500">₦{ticket.trxNgnRate.toLocaleString()} per TRX</p>
+            <p className="mt-1 text-[10px] text-slate-500">₦{(ticket.usdNgnRate ?? ticket.trxNgnRate).toLocaleString()} per {ticket.usdNgnRate != null ? 'USD' : 'TRX'}</p>
           </div>
         </div>
 

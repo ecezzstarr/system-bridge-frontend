@@ -1,4 +1,5 @@
 'use client'
+import { DistributionEntryBonusDesk } from '@/components/weave/distribution-entry-bonus-desk'
 import Link from 'next/link'
 import {useAuth} from '@/lib/auth-provider'
 import {useCallback,useEffect,useState} from 'react'
@@ -305,6 +306,7 @@ export default function RegionalDailyWorkspace(){
         </>}
       </article>)}
     </section>
+    <DistributionEntryBonusDesk token={token || ''}/>
     <footer className="text-xs leading-6 text-slate-400">The Regional Manager supervises verified work and support, not payment confirmation, employment appointment, Client ownership or salary credits. Administrations retains those authorities.</footer>
   </main>
 }

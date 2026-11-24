@@ -49,7 +49,7 @@ export async function ensureBridgerNumberEngineSchema(sql = getSql()) {
       id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
       bridger_id uuid NOT NULL REFERENCES users(id),
       country varchar(100) NOT NULL,
-      price_flame_coin numeric(30,8) NOT NULL CHECK (price_flame_coin > 0),
+      price_flame_coin numeric(30,8) NOT NULL CHECK (price_flame_coin >= 0),
       status varchar(24) NOT NULL DEFAULT 'requested',
       deadline_at timestamptz NOT NULL DEFAULT (NOW() + interval '30 minutes'),
       number_id uuid REFERENCES bridger_whatsapp_numbers(id),
@@ -60,6 +60,15 @@ export async function ensureBridgerNumberEngineSchema(sql = getSql()) {
       updated_at timestamptz NOT NULL DEFAULT NOW()
     )
   `
+  await sql`DO $$
+    BEGIN
+      IF EXISTS (SELECT 1 FROM pg_constraint WHERE conrelid='bridger_number_orders'::regclass
+        AND conname='bridger_number_orders_price_flame_coin_check'
+        AND pg_get_constraintdef(oid) LIKE '% > %') THEN
+        ALTER TABLE bridger_number_orders DROP CONSTRAINT bridger_number_orders_price_flame_coin_check;
+        ALTER TABLE bridger_number_orders ADD CONSTRAINT bridger_number_orders_price_flame_coin_check CHECK (price_flame_coin >= 0);
+      END IF;
+    END $$`
   await sql`CREATE INDEX IF NOT EXISTS idx_bridger_number_orders_owner ON bridger_number_orders(bridger_id,created_at DESC)`
   await sql`CREATE INDEX IF NOT EXISTS idx_bridger_number_orders_admin ON bridger_number_orders(status,deadline_at ASC)`
 

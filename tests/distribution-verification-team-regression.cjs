@@ -18,7 +18,7 @@ assert.match(employment,/MANAGER_EMPLOYMENT_LIMIT = 10/,'Ten lead Distribution M
 assert.match(employment,/MANAGER_MONTHLY_SALARY_NGN = 70_000/,'Lead salary retained')
 assert.match(assistants,/DISTRIBUTION_ASSISTANT_LIMIT = 20/,'Twenty assistant positions support ten lead managers')
 assert.match(assistants,/DISTRIBUTION_ASSISTANTS_PER_MANAGER = 2/,'Only two assistants per lead')
-assert.match(assistants,/DISTRIBUTION_ASSISTANT_MONTHLY_SALARY_NGN = 40_000/,'Assistant salary revised to ₦40,000')
+assert.match(assistants,/DISTRIBUTION_ASSISTANT_MONTHLY_SALARY_NGN = 45_000/,'Assistant salary revised to ₦40,000')
 assert.match(employment,/status='pending_verification'/,'Signature creates pending employment only')
 assert.match(employment,/probation_started_at=NULL,probation_ends_at=NULL/,'Signed applications cannot carry probation timestamps')
 assert.match(employment,/WHERE status IN \('pending_verification','probation','active'\)/,'All pending lead seats count toward ten-position capacity')

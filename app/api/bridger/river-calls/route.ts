@@ -4,7 +4,7 @@ import { getPool } from '@/lib/db'
 import { ensureWeaveReceiptSchema,issueWeaveReceipt } from '@/lib/weave-receipts'
 import {
   aiConfigured,ensureRiverCallSchema,hashToken,ID_RE,newWebhookToken,PHONE_RE,
-  refundUnconnectedCall,startTwilioVoice,twilioConfigured,webhookUrl,RIVER_CALL_PRICE_FLAME_COIN
+  refundUnconnectedCall,startTwilioVoice,twilioConfigured,webhookUrl
 } from '@/lib/river-voice-outreach'
 
 export const runtime='nodejs'
@@ -22,7 +22,7 @@ export async function GET(request:NextRequest) {
       pool.query('SELECT balance_trx FROM wallets WHERE user_id=$1::uuid AND is_primary=true LIMIT 1',[user.id]),
     ])
     const config=settings.rows[0]
-    return NextResponse.json({success:true,priceFlameCoin:RIVER_CALL_PRICE_FLAME_COIN,
+    return NextResponse.json({success:true,priceFlameCoin:0,
       enabled:Boolean(config?.enabled),providerReady:twilioConfigured()&&aiConfigured(),
       walletBalance:Number(wallet.rows[0]?.balance_trx||0),calls:calls.rows},{headers:{'Cache-Control':'private,no-store'}})
   }catch(e){console.error('[river voice GET]',e);return NextResponse.json({error:'River call records unavailable'},{status:503})}
@@ -64,31 +64,22 @@ export async function POST(request:NextRequest) {
     const blocked=await client.query('SELECT 1 FROM weave_river_call_optouts WHERE phone_e164=$1 LIMIT 1',[phone])
     if(blocked.rows.length){await client.query('ROLLBACK');return NextResponse.json({error:'This contact declined AI outreach and cannot be called'},{status:403})}
     const cfg=await client.query('SELECT enabled,price_flame_coin FROM weave_river_call_settings WHERE id=1')
-    fee=RIVER_CALL_PRICE_FLAME_COIN
-    if(!cfg.rows[0]?.enabled || !Number.isFinite(fee) || fee<=0){
-      await client.query('ROLLBACK');return NextResponse.json({error:'Administrations has not activated a River call price'},{status:503})
+    fee=0
+    if(!cfg.rows[0]?.enabled){
+      await client.query('ROLLBACK');return NextResponse.json({error:'Administrations has not enabled River calls'},{status:503})
     }
     const wa=await client.query('SELECT whatsapp_number FROM users WHERE id=$1::uuid',[user.id])
     const bridgerWhatsapp=String(wa.rows[0]?.whatsapp_number||'').replace(/\D/g,'')
     if(!/^[1-9]\d{6,14}$/.test(bridgerWhatsapp)){
       await client.query('ROLLBACK');return NextResponse.json({error:'Save your valid WhatsApp number in My Prospects before using River outreach'},{status:400})
     }
-    const wallet=await client.query('SELECT id,balance_trx FROM wallets WHERE user_id=$1::uuid AND is_primary=true FOR UPDATE',[user.id])
-    if(!wallet.rows[0]){await client.query('ROLLBACK');return NextResponse.json({error:'Primary wallet not found'},{status:404})}
-    const before=Number(wallet.rows[0].balance_trx)
-    if(before<fee){await client.query('ROLLBACK');return NextResponse.json({error:'Insufficient System Switch balance',required:fee,available:before},{status:402})}
-    balanceAfter=before-fee
-    await client.query('UPDATE wallets SET balance_trx=$1,updated_at=NOW() WHERE id=$2',[balanceAfter,wallet.rows[0].id])
+    const wallet=await client.query('SELECT balance_trx FROM wallets WHERE user_id=$1::uuid AND is_primary=true LIMIT 1',[user.id])
+    balanceAfter=Number(wallet.rows[0]?.balance_trx||0)
     const created=await client.query(
       "INSERT INTO weave_river_calls(bridger_id,request_key,source_outreach_id,candidate_name,phone_e164,consent_source,bridger_whatsapp,price_flame_coin,webhook_token_hash) "+
       "VALUES($1::uuid,$2::uuid,$3::uuid,$4,$5,$6,$7,$8,$9) RETURNING id",
       [user.id,requestKey,sourceOutreachId||null,name||null,phone,consentSource,bridgerWhatsapp,fee,hashToken(token)])
     id=String(created.rows[0].id)
-    await client.query(
-      "INSERT INTO ledger_entries(id,user_id,entry_type,amount,currency,description,balance_before,balance_after,metadata,created_at) "+
-      "VALUES(gen_random_uuid(),$1::uuid,'fee',$2,'Flame Coin','River live outreach call',$3,$4,$5::jsonb,NOW())",
-      [user.id,fee,before,balanceAfter,JSON.stringify({commerce_type:'river_voice_call',call_id:id,phone_masked:phone.slice(0,4)+'****'})]
-    )
     await client.query('COMMIT')
   }catch(e){await client.query('ROLLBACK').catch(()=>{});console.error('[river voice purchase]',e);
     return NextResponse.json({error:'River call purchase could not be completed'},{status:500})

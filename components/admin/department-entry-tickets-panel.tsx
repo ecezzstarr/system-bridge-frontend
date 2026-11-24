@@ -11,6 +11,7 @@ type EntryTicket = {
   ticket_number: string
   department: 'AGENT' | 'BRIDGER'
   status: string
+  price_usd?: number | string | null
   price_flame_coin: number | string
   amount_ngn: number | string
   payer_name?: string | null
@@ -98,7 +99,7 @@ export function DepartmentEntryTicketsPanel() {
           </div>
 
           <p className="mt-3 text-sm font-bold text-white">
-            {Number(ticket.price_flame_coin).toLocaleString()} System Switch · ₦{Number(ticket.amount_ngn).toLocaleString()}
+            {ticket.price_usd != null ? '$'+Number(ticket.price_usd).toFixed(2)+' USD' : Number(ticket.price_flame_coin).toLocaleString()+' System Switch'} · ₦{Number(ticket.amount_ngn).toLocaleString()}
           </p>
 
           <div className="mt-2 space-y-1 text-xs text-slate-400">
@@ -162,7 +163,7 @@ export function DepartmentEntryTicketsPanel() {
             <h2 className="text-sm font-black uppercase tracking-widest">Department Entry Tickets</h2>
           </div>
           <p className="mt-1 text-xs text-slate-500">
-            New Agent tickets cost 5 System Switch and new Bridger tickets cost 8 System Switch. Existing ticket amounts stay unchanged. Verify the recorded payment before releasing a one-use departmental code.
+            New Agent tickets cost $5 and new Bridger tickets cost $10. Existing ticket amounts stay unchanged. Verify the recorded payment before releasing a one-use departmental code.
           </p>
         </div>
         <Button size="sm" variant="ghost" onClick={() => load()} disabled={loading} className="text-slate-400">

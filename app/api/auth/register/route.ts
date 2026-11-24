@@ -1,3 +1,5 @@
+import { ensureRegionalOperationsSchema, regionalTeam } from '@/lib/regional-manager-operations'
+import { ensureDistributionEntryBonusSchema, recordDistributionEntryBonus } from '@/lib/distribution-entry-bonuses'
 import { consumeAuthAttempt } from '@/lib/auth-throttle'
 import { NextRequest, NextResponse } from 'next/server'
 import { sql, getPool } from '@/lib/db'
@@ -156,6 +158,20 @@ export async function POST(request: NextRequest) {
 
     // Ensure the optional registration-loan ledger exists before starting the account transaction.
     await ensureEntryLoanSupportSchema()
+    let distributionRegionId: string | null = null
+    if (genericReferrerId) {
+      await ensureRegionalOperationsSchema()
+      const regions = await regionalTeam(null, genericReferrerId)
+      const directManager = await getPool().query(
+        "SELECT user_id FROM weave_regional_manager_appointments WHERE user_id=$1::uuid AND status='active'",
+        [genericReferrerId],
+      )
+      // An ambiguous attribution requires a team assignment correction before a credit.
+      distributionRegionId = directManager.rowCount ? genericReferrerId :
+        regions.length === 1 ? regions[0].manager_id : null
+      if (distributionRegionId) await ensureDistributionEntryBonusSchema()
+    }
+
 
     // Form a whole account or none. A paid one-use code cannot be spent on an
     // account that fails to create its wallet, profile or login session.
@@ -228,6 +244,9 @@ export async function POST(request: NextRequest) {
           }, {status:409})
         }
         registrationLoanValue = principal
+      }
+      if (distributionRegionId && genericReferrerId && !ticketLoan) {
+        await recordDistributionEntryBonus(connection, used[0].id, userId, genericReferrerId, distributionRegionId)
       }
       await tx`
         INSERT INTO departmental_audit_log (event, department, target_user, code_id, result)

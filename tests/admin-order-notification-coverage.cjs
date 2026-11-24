@@ -68,7 +68,7 @@ const cases=[
   ['app/api/carrier/cakes/[code]/route.ts',["subject:'Daisy Pastries Carrier order'","event:'payment_submitted'"]],
   ['app/api/agent/cakes/route.ts',["subject:'Daisy Pastries order'","event:'paid'"]],
   ['app/api/bridger/numbers/route.ts',["subject:'Bridger Number Bay country order'","subject:'Bridger Number Bay purchase'"]],
-  ['app/api/market/prospects/purchase/route.ts',["subject:'Bridger prospect package purchase'","event:'paid'"]],
+  ['app/api/market/prospects/purchase/route.ts',["subject:'Bridger prospect package claimed'","event:'paid'"]],
   ['app/api/bridge/file-folder/purchase/route.ts',["subject:'File Folder purchase awaiting verification'"]],
   ['app/api/public/store/[slug]/orders/route.ts',["subject:'Client Customer Door order'"]],
   ['app/api/client/business-store/orders/[id]/status/route.ts',["subject:'Customer Door external payment needs verification'","event:action==='fulfilled'?'fulfilled':'cancelled'"]],

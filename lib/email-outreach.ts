@@ -5,7 +5,7 @@ import { getConnectedMailboxCredential, markMailboxSent } from '@/lib/weave-mail
 import { GoogleMailError, sendAuthenticatedGoogleMail } from '@/lib/weave-mail'
 import { getWeaveBridgeOrigin } from '@/lib/weave-origin'
 
-export const EMAIL_PROSPECT_PRICE_FLAME_COIN = 0.55
+export const EMAIL_PROSPECT_PRICE_FLAME_COIN = 0
 export const EMAIL_OUTREACH_ADMIN_DAILY_LIMIT = 120
 
 export function normalizeOutreachEmail(value: unknown) {

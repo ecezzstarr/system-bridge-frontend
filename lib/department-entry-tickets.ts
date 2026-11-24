@@ -1,6 +1,5 @@
 import { createHash, randomBytes } from 'node:crypto'
 import { sql, getPool } from './db'
-import { getTrxPaymentNgnRate } from './trx-payment'
 import { WEAVE_OPAY_ACCOUNT_NUMBER } from './opay-config'
 import { generateCode, issueDepartmentalCode, type Department } from './departmental-codes'
 import { saturdayFreeEntryWindow } from './saturday-free-entry'
@@ -41,6 +40,9 @@ export async function ensureDepartmentEntryTicketSchema() {
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `
+  await sql`ALTER TABLE departmental_entry_tickets
+    ADD COLUMN IF NOT EXISTS price_usd NUMERIC(30,2),
+    ADD COLUMN IF NOT EXISTS usd_ngn_rate NUMERIC(30,8)`
   await sql`ALTER TABLE departmental_codes ADD COLUMN IF NOT EXISTS registration_request_id UUID`
   await sql`
     CREATE UNIQUE INDEX IF NOT EXISTS idx_departmental_codes_registration_request
@@ -149,11 +151,22 @@ export async function createDepartmentEntryTicket(department: Department) {
 
   const accessToken = randomBytes(32).toString('hex')
   const accessTokenHash = hashAccessToken(accessToken)
-  const priceSystemSwitch = departmentEntryTicketPrice(department)
-  const { rateNgnPerTrx, source } = await getTrxPaymentNgnRate()
-  const amountNgn = Math.round(
-    priceSystemSwitch * rateNgnPerTrx * 100
-  ) / 100
+  const priceUsd = departmentEntryTicketPrice(department)
+  const response = await fetch(
+    'https://api.coingecko.com/api/v3/simple/price?ids=tron&vs_currencies=usd,ngn',
+    { next: { revalidate: 60 }, signal: AbortSignal.timeout(8000) },
+  )
+  if (!response.ok) throw new Error('Live USD checkout quote unavailable. Try again shortly.')
+  const data = await response.json()
+  const rateNgnPerTrx = Number(data?.tron?.ngn)
+  const rateUsdPerTrx = Number(data?.tron?.usd)
+  if (![rateNgnPerTrx, rateUsdPerTrx].every(rate => Number.isFinite(rate) && rate > 0)) {
+    throw new Error('Live USD checkout quote unavailable. Try again shortly.')
+  }
+  const rateNgnPerUsd = rateNgnPerTrx / rateUsdPerTrx
+  const amountNgn = Math.round(priceUsd * rateNgnPerUsd * 100) / 100
+  // Existing loans are repaid through the legacy TRX-denominated ledger.
+  const legacyLoanPrincipal = Math.round(amountNgn / rateNgnPerTrx * 1e8) / 1e8
 
   for (let attempt = 0; attempt < 8; attempt += 1) {
     const ticketNumber = createTicketNumber(department)
@@ -166,6 +179,8 @@ export async function createDepartmentEntryTicket(department: Department) {
           status,
           price_flame_coin,
           trx_ngn_rate,
+          price_usd,
+          usd_ngn_rate,
           amount_ngn,
           opay_account_number,
           expires_at
@@ -175,8 +190,10 @@ export async function createDepartmentEntryTicket(department: Department) {
           ${accessTokenHash},
           ${department},
           'PRESENTED',
-          ${priceSystemSwitch},
+          ${legacyLoanPrincipal},
           ${rateNgnPerTrx},
+          ${priceUsd},
+          ${rateNgnPerUsd},
           ${amountNgn},
           ${WEAVE_OPAY_ACCOUNT_NUMBER},
           NOW() + INTERVAL '24 hours'
@@ -187,13 +204,13 @@ export async function createDepartmentEntryTicket(department: Department) {
       const ticket = rows[0]
       await notifyAdmins(
         `New ${department} entry visitor`,
-        `A visitor entered the ${department} ticket gate. Ticket ${ticketNumber} has been presented at ${priceSystemSwitch} System Switch (₦${amountNgn.toLocaleString()}).`
+        `A visitor entered the ${department} ticket gate. Ticket ${ticketNumber} has been presented at USD ${priceUsd} (₦${amountNgn.toLocaleString()}).`
       )
 
       return {
         ticket,
         accessToken,
-        rateSource: source,
+        rateSource: "live",
       }
     } catch (error: any) {
       if (error?.code === '23505') continue

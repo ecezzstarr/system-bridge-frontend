@@ -104,6 +104,11 @@ export async function refundUnconnectedCall(id:string) {
     const r=await client.query("SELECT * FROM weave_river_calls WHERE id=$1::uuid FOR UPDATE",[id])
     const call=r.rows[0]
     if(!call || call.refund_at){await client.query('COMMIT');return false}
+    if (Number(call.price_flame_coin) === 0) {
+      await client.query("UPDATE weave_river_calls SET status='failed',ended_at=COALESCE(ended_at,now()) WHERE id=$1::uuid",[id])
+      await client.query('COMMIT')
+      return false
+    }
     const wallet=await client.query("SELECT id,balance_trx FROM wallets WHERE user_id=$1::uuid AND is_primary=true FOR UPDATE",[call.bridger_id])
     if(!wallet.rows[0])throw new Error('Wallet unavailable for call refund')
     const before=Number(wallet.rows[0].balance_trx),fee=Number(call.price_flame_coin)

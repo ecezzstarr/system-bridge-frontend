@@ -7,7 +7,7 @@ import { calculateDistributionTeamCompensation } from '@/lib/distribution-team-c
 
 export const DISTRIBUTION_ASSISTANT_LIMIT = 20
 export const DISTRIBUTION_ASSISTANTS_PER_MANAGER = 2
-export const DISTRIBUTION_ASSISTANT_MONTHLY_SALARY_NGN = 40_000
+export const DISTRIBUTION_ASSISTANT_MONTHLY_SALARY_NGN = 45_000
 // Team target is 300 in the Manager's probation month, then 500 per employment month.
 export const DISTRIBUTION_ASSISTANT_MONTHLY_REFERRAL_TARGET = DISTRIBUTION_TEAM_MONTHLY_REFERRAL_TARGET
 
@@ -26,7 +26,7 @@ export async function ensureDistributionAssistantSchema() {
       administration_verified_at TIMESTAMPTZ,
       administration_verification_note TEXT,
       manager_user_id UUID REFERENCES users(id) ON DELETE SET NULL,
-      monthly_salary_ngn NUMERIC(12,2) NOT NULL DEFAULT 40000,
+      monthly_salary_ngn NUMERIC(12,2) NOT NULL DEFAULT 45000,
       monthly_referral_target INTEGER NOT NULL DEFAULT 500,
       hired_at TIMESTAMPTZ,
       reviewed_at TIMESTAMPTZ,
@@ -43,9 +43,9 @@ export async function ensureDistributionAssistantSchema() {
   await sql`ALTER TABLE weave_distribution_assistants ADD COLUMN IF NOT EXISTS exit_reason TEXT`
   await sql`ALTER TABLE weave_distribution_assistants ADD COLUMN IF NOT EXISTS exited_at TIMESTAMPTZ`
   await sql`ALTER TABLE weave_distribution_assistants ADD COLUMN IF NOT EXISTS exited_by UUID REFERENCES users(id)`
-  await sql`ALTER TABLE weave_distribution_assistants ALTER COLUMN monthly_salary_ngn SET DEFAULT 40000`
+  await sql`ALTER TABLE weave_distribution_assistants ALTER COLUMN monthly_salary_ngn SET DEFAULT 45000`
   // Update previous ₦30,000 appointments; preserve any separately authorized custom terms.
-  await sql`UPDATE weave_distribution_assistants SET monthly_salary_ngn=40000,updated_at=NOW() WHERE monthly_salary_ngn=30000`
+  await sql`UPDATE weave_distribution_assistants SET monthly_salary_ngn=45000,updated_at=NOW() WHERE monthly_salary_ngn IN (30000,40000)`
   await sql`ALTER TABLE weave_distribution_assistants ALTER COLUMN monthly_referral_target SET DEFAULT 500`
   await sql`UPDATE weave_distribution_assistants SET monthly_referral_target=500 WHERE monthly_referral_target<>500`
 }
