@@ -161,7 +161,7 @@ export default function ProspectMarketPage() {
       })
       const data = await res.json()
       if (data.success) {
-        toast.success('Package purchased! Check "My Prospects" to send your first message.'); if (typeof data.newBalance === 'number') updateBalance(data.newBalance)
+        toast.success('Package claimed! Check "My Prospects" to send your first message.'); if (typeof data.newBalance === 'number') updateBalance(data.newBalance)
         fetchPackages()
       } else if(data.purchaseCompleted){
         toast.warning('Package purchase was recorded, but Agent commission or receipt reconciliation needs attention. You have not been charged twice. Your candidates remain in My Prospects.')
@@ -317,7 +317,7 @@ export default function ProspectMarketPage() {
       <section className="rounded-2xl border border-emerald-300/25 bg-emerald-300/[.045] p-5" data-bridger-outreach-quick-start="true">
         <h2 className="text-xl font-bold text-white">Start real outreach · Three actions</h2>
         <div className="mt-3 grid gap-3 sm:grid-cols-3 text-sm leading-6 text-slate-200">
-          <p><strong className="text-emerald-200">1. Find a candidate.</strong> Claim today's free contact or buy a published package at its displayed System Switch price. Numbers and interest are unverified.</p>
+          <p><strong className="text-emerald-200">1. Find a candidate.</strong> Claim today's free contact or claim a published package for free. Numbers and interest are unverified.</p>
           <p><strong className="text-emerald-200">2. Contact personally.</strong> Open WhatsApp and actually send the prepared message. Return here to confirm only after sending. Two genuine contacts per working hour is the company standard.</p>
           <p><strong className="text-emerald-200">3. Respond and earn.</strong> Listen, then share Bridge AI only with permission. Earnings and referral rewards require actual verified transactions, not clicks or unsent drafts.</p>
         </div>
@@ -382,8 +382,7 @@ export default function ProspectMarketPage() {
                       </div>
 
                       <div className="flex items-baseline gap-1">
-                        <span className="text-3xl font-black text-white">{pkg.price_trx}</span>
-                        <span className="text-xs font-black text-[#e8b93f] uppercase tracking-widest">System Switch</span>
+                        <span className="text-xl font-black text-white">Free</span>
                       </div>
                     </CardContent>
                     <CardFooter className="pt-0">
@@ -397,7 +396,7 @@ export default function ProspectMarketPage() {
                         ) : (
                           <ShoppingCart className="h-4 w-4 mr-2" />
                         )}
-                        Purchase Package
+                        Claim free package
                       </Button>
                     </CardFooter>
                   </Card>

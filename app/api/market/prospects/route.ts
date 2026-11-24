@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const packages = await sql`
-      SELECT id, price_trx, title, description, created_at
+      SELECT id, 0::numeric AS price_trx, title, description, created_at
       FROM market_prospect_packages
       WHERE status = 'published'
       ORDER BY created_at DESC

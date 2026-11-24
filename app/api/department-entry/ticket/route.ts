@@ -19,6 +19,8 @@ function safeTicket(ticket: any) {
     saturdayFreeEntry: freeEntry,
     priceFlameCoin: Number(ticket.price_flame_coin),
     trxNgnRate: Number(ticket.trx_ngn_rate),
+    priceUsd: ticket.price_usd == null ? null : Number(ticket.price_usd),
+    usdNgnRate: ticket.usd_ngn_rate == null ? null : Number(ticket.usd_ngn_rate),
     amountNgn: Number(ticket.amount_ngn),
     opayAccountNumber: ticket.opay_account_number,
     payerName: ticket.payer_name || null,
@@ -54,7 +56,6 @@ export async function POST(request: NextRequest) {
       ticket: safeTicket(result.ticket),
       accessToken: result.accessToken,
       rateSource: result.rateSource,
-      peg: '1 System Switch = 1 TRX',
     }, { status: 201 })
   } catch (error: any) {
     console.error('[department-entry] create ticket error:', error)

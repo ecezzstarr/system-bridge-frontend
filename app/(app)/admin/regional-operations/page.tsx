@@ -1,5 +1,6 @@
 'use client'
 import Link from 'next/link'
+import { DistributionPayrollReview } from '@/components/weave/distribution-payroll-review'
 import {useAuth} from '@/lib/auth-provider'
 import {useCallback,useEffect,useState} from 'react'
 
@@ -178,6 +179,7 @@ export default function AdminRegionalOperations(){
         })}
       </div>}
     </section>
+    <DistributionPayrollReview token={token || ''}/>
     <footer className="text-xs leading-6 text-slate-400">Staff assignment and supervision never authorize financial settlement, ownership changes or salary payments. Reports represent authorized staff activity, not proof of revenue.</footer>
   </main>
 }
