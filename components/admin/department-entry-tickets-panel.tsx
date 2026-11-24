@@ -11,6 +11,7 @@ type EntryTicket = {
   ticket_number: string
   department: 'AGENT' | 'BRIDGER'
   status: string
+  verified_at?: string | null
   price_usd?: number | string | null
   price_flame_coin: number | string
   amount_ngn: number | string
@@ -27,6 +28,7 @@ type EntryTicket = {
 }
 
 export function DepartmentEntryTicketsPanel() {
+  const [reference,setReference] = useState('')
   const [tickets, setTickets] = useState<EntryTicket[]>([])
   const [loading, setLoading] = useState(true)
   const [workingId, setWorkingId] = useState<string | null>(null)
@@ -39,7 +41,7 @@ export function DepartmentEntryTicketsPanel() {
   const load = async (silent = false) => {
     if (!silent) setLoading(true)
     try {
-      const res = await fetch('/api/admin/department-entry/tickets', { headers: authHeaders() })
+      const res = await fetch('/api/admin/department-entry/tickets?reference=' + encodeURIComponent(reference.trim()), { headers: authHeaders(), cache:'no-store' })
       const data = await res.json()
       if (res.ok && data.success) setTickets(data.tickets || [])
     } catch (error) {
@@ -53,9 +55,9 @@ export function DepartmentEntryTicketsPanel() {
     load()
     const stop = visiblePoll(() => load(true), 8000, false)
     return stop
-  }, [])
+  }, [reference])
 
-  const verify = async (ticketId: string, action: 'approve' | 'reject') => {
+  const verify = async (ticketId: string, action: 'approve' | 'reject' | 'check_payment') => {
     setWorkingId(ticketId)
     try {
       const res = await fetch('/api/admin/department-entry/tickets', {
@@ -65,7 +67,7 @@ export function DepartmentEntryTicketsPanel() {
       })
       const data = await res.json()
       if (!res.ok || !data.success) throw new Error(data.error || 'Unable to verify ticket')
-      toast.success(action === 'approve' ? 'Payment verified and code released' : 'Ticket rejected')
+      toast.success(data.message)
       await load(true)
     } catch (error: any) {
       toast.error(error?.message || 'Unable to verify ticket')
@@ -112,7 +114,7 @@ export function DepartmentEntryTicketsPanel() {
             {(ticket.payer_phone || ticket.payer_email) && <p>{ticket.payer_phone || ticket.payer_email}</p>}
             {ticket.payment_reference && (
               <div className="flex items-center gap-2">
-                <span>OPay ref: <span className="font-mono text-slate-200">{ticket.payment_reference}</span></span>
+                <span>Payment ref: <span className="font-mono text-slate-200">{ticket.payment_reference}</span></span>
                 <button onClick={() => copy(ticket.payment_reference!)} className="text-slate-500 hover:text-white">
                   <Copy className="h-3 w-3" />
                 </button>
@@ -129,7 +131,12 @@ export function DepartmentEntryTicketsPanel() {
           </div>
         </div>
 
-        {ticket.status === 'PAYMENT_PENDING' && (
+        {ticket.status === 'VERIFYING' && !ticket.verified_at && ticket.payment_reference && (
+          <Button size="sm" onClick={() => verify(ticket.id, 'check_payment')} disabled={workingId === ticket.id}>
+            Check Paystack payment
+          </Button>
+        )}
+        {(ticket.status === 'PAYMENT_PENDING' || (ticket.status === 'VERIFYING' && ticket.verified_at)) && (
           <div className="flex shrink-0 gap-2">
             <Button
               size="sm"
@@ -156,6 +163,11 @@ export function DepartmentEntryTicketsPanel() {
 
   return (
     <section className="rounded-2xl border border-amber-400/20 bg-amber-400/[0.03] p-5 text-white">
+      <label className="block text-sm text-slate-300">
+        Find a ticket by number or payment reference
+        <input className="mt-1 block w-full rounded border border-slate-700 bg-slate-950 p-2"
+          maxLength={255} value={reference} onChange={event=>setReference(event.target.value)}/>
+      </label>
       <div className="flex items-start justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">

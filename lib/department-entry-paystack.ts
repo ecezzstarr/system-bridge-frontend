@@ -53,20 +53,21 @@ export async function settleDepartmentEntryPaystackTicket(reference: string) {
     throw new Error('Paystack transaction does not match the ticket amount, currency, reference, or payer email.')
   }
   const changed = await sql`
-    UPDATE departmental_entry_tickets SET status = 'PAYMENT_PENDING', verified_at = NOW(), updated_at = NOW()
-    WHERE id = ${ticket.id}::uuid AND payment_reference = ${reference} AND status = 'VERIFYING' AND expires_at > NOW()
-    RETURNING id
+    WITH verified AS (
+      UPDATE departmental_entry_tickets SET status = 'PAYMENT_PENDING', verified_at = NOW(), updated_at = NOW()
+      WHERE id = ${ticket.id}::uuid AND payment_reference = ${reference} AND status = 'VERIFYING'
+        AND verified_by IS NULL
+      RETURNING id
+    ), alerted AS (
+      INSERT INTO notifications (user_id, type, title, content, from_user_name, link)
+      SELECT u.id, 'department_entry', ${ticket.department + ' ticket Paystack payment verified'},
+        ${'Paystack verified payment for ' + ticket.ticket_number + '. Open Departmental Registration to issue the code.'},
+        'WEAVE Paystack', '/admin/departmental-registration'
+      FROM verified CROSS JOIN users u WHERE u.role = 'admin' AND COALESCE(u.is_active, true) = true
+    )
+    SELECT id FROM verified
   `
-  if (changed[0]) {
-    try {
-      await sql`
-        INSERT INTO notifications (user_id, type, title, content, from_user_name, link)
-        SELECT id, 'department_entry', ${ticket.department + ' ticket Paystack payment verified'},
-          ${'Paystack verified payment for ' + ticket.ticket_number + '. Administration approval is still required before issuing the departmental code.'},
-          'WEAVE Paystack', '/admin/departmental-registration'
-        FROM users WHERE role = 'admin' AND COALESCE(is_active, true) = true
-      `
-    } catch (error) { console.error('[department-entry] verified-payment notification failed:', error) }
-  }
-  return { matched: true, settled: Boolean(changed[0]) }
+  if (changed[0]) return { matched: true, settled: true }
+  const current = await sql`SELECT status FROM departmental_entry_tickets WHERE id = ${ticket.id}::uuid`
+  return { matched: true, settled: ['PAYMENT_PENDING', 'CODE_ISSUED'].includes(current[0]?.status) }
 }

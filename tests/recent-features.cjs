@@ -206,7 +206,7 @@ assert.ok(departmentEntrySource.includes('Use Code & Continue Registration'),'De
 assert.ok(departmentTicketLibSource.includes('departmentEntryTicketPrice(department)'),'Department Entry uses role-specific USD prices')
 assert.ok(departmentTicketLibSource.includes('priceUsd * rateNgnPerUsd * 100'),'Department Entry locks the live USD quote in naira')
 assert.ok(departmentTicketLibSource.includes("'department_entry'"),'Administrations notifications created for Department Entry')
-assert.ok(departmentTicketLibSource.includes('issueDepartmentalCode'),'Code is issued from verified ticket flow')
+assert.ok(departmentTicketLibSource.includes('INSERT INTO departmental_codes') && departmentTicketLibSource.includes('FOR UPDATE'),'Code is issued from verified ticket flow')
 assert.ok(departmentRegisterSource.includes('DepartmentEntryTicketGate'),'Agent/Bridger registration uses paid ticket gate')
 assert.ok(!departmentRegisterSource.includes('Chat Administrations'),'Old manual visitor code-request gate removed')
 assert.ok(departmentAdminPanelSource.includes('Awaiting Verification'),'Administrations can verify entry payments')

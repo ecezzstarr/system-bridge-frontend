@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
   const reference = request.nextUrl.searchParams.get('reference') || request.nextUrl.searchParams.get('trxref') || ''
-  const target = new URL('/', request.url)
+  const target = new URL('/register', request.url)
   if (!reference) { target.searchParams.set('departmentEntryPayment', 'missing_reference'); return NextResponse.redirect(target) }
   try {
     const result = await settleDepartmentEntryPaystackTicket(reference)
