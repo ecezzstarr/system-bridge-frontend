@@ -35,7 +35,7 @@ const panels = {
       { title: 'Development Foundry', description: 'Persistent AI engineering roles led by Eight, grounded in live WEAVE source and gated by Administrations authority.', href: '/admin/development-agents', icon: Code, tags: ['EIGHT', 'AGENTS', 'VERIFICATION'] },
       { title: 'WEAVE Integrity Engine', description: 'Inspect live Prospect, Number Bay and Bridger prerequisites and repair only proven business-state drift.', href: '/admin/dev-workshop', icon: ShieldCheck, tags: ['INTEGRITY', 'SAFE REPAIR'] },
       { title: 'Client Vault', description: 'Review client balances and withdrawal requests.', href: '/admin/client-vault', icon: Database, tags: ['CLIENTS', 'VAULT'] },
-      { title: 'Campaign Flame', description: 'Review crossings and originating provider allocations.', href: '/admin/campaign-flame', icon: Sparkles, tags: ['FLAME', 'REPORTS'] },
+      { title: 'Campaign Flame', description: 'Review crossings and historical provider allocations.', href: '/admin/campaign-flame', icon: Sparkles, tags: ['FLAME', 'REPORTS'] },
       {
         title: 'Company Loop Workshop',
         description:
