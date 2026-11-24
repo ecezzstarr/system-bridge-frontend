@@ -32,6 +32,23 @@ export async function ensureDistributionEntryBonusSchema() {
     salary_terms jsonb NOT NULL,
     reviewed_at timestamptz NOT NULL DEFAULT NOW(),
     PRIMARY KEY(regional_manager_id, month_start)
+  );
+  CREATE TABLE IF NOT EXISTS weave_distribution_entry_corrections (
+    ticket_id uuid PRIMARY KEY REFERENCES weave_distribution_entry_bonuses(ticket_id),
+    recorded_by uuid NOT NULL REFERENCES users(id),
+    reason text NOT NULL,
+    recorded_at timestamptz NOT NULL DEFAULT NOW()
+  );
+  CREATE TABLE IF NOT EXISTS weave_distribution_payments (
+    regional_manager_id uuid NOT NULL REFERENCES users(id),
+    month_start date NOT NULL,
+    recipient_id uuid NOT NULL REFERENCES users(id),
+    kind text NOT NULL CHECK(kind IN ('salary','bonus')),
+    amount_kobo bigint NOT NULL CHECK(amount_kobo > 0),
+    reference text NOT NULL UNIQUE,
+    recorded_by uuid NOT NULL REFERENCES users(id),
+    recorded_at timestamptz NOT NULL DEFAULT NOW(),
+    PRIMARY KEY(regional_manager_id,month_start,recipient_id,kind)
   )`)
 }
 
@@ -50,3 +67,16 @@ export async function recordDistributionEntryBonus(
         AND l.status IN ('approved','registered'))
     ON CONFLICT(ticket_id) DO NOTHING`, [codeId,registrantId,referrerId,regionId])
 }
+
+
+export const distributionPayableSql = `
+  SELECT regional_manager_id, month_start, (term->>'userId')::uuid AS recipient_id,
+    'salary'::text AS kind, ROUND((term->>'salaryNgn')::numeric * 100)::bigint AS amount_kobo
+  FROM weave_distribution_salary_reviews CROSS JOIN LATERAL jsonb_array_elements(salary_terms) term
+  WHERE approved
+  UNION ALL
+  SELECT regional_manager_id, month_start, (allocation->>'userId')::uuid,
+    'bonus'::text, (allocation->>'kobo')::bigint
+  FROM weave_distribution_entry_bonus_splits CROSS JOIN LATERAL jsonb_array_elements(allocations) allocation
+  WHERE (allocation->>'kobo')::bigint > 0
+`
