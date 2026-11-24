@@ -8,8 +8,21 @@ const regional=read('app/(app)/weave/lifestyles/regional-manager/workspace/page.
 const catalog=read('lib/bridger-workplace-catalog.ts')
 const claims=read('app/api/bridger/daily-prospect/route.ts')
 const engine=read('lib/bridger-daily-prospect-engine.ts')
-for(const name of ['tiktok','facebook','instagram','x','youtube','linkedin'])
-  assert.ok(api.includes(name)&&board.includes(name),'Hope social channel: '+name)
+const channels=read('lib/hope-outreach-channels.ts')
+for(const name of ['tiktok','facebook','instagram','x','youtube','linkedin','threads','bluesky','divine','whatsapp'])
+  assert.ok(channels.includes(name),'Hope social channel: '+name)
+assert.ok(api.includes('HOPE_POST_CHANNELS')&&board.includes('HOPE_POST_CHANNELS'),
+  'Manual evidence and daily plans use the same platform directory')
+assert.ok(api.includes('prior.direction')&&api.includes('EXCLUDED.direction')&&board.includes('current.plan.direction'),
+  'Audience direction is persisted, carried forward and visible to the assigned Bridger')
+assert.ok(api.includes("action==='record_social_prospect'")&&api.includes("action==='update_social_followup'")&&
+  api.includes('body.agreed!==true')&&api.includes('completed_at IS NULL')&&board.includes('item.follow_up_on<=data.day'),
+  'Agreed social follow-ups survive day changes and can be advanced or completed')
+assert.ok(api.includes("action==='set_reviewer'")&&api.includes('supportRegions')&&
+  api.includes('reviewer_user_id=$5::uuid')&&api.includes("socialProspects:ctx.kind==='reviewer'?[]"),
+  'Explicit active-region delegation permits public evidence review without sharing private prospect notes')
+assert.ok(api.includes("OR status='pending'")&&api.includes('todaysEvidence'),
+  'Prior pending evidence remains reviewable without changing current-day work counts')
 for(const table of ['weave_regional_bridger_outreach_targets','weave_regional_bridger_target_audit','weave_regional_bridger_post_evidence'])
   assert.ok(api.includes('CREATE TABLE IF NOT EXISTS '+table),'Outreach records persist: '+table)
 for(const action of ["action==='save_plan'","action==='submit_post'","action==='review_post'"])
