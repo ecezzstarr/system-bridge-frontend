@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
       relevant: true,
       crossing: 'prospect_with_flame',
       flame: { name: flameName, presence: flamePresence },
-      provider: { key: providerKey, name: providerName, allocation_rate: 0.10 },
+      provider: { key: providerKey, name: providerName, allocation_rate: 0 },
       topic,
       bridge_url: bridgeUrl,
       message: 'Bridge AI has opened System Switch. The prospect and Flame can continue their interaction in Weave.',
