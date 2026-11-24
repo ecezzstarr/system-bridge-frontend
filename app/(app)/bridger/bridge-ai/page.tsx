@@ -143,7 +143,7 @@ export default function BridgerWorkshopPage() {
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Open a Bridge AI Template · {BRIDGE_AI_TEMPLATE_PRICE} System Switch</DialogTitle>
+              <DialogTitle>Open a Bridge AI Template</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 py-2">
               <div>
@@ -173,7 +173,7 @@ export default function BridgerWorkshopPage() {
             </div>
             <DialogFooter>
               <Button onClick={handleCreate} disabled={!selectedTemplateId || creating}>
-                {creating ? 'Opening...' : `Open Template · ${BRIDGE_AI_TEMPLATE_PRICE} System Switch`}
+                {creating ? 'Opening...' : 'Open template'}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -181,8 +181,8 @@ export default function BridgerWorkshopPage() {
       </header>
 
       <section className="border-b border-slate-800 bg-black/10 px-5 py-5 md:px-7" data-bridge-ai-station="per-template">
-        <h2 className="text-lg font-bold text-white">Bridge AI · {BRIDGE_AI_TEMPLATE_PRICE} System Switch per template opening</h2>
-        <p className="mt-2 text-sm text-slate-400">Each new Bridge AI path is purchased once when you open a template. Existing paths remain available with no monthly subscription. Your wallet is charged only when a new path is created.</p>
+        <h2 className="text-lg font-bold text-white">Bridge AI · First template free</h2>
+        <p className="mt-2 text-sm text-slate-400">Additional template paths cost {BRIDGE_AI_TEMPLATE_PRICE} System Switch each. Your existing paths stay available.</p>
       </section>
       {subError && <div role="alert" className="border-b border-red-400/20 px-5 py-3 text-sm text-red-200">{subError}</div>}
 

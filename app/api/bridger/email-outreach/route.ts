@@ -117,25 +117,10 @@ export async function POST(request: NextRequest) {
       }
 
       const wallet = await client.query(
-        `SELECT balance_trx FROM wallets
-         WHERE user_id=$1::uuid AND is_primary=true
-         FOR UPDATE`,
+        'SELECT balance_trx FROM wallets WHERE user_id=$1::uuid AND is_primary=true LIMIT 1',
         [user.id],
       )
-      if (!wallet.rows[0]) {
-        await client.query('ROLLBACK')
-        return NextResponse.json({ error: 'Primary System Switch wallet not found' }, { status: 404 })
-      }
-
-      const balanceBefore = Number(wallet.rows[0].balance_trx || 0)
-      if (balanceBefore < EMAIL_PROSPECT_PRICE_FLAME_COIN) {
-        await client.query('ROLLBACK')
-        return NextResponse.json({
-          error: 'Insufficient System Switch balance',
-          required: EMAIL_PROSPECT_PRICE_FLAME_COIN,
-          currentBalance: balanceBefore,
-        }, { status: 400 })
-      }
+      balanceAfter = Number(wallet.rows[0]?.balance_trx || 0)
 
       const leadResult = await client.query(
         `SELECT *
@@ -152,29 +137,12 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'No email Prospect is available right now' }, { status: 409 })
       }
 
-      balanceAfter = balanceBefore - EMAIL_PROSPECT_PRICE_FLAME_COIN
-      await client.query(
-        `UPDATE wallets SET balance_trx=$1,updated_at=NOW()
-         WHERE user_id=$2::uuid AND is_primary=true`,
-        [balanceAfter, user.id],
-      )
       await client.query(
         `UPDATE weave_email_prospect_leads
          SET status='acquired',owned_by=$1::uuid,acquired_at=NOW(),updated_at=NOW()
          WHERE id=$2::uuid`,
         [user.id, lead.id],
       )
-      await client.query(
-        `INSERT INTO ledger_entries (id, user_id, entry_type, amount, currency, description, balance_before, balance_after, created_at, metadata) VALUES (gen_random_uuid(), $1::uuid, 'fee', $2, 'Flame Coin', $3, $4, $5, NOW(), jsonb_build_object('commerce_type','email_prospect_purchase'))`,
-        [
-          user.id,
-          EMAIL_PROSPECT_PRICE_FLAME_COIN,
-          `Email Prospect ${lead.lead_code}`,
-          balanceBefore,
-          balanceAfter,
-        ],
-      )
-
       await client.query('COMMIT')
     } catch (error) {
       try { await client.query('ROLLBACK') } catch {}

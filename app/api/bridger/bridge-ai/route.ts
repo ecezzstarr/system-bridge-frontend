@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// Each newly opened Bridge AI template path costs 8 System Switch once.
+// The first Bridge AI path is free. Additional template paths have the existing opening fee.
 // Existing paths remain live; there is no Bridge AI monthly subscription.
 export async function POST(request: NextRequest) {
   const user = await getAuthUser(request)
@@ -68,13 +68,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({error:'Published template not found'},{status:404})
     }
     // Keep ordinary Bridger activity accessible without Agentic-Bridger purchase.
-    const bridger = await client.query('SELECT role,is_active,assigned_agent_id FROM users WHERE id=$1::uuid LIMIT 1',[user.id])
+    const bridger = await client.query('SELECT role,is_active,assigned_agent_id FROM users WHERE id=$1::uuid LIMIT 1 FOR UPDATE',[user.id])
     const owner = bridger.rows[0]
     if (!owner || (user.role === 'bridger' && owner.is_active === false)) {
       await client.query('ROLLBACK')
       return NextResponse.json({error:'Active Bridger position required'},{status:403})
     }
-    if (user.role === 'bridger') {
+    const existingPath = user.role === 'bridger' && (await client.query(
+      'SELECT 1 FROM bridge_ais WHERE bridger_id=$1::uuid LIMIT 1', [user.id],
+    )).rows.length > 0
+    if (existingPath) {
       const wallets = await client.query(
         'SELECT id,balance_trx FROM wallets WHERE user_id=$1::uuid AND is_primary=true ORDER BY created_at LIMIT 1 FOR UPDATE',
         [user.id]

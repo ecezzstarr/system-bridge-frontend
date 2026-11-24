@@ -199,8 +199,8 @@ export default function BridgerNumbersPage(){
   <div className="flex items-end justify-between gap-3 border-b border-white/10 pb-4">
    <div>
     <p className="text-[9px] font-black uppercase tracking-[.2em] text-cyan-300">Country selection</p>
-    <h2 className="mt-1 text-xl font-black text-white">Choose country → buy or order</h2>
-    <p className="mt-2 text-xs text-slate-400">You always see the country and System Switch price before spending. The exact phone number is revealed only after assignment or Administrations delivery.</p>
+    <h2 className="mt-1 text-xl font-black text-white">Choose a country to claim or request</h2>
+    <p className="mt-2 text-xs text-slate-400">Numbers are free for Bridgers. The exact phone number is revealed only after assignment or Administrations delivery.</p>
    </div>
    <button onClick={()=>void load()} aria-label="Refresh Number Bay" className="rounded-xl border border-white/10 p-2"><RefreshCw className={`h-4 w-4 text-slate-400 ${loading?'animate-spin':''}`}/></button>
   </div>
@@ -210,7 +210,6 @@ export default function BridgerNumbersPage(){
     <p className="rounded-2xl border border-dashed border-white/10 p-5 text-sm text-slate-500">No countries are published in the Number Bay yet.</p>
     :offers.map(offer=>{
      const stock=Number(offer.stock_count)||0
-     const price=Number(offer.price_flame_coin)||0
      return <article key={offer.country} className={`rounded-2xl border p-4 ${stock>0?'border-cyan-300/10 bg-cyan-400/[.025]':'border-amber-300/10 bg-amber-400/[.025]'}`}>
       <div className="flex items-start justify-between gap-3">
        <div>
@@ -219,17 +218,17 @@ export default function BridgerNumbersPage(){
        </div>
        {stock>0?<BatteryCharging className="h-5 w-5 text-cyan-300"/>:<PackageSearch className="h-5 w-5 text-amber-300"/>}
       </div>
-      <p className="mt-4 text-2xl font-black text-white">{price.toLocaleString()} <span className="text-xs text-slate-500">System Switch</span></p>
+      <p className="mt-4 text-2xl font-black text-white">Free</p>
       {stock>0?
-       <p className="mt-2 text-[10px] leading-5 text-slate-500">{stock} in WEAVE stock · immediate assignment after successful purchase.</p>
+       <p className="mt-2 text-[10px] leading-5 text-slate-500">{stock} in WEAVE stock · immediate assignment after claim.</p>
        :<p className="mt-2 text-[10px] leading-5 text-slate-400">Out of stock · Administrations can acquire and deliver this country through WEAVE within the {Number(offer.delivery_minutes)||30}-minute target.</p>}
       {stock>0?
        <button
-        data-presence-output={`Buy ${offer.country} WEAVE number for ${price.toLocaleString()} System Switch`}
+        data-presence-output={`Claim a free ${offer.country} WEAVE number`}
         onClick={()=>void buyCountry(offer.country)}
         disabled={buying===offer.country}
         className="mt-4 w-full rounded-xl bg-cyan-300 p-2.5 text-xs font-black text-slate-950 disabled:opacity-40"
-       ><ShoppingCart className="mr-2 inline h-4 w-4"/>{buying===offer.country?'Assigning…':'Buy '+offer.country+' number'}</button>
+       ><ShoppingCart className="mr-2 inline h-4 w-4"/>{buying===offer.country?'Assigning…':'Claim '+offer.country+' number'}</button>
        :<button data-presence-output={`Order ${offer.country} WEAVE number for Administrations delivery`} onClick={()=>void orderCountry(offer.country)} disabled={ordering===offer.country||activeOrders.some(o=>String(o.country).toLowerCase()===String(offer.country).toLowerCase())} className="mt-4 w-full rounded-xl bg-amber-300 p-2.5 text-xs font-black text-slate-950 disabled:opacity-40"><Timer className="mr-2 inline h-4 w-4"/>{ordering===offer.country?'Ordering…':activeOrders.some(o=>String(o.country).toLowerCase()===String(offer.country).toLowerCase())?'Order active':'Order · '+(Number(offer.delivery_minutes)||30)+' min delivery'}</button>}
      </article>
     })
@@ -285,8 +284,8 @@ export default function BridgerNumbersPage(){
  </>
 
  const right=<>
-  <section className="rounded-3xl border border-amber-300/15 bg-amber-400/[.035] p-4"><ShieldCheck className="h-5 w-5 text-amber-300"/><p className="mt-3 text-sm font-black text-white">WEAVE wrapper</p><p className="mt-2 text-xs leading-5 text-slate-400">Provider acquisition details remain Administrations-only. You see the country, System Switch price, stock state, delivery deadline, assigned number and verification movement.</p></section>
-  <section className="rounded-3xl border border-white/10 bg-black/20 p-4"><Phone className="h-5 w-5 text-emerald-300"/><p className="mt-3 text-sm font-black text-white">30-minute order path</p><p className="mt-2 text-xs leading-5 text-slate-400">When a published country is out of stock: order → System Switch reserved as purchase → Administrations acquires number → delivery enters My Numbers → request SMS/call verification.</p></section>
+  <section className="rounded-3xl border border-amber-300/15 bg-amber-400/[.035] p-4"><ShieldCheck className="h-5 w-5 text-amber-300"/><p className="mt-3 text-sm font-black text-white">WEAVE wrapper</p><p className="mt-2 text-xs leading-5 text-slate-400">Provider acquisition details remain Administrations-only. You see the country, stock state, delivery deadline, assigned number and verification movement.</p></section>
+  <section className="rounded-3xl border border-white/10 bg-black/20 p-4"><Phone className="h-5 w-5 text-emerald-300"/><p className="mt-3 text-sm font-black text-white">30-minute order path</p><p className="mt-2 text-xs leading-5 text-slate-400">When a published country is out of stock: request → Administrations acquires number → delivery enters My Numbers → request SMS/call verification.</p></section>
   <Link href="/bridger/dashboard" className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[.025] px-4 py-3 text-xs font-black text-white">Bridger Operating Room <span className="text-cyan-300">→</span></Link>
  </>
 

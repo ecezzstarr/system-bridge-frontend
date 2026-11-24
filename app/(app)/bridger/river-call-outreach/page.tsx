@@ -82,7 +82,7 @@ export default function RiverCallOutreachPage(){
         <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">A Bridger pays for one AI phone call with System Switch. River introduces itself as an AI, explains WEAVE and listens to the candidate. If the candidate wants more, River asks permission for WhatsApp, ends the call and opens a handoff to the Bridger.</p>
       </header>
       <div className="mt-6 grid gap-4 sm:grid-cols-3">
-        <div className="border border-white/10 bg-white/[.025] p-4"><p className="text-[10px] text-slate-400">Call price · set by Administrations</p><p className="mt-2 text-xl font-bold">{state?.priceFlameCoin==null?'Not set':state.priceFlameCoin+' System Switch'}</p></div>
+        <div className="border border-white/10 bg-white/[.025] p-4"><p className="text-[10px] text-slate-400">River calling</p><p className="mt-2 text-xl font-bold">{state?.priceFlameCoin==null?'Loading':'Free'}</p></div>
         <div className="border border-white/10 bg-white/[.025] p-4"><p className="flex items-center gap-2 text-[10px] text-slate-400"><Wallet className="h-3.5 w-3.5"/>Available balance</p><p className="mt-2 text-xl font-bold">{state?.walletBalance?.toFixed(2)??'—'} System Switch</p></div>
         <div className="border border-white/10 bg-white/[.025] p-4"><p className="text-[10px] text-slate-400">River calling</p><p className="mt-2 text-sm font-bold">{state?.enabled&&state.providerReady?'Available':'Not yet activated'}</p></div>
       </div>
@@ -111,7 +111,7 @@ export default function RiverCallOutreachPage(){
         </label>
         <button onClick={dial} disabled={!ownWhatsAppReady||!state?.enabled||!state.providerReady||busy||!confirmed||consentSource.trim().length<8||!name.trim()||!/^\+[1-9]\d{7,14}$/.test(phone)}
           className="mt-6 flex w-full items-center justify-center gap-2 border border-sky-300/40 bg-sky-600/20 px-4 py-3 text-sm font-bold text-sky-100 disabled:cursor-not-allowed disabled:opacity-35">
-          <PhoneCall className="h-4 w-4"/>{busy?'Contacting provider…':'Call with River · '+(state?.priceFlameCoin??'—')+' System Switch'}
+          <PhoneCall className="h-4 w-4"/>{busy?'Contacting provider…':'Call with River'}
         </button>
         <p className="mt-3 text-sm leading-6 text-slate-300">River calling requires an active provider, verified consent and enough System Switch. If a provider is not configured, the call button remains unavailable and no call payment is made.</p>
         <p className="mt-3 text-[11px] text-slate-500">A failed or unanswered call is refunded. A connected call is charged even if the candidate declines. Calls are not recorded; River retains a limited text exchange for the handoff.</p>

@@ -26,7 +26,7 @@ export async function GET(request:NextRequest){
   const client=await pool.connect()
   try{
     const available=(await client.query(`
-      SELECT id,country,price_flame_coin,status,created_at
+      SELECT id,country,0::numeric AS price_flame_coin,status,created_at
       FROM bridger_whatsapp_numbers
       WHERE status='available' AND assigned_to IS NULL
       ORDER BY country ASC,price_flame_coin ASC,created_at ASC
@@ -36,10 +36,7 @@ export async function GET(request:NextRequest){
     const offers=(await client.query(`
       SELECT
         o.country,
-        CASE
-          WHEN COALESCE(stock.next_price,0)>0 THEN stock.next_price
-          ELSE o.price_flame_coin
-        END AS price_flame_coin,
+        0::numeric AS price_flame_coin,
         o.delivery_minutes,
         o.enabled,
         COALESCE(stock.stock_count,0)::int AS stock_count
@@ -170,22 +167,8 @@ export async function POST(request:NextRequest){
         },{status:409})
       }
 
-      const price=Number(offer.price_flame_coin)
-      if(before<price){
-        await client.query('ROLLBACK')
-        return NextResponse.json({
-          error:'Insufficient System Switch balance',
-          required:price,
-          currentBalance:before,
-        },{status:400})
-      }
-
-      const after=before-price
-      await client.query(`
-        UPDATE wallets
-        SET balance_trx=$1,updated_at=NOW()
-        WHERE id=$2::uuid
-      `,[after,wallet.id])
+      const price=0
+      const after=before
 
       const order=(await client.query(`
         INSERT INTO bridger_number_orders (
@@ -197,19 +180,9 @@ export async function POST(request:NextRequest){
         RETURNING *
       `,[user.id,offer.country,price,Number(offer.delivery_minutes)||30])).rows[0]
 
-      await client.query(`
-        INSERT INTO ledger_entries (id, user_id, entry_type, amount, currency, description, balance_before, balance_after, created_at, metadata) VALUES (gen_random_uuid(), $1::uuid, 'fee', $2, 'Flame Coin', $3, $4, $5, NOW(), jsonb_build_object('commerce_type','whatsapp_number_order'))
-      `,[
-        user.id,
-        price,
-        `Ordered WEAVE WhatsApp business number for ${offer.country}; Administrations delivery due within ${Number(offer.delivery_minutes)||30} minutes`,
-        before,
-        after,
-      ])
-
       await client.query('COMMIT')
 
-      await notifyAdminOrder({orderId:String(order.id),event:'placed',department:'bridger',subject:'Bridger Number Bay country order',detail:`${user.name||user.email||'Bridger'} ordered a WhatsApp number for ${offer.country}, ${price} System Switch debited; fulfillment due by ${new Date(order.deadline_at).toLocaleString()}`,adminPath:'/admin/bridger-numbers',actorId:user.id,actorName:user.name||'Bridger'})
+      await notifyAdminOrder({orderId:String(order.id),event:'placed',department:'bridger',subject:'Bridger Number Bay country order',detail:`${user.name||user.email||'Bridger'} ordered a WhatsApp number for ${offer.country}, free request; fulfillment due by ${new Date(order.deadline_at).toLocaleString()}`,adminPath:'/admin/bridger-numbers',actorId:user.id,actorName:user.name||'Bridger'})
 
       let receipt:any=null
       try{
@@ -286,68 +259,12 @@ export async function POST(request:NextRequest){
       },{status:409})
     }
 
-    let price=Number(number.price_flame_coin)
-    if(!Number.isFinite(price)||price<=0){
-      const fallbackOffer=(await client.query(`
-        SELECT price_flame_coin
-        FROM bridger_number_country_offers
-        WHERE LOWER(TRIM(country))=LOWER(TRIM($1))
-          AND enabled=true
-          AND price_flame_coin>0
-        ORDER BY updated_at DESC
-        LIMIT 1
-      `,[number.country])).rows[0]
-
-      const repairedPrice=Number(fallbackOffer?.price_flame_coin)
-      if(!Number.isFinite(repairedPrice)||repairedPrice<=0){
-        await client.query('ROLLBACK')
-        return NextResponse.json({
-          error:'This stocked number is missing its Bridger price. Administrations must publish a valid country price.',
-          gate:'invalid_stock_price',
-        },{status:409})
-      }
-
-      price=repairedPrice
-      await client.query(`
-        UPDATE bridger_whatsapp_numbers
-        SET price_flame_coin=$1,updated_at=NOW()
-        WHERE id=$2::uuid
-      `,[price,number.id])
-      number.price_flame_coin=price
-    }
-
-    const debited=(await client.query(`
-      UPDATE wallets
-      SET balance_trx=balance_trx-$1,updated_at=NOW()
-      WHERE id=$2::uuid
-        AND balance_trx >= $1
-      RETURNING balance_trx
-    `,[price,wallet.id])).rows[0]
-
-    if(!debited){
-      await client.query('ROLLBACK')
-      return NextResponse.json({
-        error:'Insufficient System Switch balance',
-        required:price,
-        currentBalance:before,
-      },{status:400})
-    }
-
-    const after=Number(debited.balance_trx)||0
-
-    await client.query(`
-      INSERT INTO ledger_entries (id, user_id, entry_type, amount, currency, description, balance_before, balance_after, created_at, metadata) VALUES (gen_random_uuid(), $1::uuid, 'fee', $2, 'Flame Coin', $3, $4, $5, NOW(), jsonb_build_object('commerce_type','whatsapp_number_purchase'))
-    `,[
-      user.id,
-      price,
-      `Purchased assigned WhatsApp business number ${number.id}`,
-      before,
-      after,
-    ])
+    const price=0
+    const after=before
 
     const assigned=(await client.query(`
       UPDATE bridger_whatsapp_numbers
-      SET status='assigned',assigned_to=$1::uuid,assigned_at=NOW(),updated_at=NOW()
+      SET status='assigned',price_flame_coin=0,assigned_to=$1::uuid,assigned_at=NOW(),updated_at=NOW()
       WHERE id=$2::uuid
         AND status='available'
         AND assigned_to IS NULL
@@ -364,7 +281,7 @@ export async function POST(request:NextRequest){
 
     await client.query('COMMIT')
 
-    await notifyAdminOrder({orderId:String(assigned.id),event:'paid',department:'bridger',subject:'Bridger Number Bay purchase',detail:`${user.name||user.email||'Bridger'} purchased an in-stock WhatsApp number for ${assigned.country}; ${price} System Switch deducted and assignment recorded`,adminPath:'/admin/bridger-numbers',actorId:user.id,actorName:user.name||'Bridger'})
+    await notifyAdminOrder({orderId:String(assigned.id),event:'paid',department:'bridger',subject:'Bridger Number Bay purchase',detail:`${user.name||user.email||'Bridger'} purchased an in-stock WhatsApp number for ${assigned.country}; free assignment recorded`,adminPath:'/admin/bridger-numbers',actorId:user.id,actorName:user.name||'Bridger'})
 
     let receipt:any=null
     try{

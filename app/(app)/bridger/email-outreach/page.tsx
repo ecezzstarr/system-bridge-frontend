@@ -93,7 +93,7 @@ export default function BridgerEmailOutreachPage(){
       })
       const body=await response.json()
       if(!response.ok)throw new Error(body.error||'Unable to acquire email Prospect')
-      setNotice(`Email Prospect ${body.lead?.lead_code||''} acquired for ${data.priceFlameCoin} System Switch. It remains an unverified candidate until real outreach receives a response.`)
+      setNotice(`Email Prospect ${body.lead?.lead_code||''} claimed for free. It remains an unverified candidate until real outreach receives a response.`)
       await load()
     }catch(e:any){setError(e?.message||'Unable to acquire email Prospect')}
     finally{setBusy('')}
@@ -142,7 +142,7 @@ export default function BridgerEmailOutreachPage(){
       <header className="border-b border-white/10 pb-6">
         <div className="flex items-center gap-2 text-sky-300"><Mail className="h-4 w-4"/><span className="text-[9px] font-black uppercase tracking-[.2em]">Hope · Bridger Department · Email Outreach</span></div>
         <h1 className="mt-3 text-3xl font-black">Email Prospect Movement</h1>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">Email Prospects cost half the normal Prospect reference: <b className="text-white">{data.priceFlameCoin} System Switch</b> each. A Prospect is an unverified candidate tool: acquire one, attempt the connection, and let real response establish what is actually there.</p>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">Email Prospects are free for active Bridgers. A Prospect is an unverified candidate tool: acquire one, attempt the connection, and let real response establish what is actually there.</p>
       </header>
 
       <section data-bridger-email-outreach-steps="sender-acquire-send-response" className="mt-5 rounded-2xl border border-sky-300/20 bg-sky-300/[.045] p-5">
@@ -186,7 +186,7 @@ export default function BridgerEmailOutreachPage(){
               <p className="mt-1 text-[9px] uppercase tracking-[.12em] text-slate-500">System Switch balance</p>
             </div>
           </div>
-          <button onClick={acquire} disabled={busy==='acquire'||!data.availableCount} className="mt-5 w-full border border-emerald-300/30 px-4 py-3 text-[10px] font-black uppercase tracking-[.14em] text-emerald-100 disabled:opacity-40">{busy==='acquire'?'Acquiring…':`Acquire Email Prospect · ${data.priceFlameCoin} System Switch`}</button>
+          <button onClick={acquire} disabled={busy==='acquire'||!data.availableCount} className="mt-5 w-full border border-emerald-300/30 px-4 py-3 text-[10px] font-black uppercase tracking-[.14em] text-emerald-100 disabled:opacity-40">{busy==='acquire'?'Acquiring…':'Claim free Email Prospect'}</button>
           <p className="mt-3 text-[10px] leading-5 text-slate-500">Prospects may be Administrations-loaded addresses or generated guesses. The fee buys the candidate movement and WEAVE reference, not a verified person, working address, reply, interest or conversion. Verification begins through real outreach and response. Each acquisition is debited and receipted.</p>
         </div>
       </section>

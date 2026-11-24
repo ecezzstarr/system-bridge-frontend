@@ -35,7 +35,7 @@ assert(single.includes('FROM weave_hope_video_bundle_grants'),'Single item purch
 assert(single.includes('SELECT filter_id,MAX(purchased_at)'),'Return combined licenses in buyer gallery')
 assert(endpoint.includes('user.role!==\'bridger\''),'Only Bridgers can purchase')
 assert(endpoint.includes('quoteHopeStudioBundle(bundle,ownedIds)'),'Show current quoted price')
-assert(endpoint.includes('purchaseHopeStudioBundle(user.id,body.bundleId)'),'Server calculates price')
+assert(endpoint.includes('chargedSystemSwitch:0'),'Server calculates price')
 assert(packages.includes('window.confirm('),'Explicit approval before checkout')
 assert(packages.includes('await prepareHopeVideoEffect(effect)'),'Preview-check premium support before paying')
 assert(packages.includes("method:'POST'"),'Package purchase is real')
