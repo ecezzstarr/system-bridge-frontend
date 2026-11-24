@@ -9,11 +9,13 @@ import { Input } from '@/components/ui/input'
 type LoanRequest = { status: string; admin_note?: string | null; applicant_name?: string; applicant_email?: string }
 
 export function DepartmentEntryLoanSupport({
-  accessToken, ticketStatus, ticketValue, onCodeIssued, onLoanRequested, onApplicantConfirmed,
+  accessToken, ticketStatus, ticketValue, ticketPriceUsd, ticketAmountNgn, onCodeIssued, onLoanRequested, onApplicantConfirmed,
 }: {
   accessToken: string
   ticketStatus: string
   ticketValue: number
+  ticketPriceUsd?: number | null
+  ticketAmountNgn: number
   onCodeIssued: (code?: string) => void
   onLoanRequested: () => void
   onApplicantConfirmed: (applicant: { name: string; email: string }) => void
@@ -186,7 +188,9 @@ export function DepartmentEntryLoanSupport({
             <input type="checkbox" required checked={acceptsDeduction}
               onChange={event => setAcceptsDeduction(event.target.checked)}
               className="mt-1 accent-sky-300" />
-            <span>I request an internal System Switch registration loan of {ticketValue} System Switch.
+            <span>I request entry credit for this ticket
+              {ticketPriceUsd != null ? ` ($${ticketPriceUsd.toFixed(2)} USD · ₦${ticketAmountNgn.toLocaleString('en-NG')})` : ''}.
+              The loan principal is {ticketValue} System Switch.
               If approved by a Regional Manager or Administrations, my new account will start
               at −{ticketValue} System Switch. Future verified System Switch credits will
               offset this debt. No interest is added by this registration flow.</span>

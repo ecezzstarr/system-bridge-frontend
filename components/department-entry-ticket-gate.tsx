@@ -25,6 +25,7 @@ type EntryTicket = {
   ticketNumber: string
   department: Department
   status: 'PRESENTED' | 'PAYMENT_PENDING' | 'VERIFYING' | 'CODE_ISSUED' | 'REJECTED' | 'EXPIRED'
+  loanPrincipal?: number
   priceUsd?: number | null
   usdNgnRate?: number | null
   priceFlameCoin: number
@@ -408,7 +409,8 @@ export function DepartmentEntryTicketGate({
       </div>
 
       {!freeTicket && <DepartmentEntryLoanSupport key={ticket.id} accessToken={accessToken}
-        ticketStatus={ticket.status} ticketValue={ticket.priceFlameCoin}
+        ticketStatus={ticket.status} ticketValue={ticket.loanPrincipal ?? ticket.priceFlameCoin}
+        ticketPriceUsd={ticket.priceUsd} ticketAmountNgn={ticket.amountNgn}
         onLoanRequested={saveLoanResume} onApplicantConfirmed={setLoanApplicant}
         onCodeIssued={code => {
           if (code) { setTicket(prev => prev ? { ...prev, status:'CODE_ISSUED', departmentalCode:code } : prev); setError('') }

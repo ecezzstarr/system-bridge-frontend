@@ -222,7 +222,7 @@ export async function POST(request: NextRequest) {
       // not a general-purpose code. Debt and user creation must be atomic.
       const matchingLoans = await tx`
         SELECT r.id,r.status,r.applicant_email,r.applicant_balance_consent,
-          r.approved_principal,t.price_flame_coin
+          r.approved_principal,ROUND(t.price_flame_coin, 6) AS price_flame_coin
         FROM departmental_codes dc
         JOIN department_entry_loan_requests r ON r.ticket_id=dc.registration_request_id
         JOIN departmental_entry_tickets t ON t.id=r.ticket_id

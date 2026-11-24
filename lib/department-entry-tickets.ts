@@ -166,7 +166,7 @@ export async function createDepartmentEntryTicket(department: Department) {
   const rateNgnPerUsd = rateNgnPerTrx / rateUsdPerTrx
   const amountNgn = Math.round(priceUsd * rateNgnPerUsd * 100) / 100
   // Existing loans are repaid through the legacy TRX-denominated ledger.
-  const legacyLoanPrincipal = Math.round(amountNgn / rateNgnPerTrx * 1e8) / 1e8
+  const legacyLoanPrincipal = Math.round(amountNgn / rateNgnPerTrx * 1e6) / 1e6
 
   for (let attempt = 0; attempt < 8; attempt += 1) {
     const ticketNumber = createTicketNumber(department)

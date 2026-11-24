@@ -19,6 +19,7 @@ function safeTicket(ticket: any) {
     saturdayFreeEntry: freeEntry,
     priceFlameCoin: Number(ticket.price_flame_coin),
     trxNgnRate: Number(ticket.trx_ngn_rate),
+    loanPrincipal: Math.round(Number(ticket.price_flame_coin) * 1e6) / 1e6,
     priceUsd: ticket.price_usd == null ? null : Number(ticket.price_usd),
     usdNgnRate: ticket.usd_ngn_rate == null ? null : Number(ticket.usd_ngn_rate),
     amountNgn: Number(ticket.amount_ngn),
