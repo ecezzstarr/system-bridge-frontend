@@ -62,8 +62,8 @@ const adminDirectory=fs.readFileSync(path.join(root,'lib/admin-user-directory.ts
 assert.ok(adminDirectory.includes("currency IN ('Flame Coin','System Switch','TRX')"),
   'Administrations must include historical currency rows in escrow balances')
 const riverCalls=fs.readFileSync(path.join(root,'app/api/bridger/river-calls/route.ts'),'utf8')
-assert.ok(riverCalls.includes("'Flame Coin','River live outreach call'"),
-  'Call fees must retain their existing ledger currency even if the user-facing label changes')
+assert.ok(riverCalls.includes('fee=0')&&!riverCalls.includes('UPDATE wallets'),
+  'New Bridger River calls must be free and leave wallet balances alone')
 const ownerEarnings=fs.readFileSync(path.join(root,'lib/client-owner-earnings.ts'),'utf8')
 assert.ok(ownerEarnings.includes("OWNER_COST_CURRENCIES = ['FLAME COIN','NGN'"),
   'File Folder expense validation must match its current SQL check and stored values')
