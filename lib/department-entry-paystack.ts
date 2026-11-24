@@ -80,7 +80,7 @@ export async function settleDepartmentEntryPaystackTicket(reference: string) {
 
 /** Explicit Administrations decision. Verify the original provider charge before
  * changing any quote. No public amount override, and no code is issued here. */
-export async function authorizeDepartmentEntryReconciliation(ticketId: string, adminId: string, totalNgn: number) {
+export async function authorizeDepartmentEntryReconciliation(ticketId: string, adminId: string, totalNgn: number, originalPaidNgn: number) {
   await ensureDepartmentEntryTicketSchema()
   const totalKobo = Math.round(totalNgn * 100)
   if (!Number.isSafeInteger(totalKobo) || totalKobo < 100 || Math.abs(totalNgn * 100 - totalKobo) > 0.00001)
@@ -90,13 +90,16 @@ export async function authorizeDepartmentEntryReconciliation(ticketId: string, a
       !['PAYMENT_PENDING','VERIFYING','EXPIRED'].includes(snapshot.status) || snapshot.verified_by ||
       !snapshot.payment_reference?.startsWith('ENTRY-') || !snapshot.payer_email)
     throw new Error('Select an unissued original paid ticket with a Paystack reference.')
-  const creditKobo = Math.round(Number(snapshot.amount_ngn) * 100)
-  if (!Number.isSafeInteger(creditKobo) || creditKobo < 100 || totalKobo - creditKobo < 100)
-    throw new Error('The agreed total must exceed the verified original payment by at least ₦1.')
+  const originalQuoteKobo = Math.round(Number(snapshot.amount_ngn) * 100)
+  const creditKobo = Math.round(originalPaidNgn * 100)
+  if (!Number.isSafeInteger(creditKobo) || creditKobo < 100 || Math.abs(originalPaidNgn * 100 - creditKobo) > 0.00001)
+    throw new Error('Enter the actual original Paystack payment in naira, to two decimals.')
+  if (totalKobo - creditKobo < 100)
+    throw new Error('The agreed total must exceed the actual original payment by at least ₦1.')
   const transaction = await verifyPaystackTransaction(snapshot.payment_reference)
   if (!paystackTransactionMatches({ transaction, expectedReference: snapshot.payment_reference,
       expectedAmountKobo: creditKobo, expectedEmail: snapshot.payer_email }))
-    throw new Error('The original Paystack payment does not match the ticket. No balance authorized.')
+    throw new Error('The original Paystack payment does not match the entered receipt amount, reference, currency or payer email. No balance authorized.')
   const metadata = transaction.metadata
   if (metadata && typeof metadata === 'object' && !Array.isArray(metadata)) {
     const meta = metadata as Record<string, unknown>
@@ -104,6 +107,16 @@ export async function authorizeDepartmentEntryReconciliation(ticketId: string, a
         (meta.department && String(meta.department) !== String(snapshot.department)) ||
         (meta.payment_type && meta.payment_type !== 'department_entry_ticket'))
       throw new Error('Original Paystack ticket metadata does not match.')
+  }
+  // If the stored quote differs from the actual receipt, require explicit
+  // provider metadata tying the successful charge to this exact entry ticket.
+  if (originalQuoteKobo !== creditKobo) {
+    const meta = metadata && typeof metadata === 'object' && !Array.isArray(metadata)
+      ? metadata as Record<string, unknown> : null
+    if (!meta || String(meta.ticket_id || '') !== String(snapshot.id) ||
+        meta.payment_type !== 'department_entry_ticket' ||
+        String(meta.department || '') !== String(snapshot.department))
+      throw new Error('The receipt differs from the stored quote and lacks matching Paystack ticket metadata. Review the original transaction in Paystack.')
   }
   const db = await getPool().connect()
   const token = randomBytes(32).toString('hex')
@@ -113,7 +126,7 @@ export async function authorizeDepartmentEntryReconciliation(ticketId: string, a
     if (!locked || locked.reconciliation_original_reference || locked.verified_by ||
         !['PAYMENT_PENDING','VERIFYING','EXPIRED'].includes(locked.status) ||
         locked.payment_reference !== snapshot.payment_reference || locked.payer_email !== snapshot.payer_email ||
-        Math.round(Number(locked.amount_ngn)*100) !== creditKobo)
+        Math.round(Number(locked.amount_ngn)*100) !== originalQuoteKobo)
       throw new Error('Ticket changed during verification; reload and review.')
     const {rows:[conflict]} = await db.query(`SELECT 1 WHERE EXISTS (SELECT 1 FROM departmental_codes WHERE registration_request_id=$1::uuid)
       OR EXISTS (SELECT 1 FROM department_entry_loan_requests WHERE ticket_id=$1::uuid)`,[ticketId])
@@ -121,7 +134,7 @@ export async function authorizeDepartmentEntryReconciliation(ticketId: string, a
     const priceUsd = departmentEntryTicketPrice(locked.department)
     const originalQuote = JSON.stringify({ amountNgn:locked.amount_ngn, priceUsd:locked.price_usd,
       usdNgnRate:locked.usd_ngn_rate, priceFlameCoin:locked.price_flame_coin, trxNgnRate:locked.trx_ngn_rate,
-      submittedAt:locked.payment_submitted_at, verifiedAt:locked.verified_at, paystackPaidAt:transaction.paid_at })
+      submittedAt:locked.payment_submitted_at, verifiedAt:locked.verified_at, paystackPaidAt:transaction.paid_at, verifiedOriginalPaymentNgn:creditKobo/100 })
     await db.query(`UPDATE departmental_entry_tickets SET
       reconciliation_original_reference=payment_reference, reconciliation_credit_ngn=$2,
       reconciliation_original_quote=$3::jsonb, reconciliation_authorized_by=$4::uuid,

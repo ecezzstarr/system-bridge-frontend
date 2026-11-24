@@ -56,11 +56,16 @@ const lib=mod.exports
 ;(async()=>{
  reset()
  providerAmount=1
- await assert.rejects(lib.authorizeDepartmentEntryReconciliation(id,id,13655),/does not match/)
+ await assert.rejects(lib.authorizeDepartmentEntryReconciliation(id,id,13655,3467.94),/does not match/)
  assert.equal(ticket.status,'PAYMENT_PENDING')
  assert.equal(state.commit,0)
+ // The stored quote can already reflect the new ticket value.
+ // Reconciliation must use the actual verified historical receipt instead.
+ ticket.amount_ngn=13655
  providerAmount=346794
- const authorized=await lib.authorizeDepartmentEntryReconciliation(id,id,13655)
+ await assert.rejects(lib.authorizeDepartmentEntryReconciliation(id,id,13655,3468),/does not match/)
+ assert.equal(state.commit,0)
+ const authorized=await lib.authorizeDepartmentEntryReconciliation(id,id,13655,3467.94)
  assert.equal(authorized.balanceNgn,10187.06)
  assert.equal(ticket.reconciliation_original_reference,original)
  assert.equal(ticket.reconciliation_credit_ngn,3467.94)
@@ -71,7 +76,7 @@ const lib=mod.exports
  assert.match(authorized.path,/^\/register\?role=bridger#entry-reconciliation=[a-f0-9]{64}$/)
  const token=authorized.path.split('=')[2]
  assert.equal(crypto.createHash('sha256').update(token).digest('hex'),ticket.access_token_hash)
- await assert.rejects(lib.authorizeDepartmentEntryReconciliation(id,id,13655),/unissued original/)
+ await assert.rejects(lib.authorizeDepartmentEntryReconciliation(id,id,13655,3467.94),/unissued original/)
  await assert.rejects(lib.initializeDepartmentEntryPaystackTicket({accessToken:'bad',payerName:'Test',payerEmail:'test@example.test'}),/unavailable/)
  await assert.rejects(lib.initializeDepartmentEntryPaystackTicket({accessToken:token,payerName:'Test',payerEmail:'other@example.test'}),/original verified payer email/)
  const checkout=await lib.initializeDepartmentEntryPaystackTicket({accessToken:token,payerName:'Test',payerEmail:'test@example.test'})
