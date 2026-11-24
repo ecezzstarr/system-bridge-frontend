@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { sql } from '@/lib/db'
+import { settleDepartmentEntryPaystackTicket } from '@/lib/department-entry-paystack'
 import { getAuthUser } from '@/lib/auth-api'
 import { ensureEntryLoanSupportSchema } from '@/lib/department-entry-loan-support'
 import {
@@ -20,7 +22,8 @@ export async function GET(request: NextRequest) {
 
   try {
     await ensureEntryLoanSupportSchema()
-    const tickets = await listDepartmentEntryTickets()
+    const reference = (request.nextUrl.searchParams.get('reference') || '').trim().slice(0, 255)
+    const tickets = await listDepartmentEntryTickets(reference)
     return NextResponse.json({ success: true, tickets })
   } catch (error: any) {
     console.error('[admin department-entry] list error:', error)
@@ -37,11 +40,24 @@ export async function PATCH(request: NextRequest) {
     const ticketId = String(body.ticketId || '')
     const action = String(body.action || '').toLowerCase()
 
-    if (!ticketId || !['approve', 'reject'].includes(action)) {
+    if (!ticketId || !['approve', 'reject', 'check_payment'].includes(action)) {
       return NextResponse.json(
-        { error: 'ticketId and action (approve|reject) are required' },
+        { error: 'ticketId and action (approve|reject|check_payment) are required' },
         { status: 400 }
       )
+    }
+
+    if (action === 'check_payment') {
+      const [ticket] = await sql`
+        SELECT payment_reference, verified_by, verified_at FROM departmental_entry_tickets
+        WHERE id=${ticketId}::uuid AND status='VERIFYING'
+      `
+      if (!ticket?.payment_reference || ticket.verified_by || ticket.verified_at) {
+        return NextResponse.json({ error: 'No Paystack payment is waiting for verification.' }, { status:409 })
+      }
+      const result = await settleDepartmentEntryPaystackTicket(ticket.payment_reference)
+      if (!result.settled) return NextResponse.json({ error: 'Paystack has not confirmed payment.' }, { status:409 })
+      return NextResponse.json({ success:true, message:'Payment confirmed. Issue the registration code from this ticket.' })
     }
 
     if (action === 'approve') {

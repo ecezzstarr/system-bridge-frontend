@@ -1,7 +1,7 @@
 import { createHash, randomBytes } from 'node:crypto'
 import { sql, getPool } from './db'
 import { WEAVE_OPAY_ACCOUNT_NUMBER } from './opay-config'
-import { generateCode, issueDepartmentalCode, type Department } from './departmental-codes'
+import { generateCode, type Department } from './departmental-codes'
 import { saturdayFreeEntryWindow } from './saturday-free-entry'
 import { departmentEntryTicketPrice } from './department-entry-pricing'
 
@@ -294,7 +294,7 @@ export async function submitDepartmentEntryPayment(
   return ticket
 }
 
-export async function listDepartmentEntryTickets() {
+export async function listDepartmentEntryTickets(reference = '') {
   await ensureDepartmentEntryTicketSchema()
   return sql`
     SELECT
@@ -311,11 +311,12 @@ export async function listDepartmentEntryTickets() {
       ON u.id = t.verified_by
     LEFT JOIN department_entry_loan_requests loan
       ON loan.ticket_id = t.id
+    WHERE (${reference} = '' OR t.payment_reference = ${reference} OR t.ticket_number = ${reference})
     ORDER BY
       CASE t.status
         WHEN 'PAYMENT_PENDING' THEN 0
-        WHEN 'PRESENTED' THEN 1
-        WHEN 'VERIFYING' THEN 2
+        WHEN 'VERIFYING' THEN 1
+        WHEN 'PRESENTED' THEN 2
         WHEN 'CODE_ISSUED' THEN 3
         WHEN 'REJECTED' THEN 4
         ELSE 5
@@ -328,48 +329,44 @@ export async function listDepartmentEntryTickets() {
 export async function approveDepartmentEntryTicket(ticketId: string, adminId: string) {
   await ensureDepartmentEntryTicketSchema()
 
-  const claimed = await sql`
-    UPDATE departmental_entry_tickets
-    SET
-      status = 'VERIFYING',
-      verified_by = ${adminId}::uuid,
-      updated_at = NOW()
-    WHERE id = ${ticketId}::uuid
-      AND status = 'PAYMENT_PENDING'
-      AND expires_at > NOW()
-    RETURNING *
-  `
-
-  if (!claimed[0]) return null
-  const ticket = claimed[0]
-
+  const db = await getPool().connect()
   try {
-    const code = await issueDepartmentalCode(
-      ticket.department as Department,
-      adminId,
-      7,
-      ticket.id
-    )
-
-    const completed = await sql`
-      UPDATE departmental_entry_tickets
-      SET
-        status = 'CODE_ISSUED',
-        verified_at = NOW(),
-        updated_at = NOW()
-      WHERE id = ${ticket.id}::uuid
-      RETURNING *
-    `
-
-    return { ticket: completed[0], code }
+    await db.query('BEGIN')
+    const { rows: [ticket] } = await db.query(`
+      SELECT * FROM departmental_entry_tickets WHERE id=$1::uuid
+        AND verified_at IS NOT NULL
+        AND (status='PAYMENT_PENDING' OR (status='VERIFYING' AND verified_by IS NOT NULL))
+      FOR UPDATE
+    `, [ticketId])
+    if (!ticket) {
+      await db.query('ROLLBACK')
+      return null
+    }
+    const { rows: [existing] } = await db.query(`
+      SELECT code FROM departmental_codes WHERE registration_request_id=$1::uuid
+    `, [ticketId])
+    const code = existing?.code ?? generateCode(ticket.department as Department)
+    if (!existing) {
+      const { rows: [issued] } = await db.query(`
+        INSERT INTO departmental_codes (code,department,issued_by,expires_at,status,registration_request_id)
+        VALUES ($1,$2,$3::uuid,NOW()+INTERVAL '7 days','ACTIVE',$4::uuid) RETURNING id
+      `, [code,ticket.department,adminId,ticketId])
+      await db.query(`
+        INSERT INTO departmental_audit_log (event,department,administration_actor,code_id,result)
+        VALUES ('ISSUE_CODE',$1,$2::uuid,$3::uuid,'SUCCESS')
+      `, [ticket.department,adminId,issued.id])
+    }
+    const { rows: [completed] } = await db.query(`
+      UPDATE departmental_entry_tickets SET status='CODE_ISSUED',verified_by=$2::uuid,updated_at=NOW()
+      WHERE id=$1::uuid RETURNING *
+    `, [ticketId,adminId])
+    await db.query('COMMIT')
+    return { ticket:completed, code }
   } catch (error) {
-    await sql`
-      UPDATE departmental_entry_tickets
-      SET status = 'PAYMENT_PENDING', verified_by = NULL, updated_at = NOW()
-      WHERE id = ${ticket.id}::uuid
-        AND status = 'VERIFYING'
-    `
+    await db.query('ROLLBACK').catch(() => {})
     throw error
+  } finally {
+    db.release()
   }
 }
 
