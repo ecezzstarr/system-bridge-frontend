@@ -9,7 +9,6 @@ import { creditRegionalManagerFileFolderCommission } from '@/lib/regional-manage
 import { FILE_FOLDER_PRICING, fileFolderTierLabel, getFileFolderTier } from '@/lib/file-folder-pricing'
 import { notifyUser } from '@/lib/deposit-notifications'
 import { ensureFlameSchema } from '@/lib/flame-schema'
-import { accrueAiProviderAllocation } from '@/lib/ai-provider-settlement'
 import { recordSystemEvent } from '@/lib/system-events'
 import {
   activatePurchasedFileFolderForClient,
@@ -268,17 +267,6 @@ async function verifyBridgeRadiancePurchase({
     `
   }
 
-  const allocation = await accrueAiProviderAllocation({
-    sql,
-    purchaseId: String(confirmed.id),
-    fileNumber,
-    grossAmount: Number(confirmed.amount_trx),
-    bridgeCode: confirmed.bridge_code,
-    providerKey: confirmed.provider_key,
-    providerName: confirmed.provider_name,
-    flameExternalId: confirmed.flame_external_id,
-    flameName: confirmed.flame_name,
-  })
 
   let commissionMovement = null
   if (bridgerId) {
@@ -375,7 +363,7 @@ async function verifyBridgeRadiancePurchase({
     plusUsdtReference: fileFolderTier === 'plus' ? FILE_FOLDER_PRICING.plusUsdt : null,
     registerUrl: existingClientId ? null : `/client/register?fileNumber=${encodeURIComponent(fileNumber)}`,
     systemSwitchUrl: existingClientId ? '/client/system-switch' : null,
-    aiProviderAllocation: allocation?.allocation || null,
+    aiProviderAllocation: null,
     commissionMovement,
     regionalManagerCommission,
     customerDoor: activation?.customerDoor || null,

@@ -7,7 +7,6 @@ import { FILE_FOLDER_PRICING, fileFolderTierLabel, getFileFolderTier, isValidFil
 import { requireWorkshopAuthorization } from '@/lib/workshop-auth'
 import { recordSystemEvent } from '@/lib/system-events'
 import { requireApiUser } from '@/lib/api-auth'
-import { accrueAiProviderAllocation } from '@/lib/ai-provider-settlement'
 import { issueWeaveReceipt } from '@/lib/weave-receipts'
 import { getPublicFlameMovementAttribution, publicFlameMovementCodeFromRequest, recordPublicFlameMovementEvent } from '@/lib/public-flame-movement'
 import { provisionPurchasedFileFolderCustomerDoor } from '@/lib/client-customer-door-provisioning'
@@ -277,7 +276,6 @@ export async function PATCH(request: NextRequest) {
     })
 
     const [confirmed] = await sql`UPDATE file_folder_purchases SET file_number=${fileNumber},client_id=${clientId}::uuid,status='confirmed',confirmed_at=NOW(),confirmed_by=${auth.session.user.id}::uuid WHERE id=${purchaseId}::uuid RETURNING *`
-    const allocation = await accrueAiProviderAllocation({ sql, purchaseId: String(confirmed.id), fileNumber, grossAmount: Number(confirmed.amount_trx), bridgeCode: confirmed.bridge_code, providerKey: confirmed.provider_key, providerName: confirmed.provider_name, flameExternalId: confirmed.flame_external_id, flameName: confirmed.flame_name })
     await recordSystemEvent({ eventType: 'file_number_issued', actorId: auth.session.user.id, actorRole: 'admin', subjectType: 'client_file_folder', subjectId: fileNumber, source: 'admin-file-folder', payload: { purchaseId, clientId } })
     await recordSystemEvent({ eventType: 'client_registered', actorId: clientId, actorRole: 'client', subjectType: 'client_file_folder', subjectId: fileNumber, source: 'bridge-file-folder', payload: { purchaseId } })
     await recordSystemEvent({
@@ -297,6 +295,6 @@ export async function PATCH(request: NextRequest) {
         boostOptional: customerDoor.boostOptional,
       },
     })
-    return NextResponse.json({ success: true, folder: claimed, purchase: confirmed, customerDoor, aiProviderAllocation: allocation?.allocation || null })
+    return NextResponse.json({ success: true, folder: claimed, purchase: confirmed, customerDoor, aiProviderAllocation: null })
   } catch (error: any) { return NextResponse.json({ error: error?.message || 'Unable to confirm File Folder purchase' }, { status: 500 }) }
 }

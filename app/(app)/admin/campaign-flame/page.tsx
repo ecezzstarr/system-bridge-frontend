@@ -14,7 +14,7 @@ export default function CampaignFlamePage() {
  useEffect(()=>{if(user?.role==='admin')void load()},[user?.id,token])
  if(!isInitialized)return <main className="p-8">Loading Campaign Flame...</main>
  if(user?.role!=='admin')return <main className="p-8">Administrator access required. <Link href="/login">Sign in</Link></main>
- const labels:Record<string,string>={interactions:'Interactions',crossings_opened:'Crossings opened',file_folder_movements:'File Folder movements',clients_confirmed:'Clients confirmed',provider_allocations:'Provider allocations',provider_value_trx:'Provider value (System Switch)'}
+ const labels:Record<string,string>={interactions:'Interactions',crossings_opened:'Crossings opened',file_folder_movements:'File Folder movements',clients_confirmed:'Clients confirmed',provider_allocations:'Historical provider allocations',provider_value_trx:'Historical provider value (System Switch)'}
  return <main className="min-h-screen bg-slate-950 p-6 text-slate-200"><div className="mx-auto max-w-6xl space-y-6">
  <header className="flex flex-wrap justify-between gap-4"><div><h1 className="text-3xl font-bold">Campaign Flame</h1><p className="mt-2 text-slate-400">Crossings, File Folders, and originating provider allocations.</p></div><Link href="/authority/workshops">Authority Workshop</Link></header>
  <button disabled={busy} onClick={load} className="rounded-lg border border-white/20 px-4 py-2">{busy?'Loading...':'Refresh report'}</button>
