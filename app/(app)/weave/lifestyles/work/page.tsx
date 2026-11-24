@@ -1,4 +1,5 @@
 'use client'
+import { DistributionStaffPay } from '@/components/weave/distribution-staff-pay'
 import Link from 'next/link'
 import {useCallback,useEffect,useState} from 'react'
 import {useAuth} from '@/lib/auth-provider'
@@ -156,6 +157,7 @@ export default function CompanyWorkspaces(){
       <p>No approved employment workspace is available for this account yet. Your normal Agent or Bridger work remains separate.</p>
       <Link href="/weave/lifestyles" className="mt-4 inline-flex min-h-11 items-center text-sm font-black text-amber-200">View company positions and applications →</Link>
     </section>}
+    <DistributionStaffPay token={token || ''}/>
     <footer className="border-t border-white/10 pt-5 text-xs leading-6 text-slate-500">Job controls remain role-restricted. Administrations retains hiring verification and financial authority; staff lead their assigned operations and record real outcomes.</footer>
   </main>
 }
