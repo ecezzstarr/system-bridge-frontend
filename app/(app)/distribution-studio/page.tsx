@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import HopeSocialStudio from '@/components/bridger/hope-social-studio'
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth-provider'
@@ -51,7 +52,6 @@ export default function DistributionStudioPage(){
   const [mediaType,setMediaType]=useState<'none'|'image'|'video'>('none')
   const [scheduledAt,setScheduledAt]=useState(localDateTime())
   const [selectedChannels,setSelectedChannels]=useState<string[]>([])
-  const [tiktokEntrance,setTiktokEntrance]=useState(false)
   const [accountLabels,setAccountLabels]=useState<Record<string,string>>({})
 
   const userRole=String(user?.role||'')
@@ -77,21 +77,9 @@ export default function DistributionStudioPage(){
     }catch(error:any){setMessage(error.message||'Distribution Studio could not open')}finally{setLoading(false)}
   }
 
-  // Hope's TikTok building is a dedicated entrance into this EXISTING channel.
-  // Keep the original API, content records, and provider-authorization status.
-  useEffect(()=>{
-    if(user?.role!=='bridger')return
-    if(new URLSearchParams(window.location.search).get('channel')==='tiktok'){
-      setTiktokEntrance(true)
-      setSelectedChannels(['tiktok'])
-      setMediaType('video')
-    }
-  },[user?.role])
-
   useEffect(()=>{if(user&&isStudioRole(user.role))void load()},[user?.id,user?.role])
 
   const readyChannels=useMemo(()=>(state?.channels||[]).filter(channel=>channel.status==='ready'),[state?.channels])
-  const tikTokChannel=state?.channels.find(channel=>channel.key==='tiktok')
 
   const saveProfile=async()=>{
     setSaving(true);setMessage(null)
@@ -149,34 +137,13 @@ export default function DistributionStudioPage(){
   }
 
   if(!user||!isStudioRole(user.role))return null
+  if(user.role==='bridger')return <HopeSocialStudio history={state?.content||[]}/>
 
   return <main className="mx-auto max-w-7xl space-y-6 pb-16" data-social-presence-studio={role}>
     <section className="overflow-hidden border-y border-cyan-300/15 bg-[#07101a]/88 p-5 text-white sm:rounded-[2rem] sm:border sm:p-8">
       <div className="flex flex-wrap items-start justify-between gap-5"><div className="max-w-4xl"><div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.28em] text-cyan-300"><Share2 className="h-4 w-4"/>Distribution Studio · Social Presence</div><h1 className="mt-3 text-3xl font-black tracking-tight sm:text-5xl">{copy.title}</h1><p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">{copy.description}</p><p className="mt-2 max-w-3xl text-xs leading-5 text-slate-600">Your WEAVE position stays intact. This environment only carries your authorized public presence outward and returns the record to you.</p></div><div className="flex gap-2">{role==='admin'&&<Button asChild variant="outline" className="border-white/15 text-white"><Link href="/admin/distribution-studio">ADMIN OVERSIGHT</Link></Button>}<Button variant="outline" onClick={()=>void load()} disabled={loading} className="border-white/15 text-white"><RefreshCw className={`mr-2 h-4 w-4 ${loading?'animate-spin':''}`}/>REFRESH</Button></div></div>
       <div className="mt-7 grid grid-cols-2 border-y border-white/10 sm:grid-cols-5"><Metric label="Ready Channels" value={readyChannels.length}/><Metric label="Scheduled" value={state?.summary.scheduled||0} bordered/><Metric label="Published" value={state?.summary.publishedDeliveries||0} bordered/><Metric label="Reach" value={state?.summary.reach||0} bordered/><Metric label="Follows" value={state?.summary.follows||0}/></div>
     </section>
-
-    {tiktokEntrance&&role==='bridger'&&<section data-hope-tiktok-publication="existing-distribution-channel"
-      className="rounded-2xl border border-sky-300/30 bg-[#0b1c2c] px-4 py-5 text-white sm:p-6">
-      <p className="text-[10px] font-bold uppercase tracking-widest text-sky-200">Hope · TikTok Publication building</p>
-      <h2 className="mt-1 text-2xl font-black">TikTok Publication</h2>
-      <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-200">
-        Prepare your video, select TikTok and follow the actual delivery record.
-        This is the existing Social Studio channel, not a separate publisher.
-      </p>
-      <p className="mt-3 text-sm text-slate-200" role="status">
-        TikTok connection: <strong className="text-sky-100">{tikTokChannel?.status||'Checking channel…'}</strong>
-        {tikTokChannel?.status==='ready'
-          ? ' · Authorized channel available for the existing publication workflow.'
-          : ' · Saving a draft or account handle does not publish to TikTok; provider authorization is required.'}
-      </p>
-      <nav aria-label="TikTok Publication actions" className="mt-4 flex flex-wrap gap-2">
-        <a href="#tiktok-composer" className="inline-flex min-h-11 items-center rounded-lg bg-sky-200 px-4 py-2 text-sm font-bold text-slate-950">Prepare TikTok post</a>
-        <a href="#tiktok-channel" className="inline-flex min-h-11 items-center rounded-lg border border-sky-200/40 px-4 py-2 text-sm text-sky-100">TikTok account</a>
-        <a href="#tiktok-deliveries" className="inline-flex min-h-11 items-center rounded-lg border border-sky-200/40 px-4 py-2 text-sm text-sky-100">Publication record</a>
-        <Link href="/weave/lifestyles/regional-manager/hope-outreach" className="inline-flex min-h-11 items-center rounded-lg border border-sky-200/40 px-4 py-2 text-sm text-sky-100">Report a published TikTok link</Link>
-      </nav>
-    </section>}
 
     <section data-social-outreach-actual-delivery="draft-authorization-provider" className="rounded-2xl border border-amber-200/20 bg-amber-200/[.035] p-5 text-white">
       <h2 className="text-xl font-bold">How social outreach becomes real customer work</h2>
