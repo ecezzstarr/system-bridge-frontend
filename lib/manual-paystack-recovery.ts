@@ -77,9 +77,7 @@ export async function manualCreditStuckPaystack(input: ManualPaystackInput) {
         amountNgn <= 0 || !Number.isFinite(flameCoin) || flameCoin <= 0) {
       refuse('Saved deposit information is incomplete or invalid; do not credit.')
     }
-    if (amountNgn > 10000) {
-      refuse('Emergency manual credit is limited to ₦10,000. Escalate larger deposits for independent review.')
-    }
+    // No separate manual-credit ceiling: credit only the exact stored checkout.
 
     // The deposit row lock serializes the human decision with the signed
     // Paystack webhook and any concurrent Administration request.

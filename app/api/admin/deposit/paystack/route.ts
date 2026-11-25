@@ -13,6 +13,10 @@ export async function GET(request: NextRequest) {
   if (!admin || admin.role !== 'admin') return NextResponse.json({ error: 'Administrations only' }, { status: 403 })
 
   try {
+    const reference = (request.nextUrl.searchParams.get('reference') || '').trim()
+    if (reference && !/^[A-Za-z0-9.=-]{1,100}$/.test(reference)) {
+      return NextResponse.json({error:'Enter the exact original Paystack reference.'}, {status:400})
+    }
     const result = await getPool().query(`
       SELECT d.id, d.user_id, d.status, d.receipt_data AS reference,
              d.amount_usd AS amount_ngn, d.amount_trx AS flame_coin,
@@ -27,10 +31,15 @@ export async function GET(request: NextRequest) {
       JOIN users u ON u.id = d.user_id
       WHERE d.method = 'paystack'
         AND u.role IN ('agent', 'bridger', 'admin', 'client')
-      ORDER BY CASE WHEN d.status='approved' AND d.verified_at IS NULL THEN 0 WHEN d.status='rejected' THEN 1 WHEN d.status='pending' THEN 2 ELSE 3 END,
-               d.created_at DESC
+        AND ($1::text = '' OR d.receipt_data = $1::text)
+      ORDER BY CASE
+        WHEN d.status IN ('pending','rejected') AND d.created_at >= NOW() - INTERVAL '24 hours' THEN 0
+        WHEN d.created_at >= NOW() - INTERVAL '24 hours' THEN 1
+        WHEN d.status IN ('pending','rejected') OR (d.status='approved' AND d.verified_at IS NULL) THEN 2
+        ELSE 3 END,
+        d.created_at DESC, d.id DESC
       LIMIT 100
-    `)
+    `, [reference])
     return NextResponse.json({ success: true, deposits: result.rows }, {
       headers: { 'Cache-Control': 'private, no-store', Vary: 'Authorization' },
     })
@@ -54,7 +63,7 @@ export async function POST(request: NextRequest) {
       if (!validId) return NextResponse.json({error:'A valid deposit ID is required.'}, {status:400})
       // Emergency recovery is intentionally separate from Paystack's automatic
       // confirmation. The admin must have personally seen charge.success in
-      // the Paystack merchant dashboard and supply its transaction ID.
+      // the Paystack merchant dashboard. A numeric transaction ID is optional.
       try {
         const result = await manualCreditStuckPaystack({
           depositId,adminId:String(admin.id),
