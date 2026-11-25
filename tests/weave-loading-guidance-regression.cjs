@@ -41,7 +41,10 @@ assert.ok(loopWorld.includes('data-flame-event-compact-entrance="true"')&&!loopW
 const loopRegistry=read('app/(app)/company/loops/page.tsx')
 assert.ok(loopRegistry.includes('data-company-loop-one-explanation'),'Loop registry teaches current period without fabricating published agreements')
 const departmentMap=read('lib/weave-system-map.ts')
-assert.ok(departmentMap.includes('WEAVE products to Nigerians')&&departmentMap.includes('digital File Folders'),'Both departments preserve their genuine commercial focus')
+const stabilityDescription=departmentMap.split('\n').find(line=>line.includes("description: 'Stability:"))||''
+assert.ok(stabilityDescription.includes('physically distributes WEAVE products')&&stabilityDescription.includes('delivers orders to customers')&&stabilityDescription.includes('not online outreach'),'Stability preserves physical sales, distribution and delivery')
+assert.doesNotMatch(stabilityDescription,/\bNigerians\b/,'Stability is not restricted to a nationality')
+assert.ok(departmentMap.includes('digital File Folders'),'Hope preserves its genuine digital commercial focus')
 assert.ok(trainingBriefsForRole('bridger')[1].body.includes('unverified'))
 assert.ok(trainingBriefsForRole('client')[1].title.includes('real time'))
 assert.ok(trainingBriefsForRole('admin')[1].body.includes('Forensics verifies')&&trainingBriefsForRole('admin')[1].body.includes('evidence'))
