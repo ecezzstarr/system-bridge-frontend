@@ -591,6 +591,11 @@ function DepositApprovalSection({ user }: { user: any }) {
   const [manualConfirmed, setManualConfirmed] = useState(false)
   const [manualBusy, setManualBusy] = useState(false)
   const [manualError, setManualError] = useState('')
+  const [referenceInput, setReferenceInput] = useState('')
+  const [activeReference, setActiveReference] = useState('')
+  const referenceFilter = useRef('')
+  const requestSequence = useRef(0)
+  const [queueError, setQueueError] = useState('')
 
   const openManualCredit = (deposit: ReviewDeposit) => {
     setManualId(deposit.id)
@@ -640,22 +645,44 @@ function DepositApprovalSection({ user }: { user: any }) {
   }, [])
 
   const fetchPendingDeposits = async (silent = false) => {
+    const sequence = ++requestSequence.current
+    const reference = referenceFilter.current
     if (!silent) setLoading(true)
     try {
       const token = localStorage.getItem('ssb_auth_token')
-      const response = await fetch('/api/admin/deposit/paystack', {
+      const response = await fetch('/api/admin/deposit/paystack' + (reference ? '?reference=' + encodeURIComponent(reference) : ''), {
         cache: 'no-store',
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       })
       const data = await response.json()
       if (!response.ok || !data.success) throw new Error(data.error || 'Unable to load deposits')
+      if (sequence !== requestSequence.current) return
       setDeposits(Array.isArray(data.deposits) ? data.deposits : [])
+      setQueueError('')
     } catch (error) {
+      if (sequence !== requestSequence.current) return
       console.error('Paystack reconciliation list failed:', error)
-      if (!silent) toast.error(error instanceof Error ? error.message : 'Unable to load deposits')
+      const message = error instanceof Error ? error.message : 'Unable to load deposits'
+      setQueueError(message)
+      if (!silent) toast.error(message)
     } finally {
-      if (!silent) setLoading(false)
+      if (sequence === requestSequence.current) setLoading(false)
     }
+  }
+
+  const findDeposit = (reference: string) => {
+    const value = reference.trim()
+    if (value && !/^[A-Za-z0-9.=-]{1,100}$/.test(value)) {
+      toast.error('Enter the exact original Paystack reference.')
+      return
+    }
+    if (manualBusy) return
+    setManualId(null)
+    referenceFilter.current = value
+    setActiveReference(value)
+    setDeposits([])
+    setQueueError('')
+    void fetchPendingDeposits()
   }
 
   const inspectDeposit = async (depositId: string) => {
@@ -741,7 +768,7 @@ function DepositApprovalSection({ user }: { user: any }) {
           <p className="max-w-xl text-xs leading-5 text-slate-400">
             Paystack-confirmed payments credit the user's wallet automatically and immediately.
             Administrations receives a payment and credit notification; no manual approval is needed.
-            For older stuck payments, Administrations may credit once after personally confirming the original successful charge in the Paystack merchant dashboard. Each exceptional credit is recorded for audit.
+            For any saved pending or rejected payment, including one made just now, Administrations may credit once after personally confirming the original successful charge in the Paystack merchant dashboard. Each exceptional credit up to ₦10,000 is recorded for audit. Larger payments require verified recovery or Finance review.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -751,10 +778,22 @@ function DepositApprovalSection({ user }: { user: any }) {
           <Button variant="outline" size="sm" onClick={() => void fetchPendingDeposits()}>Refresh</Button>
         </div>
       </div>
+      <form className="mt-4 flex flex-wrap items-end gap-2" onSubmit={event => { event.preventDefault(); findDeposit(referenceInput) }}>
+        <label className="min-w-0 flex-1 text-xs text-slate-200">
+          Find a deposit by its exact Paystack reference
+          <input value={referenceInput} onChange={event => setReferenceInput(event.target.value)}
+            autoComplete="off" maxLength={100} placeholder="Original Paystack reference"
+            className="mt-1 w-full rounded-lg border border-white/20 bg-[#0a1a25] p-3 text-sm text-white" />
+        </label>
+        <Button type="submit" size="sm" disabled={manualBusy || !referenceInput.trim()}>Find deposit</Button>
+        {activeReference && <Button type="button" size="sm" variant="outline" disabled={manualBusy}
+          onClick={() => { setReferenceInput(''); findDeposit('') }}>Show recent deposits</Button>}
+      </form>
+      {queueError && <p role="alert" className="mt-3 rounded-lg border border-red-400/30 p-3 text-xs text-red-200">{queueError}</p>}
       {loading ? (
         <p className="py-8 text-center text-xs text-slate-400">Loading Paystack deposits...</p>
       ) : deposits.length === 0 ? (
-        <p className="py-8 text-center text-xs text-slate-400">No Paystack deposit records yet.</p>
+        <p className="py-8 text-center text-xs text-slate-400">{queueError ? 'Deposit list unavailable. Retry Refresh.' : activeReference ? 'No saved wallet deposit matches that reference. Check the original reference; entry tickets and File Folder payments use separate workflows.' : 'No Paystack deposit records yet.'}</p>
       ) : (
         <div className="mt-4 space-y-3">
           {deposits.map(deposit => (
@@ -784,6 +823,9 @@ function DepositApprovalSection({ user }: { user: any }) {
                           onClick={() => openManualCredit(deposit)}>
                           Manual credit after Paystack confirmation
                         </Button>
+                      )}
+                      {(deposit.status === 'pending' || deposit.status === 'rejected') && Number(deposit.amount_ngn) > 10000 && (
+                        <p className="w-full text-right text-xs text-amber-200">Above the ₦10,000 emergency credit limit. Use Paystack verification or Finance review.</p>
                       )}
                     </div>
                   )}
@@ -821,7 +863,7 @@ function DepositApprovalSection({ user }: { user: any }) {
                   <label className="flex items-start gap-3 rounded-lg border border-amber-300/20 p-3 text-xs leading-5 text-amber-100">
                     <input type="checkbox" checked={manualConfirmed}
                       onChange={event => setManualConfirmed(event.target.checked)} className="mt-1" />
-                    I independently checked Paystack and confirm this reference was successfully paid, in full, without a refund or reversal. I authorize the exact stored wallet credit.
+                    I independently checked the original Paystack merchant dashboard: the reference, NGN amount and payer match this deposit, the payment succeeded in full, and no refund or reversal exists. I authorize the exact stored wallet credit.
                   </label>
                   {manualError && <p role="alert" className="rounded-lg border border-red-400/30 p-3 text-xs text-red-200">{manualError}</p>}
                   <div className="flex flex-wrap gap-2">
