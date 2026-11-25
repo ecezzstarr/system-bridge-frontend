@@ -32,46 +32,39 @@ vm.runInNewContext(code,{exports:resultExports,require:key=>{
  if(!(key in mocked))throw Error('unexpected import '+key)
  return mocked[key]
 }})
-const href='/distribution-studio?channel=tiktok'
-assert.equal(resultExports.HOPE_TIKTOK_PUBLICATION_HREF,href)
-const hope=resultExports.departmentBuildings('hope',['/distribution-studio','/bridger/my-prospects'])
-const tiktok=hope.filter(x=>x.href===href)
-const social=hope.filter(x=>x.href==='/distribution-studio')
-assert.equal(tiktok.length,1,'Hope receives exactly one dedicated TikTok building')
-assert.equal(social.length,1,'Existing Social Studio remains intact and not duplicated')
-assert.equal(tiktok[0].title,'TikTok Publication')
-assert.equal(tiktok[0].officialImage,'/images/workshops/stage.webp',
- 'TikTok building uses a separate existing facade image')
-assert.equal(resultExports.departmentBuildings('stability',['/distribution-studio']).some(x=>x.href===href),false,
- 'A special Hope building must not appear in Stability')
-assert.equal(resultExports.departmentBuildings('hope',[]).some(x=>x.href===href),false,
- 'Do not show a TikTok building when the original Social Studio is absent')
-assert(resultExports.firstWorkshops.hope.some(x=>x.href===href))
-assert(component.includes('department===\'hope\''),'The dedicated facade is scoped to Hope')
-assert(component.includes('data-hope-publication-buildings="existing-channel-entrances"'))
-assert(component.includes('isVisible(door.href)'),'Company organizer controls building visibility')
-assert(component.includes('if(user?.role!==role)return null'),'Role gates remain intact')
-assert(component.includes('entrance(tikTokPublication,tikTokPublication.action)'),
- 'Bridgers can enter TikTok without navigating the general directory')
-assert(css.includes('.publicationBuildings'),'The dedicated building uses existing responsive campus styles')
-assert(room.includes('<DepartmentBuildings department="hope"'),
- 'Hope retains its one unified workplace')
-assert(distribution.includes("key: 'tiktok'"),'TikTok is the pre-existing publication channel')
-assert(studio.includes("get('channel')==='tiktok'"),'Focused entry recognizes TikTok')
-assert(studio.includes("setSelectedChannels(['tiktok'])"),'TikTok is preselected')
-assert(studio.includes("setMediaType('video')"),'TikTok begins from video preparation')
-for(const anchor of ['tiktok-channel','tiktok-composer','tiktok-deliveries']){
- assert(studio.includes('id="'+anchor+'"')||studio.includes("'"+anchor+"'"),
-  'A direct phone shortcut must lead to '+anchor)
-}
-assert(studio.includes('data-hope-tiktok-publication="existing-distribution-channel"'))
-assert(studio.includes('tikTokChannel?.status'),'TikTok account status is not invented')
-assert(studio.includes('provider authorization is required'),'Drafts never falsely claim publication')
-assert(studio.includes("role==='bridger'"),'TikTok fast entrance is only personalized for Bridgers')
-assert(studio.includes('/weave/lifestyles/regional-manager/hope-outreach'),
- 'Published post proof returns to the original Hope outreach record')
-assert(studio.includes("action:'create_content'")&&studio.includes("fetch('/api/distribution-studio'"),
- 'TikTok saves through the original Distribution Studio backend')
-assert(!fs.existsSync('app/(app)/bridger/tiktok-publication/page.tsx'),
- 'Do not add a duplicate social publishing backend or route')
-console.log('PASS: Hope TikTok Publication is one dedicated building that enters the existing channel, content queue and proof workflow')
+const href='/distribution-studio'
+const hope=resultExports.departmentBuildings('hope',[href,'/bridger/my-prospects'])
+assert.equal(hope.filter(x=>x.href===href).length,1)
+assert.equal(hope.filter(x=>x.href.startsWith(href+'?')).length,0)
+assert.equal(hope.find(x=>x.href===href).title,'Social Studio')
+assert.equal(resultExports.firstWorkshops.hope.filter(x=>x.href.startsWith(href)).length,1)
+assert(component.includes('data-hope-publication-buildings="unified-social-studio"'))
+assert(component.includes('isVisible(door.href)'))
+assert(component.includes('if(user?.role!==role)return null'))
+assert(room.includes('<DepartmentBuildings department="hope"'))
+assert(distribution.includes("key: 'tiktok'"))
+assert(studio.includes("if(user.role==='bridger')return <HopeSocialStudio"))
+const guide=read('components/bridger/hope-social-studio.tsx')
+assert(guide.includes('data-hope-social-studio="manual-publication"'))
+assert(!guide.includes('request_connection'))
+assert(guide.includes("action:'submit_post'"))
+assert(guide.includes("action:'record_social_prospect'"))
+assert(guide.includes('/api/regional-manager/hope-outreach'))
+assert(guide.includes('data-hope-prospect-search'))
+assert(guide.includes('data-hope-work-bot'))
+assert(guide.includes('They agreed to this next step.'))
+const api=read('app/api/distribution-studio/route.ts')
+assert(api.includes("if(auth.user.role==='bridger')return NextResponse.json"))
+const helper=ts.transpileModule(read('lib/hope-social-work-guide.ts'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText
+const rules={}
+vm.runInNewContext(helper,{exports:rules})
+assert.equal(rules.hopeSearchTerms('','').length,0)
+assert.equal(rules.hopeSearchTerms('bakery','Lagos')[0],'bakery Lagos')
+assert.match(rules.hopeNextAction('no_reply'),/Do not repeat/)
+assert.match(rules.hopeNextAction('declined'),/Do not pursue/)
+assert.match(rules.hopeNextAction('agreed'),/agreed next action/)
+assert.match(rules.hopeWorkDirection(null),/active assignment/)
+assert.match(rules.hopeWorkDirection({assigned:true,target:1,reviewed:0,pending:0,due:1}),/follow-ups/)
+assert.match(rules.hopeWorkDirection({assigned:true,target:1,reviewed:0,pending:1,due:0}),/awaits review/)
+assert(!fs.existsSync('app/(app)/bridger/tiktok-publication/page.tsx'))
+console.log('PASS: unified Hope Social Studio, manual evidence, prospect search and deterministic work guide')

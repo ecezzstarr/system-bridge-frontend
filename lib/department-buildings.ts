@@ -11,7 +11,7 @@ export const departmentNames = {
   client: 'Dream Lovely Department', admin: 'Administrations Department · A Time',
 } as const
 
-/** A channel-specific doorway into the existing Social Studio, not a new publisher. */
+/** Legacy TikTok links remain valid but Hope has one Social Studio entrance. */
 export const HOPE_TIKTOK_PUBLICATION_HREF = '/distribution-studio?channel=tiktok'
 type FirstWorkshop = { href: string; name: string; action: string }
 export const firstWorkshops: Record<NativeDepartment, FirstWorkshop[]> = {
@@ -19,8 +19,7 @@ export const firstWorkshops: Record<NativeDepartment, FirstWorkshop[]> = {
     { href: '/weave/market/prospects', name: 'Prospect Market', action: 'Find a prospect to contact.' },
     { href: '/bridger/my-prospects', name: 'My Prospects', action: 'Contact your prospect, record their reply and follow up.' },
     { href: '/bridger/bridge-ai', name: 'Bridge AI', action: 'When they agree, guide them toward a Client File Folder.' },
-    { href: HOPE_TIKTOK_PUBLICATION_HREF, name: 'TikTok Publication', action: 'Open TikTok, prepare a video, and follow its publication status.' },
-    { href: '/distribution-studio', name: 'Social Studio', action: 'Create posts to reach new prospects or promote a Client’s business.' },
+    { href: '/distribution-studio', name: 'Social Studio', action: 'TikTok and social publication, prospect search, and daily work guidance.' },
     { href: '/referrals', name: 'Referral Movement', action: 'Invite staff through your own referral entrance and track verified ₦500 rewards.' },
   ],
   stability: [
@@ -58,20 +57,8 @@ export function departmentBuildings(department: NativeDepartment, pages: readonl
   for (const item of getWeaveSearchDirectory(role)) {
     const path = item.href.split(/[?#]/)[0]
     if (!pageSet.has(path) || entryOnly.test(path) || path === '/' + role) continue
-    doors.set(item.href, { title: item.title, href: item.href, area: item.department, access: item.access, officialImage:officialImageByHref.get(path) })
-  }
-  // A second façade points to one EXISTING TikTok channel and its durable
-  // Distribution Studio records. It adds no API, credentials, publisher or wallet.
-  // Only build this doorway when Hope has the real Social Studio workstation.
-  if (department === 'hope' && doors.has('/distribution-studio')) {
-    const studio = doors.get('/distribution-studio')!
-    doors.set(HOPE_TIKTOK_PUBLICATION_HREF, {
-      ...studio,
-      title: 'TikTok Publication',
-      href: HOPE_TIKTOK_PUBLICATION_HREF,
-      area: 'Hope · Social publication',
-      officialImage: '/images/workshops/stage.webp',
-    })
+    const href=department==='hope'&&path==='/distribution-studio'?path:item.href
+    doors.set(href, { title: department==='hope'&&path==='/distribution-studio'?'Social Studio':item.title, href, area: item.department, access: item.access, officialImage:officialImageByHref.get(path) })
   }
   for (const lifestyle of Object.values(WEAVE_LIFESTYLE_CATALOG)) {
     const roles: readonly string[] = lifestyle.roles
