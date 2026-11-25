@@ -59,6 +59,27 @@ export default function NotificationInbox(){
     if(!item.is_read)void markRead([item.id])
   }
   const active=items.find(item=>item.id===selectedId)
+  const [announcementImage,setAnnouncementImage]=useState<{id:string;url:string}|null>(null)
+  const [imageError,setImageError]=useState('')
+  useEffect(()=>{
+    setAnnouncementImage(null);setImageError('')
+    if(active?.type!=='company_announcement_image'||!token)return
+    const controller=new AbortController()
+    let url=''
+    void (async()=>{
+      try{
+        const response=await fetch('/api/notifications/announcement-image?id='+encodeURIComponent(active.id),{
+          headers:{Authorization:`Bearer ${token}`},cache:'no-store',signal:controller.signal
+        })
+        if(!response.ok)throw new Error('Image unavailable')
+        const blob=await response.blob()
+        if(controller.signal.aborted)return
+        url=URL.createObjectURL(blob)
+        setAnnouncementImage({id:active.id,url})
+      }catch{if(!controller.signal.aborted)setImageError('Announcement image unavailable. The full write-up is below.')}
+    })()
+    return ()=>{controller.abort();if(url)URL.revokeObjectURL(url)}
+  },[active?.id,active?.type,token])
   const unread=items.filter(item=>!item.is_read).length
   if(!isInitialized)return <main className="p-6 text-slate-200">Opening notifications…</main>
   if(!user)return <main className="p-6 text-slate-200">Sign in to view your messages.</main>
@@ -101,6 +122,10 @@ export default function NotificationInbox(){
           <h2 className="mt-4 break-words text-xl font-black sm:text-2xl">{active.title}</h2>
           <p className="mt-3 text-xs text-slate-400">{active.from_user_name||'WEAVE'} · {new Date(active.created_at).toLocaleString('en-NG')}</p>
           <div className="my-6 border-t border-white/10"/>
+          {active.type==='company_announcement_image'&&<div className="mb-5" data-company-announcement-image>
+            {announcementImage?.id===active.id?<img src={announcementImage.url} alt={active.title+' · Company announcement'} className="max-h-[70vh] w-full rounded-xl object-contain"/>:
+              <p className="text-sm text-slate-400">{imageError||'Opening announcement image…'}</p>}
+          </div>}
           <p className="whitespace-pre-wrap break-words text-sm leading-7 text-slate-100">{active.content||'No additional message was provided.'}</p>
           <div className="mt-8 flex flex-wrap gap-3 border-t border-white/10 pt-5">
             {(()=>{const destination=notificationDestination(active,user.role);return <Link href={destination.href} className="inline-flex min-h-12 items-center gap-2 rounded-xl bg-cyan-300 px-5 text-sm font-black text-slate-950"><ArrowUpRight className="h-4 w-4"/>{destination.label}</Link>})()}
