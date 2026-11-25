@@ -1,17 +1,16 @@
 'use client'
 
-// The single WEAVE environment transit gate supplies the three Client lessons,
-// the background artwork, readiness check, and automatically timed entrance.
-// This nested Client request contributes only a pending signal to that gate.
-// It must never create a second full-screen loader.
+// File Folder owns its actual pending state without a full-screen company cover.
 export function FileFolderEnvironmentLoader() {
   return (
     <div
       data-environment-pending="true"
-      data-file-folder-loader="shared-gate-only"
-      className="min-h-[100svh] w-full bg-transparent"
+      data-file-folder-loader="local-status"
+      className="flex w-full items-center justify-center px-4 py-8 text-sm"
       role="status"
-      aria-label="Preparing your Client File Folder operating world"
-    />
+      aria-live="polite"
+    >
+      Preparing your Client File Folder…
+    </div>
   )
 }

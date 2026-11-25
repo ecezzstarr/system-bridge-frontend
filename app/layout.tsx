@@ -23,7 +23,6 @@ import { InteractionMotionLayer } from '@/components/world/interaction-motion-la
 import { DivineShieldGate } from '@/components/divine-shield-gate'
 import { WeaveEnvironmentTransit } from '@/components/world/weave-environment-transit'
 import { WeavePresenceAmbience } from '@/components/world/weave-presence-ambience'
-import { WeaveRadianceCrossing } from '@/components/world/weave-radiance-crossing'
 
 // Every phone navigation must render the currently deployed WEAVE release.
 // Keep immutable Next.js assets cached; never retain an old application shell.
@@ -71,7 +70,6 @@ export default function RootLayout({
               <WeaveEnvironmentTransit>
                 <DivineShieldGate>
                   <PresenceCameraRootViewport>{children}</PresenceCameraRootViewport>
-                  <WeaveRadianceCrossing />
                   <WeavePresenceAmbience />
                   <DJBroadcastPlayer />
                 </DivineShieldGate>
