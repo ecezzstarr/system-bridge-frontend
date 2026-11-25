@@ -51,10 +51,10 @@ assert.ok(rootLayout.includes('<WeavePresenceAmbience />'),'Persistent WEAVE wor
 const flameReentryTransit=read('components/world/weave-environment-transit.tsx')
 assert.ok(!flameReentryTransit.includes('FLAME_REENTRY_AFTER_MS'),'Flame Event cold-entry briefing is not suppressed by an obsolete re-entry timeout')
 assert.ok(flameReentryTransit.includes("FLAME_REENTRY_LAST_ACTIVE_KEY"),'Flame Event re-entry state persists last app presence')
-assert.ok(flameReentryTransit.includes("resolveEventStatus(FLAME_EVENT"),'Flame Event re-entry briefing follows the October 1 event lifecycle')
-assert.ok(flameReentryTransit.includes("const showFlameBriefing=booting&&flameEventActive"),'Flame Event briefing is boot-only and cannot replace ordinary route transit')
-assert.ok(flameReentryTransit.includes("const briefs=showFlameBriefing?FLAME_EVENT_BRIEFS:PLATFORM_BRIEFS"),'Normal WEAVE loading briefs remain intact outside eligible Flame Event re-entry')
-assert.ok(flameReentryTransit.includes("Burning River")&&flameReentryTransit.includes("The River that Burns"),'Flame Event re-entry identifies the Burning River explicitly')
+
+
+
+
 
 
 const liveFlameField=read('components/world/weave-live-flame-field.tsx')
@@ -351,7 +351,7 @@ assert.ok(read('components/world/weave-dashboard-world.tsx').includes("role==='a
 assert.ok(read('components/world/role-district-environment.tsx').includes('districtScenes')&&read('components/world/role-district-environment.tsx').includes('data-district-scene={scene.label}'),'Role districts have distinct spatial scene geometry instead of one renamed room')
 assert.ok(!clientFileFolder.includes('bg-[#120c08]'),'Persistent File Folder shell no longer falls back to the brown wash')
 assert.ok(!clientFileFolder3d.includes('bg-[#120c08]')&&!clientFileFolder3d.includes("args={['#17100b']}"),'File Folder territory no longer renders the brown fallback world')
-assert.ok(environmentTransit.includes('automatic-readiness-gate')&&environmentTransit.includes('if(!covered||!environmentReady)return')&&environmentTransit.includes('revealAfterMs'),'Internal travel automatically waits for configured lessons and actual readiness')
+
 assert.ok(read('components/world/use-adaptive-runtime.ts').includes('level===2?1.15'),'High-tier 3D DPR is capped for smooth persistent-world interaction')
 assert.ok(clientFileFolder.includes('one continuous site'),'Construction opens directly into one continuous site rather than an intermediary catalog dashboard')
 assert.ok(fileFolderOpenWorld.includes('materialPurpose'),'Materials explain which blueprints/functions they enable')
@@ -371,12 +371,12 @@ const cleanRevealHeader2026=read('components/app-header.tsx')
 const cleanRevealCss2026=read('app/globals.css')
 const cleanRevealFileLoader2026=read('components/system-switch/file-folder-environment-loader.tsx')
 
-assert.ok(cleanRevealTransit2026.includes('[data-environment-pending="true"]')&&cleanRevealTransit2026.includes("readyPath!==pathname"),'Environment cover remains until destination-level pending work clears')
-assert.ok(cleanRevealTransit2026.includes("data-environment-content-state={covered?'forming':'ready'}"),'Incomplete destination content stays hidden until the clean reveal')
+
+
 assert.ok(cleanRevealAppLayout2026.includes('data-environment-pending="true"'),'Authenticated shell keeps the global cover while auth state resolves')
 assert.ok(cleanRevealAppLayout2026.includes('Opening WEAVE')&&cleanRevealAppLayout2026.includes('Restoring your position and the current environment.'),'Authenticated shell has a visible recovery surface if auth initialization outlives the global cover')
 assert.ok(cleanRevealFileLoader2026.includes('data-environment-pending="true"'),'File Folder boot participates in the global readiness gate')
-assert.ok(cleanRevealFileLoader2026.includes('data-file-folder-loader="shared-gate-only"')&&!cleanRevealFileLoader2026.includes('FILE_FOLDER_BEATS'),'Client File Folder does not start another loader after the global instruction gate')
+assert.ok(cleanRevealFileLoader2026.includes('data-file-folder-loader="local-status"')&&!cleanRevealFileLoader2026.includes('FILE_FOLDER_BEATS'),'Client File Folder does not start another loader after the global instruction gate')
 assert.ok(read('app/client/system-switch/page.tsx').includes('2200-(Date.now()-bootStartedAt)'),'File Folder keeps a deliberate minimum environment-formation interval before reveal')
 assert.ok(!clientFileFolder.includes("bg-[#0d0907]")&&!clientFileFolder.includes("bg-[#17100b]"),'File Folder interior no longer reintroduces the brown panel shell over the 4D territory')
 assert.ok(cleanRevealClientLayout2026.includes('overflow-x-clip')&&!cleanRevealClientLayout2026.includes('min-h-screen overflow-hidden'),'Client environments are not vertically clipped by their shell')
@@ -398,16 +398,16 @@ assert.ok(adaptiveCanvas2026.includes("data-adaptive-canvas-ready")&&adaptiveCan
 assert.ok(adaptiveCanvas2026.includes("(!budget.covered||!ready)")&&adaptiveCanvas2026.includes('setReady(true)'),'Covered adaptive canvases draw one formation frame then pause until reveal')
 assert.ok(cleanRevealCss2026.includes('html[data-weave-event="flame-live"] .weave-dashboard-world'),'Flame Live themes dashboard surfaces rather than adding a wallpaper')
 assert.ok(cleanRevealTransit2026.includes('(hasPendingSurface()||hasUnreadyCanvas())&&elapsed<absoluteMaximum'),'Pending application state and unfinished 3D worlds hold the clean reveal only until the absolute recovery ceiling')
-assert.ok(cleanRevealTransit2026.includes('const activeBriefs:readonly LoadingBrief[]=booting?bootBriefs:['),'Role and route entrances each offer three complete lessons')
-assert.ok(cleanRevealTransit2026.includes('setRuntimeCovered(covered)'),'Loader pauses background runtime while the destination forms underneath')
-assert.ok(cleanRevealTransit2026.includes('waitForEnvironmentReadiness(mode,configRef.current,controller.signal)'),'Destination readiness is verified while the lessons progress automatically')
+
+
+
 assert.ok(cleanRevealTransit2026.includes('hasUnreadyCanvas')&&cleanRevealTransit2026.includes('data-adaptive-canvas-ready'),'Destination still waits for a ready adaptive world canvas')
-assert.ok(cleanRevealTransit2026.includes("title:`Opening ${destinationEnvironment.title}`")&&cleanRevealTransit2026.includes('body:destinationEnvironment.purpose'),'Instruction identifies the actual destination')
-assert.ok(cleanRevealTransit2026.includes('activeBriefs.map((_,index)'),'Progress represents exactly three complete reading lessons')
-assert.ok(cleanRevealTransit2026.includes("document.addEventListener('click',handleInternalNavigation,true)"),'Click navigation primes the single environment gate')
-assert.ok(cleanRevealTransit2026.includes('setReadyPath(null)')&&cleanRevealTransit2026.includes('setTransiting(true)'),'Navigation hides the previous environment while forming the next one')
-assert.ok(cleanRevealTransit2026.includes("waitForEnvironmentReadiness('transit',configRef.current,controller.signal)"),'Query-only travel also respects readiness and the automatic lesson gate')
-assert.ok(cleanRevealTransit2026.includes('data-weave-loader-enter="automatic"')&&cleanRevealTransit2026.includes('!environmentReady')&&cleanRevealTransit2026.includes('revealAfterMs'),'No destination reveals itself before the automatic lessons finish and the world is ready')
+
+
+
+
+
+
 const loadingBriefCss2026=read('app/weave-readability.css')
 assert.ok(loadingBriefCss2026.includes('.weave-loading-brief')&&loadingBriefCss2026.includes('animation: none !important'),'Loader reading surface stays sharp without animated blur')
 assert.ok(loadingBriefCss2026.includes('grid-template-rows: minmax(0, 1fr)')&&loadingBriefCss2026.includes('46svh'),'Longer lessons occupy a constant-height scrolling viewport')
@@ -774,14 +774,14 @@ assert.ok(!environmentSurfaceSource.includes('FILE FOLDER WORLD')&&!environmentS
 assert.ok(!environmentSurfaceSource.includes('roleWorldHref')&&!environmentSurfaceSource.includes('presenceFor(role)'),'Persistent environment shell leaves world and Presence navigation to canonical controls instead of duplicate header links')
 
 
-assert.ok(environmentTransit.includes("min-h-[100svh]")&&environmentTransit.includes("items-stretch"),'Global loader uses a stable viewport and avoids mobile address-bar jumps')
-assert.ok(environmentTransit.includes("bg-[#02050a]")&&!environmentTransit.includes("bg-[#090807]/98"),'Loader has no brown fallback background')
-assert.ok(environmentTransit.includes("const showFlameBriefing=booting&&flameEventActive"),'Active Flame Event owns the cold-entry loader rather than requiring a 30-minute reentry gap')
-assert.ok(environmentTransit.includes('data-flame-event-loader={showFlameBriefing?\'burning-river\':undefined}'),'Flame Event loader exposes the Burning River state')
-assert.ok(environmentTransit.includes("max-w-3xl")&&environmentTransit.includes("weave-loader-card"),'Loading card stays readable inside fixed, bounded viewport geometry')
 
 
-assert.ok(environmentTransit.includes('data-environment-reveal-shell="continuous"'),'Loader and destination share one continuous dark reveal shell with no exposed frame')
+
+
+
+
+
+
 assert.ok(!environmentTransit.includes('FLAME_REENTRY_AFTER_MS'),'Flame Event loader is not suppressed by an obsolete reentry timeout')
 
 
@@ -812,3 +812,7 @@ assert.ok(aiFileFolderStoreSource.includes('generated_sales_flame_coin=ai.genera
 assert.ok(!aiFileFolderStoreSource.includes('wallet_flame_coin=wallet_flame_coin+${total}'),'Customer sales never auto-credit the AI operating wallet')
 assert.ok(aiFileFolderStoreSource.includes('adminCreditAiOperatingFlameCoin')&&aiFileFolderStoreSource.includes("'admin_operating_credit'"),'Administrations separately credits AI operating System Switch')
 assert.ok(aiFileFolderStoreSource.includes('source_id')&&aiFileFolderStoreSource.includes('product_id'),'AI earnings retain sale/product provenance')
+
+assert.ok(environmentTransit.includes('data-environment-content-state="ready">{children}'),'Page renders without a global cover')
+assert.doesNotMatch(environmentTransit,/weave-loader-stable|revealAfterMs|handleInternalNavigation|setRuntimeCovered\(covered\)/,'No mandatory loader or delay')
+assert.ok(cleanRevealFileLoader2026.includes('role="status"'),'Local File Folder pending state remains accessible')
