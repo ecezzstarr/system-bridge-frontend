@@ -48,7 +48,7 @@ export const WEAVE_SYSTEM_MAP = {
     agent: {
       name: 'Agent',
       kind: 'employee',
-      description: 'Stability: the Agent sells and distributes WEAVE products to Nigerians, manages customers and shop supply, and participates in attached Bridger programs with qualifying commissions.',
+      description: 'Stability: the Agent sells and physically distributes WEAVE products, delivers orders to customers, manages shop supply, and participates in attached Bridger programs with qualifying commissions. The Agent’s field of work is physical delivery and distribution, not online outreach.',
     },
     admin: {
       name: 'Administrations',
