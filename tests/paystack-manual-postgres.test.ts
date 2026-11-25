@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import { randomUUID } from 'node:crypto'
+import { readFileSync } from 'node:fs'
 import { Pool } from 'pg'
 
 /**
@@ -72,6 +73,38 @@ try {
     evidenceNote:'Success confirmed in the Paystack merchant transaction dashboard.',
     paystackTransactionId:transactionId,
   })
+  // Exercise the actual Administration GET query against a backlog of
+  // 105 historic exceptions. A deposit from minutes ago must still appear.
+  const routeSource=readFileSync('app/api/admin/deposit/paystack/route.ts','utf8')
+  const queueSql=routeSource.match(/const result = await getPool\(\)\.query\(`([\s\S]+?)`, \[reference\]\)/)?.[1]
+  assert.ok(queueSql,'Administration queue SQL must be available')
+  await transactionPool.query(`
+    INSERT INTO deposits(id,user_id,method,receipt_data,amount_usd,amount_trx,status,created_at)
+    SELECT md5('historic-paystack-' || n)::uuid,$1,'paystack','OLD-' || n,100,0.2,'rejected',NOW()-INTERVAL '7 days'
+    FROM generate_series(1,105) AS n
+  `,[agentId])
+  const freshReference='BRIDGER-fresh-'+randomUUID().slice(0,8)
+  const freshDeposit=await insert(bridgerId,'pending',100,0.2,freshReference)
+  await transactionPool.query("UPDATE deposits SET created_at=NOW()-INTERVAL '2 minutes' WHERE id=$1",[freshDeposit])
+  const recentQueue=await transactionPool.query(queueSql,[''])
+  assert.equal(recentQueue.rows[0].id,freshDeposit)
+  assert.equal(recentQueue.rowCount,100)
+  const lookup=await transactionPool.query(queueSql,['OLD-105'])
+  assert.equal(lookup.rowCount,1)
+  assert.equal(lookup.rows[0].reference,'OLD-105')
+  const exactFresh=await transactionPool.query(queueSql,[freshReference])
+  assert.equal(exactFresh.rows[0].id,freshDeposit)
+  // Confirm immediate manual recovery succeeds without an age threshold.
+  assert.equal((await manualCreditStuckPaystack(request(freshDeposit))).credited,true)
+  const freshAfter=await transactionPool.query(queueSql,[freshReference])
+  assert.equal(freshAfter.rows[0].status,'approved')
+  assert.equal(freshAfter.rows[0].manual_credited,true)
+  await assert.rejects(manualCreditStuckPaystack(request(freshDeposit)),ManualPaystackCreditError)
+  // Isolate subsequent existing balance fixtures from the fresh-credit scenario.
+  await transactionPool.query("UPDATE wallets SET balance_trx=0 WHERE user_id=$1",[bridgerId])
+  await transactionPool.query("DELETE FROM ledger_entries WHERE metadata->>'deposit_id'=$1",[freshDeposit])
+  await transactionPool.query("DELETE FROM deposits WHERE id=$1 OR receipt_data LIKE 'OLD-%'",[freshDeposit])
+
   const refBridger='BRIDGER-test-'+randomUUID().slice(0,8)
   const bridgerDeposit=await insert(bridgerId,'rejected',2200,5.141,refBridger)
   // Regression: the historic form incorrectly required all duplicate inputs,
