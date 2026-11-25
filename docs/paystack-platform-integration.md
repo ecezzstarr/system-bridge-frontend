@@ -122,7 +122,7 @@ The normal payment route remains automatic: Weave credits Paystack-confirmed cha
 after signed webhooks or server verification and notifies Administration.
 If a saved Paystack checkout remains `pending` or `rejected` but the user
 actually paid, an authorized Administration account may select
-**Manual credit after Paystack confirmation** for deposits up to **₦10,000**.
+**Manual credit after Paystack confirmation** for any valid stored deposit amount. There is no separate manual approval ceiling; only the exact confirmed checkout amount may be credited.
 
 Administration must independently open the ORIGINAL merchant's Paystack dashboard
 and see a successful charge. The form requires that charge's numeric Paystack
@@ -146,8 +146,8 @@ were authenticated by the Paystack API. Instead, user and Admin records label
 it **Administration-confirmed · Wallet credited** using the audited ledger.
 Older already-approved entries are ineligible for additional manual credit.
 Later independent Paystack verification may attach provider proof to an
-existing manual credit without crediting twice. Larger or conflicting payments
-require separate Finance investigation.
+existing manual credit without crediting twice. Conflicting payments
+require separate Finance investigation regardless of amount.
 
 **This is a privileged exceptional action and a financial risk.** Grant
 Administration accounts only to trusted staff and restrict the server
