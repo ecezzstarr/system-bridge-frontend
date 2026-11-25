@@ -768,7 +768,7 @@ function DepositApprovalSection({ user }: { user: any }) {
           <p className="max-w-xl text-xs leading-5 text-slate-400">
             Paystack-confirmed payments credit the user's wallet automatically and immediately.
             Administrations receives a payment and credit notification; no manual approval is needed.
-            For any saved pending or rejected payment, including one made just now, Administrations may credit once after personally confirming the original successful charge in the Paystack merchant dashboard. Each exceptional credit up to ₦10,000 is recorded for audit. Larger payments require verified recovery or Finance review.
+            For any saved pending or rejected payment, including one made just now, Administrations may credit once after personally confirming the original successful charge in the Paystack merchant dashboard. There is no separate manual-credit amount limit. Each confirmed deposit is credited at its exact stored value and recorded for audit.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -817,15 +817,12 @@ function DepositApprovalSection({ user }: { user: any }) {
                       <Button size="sm" disabled={processingId === deposit.id} onClick={() => void verifyDeposit(deposit.id)}>
                         {processingId === deposit.id ? 'Verifying...' : deposit.status === 'pending' ? 'Verify with Paystack' : deposit.status === 'rejected' ? 'Retry verified recovery' : 'Attach verified proof'}
                       </Button>
-                      {(deposit.status === 'pending' || deposit.status === 'rejected') && Number(deposit.amount_ngn) <= 10000 && (
+                      {(deposit.status === 'pending' || deposit.status === 'rejected') && (
                         <Button size="sm" variant="outline"
                           disabled={manualBusy}
                           onClick={() => openManualCredit(deposit)}>
                           Manual credit after Paystack confirmation
                         </Button>
-                      )}
-                      {(deposit.status === 'pending' || deposit.status === 'rejected') && Number(deposit.amount_ngn) > 10000 && (
-                        <p className="w-full text-right text-xs text-amber-200">Above the ₦10,000 emergency credit limit. Use Paystack verification or Finance review.</p>
                       )}
                     </div>
                   )}
