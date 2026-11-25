@@ -1,4 +1,5 @@
 'use client'
+import { useUsdValue } from '@/components/usd-value'
 
 import Link from 'next/link'
 import {useEffect,useMemo,useRef,useState,type ChangeEvent} from 'react'
@@ -56,6 +57,7 @@ function placement(ctx:CanvasRenderingContext2D,kind:string,mark:HTMLImageElemen
 export default function WeaveMaterialBranding(){
   const {user,isInitialized}=useAuth()
   const canvasRef=useRef<HTMLCanvasElement>(null)
+  const usd = useUsdValue()
   const [sampleId,setSampleId]=useState('brand-tee-classic')
   const [brand,setBrand]=useState('YOUR BRAND')
   const [headline,setHeadline]=useState('Made for your customers')
@@ -145,7 +147,7 @@ export default function WeaveMaterialBranding(){
       if(!response.ok||!result.success)throw Error(result.error||'Licensing did not complete.')
       setLicenseId(result.license.id)
       setNotice(result.existing?'This exact design was already licensed to your account. No second charge.':
-        'Your branded concept is licensed; the System Switch company fee was recorded. Download the finished mockup.')
+        'Your branded concept is licensed; the company fee was recorded. Download the finished mockup.')
       setStudio(current=>current?{...current,walletBalance:Number(result.balance??current.walletBalance)}:current)
     }catch(e){setNotice(e instanceof Error?e.message:'Could not license this product.') }
     finally{setBusy('')}
@@ -217,13 +219,13 @@ export default function WeaveMaterialBranding(){
           </label>}
           <div className="rounded-xl border border-amber-200/25 bg-amber-200/[.05] p-4">
             <h3 className="text-base font-bold text-amber-100">Commercial licensing</h3>
-            <p className="mt-2 text-sm leading-6 text-slate-200">Your preview is free. Real product photos stay on your device. {user.role==='admin'?'Official Administrations exports carry no internal fee.':'The company license for a new customized mockup is '+fee+' System Switch. You choose any separate customer service quote; it is not collected here.'}</p>
+            <p className="mt-2 text-sm leading-6 text-slate-200">Your preview is free. Real product photos stay on your device. {user.role==='admin'?'Official Administrations exports carry no internal fee.':'The company license for a new customized mockup is '+usd(fee)+'. You choose any separate customer service quote; it is not collected here.'}</p>
             <label className="mt-3 flex items-start gap-2 text-sm leading-6 text-slate-200"><input type="checkbox" checked={accepted} onChange={e=>setAccepted(e.target.checked)} className="mt-1 h-5 w-5"/>I approve the shown fee and have rights to use any uploaded artwork. This is a digital preview, not a physical print order.</label>
           </div>
           {licenseId?
             <button type="button" className="flex min-h-14 w-full items-center justify-center gap-2 rounded-xl bg-emerald-200 px-5 text-base font-black text-[#09251e] disabled:opacity-50" disabled={Boolean(busy)||!ready} onClick={()=>void download()}><Download size={20}/>{busy==='download'?'Preparing PNG…':'Download licensed mockup PNG'}</button>:
-            <button type="button" className="flex min-h-14 w-full items-center justify-center gap-2 rounded-xl bg-cyan-200 px-5 text-base font-black text-[#071923] disabled:opacity-50" disabled={Boolean(busy)||!accepted||!ready} onClick={()=>void license()}><ShoppingBag size={20}/>{busy==='license'?'Checking license…':user.role==='admin'?'License official design':'License for '+fee+' System Switch'}</button>}
-          {user.role!=='admin'&&<Link href="/wallet/deposit-withdraw" className={button}><Wallet size={17}/>Fund your System Switch</Link>}
+            <button type="button" className="flex min-h-14 w-full items-center justify-center gap-2 rounded-xl bg-cyan-200 px-5 text-base font-black text-[#071923] disabled:opacity-50" disabled={Boolean(busy)||!accepted||!ready} onClick={()=>void license()}><ShoppingBag size={20}/>{busy==='license'?'Checking license…':user.role==='admin'?'License official design':'License for '+usd(fee)+''}</button>}
+          {user.role!=='admin'&&<Link href="/wallet/deposit-withdraw" className={button}><Wallet size={17}/>Fund your wallet</Link>}
         </section>
         <aside className="space-y-4 lg:sticky lg:top-5">
           <div className="rounded-3xl border border-white/10 bg-[#0e2030] p-4"><h2 className="text-lg font-bold">Live product preview</h2>

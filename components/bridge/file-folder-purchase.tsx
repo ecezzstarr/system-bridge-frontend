@@ -1,4 +1,5 @@
 'use client'
+import { UsdValue } from '@/components/usd-value'
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -327,7 +328,7 @@ export default function FileFolderPurchase({
                   />
                   <span className="pb-1 text-[9px] font-bold uppercase tracking-[.12em] text-stone-500">System Switch</span>
                 </div>
-                <p className="mt-2 text-[9px] leading-4 text-stone-500">Normal Pro starting value is {PRO_STARTING_PRICE.toLocaleString()} System Switch. Administrations may approve a negotiated Pro sale down to {PRO_NEGOTIATED_MIN.toLocaleString()}.</p>
+                <p className="mt-2 text-[9px] leading-4 text-stone-500">Normal Pro starting value is <UsdValue trx={PRO_STARTING_PRICE} />. Administrations may approve a negotiated Pro sale down to {PRO_NEGOTIATED_MIN.toLocaleString()}.</p>
               </div>
             )}
 
@@ -348,7 +349,7 @@ export default function FileFolderPurchase({
             </p>
             <div className="mt-6 border-y border-white/8 py-4">
               <p className="text-[8px] uppercase tracking-[.15em] text-stone-500">File Folder value</p>
-              <p className="mt-1 text-2xl font-black text-white">{Number.isFinite(selectedPrice) ? selectedPrice.toLocaleString() : '—'} System Switch</p>
+              <p className="mt-1 text-2xl font-black text-white"><UsdValue trx={Number.isFinite(selectedPrice) ? selectedPrice : '—'} /></p>
               <p className="mt-1 text-[9px] text-stone-500">The exact NGN total appears in Paystack checkout.</p>
             </div>
           </div>

@@ -19,7 +19,7 @@ for(const title of ['Choose a career','Get materials','Build over time','Add cap
 }
 assert(workspace.includes('data-file-folder-career-service={blueprint.blueprint_key}'),'Actual blueprints have a customer-facing job explanation')
 assert(workspace.includes('quoteFileFolderBlueprint(blueprint,owned)'),'Actual blueprint prices consider existing material inventory')
-assert(workspace.includes('quote.priceAvailable')&&workspace.includes('quote.acquireCost.toLocaleString()'),'Unpublished prices are not invented')
+assert(workspace.includes('quote.priceAvailable')&&workspace.includes('<UsdValue trx={quote.acquireCost} />'),'Unpublished prices are not invented')
 assert(workspace.includes('effectiveMinutes')&&workspace.includes('blueprint.build_hours'),'Client is shown construction time from the real blueprint')
 assert(workspace.includes('new Date(build.completes_at).toLocaleString()')&&workspace.includes('buildFormationProgress'),'Active builds use server-persisted timing and completion state')
 assert(workspace.includes('data-file-folder-boost-target="active-construction"'),'Boost Bay selects a real active build')

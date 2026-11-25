@@ -1,4 +1,5 @@
 'use client'
+import { UsdValue } from '@/components/usd-value'
 
 import { useEffect } from 'react'
 import { Check, Copy, Crown, Loader2, Wallet, X } from 'lucide-react'
@@ -62,7 +63,7 @@ export function LegacyFileFolderSale({
           <p className="text-[9px] font-black uppercase tracking-[.24em] text-orange-200">Prospect File Folder Sale</p>
           <h2 className="mt-3 text-3xl font-black tracking-tight">Pro File Folder</h2>
           <p className="mt-3 max-w-xl text-xs leading-6 text-white/45">
-            Pro normally starts at {FILE_FOLDER_PRICING.proStartingFlameCoin.toLocaleString()} System Switch. A real negotiated sale may be approved as low as {FILE_FOLDER_PRICING.proNegotiatedMinimumFlameCoin.toLocaleString()} System Switch. Premium remains fixed at {FILE_FOLDER_PRICING.premiumFlameCoin.toLocaleString()} System Switch.
+            Pro normally starts at <UsdValue trx={FILE_FOLDER_PRICING.proStartingFlameCoin} />. A real negotiated sale may be approved as low as <UsdValue trx={FILE_FOLDER_PRICING.proNegotiatedMinimumFlameCoin} />. Premium remains fixed at <UsdValue trx={FILE_FOLDER_PRICING.premiumFlameCoin} />.
           </p>
         </header>
 
@@ -74,7 +75,7 @@ export function LegacyFileFolderSale({
           >
             <div className="flex items-center gap-2 text-cyan-200"><Wallet className="h-4 w-4" /><span className="text-[9px] font-black uppercase tracking-[.16em]">Pro</span></div>
             <p className="mt-4 text-2xl font-black">From {FILE_FOLDER_PRICING.proStartingFlameCoin.toLocaleString()}</p>
-            <p className="mt-1 text-[9px] text-white/35">Negotiable to {FILE_FOLDER_PRICING.proNegotiatedMinimumFlameCoin.toLocaleString()} System Switch</p>
+            <p className="mt-1 text-[9px] text-white/35">Negotiable to <UsdValue trx={FILE_FOLDER_PRICING.proNegotiatedMinimumFlameCoin} /></p>
           </button>
           <button
             type="button"

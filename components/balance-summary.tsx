@@ -1,5 +1,7 @@
 'use client'
 
+import { useUsdValue } from '@/components/usd-value'
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Lock } from 'lucide-react'
 import { SYSTEM_SWITCH_NAME, displayCurrencyName } from '@/lib/flame-coin'
@@ -11,12 +13,16 @@ export interface BalanceSummaryProps {
 }
 
 export function BalanceSummary({ available, locked, currency = SYSTEM_SWITCH_NAME }: BalanceSummaryProps) {
+  const usd = useUsdValue()
   const safeAvailable = available == null || !Number.isFinite(Number(available)) ? null : Number(available)
   const safeLocked = locked == null || !Number.isFinite(Number(locked)) ? null : Number(locked)
   const total = safeAvailable == null || safeLocked == null ? null : safeAvailable + safeLocked
   const amount = (value:number|null) => value==null?'Unavailable':value.toLocaleString(undefined,{
     minimumFractionDigits:2,maximumFractionDigits:6,
   })
+
+  const display = (value: number | null) => displayCurrencyName(currency) === SYSTEM_SWITCH_NAME
+    ? usd(value) : `${amount(value)} ${displayCurrencyName(currency)}`
 
   return (
     <div className="grid gap-4 md:grid-cols-3">
@@ -25,7 +31,7 @@ export function BalanceSummary({ available, locked, currency = SYSTEM_SWITCH_NAM
           <CardTitle className="text-sm font-medium text-muted-foreground">Available Balance</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{amount(safeAvailable)} {displayCurrencyName(currency)}</div>
+          <div className="text-2xl font-bold">{display(safeAvailable)}</div>
           <p className="text-xs text-muted-foreground mt-1">Ready to use</p>
         </CardContent>
       </Card>
@@ -38,7 +44,7 @@ export function BalanceSummary({ available, locked, currency = SYSTEM_SWITCH_NAM
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-yellow-600">{amount(safeLocked)} {displayCurrencyName(currency)}</div>
+          <div className="text-2xl font-bold text-yellow-600">{display(safeLocked)}</div>
           <p className="text-xs text-muted-foreground mt-1">In active transactions</p>
         </CardContent>
       </Card>
@@ -48,7 +54,7 @@ export function BalanceSummary({ available, locked, currency = SYSTEM_SWITCH_NAM
           <CardTitle className="text-sm font-medium text-muted-foreground">Total Balance</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-primary">{amount(total)} {displayCurrencyName(currency)}</div>
+          <div className="text-2xl font-bold text-primary">{display(total)}</div>
           <p className="text-xs text-muted-foreground mt-1">Available + Locked</p>
         </CardContent>
       </Card>

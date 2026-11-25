@@ -1,4 +1,5 @@
 'use client'
+import { useUsdValue } from '@/components/usd-value'
 
 import { useCallback, useEffect, useState } from 'react'
 import { Mail, RefreshCw, Send, WalletCards } from 'lucide-react'
@@ -31,6 +32,7 @@ type Outreach = {
 }
 
 export default function BridgerEmailOutreachPage(){
+  const usd = useUsdValue()
   const [data,setData]=useState<any>(null)
   const [loading,setLoading]=useState(true)
   const [busy,setBusy]=useState('')
@@ -150,7 +152,7 @@ export default function BridgerEmailOutreachPage(){
         <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {[
             ['1 · Connect your mailbox','A valid Google app password enables WEAVE to send mail from your own address.'],
-            ['2 · Acquire a candidate','Check the current System Switch cost, then buy a candidate. The email may not belong to an interested person.'],
+            ['2 · Acquire a candidate','Check the listed cost, then buy a candidate. The email may not belong to an interested person.'],
             ['3 · Send a relevant offer','Write a personal subject and clear service message. Only a provider-accepted message counts as sent.'],
             ['4 · Follow real replies','Update the outreach record only after a real response; customer purchase and your earnings are separate verified events.'],
           ].map(([title,description])=><article key={title} className="rounded-xl border border-white/10 bg-[#0a1724] p-4 text-sm leading-6 text-slate-200"><strong className="block text-base text-sky-200">{title}</strong><p className="mt-2">{description}</p></article>)}
@@ -182,8 +184,8 @@ export default function BridgerEmailOutreachPage(){
               <p className="mt-1 text-[9px] uppercase tracking-[.12em] text-slate-500">Prospect candidates available</p>
             </div>
             <div className="text-right">
-              <p className="flex items-center justify-end gap-1 text-sm font-black"><WalletCards className="h-4 w-4"/>{Number(data.walletBalance||0).toFixed(2)}</p>
-              <p className="mt-1 text-[9px] uppercase tracking-[.12em] text-slate-500">System Switch balance</p>
+              <p className="flex items-center justify-end gap-1 text-sm font-black"><WalletCards className="h-4 w-4"/>{usd(data.walletBalance)}</p>
+              <p className="mt-1 text-[9px] uppercase tracking-[.12em] text-slate-500">Wallet balance (USD)</p>
             </div>
           </div>
           <button onClick={acquire} disabled={busy==='acquire'||!data.availableCount} className="mt-5 w-full border border-emerald-300/30 px-4 py-3 text-[10px] font-black uppercase tracking-[.14em] text-emerald-100 disabled:opacity-40">{busy==='acquire'?'Acquiring…':'Claim free Email Prospect'}</button>

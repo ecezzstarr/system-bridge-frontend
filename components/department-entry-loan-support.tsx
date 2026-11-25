@@ -139,7 +139,7 @@ export function DepartmentEntryLoanSupport({
               {request.status === 'approved' && <p className="mt-2 text-sky-100">
                 Your entry loan is approved. Your one-use code should appear in the ticket below.
                 Register using <strong>{request.applicant_email || 'the email supplied in your application'}</strong>.
-                Your starting System Switch balance will be −{ticketValue}.
+                Your starting wallet balance will be −{ticketValue} TRX units.
               </p>}
               {codeExpired && <div className="mt-2 space-y-2 text-amber-200">
                 <p role="alert">Your previously approved one-use code is no longer available.
@@ -190,9 +190,9 @@ export function DepartmentEntryLoanSupport({
               className="mt-1 accent-sky-300" />
             <span>I request entry credit for this ticket
               {ticketPriceUsd != null ? ` ($${ticketPriceUsd.toFixed(2)} USD · ₦${ticketAmountNgn.toLocaleString('en-NG')})` : ''}.
-              The loan principal is {ticketValue} System Switch.
+              The loan principal is {ticketValue} TRX units.
               If approved by a Regional Manager or Administrations, my new account will start
-              at −{ticketValue} System Switch. Future verified System Switch credits will
+              at −{ticketValue} TRX units. Future verified wallet credits will
               offset this debt. No interest is added by this registration flow.</span>
           </label>
           <p className="text-xs leading-5 text-slate-400">

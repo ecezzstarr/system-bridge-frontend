@@ -1,4 +1,5 @@
 'use client'
+import { UsdValue } from '@/components/usd-value'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useAuth } from '@/lib/auth-provider'
@@ -20,7 +21,7 @@ export default function CampaignFlamePage() {
  <button disabled={busy} onClick={load} className="rounded-lg border border-white/20 px-4 py-2">{busy?'Loading...':'Refresh report'}</button>
  {error&&<p role="alert" className="text-red-300">{error}</p>}
  {report&&<><section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{Object.entries(labels).map(([key,label])=><div key={key} className="rounded-xl border border-white/10 bg-white/5 p-5"><p className="text-sm text-slate-400">{label}</p><p className="mt-2 text-2xl">{Number(report.summary?.[key]||0).toLocaleString()}</p></div>)}</section>
- <section className="rounded-xl border border-white/10 p-5"><h2 className="text-xl">Provider archive</h2>{!report.providers?.length?<p className="mt-4 text-slate-400">No provider allocations recorded yet.</p>:report.providers.map((p:any)=><div key={p.provider_key} className="mt-4 flex justify-between gap-4"><span>{p.display_name} · {p.settlement_status}</span><span>{Number(p.allocation_trx).toLocaleString()} System Switch</span></div>)}</section>
+ <section className="rounded-xl border border-white/10 p-5"><h2 className="text-xl">Provider archive</h2>{!report.providers?.length?<p className="mt-4 text-slate-400">No provider allocations recorded yet.</p>:report.providers.map((p:any)=><div key={p.provider_key} className="mt-4 flex justify-between gap-4"><span>{p.display_name} · {p.settlement_status}</span><span><UsdValue trx={Number(p.allocation_trx)} /></span></div>)}</section>
  <section className="rounded-xl border border-white/10 p-5"><h2 className="text-xl">Recent crossings</h2>{!report.movements?.length?<p className="mt-4 text-slate-400">No crossings recorded yet.</p>:report.movements.map((m:any)=><div key={m.code} className="mt-4 flex flex-wrap justify-between gap-3"><span>{m.flame_name||m.provider_name||'Bridge AI'} · {m.topic}</span><span>{m.crossing_state}</span></div>)}</section></>}
  </div></main>
 }

@@ -1,4 +1,5 @@
 'use client'
+import { UsdValue, useUsdValue } from '@/components/usd-value'
 
 import Link from 'next/link'
 import {useEffect,useMemo,useState} from 'react'
@@ -29,6 +30,7 @@ const num=(value:number)=>Number(value).toLocaleString('en-NG',{maximumFractionD
 export default function WeaveImageSamples(){
   const {user,isInitialized}=useAuth()
   const router=useRouter()
+  const usd = useUsdValue()
   const [loading,setLoading]=useState(true)
   const [busy,setBusy]=useState('')
   const [error,setError]=useState('')
@@ -101,7 +103,7 @@ export default function WeaveImageSamples(){
     const result=await send('checkout',{sampleId:selected.id,edits,serviceOrderId:customerOrderId||null})
     setLicenseId(result.license.id)
     setMessage(result.existing?'This exact production is already licensed to you. No second charge was made.':
-      'Commercial design licensed. The System Switch fee is recorded for WEAVE, and your final artwork is ready.')
+      'Commercial design licensed. The license fee is recorded for WEAVE, and your final artwork is ready.')
     await load()
   })
   const download=async(license:string)=>{
@@ -145,7 +147,7 @@ export default function WeaveImageSamples(){
   })
   const saveFee=()=>void run('fee',async()=>{
     const result=await send('admin_set_fee',{fee:Number(adminFee)})
-    setMessage('Administrations production fee updated to '+num(Number(result.fee))+' System Switch.')
+    setMessage('Administrations production fee updated to '+usd(result.fee)+'.')
     await load()
   })
   if(!isInitialized||!user)return <main className="min-h-screen p-8 text-slate-300">Opening the WEAVE Image Workshop…</main>
@@ -171,8 +173,8 @@ export default function WeaveImageSamples(){
       <div className="mt-5 grid grid-cols-2 gap-2 sm:max-w-2xl sm:grid-cols-4">
         <div className="rounded-xl border border-white/10 bg-white/[.04] p-3"><div className="text-2xl font-black text-cyan-100">{WEAVE_IMAGE_SAMPLES.length}</div><p className="text-[10px] text-slate-400">Original examples</p></div>
         <div className="rounded-xl border border-white/10 bg-white/[.04] p-3"><div className="text-2xl font-black text-cyan-100">{categories.length-1}</div><p className="text-[10px] text-slate-400">Business styles</p></div>
-        <div className="rounded-xl border border-white/10 bg-white/[.04] p-3"><div className="text-2xl font-black text-cyan-100">{loading?'…':num(fee)}</div><p className="text-[10px] text-slate-400">System Switch / license</p></div>
-        <div className="rounded-xl border border-white/10 bg-white/[.04] p-3"><div className="text-2xl font-black text-cyan-100">{loading?'…':num(studio?.walletBalance||0)}</div><p className="text-[10px] text-slate-400">Your System Switch balance</p></div>
+        <div className="rounded-xl border border-white/10 bg-white/[.04] p-3"><div className="text-2xl font-black text-cyan-100">{loading?'…':usd(fee)}</div><p className="text-[10px] text-slate-400">USD / license</p></div>
+        <div className="rounded-xl border border-white/10 bg-white/[.04] p-3"><div className="text-2xl font-black text-cyan-100">{loading?'…':usd(studio?.walletBalance)}</div><p className="text-[10px] text-slate-400">Wallet balance (USD)</p></div>
       </div>
     </header>
     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" data-image-house-business-systems="true">
@@ -240,7 +242,7 @@ export default function WeaveImageSamples(){
           <h3 className="text-sm font-bold text-amber-100">Commercial production terms</h3>
           <p className="mt-2 text-xs leading-5 text-slate-300">
             {isAdmin?'Official Administrations output · No internal wallet debit.':
-              'WEAVE company fee: '+num(fee)+' System Switch for this customized production. You may sell the finished, licensed output at a price you agree with your customer. No third-party customer payment is collected by this checkout.'}
+              'WEAVE company fee: '+usd(fee)+' for this customized production. You may sell the finished, licensed output at a price you agree with your customer. No third-party customer payment is collected by this checkout.'}
           </p>
           <label className="mt-3 flex items-start gap-2 text-xs leading-5 text-slate-300">
             <input type="checkbox" className="mt-1" checked={confirmed} onChange={e=>setConfirmed(e.target.checked)}/>
@@ -252,9 +254,9 @@ export default function WeaveImageSamples(){
           <Download className="h-5 w-5"/>Download licensed high-resolution PNG</button>:
           <button type="button" onClick={checkout} disabled={Boolean(busy)||!confirmed||loading}
             className="flex min-h-14 w-full items-center justify-center gap-2 rounded-xl bg-cyan-200 px-4 text-sm font-black text-[#061521] disabled:opacity-50">
-            <ShoppingBag className="h-5 w-5"/>{busy==='checkout'?'Recording purchase…':isAdmin?'License official image · No charge':'Approve '+num(fee)+' System Switch and license image'}
+            <ShoppingBag className="h-5 w-5"/>{busy==='checkout'?'Recording purchase…':isAdmin?'License official image · No charge':'Approve '+usd(fee)+' and license image'}
           </button>}
-        {!isAdmin&&<Link href="/wallet/deposit-withdraw" className={small+' w-full'}><Wallet className="h-4 w-4"/>Fund System Switch wallet</Link>}
+        {!isAdmin&&<Link href="/wallet/deposit-withdraw" className={small+' w-full'}><Wallet className="h-4 w-4"/>Fund wallet</Link>}
         <p className="text-[11px] leading-5 text-slate-400">All sample artwork is predesigned, vector-based illustration. This is not live AI photography or custom AI generation. The licensed file contains your edits and is saved in your WEAVE production records.</p>
       </div>
       <div className="space-y-4 lg:sticky lg:top-5">
@@ -284,14 +286,14 @@ export default function WeaveImageSamples(){
       </div>}
       {isAdmin&&<div className="space-y-4 rounded-2xl border border-white/10 bg-[#0b1927] p-5">
         <p className="text-[10px] font-bold uppercase tracking-widest text-amber-200">Administrations · company production income</p>
-        <h2 className="text-xl font-bold">Verified System Switch earnings</h2>
+        <h2 className="text-xl font-bold">Verified earnings (USD)</h2>
         <label className="block text-xs text-slate-200">Published fee per commercial production license
           <input className={input} type="number" min={0} max={1000} step=".001" value={adminFee} onChange={e=>setAdminFee(e.target.value)}/></label>
         <button type="button" onClick={saveFee} disabled={Boolean(busy)} className={small}>Publish company fee</button>
         <div className="max-h-80 space-y-2 overflow-y-auto">
           {(studio?.companyDaily||[]).length?<table className="w-full text-left text-xs"><thead><tr><th className="p-2">Day (UTC)</th><th className="p-2">Licenses sold</th><th className="p-2">Company earnings</th></tr></thead>
           <tbody>{(studio?.companyDaily||[]).map(item=><tr className="border-t border-white/10" key={item.day}>
-            <td className="p-2">{new Date(item.day).toISOString().slice(0,10)}</td><td className="p-2">{item.sales}</td><td className="p-2">{num(item.companyEarned)} System Switch</td>
+            <td className="p-2">{new Date(item.day).toISOString().slice(0,10)}</td><td className="p-2">{item.sales}</td><td className="p-2"><UsdValue trx={item.companyEarned} /></td>
           </tr>)}</tbody></table>:<p className="py-6 text-xs text-slate-400">No paid sample exports recorded yet. Previews and official internal designs do not count as company sales.</p>}
         </div>
         <p className="text-xs text-slate-400">Only committed paid licensing records appear here. Unverified customer promises and sample views are excluded.</p>
@@ -303,7 +305,7 @@ export default function WeaveImageSamples(){
           {!studio?.licenses?.length?<p className="py-8 text-center text-xs text-slate-400">Commercial licenses and their receipts will be saved here.</p>:
             studio.licenses.map(item=><div key={item.id} className="rounded-xl border border-white/10 bg-white/[.03] p-3">
               <p className="text-xs font-bold">{WEAVE_IMAGE_SAMPLES.find(s=>s.id===item.sample_id)?.name||item.sample_id}</p>
-              <p className="mt-1 text-[11px] text-slate-300">{item.edits.brand} · {item.edits.format} · {num(item.fee_system_switch)} System Switch</p>
+              <p className="mt-1 text-[11px] text-slate-300">{item.edits.brand} · {item.edits.format} · <UsdValue trx={item.fee_system_switch} /></p>
               <p className="mt-1 break-all text-[10px] text-slate-500"><ReceiptText className="mr-1 inline h-3 w-3"/>{item.receipt_number||'Official Administrations production'} · {new Date(item.created_at).toLocaleDateString()}</p>
               <button type="button" className={small+' mt-2'} disabled={Boolean(busy)} onClick={()=>void download(item.id)}><Download className="h-4 w-4"/>Download PNG again</button>
             </div>)}

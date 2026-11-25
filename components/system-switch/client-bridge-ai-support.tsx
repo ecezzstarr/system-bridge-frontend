@@ -1,4 +1,5 @@
 'use client'
+import { UsdValue, useUsdValue } from '@/components/usd-value'
 
 import { useEffect, useRef, useState } from 'react'
 import { Bot, Send, Sparkles } from 'lucide-react'
@@ -12,6 +13,7 @@ type SupportMessage = {
 }
 
 export function ClientBridgeAiSupport() {
+  const usd = useUsdValue()
   const [messages,setMessages]=useState<SupportMessage[]>([])
   const [identity,setIdentity]=useState<any>(null)
   const [input,setInput]=useState('')
@@ -125,7 +127,7 @@ export function ClientBridgeAiSupport() {
               {identity?.assignedBridger ? 'Bridger: ' + identity.assignedBridger.name : (identity?.continuity==='crossing-linked'?'Crossing linked':'Continuity active')}
             </span>
             {billing&&<span className="rounded-full border border-amber-300/15 bg-amber-400/5 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.12em] text-amber-200">
-              {billing.feeFlameCoin.toLocaleString()} System Switch / assisted reply
+              <UsdValue trx={billing.feeFlameCoin} /> / assisted reply
             </span>}
           </div>
         </div>
@@ -156,7 +158,7 @@ export function ClientBridgeAiSupport() {
       <div className="border-t border-white/10 bg-black/20 p-4">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2 text-[9px]">
           <span className="text-slate-500">Bridge AI assistance is a Client File Folder service.</span>
-          {billing&&<span className="font-black text-amber-200">Wallet: {billing.walletBalanceFlameCoin.toLocaleString()} System Switch</span>}
+          {billing&&<span className="font-black text-amber-200">Wallet: <UsdValue trx={billing.walletBalanceFlameCoin} /></span>}
         </div>
         {error&&<p className="mb-2 text-xs font-bold text-rose-300">{error}</p>}
         <div className="flex gap-2">
@@ -179,7 +181,7 @@ export function ClientBridgeAiSupport() {
             className="inline-flex w-12 items-center justify-center rounded-2xl bg-sky-400 text-slate-950 disabled:opacity-40"
             aria-label="Send to Bridge AI"
           >
-            <span className="sr-only">{billing ? `Send for ${billing.feeFlameCoin} System Switch` : 'Send to Bridge AI'}</span>
+            <span className="sr-only">{billing ? `Send for ${usd(billing.feeFlameCoin)}` : 'Send to Bridge AI'}</span>
             <Send className="h-4 w-4"/>
           </button>
         </div>

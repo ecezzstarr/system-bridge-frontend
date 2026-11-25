@@ -1,6 +1,8 @@
 'use client'
 
 import { ArrowUpRight, ArrowDownLeft, Lock, Unlock } from 'lucide-react'
+import { useUsdValue } from '@/components/usd-value'
+import { displayCurrencyName } from '@/lib/flame-coin'
 import { cn } from '@/lib/utils'
 
 export interface TransactionItemProps {
@@ -13,6 +15,9 @@ export interface TransactionItemProps {
 }
 
 export function TransactionItem({ type, amount, currency, description, date, balanceAfter }: TransactionItemProps) {
+  const usd = useUsdValue()
+  const legacy = displayCurrencyName(currency) === 'System Switch'
+  const display = (value: number) => legacy ? usd(value) : `${value} ${currency}`
   const isIncoming = type === 'deposit' || type === 'earning' || type === 'escrow_release'
   const isEscrow = type === 'escrow_lock' || type === 'escrow_release'
 
@@ -44,13 +49,13 @@ export function TransactionItem({ type, amount, currency, description, date, bal
       <div className="text-right">
         <p className={cn('font-medium', textColor)}>
           {isIncoming ? '+' : '-'}
-          {amount} {currency}
+          {display(amount)}
         </p>
         <p className="text-xs text-muted-foreground">
-          {date.toLocaleDateString()} {date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          {legacy && `Recorded ${amount} TRX · current USD value · `}{date.toLocaleDateString()} {date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </p>
         {balanceAfter !== undefined && (
-          <p className="text-xs text-muted-foreground">Balance: {balanceAfter} {currency}</p>
+          <p className="text-xs text-muted-foreground">Balance: {display(balanceAfter)}</p>
         )}
       </div>
     </div>

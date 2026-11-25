@@ -1,4 +1,5 @@
 'use client'
+import { useUsdValue } from '@/components/usd-value'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { DailyProspectClaim } from '@/components/bridger/daily-prospect-claim'
@@ -47,6 +48,7 @@ export default function ProspectMarketPage() {
   const { user, updateBalance } = useAuth()
   const router = useRouter()
   const personalBuilding = usePathname() === '/bridger/my-prospects'
+  const usd = useUsdValue()
   const [marketTab, setMarketTab] = useState<'browse' | 'mine'>('browse')
   const tab = personalBuilding ? 'mine' : marketTab
 
@@ -308,7 +310,7 @@ export default function ProspectMarketPage() {
             <Wallet className="h-5 w-5 text-[#e8b93f]" />
             <div>
               <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Your Balance</p>
-              <p className="text-lg font-black text-white">{user?.platform_wallet_balance?.toFixed(2) || '0.00'} <span className="text-[#e8b93f] text-xs">System Switch</span></p>
+              <p className="text-lg font-black text-white">{usd(user?.platform_wallet_balance)}</p>
             </div>
           </CardContent>
         </Card>

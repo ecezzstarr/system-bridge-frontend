@@ -1,4 +1,5 @@
 'use client'
+import { UsdValue } from '@/components/usd-value'
 
 import { useEffect, useState } from 'react'
 import useSWR from 'swr'
@@ -142,7 +143,7 @@ export default function ReserveEnginePage() {
                         <p className="mt-1 truncate font-mono text-[9px] text-slate-500">{sweep.from || 'source not recorded'} → {sweep.to || 'destination not recorded'}</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-black text-emerald-200">+{Number(sweep.amount||0).toLocaleString(undefined,{maximumFractionDigits:2})} System Switch</p>
+                        <p className="text-sm font-black text-emerald-200">+<UsdValue trx={Number(sweep.amount||0)} /></p>
                         <p className="mt-1 text-[9px] text-slate-500">{sweep.completedAt ? new Date(sweep.completedAt).toLocaleString() : 'Recorded'}</p>
                       </div>
                     </div>

@@ -1,5 +1,7 @@
 'use client'
 
+import { useUsdValue } from '@/components/usd-value'
+
 import { useAuth } from '@/lib/auth-provider'
 import { Button } from '@/components/ui/button'
 import { ArrowRight, ArrowDownToLine, ArrowUpFromLine, Wallet, Copy, Check, ShieldCheck } from 'lucide-react'
@@ -14,6 +16,7 @@ export default function WalletDepositWithdrawPage() {
   const [amount, setAmount] = useState('')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
+  const usd = useUsdValue()
   const [balance,setBalance]=useState<number|null>(null)
   const [balanceError,setBalanceError]=useState('')
   const [balanceUpdatedAt,setBalanceUpdatedAt]=useState<string|null>(null)
@@ -71,7 +74,7 @@ export default function WalletDepositWithdrawPage() {
 
   useEffect(() => {
     if (!user || isOpayRole) return
-    // Fetch only the Company TRX wallet and System Switch peg; no NGN quote for Clients.
+    // Fetch only the Company TRX wallet and TRX peg; no NGN quote for Clients.
     fetch('/api/bridge/file-folder')
       .then(res => res.json())
       .then(data => {
@@ -94,7 +97,7 @@ export default function WalletDepositWithdrawPage() {
     if (!user) return
     const paymentStatus = new URLSearchParams(window.location.search).get('deposit')
     if (paymentStatus === 'verified') {
-      setMessage('Payment verified by Paystack. Your System Switch wallet has been credited.')
+      setMessage('Payment verified by Paystack. Your wallet has been credited.')
       void fetchBalance()
       void fetchClientDeposits()
     } else if (paymentStatus === 'pending' || paymentStatus === 'verification_pending') {
@@ -244,7 +247,7 @@ export default function WalletDepositWithdrawPage() {
 
       const data = await response.json()
       if (data.success) {
-        setMessage(`Withdrawal of ${amount} System Switch initiated! Processing time: 1-24 hours`)
+        setMessage(`Withdrawal of ${amount} TRX initiated! Processing time: 1-24 hours`)
         setAmount('')
         setWithdrawAddress('')
         fetchBalance()
@@ -294,7 +297,7 @@ export default function WalletDepositWithdrawPage() {
       })
       const data = await response.json()
       if (data.success) {
-        setMessage(data.message || `Withdrawal of ${amount} System Switch initiated via OPay!`)
+        setMessage(data.message || `Withdrawal of ${amount} TRX initiated via OPay!`)
         setAmount('')
         setWithdrawBankName('')
         setWithdrawAccountNumber('')
@@ -323,7 +326,7 @@ export default function WalletDepositWithdrawPage() {
               </Link>
               <p className="mt-4 weave-word-presence text-[9px] font-black uppercase tracking-[0.22em] text-cyan-300">Value Movement Engine</p>
               <h1 className="mt-2 text-2xl font-black text-white md:text-3xl">Deposit, verification, conversion and withdrawal are one recorded value lifecycle.</h1>
-              <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-300">Every deposit creates a verifiable movement before System Switch is credited. Every withdrawal moves from recorded balance into an authorized external rail.</p>
+              <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-300">Every deposit creates a verifiable movement before your wallet is credited. Every withdrawal moves from recorded balance into an authorized external rail.</p>
             </div>
             <div className="rounded-xl border border-cyan-300/15 bg-cyan-400/[0.05] px-4 py-3 text-right">
               <p className="text-[8px] font-black uppercase tracking-wider text-cyan-300">Current position</p>
@@ -343,8 +346,8 @@ export default function WalletDepositWithdrawPage() {
                 <div>
                   <p className="text-slate-400 text-sm mb-1">Current Balance</p>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-4xl font-bold text-cyan-400">{balanceLabel}</span>
-                    <span className="text-xl text-slate-400">System Switch</span>
+                    <span className="text-4xl font-bold text-cyan-400">{usd(balance)}</span>
+                    <span className="text-xl text-slate-400">USD</span>
                   </div>
                   <p className="mt-2 text-[10px] text-slate-400">
                     {balanceUpdatedAt ? 'Last persisted balance: '+new Date(balanceUpdatedAt).toLocaleString()
@@ -400,21 +403,22 @@ export default function WalletDepositWithdrawPage() {
                   <>
                     <h2 className="text-xl font-bold text-white mb-4">Deposit via Paystack (NGN)</h2>
                     <p className="text-slate-400 text-sm mb-6">
-                      Pay securely through the Company Paystack checkout. Weave verifies the payment server-side and credits the corresponding System Switch to your Main Wallet. No manual receipt submission is required.
+                      Pay securely through the Company Paystack checkout. Weave verifies the payment server-side and credits your Main Wallet. No manual receipt submission is required.
                     </p>
                     <div className="mb-6 grid grid-cols-2 gap-4">
                       <div className="p-4 bg-slate-800/50 border border-slate-700 rounded-xl">
                         <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Exchange Rate</p>
-                        <p className="text-cyan-400 font-bold">{flameCoinRate ? `1 System Switch = ₦${flameCoinRate.toFixed(2)}` : 'Rate confirmed at checkout'}</p>
+                        <p className="text-cyan-400 font-bold">{flameCoinRate ? `1 TRX = ₦${flameCoinRate.toFixed(2)}` : 'Rate confirmed at checkout'}</p>
                       </div>
                       <div className="p-4 bg-slate-800/50 border border-slate-700 rounded-xl">
-                        <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Target Asset</p>
-                        <p className="text-white font-bold">System Switch</p>
+                        <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Balance display</p>
+                        <p className="text-white font-bold">USD</p>
                       </div>
                     </div>
                     <div className="mb-6">
                       <label className="block text-sm font-semibold text-white mb-3">Amount to Deposit (NGN)</label>
                       <input type="number" min="1" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="Enter Naira amount" className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" />
+                      {flameCoinRate && Number(amount) > 0 && <p className="mt-2 text-sm text-slate-300">Estimated wallet credit: {usd(Number(amount) / flameCoinRate)}</p>}
                     </div>
                     {message && <div className="p-3 rounded-lg mb-6 text-sm bg-red-500/20 border border-red-500/50 text-red-300">{message}</div>}
                   </>
@@ -450,14 +454,14 @@ export default function WalletDepositWithdrawPage() {
                   </Button>
 
                   <p className="text-xs text-slate-500 text-center mt-4">
-                    Payment is verified by Paystack and Weave before System Switch is credited. Withdrawals remain on their existing method.
+                    Payment is verified by Paystack and Weave before your wallet is credited. Withdrawals remain on their existing method.
                   </p>
                 </div>
               </div>
 
               {<section data-client-tron-deposits className="rounded-2xl border border-cyan-300/20 bg-slate-900/60 p-5 text-white">
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div><h3 className="text-lg font-black">My deposit records</h3><p className="mt-1 text-xs text-slate-400">Only confirmed Paystack payments credit System Switch. Pending checkouts and earlier TRX deposits appear with their actual status.</p></div>
+                  <div><h3 className="text-lg font-black">My deposit records</h3><p className="mt-1 text-xs text-slate-400">Only confirmed Paystack payments credit TRX. Pending checkouts and earlier TRX deposits appear with their actual status.</p></div>
                   <Button onClick={()=>{void fetchClientDeposits();void fetchBalance()}} variant="outline" size="sm">Refresh deposits</Button>
                 </div>
                 <div className="mt-4 space-y-2">
@@ -465,10 +469,10 @@ export default function WalletDepositWithdrawPage() {
                    {!depositHistoryLoaded ? <p className="text-sm text-slate-400">Loading deposit records…</p>
                     : clientDeposits.length===0 ? <p className="text-sm text-slate-400">No deposit records yet.</p> : clientDeposits.map(item=>(
                     <div key={item.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-white/10 bg-black/20 p-3">
-                      <div><p className="font-bold text-white">{item.method==='paystack' ? `₦${Number(item.amount_usd||0).toLocaleString()} · ${Number(item.amount_trx).toLocaleString()} System Switch` : `${Number(item.amount_trx).toLocaleString()} TRX`}</p><p className="mt-1 text-xs text-slate-400">{new Date(item.created_at).toLocaleString()}</p>
+                      <div><p className="font-bold text-white">{item.method==='paystack' ? `₦${Number(item.amount_usd||0).toLocaleString()} · ${Number(item.amount_trx).toLocaleString()} TRX` : `${Number(item.amount_trx).toLocaleString()} TRX`}</p><p className="mt-1 text-xs text-slate-400">{new Date(item.created_at).toLocaleString()}</p>
                         <p className="mt-1 max-w-[260px] truncate font-mono text-[10px] text-cyan-200">{item.receipt_data||(item.method==='paystack'?'Missing Paystack reference':'Missing transaction hash')}</p></div>
                       <span className={item.status==='approved'?'text-sm font-bold text-emerald-300':item.status==='rejected'?'text-sm font-bold text-red-300':'text-sm font-bold text-amber-200'}>
-                        {item.status==='approved'?(item.manual_credited?'Administrations-confirmed · System Switch credited':item.method==='paystack'&&!item.verified_at?'Credited · Verification under review':'Verified · System Switch credited'):item.status==='rejected'?'Rejected · No credit':'Awaiting Paystack verification'}
+                        {item.status==='approved'?(item.manual_credited?'Administrations-confirmed · TRX credited':item.method==='paystack'&&!item.verified_at?'Credited · Verification under review':'Verified · TRX credited'):item.status==='rejected'?'Rejected · No credit':'Awaiting Paystack verification'}
                       </span>
                     </div>
                   ))}
@@ -484,13 +488,13 @@ export default function WalletDepositWithdrawPage() {
                         <div className="w-8 h-8 rounded-full bg-cyan-500/20 flex items-center justify-center shrink-0">
                           <span className="text-cyan-400 text-xs font-bold">1</span>
                         </div>
-                        <p className="text-slate-400 text-sm">System Switch is Weave's internal purchasing unit for platform purchases, subscriptions, workshops, Arena, Casino, and other paid participation.</p>
+                        <p className="text-slate-400 text-sm">Weave displays wallet balances in USD using the current TRX exchange rate.</p>
                       </div>
                       <div className="flex gap-4">
                         <div className="w-8 h-8 rounded-full bg-cyan-500/20 flex items-center justify-center shrink-0">
                           <span className="text-cyan-400 text-xs font-bold">2</span>
                         </div>
-                        <p className="text-slate-400 text-sm">Agents and Bridgers fund System Switch through Paystack checkout. Weave credits the wallet after independent server-side Paystack verification.</p>
+                        <p className="text-slate-400 text-sm">Agents and Bridgers fund their wallets through Paystack checkout. Weave credits the wallet after independent server-side Paystack verification.</p>
                       </div>
                       <div className="flex gap-4">
                         <div className="w-8 h-8 rounded-full bg-cyan-500/20 flex items-center justify-center shrink-0">
@@ -512,7 +516,7 @@ export default function WalletDepositWithdrawPage() {
                               <p className="text-[10px] text-slate-500">{new Date(conv.created_at).toLocaleDateString()}</p>
                             </div>
                             <div className="text-right">
-                              <p className="text-sm font-bold text-cyan-400">+{conv.amount} System Switch</p>
+                              <p className="text-sm font-bold text-cyan-400">+{conv.amount} TRX</p>
                               <p className="text-[9px] text-slate-500">Converted from NGN</p>
                             </div>
                           </div>
@@ -533,22 +537,22 @@ export default function WalletDepositWithdrawPage() {
                 {isOpayRole ? (
                   <>
                     <h2 className="text-xl font-bold text-white mb-4">Withdraw via OPay (NGN)</h2>
-                    <p className="text-slate-400 text-sm mb-6">Cash out your System Switch balance to your bank account via OPay.</p>
+                    <p className="text-slate-400 text-sm mb-6">Cash out your TRX balance to your bank account via OPay.</p>
 
                     <div className="mb-6">
-                      <label className="block text-sm font-semibold text-white mb-3">Amount (System Switch)</label>
+                      <label className="block text-sm font-semibold text-white mb-3">Amount (TRX)</label>
                       <input
                         type="number"
                         value={amount}
                         onChange={(e) => setAmount(e.target.value)}
-                        placeholder="Enter System Switch amount"
+                        placeholder="Enter TRX amount"
                         className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
                       />
-                      <p className="text-slate-500 text-sm mt-2">Available: {balanceLabel} System Switch</p>
+                      <p className="text-slate-500 text-sm mt-2">Available: {balanceLabel} TRX</p>
                       {amount && flameCoinRate && (
                         <p className="text-xs text-orange-400 mt-2">
                           You'll receive: <span className="font-bold">₦{(parseFloat(amount) * flameCoinRate * (1 - platformFeePercent / 100)).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
-                          {' '}(rate: 1 System Switch = ₦{flameCoinRate.toFixed(2)}, {platformFeePercent}% fee)
+                          {' '}(rate: 1 TRX = ₦{flameCoinRate.toFixed(2)}, {platformFeePercent}% fee)
                         </p>
                       )}
                     </div>
@@ -601,24 +605,24 @@ export default function WalletDepositWithdrawPage() {
                     </Button>
 
                     <p className="text-xs text-slate-500 text-center mt-4">
-                      Minimum withdrawal: 10 System Switch - Processing time: 1-24 hours
+                      Minimum withdrawal: 10 TRX - Processing time: 1-24 hours
                     </p>
                   </>
                 ) : (
                   <>
-                    <h2 className="text-xl font-bold text-white mb-4">Withdraw System Switch</h2>
-                    <p className="text-slate-400 text-sm mb-6">Withdraw System Switch as TRX to your external TRON wallet</p>
+                    <h2 className="text-xl font-bold text-white mb-4">Withdraw TRX</h2>
+                    <p className="text-slate-400 text-sm mb-6">Withdraw TRX to your external TRON wallet</p>
 
                     <div className="mb-6">
-                      <label className="block text-sm font-semibold text-white mb-3">Amount (System Switch)</label>
+                      <label className="block text-sm font-semibold text-white mb-3">Amount (TRX)</label>
                       <input
                         type="number"
                         value={amount}
                         onChange={(e) => setAmount(e.target.value)}
-                        placeholder="Enter System Switch amount"
+                        placeholder="Enter TRX amount"
                         className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
                       />
-                      <p className="text-slate-500 text-sm mt-2">Available: {balanceLabel} System Switch</p>
+                      <p className="text-slate-500 text-sm mt-2">Available: {balanceLabel} TRX</p>
                     </div>
 
                     <div className="mb-6">
@@ -647,7 +651,7 @@ export default function WalletDepositWithdrawPage() {
                     </Button>
 
                     <p className="text-xs text-slate-500 text-center mt-4">
-                      Minimum withdrawal: 10 System Switch - Processing time: 1-24 hours
+                      Minimum withdrawal: 10 TRX - Processing time: 1-24 hours
                     </p>
                   </>
                 )}
@@ -664,15 +668,15 @@ export default function WalletDepositWithdrawPage() {
               <div className="mt-3 space-y-2 text-xs font-semibold text-slate-300">
                 <p>External value → deposit record.</p>
                 <p>Deposit record → verification.</p>
-                <p>Verification → System Switch credit.</p>
-                <p>System Switch → participation or withdrawal.</p>
+                <p>Verification → wallet credit.</p>
+                <p>Wallet balance → participation or withdrawal.</p>
               </div>
             </section>
 
             <section className="rounded-3xl border border-sky-300/15 bg-sky-400/[0.04] p-4">
               <div className="flex items-center gap-2"><Wallet className="h-4 w-4 text-sky-300"/><p className="text-[9px] font-black uppercase tracking-[0.18em] text-sky-300">Recorded balance</p></div>
-              <p className="mt-3 text-2xl font-black text-white">{balanceLabel}</p>
-              <p className="text-xs font-black text-slate-300">System Switch</p>
+              <p className="mt-3 text-2xl font-black text-white">{usd(balance)}</p>
+              <p className="text-xs font-black text-slate-300">USD</p>
               <Link href="/ledger" className="mt-4 inline-flex w-full items-center justify-between rounded-xl border border-sky-300/15 bg-sky-400/[0.06] px-3 py-2.5 text-[10px] font-black uppercase tracking-[0.1em] text-sky-100">Open Record <ArrowRight className="h-3.5 w-3.5"/></Link>
             </section>
 

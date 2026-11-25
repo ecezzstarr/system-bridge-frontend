@@ -29,7 +29,7 @@ assert.ok(route.includes('complete_registration_gender'),'Legacy Clients without
 assert.ok(enterprise.includes('monthlyStanding.title')&&!enterprise.includes('cleanText(body.requestedPosition'),'Enterprise title cannot be manually chosen')
 assert.ok(enterprise.includes("folder.enterprise_status === 'approved'"),'A subscribed Lord/Lady is not misclassified as an approved enterprise')
 assert.ok(admin.includes('getClientMonthlyStanding'),'Admin approval verifies current Client subscription')
-assert.ok(panel.includes('Subscribe · 600 System Switch / month'),'UI opens paid monthly subscription')
+assert.ok(panel.includes('Subscribe · <UsdValue trx={600} /> / month'),'UI opens paid monthly subscription')
 assert.ok(!panel.includes('Requested position<select'),'Lord/Lady is not manually selected')
 assert.ok(lifestyle.includes("if (role === 'client')")&&lifestyle.includes('getClientMonthlyStanding(userId)'),'Client Lifestyle requires verified subscription')
 assert.ok(notebook.includes('Real Client product sales fund expenses'),'Enterprise economics focus on Client-owned products')

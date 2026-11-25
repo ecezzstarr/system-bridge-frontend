@@ -1,5 +1,7 @@
 "use client"
 
+import { useUsdValue } from '@/components/usd-value'
+
 import { useRouter } from "next/navigation"
 import { Search, Wallet, Settings, LogOut, Radio, Sparkles, MessageCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -19,6 +21,7 @@ interface AppHeaderProps {
 }
 
 export function AppHeader({ user }: AppHeaderProps) {
+  const usd = useUsdValue()
   const router = useRouter()
   const [search, setSearch] = useState("")
   const { user: authUser, logout } = useAuth()
@@ -44,7 +47,7 @@ export function AppHeader({ user }: AppHeaderProps) {
       if (!result.ok) return
       const data = await result.json()
       if (!signal.aborted && data.success &&
-          Number.isFinite(Number(data.flameCoinBalance))) {
+          data.flameCoinBalance != null && Number.isFinite(Number(data.flameCoinBalance))) {
         setFlameCoinBalance(Number(data.flameCoinBalance))
       }
     }
@@ -222,7 +225,7 @@ export function AppHeader({ user }: AppHeaderProps) {
           data-phone-chrome="value"
           className="h-9 w-9 shrink-0 rounded-full px-0 text-slate-300 hover:bg-cyan-300/[0.06] hover:text-white"
           onClick={() => router.push('/wallet')}
-          aria-label={flameCoinBalance !== null ? `Open System Switch wallet, balance ${flameCoinBalance.toLocaleString(undefined,{maximumFractionDigits:6})}` : 'Open System Switch wallet'}
+          aria-label={`Open wallet, balance ${usd(flameCoinBalance)}`}
         >
           <Wallet className="h-4 w-4 text-cyan-300" />
         </Button>
@@ -264,11 +267,11 @@ export function AppHeader({ user }: AppHeaderProps) {
             size="sm"
             className="h-8 min-w-10 gap-2 border-white/5 bg-transparent px-3"
             onClick={() => router.push('/wallet')}
-            aria-label="Open System Switch wallet"
+            aria-label={`Open wallet, balance ${usd(flameCoinBalance)}`}
           >
             <Wallet className="h-4 w-4 text-cyan-400" />
             <span data-weave-live-word="station" className="font-mono text-xs">
-              {flameCoinBalance !== null ? `${flameCoinBalance.toLocaleString(undefined,{maximumFractionDigits:6})} System Switch` : '—'}
+              {usd(flameCoinBalance)}
             </span>
           </Button>
 

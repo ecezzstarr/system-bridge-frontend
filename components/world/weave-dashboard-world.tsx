@@ -1,4 +1,5 @@
 'use client'
+import { useUsdValue } from '@/components/usd-value'
 
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
@@ -76,6 +77,7 @@ export function WeaveDashboardWorld({
   role:WorldRole
   userName?:string|null
 }){
+  const usd = useUsdValue()
   const copy=COPY[role]
   const {identity:kingdom}=useKingdomIdentity()
   const {isVisible,orderFor}=useEnvironmentOrganizer()
@@ -246,7 +248,7 @@ export function WeaveDashboardWorld({
       className="group absolute bottom-[7%] left-1/2 z-20 hidden -translate-x-1/2 items-center gap-2 border border-fuchsia-300/15 bg-black/30 px-4 py-2.5 backdrop-blur-xl sm:flex"
     >
       <Clapperboard className="h-4 w-4 text-fuchsia-200"/>
-      <span><span className="block text-[9px] font-black uppercase tracking-[.12em] text-white">{role==='agent'?'Image + Video Studio':'Video Ad Studio'}</span><span className="mt-0.5 block text-[8px] text-slate-500">{role==='agent'?'Image free · Video max 1.5 System Switch':'Business video production · System Switch'}</span></span>
+      <span><span className="block text-[9px] font-black uppercase tracking-[.12em] text-white">{role==='agent'?'Image + Video Studio':'Video Ad Studio'}</span><span className="mt-0.5 block text-[8px] text-slate-500">{role==='agent'?`Image free · Video max ${usd(1.5)}`:'Business video production · System Switch'}</span></span>
     </Link>}
 
     <div className="absolute inset-0 z-10 hidden sm:block">

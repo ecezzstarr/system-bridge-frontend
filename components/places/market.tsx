@@ -1,4 +1,5 @@
 'use client'
+import { UsdValue } from '@/components/usd-value'
 
 import { marketItems } from '@/lib/mock-places'
 import { Button } from '@/components/ui/button'
@@ -48,7 +49,7 @@ export default function MarketPlace() {
               </div>
               <div className="text-right">
                 <p className="text-xs text-slate-500">Price</p>
-                <p className="text-lg font-bold text-emerald-400">{item.price} System Switch</p>
+                <p className="text-lg font-bold text-emerald-400"><UsdValue trx={item.price} /></p>
               </div>
             </div>
 

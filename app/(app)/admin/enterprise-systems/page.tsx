@@ -1,4 +1,5 @@
 'use client'
+import { UsdValue } from '@/components/usd-value'
 
 import { useEffect, useState } from 'react'
 import { Building2, CheckCircle2, RefreshCw, Save, Settings2 } from 'lucide-react'
@@ -210,7 +211,7 @@ export default function EnterpriseSystemsAdminPage() {
                     <p className="mt-1 text-sm text-slate-500">{order.buyer_email}</p>
                     <p className="mt-3 text-2xl font-black text-amber-200">{gbp(order.quoted_price_gbp)}</p>
                     {order.quoted_flame_coin != null && (
-                      <p className="mt-1 text-base font-black text-cyan-200">≈ {Number(order.quoted_flame_coin).toLocaleString(undefined,{maximumFractionDigits:0})} System Switch</p>
+                      <p className="mt-1 text-base font-black text-cyan-200">≈ <UsdValue trx={Number(order.quoted_flame_coin)} /></p>
                     )}
                     <p className="mt-1 text-sm text-slate-500">{order.rate_source === 'live' ? 'Live TRX/GBP reference captured at request time' : 'System Switch reference unavailable at request time'}</p>
                     <p className="mt-1 text-sm text-slate-500">{new Date(order.created_at).toLocaleString()}</p>

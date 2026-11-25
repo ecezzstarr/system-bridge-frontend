@@ -1,4 +1,5 @@
 'use client'
+import { UsdValue } from '@/components/usd-value'
 import { useEffect, useState } from 'react'
 import { HandCoins, RefreshCw } from 'lucide-react'
 import { visiblePoll } from '@/lib/visible-poll'
@@ -90,7 +91,7 @@ export function RegionalEntryLoanDesk({ token }: { token: string }) {
             <p className="font-semibold">{item.applicant_name} · {item.department}</p>
             <p className="mt-1 break-all text-xs text-slate-300">{item.applicant_email}{item.applicant_phone ? ' · ' + item.applicant_phone : ''}</p>
             <p className="mt-1 text-xs text-slate-400">
-              {item.ticket_number} · {Number(item.price_flame_coin).toLocaleString()} System Switch · {expired ? 'Ticket unavailable / expired' : 'Awaiting decision'}
+              {item.ticket_number} · <UsdValue trx={Number(item.price_flame_coin)} /> · {expired ? 'Ticket unavailable / expired' : 'Awaiting decision'}
             </p>
             {item.statement && <p className="mt-2 whitespace-pre-wrap text-sm text-slate-200">{item.statement}</p>}
             <label className="mt-3 block text-sm text-slate-300">

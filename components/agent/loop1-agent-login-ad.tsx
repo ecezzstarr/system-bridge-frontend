@@ -1,4 +1,5 @@
 'use client'
+import { UsdValue } from '@/components/usd-value'
 
 import {
   ArrowRight,
@@ -103,7 +104,7 @@ export function Loop1AgentLoginAd({ open, onOpenChange, onOpenContinuance }: Pro
               <p className="mt-4 text-[10px] font-black uppercase tracking-[0.2em] text-emerald-300">3 · Your Return</p>
               <h3 className="mt-1 text-xl font-black text-white">30% returns to your Agent balance.</h3>
               <p className="mt-3 text-sm leading-6 text-slate-400">
-                Example: a 100 System Switch Prospect purchase produces a 30 System Switch Agent commission.
+                Example: a <UsdValue trx={100} /> Prospect purchase produces a <UsdValue trx={30} /> Agent commission.
               </p>
             </div>
           </section>
