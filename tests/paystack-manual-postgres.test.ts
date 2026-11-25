@@ -84,7 +84,7 @@ try {
     FROM generate_series(1,105) AS n
   `,[agentId])
   const freshReference='BRIDGER-fresh-'+randomUUID().slice(0,8)
-  const freshDeposit=await insert(bridgerId,'pending',100,0.2,freshReference)
+  const freshDeposit=await insert(bridgerId,'pending',14000,28,freshReference)
   await transactionPool.query("UPDATE deposits SET created_at=NOW()-INTERVAL '2 minutes' WHERE id=$1",[freshDeposit])
   const recentQueue=await transactionPool.query(queueSql,[''])
   assert.equal(recentQueue.rows[0].id,freshDeposit)
@@ -95,7 +95,11 @@ try {
   const exactFresh=await transactionPool.query(queueSql,[freshReference])
   assert.equal(exactFresh.rows[0].id,freshDeposit)
   // Confirm immediate manual recovery succeeds without an age threshold.
-  assert.equal((await manualCreditStuckPaystack(request(freshDeposit))).credited,true)
+  const freshCredit=await manualCreditStuckPaystack(request(freshDeposit))
+  assert.equal(freshCredit.credited,true)
+  assert.equal(freshCredit.amountNgn,14000)
+  const freshWallet=await transactionPool.query('SELECT balance_trx FROM wallets WHERE user_id=$1',[bridgerId])
+  assert.equal(Number(freshWallet.rows[0].balance_trx),28)
   const freshAfter=await transactionPool.query(queueSql,[freshReference])
   assert.equal(freshAfter.rows[0].status,'approved')
   assert.equal(freshAfter.rows[0].manual_credited,true)
