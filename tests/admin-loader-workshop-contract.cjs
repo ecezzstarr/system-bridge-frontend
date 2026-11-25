@@ -16,10 +16,8 @@ for(const role of ['visitor','agent','bridger','client','admin','flame-event']){
   assert.match(profile,new RegExp(role.replace('-','\\-')))
 }
 assert.match(profile,/lessons:normalizeLoaderLessons\(loading.lessons\)/)
-assert.match(transit,/revealAfterMs=Math.max\(minimumDuration,lessonDuration\*activeBriefs.length\)/)
-assert.match(transit,/if\(!covered\|\|!environmentReady\)return/)
-assert.match(transit,/setInterval\(showCurrentLesson,180\)/)
-assert.match(transit,/data-weave-loader-enter="automatic"/)
+assert.ok(transit.includes('data-environment-content-state="ready">{children}'),'Render children directly')
+assert.doesNotMatch(transit,/weave-loader-stable|revealAfterMs|handleInternalNavigation|setRuntimeCovered\(covered\)/,'No global cover, artificial delay or intercepted navigation')
 assert.doesNotMatch(transit,/onClick=\{enterEnvironment\}/)
 assert.match(workshop,/\/api\/admin\/environment-organizer/)
 assert.match(workshop,/action:'set_runtime'/)
