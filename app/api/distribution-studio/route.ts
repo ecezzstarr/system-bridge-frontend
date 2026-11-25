@@ -93,6 +93,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (action === 'request_connection') {
+      if(auth.user.role==='bridger')return NextResponse.json({success:false,error:'Hope uses manual social publication and review; account connections are not required.'},{status:403})
       const channelKey = typeof input.channelKey === 'string' ? input.channelKey.trim() : ''
       const definition = getDistributionChannelDefinition(channelKey)
       if (!definition || definition.kind !== 'external') {
