@@ -4,7 +4,6 @@ const fs = require('node:fs')
 const path = require('node:path')
 const { chromium } = require('playwright')
 const load = require('./helpers/load-ts-module.cjs')
-const { DEFAULT_LOADER_LESSONS } = load('lib/weave-environment-runtime-profile.ts')
 const { LEGACY_LOADER_LESSONS } = load('lib/weave-loader-copy-history.ts')
 const { FLAME_EVENT } = load('lib/weave-event.ts')
 
@@ -44,25 +43,15 @@ async function checkLoaders(browser) {
     const audience=entry.flame?'flame-event':entry.role
     const label=entry.tier?'client-'+entry.tier:audience
     await page.goto(origin+(entry.flame?'/flame-event':entry.role==='client'?'/client/login':'/login'),{waitUntil:'domcontentloaded'})
-    const loader=page.locator('.weave-loader-stable')
-    for(let index=0;index<3;index++){
-      const card=loader.locator(`[data-loading-brief="${index+1}"]`)
-      await card.waitFor({state:'visible',timeout:20000})
-      // Stored pre-refinement defaults must render as current company lessons.
-      await page.waitForFunction(({title,index})=>document.querySelector(`[data-loading-brief="${index+1}"] h2`)?.textContent===title,
-        {title:DEFAULT_LOADER_LESSONS[audience][index].title,index})
-      assert.equal(await loader.getAttribute('data-weave-loader-role'),entry.role)
-      const text=await card.innerText()
-      assert.doesNotMatch(text,/\bAdministration\b|Bridge Radiance|Flame Coin/)
-      const typography=await card.locator('h2').evaluate(element=>getComputedStyle(element).fontFamily)
-      assert.match(typography,/Weave Cormorant/)
-      assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false)
-      await page.screenshot({path:path.join(output,`loader-${label}-${index+1}.png`)})
-    }
-    assert.deepEqual(errors,[],label+' loader runtime errors')
+    await page.locator('[data-environment-content-state="ready"]').waitFor({state:'visible',timeout:10000})
+    assert.equal(await page.locator('.weave-loader-stable').count(),0,label+' has no global loader')
+    assert.equal(await page.locator('[data-weave-radiance-crossing]').count(),0,label+' has no full-screen crossing')
+    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false)
+    assert.deepEqual(errors,[],label+' runtime errors')
+    await page.screenshot({path:path.join(output,`direct-entry-${label}.png`)})
     await context.close()
   }
-  console.log('PASS: 27 shared-loader lessons at 360×640 across all roles, four File Folder tiers and Flame Event')
+  console.log('PASS: direct entry at 360×640 across all roles, four File Folder tiers and Flame Event')
 }
 
 async function main() {
@@ -85,7 +74,8 @@ async function main() {
         const onError = error => errors.push(error.message)
         page.on('pageerror', onError)
         await page.goto(origin + route, { waitUntil: 'networkidle' })
-        await page.locator('.weave-loader-stable').waitFor({ state: 'hidden', timeout: 45000 })
+        await page.locator('[data-environment-content-state="ready"]').waitFor({ state: 'visible', timeout: 10000 })
+        assert.equal(await page.locator('.weave-loader-stable').count(), 0, 'No global loading cover')
         await page.evaluate(() => document.fonts.ready)
         const slug = route === '/' ? 'home' : route.slice(1).replaceAll('/', '-')
         await page.screenshot({ path: path.join(output, `${slug}-${width}.png`), fullPage: true })
