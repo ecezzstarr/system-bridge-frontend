@@ -1119,78 +1119,114 @@ function WithdrawalApprovalSection({ user }: { user: any }) {
 function AnnouncementSection() {
   const [title, setTitle] = useState('')
   const [message, setMessage] = useState('')
+  const [directions,setDirections]=useState('')
+  const [earnings,setEarnings]=useState('')
+  const [link,setLink]=useState('')
+  const [image,setImage]=useState<File|null>(null)
+  const [preview,setPreview]=useState('')
   const [targetRole, setTargetRole] = useState('all')
   const [sending, setSending] = useState(false)
   const [result, setResult] = useState<string | null>(null)
-
+  useEffect(()=>{
+    if(!image){setPreview('');return}
+    const url=URL.createObjectURL(image)
+    setPreview(url)
+    return ()=>URL.revokeObjectURL(url)
+  },[image])
+  const field='w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-3 text-sm text-white'
   const sendAnnouncement = async () => {
+    if (sending) return
     if (!title.trim() || !message.trim()) {
-      setResult('Title and message are required')
+      setResult('Title and write-up are required')
       return
     }
     setSending(true)
     setResult(null)
     try {
       const token = localStorage.getItem('ssb_auth_token')
-      const roles = targetRole === 'all' ? undefined : [targetRole]
+      const body=new FormData()
+      body.set('title',title)
+      body.set('content',message)
+      body.set('directions',directions)
+      body.set('earnings',earnings)
+      body.set('link',link)
+      if(targetRole!=='all')body.append('roles',targetRole)
+      if(image)body.set('image',image)
       const response = await fetch('/api/admin/broadcast', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token || ''}`,
-        },
-        body: JSON.stringify({ title, content: message, type: 'announcement', roles }),
+        headers: {Authorization: `Bearer ${token || ''}`},
+        body,
       })
       const data = await response.json()
       if (response.ok && data.success) {
         setResult(data.message)
-        setTitle('')
-        setMessage('')
+        if(data.count>0){
+          setTitle('');setMessage('');setDirections('');setEarnings('');setLink('');setImage(null)
+        }
       } else {
         setResult(data.error || 'Failed to send')
       }
-    } catch (error) {
-      setResult('Failed to send announcement')
+    } catch {
+      setResult('Delivery could not be confirmed. Check the notification inbox before retrying.')
     } finally {
       setSending(false)
     }
   }
-
   return (
-    <div className="p-4 space-y-4 max-w-lg">
-      <h3 className="font-bold text-white">Send Announcement / App Update Notice</h3>
-      {result && (
-        <div className="px-3 py-2 rounded-lg text-xs bg-cyan-500/20 text-cyan-300">{result}</div>
-      )}
-      <div className="space-y-1">
-        <label className="text-[10px] text-slate-500 uppercase font-bold">Send To</label>
-        <select
-          value={targetRole}
-          onChange={(e) => setTargetRole(e.target.value)}
-          className="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-white text-xs"
-        >
-          <option value="all">All Users</option>
-          <option value="agent">Agents Only</option>
-          <option value="bridger">Bridgers Only</option>
-        </select>
-      </div>
-      <input
-        type="text"
-        placeholder="Title (e.g. App Update Available)"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        className="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-white text-sm"
-      />
-      <textarea
-        placeholder="Message"
-        value={message}
-        onChange={(e) => setMessage(e.target.value)}
-        rows={4}
-        className="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-white text-sm"
-      />
-      <Button onClick={sendAnnouncement} disabled={sending} className="bg-cyan-600 hover:bg-cyan-700">
-        {sending ? 'Sending...' : 'Send Notification'}
-      </Button>
+    <div className="max-w-2xl space-y-4 p-4" data-company-announcement-composer>
+      <p className="text-xs font-bold uppercase tracking-widest text-amber-200">A Time · Administrations</p>
+      <h3 className="text-xl font-black text-white">Company Announcement</h3>
+      <p className="text-sm leading-6 text-slate-300">Send the image, write-up, directions of work and earning conditions to the appropriate department through its existing notifications.</p>
+      {result && <div role="status" className="rounded-lg bg-cyan-500/20 px-3 py-2 text-sm text-cyan-100">{result}</div>}
+      <fieldset disabled={sending} className="space-y-4">
+        <label className="block space-y-2 text-sm font-bold text-slate-200">Send to
+          <select value={targetRole} onChange={e=>setTargetRole(e.target.value)} className={field}>
+            <option value="all">All active users</option>
+            <option value="bridger">Hope · Bridgers</option>
+            <option value="agent">Stability · Agents</option>
+            <option value="client">Dream Lovely · Clients</option>
+            <option value="admin">A Time · Administrations</option>
+          </select>
+        </label>
+        <label className="block space-y-2 text-sm font-bold text-slate-200">Title
+          <input className={field} maxLength={150} value={title} onChange={e=>setTitle(e.target.value)} placeholder="Company announcement title"/>
+        </label>
+        <div className="space-y-2">
+          <label className="block space-y-2 text-sm font-bold text-slate-200">Image (optional · JPG, PNG or WebP, up to 3 MB)
+            <input key={image?'image-chosen':'image-empty'} type="file" accept="image/jpeg,image/png,image/webp" className={field} onChange={e=>{
+              const file=e.target.files?.[0]
+              if(!file)return
+              if(file.size>3*1024*1024||!['image/jpeg','image/png','image/webp'].includes(file.type)){
+                setResult('Choose a JPG, PNG or WebP image up to 3 MB');e.target.value='';return
+              }
+              setImage(file);setResult(null)
+            }}/>
+          </label>
+          {preview&&<><img src={preview} alt="Announcement image preview" className="max-h-80 w-full rounded-xl object-contain"/><button type="button" className="text-sm text-cyan-200" onClick={()=>setImage(null)}>Remove image</button></>}
+        </div>
+        <label className="block space-y-2 text-sm font-bold text-slate-200">Write-up
+          <textarea className={field} maxLength={8000} rows={6} value={message} onChange={e=>setMessage(e.target.value)} placeholder="Speak to the department in full."/>
+        </label>
+        <label className="block space-y-2 text-sm font-bold text-slate-200">Directions of work (optional)
+          <textarea className={field} maxLength={4000} rows={4} value={directions} onChange={e=>setDirections(e.target.value)} placeholder="What should participants do?"/>
+        </label>
+        <label className="block space-y-2 text-sm font-bold text-slate-200">Earning conditions (optional)
+          <textarea className={field} maxLength={4000} rows={4} value={earnings} onChange={e=>setEarnings(e.target.value)} placeholder="Approved compensation, currency, eligibility and verification conditions. An announcement does not credit a wallet."/>
+        </label>
+        <label className="block space-y-2 text-sm font-bold text-slate-200">Related work page (optional)
+          <input className={field} maxLength={500} value={link} onChange={e=>setLink(e.target.value)} placeholder="/distribution-studio"/>
+        </label>
+        <div className="rounded-xl border border-white/10 p-4">
+          <p className="text-xs font-bold uppercase text-cyan-200">Message preview</p>
+          <h4 className="mt-2 break-words font-bold text-white">{title||'Announcement title'}</h4>
+          <p className="mt-2 whitespace-pre-wrap break-words text-sm text-slate-200">{message||'Write-up'}</p>
+          {directions&&<p className="mt-3 whitespace-pre-wrap break-words text-sm text-slate-200">Directions of work:{'\n'}{directions}</p>}
+          {earnings&&<p className="mt-3 whitespace-pre-wrap break-words text-sm text-slate-200">Earning conditions:{'\n'}{earnings}</p>}
+        </div>
+        <Button onClick={sendAnnouncement} disabled={sending||!title.trim()||!message.trim()} className="min-h-12 bg-cyan-600 hover:bg-cyan-700">
+          {sending ? 'Sending...' : 'Send Company Notification'}
+        </Button>
+      </fieldset>
     </div>
   )
 }
