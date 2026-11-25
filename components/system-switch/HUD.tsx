@@ -1,4 +1,5 @@
 'use client'
+import { UsdValue } from '@/components/usd-value'
 
 import {
   Sparkles,
@@ -649,7 +650,7 @@ export function HUD({
                         : 'text-[#e8b93f]'
                     }`}
                   >
-                    {WORLD_RULES.FILE_FOLDER_PREMIUM_PRICE_FLAME_COIN.toLocaleString()} System Switch
+                    <UsdValue trx={WORLD_RULES.FILE_FOLDER_PREMIUM_PRICE_FLAME_COIN} />
                   </div>
                   <p className={`text-sm font-bold uppercase tracking-widest ${
                     depositFlow.tier === WORLD_RULES.FILE_FOLDER_PREMIUM_PRICE_FLAME_COIN
@@ -686,7 +687,7 @@ export function HUD({
                       Standard File Folder
                     </p>
                     <p className="mt-2 text-2xl font-black text-white">
-                      From {WORLD_RULES.FILE_FOLDER_STANDARD_MIN_FLAME_COIN.toLocaleString()} System Switch
+                      From <UsdValue trx={WORLD_RULES.FILE_FOLDER_STANDARD_MIN_FLAME_COIN} />
                     </p>
                     <p className="mt-1 text-xs text-white/40">
                       Choose any value below {WORLD_RULES.FILE_FOLDER_PREMIUM_PRICE_FLAME_COIN.toLocaleString()}. Same numeric amount in TRX.
@@ -727,7 +728,7 @@ export function HUD({
                       depositFlow.tier < WORLD_RULES.FILE_FOLDER_PREMIUM_PRICE_FLAME_COIN &&
                       depositFlow.tier < WORLD_RULES.FILE_FOLDER_STANDARD_MIN_FLAME_COIN && (
                         <p className="mt-2 text-xs text-red-300">
-                          Standard begins at {WORLD_RULES.FILE_FOLDER_STANDARD_MIN_FLAME_COIN.toLocaleString()} System Switch.
+                          Standard begins at <UsdValue trx={WORLD_RULES.FILE_FOLDER_STANDARD_MIN_FLAME_COIN} />.
                         </p>
                       )}
                   </div>

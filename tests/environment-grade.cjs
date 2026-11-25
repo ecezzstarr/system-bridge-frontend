@@ -231,7 +231,7 @@ assert.ok(!bridgerRadiancePage.includes('visiblePoll(')&&!bridgerRadiancePage.in
 assert.ok(bridgerNumbers.includes('visiblePoll(signal=>load(true,signal),10000,false)'),'Number Bay refreshes delivery and verification movement while visible')
 assert.ok(bridgerClientsPage.includes("redirect('/bridger/presence')"),'Retired Bridger Clients route resolves to Bridger Presence without mounting a second continuity application')
 assert.ok(bridgerContinuancePage.includes('data-bridger-no-continuance'),'Legacy Bridger Continuance page now explains free Bridger participation')
-assert.ok(bridgerContinuancePage.includes('8 System Switch')&&bridgerContinuancePage.includes('11 System Switch'),'Old Bridger links display current per-template and permanent fees')
+assert.ok(bridgerContinuancePage.includes('<UsdValue trx={8} />')&&bridgerContinuancePage.includes('<UsdValue trx={11} />'),'Old Bridger links display current per-template and permanent fees')
 assert.ok(dailyProspectClaimUi.includes('visiblePoll(signal => load(true, signal), 60000, false)')&&dailyProspectClaimUi.includes('Refresh intake'),'Daily Prospect intake can recover and reflect new reserve state')
 assert.ok(environmentRegistry.includes('WEAVE_ENVIRONMENT_REGISTRY'),'Environment Organizer has an explicit world surface registry')
 assert.ok(environmentRegistry.includes("kind:'station'")&&environmentRegistry.includes("kind:'district'"),'Environment Organizer registers world districts and operating stations')

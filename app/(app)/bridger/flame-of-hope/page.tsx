@@ -1,4 +1,5 @@
 'use client'
+import { UsdValue } from '@/components/usd-value'
 
 import Image from 'next/image'
 import Link from 'next/link'
@@ -77,7 +78,7 @@ export default function FlameOfHopePage(){
           <p className="text-xs font-bold uppercase tracking-wider text-emerald-200">{revealed?'Your mystery box has opened':'This week’s box has been claimed'}</p>
           <div className="mx-auto mt-3 h-32 w-32 overflow-hidden rounded-xl border border-amber-300/30"><Image src={rewardImage(prize||'')} alt={rewardName(prize||'')} width={256} height={256} className="h-full w-full object-cover"/></div>
           <p className="mt-3 text-xl font-black text-white">{rewardName(prize||'')}</p>
-          <p className="mt-2 text-xs text-emerald-100/85">{statusName(claim.fulfillment_status)}. Administrations coordinates preparation and delivery or collection. This is a food reward, not a System Switch credit.</p>
+          <p className="mt-2 text-xs text-emerald-100/85">{statusName(claim.fulfillment_status)}. Administrations coordinates preparation and delivery or collection. This is a food reward, not a wallet credit.</p>
           {claim.fulfillment_reference&&<p className="mt-2 break-all text-xs text-emerald-100">Delivery reference: {claim.fulfillment_reference}</p>}
         </div> : <button type="button" onClick={openBox} disabled={!canClaim||opening}
           className="relative mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-amber-300 px-5 py-3 font-black text-[#201309] enabled:hover:bg-amber-200 disabled:cursor-not-allowed disabled:bg-slate-500 disabled:text-slate-200">
@@ -87,7 +88,7 @@ export default function FlameOfHopePage(){
         {!claim&&!loading&&<p className="relative mt-3 text-xs leading-5 text-orange-100/75">
           {!state?.open?'Only available during the active Flame Event.':
             !state?.enabled?'Administrations has not activated food reward fulfilment.':
-            !state?.eligible?'Spend at least five times an eligible product’s retail price in verified System Switch service purchases this week.':
+            !state?.eligible?'Spend at least five times an eligible product’s retail price in verified service purchases this week.':
             'Your verified spending qualifies. Open to reveal your available food reward.'}
         </p>}
         {loading&&<p className="mt-3 text-sm text-amber-100">Checking this week’s recorded spending...</p>}
@@ -96,9 +97,9 @@ export default function FlameOfHopePage(){
         <div className="flex items-start gap-3">
           <ShieldCheck className="mt-1 h-5 w-5 shrink-0 text-amber-200"/>
           <div><h2 className="text-base font-bold">Five times the food price · one claim per week</h2>
-          <p className="mt-2 text-sm leading-6 text-slate-300">Weave counts completed qualifying System Switch spending on company services during the current Monday–Sunday week (Nigeria time). Transfers, deposits and unverified activity do not count. The reward does not deduct another box fee.</p></div>
+          <p className="mt-2 text-sm leading-6 text-slate-300">Weave counts completed qualifying spending on company services during the current Monday–Sunday week (Nigeria time). Transfers, deposits and unverified activity do not count. The reward does not deduct another box fee.</p></div>
         </div>
-        <p className="mt-4 text-sm text-amber-100">Qualifying spend this week: <strong>{state?.spent===undefined?'—':switchUnits(state.spent)+' System Switch'}</strong></p>
+        <p className="mt-4 text-sm text-amber-100">Qualifying spend this week: <strong><UsdValue trx={state?.spent} /></strong></p>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           {state?.options?.map(product=><div key={product.id} className="overflow-hidden rounded-xl border border-white/15 bg-black/25">
             <div className="h-32 overflow-hidden"><Image src={rewardImage(product.id)} alt={product.label} width={400} height={256} className="h-full w-full object-cover"/></div>
@@ -106,7 +107,7 @@ export default function FlameOfHopePage(){
               <p className="text-sm font-bold text-white">{product.label}</p>
               <p className="mt-1 text-xs text-slate-300">Retail: {money(product.priceNgn)}</p>
               <p className="mt-1 text-xs text-slate-300">5× price: {money(product.fiveTimesPriceNgn)}</p>
-              <p className="mt-1 text-xs text-slate-300">Spend target: {switchUnits(product.requiredSystemSwitch)} System Switch</p>
+              <p className="mt-1 text-xs text-slate-300">Spend target: <UsdValue trx={product.requiredSystemSwitch} /></p>
               <p className={'mt-2 text-xs font-bold '+(product.unlocked?'text-emerald-300':'text-amber-200')}>{product.unlocked?'Unlocked':'Not yet unlocked'}</p>
             </div>
           </div>)}

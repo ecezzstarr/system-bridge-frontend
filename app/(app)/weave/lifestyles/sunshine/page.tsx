@@ -1,4 +1,5 @@
 'use client'
+import { useUsdValue } from '@/components/usd-value'
 
 import Link from 'next/link'
 import {useAuth} from '@/lib/auth-provider'
@@ -23,6 +24,7 @@ const money=(value:number)=>new Intl.NumberFormat('en-NG',{style:'currency',curr
 
 export default function SunshineWorkshop(){
   const {user,token,isInitialized}=useAuth()
+  const usd = useUsdValue()
   const [mine,setMine]=useState<Mine|null>(null)
   const [team,setTeam]=useState<TeamMember[]|null>(null)
   const [capital,setCapital]=useState('0')
@@ -125,7 +127,7 @@ export default function SunshineWorkshop(){
       <Link className="text-sm text-cyan-200" href="/weave/lifestyles">← Weave Lifestyle</Link>
       <p className="mt-5 text-xs font-bold uppercase tracking-[.23em] text-amber-200">Sunshine · Mechanized Wealth</p>
       <h1 className="mt-3 text-3xl font-black sm:text-4xl">Capital protected. Work continues.</h1>
-      <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-200">Apply before reaching your savings goal. Sunshine's initial capital target is 1,000,000 System Switch in value; Clients may declare progress using the 1 TRX = 1 System Switch reference, while actual TRX deposits require separate blockchain verification. Track a voluntary two-withdrawal monthly discipline alongside your bank's real rules. Your assigned Regional Manager helps remove work obstacles through verified Weave opportunities and company support—not by handling your bank money.</p>
+      <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-200">Apply before reaching your savings goal. Sunshine's initial capital target is {usd(targetSwitch)} in value; Clients may declare progress using TRX units, while actual TRX deposits require separate blockchain verification. Track a voluntary two-withdrawal monthly discipline alongside your bank's real rules. Your assigned Regional Manager helps remove work obstacles through verified Weave opportunities and company support—not by handling your bank money.</p>
       <p className="mt-3 text-xs leading-6 text-amber-100">External bank deposits, interest and withdrawal counts are not verified by Weave. No bank credentials, account number or payment are requested here. Check the rules of your actual bank product; interest rates and returns can change.</p>
     </header>
     {loading&&<p className="text-sm text-slate-300">Opening personal continuity records…</p>}
@@ -135,32 +137,32 @@ export default function SunshineWorkshop(){
       <section className="rounded-2xl border border-amber-200/25 bg-[#102329] p-5" data-sunshine-earn-first>
         <h2 className="text-xl font-bold">First earn. Then build savings. Then live from interest.</h2>
         <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-200">Sunshine is the wealth-continuity phase of real Weave work. Complete verified tasks and serve real customers; separate affordable savings from actual naira proceeds, then open the eligible savings product directly with your chosen institution. Weave does not promise earnings, transfer funds to banks, or provide a banking account.</p>
-        <p className="mt-2 text-xs leading-6 text-amber-100">{isClient?'Clients declare a TRX-equivalent savings reference; actual TRX-to-System-Switch deposits are credited only after independent on-chain verification.':'Agents and Bridgers compare real NGN savings to the System Switch target using a live TRX/NGN quote.'} Weave System Switch is an internal asset, not a bank balance or guaranteed external cash. Interest in a Nigerian bank is tracked separately from Weave value.</p>
+        <p className="mt-2 text-xs leading-6 text-amber-100">{isClient?'Clients declare a TRX-equivalent savings reference; actual TRX deposits are credited only after independent on-chain verification.':'Agents and Bridgers compare real NGN savings to the savings target using a live TRX/NGN quote.'} The wallet valuation is an estimate, not a bank balance or guaranteed external cash. Interest in a Nigerian bank is tracked separately from Weave value.</p>
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
           <div className="rounded-xl border border-white/15 p-4"><h3 className="font-bold text-amber-100">1 · Earn through Weave</h3><p className="mt-2 text-sm leading-6 text-slate-200">{user?.role==='bridger'?'Work in Hope: outreach, qualified prospects and verified Client File Folder sales.':user?.role==='agent'?'Work in Stability: food distribution, customer fulfillment and verified Agent earnings.':user?.role==='client'?'Operate your Client File Folder and Customer Door, serve customers and verify business earnings.':'Grow income through authorized Weave activities and records.'}</p>
             <Link className="mt-3 inline-flex text-sm font-semibold text-cyan-200" href={user?.role==='bridger'?'/bridger/dashboard':user?.role==='agent'?'/agent/distribution':user?.role==='client'?'/client/dashboard':'/weave/lifestyles/work'}>Open working systems →</Link>
           </div>
-          <div className="rounded-xl border border-white/15 p-4"><h3 className="font-bold text-amber-100">2 · Accumulate capital</h3><p className="mt-2 text-sm leading-6 text-slate-200">Enroll at any savings level and build toward the 1,000,000 System Switch value milestone. Keep external savings in a bank account you control. Weave does not charge the target value.</p>
+          <div className="rounded-xl border border-white/15 p-4"><h3 className="font-bold text-amber-100">2 · Accumulate capital</h3><p className="mt-2 text-sm leading-6 text-slate-200">Enroll at any savings level and build toward the {usd(targetSwitch)} value milestone. Keep external savings in a bank account you control. Weave does not charge the target value.</p>
             <Link className="mt-3 inline-flex text-sm font-semibold text-cyan-200" href="/weave/lifestyles/support">Request work assistance →</Link>
           </div>
           <div className="rounded-xl border border-white/15 p-4"><h3 className="font-bold text-amber-100">3 · Protect living capital</h3><p className="mt-2 text-sm leading-6 text-slate-200">Track interest, withdrawal activity and the bank's actual terms. Spend only affordable returns once the interest can cover living needs without consuming principal.</p></div>
         </div>
       </section>
       <section className="rounded-2xl border border-white/15 bg-[#0d1d25] p-5" data-sunshine-saving-goal>
-        <h2 className="text-xl font-bold">Savings from actual work · 1m System Switch target</h2>
+        <h2 className="text-xl font-bold">Savings from actual work · {usd(targetSwitch)} target</h2>
         <p className="mt-2 text-sm leading-6 text-slate-300">Use the amount you can afford to save monthly after real living and business expenses. This planning tool does not imply that Weave earnings are guaranteed or bank deposits are automatic.</p>
         <label className="mt-4 block max-w-md text-sm font-semibold">Monthly surplus available for savings ({isClient?'TRX':'₦'})
           <input type="number" min="0" step="1000" inputMode="decimal" value={monthlySurplus} onChange={e=>setMonthlySurplus(e.target.value)}
             placeholder="After expenses" className="mt-2 min-h-11 w-full rounded-lg border border-white/25 bg-slate-950 p-3 text-white"/>
         </label>
-        {projectedMonths!==null&&<p className="mt-3 text-sm text-amber-100">At this monthly savings surplus, the difference between your declared balance and the 1m System Switch value target takes approximately <strong>{projectedMonths} month{projectedMonths===1?'':'s'}</strong> to close, excluding interest. Your actual results depend on work and expenses.</p>}
-        <p className="mt-3 text-sm text-slate-300">Self-declared capital equivalent (not a verified deposit): {progressSwitch===null?'Live TRX/NGN conversion unavailable':progressSwitch.toLocaleString('en-NG',{maximumFractionDigits:3})+' / '+targetSwitch.toLocaleString('en-NG')+' System Switch'}. Enrollment carries no 1m System Switch charge.</p>
+        {projectedMonths!==null&&<p className="mt-3 text-sm text-amber-100">At this monthly savings surplus, the difference between your declared balance and the savings target takes approximately <strong>{projectedMonths} month{projectedMonths===1?'':'s'}</strong> to close, excluding interest. Your actual results depend on work and expenses.</p>}
+        <p className="mt-3 text-sm text-slate-300">Self-declared capital equivalent (not a verified deposit): {progressSwitch===null?'Live TRX/NGN conversion unavailable':usd(progressSwitch)+' / '+usd(targetSwitch)}. Enrollment is free.</p>
       </section>
       <section className="grid gap-4 lg:grid-cols-2">
         <div className="rounded-2xl border border-white/15 bg-[#10212a] p-5" data-sunshine-owner-record>
           <h2 className="text-xl font-bold">My Sunshine capital</h2>
           <p className="mt-2 text-sm leading-6 text-slate-300">Self-declared information visible only to you. A Regional Manager never receives this capital amount. This is not a payment or a bank deposit.</p>
-          <label className="mt-4 block text-sm font-semibold">{isClient?'Self-reported Client capital reference (TRX · 1 TRX = 1 System Switch)':'Self-reported personal bank savings balance (₦)'}
+          <label className="mt-4 block text-sm font-semibold">{isClient?'Self-reported Client capital reference (TRX)':'Self-reported personal bank savings balance (₦)'}
             <input type="number" min={0} max={999999999999} step={isClient?'0.000001':'0.01'} inputMode="decimal"
               value={capital} onChange={e=>setCapital(e.target.value)}
               className="mt-2 min-h-12 w-full rounded-lg border border-white/25 bg-slate-950 p-3 text-white"/>

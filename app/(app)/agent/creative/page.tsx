@@ -1,4 +1,5 @@
 'use client'
+import { UsdValue } from '@/components/usd-value'
 
 import Link from 'next/link'
 import { useEffect, useRef, useState, type ChangeEvent } from 'react'
@@ -174,7 +175,7 @@ export default function AgentCreativeStudio() {
       <Link href="/image-workshop" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-cyan-300/30 bg-cyan-300/10 px-4 py-3 text-xs font-bold text-cyan-100">OPEN WEAVE IMAGE HOUSE · ORIGINAL DESIGNS & COMMERCIAL LICENSING</Link>
       <p className="max-w-3xl text-sm leading-6 text-slate-300">Design clear commercial images for stores, products and companies. Create a finished PNG on your phone, or open the Video Studio for moving advertisements. You can sell the finished work to outside customers at your own price.</p>
       <div className="flex flex-wrap gap-3">
-        <span className="border border-emerald-300/20 bg-emerald-300/5 px-3 py-2 text-xs text-emerald-200">Classic image layout · 0 System Switch</span>
+        <span className="border border-emerald-300/20 bg-emerald-300/5 px-3 py-2 text-xs text-emerald-200">Classic image layout · <UsdValue trx={0} /></span>
         <span className="border border-amber-300/20 bg-amber-300/5 px-3 py-2 text-xs text-amber-200">Video production · role-based pricing shown in Video Studio</span>
       </div>
     </header>

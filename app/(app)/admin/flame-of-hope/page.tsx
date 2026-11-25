@@ -1,4 +1,5 @@
 'use client'
+import { UsdValue } from '@/components/usd-value'
 import { useEffect,useState } from 'react'
 import Link from 'next/link'
 import { getAuthHeaders } from '@/lib/auth-client'
@@ -47,7 +48,7 @@ export default function AdminFlameOfHope(){
         <div>
           <h2 className="font-bold">{c.bridger_name} · {food(c.product_id)}</h2>
           <p className="mt-1 text-xs text-slate-300">{c.bridger_email} · Week starting {c.week_start}</p>
-          <p className="mt-2 text-xs text-slate-300">Spent {c.actual_spend_system_switch} System Switch · Required {c.required_spend_system_switch} System Switch</p>
+          <p className="mt-2 text-xs text-slate-300">Spent <UsdValue trx={c.actual_spend_system_switch} /> · Required <UsdValue trx={c.required_spend_system_switch} /></p>
         </div>
         <span className="rounded-full border border-amber-200/25 px-3 py-1 text-xs text-amber-200">{c.fulfillment_status.replaceAll('_',' ')}</span>
       </div>

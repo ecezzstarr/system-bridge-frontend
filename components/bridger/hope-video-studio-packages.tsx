@@ -1,4 +1,5 @@
 'use client'
+import { UsdValue, useUsdValue } from '@/components/usd-value'
 
 import {useCallback,useEffect,useState} from 'react'
 import {Check,Gift,Layers3,Wallet} from 'lucide-react'
@@ -17,6 +18,7 @@ type Catalog={packages:Package[];ownedFilterIds:string[];balanceSystemSwitch:num
 export default function HopeVideoStudioPackages({onPurchase}:{
   onPurchase?:()=>void|Promise<void>
 }){
+  const usd = useUsdValue()
   const [catalog,setCatalog]=useState<Catalog|null>(null)
   const [busy,setBusy]=useState<string|null>(null)
   const [error,setError]=useState('')
@@ -49,8 +51,7 @@ export default function HopeVideoStudioPackages({onPurchase}:{
         .filter((effect):effect is NonNullable<typeof effect>=>Boolean(effect))
       for(const effect of representative)await prepareHopeVideoEffect(effect)
       if(!window.confirm(
-        'Purchase '+bundle.name+' for '+bundle.quote.chargedSystemSwitch+
-        ' System Switch? This grants '+bundle.quote.remaining+' new permanent effects. Existing purchases are excluded.'
+        'Purchase '+bundle.name+' for '+usd(bundle.quote.chargedSystemSwitch)+'? This grants '+bundle.quote.remaining+' new permanent effects. Existing purchases are excluded.'
       )){
         setBusy(null)
         return
@@ -62,15 +63,15 @@ export default function HopeVideoStudioPackages({onPurchase}:{
       const result=await response.json().catch(()=>({}))
       if(!response.ok||!result.success){
         if(result.reason==='insufficient_balance')throw new Error(
-          'Insufficient System Switch. Required '+result.requiredSystemSwitch+
-          '; available '+result.availableSystemSwitch+'.')
+          'Insufficient wallet balance. Required '+usd(result.requiredSystemSwitch)+
+          '; available '+usd(result.availableSystemSwitch)+'.')
         throw new Error(result.error||result.reason||'Package checkout failed')
       }
       await refresh()
       await onPurchase?.()
       setNotice(result.alreadyOwned?'Effects already owned; no additional charge.':
         bundle.name+' purchased. '+result.licensedFilterIds.length+' permanent effects added for '+
-        result.chargedSystemSwitch+' System Switch.')
+        usd(result.chargedSystemSwitch)+'.')
     }catch(error:any){
       setError(error?.message||'Purchase unavailable. Check the wallet record before retrying.')
     }finally{setBusy(null)}
@@ -85,7 +86,7 @@ export default function HopeVideoStudioPackages({onPurchase}:{
           Buy a permanent collection for less than purchasing every effect separately. Already-owned looks are discounted automatically. Basic calling remains free.
         </p>
       </div>
-      {catalog&&<div className="flex items-center gap-2 rounded-xl border border-[#dccaa5] bg-white px-3 py-2 text-xs font-semibold text-[#294653]"><Wallet size={16}/>{catalog.balanceSystemSwitch.toLocaleString()} System Switch</div>}
+      {catalog&&<div className="flex items-center gap-2 rounded-xl border border-[#dccaa5] bg-white px-3 py-2 text-xs font-semibold text-[#294653]"><Wallet size={16}/><UsdValue trx={catalog.balanceSystemSwitch} /></div>}
     </div>
     {loading&&<p role="status" className="mt-4 text-sm">Loading the Studio collections…</p>}
     {catalog&&<div className="mt-5 grid gap-3 md:grid-cols-3">
@@ -98,10 +99,9 @@ export default function HopeVideoStudioPackages({onPurchase}:{
           <h4 className="mt-2 text-lg font-bold text-[#253d47]">{bundle.name}</h4>
           <p className="mt-2 min-h-12 flex-1 text-sm leading-5 text-[#5b6d72]">{bundle.description}</p>
           <div className="mt-3 flex items-end gap-2">
-            <span className="text-3xl font-bold tabular-nums text-[#233f4d]">{q.chargedSystemSwitch}</span>
-            <span className="pb-1.5 text-xs font-semibold text-[#667980]">System Switch</span>
+            <span className="text-3xl font-bold tabular-nums text-[#233f4d]">{usd(q.chargedSystemSwitch)}</span>
           </div>
-          <p className="mt-1 text-xs text-[#677579]">{owned?'All effects are yours':q.remaining+' new effects · save '+q.savedSystemSwitch+' against individual prices'}</p>
+          <p className="mt-1 text-xs text-[#677579]">{owned?'All effects are yours':q.remaining+' new effects · save '+usd(q.savedSystemSwitch)+' against individual prices'}</p>
           {bundle.alreadyPurchased&&<p className="mt-2 flex items-center gap-1 text-xs text-emerald-700"><Check size={15}/> Previously purchased</p>}
           <button type="button" disabled={Boolean(busy)||owned} onClick={()=>void purchase(bundle)}
             className={'mt-4 min-h-12 rounded-xl px-3 text-sm font-bold transition disabled:opacity-60 '+(owned?'bg-[#e0ebdf] text-[#1d594b]':bundle.featured?'bg-[#254d5b] text-white':'border border-[#b89a69] bg-[#f9f3e6] text-[#6b4b21]')}>

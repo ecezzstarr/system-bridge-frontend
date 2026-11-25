@@ -1,4 +1,5 @@
 'use client'
+import { UsdValue, useUsdValue } from '@/components/usd-value'
 
 import {useEffect,useMemo,useState} from 'react'
 import {quoteFileFolderBlueprint,type BlueprintCostFields} from '@/lib/file-folder-build-quote'
@@ -57,6 +58,7 @@ export default function FileFolderProBuildConsole({
  view,onViewChange,businessName,blueprints,items,inventory,builds,buildFunding,doorStatus,
  now,busy,onAction,onEnterDistrict,
 }:Props){
+ const usd = useUsdValue()
  const [selectedBlueprintKey,setSelectedBlueprintKey]=useState('')
  const [selectedBuildId,setSelectedBuildId]=useState('')
  const [title,setTitle]=useState('')
@@ -136,7 +138,7 @@ export default function FileFolderProBuildConsole({
        <p className="text-[10px] font-bold uppercase tracking-widest text-amber-200">Bill of materials</p>
        <p className="mt-1 font-semibold">{planQuote.materialName}</p>
        <p className="mt-1 text-xs">Required: {planQuote.materialRequired} · Owned: {planQuote.materialOwned} · Missing: {planQuote.materialMissing}</p>
-       <p className="mt-2 text-xs">{planQuote.priceAvailable?'To acquire: '+money(planQuote.acquireCost)+' System Switch':'Price not published; purchase unavailable'}</p>
+       <p className="mt-2 text-xs">{planQuote.priceAvailable?'To acquire: '+usd(planQuote.acquireCost):'Price not published; purchase unavailable'}</p>
        {!planQuote.purchaseAvailable&&planQuote.materialMissing>0&&<p role="alert" className="mt-1 text-xs text-amber-200">Required material is not published for purchase.</p>}
       </div>
      </div>
@@ -157,7 +159,7 @@ export default function FileFolderProBuildConsole({
         quantity:Math.min(25,planQuote.materialMissing)},
         'pro-plan-material-'+selectedPlan.blueprint_key,'Material purchase recorded. Check the refreshed quantity before building.')}
        className="min-h-12 rounded-lg border border-amber-300/30 bg-amber-200/10 px-3 py-2 text-sm font-bold text-amber-100 disabled:opacity-40">
-       Acquire {Math.min(25,planQuote.materialMissing)} kit(s) · {money(Math.min(25,planQuote.materialMissing)*planQuote.unitPrice)} System Switch
+       Acquire {Math.min(25,planQuote.materialMissing)} kit(s) · <UsdValue trx={Math.min(25,planQuote.materialMissing)*planQuote.unitPrice} />
       </button>:<div className="flex min-h-12 items-center rounded-lg border border-emerald-300/30 px-3 text-sm text-emerald-200">Required kits ready</div>}
       <button type="button" disabled={busy||gate||planQuote.materialMissing>0}
        onClick={()=>void submit({action:'start_build',blueprint_key:selectedPlan.blueprint_key,
@@ -201,7 +203,7 @@ export default function FileFolderProBuildConsole({
      {selectedBuild&&compatible.map(item=><div key={item.item_key} className="border border-sky-200/20 bg-[#10263b] p-3">
       <div className="flex items-start justify-between gap-3">
        <p className="text-sm font-semibold">{item.name}</p>
-       <p className="shrink-0 text-xs text-sky-200">{Number(item.price_flame_coin||0).toLocaleString()} System Switch</p>
+       <p className="shrink-0 text-xs text-sky-200"><UsdValue trx={Number(item.price_flame_coin||0)} /></p>
       </div>
       <p className="mt-2 text-xs leading-5 text-slate-300">{item.description}</p>
       <p className="mt-2 text-xs text-sky-100">Owned: {owned.get(item.item_key)||0}</p>
@@ -224,7 +226,7 @@ export default function FileFolderProBuildConsole({
      {selectedBuild&&speedItems.map(item=><div key={item.item_key} className="border border-amber-200/25 bg-[#222236] p-3">
       <p className="text-sm font-semibold text-amber-100">{item.name}</p>
       <p className="mt-2 text-xs text-slate-300">Speed factor ×{Number(item.effect_value||1).toFixed(2)}</p>
-      <p className="mt-2 text-xs text-amber-100">{money(Number(item.price_flame_coin||0))} System Switch · {owned.get(item.item_key)||0} owned</p>
+      <p className="mt-2 text-xs text-amber-100"><UsdValue trx={Number(item.price_flame_coin||0)} /> · {owned.get(item.item_key)||0} owned</p>
       <div className="mt-3 flex flex-col gap-2">
        <button type="button" disabled={busy} onClick={()=>void submit({action:'purchase_item',item_key:item.item_key,quantity:1},
         'pro-boost-purchase-'+item.item_key,'Booster purchased. Install it on a real active build to accelerate construction.')}

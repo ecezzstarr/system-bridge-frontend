@@ -1,4 +1,5 @@
 'use client'
+import { UsdValue } from '@/components/usd-value'
 
 import { useEffect, useState } from 'react'
 import { HandCoins, Loader2, RefreshCw } from 'lucide-react'
@@ -83,7 +84,7 @@ export function DepartmentEntryLoanRequestsPanel() {
       <p className="mt-2 break-all text-xs text-slate-300">{item.applicant_email}{item.applicant_phone ? ' · ' + item.applicant_phone : ''}</p>
       <p className="mt-1 text-xs text-slate-400">
         {item.ticket_number} · {item.ticket_status} · ₦{Number(item.amount_ngn).toLocaleString()}
-        {' · '}{Number(item.price_flame_coin).toLocaleString()} System Switch
+        {' · '}<UsdValue trx={Number(item.price_flame_coin)} />
       </p>
       {open && unavailable && <p className="mt-1 text-xs text-amber-200">
         This ticket is expired or unavailable. Approval is disabled; decline or contact the applicant.

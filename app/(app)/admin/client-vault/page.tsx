@@ -1,4 +1,5 @@
 'use client'
+import { UsdValue } from '@/components/usd-value'
 
 import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '@/lib/auth-provider'
@@ -48,7 +49,7 @@ export default function ClientVaultAuthorityEnginePage() {
   const credit=async()=>{
     if(!selected||!token) return
     const numeric=Number(amount)
-    if(!Number.isFinite(numeric)||numeric<=0){setMessage('Enter a positive System Switch credit amount.');return}
+    if(!Number.isFinite(numeric)||numeric<=0){setMessage('Enter a positive TRX-unit credit amount.');return}
     const response=await fetch('/api/admin/client-vault/credit',{
       method:'POST',
       headers:{...headers,'Content-Type':'application/json'},
@@ -104,7 +105,7 @@ export default function ClientVaultAuthorityEnginePage() {
           <aside className="space-y-4">
             <section className="rounded-3xl border border-emerald-300/15 bg-emerald-400/[0.04] p-4">
               <div className="flex items-center gap-2"><WalletCards className="h-4 w-4 text-emerald-300"/><p className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-300">Vault credit operation</p></div>
-              {selected?<div className="mt-3 space-y-3"><div><p className="text-sm font-black text-white">{selected.name}</p><p className="mt-1 text-2xl font-black text-emerald-200">{Number(selected.vault_balance||0).toLocaleString()} System Switch</p></div><input value={amount} onChange={e=>setAmount(e.target.value)} type="number" min="0" step="any" placeholder="Credit amount" className="h-11 w-full rounded-xl border border-white/10 bg-black/25 px-3 text-sm text-white"/><input value={reason} onChange={e=>setReason(e.target.value)} placeholder="Reason / reference" className="h-11 w-full rounded-xl border border-white/10 bg-black/25 px-3 text-xs text-white"/><button onClick={()=>void credit()} disabled={!amount} className="w-full rounded-xl bg-emerald-300 px-4 py-3 text-[10px] font-black uppercase tracking-[0.1em] text-slate-950 disabled:opacity-40">Record Vault credit</button><p className="text-[10px] leading-5 text-slate-400">This operation credits only the Administrations Client Vault.</p></div>:<p className="mt-3 text-xs text-slate-400">Select a Client before creating a Vault credit.</p>}
+              {selected?<div className="mt-3 space-y-3"><div><p className="text-sm font-black text-white">{selected.name}</p><p className="mt-1 text-2xl font-black text-emerald-200"><UsdValue trx={Number(selected.vault_balance||0)} /></p></div><input value={amount} onChange={e=>setAmount(e.target.value)} type="number" min="0" step="any" placeholder="Credit amount (TRX units)" className="h-11 w-full rounded-xl border border-white/10 bg-black/25 px-3 text-sm text-white"/><input value={reason} onChange={e=>setReason(e.target.value)} placeholder="Reason / reference" className="h-11 w-full rounded-xl border border-white/10 bg-black/25 px-3 text-xs text-white"/><button onClick={()=>void credit()} disabled={!amount} className="w-full rounded-xl bg-emerald-300 px-4 py-3 text-[10px] font-black uppercase tracking-[0.1em] text-slate-950 disabled:opacity-40">Record Vault credit</button><p className="text-[10px] leading-5 text-slate-400">This operation credits only the Administrations Client Vault.</p></div>:<p className="mt-3 text-xs text-slate-400">Select a Client before creating a Vault credit.</p>}
             </section>
             <section className="rounded-3xl border border-violet-300/15 bg-violet-400/[0.04] p-4"><div className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-violet-300"/><p className="text-[9px] font-black uppercase tracking-[0.18em] text-violet-300">Balance separation</p></div><p className="mt-3 text-xs leading-5 text-slate-300">Vault, Siblings Funds and Main Client Wallet are separate ledgers. A Vault credit does not silently rewrite the other balances.</p></section>
           </aside>
@@ -122,4 +123,4 @@ export default function ClientVaultAuthorityEnginePage() {
 }
 
 function Metric({label,value,tone}:{label:string;value:string;tone:'sky'|'emerald'|'violet'|'amber'}){const c=tone==='emerald'?'text-emerald-300 border-emerald-300/15 bg-emerald-400/[0.04]':tone==='violet'?'text-violet-300 border-violet-300/15 bg-violet-400/[0.04]':tone==='amber'?'text-amber-300 border-amber-300/15 bg-amber-400/[0.04]':'text-sky-300 border-sky-300/15 bg-sky-400/[0.04]';return <div className={`rounded-xl border px-3 py-3 ${c}`}><p className="text-[8px] font-black uppercase tracking-wider">{label}</p><p className="mt-1 text-lg font-black text-white">{value}</p></div>}
-function State({label,value}:{label:string;value:any}){return <div className="rounded-lg border border-white/8 bg-black/20 px-2 py-2"><p className="text-[8px] uppercase text-slate-500">{label}</p><p className="mt-1 text-[10px] font-black text-white">{Number(value||0).toLocaleString()}</p></div>}
+function State({label,value}:{label:string;value:any}){return <div className="rounded-lg border border-white/8 bg-black/20 px-2 py-2"><p className="text-[8px] uppercase text-slate-500">{label}</p><p className="mt-1 text-[10px] font-black text-white"><UsdValue trx={value} /></p></div>}

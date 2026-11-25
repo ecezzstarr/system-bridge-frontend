@@ -1,4 +1,5 @@
 'use client'
+import { useUsdValue } from '@/components/usd-value'
 
 import { useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
@@ -41,6 +42,7 @@ const SOURCES = [
 ]
 
 export default function EchoPage() {
+  const usd = useUsdValue()
   const { user, token } = useAuth()
   const [subscription, setContinuance] = useState<Continuance | null>(null)
   const [insights, setInsights] = useState<Insight[]>([])
@@ -118,7 +120,7 @@ export default function EchoPage() {
         setMessage('Echo is ready. Your immediate next movements are available now.')
         await load()
       } else if (data.reason === 'insufficient_balance') {
-        setError(`Insufficient balance. Need ${data.requiredFlameCoin} System Switch, wallet has ${data.availableFlameCoin} System Switch.`)
+        setError(`Insufficient balance. Need ${usd(data.requiredFlameCoin)}, wallet has ${usd(data.availableFlameCoin)}.`)
       } else {
         setError('Echo activation failed. Please try again.')
       }

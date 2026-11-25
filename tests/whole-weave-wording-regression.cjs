@@ -80,7 +80,7 @@ assert.ok(checkout.includes('displayCurrencyName(currency)'),
 const ownerPanel=fs.readFileSync(path.join(root,'components/system-switch/client-owner-earnings-panel.tsx'),'utf8')
 assert.ok(ownerPanel.includes("const currencies=['FLAME COIN','NGN'"),
   'Owner cost options must match the financial database constraint')
-assert.ok(ownerPanel.includes("useState('FLAME COIN')"),
+assert.ok(ownerPanel.includes("useState('USD')") && ownerPanel.includes("'NGN','USD','EUR'"),
   'Owner cost form must not default to a value rejected by its SQL constraint')
 assert.ok(!ownerPanel.includes("row.currency!=='SYSTEM SWITCH'"),
   'Historical System Switch costs must not be miscategorized as foreign currency')

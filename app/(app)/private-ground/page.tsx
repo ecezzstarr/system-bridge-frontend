@@ -1,4 +1,5 @@
 'use client'
+import { UsdValue } from '@/components/usd-value'
 
 import { useMemo, useState } from 'react'
 import {
@@ -111,7 +112,7 @@ export default function PrivateGroundPage() {
                         </div>
                         <div className="text-right">
                           <p className="text-[9px] font-black uppercase tracking-[0.1em]">{String(session.status||'recorded')}</p>
-                          <p className="mt-1 text-xs font-black text-white">{rate.toLocaleString()} System Switch</p>
+                          <p className="mt-1 text-xs font-black text-white"><UsdValue trx={rate} /></p>
                         </div>
                       </div>
                     </article>

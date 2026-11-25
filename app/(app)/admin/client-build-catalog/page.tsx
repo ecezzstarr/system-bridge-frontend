@@ -115,7 +115,7 @@ export default function ClientBuildCatalogAdminPage() {
           <p className="text-sm font-black uppercase tracking-[0.18em] text-cyan-300">Administrations · Client Building</p>
           <h1 className="mt-2 text-3xl font-black md:text-5xl">Client Build Catalog</h1>
           <p className="mt-3 max-w-3xl text-base leading-7 text-slate-300">
-            Control what Clients can buy and build inside their File Folders. Component prices are in System Switch. Blueprint build time and visibility can be changed here without redeploying WEAVE.
+            Control what Clients can buy and build inside their File Folders. Enter component prices in TRX units. Clients see current USD equivalents. Blueprint build time and visibility can be changed here without redeploying WEAVE.
           </p>
         </div>
         <button onClick={() => void load()} className="inline-flex items-center gap-2 rounded-full border border-white/10 px-4 py-2 text-sm font-bold">
@@ -153,7 +153,7 @@ export default function ClientBuildCatalogAdminPage() {
 
               <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end">
                 <label className="flex-1">
-                  <span className="text-sm font-bold text-slate-400">Price · System Switch</span>
+                  <span className="text-sm font-bold text-slate-400">Price · TRX units</span>
                   <input
                     type="number"
                     min="0"

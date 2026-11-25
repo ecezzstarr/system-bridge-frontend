@@ -1,4 +1,5 @@
 'use client'
+import { UsdValue, useUsdValue } from '@/components/usd-value'
 
 import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
@@ -17,6 +18,7 @@ type CatalogState={
 type Props={activeFilter?:FilterInfo|null;activeFace?:FilterInfo|null;onFilterSelect?:(filter:FilterInfo|null,layer?:'scene'|'face')=>Promise<void>}
 
 export default function HopeVideoFilterShop({activeFilter,activeFace,onFilterSelect}:Props){
+  const usd = useUsdValue()
   const [catalog,setCatalog]=useState<CatalogState|null>(null)
   const [loading,setLoading]=useState(true)
   const [supported,setSupported]=useState<boolean|null>(null)
@@ -75,7 +77,7 @@ export default function HopeVideoFilterShop({activeFilter,activeFace,onFilterSel
       }
       setBuying(null);setNotice('')
     }
-    if(!window.confirm('Purchase '+filter.name+' permanently for '+filter.priceSystemSwitch+' System Switch?')){
+    if(!window.confirm('Purchase '+filter.name+' permanently for '+usd(filter.priceSystemSwitch)+'?')){
       return
     }
     setBuying(filter.id);setError('');setNotice('')
@@ -86,13 +88,13 @@ export default function HopeVideoFilterShop({activeFilter,activeFace,onFilterSel
       const data=await res.json().catch(()=>({}))
       if(!res.ok||!data.success){
         if(data.reason==='insufficient_balance'){
-          throw new Error('Insufficient System Switch. Required: '+data.requiredSystemSwitch+'; available: '+data.availableSystemSwitch+'.')
+          throw new Error('Insufficient wallet balance. Required: '+usd(data.requiredSystemSwitch)+'; available: '+usd(data.availableSystemSwitch)+'.')
         }
         throw new Error(data.error||data.reason||'The purchase could not be completed. No license granted.')
       }
       // Refresh the authenticated entitlement before enabling the filter.
       await refresh()
-      setNotice(data.alreadyOwned?'Already purchased; no additional charge.':'Purchased '+filter.name+' for '+data.chargedSystemSwitch+' System Switch. This filter is yours permanently.')
+      setNotice(data.alreadyOwned?'Already purchased; no additional charge.':'Purchased '+filter.name+' for '+usd(data.chargedSystemSwitch)+'. This filter is yours permanently.')
     }catch(e:any){setError(e?.message||'Could not complete purchase. Check your records before retrying.')}
     finally{setBuying(null)}
   }
@@ -107,11 +109,11 @@ export default function HopeVideoFilterShop({activeFilter,activeFace,onFilterSel
         </p>
       </div>
       <div className="inline-flex items-center gap-2 rounded-xl border border-[#ddc9a2] bg-white px-3 py-2 text-xs font-semibold">
-        <Wallet size={15}/> {catalog?catalog.balanceSystemSwitch.toLocaleString():'—'} System Switch
+        <Wallet size={15}/> <UsdValue trx={catalog?catalog.balanceSystemSwitch:'—'} />
       </div>
     </div>
 
-    {supported===false&&<p role="alert" className="mt-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900">This device cannot transmit live canvas filters. Purchases are disabled here; try a supported browser before spending System Switch.</p>}
+    {supported===false&&<p role="alert" className="mt-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900">This device cannot transmit live canvas filters. Purchases are disabled here; try a supported browser before making a purchase.</p>}
     {loading&&<p role="status" className="mt-3 text-sm">Loading prices and your saved licenses…</p>}
     {!loading&&!catalog&&<button className="mt-3 rounded-lg border px-4 py-2 text-sm" onClick={()=>void refresh().catch(e=>setError(e?.message))}>Retry filter shop</button>}
     <div className="mt-4"><HopeVideoStudioPackages onPurchase={refresh}/></div>
@@ -154,13 +156,13 @@ export default function HopeVideoFilterShop({activeFilter,activeFace,onFilterSel
             :<Link href="/bridger/ai-video-call" className="mt-3 flex min-h-11 items-center justify-center rounded-lg bg-[#275464] px-2 text-center text-xs font-semibold text-white">Use in a video call</Link>)
           :<button type="button" disabled={applying||Boolean(buying)||supported!==true} onClick={()=>void buy(filter)}
             className="mt-3 min-h-11 rounded-lg border border-[#bc985a] px-2 text-xs font-bold text-[#76531b] disabled:opacity-50">
-              {buying===filter.id?'Purchasing…':'Buy · '+filter.priceSystemSwitch+' System Switch'}
+              {buying===filter.id?'Purchasing…':'Buy · '+usd(filter.priceSystemSwitch)}
             </button>}
         </div>
       })}
     </div>}
     {notice&&<p role="status" className="mt-3 flex items-start gap-2 text-xs leading-5 text-emerald-800"><Sparkles size={16} className="shrink-0"/>{notice}</p>}
     {error&&<p role="alert" className="mt-3 rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-800">{error}</p>}
-    <p className="mt-3 text-[11px] leading-5 text-[#6f7776]">Purchases use your primary System Switch wallet, one permanent license per look or background. Live backgrounds use on-device person segmentation. Face masks are clearly synthetic, not a real person's identity. Device compatibility and model download are checked before higher-priced purchases. No per-call AI generation charge.</p>
+    <p className="mt-3 text-[11px] leading-5 text-[#6f7776]">Purchases use your primary wallet, one permanent license per look or background. Live backgrounds use on-device person segmentation. Face masks are clearly synthetic, not a real person's identity. Device compatibility and model download are checked before higher-priced purchases. No per-call AI generation charge.</p>
   </section>
 }

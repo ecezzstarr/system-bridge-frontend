@@ -1,4 +1,5 @@
 'use client'
+import { UsdValue } from '@/components/usd-value'
 import Link from 'next/link'
 import {useCallback,useEffect,useState} from 'react'
 import {useAuth} from '@/lib/auth-provider'
@@ -158,7 +159,7 @@ export default function CompanyMovementPage(){
           <h3 className="text-sm font-semibold text-amber-100">Package performance</h3>
           <div className="mt-2 flex flex-wrap gap-2">{sec('videoBundleBreakdown')?.rows.map((item,i)=>
             <p key={i} className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-slate-200">
-              {String(item.bundle_id||'Unknown')} · {formatNumber(item.packages)} purchases · {formatMoney(item.earned_system_switch)} System Switch
+              {String(item.bundle_id||'Unknown')} · {formatNumber(item.packages)} purchases · <UsdValue trx={Number(item.earned_system_switch)} />
             </p>)}</div>
         </div>}
     </section>

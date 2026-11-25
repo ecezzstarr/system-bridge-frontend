@@ -1,4 +1,5 @@
 'use client'
+import { UsdValue, useUsdValue } from '@/components/usd-value'
 
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
@@ -44,6 +45,7 @@ function bridgeUrl(bridge: Bridge) {
 }
 
 export default function BridgerWorkshopPage() {
+  const usd = useUsdValue()
   const [bridges, setBridges] = useState<Bridge[]>([])
   const [templates, setTemplates] = useState<Template[]>([])
   const [loading, setLoading] = useState(true)
@@ -97,7 +99,7 @@ export default function BridgerWorkshopPage() {
         setCustomWelcome('')
         await loadData()
       } else if (data.reason === 'insufficient_balance') {
-        setSubError(`Opening a Bridge AI template costs ${data.requiredFlameCoin} System Switch; wallet has ${data.availableFlameCoin} System Switch.`)
+        setSubError(`Opening a Bridge AI template costs ${usd(data.requiredFlameCoin)}; wallet has ${usd(data.availableFlameCoin)}.`)
         setDialogOpen(false)
       } else {
         setSubError(data.error || 'Bridge AI template could not be opened.')
@@ -182,7 +184,7 @@ export default function BridgerWorkshopPage() {
 
       <section className="border-b border-slate-800 bg-black/10 px-5 py-5 md:px-7" data-bridge-ai-station="per-template">
         <h2 className="text-lg font-bold text-white">Bridge AI · First template free</h2>
-        <p className="mt-2 text-sm text-slate-400">Additional template paths cost {BRIDGE_AI_TEMPLATE_PRICE} System Switch each. Your existing paths stay available.</p>
+        <p className="mt-2 text-sm text-slate-400">Additional template paths cost <UsdValue trx={BRIDGE_AI_TEMPLATE_PRICE} /> each. Your existing paths stay available.</p>
       </section>
       {subError && <div role="alert" className="border-b border-red-400/20 px-5 py-3 text-sm text-red-200">{subError}</div>}
 

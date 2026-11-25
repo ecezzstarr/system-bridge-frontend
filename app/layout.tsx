@@ -10,6 +10,7 @@ import './weave-plus-company-theme.css'
 import './weave-plus-company-pages.css'
 import './weave-expression.css'
 import './weave-home-plus-depth.css'
+import { UsdQuoteProvider } from '@/components/usd-value'
 import { AuthProvider } from '@/lib/auth-provider'
 import { ThemeProvider } from 'next-themes'
 import { PWARegister } from '@/components/pwa-register'
@@ -69,7 +70,7 @@ export default function RootLayout({
               <PublicAppDownloadEntry />
               <WeaveEnvironmentTransit>
                 <DivineShieldGate>
-                  <PresenceCameraRootViewport>{children}</PresenceCameraRootViewport>
+                  <UsdQuoteProvider><PresenceCameraRootViewport>{children}</PresenceCameraRootViewport></UsdQuoteProvider>
                   <WeavePresenceAmbience />
                   <DJBroadcastPlayer />
                 </DivineShieldGate>

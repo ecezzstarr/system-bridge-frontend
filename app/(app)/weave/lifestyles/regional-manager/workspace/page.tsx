@@ -1,4 +1,5 @@
 'use client'
+import { UsdValue } from '@/components/usd-value'
 import { DistributionEntryBonusDesk } from '@/components/weave/distribution-entry-bonus-desk'
 import Link from 'next/link'
 import {useAuth} from '@/lib/auth-provider'
@@ -192,8 +193,8 @@ export default function RegionalDailyWorkspace(){
         <p className="mt-2 text-sm leading-6 text-slate-300">One-to-one obstacles belong to their real employee. Guidance is a conversation; financial support requires a written offer, worker acceptance and confirmed funding. System Switch credit is restricted to approved Prospect Market purchases, with recovery from eligible verified platform earnings. Food stock funding in NGN requires separate Administrations verification and repayment evidence.</p>
         {data.supportAvailable?<div className="mt-4 grid gap-3 sm:grid-cols-3">
           <div className="rounded-xl border border-white/10 p-4"><p className="text-sm text-slate-300">Cases needing action</p><p className="mt-2 text-2xl font-bold">{waitingSupport.length}</p></div>
-          <div className="rounded-xl border border-white/10 p-4"><p className="text-sm text-slate-300">Used support awaiting recovery</p><p className="mt-2 text-2xl font-bold">{format(data.summary?.outstandingSystemSwitchSupport)} System Switch</p><p className="mt-2 text-sm text-slate-300">NGN stock repayment: ₦{format(data.summary?.outstandingNgnSupport)} · separately verified</p></div>
-          <div className="rounded-xl border border-white/10 p-4"><p className="text-sm text-slate-300">Unspent reserved support</p><p className="mt-2 text-2xl font-bold">{waitingSupport.filter(c=>c.currency==='SYSTEM_SWITCH').reduce((sum,c)=>sum+c.unused,0).toLocaleString('en-NG')} System Switch</p></div>
+          <div className="rounded-xl border border-white/10 p-4"><p className="text-sm text-slate-300">Used support awaiting recovery</p><p className="mt-2 text-2xl font-bold"><UsdValue trx={data.summary?.outstandingSystemSwitchSupport} /></p><p className="mt-2 text-sm text-slate-300">NGN stock repayment: ₦{format(data.summary?.outstandingNgnSupport)} · separately verified</p></div>
+          <div className="rounded-xl border border-white/10 p-4"><p className="text-sm text-slate-300">Unspent reserved support</p><p className="mt-2 text-2xl font-bold"><UsdValue trx={waitingSupport.filter(c=>c.currency==='SYSTEM_SWITCH').reduce((sum,c)=>sum+c.unused,0)} /></p></div>
         </div>:<p role="alert" className="mt-4 text-sm text-amber-200">Support records are temporarily unavailable. Recheck in the private support workspace; no financial records have been assumed.</p>}
         <div className="mt-4 space-y-3">
           {waitingSupport.slice(0,18).map(c=><article key={c.id} className="rounded-xl border border-white/15 p-4">

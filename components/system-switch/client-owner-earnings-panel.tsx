@@ -1,5 +1,7 @@
 'use client'
 
+import { useUsdValue } from '@/components/usd-value'
+
 import {useCallback,useEffect,useState} from 'react'
 import {getClientToken} from '@/lib/client-auth'
 import {displayCurrencyName} from '@/lib/flame-coin'
@@ -48,12 +50,13 @@ const date=(value:string)=>new Date(value).toLocaleDateString()
 export default function ClientOwnerEarningsPanel({storeApiPath,systems=[]}:{
   storeApiPath:string;systems?:Array<{id:string;title:string;status:string}>
 }){
+  const usd = useUsdValue()
   const [report,setReport]=useState<Report|null>(null)
   const [busy,setBusy]=useState(false)
   const [error,setError]=useState('')
   const [message,setMessage]=useState('')
   const [category,setCategory]=useState<string>('production')
-  const [currency,setCurrency]=useState('FLAME COIN')
+  const [currency,setCurrency]=useState('USD')
   const [amount,setAmount]=useState('')
   const [description,setDescription]=useState('')
   const [evidence,setEvidence]=useState('')
@@ -113,9 +116,9 @@ export default function ClientOwnerEarningsPanel({storeApiPath,systems=[]}:{
     {report&&<>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {[
-          ['Verified receipts',fmt(report.summary.verifiedReceiptsFlameCoin)+' FC'],
-          ['Owner-reported costs',fmt(report.summary.reportedCostFlameCoin)+' FC'],
-          ['Provisional FC remainder',fmt(report.summary.provisionalRemainderFlameCoin)+' FC'],
+          ['Verified receipts',usd(report.summary.verifiedReceiptsFlameCoin)],
+          ['Owner-reported costs',usd(report.summary.reportedCostFlameCoin)],
+          ['Provisional remainder',usd(report.summary.provisionalRemainderFlameCoin)],
           ['Pending customer payments',String(report.summary.awaitingPayment)],
         ].map(([label,value])=><div key={label} className="rounded-xl border border-white/10 bg-white/[.035] p-4">
           <p className="text-xs text-slate-300">{label}</p><p className="mt-2 text-lg font-bold">{value}</p>
@@ -132,7 +135,7 @@ export default function ClientOwnerEarningsPanel({storeApiPath,systems=[]}:{
           <p className="mb-3 mt-1 text-xs text-slate-400">{report.summary.verifiedSalesCount} credited sale(s), {report.summary.fulfilledOrders} fulfilled order(s)</p>
           <div className="max-h-72 space-y-2 overflow-y-auto">
             {report.revenue.map(sale=><div key={sale.id} className="rounded-lg border border-white/10 p-3 text-xs">
-              <p className="flex justify-between gap-2 font-semibold"><span>{sale.offer_name||'Customer Door offer'}</span><span>{fmt(sale.credited_flame_coin)} FC</span></p>
+              <p className="flex justify-between gap-2 font-semibold"><span>{sale.offer_name||'Customer Door offer'}</span><span>{usd(sale.credited_flame_coin)}</span></p>
               <p className="mt-2 text-slate-400">{date(sale.created_at)} · {sale.fulfilment_status.replaceAll('_',' ')} · {sale.payment_source.replaceAll('_',' ')}</p>
               {sale.legion_name&&<p className="mt-1 text-sky-200">Carried by {sale.legion_name} · attribution only; compensation follows agreed terms</p>}
               <p className="mt-1 break-all text-slate-500">Receipt {sale.receipt_number}</p>
@@ -149,7 +152,7 @@ export default function ClientOwnerEarningsPanel({storeApiPath,systems=[]}:{
             </select></label>
             <div className="grid grid-cols-2 gap-2">
               <label className="text-xs text-slate-300">Amount<input type="number" min="0.00000001" step="any" value={amount} onChange={e=>{setAmount(e.target.value);setRequestId('')}} className="mt-1 w-full rounded-lg border border-white/15 bg-[#0d263b] p-3"/></label>
-              <label className="text-xs text-slate-300">Currency<select value={currency} onChange={e=>{setCurrency(e.target.value);setRequestId('')}} className="mt-1 w-full rounded-lg border border-white/15 bg-[#0d263b] p-3">{currencies.map(c=><option key={c} value={c}>{displayCurrencyName(c)}</option>)}</select></label>
+              <label className="text-xs text-slate-300">Currency<select value={currency} onChange={e=>{setCurrency(e.target.value);setRequestId('')}} className="mt-1 w-full rounded-lg border border-white/15 bg-[#0d263b] p-3">{currencies.map(c=><option key={c} value={c}>{c==='FLAME COIN'?'Legacy TRX units':displayCurrencyName(c)}</option>)}</select></label>
             </div>
             <label className="text-xs text-slate-300">Purpose or obligation<input value={description} maxLength={300} onChange={e=>{setDescription(e.target.value);setRequestId('')}} className="mt-1 w-full rounded-lg border border-white/15 bg-[#0d263b] p-3" placeholder="For example, production material purchase"/></label>
             <label className="text-xs text-slate-300">Evidence reference (optional)<input value={evidence} maxLength={160} onChange={e=>{setEvidence(e.target.value);setRequestId('')}} className="mt-1 w-full rounded-lg border border-white/15 bg-[#0d263b] p-3" placeholder="Receipt or invoice reference"/></label>
@@ -163,7 +166,7 @@ export default function ClientOwnerEarningsPanel({storeApiPath,systems=[]}:{
         <div className="mt-3 max-h-64 space-y-2 overflow-y-auto">
           {report.costs.map(cost=><div key={cost.id} className="flex flex-wrap justify-between gap-2 rounded-lg border border-white/10 p-3 text-xs">
             <div><p className="font-semibold">{cost.description}</p><p className="mt-1 text-slate-400">{cost.category.replaceAll('_',' ')} · {date(cost.recorded_at)}{cost.system_title?' · '+cost.system_title:''}</p></div>
-            <span className="font-bold">{fmt(cost.amount)} {displayCurrencyName(cost.currency)}</span>
+            <span className="font-bold">{displayCurrencyName(cost.currency)==='System Switch'?usd(cost.amount):fmt(cost.amount)+' '+displayCurrencyName(cost.currency)}</span>
           </div>)}
           {report.costs.length===0&&<p className="text-xs text-slate-400">No operating costs have been reported yet.</p>}
         </div>

@@ -1,4 +1,5 @@
 "use client"
+import { UsdValue } from '@/components/usd-value'
 
 import { cn } from "@/lib/utils"
 import { Sparkles } from "lucide-react"
@@ -62,7 +63,7 @@ export function WealthTier({ tier, balance, className }: WealthTierProps) {
       <span>{config.label}</span>
       {balance !== undefined && (
         <span className="text-muted-foreground">
-          {balance.toLocaleString()} System Switch
+          <UsdValue trx={balance} />
         </span>
       )}
     </div>

@@ -170,7 +170,7 @@ for (const token of ['Manual credit after Paystack confirmation', 'Approve and c
   'manual_credited', 'role="alert"']) {
   if (!adminTerminal.includes(token)) throw new Error('Administrations manual credit workflow missing: '+token)
 }
-if (!depositRoute.includes('manual_credited') || !walletUi.includes('Administrations-confirmed · System Switch credited')) {
+if (!depositRoute.includes('manual_credited') || !walletUi.includes('Administrations-confirmed · TRX credited')) {
   throw new Error('User wallet history must distinguish Administrations confirmed funds from Paystack API-verified funds')
 }
 console.log('Paystack verified deposits, secured Administrations review, and legacy endpoint regressions passed')

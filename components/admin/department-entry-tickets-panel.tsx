@@ -1,4 +1,5 @@
 'use client'
+import { UsdValue } from '@/components/usd-value'
 
 import { useEffect, useState } from 'react'
 import { CheckCircle2, Clock, Copy, Loader2, RefreshCw, Ticket, XCircle } from 'lucide-react'
@@ -111,7 +112,7 @@ export function DepartmentEntryTicketsPanel() {
           <div className="mt-2 space-y-1 text-xs text-slate-400">
             {ticket.entry_loan_status && (
               <p className="font-semibold text-sky-200">
-                Entry loan: {ticket.entry_loan_status} · {Number(ticket.entry_loan_principal || ticket.price_flame_coin).toLocaleString()} System Switch · no paid receipt
+                Entry loan: {ticket.entry_loan_status} · <UsdValue trx={Number(ticket.entry_loan_principal || ticket.price_flame_coin)} /> · no paid receipt
               </p>
             )}
             <p>{ticket.payer_name || (ticket.entry_loan_status ? 'Loan application is recorded in Administrations support review.' : 'Visitor has not submitted payment details yet.')}</p>
