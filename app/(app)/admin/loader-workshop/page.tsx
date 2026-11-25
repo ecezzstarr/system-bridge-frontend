@@ -108,26 +108,26 @@ export default function LoaderWorkshop(){
         <div>
           <p className="text-[10px] font-black uppercase tracking-[.2em] text-amber-200">Administrations · System Workshop</p>
           <h1 className="mt-2 text-3xl font-black">Loader Workshop</h1>
-          <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">Shape the first words people meet in Weave. Review the three entrance lessons for every department and Flame Event, set their reading pace and publish the wording across the company.</p>
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">The global company loader is retired. Historical lesson content and settings are preserved here; saving them does not interrupt or delay any page.</p>
         </div>
         <div className="rounded-xl border border-white/10 p-3 text-xs text-slate-400">Live version <strong className="text-white">v{version||'—'}</strong>{updatedAt&&<p className="mt-1">{new Date(updatedAt).toLocaleString()}</p>}</div>
       </header>
       {loading?<div className="flex min-h-96 items-center justify-center"><RefreshCw className="h-7 w-7 animate-spin text-amber-200"/></div>:<>
         <section className="mt-6 rounded-2xl border border-amber-300/20 bg-[#0d1726] p-5">
           <div className="flex items-center gap-2 text-amber-200"><Clock3 className="h-5 w-5"/><h2 className="font-black">Automatic loading speed</h2></div>
-          <p className="mt-2 text-xs leading-5 text-slate-300">Defaults provide at least eight seconds, no Next or Enter button, and three readable lessons. Longer or shorter durations can be published here. Environment readiness must also finish before the cover is removed.</p>
+          <p className="mt-2 text-xs leading-5 text-slate-300">These are historical loader settings. The company now opens pages directly; these timings are not applied to navigation.</p>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {durationFields.map(field=><label key={field.key} className="rounded-xl border border-white/10 bg-black/20 p-3">
               <span className="block min-h-9 text-xs text-slate-200">{field.label}</span>
               <input type="number" min={field.min} max={field.max} step={field.step} value={numberToSec(draft.loading[field.key])} onChange={event=>setDuration(field.key,Number(event.target.value))} className="w-full rounded-lg border border-white/20 bg-[#060d18] px-3 py-2 text-sm font-semibold text-white"/>
             </label>)}
           </div>
-          <p className="mt-3 text-xs text-sky-200">Expected minimum: Entrance {numberToSec(timedMinimum)}s · Movement {numberToSec(transitMinimum)}s. Three lessons always appear automatically.</p>
+          <p className="mt-3 text-xs text-sky-200">Archived configuration: Entrance {numberToSec(timedMinimum)}s · Movement {numberToSec(transitMinimum)}s. Not enforced on the live site.</p>
         </section>
         <section className="mt-5 grid gap-5 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,.8fr)]">
           <div className="rounded-2xl border border-white/10 bg-[#0d1726] p-5">
             <div className="flex items-center gap-2 text-amber-200"><BookOpen className="h-5 w-5"/><h2 className="font-black">Department wordings</h2></div>
-            <p className="mt-2 text-xs text-slate-300">Choose an audience and refine its three entrance lessons. During page transitions, the loader introduces the destination and its work. Unchanged older defaults receive the current company wording; your authored lessons remain yours to direct.</p>
+            <p className="mt-2 text-xs text-slate-300">Choose an audience and refine its archived entrance lessons. These lessons no longer appear during page transitions. Unchanged older defaults receive the current company wording; your authored lessons remain yours to direct.</p>
             <div className="mt-4 flex flex-wrap gap-2">{LOADER_COPY_ROLES.map(role=><button key={role} type="button" onClick={()=>{setAudience(role);setLessonIndex(0)}} className={audience===role?'rounded-xl bg-amber-200 px-3 py-2 text-xs font-black text-slate-950':'rounded-xl border border-white/10 px-3 py-2 text-xs font-semibold text-slate-200'}>{labels[role]}</button>)}</div>
             <div className="mt-4 flex gap-2">{[0,1,2].map(index=><button key={index} type="button" onClick={()=>setLessonIndex(index)} className={index===lessonIndex?'flex-1 rounded-lg bg-sky-200 px-3 py-2 text-xs font-black text-slate-950':'flex-1 rounded-lg border border-white/10 px-3 py-2 text-xs font-semibold text-white'}>Lesson {index+1}</button>)}</div>
             <div className="mt-4 space-y-3">{(['eyebrow','title','body','movement'] as const).map(field=><label key={field} className="block text-xs font-semibold text-slate-200">
