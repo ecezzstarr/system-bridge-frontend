@@ -18,7 +18,7 @@ export async function POST(request:NextRequest){
  const p=await request.json() as Publication
  const allowedImage=starterPublications.some(x=>x.image===p.image)|| (typeof p.image==='string'&&/^\/api\/media\/ads\/[\w/-]+\.(jpg|png|webp|gif)$/.test(p.image))
  if(typeof p.id!=='string'||!(/^(seed-[0-3]-[0-9]-[0-5]|custom-[0-9a-f-]{36})$/.test(p.id))||!departments.includes(p.department)||typeof p.title!=='string'||!p.title.trim()||p.title.length>90||typeof p.caption!=='string'||!p.caption.trim()||p.caption.length>2000||!allowedImage||!Number.isInteger(p.style)||p.style<0||p.style>5||typeof p.active!=='boolean')return NextResponse.json({success:false,error:'Invalid publication details or image path'},{status:400})
- const item:Publication={id:p.id,department:p.department,title:p.title.trim(),caption:p.caption.trim(),image:p.image,style:p.style,active:p.active}
+ const item:Publication={id:p.id,department:p.department,title:p.title.trim(),caption:p.caption.trim(),image:p.image,style:p.style,active:p.active,original:p.original===true}
  await ensure();await sql`INSERT INTO weave_publication_library (id,publication,updated_by) VALUES (${item.id},${JSON.stringify(item)}::jsonb,${user.id}::uuid) ON CONFLICT(id) DO UPDATE SET publication=EXCLUDED.publication,updated_by=EXCLUDED.updated_by,updated_at=NOW()`
  return NextResponse.json({success:true,item})
  }catch(e){console.error('[Publication Library]',e);return NextResponse.json({success:false,error:'Unable to save publication'},{status:500})}

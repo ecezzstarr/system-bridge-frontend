@@ -1,6 +1,6 @@
 export const departments=['Hope','Stability','Dream Lovely','A Time'] as const
 export type Department=typeof departments[number]
-export type Publication={id:string;department:Department;title:string;caption:string;image:string;style:number;active:boolean}
+export type Publication={id:string;department:Department;title:string;caption:string;image:string;style:number;active:boolean;original?:boolean}
 const w='/images/workshops/'
 const topics:Record<Department,[string,string,string][]> = {
  Hope:[
