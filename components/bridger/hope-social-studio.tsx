@@ -1,5 +1,6 @@
 'use client'
 import Link from 'next/link'
+import HopePublicationLibrary from '@/components/bridger/hope-publication-library'
 import {useCallback,useEffect,useState} from 'react'
 import {useAuth} from '@/lib/auth-provider'
 import {hopeSearchTerms,hopeNextAction,hopeWorkDirection,type ProspectSituation} from '@/lib/hope-social-work-guide'
@@ -80,6 +81,7 @@ export default function HopeSocialStudio({history=[]}:{history?:Legacy[]}){
    {report&&<p className="text-sm text-slate-200">Publication: {data?.sources.publishing?post?.total??0:'Unavailable'} reviewed/provider-confirmed · {post?.pending??0} pending · target {report.plan?post?.target??0:'Not assigned'} · {due} agreed follow-ups due.</p>}
    <button type="button" className={link} onClick={()=>void load()}>Refresh work record</button>
   </section>
+  <HopePublicationLibrary onCaption={setCaption}/>
   <section className={panel} id="publication">
    <h2 className="text-xl font-bold">1. Publish on {entry.name}</h2>
    {channel==='tiktok'?<ol className="list-decimal space-y-2 pl-5 text-sm leading-6 text-slate-200">

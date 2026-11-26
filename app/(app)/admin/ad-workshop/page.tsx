@@ -1,6 +1,7 @@
 'use client'
 
 import { ChangeEvent, useEffect, useMemo, useRef, useState } from 'react'
+import HopePublicationLibrary from '@/components/bridger/hope-publication-library'
 import { useAuth } from '@/lib/auth-provider'
 import { useRouter } from 'next/navigation'
 import { Archive, Image as ImageIcon, Loader2, Megaphone, Pencil, Play, Upload, Video } from 'lucide-react'
@@ -291,6 +292,8 @@ export default function AdWorkshopPage() {
           </div>
         </div>
       </section>
+
+      <HopePublicationLibrary admin />
 
       {message && (
         <div className="rounded-xl border border-cyan-400/20 bg-cyan-400/5 px-4 py-3 text-sm text-cyan-100">{message}</div>
