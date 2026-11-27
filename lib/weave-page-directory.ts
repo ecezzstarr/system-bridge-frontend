@@ -44,6 +44,7 @@ const entrances:readonly (readonly [string,string,string])[]=[
   ['/company-chat/[position]','Company Guidance','Speak with the company position responsible for your question and follow the response.'],
   ['/dashboard','Your Weave Workplace','Return to the department, people and working systems attached to your position.'],
   ['/district/[district]','Your Working District','Choose a place in this district and continue the work available to your position.'],
+  ['/image-workshop/production','Flame Creative Production','Create original images or written content through configured services, review usage and retrieve your private production records.'],
   ['/image-workshop/ai','Your Previous Artwork','Return to saved artwork and review the production options available for each piece.'],
   ['/lounge','Weave Lounge','Meet the people of the company and continue the conversations available to you.'],
   ['/system-switch/world/company-domain','Company Domain','Explore the company plots and enter a published departmental workshop.'],
