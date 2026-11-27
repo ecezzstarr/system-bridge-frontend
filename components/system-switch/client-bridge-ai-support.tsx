@@ -84,7 +84,7 @@ export function ClientBridgeAiSupport() {
           Authorization:`Bearer ${token}`,
           'Content-Type':'application/json',
         },
-        body:JSON.stringify({message:value}),
+        body:JSON.stringify({message:value,requestId:crypto.randomUUID()}),
       })
       const body=await response.json()
       if(!response.ok)throw new Error(body.error||'Bridge AI support is unavailable')
@@ -120,6 +120,8 @@ export function ClientBridgeAiSupport() {
           </div>
         </div>
         <FlameSubscriptionPanel />
+        <a className="block text-sm text-cyan-200 underline" href="/image-workshop/production">Open Creative Production</a>
+        <p className="text-xs text-slate-300">Say generate image with provider: your brief (50 units), or write content with provider: your brief (5 units). Only use non-confidential briefs; this support conversation is shared with your assigned Bridger.</p>
       </header>
 
       <div className="max-h-[380px] min-h-[220px] space-y-3 overflow-y-auto p-4 md:p-5">
