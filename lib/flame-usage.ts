@@ -3,6 +3,8 @@ import {NextResponse} from 'next/server'
 import {getPool,sql} from '@/lib/db'
 import {FLAME_PLANS,FLAME_USAGE_COST,getFlamePlan,flameUsageCost,type FlameUsageKind} from '@/lib/flame-usage-policy'
 
+let rateCache:{rate:number;expires:number}|null=null
+let pendingRate:Promise<number>|null=null
 const treasury='be4f0618-d666-4e13-ae8f-13c986784ff7' // existing company settlement identity
 let ready:Promise<void>|null=null
 export function ensureFlameUsage(){
@@ -49,11 +51,18 @@ export async function withFlameUsage(userId:string,role:string,kind:FlameUsageKi
  }
 }
 async function flameLiveRate(){
- const r=await fetch('https://api.coingecko.com/api/v3/simple/price?ids=tron&vs_currencies=usd',{cache:'no-store',signal:AbortSignal.timeout(5000)})
- if(!r.ok)throw Error('Live USD valuation unavailable')
- const rate=Number((await r.json())?.tron?.usd)
- if(!Number.isFinite(rate)||rate<=0)throw Error('Live USD valuation unavailable')
- return rate
+ if(rateCache&&Date.now()<rateCache.expires)return rateCache.rate
+ if(pendingRate)return pendingRate
+ pendingRate=(async()=>{
+  // Same short-lived USD rate source as the shared wallet display.
+  const r=await fetch('https://api.coingecko.com/api/v3/simple/price?ids=tron&vs_currencies=usd',{next:{revalidate:60},signal:AbortSignal.timeout(5000)})
+  if(!r.ok)throw Error('Live USD valuation unavailable; refresh and retry')
+  const rate=Number((await r.json())?.tron?.usd)
+  if(!Number.isFinite(rate)||rate<=0)throw Error('Live USD valuation unavailable; refresh and retry')
+  rateCache={rate,expires:Date.now()+60000}
+  return rate
+ })().finally(()=>{pendingRate=null})
+ return pendingRate
 }
 function quotePlan(plan:typeof FLAME_PLANS[number],rate:number){
  const amountTrx=Math.ceil(plan.usdCents/100/rate*1e6)/1e6
@@ -79,7 +88,8 @@ export async function buyFlamePack(userId:string,role:string,requestId:string,pl
   const amount=quote.amountTrx
   const wallets=await conn.query('SELECT id,user_id,balance_trx FROM wallets WHERE user_id IN ($1::uuid,$2::uuid) AND is_primary=true ORDER BY id FOR UPDATE',[userId,treasury])
   const buyer=wallets.rows.filter(r=>String(r.user_id)===userId),company=wallets.rows.filter(r=>String(r.user_id)===treasury)
-  if(buyer.length!==1||company.length!==1)throw Error('Subscription settlement wallet unavailable')
+  if(buyer.length!==1)throw Error('Subscription settlement wallet unavailable for your account; contact Administrations')
+  if(company.length!==1)throw Error('Company settlement wallet unavailable; contact Administrations')
   const debit=await conn.query('UPDATE wallets SET balance_trx=balance_trx-$1,updated_at=NOW() WHERE id=$2::uuid AND balance_trx >= $1 RETURNING balance_trx',[amount,buyer[0].id])
   if(debit.rows.length!==1)throw Error('Insufficient wallet balance')
   const credit=await conn.query('UPDATE wallets SET balance_trx=balance_trx+$1,updated_at=NOW() WHERE id=$2::uuid RETURNING balance_trx',[amount,company[0].id])
@@ -88,7 +98,7 @@ export async function buyFlamePack(userId:string,role:string,requestId:string,pl
   await conn.query('INSERT INTO weave_flame_usage_purchases(id,user_id,request_id,units,usd_cents,usd_per_trx,amount_trx,plan_id) VALUES($1::uuid,$2::uuid,$3::uuid,$4,$5,$6,$7,$8)',[id,userId,requestId,quote.units,quote.usdCents,quote.usdPerTrx,amount,plan.id])
   await conn.query('INSERT INTO weave_flame_usage_accounts(user_id,units) VALUES($1::uuid,$2) ON CONFLICT(user_id) DO UPDATE SET units=weave_flame_usage_accounts.units+EXCLUDED.units,updated_at=NOW()',[userId,quote.units])
   for(const [owner,before,after] of [[userId,buyer[0].balance_trx,debit.rows[0].balance_trx],[treasury,company[0].balance_trx,credit.rows[0].balance_trx]]){
-   await conn.query("INSERT INTO ledger_entries(id,user_id,entry_type,amount,currency,description,balance_before,balance_after,metadata,created_at) VALUES(gen_random_uuid(),$1::uuid,$2,$3,'Flame Coin','Flame prepaid usage allowance',$4,$5,$6::jsonb,NOW())",[owner,owner===userId?'fee':'credit',amount,before,after,JSON.stringify({source:'flame_usage_purchase',purchaseId:id,planId:plan.id,usdCents:quote.usdCents,usdPerTrx:quote.usdPerTrx,units:quote.units})])
+   await conn.query("INSERT INTO ledger_entries(id,user_id,entry_type,amount,currency,description,balance_before,balance_after,metadata,created_at) VALUES(gen_random_uuid(),$1::uuid,$2,$3,'Flame Coin','Flame prepaid usage allowance',$4,$5,$6::jsonb,NOW())",[owner,owner===userId?'fee':'earning',amount,before,after,JSON.stringify({source:'flame_usage_purchase',commerce_type:'flame_usage_purchase',purchaseId:id,planId:plan.id,usdCents:quote.usdCents,usdPerTrx:quote.usdPerTrx,units:quote.units})])
   }
   await conn.query('COMMIT')
   return {purchase:{id,plan_id:plan.id,units:quote.units,usd_cents:quote.usdCents,amount_trx:amount},replayed:false}
