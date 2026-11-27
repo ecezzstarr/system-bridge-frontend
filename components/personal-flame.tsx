@@ -1,8 +1,8 @@
 'use client'
 import { useEffect,useRef,useState } from 'react'
-import { Flame,X,Minus,MessageSquare,BookOpen,Activity,Wallet,ArrowUp,ArrowUpRight } from 'lucide-react'
+import { Flame,MessageSquare,BookOpen,Activity,Wallet,ArrowUp,ArrowUpRight } from 'lucide-react'
 import {FlameSubscriptionPanel,notifyFlameUsage} from '@/components/flame-subscription'
-import {useRouter,usePathname} from 'next/navigation'
+import {useRouter} from 'next/navigation'
 import {useAuth} from '@/lib/auth-provider'
 import type {FlameMovement} from '@/lib/flame-environment'
 import { getClientToken } from '@/lib/client-auth'
@@ -12,17 +12,15 @@ function headers():Record<string,string>{
   const token=getClientToken()
   return {'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})}
 }
-export function PersonalFlame({onClose}:{onClose:()=>void}){
-  const router=useRouter(),pathname=usePathname()
-  const [compact,setCompact]=useState(false)
+export function PersonalFlame(){
+  const router=useRouter()
   const [section,setSection]=useState<'conversation'|'activity'|'words'|'usage'>('conversation')
   const [movement,setMovement]=useState<FlameMovement|null>(null)
   const [destination,setDestination]=useState('')
-  const [queued,setQueued]=useState<{message:string;href:string;token:string|null}|null>(null)
   const executionRef=useRef(false)
   function navigate(href:string){
     if(!/^\/(?!\/)[a-zA-Z0-9_/#:.?=&-]*$/.test(href))return
-    setDestination(href);setCompact(true);router.push(href)
+    setDestination(href);router.push(href)
   }
   const [messages,setMessages]=useState<PersonalFlameMessage[]>([])
   const [input,setInput]=useState('')
@@ -44,38 +42,20 @@ export function PersonalFlame({onClose}:{onClose:()=>void}){
   async function execute(value:string){
     try{
       const r=await fetch('/api/personal-flame',{method:'POST',headers:headers(),body:JSON.stringify({message:value,allowExternal:advanced})})
-      const b=await r.json();if(!r.ok)throw Error(b.error)
+      const b=await r.json();if(!r.ok){if(r.status===402)setSection('usage');throw Error(b.error)}
       setMessages(b.messages||[]);setInput('');setMovement(b.movement||null)
       if(b.movement?.state==='verified')window.dispatchEvent(new Event('weave:flame-workshop-confirmed'))
-      if(b.movement?.navigate&&pathname!==b.movement.navigate.split(/[?#]/)[0])navigate(b.movement.navigate)
+      if(b.movement?.kind==='navigation'&&b.movement.navigate)navigate(b.movement.navigate)
     }catch(e){setError(e instanceof Error?e.message:'Interaction unavailable.')}
     finally{setBusy(false);executionRef.current=false;notifyFlameUsage()}
   }
   async function send(value:string){
     if(busy||executionRef.current||!value.trim())return
     executionRef.current=true;setBusy(true);setError('');setMovement(null)
-    try{
-      // Preview is read-only; the requested operation runs only after the authorized route opens.
-      const token=getClientToken()
-      const r=await fetch('/api/personal-flame',{method:'POST',headers:headers(),body:JSON.stringify({message:value,previewOnly:true})})
-      const b=await r.json();if(!r.ok)throw Error(b.error)
-      if(b.movement?.state==='ready'&&b.movement.kind!=='navigation'&&b.movement.navigate){
-        setMovement(b.movement);setQueued({message:value,href:b.movement.navigate,token});navigate(b.movement.navigate);return
-      }
-      await execute(value)
-    }catch(e){setError(e instanceof Error?e.message:'Interaction unavailable.');setBusy(false);executionRef.current=false}
+    // Operations are authenticated and verified by the original workshop API.
+    // Stay in the Flame building to show the result; workshop links are voluntary.
+    await execute(value)
   }
-  useEffect(()=>{
-    if(!queued)return
-    if(pathname===queued.href.split(/[?#]/)[0]){
-      const job=queued;setQueued(null)
-      if(job.token!==getClientToken()){setError('Account changed; movement cancelled.');setBusy(false);executionRef.current=false;return}
-      void execute(job.message)
-      return
-    }
-    const timeout=window.setTimeout(()=>{setQueued(null);setBusy(false);executionRef.current=false;setError('The workshop route did not open. No operation was submitted.')},15000)
-    return ()=>window.clearTimeout(timeout)
-  },[queued,pathname])
   async function clear(){
     if(busy||!window.confirm('Clear all Personal Flame conversation records and notes from WEAVE? This does not clear external provider records or backups.'))return
     setBusy(true);setError('')
@@ -83,7 +63,6 @@ export function PersonalFlame({onClose}:{onClose:()=>void}){
     catch(e){setError(e instanceof Error?e.message:'Unable to clear conversation.')}
     finally{setBusy(false)}
   }
-  if(compact)return <div className="fixed bottom-4 right-3 z-[90] w-[min(92vw,24rem)] rounded-2xl border border-amber-400/30 bg-slate-950 p-3 text-white shadow-2xl"><div className="flex items-center justify-between"><button type="button" onClick={()=>setCompact(false)} className="flex items-center gap-2 text-sm font-bold text-amber-200"><Flame className="h-5 w-5"/>Flame · expand</button><button disabled={busy} onClick={onClose} aria-label="Close Flame"><X className="h-4 w-4"/></button></div><p className="mt-2 text-xs text-slate-300">{queued?'Flame is opening the workshop before execution.':busy?'Flame is awaiting a workshop response.':destination?(pathname===destination.split(/[?#]/)[0]?'Environment route opened. Its access and records remain independently verified.':'Requested environment: '+destination+' · waiting for route or access decision.'):movement?.summary||'Your interaction remains open.'}</p>{error&&<p role="alert" className="mt-2 text-xs text-amber-200">{error}</p>}{movement&&<><p className="mt-2 text-xs">{movement.state==='verified'?'Workshop confirmed: ':movement.state==='blocked'?'Not confirmed: ':'Direction: '}{movement.summary}</p>{movement.directions.map(d=><button key={d.href} onClick={()=>navigate(d.href)} className="mt-2 block text-left text-xs text-amber-200 underline">{d.title} — {d.detail}</button>)}</>}</div>
   const tabs = [
     {id:'conversation',label:'Conversation',icon:MessageSquare},
     {id:'activity',label:'Activity',icon:Activity},
@@ -91,20 +70,20 @@ export function PersonalFlame({onClose}:{onClose:()=>void}){
     {id:'usage',label:'Usage',icon:Wallet},
   ] as const
   const activity=messages.filter(m=>m.role==='assistant'&&m.movement)
-  return <section className="fixed inset-x-0 bottom-0 top-14 z-[90] mx-auto flex min-h-0 max-w-5xl flex-col overflow-hidden border border-border bg-background text-foreground shadow-2xl sm:inset-x-4 sm:bottom-4 sm:top-20 sm:rounded-2xl" role="dialog" aria-label="Flame workspace" onKeyDown={e=>{if(e.key==='Escape'&&!busy)onClose()}}>
+  return <section className="mx-auto flex min-h-[65dvh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-border bg-background text-foreground" aria-label="Flame building workspace">
     <header className="flex shrink-0 items-center justify-between gap-3 border-b border-border px-4 py-3 sm:px-6">
       <div className="flex min-w-0 items-center gap-3"><div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-300"><Flame className="h-6 w-6"/></div><div className="min-w-0"><h2 className="text-lg font-semibold tracking-tight">Flame</h2><p className="truncate text-xs text-muted-foreground">WEAVE · Personal presence</p></div></div>
-      <div className="flex items-center gap-2"><span className="hidden text-xs text-muted-foreground sm:inline" role="status">{busy?'Working':'Ready'}</span><button type="button" onClick={()=>setCompact(true)} aria-label="Observe environment" className="rounded-lg p-2 hover:bg-muted"><Minus className="h-5 w-5"/></button><button type="button" disabled={busy} onClick={onClose} aria-label="Close Flame" className="rounded-lg p-2 hover:bg-muted disabled:opacity-40"><X className="h-5 w-5"/></button></div>
+      <span className="text-xs text-muted-foreground" role="status">{busy?'Working':'Ready'}</span>
     </header>
     <nav className="grid shrink-0 grid-cols-4 gap-1 border-b border-border px-2 py-2 sm:px-6" aria-label="Flame workspace sections">
       {tabs.map(({id,label,icon:Icon})=><button key={id} type="button" aria-pressed={section===id} onClick={()=>setSection(id)} className={'flex min-h-12 items-center justify-center gap-1 rounded-lg px-1 py-2 text-[11px] font-medium sm:gap-2 sm:text-sm '+(section===id?'bg-muted text-foreground':'text-muted-foreground hover:bg-muted/50')}><Icon className="h-4 w-4 shrink-0"/><span>{label}</span></button>)}
     </nav>
     {error&&<div role="alert" className="mx-4 mt-2 shrink-0 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm">{error}</div>}
     {section==='conversation'&&<>
-      <div className="min-h-0 flex-1 overflow-y-auto px-4 py-6 sm:px-8" aria-live="polite">
+      <div className="min-h-[35dvh] max-h-[62dvh] flex-1 overflow-y-auto px-4 py-6 sm:px-8" aria-live="polite">
         {!messages.length&&<div className="mx-auto max-w-lg py-8 sm:py-16"><Flame className="mb-5 h-10 w-10 text-amber-600 dark:text-amber-300"/><h3 className="text-2xl font-semibold tracking-tight">What shall we work on?</h3><p className="mt-2 text-sm leading-relaxed text-muted-foreground">Understand your environment, find a workshop, inspect supported records or reflect on your participation.</p><div className="mt-6 grid gap-2 sm:grid-cols-2">{[{label:'Find my work',value:'find my work'},{label:'Understand Weave',value:'What is Weave?'},{label:'Review my notes',value:'my notes'},{label:'Reflect on today',value:'reflect'}].map(v=><button key={v.value} type="button" disabled={busy} onClick={()=>void send(v.value)} className="flex min-h-12 items-center justify-between rounded-xl border border-border px-3 py-2 text-left text-sm hover:bg-muted disabled:opacity-40">{v.label}<ArrowUpRight className="h-4 w-4 text-muted-foreground"/></button>)}</div></div>}
         <div className="mx-auto max-w-3xl space-y-6">{messages.map((m,i)=><article key={i} className={m.role==='user'?'ml-auto max-w-[88%] rounded-2xl bg-muted px-4 py-3':'mr-auto w-full max-w-[95%] py-2'}><p className="mb-2 flex items-center gap-2 text-xs font-medium text-muted-foreground">{m.role==='user'?'You':<><Flame className="h-4 w-4 text-amber-600 dark:text-amber-300"/>Flame · {m.mode==='native'?'Native':'Model-assisted'}</>}</p><p className="whitespace-pre-wrap break-words text-sm leading-relaxed">{m.content}</p>{m.movement&&<div className="mt-3 rounded-xl border border-border p-3"><p className="text-xs font-semibold">{m.movement.state==='verified'?'Workshop confirmed':m.movement.state==='blocked'?'Not confirmed':'Direction ready'}</p>{m.movement.directions.map(d=><div key={d.href} className="mt-2 border-t border-border pt-2"><button type="button" disabled={busy} onClick={()=>navigate(d.href)} className="flex items-center gap-1 text-left text-sm font-medium underline underline-offset-4 disabled:opacity-40">{d.title}<ArrowUpRight className="h-4 w-4"/></button><p className="mt-1 text-xs text-muted-foreground">{d.detail}</p><p className="text-xs text-muted-foreground">{d.requirements}</p></div>)}</div>}</article>)}</div>
-        {busy&&<p className="mx-auto mt-4 max-w-3xl text-sm text-muted-foreground" role="status">{queued?'Opening the workshop…':'Retrieving or processing your interaction…'}</p>}
+        {busy&&<p className="mx-auto mt-4 max-w-3xl text-sm text-muted-foreground" role="status">Retrieving or processing your interaction…</p>}
         <div ref={end}/>
       </div>
       <footer className="shrink-0 border-t border-border px-4 pb-4 pt-3 sm:px-8">
@@ -119,15 +98,8 @@ export function PersonalFlame({onClose}:{onClose:()=>void}){
   </section>
 }
 
-/** Mounted once above departmental layouts so Flame survives internal navigation. */
-export function PersonalFlameHost(){
+/** Dedicated authenticated page; never mounts a global overlay. */
+export function PersonalFlameBuilding(){
  const {user,isAuthenticated}=useAuth()
- const [open,setOpen]=useState(false)
- useEffect(()=>{
-  setOpen(false)
-  const toggle=()=>setOpen(v=>!v)
-  window.addEventListener('weave:personal-flame',toggle)
-  return ()=>window.removeEventListener('weave:personal-flame',toggle)
- },[user?.id])
- return isAuthenticated&&user?.id&&open?<PersonalFlame key={user.id} onClose={()=>setOpen(false)}/>:null
+ return isAuthenticated&&user?.id?<PersonalFlame key={user.id}/>:null
 }
