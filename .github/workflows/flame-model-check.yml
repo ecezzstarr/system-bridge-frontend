@@ -1,0 +1,23 @@
+name: Private model research checks
+on:
+  pull_request:
+    branches: [main]
+    paths: ['flame-model/**', '.github/workflows/flame-model-check.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  synthetic-contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install CPU research dependency
+        run: python -m pip install -r flame-model/requirements.txt --index-url https://download.pytorch.org/whl/cpu
+      - name: Recovery, checkpoint continuation and private service contracts
+        run: python -m unittest discover -s flame-model -p 'test_*.py' -v
+      # Synthetic tests use temporary files only. No private corpus, checkpoint
+      # artifacts, account access, model activation or deployment in this job.

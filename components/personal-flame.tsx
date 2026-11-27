@@ -1,7 +1,8 @@
 'use client'
 import { useEffect,useRef,useState } from 'react'
-import { Flame,MessageSquare,BookOpen,Activity,Wallet,ArrowUp,ArrowUpRight } from 'lucide-react'
+import { Flame,MessageSquare,BookOpen,Activity,Wallet,ArrowUp,ArrowUpRight,FlaskConical } from 'lucide-react'
 import {FlameSubscriptionPanel,notifyFlameUsage} from '@/components/flame-subscription'
+import {FlameModelPilot} from '@/components/flame-model-pilot'
 import {useRouter} from 'next/navigation'
 import {useAuth} from '@/lib/auth-provider'
 import type {FlameMovement} from '@/lib/flame-environment'
@@ -14,7 +15,8 @@ function headers():Record<string,string>{
 }
 export function PersonalFlame(){
   const router=useRouter()
-  const [section,setSection]=useState<'conversation'|'activity'|'words'|'usage'>('conversation')
+  const {user}=useAuth()
+  const [section,setSection]=useState<'conversation'|'activity'|'words'|'usage'|'model'>('conversation')
   const [movement,setMovement]=useState<FlameMovement|null>(null)
   const [destination,setDestination]=useState('')
   const executionRef=useRef(false)
@@ -68,6 +70,7 @@ export function PersonalFlame(){
     {id:'activity',label:'Activity',icon:Activity},
     {id:'words',label:'Flame Words',icon:BookOpen},
     {id:'usage',label:'Usage',icon:Wallet},
+    ...(user?.role==='admin'?[{id:'model' as const,label:'Model Lab',icon:FlaskConical}]:[]),
   ] as const
   const activity=messages.filter(m=>m.role==='assistant'&&m.movement)
   return <section className="mx-auto flex min-h-[65dvh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-border bg-background text-foreground" aria-label="Flame building workspace">
@@ -75,7 +78,7 @@ export function PersonalFlame(){
       <div className="flex min-w-0 items-center gap-3"><div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-300"><Flame className="h-6 w-6"/></div><div className="min-w-0"><h2 className="text-lg font-semibold tracking-tight">Flame</h2><p className="truncate text-xs text-muted-foreground">WEAVE · Personal presence</p></div></div>
       <span className="text-xs text-muted-foreground" role="status">{busy?'Working':'Ready'}</span>
     </header>
-    <nav className="grid shrink-0 grid-cols-4 gap-1 border-b border-border px-2 py-2 sm:px-6" aria-label="Flame workspace sections">
+    <nav className={'grid shrink-0 gap-1 border-b border-border px-2 py-2 sm:px-6 '+(user?.role==='admin'?'grid-cols-5':'grid-cols-4')} aria-label="Flame workspace sections">
       {tabs.map(({id,label,icon:Icon})=><button key={id} type="button" aria-pressed={section===id} onClick={()=>setSection(id)} className={'flex min-h-12 items-center justify-center gap-1 rounded-lg px-1 py-2 text-[11px] font-medium sm:gap-2 sm:text-sm '+(section===id?'bg-muted text-foreground':'text-muted-foreground hover:bg-muted/50')}><Icon className="h-4 w-4 shrink-0"/><span>{label}</span></button>)}
     </nav>
     {error&&<div role="alert" className="mx-4 mt-2 shrink-0 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm">{error}</div>}
@@ -94,6 +97,7 @@ export function PersonalFlame(){
     </>}
     {section==='activity'&&<div className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-8"><h3 className="text-xl font-semibold">Movement and operations</h3><p className="mt-2 text-sm text-muted-foreground">Results from registered workshops. An opened route alone is not proof of a completed operation.</p>{destination&&<p className="mt-3 break-all text-sm">Requested environment: {destination}</p>}{movement&&<div className="mt-4 rounded-xl border border-border p-4"><p className="text-xs font-medium uppercase text-muted-foreground">Current movement · {movement.state}</p><p className="mt-2 text-sm">{movement.summary}</p>{movement.directions.map(d=><button key={d.href} type="button" disabled={busy} onClick={()=>navigate(d.href)} className="mt-3 block text-left text-sm underline disabled:opacity-40">{d.title} — {d.detail}</button>)}</div>}<div className="mt-6 space-y-3">{[...activity].reverse().map((m,i)=><article key={i} className="rounded-xl border border-border p-4"><p className="text-xs font-medium uppercase text-muted-foreground">{m.movement?.kind} · {m.movement?.state}</p><p className="mt-2 whitespace-pre-wrap text-sm">{m.content}</p></article>)}</div>{!activity.length&&!movement&&<p className="mt-5 text-sm text-muted-foreground">No workshop movements in the retrieved conversation.</p>}</div>}
     {section==='words'&&<div className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-8"><h3 className="text-xl font-semibold">Flame Words</h3><p className="mt-2 text-sm leading-relaxed text-muted-foreground">Your interaction history and notes. Current release stores these records in your WEAVE account; device-first memory is not yet enabled.</p><div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border p-4"><div><p className="text-sm font-medium">Retrieved conversation</p><p className="text-xs text-muted-foreground">{messages.filter(m=>m.role==='user').length} recent interactions loaded</p></div><button type="button" disabled={busy} onClick={()=>void clear()} className="rounded-lg border border-border px-3 py-2 text-sm disabled:opacity-40">Clear history</button></div><div className="mt-5 space-y-3">{messages.filter(m=>m.role==='user'&&/^note:\s*\S/i.test(m.content)).map((m,i)=><div key={i} className="rounded-xl border border-border p-4 text-sm whitespace-pre-wrap">{m.content.replace(/^note:\s*/i,'')}</div>)}</div><button type="button" onClick={()=>{setSection('conversation');setInput('note: ')}} className="mt-5 rounded-lg border border-border px-4 py-2 text-sm">Write a note</button></div>}
+    {section==='model'&&user?.role==='admin'&&<div className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-8"><FlameModelPilot/></div>}
     {section==='usage'&&<div className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-8"><h3 className="text-xl font-semibold">Flame usage</h3><p className="mt-2 text-sm text-muted-foreground">Manage prepaid access and view actual remaining units.</p><div className="mt-5 rounded-xl bg-slate-950 p-3 text-white"><FlameSubscriptionPanel/></div></div>}
   </section>
 }
