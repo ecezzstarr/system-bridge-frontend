@@ -1,12 +1,34 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),ts=require('typescript')
-const f={}
-vm.runInNewContext(ts.transpileModule(fs.readFileSync('lib/personal-flame.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{exports:f})
+const teaching={},f={}
+const transpile=path=>ts.transpileModule(fs.readFileSync(path,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText
+vm.runInNewContext(transpile('lib/flame-teaching.ts'),{exports:teaching})
+vm.runInNewContext(transpile('lib/personal-flame.ts'),{exports:f,require:name=>{if(name==='./flame-teaching')return teaching;throw Error('Unexpected import '+name)}})
 assert.equal(f.PERSONAL_FLAME_OWNER,'WEAVE')
 assert.match(f.personalFlameNativeReply('What is presence?',[]),/attentive/)
 assert.equal(f.personalFlameNativeReply('What is the capital of France?',[]),null)
 const history=[{role:'user',mode:'native',content:'note: private thought'},{role:'user',mode:'model',content:'public question'}]
 assert.match(f.personalFlameNativeReply('my notes',history),/private thought/)
 assert(!JSON.stringify(f.personalFlameModelContext(history,'next question')).includes('private thought'))
+const conversation=[]
+function say(content){
+ const reply=f.personalFlameNativeReply(content,conversation)
+ assert.equal(typeof reply,'string')
+ conversation.push({role:'user',mode:'native',content},{role:'assistant',mode:'native',content:reply})
+ return reply
+}
+assert.match(say('What is Weave?'),/company/)
+assert.match(say('I do not understand'),/Think of Weave/)
+assert.match(say('Give me an example'),/File Folder/)
+assert.match(say('What is a Bridger?'),/Hope/)
+assert.match(say('Tell me more'),/qualifying work/)
+assert.match(say('How can I earn in Weave?'),/position/)
+assert.match(say('What is a File Folder?'),/Client/)
+assert.match(say('Flame Words'),/memory/)
+assert.match(say('Go deeper'),/not yet device-first/)
+assert.equal(f.personalFlameNativeReply('continue',[]),null)
+assert.equal(f.personalFlameNativeReply('delete all records',conversation),null)
+assert.equal(f.personalFlameNativeReply('claim my daily free prospect',conversation),null)
+assert.equal(f.personalFlameNativeReply('constructor',[]),null)
 const route=fs.readFileSync('app/api/personal-flame/route.ts','utf8')
 assert(route.includes('body?.allowExternal!==true'))
 assert(route.includes('WHERE user_id=\${userId}::uuid'))
