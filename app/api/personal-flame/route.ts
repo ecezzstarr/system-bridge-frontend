@@ -6,7 +6,7 @@ import { withFlameUsage } from '@/lib/flame-usage'
 import { flameOperationIntent } from '@/lib/flame-environment'
 import { runFlameEnvironment } from '@/lib/flame-environment-runtime'
 import type { FlameMovement } from '@/lib/flame-environment'
-import { PERSONAL_FLAME_DAILY_MODEL_LIMIT, PERSONAL_FLAME_MAX_MESSAGE, personalFlameNativeReply, personalFlameModelContext, type PersonalFlameMessage } from '@/lib/personal-flame'
+import { PERSONAL_FLAME_DAILY_MODEL_LIMIT, PERSONAL_FLAME_MAX_MESSAGE, personalFlameNativeReply, nativeFlameClarification, personalFlameModelContext, type PersonalFlameMessage } from '@/lib/personal-flame'
 
 export const dynamic = 'force-dynamic'
 const headers = {'Cache-Control':'private, no-store'}
@@ -51,10 +51,10 @@ export async function POST(request:NextRequest){
     await ensureSchema()
     const previous=await history(user.id)
     const intent=flameOperationIntent(message)
-    const native=personalFlameNativeReply(message,previous)
+    const native=personalFlameNativeReply(message,previous,user.role)
     const operation=async()=>{
     const movement=await runFlameEnvironment(request,user.role,message)
-    let response=movement?.summary??native
+    let response=movement?.summary??native??(body?.allowExternal!==true?nativeFlameClarification(message,user.role):null)
     let mode:'native'|'model'='native'
     if(response===null){
       if(body?.allowExternal!==true)return reply({error:'This question requires advanced conversation. Enable external model assistance to continue, or use a native command.',code:'CONSENT_REQUIRED'},409)
@@ -76,7 +76,7 @@ export async function POST(request:NextRequest){
     return reply({messages:await history(user.id),mode,movement})
     }
     if(intent?.kind==='navigate')return await operation()
-    return await withFlameUsage(user.id,user.role,intent?'workshop_operation':native!==null?'native_reply':'model_reply',operation,b=>b.movement?.state!=='blocked')
+    return await withFlameUsage(user.id,user.role,intent?'workshop_operation':(native!==null||body?.allowExternal!==true)?'native_reply':'model_reply',operation,b=>b.movement?.state!=='blocked')
   }catch{return reply({error:'Personal Flame could not complete this interaction.'},503)}
 }
 export async function DELETE(request:NextRequest){
