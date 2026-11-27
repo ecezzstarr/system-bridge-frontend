@@ -36,3 +36,15 @@ export function flameNavigate(role:string,query:string,auto:boolean):FlameMoveme
  const navigate=auto&&exact.length===1?exact[0].href:undefined
  return {kind:'navigation',state:directions.length?'ready':'blocked',summary:directions.length?(navigate?'Opening the registered environment. Its own access gates remain active.':'Choose the matching registered environment. Flame will guide you from there.'):'No matching authorized environment was found.',directions,...(navigate?{navigate}:{})}
 }
+
+/** Resolve a conversational reference only to navigation, never to a mutation.
+ * The last recorded assistant movement is server-owned and its destination must
+ * still be present in the current role's directory. */
+export function flameFollowupDirection(role:string,message:string,previous?:FlameMovement):string|null{
+ const q=normalize(message)
+ if(!/^(?:open it|open that|take me there|go there|open the first one|open the second one|open the third one)$/.test(q))return null
+ if(!previous||previous.state==='blocked')return null
+ const index=q.includes('second')?1:q.includes('third')?2:q.includes('first')?0:previous.directions.length===1?0:-1
+ const href=previous.directions[index]?.href
+ return href&&flameDirections(role,[href]).length===1?'open '+href:null
+}
