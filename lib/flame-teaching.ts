@@ -101,7 +101,7 @@ export function flameTeachingReply(message:string,history:readonly PersonalFlame
   if(/^(?:example|an example|give me an example|show me an example|a practical example|for example)$/.test(q))return lessons[prior.topic].example
   if(/^(?:yes|yes please|go on|continue|tell me more|more|go deeper|explain further|why|how)$/.test(q)){
     if(prior.stage==='deeper')return lessons[prior.topic].example
-    if(prior.stage==='example')return lessons.departments.introduction
+    if(prior.stage==='example')return 'Which part of that example would you like me to explain further? You can name the department, the work, or the opportunity you want to understand.'
     return lessons[prior.topic].deeper
   }
   if(/^(?:daily work|the work|my work|how does the work happen|responsibility|its responsibility|development|file folder development)$/.test(q))return lessons[prior.topic].deeper
