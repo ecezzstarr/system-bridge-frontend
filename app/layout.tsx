@@ -12,7 +12,6 @@ import './weave-expression.css'
 import './weave-home-plus-depth.css'
 import { UsdQuoteProvider } from '@/components/usd-value'
 import { AuthProvider } from '@/lib/auth-provider'
-import { PersonalFlameHost } from '@/components/personal-flame'
 import { ThemeProvider } from 'next-themes'
 import { PWARegister } from '@/components/pwa-register'
 import { PublicAppDownloadEntry } from '@/components/public-app-download-entry'
@@ -72,7 +71,6 @@ export default function RootLayout({
               <WeaveEnvironmentTransit>
                 <DivineShieldGate>
                   <UsdQuoteProvider><PresenceCameraRootViewport>{children}</PresenceCameraRootViewport></UsdQuoteProvider>
-                  <PersonalFlameHost />
                   <WeavePresenceAmbience />
                   <DJBroadcastPlayer />
                 </DivineShieldGate>
