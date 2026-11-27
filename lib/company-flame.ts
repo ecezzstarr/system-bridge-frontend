@@ -9,6 +9,7 @@ export const FLAME_INSTITUTION = {
     river: { name: 'River', scope: 'interaction' },
     echo: { name: 'Echo', scope: 'observation and coordination' },
     file_folder: { name: 'File Folder Flame', scope: 'client-authorized technical operations' },
+    personal: { name: 'Personal Flame', scope: 'private interaction, reflection and everyday assistance' },
   },
 } as const
 

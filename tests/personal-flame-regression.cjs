@@ -1,0 +1,17 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),ts=require('typescript')
+const f={}
+vm.runInNewContext(ts.transpileModule(fs.readFileSync('lib/personal-flame.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{exports:f})
+assert.equal(f.PERSONAL_FLAME_OWNER,'WEAVE')
+assert.match(f.personalFlameNativeReply('What is presence?',[]),/attentive/)
+assert.equal(f.personalFlameNativeReply('What is the capital of France?',[]),null)
+const history=[{role:'user',mode:'native',content:'note: private thought'},{role:'user',mode:'model',content:'public question'}]
+assert.match(f.personalFlameNativeReply('my notes',history),/private thought/)
+assert(!JSON.stringify(f.personalFlameModelContext(history,'next question')).includes('private thought'))
+const route=fs.readFileSync('app/api/personal-flame/route.ts','utf8')
+assert(route.includes('body?.allowExternal!==true'))
+assert(route.includes('WHERE user_id=\${userId}::uuid'))
+assert(route.includes('DELETE FROM weave_personal_flame_turns WHERE user_id=\${user.id}::uuid'))
+assert(!route.includes('body.userId'))
+assert(route.includes('requests<\${PERSONAL_FLAME_DAILY_MODEL_LIMIT}'))
+assert(fs.readFileSync('components/app-header.tsx','utf8').includes('<PersonalFlame key={authUser.id}'))
+console.log('Personal Flame source and native behavior regression passed')

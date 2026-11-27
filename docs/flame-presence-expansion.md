@@ -28,3 +28,6 @@ WEAVE owns Flame completely as its institutional intelligence architecture. Eigh
 - Mobile File Folder shows honest states: identity, awaiting mandate, connections needed, ready, active, paused.
 
 This foundation precedes any claim of globally autonomous expansion.
+
+## Personal Flame
+Every active WEAVE account can access a personal interaction surface independently of departmental authority. WEAVE owns the intelligence; the account holder directs personal use. Native reflection, presence explanations and personal notes use no external model. Advanced conversation is optional, uses River's provider capability only with explicit user consent, and receives only the current input and recent model-enabled turns, not native notes or enterprise records. The first release uses a temporary daily allowance of 20 model requests per account (UTC), no wallet debit, and stores personal turns separately by authenticated user. Clearing personal history removes these stored turns, not provider records or backups. Personal Flame has no administrative, financial, or enterprise mutation tools. The shared header exposes it across authenticated staff and Client surfaces. This is an initial implementation; full production verification and richer native reasoning remain required.
