@@ -5,7 +5,6 @@
  */
 
 import express from 'express'
-import cors from 'cors'
 import pg from 'pg'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import fs from 'fs/promises'
@@ -13,7 +12,12 @@ import path from 'path'
 
 const { Pool } = pg
 const app = express()
-app.use(cors())
+// Retired privileged service: only a non-sensitive health response remains.
+// Do not revive its database or wallet operations; use the authenticated Weave workshops.
+app.use((req,res,next)=>{
+  if(req.method==='GET'&&req.path==='/health') return next()
+  res.status(410).json({error:'Legacy Eight Core retired. Use authenticated Weave workshops.'})
+})
 app.use(express.json({ limit: '50mb' }))
 
 // Database connection - Cloud SQL
