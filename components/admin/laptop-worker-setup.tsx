@@ -26,15 +26,21 @@ export function LaptopWorkerSetup({token}:{token:string|null}){
  const [operation,setOperation]=useState('inspect')
  const [phrase,setPhrase]=useState('')
  const mutation=useRef(false)
+ const activeToken=useRef(token)
+ activeToken.current=token
  const load=useCallback(async()=>{
   if(!token)return
+  try{
   const response=await fetch('/api/admin/laptop-worker',{headers:{Authorization:'Bearer '+token},cache:'no-store',signal:AbortSignal.timeout(12000)})
   const body=await response.json().catch(()=>({}))
+  if(activeToken.current!==token)return
   if(!response.ok||!body.success)throw Error(body.error||'Laptop register unavailable')
   setState(body);setError('')
+  }catch(error){if(activeToken.current===token)throw error}
  },[token])
  useEffect(()=>{
-  if(!token){setState(null);setPairing(null);return}
+  setState(null);setPairing(null);setDeviceId('');setPhrase('');setPairPhrase('')
+  if(!token)return
   const read=()=>{if(document.visibilityState==='visible'&&!mutation.current)void load().catch(e=>{setState(null);setError(e.message)})}
   read();const timer=setInterval(read,15000)
   document.addEventListener('visibilitychange',read)
@@ -53,6 +59,7 @@ export function LaptopWorkerSetup({token}:{token:string|null}){
   try{
    const response=await fetch('/api/admin/laptop-worker',{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify(data)})
    const result=await response.json().catch(()=>({}))
+   if(activeToken.current!==token)return
    if(!response.ok||!result.success)throw Error(result.error||'Laptop action refused')
    if(data.action==='pairing')setPairing({code:result.code,expiresAt:result.expiresAt})
    setPairPhrase('');setPhrase('')
@@ -88,7 +95,7 @@ export function LaptopWorkerSetup({token}:{token:string|null}){
    <div className="space-y-4 rounded-2xl border border-white/10 p-5">
     <h3 className="text-lg font-bold">2. Connect with a one-time code</h3>
     <label className="block space-y-2 text-xs font-semibold">Laptop name<input className={field} value={label} maxLength={80} disabled={busy} onChange={e=>setLabel(e.target.value)}/></label>
-    <p className="text-sm leading-7 text-slate-300">The code expires in ten minutes and can be used once. Paste it only into the reviewed worker on your laptop. Connecting grants that laptop checks and the setup operations you permit locally, for up to 30 days.</p>
+    <p className="text-sm leading-7 text-slate-300">The code expires in ten minutes and can be used once. A new code invalidates your previous unused code. Paste it only into the reviewed worker on your laptop. Connecting grants that laptop checks and the setup operations you permit locally, for up to 30 days.</p>
     <label className="block space-y-2 text-xs font-semibold">Type CONNECT LAPTOP<input className={field} autoComplete="off" value={pairPhrase} disabled={busy} onChange={e=>setPairPhrase(e.target.value)}/></label>
     <button type="button" className={button} disabled={busy||!state||!label.trim()||pairPhrase!=='CONNECT LAPTOP'} onClick={()=>void submit({action:'pairing',label:label.trim(),confirmation:pairPhrase})}>Create connection code</button>
     {pairing&&<div className="space-y-3 rounded-xl border border-amber-200/35 p-4">

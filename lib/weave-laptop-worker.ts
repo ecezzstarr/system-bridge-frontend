@@ -89,9 +89,9 @@ export async function laptopState(){
  return transaction(async db=>{
   await expireJobs(db)
   const devices=await db.query(`SELECT id,label,created_at,expires_at,revoked_at,last_seen_at,snapshot
-   FROM weave_laptop_devices ORDER BY created_at DESC LIMIT 40`)
+   FROM weave_laptop_devices ORDER BY (revoked_at IS NULL AND expires_at>now()) DESC,created_at DESC LIMIT 40`)
   const jobs=await db.query(`SELECT id,device_id,operation,status,created_at,claimed_at,finished_at,result_code
-   FROM weave_laptop_jobs ORDER BY created_at DESC LIMIT 60`)
+   FROM weave_laptop_jobs ORDER BY (status IN ('queued','running')) DESC,created_at DESC LIMIT 60`)
   return {devices:devices.rows.map(device=>({...device,online:!device.revoked_at&&
    new Date(device.expires_at).getTime()>Date.now()&&Boolean(device.last_seen_at&&Date.now()-new Date(device.last_seen_at).getTime()<90000)})),jobs:jobs.rows}
  })
