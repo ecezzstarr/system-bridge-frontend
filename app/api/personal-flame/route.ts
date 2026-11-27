@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { sql } from '@/lib/db'
 import { chatWithRiver } from '@/lib/river-assistant'
+import { runFlameEnvironment } from '@/lib/flame-environment-runtime'
+import type { FlameMovement } from '@/lib/flame-environment'
 import { PERSONAL_FLAME_DAILY_MODEL_LIMIT, PERSONAL_FLAME_MAX_MESSAGE, personalFlameNativeReply, personalFlameModelContext, type PersonalFlameMessage } from '@/lib/personal-flame'
 
 export const dynamic = 'force-dynamic'
@@ -13,6 +15,7 @@ async function ensureSchema(){
     instruction text NOT NULL, response text NOT NULL,
     mode text NOT NULL CHECK(mode IN ('native','model')), created_at timestamptz NOT NULL DEFAULT NOW()
   )`
+  await sql`ALTER TABLE weave_personal_flame_turns ADD COLUMN IF NOT EXISTS movement jsonb`
   await sql`CREATE INDEX IF NOT EXISTS weave_personal_flame_turns_user_time ON weave_personal_flame_turns(user_id,created_at DESC)`
   await sql`CREATE TABLE IF NOT EXISTS weave_personal_flame_usage (
     user_id uuid NOT NULL, usage_day date NOT NULL, requests integer NOT NULL DEFAULT 0,
@@ -20,11 +23,11 @@ async function ensureSchema(){
   )`
 }
 async function history(userId:string):Promise<PersonalFlameMessage[]>{
-  const rows=await sql`SELECT instruction,response,mode FROM weave_personal_flame_turns
+  const rows=await sql`SELECT instruction,response,mode,movement FROM weave_personal_flame_turns
     WHERE user_id=${userId}::uuid ORDER BY created_at DESC,id DESC LIMIT 30`
   return rows.reverse().flatMap(row=>[
     {role:'user' as const,content:String(row.instruction),mode:row.mode as PersonalFlameMessage['mode']},
-    {role:'assistant' as const,content:String(row.response),mode:row.mode as PersonalFlameMessage['mode']},
+    {role:'assistant' as const,content:String(row.response),mode:row.mode as PersonalFlameMessage['mode'],...(row.movement?{movement:row.movement as FlameMovement}:{})},
   ])
 }
 export async function GET(request:NextRequest){
@@ -44,7 +47,8 @@ export async function POST(request:NextRequest){
     if(!message||message.length>PERSONAL_FLAME_MAX_MESSAGE)return reply({error:'Enter a message of up to 4,000 characters.'},400)
     await ensureSchema()
     const previous=await history(user.id)
-    let response=personalFlameNativeReply(message,previous)
+    const movement=await runFlameEnvironment(request,user.role,message)
+    let response=movement?.summary??personalFlameNativeReply(message,previous)
     let mode:'native'|'model'='native'
     if(response===null){
       if(body?.allowExternal!==true)return reply({error:'This question requires advanced conversation. Enable external model assistance to continue, or use a native command.',code:'CONSENT_REQUIRED'},409)
@@ -61,9 +65,9 @@ export async function POST(request:NextRequest){
         return reply({error:'Advanced conversation is temporarily unavailable. No reply was recorded.'},503)
       mode='model'
     }
-    await sql`INSERT INTO weave_personal_flame_turns(user_id,instruction,response,mode)
-      VALUES(${user.id}::uuid,${message},${response},${mode})`
-    return reply({messages:await history(user.id),mode})
+    await sql`INSERT INTO weave_personal_flame_turns(user_id,instruction,response,mode,movement)
+      VALUES(${user.id}::uuid,${message},${response},${mode},${movement?JSON.stringify(movement):null}::jsonb)`
+    return reply({messages:await history(user.id),mode,movement})
   }catch{return reply({error:'Personal Flame could not complete this interaction.'},503)}
 }
 export async function DELETE(request:NextRequest){
