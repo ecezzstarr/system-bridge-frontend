@@ -34,6 +34,12 @@ if(require.main===module)(async()=>{
   process.env.WEAVE_WORKSHOP_ADMIN_IDS=id;assert.deepEqual(lib.operatorIds(),[id])
  }finally{if(saved===undefined)delete process.env.WEAVE_WORKSHOP_ADMIN_IDS;else process.env.WEAVE_WORKSHOP_ADMIN_IDS=saved}
  const worker=read('public/host/weave-laptop-worker.ps1')
+ const wiring=read('tests/wiring.cjs')
+ const normalizeSource=wiring.slice(wiring.indexOf('function normalizeLocal('),wiring.indexOf('\nfunction matches('))
+ const normalize=new Function('fs','path','root',normalizeSource+'\nreturn normalizeLocal')(fs,path,root)
+ assert.equal(normalize('/host/weave-laptop-worker.ps1'),null,'Existing worker download is a public asset')
+ assert.equal(normalize('/host/weave-laptop-worker.ps1?v=1'),null)
+ assert.equal(normalize('/host/definitely-missing-worker.ps1'),'/host/definitely-missing-worker.ps1','Missing downloads must still fail wiring')
  const denied={status:401}
  const adminSource=stripTypeScriptTypes(read('app/api/admin/laptop-worker/route.ts').replace(/^import .*\n/gm,'').replace(/^export /gm,''),{mode:'transform'})
  const admin=new Function('requireWorkshopAuthorization',adminSource+'\nreturn {GET,POST}')(
