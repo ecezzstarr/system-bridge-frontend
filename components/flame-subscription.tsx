@@ -9,6 +9,9 @@ function headers(){const token=getClientToken();return {'Content-Type':'applicat
 export function notifyFlameUsage(){window.dispatchEvent(new Event('weave:flame-usage'))}
 export function FlameSubscriptionPanel(){
  const {user}=useAuth()
+ return user?.id?<FlameSubscriptionAccount key={user.id} accountId={user.id}/>:<p>Sign in to manage Flame usage.</p>
+}
+function FlameSubscriptionAccount({accountId}:{accountId:string}){
  const [subscription,setSubscription]=useState<Subscription|null>(null)
  const [quotes,setQuotes]=useState<Quote[]>([])
  const [busy,setBusy]=useState(false)
@@ -18,7 +21,7 @@ export function FlameSubscriptionPanel(){
  const [pendingPlan,setPendingPlan]=useState<string|null>(null)
  const [loading,setLoading]=useState(true)
  const lock=useRef(false)
- const storageKey=user?.id?'weave:flame-purchase:'+user.id:null
+ const storageKey='weave:flame-purchase:'+accountId
  const pending=useRef<{id:string;planId:string}|null>(null)
  async function refresh(){
   setLoading(true);setError('')
@@ -36,14 +39,17 @@ export function FlameSubscriptionPanel(){
  async function refill(quote:Quote){
   if(busy||lock.current||subscription?.exempt||!storageKey)return
   if(pending.current&&pending.current.planId!==quote.planId){setError('A previous purchase is unconfirmed. Retry that same plan before selecting another.');return}
-  if(!window.confirm('Buy '+quote.name+' with '+quote.units+' usage units for USD '+(quote.usdCents/100).toFixed(2)+'? Maximum wallet debit: '+quote.amountTrx+' TRX. No automatic renewal.'))return
+  if(!window.confirm('Buy '+quote.name+' with '+quote.units+' usage units for USD '+(quote.usdCents/100).toFixed(2)+'? Maximum wallet debit: '+quote.amountTrx+' TRX from your existing WEAVE wallet. No automatic renewal.'))return
   pending.current ||= {id:crypto.randomUUID(),planId:quote.planId}
   lock.current=true;setPendingPlan(quote.planId)
   try{localStorage.setItem(storageKey,JSON.stringify(pending.current))}catch{setError('Purchase reference could not be saved on this device. Enable browser storage and retry.');lock.current=false;return}
   setBusy(true);setError('');setReceipt(null)
   try{
    const r=await fetch('/api/flame-subscription',{method:'POST',headers:headers(),body:JSON.stringify({confirmation:'BUY FLAME USAGE',requestId:pending.current.id,planId:quote.planId,expectedUsdCents:quote.usdCents,maxAmountTrx:quote.amountTrx})})
-   const b=await r.json();if(!r.ok)throw Error(b.error)
+   const b=await r.json();if(!r.ok){
+    if(b.code==='PURCHASE_REJECTED'&&!String(b.error).startsWith('Purchase reference')){pending.current=null;setPendingPlan(null);try{localStorage.removeItem(storageKey)}catch{}}
+    throw Error(b.error)
+   }
    pending.current=null;setPendingPlan(null);try{localStorage.removeItem(storageKey)}catch{};setSubscription(b.subscription);if(b.purchase?.id)setReceipt({id:String(b.purchase.id),units:Number(b.purchase.units)});notifyFlameUsage()
   }catch(e){setError(e instanceof Error?e.message:'Purchase not confirmed. Refresh and retry the same request.')}
   finally{setBusy(false);lock.current=false}
