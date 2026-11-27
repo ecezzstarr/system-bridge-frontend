@@ -56,44 +56,27 @@ const TOOLS = [
   },
 ]
 
-function redactRow(row: Record<string, any>) {
-  const out: Record<string, any> = {}
-  for (const [k, v] of Object.entries(row)) {
-    out[k] = /password|secret|token|private_key/i.test(k) ? '[REDACTED]' : v
-  }
-  return out
-}
-
 async function toolGetSchema() {
   try {
-    const tables = await sql`
-      SELECT table_name FROM information_schema.tables
-      WHERE table_schema = 'public' ORDER BY table_name
+    // A bounded metadata query instead of one database round trip per table.
+    const rows=await sql`
+      SELECT table_name,column_name,data_type,is_nullable
+      FROM information_schema.columns WHERE table_schema='public'
+      ORDER BY table_name,ordinal_position LIMIT 1501
     `
-    const schema: Record<string, any[]> = {}
-    for (const t of tables as any[]) {
-      const columns = await sql`
-        SELECT column_name, data_type, is_nullable
-        FROM information_schema.columns
-        WHERE table_name = ${t.table_name} AND table_schema = 'public'
-        ORDER BY ordinal_position
-      `
-      schema[t.table_name] = (columns as any[]).map(c => ({
-        column: c.column_name,
-        type: c.data_type,
-        nullable: c.is_nullable === 'YES',
-      }))
+    const schema:Record<string,any[]>=Object.create(null)
+    for(const row of rows.slice(0,1500)){
+      const table=String(row.table_name)
+      if(!schema[table])schema[table]=[]
+      schema[table].push({column:row.column_name,type:row.data_type,nullable:row.is_nullable==='YES'})
     }
-    return { schema, tableCount: Object.keys(schema).length }
-  } catch (err: any) {
-    return { error: err.message || 'Schema fetch failed' }
-  }
+    return {schema,tableCount:Object.keys(schema).length,truncated:rows.length>1500}
+  }catch{return {error:'Database metadata unavailable'}}
 }
 
 async function executeTool(name: string, args: any, institutional: {actorId:string;topic:string|null}|null) {
   if (!institutional) return {error:'Appointed Code Workshop operator required'}
   if (['read_continuity_evidence','read_canonical_source','discover_public_research'].includes(name)) {
-    if (!institutional) return {error:'Appointed Code Workshop operator required'}
     try {
       if(name==='read_continuity_evidence') return await readContinuityEvidence()
       if(name==='read_canonical_source') return await readContinuitySource(institutional.actorId,String(args?.path||''),args?.directory===true)
@@ -127,6 +110,7 @@ async function runToolLoop(
   }))
 
   let lastError = ''
+  let toolCallsRemaining=12
 
   for (const modelName of GOOGLE_AI_MODELS) {
     try {
@@ -138,7 +122,6 @@ async function runToolLoop(
 
       let workingContents: any[] = [...baseContents]
       const MAX_ITERATIONS = 10
-      let returned = false
 
       for (let iteration = 0; iteration < MAX_ITERATIONS; iteration++) {
         const result = await model.generateContent({
@@ -152,7 +135,7 @@ async function runToolLoop(
 
         if (functionCallParts.length === 0) {
           const text = parts.map((p: any) => p.text || '').join('')
-          if (text) { returned = true; return text }
+          if (text) return text
           lastError = `Empty response from ${modelName} (finishReason: ${candidate?.finishReason || 'unknown'})`
           break
         }
@@ -163,7 +146,9 @@ async function runToolLoop(
         for (const part of functionCallParts) {
           const { name, args } = (part as any).functionCall
           console.log(`[EIGHT tool call ${iteration + 1}/${MAX_ITERATIONS}] ${modelName} -> ${name}`)
-          const toolResult = await executeTool(name, args, institutional)
+          const toolResult = toolCallsRemaining-- > 0
+            ? await executeTool(name, args, institutional).catch(()=>({error:'Tool operation unavailable'}))
+            : {error:'Tool budget reached. Summarize verified findings and remaining work.'}
           responseParts.push({ functionResponse: { name, response: { result: toolResult } } })
         }
 
@@ -240,9 +225,10 @@ export async function POST(request: NextRequest) {
     const messages: Array<{ role: string; content: string }> = []
     if (conversationHistory && Array.isArray(conversationHistory)) {
       for (const msg of conversationHistory.slice(-10)) {
+        if(!msg||typeof msg.content!=='string'||!['user','eight'].includes(msg.role))continue
         messages.push({
           role: msg.role === 'eight' ? 'assistant' : 'user',
-          content: msg.content,
+          content: msg.content.slice(0,8000),
         })
       }
     }
@@ -264,7 +250,7 @@ export async function POST(request: NextRequest) {
         `
         const prior = (priorRows as any[]).reverse().map(r => ({
           role: r.role === 'eight' ? 'assistant' : 'user',
-          content: r.content,
+          content: String(r.content||'').slice(0,8000),
         }))
         messages.unshift(...prior.filter(p => p.content !== command))
       } catch (err) {
