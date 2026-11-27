@@ -3,7 +3,7 @@ import { getAuthUser } from '@/lib/auth-api'
 import { sql } from '@/lib/db'
 import { chatWithRiver } from '@/lib/river-assistant'
 import { withFlameUsage } from '@/lib/flame-usage'
-import { flameOperationIntent } from '@/lib/flame-environment'
+import { flameOperationIntent, flameFollowupDirection } from '@/lib/flame-environment'
 import { runFlameEnvironment } from '@/lib/flame-environment-runtime'
 import type { FlameMovement } from '@/lib/flame-environment'
 import { PERSONAL_FLAME_DAILY_MODEL_LIMIT, PERSONAL_FLAME_MAX_MESSAGE, personalFlameNativeReply, nativeFlameClarification, personalFlameModelContext, type PersonalFlameMessage } from '@/lib/personal-flame'
@@ -47,13 +47,15 @@ export async function POST(request:NextRequest){
     const body=await request.json().catch(()=>null)
     const message=typeof body?.message==='string'?body.message.trim():''
     if(!message||message.length>PERSONAL_FLAME_MAX_MESSAGE)return reply({error:'Enter a message of up to 4,000 characters.'},400)
-    if(body?.previewOnly===true)return reply({movement:await runFlameEnvironment(request,user.role,message,true)})
     await ensureSchema()
     const previous=await history(user.id)
-    const intent=flameOperationIntent(message)
+    const priorMovement=previous[previous.length-1]?.movement
+    const operationMessage=flameFollowupDirection(user.role,message,priorMovement)??message
+    if(body?.previewOnly===true)return reply({movement:await runFlameEnvironment(request,user.role,operationMessage,true)})
+    const intent=flameOperationIntent(operationMessage)
     const native=personalFlameNativeReply(message,previous,user.role)
     const operation=async()=>{
-    const movement=await runFlameEnvironment(request,user.role,message)
+    const movement=await runFlameEnvironment(request,user.role,operationMessage)
     let response=movement?.summary??native??(body?.allowExternal!==true?nativeFlameClarification(message,user.role):null)
     let mode:'native'|'model'='native'
     if(response===null){
