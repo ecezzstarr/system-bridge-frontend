@@ -28,7 +28,7 @@ export function AppHeader({ user }: AppHeaderProps) {
   const { user: authUser, logout } = useAuth()
   const effectiveUser = user || (authUser ? { name: authUser.name || 'WEAVE User', role: authUser.role || 'user', avatar: authUser.avatar || undefined } : undefined)
   const [accountOpen, setAccountOpen] = useState(false)
-  const openPersonalFlame=()=>window.dispatchEvent(new Event('weave:personal-flame'))
+  const openPersonalFlame=()=>router.push('/flame')
   const [flameCoinBalance, setFlameCoinBalance] = useState<number | null>(null)
   const [carrierOpen, setCarrierOpen] = useState(false)
 
@@ -232,7 +232,7 @@ export function AppHeader({ user }: AppHeaderProps) {
           <Wallet className="h-4 w-4 text-cyan-300" />
         </Button>
 
-        {authUser?.id&&<button type="button" onClick={openPersonalFlame} aria-label="Open Personal Flame" className="h-9 w-9 shrink-0 rounded-full text-amber-300"><Flame className="mx-auto h-4 w-4"/></button>}
+        {authUser?.id&&<button type="button" onClick={openPersonalFlame} aria-label="Enter Flame building" className="h-9 w-9 shrink-0 rounded-full text-amber-300"><Flame className="mx-auto h-4 w-4"/></button>}
         <div className="shrink-0" data-phone-chrome="signal">
           <NotificationBell position="phone" />
         </div>
@@ -291,7 +291,7 @@ export function AppHeader({ user }: AppHeaderProps) {
             {accountOpen && renderAccountMenu('right')}
           </div>
 
-          {authUser?.id&&<button type="button" onClick={openPersonalFlame} aria-label="Open Personal Flame" className="flex items-center gap-1.5 text-xs font-bold text-amber-300"><Flame className="h-4 w-4"/>Flame</button>}
+          {authUser?.id&&<button type="button" onClick={openPersonalFlame} aria-label="Enter Flame building" className="flex items-center gap-1.5 text-xs font-bold text-amber-300"><Flame className="h-4 w-4"/>Flame</button>}
           <NotificationBell position="desktop" />
         </div>
       </div>
