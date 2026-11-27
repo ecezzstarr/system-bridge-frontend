@@ -236,6 +236,7 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
         {label:'WEAVE Integrity Engine',href:'/admin/dev-workshop',detail:'Inspect and safely repair live WEAVE system state.'},
         {label:'Origin Systems',href:'/admin/origin-systems',detail:'Inspect origin runtime and system foundations.'},
         {label:'Infrastructure',href:'/admin/infrastructure',detail:'Inspect WEAVE host, health checks and maintenance.'},
+        {label:'Weave One Training Workshop',href:'/admin/flame-training',detail:'Train and evaluate the native language model, activate or restore private pilot checkpoints.'},
         {label:'Release Workshop',href:'/admin/release-workshop',detail:'Request verified production deployment or historical rollback and observe host verification.',daily:true},
         {label:'Visual Systems · Interaction in Motion',href:'/admin/visual-systems',detail:'Govern live Flame, River, route current and visual runtime.'},
         {label:'Image House · Commercial Production',href:'/image-workshop',detail:'Personalize WEAVE original illustrations, license customer work and record System Switch production earnings.'},

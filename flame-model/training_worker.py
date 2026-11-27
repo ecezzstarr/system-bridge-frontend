@@ -22,8 +22,10 @@ TOKEN = re.compile(r"[A-Za-z0-9_-]{32,128}")
 def now():
     return datetime.now(timezone.utc).isoformat()
 def digest(path):
+    h=hashlib.sha256()
     with path.open("rb") as f:
-        return hashlib.file_digest(f, "sha256").hexdigest()
+        for chunk in iter(lambda:f.read(1024*1024),b""):h.update(chunk)
+    return h.hexdigest()
 def read(path):
     return json.loads(path.read_text(encoding="utf-8"))
 def atomic(path, value):
@@ -156,10 +158,12 @@ class Workshop:
             from flame_lm import load
             import torch
             torch.set_num_threads(2)
-            candidate=load(folder/"model.pt")
             old=self.active()
+            if old["current"] and old["current"]["checkpoint"]==sha and old["current"]["id"]==ident and self.model_sha==sha:
+                return old
+            candidate=load(folder/"model.pt")
             current={"id":ident,"checkpoint":sha,"actor":actor,"activatedAt":now()}
-            atomic(self.active_path,{"current":current,"previous":old["current"] if old["current"]!=current else old["previous"]})
+            atomic(self.active_path,{"current":current,"previous":old["current"] if old["current"] and old["current"]["id"]!=ident else old["previous"]})
             self.model,self.model_sha=candidate,sha
             return self.active()
     def deactivate(self, actor):
