@@ -18,6 +18,7 @@ for(const space of ADMIN_SPACES)for(const item of space.stations)add(item.href,i
 for(const role of ['agent','bridger','client','admin'])for(const item of getRolePlaces(role))add(item.href,item.label,item.detail)
 
 const entrances:readonly (readonly [string,string,string])[]=[
+  ['/flame','Flame','Enter Weave intelligence to understand the company, retrieve your interaction history, manage usage and perform supported workshop operations.'],
   ['/','The Company of Time','Give your work a place and your dreams a living form through the people, services and systems of Weave.'],
   ['/company-grounds/3d','Company Grounds · Live 3D','Orbit the company buildings, select a department or public place, and follow its authorized entrance without losing the official homepage.'],
   ['/admin','Administrations · A Time','Return to your company responsibilities, decisions and working records.'],
