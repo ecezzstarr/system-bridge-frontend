@@ -287,7 +287,7 @@ export async function POST(request: NextRequest) {
 
     const nativeHistory:PersonalFlameMessage[]=messages.slice(0,-1).map(m=>({role:m.role==='assistant'?'assistant':'user',content:m.content,mode:'native'}))
     const useExternal=/^advanced:\s*\S/i.test(command)
-    const text = useExternal ? await runToolLoop(messages, EIGHT_SYSTEM_PROMPT, institutional) : await nativeEight(command,String(userId),nativeHistory)
+    const text = useExternal ? await runToolLoop([{role:'user',content:command}], EIGHT_SYSTEM_PROMPT, institutional) : await nativeEight(command,String(userId),nativeHistory)
 
     const codeBlocks: Array<{
       id: string
