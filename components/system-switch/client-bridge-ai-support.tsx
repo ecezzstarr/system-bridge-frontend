@@ -1,10 +1,9 @@
 'use client'
-import { UsdValue, useUsdValue } from '@/components/usd-value'
+import {FlameSubscriptionPanel,notifyFlameUsage} from '@/components/flame-subscription'
 
 import { useEffect, useRef, useState } from 'react'
 import { Bot, Send, Sparkles } from 'lucide-react'
 import { getClientToken } from '@/lib/client-auth'
-import { isNativeFlameCommand } from '@/lib/company-flame'
 
 type SupportMessage = {
   id?: string
@@ -14,14 +13,12 @@ type SupportMessage = {
 }
 
 export function ClientBridgeAiSupport() {
-  const usd = useUsdValue()
   const [messages,setMessages]=useState<SupportMessage[]>([])
   const [identity,setIdentity]=useState<any>(null)
   const [input,setInput]=useState('')
   const [loading,setLoading]=useState(true)
   const [sending,setSending]=useState(false)
   const [error,setError]=useState('')
-  const [billing,setBilling]=useState<{feeFlameCoin:number;walletBalanceFlameCoin:number;currency:string}|null>(null)
   const endRef=useRef<HTMLDivElement|null>(null)
 
   useEffect(()=>{
@@ -37,7 +34,6 @@ export function ClientBridgeAiSupport() {
         if(!response.ok)throw new Error(body.error||'Unable to load Bridge AI')
         setMessages(Array.isArray(body.messages)?body.messages:[])
         setIdentity(body.identity||null)
-        setBilling(body.billing||null)
       }catch(e:any){
         setError(e?.message||'Unable to load Bridge AI')
       }finally{
@@ -93,17 +89,10 @@ export function ClientBridgeAiSupport() {
       const body=await response.json()
       if(!response.ok)throw new Error(body.error||'Bridge AI support is unavailable')
       if(body.message)setMessages(current=>[...current,body.message])
-      if(body.billing){
-        setBilling(current=>({
-          feeFlameCoin:Number(current?.feeFlameCoin ?? body.billing.chargedFlameCoin ?? 0),
-          walletBalanceFlameCoin:Number(body.billing.walletBalanceFlameCoin ?? current?.walletBalanceFlameCoin ?? 0),
-          currency:String(body.billing.currency||current?.currency||'Flame Coin'),
-        }))
-      }
     }catch(e:any){
       setError(e?.message||'Bridge AI support is unavailable')
     }finally{
-      setSending(false)
+      setSending(false);notifyFlameUsage()
     }
   }
 
@@ -119,7 +108,7 @@ export function ClientBridgeAiSupport() {
               <p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.2em] text-sky-300">Client AI Support</p>
               <h3 className="mt-1 text-lg font-black text-white">File Folder Flame</h3>
               <p className="mt-1 max-w-2xl text-xs leading-5 text-slate-400">
-                You direct your enterprise; WEAVE owns Flame and operates the technical systems through your authorized instructions. Ask about formation and active systems. Status, show builds and show systems are free native commands; other assisted replies retain the displayed fee.
+                You direct your enterprise; WEAVE owns Flame and operates the technical systems through your authorized instructions. Ask about formation and active systems. All Flame replies use your shared usage subscription; actual enterprise costs remain separate.
               </p>
             </div>
           </div>
@@ -127,11 +116,10 @@ export function ClientBridgeAiSupport() {
             <span className="rounded-full border border-emerald-300/15 bg-emerald-400/5 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.14em] text-emerald-200">
               {identity?.assignedBridger ? 'Bridger: ' + identity.assignedBridger.name : (identity?.continuity==='crossing-linked'?'Crossing linked':'Continuity active')}
             </span>
-            {billing&&<span className="rounded-full border border-amber-300/15 bg-amber-400/5 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.12em] text-amber-200">
-              <UsdValue trx={billing.feeFlameCoin} /> / assisted reply
-            </span>}
+
           </div>
         </div>
+        <FlameSubscriptionPanel />
       </header>
 
       <div className="max-h-[380px] min-h-[220px] space-y-3 overflow-y-auto p-4 md:p-5">
@@ -159,7 +147,7 @@ export function ClientBridgeAiSupport() {
       <div className="border-t border-white/10 bg-black/20 p-4">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2 text-[9px]">
           <span className="text-slate-500">Bridge AI assistance is a Client File Folder service.</span>
-          {billing&&<span className="font-black text-amber-200">Wallet: <UsdValue trx={billing.walletBalanceFlameCoin} /></span>}
+
         </div>
         {error&&<p className="mb-2 text-xs font-bold text-rose-300">{error}</p>}
         <div className="flex gap-2">
@@ -182,7 +170,7 @@ export function ClientBridgeAiSupport() {
             className="inline-flex w-12 items-center justify-center rounded-2xl bg-sky-400 text-slate-950 disabled:opacity-40"
             aria-label="Send to Bridge AI"
           >
-            <span className="sr-only">{isNativeFlameCommand(input) ? 'Send free native command' : billing ? `Send for ${usd(billing.feeFlameCoin)}` : 'Send to Flame'}</span>
+            <span className="sr-only">Send to Flame</span>
             <Send className="h-4 w-4"/>
           </button>
         </div>

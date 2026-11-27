@@ -1,6 +1,7 @@
 'use client'
 import { useEffect,useRef,useState } from 'react'
 import { Flame,X,Minus } from 'lucide-react'
+import {FlameSubscriptionPanel,notifyFlameUsage} from '@/components/flame-subscription'
 import {useRouter,usePathname} from 'next/navigation'
 import {useAuth} from '@/lib/auth-provider'
 import type {FlameMovement} from '@/lib/flame-environment'
@@ -47,7 +48,7 @@ export function PersonalFlame({onClose}:{onClose:()=>void}){
       if(b.movement?.state==='verified')window.dispatchEvent(new Event('weave:flame-workshop-confirmed'))
       if(b.movement?.navigate&&pathname!==b.movement.navigate.split(/[?#]/)[0])navigate(b.movement.navigate)
     }catch(e){setError(e instanceof Error?e.message:'Interaction unavailable.')}
-    finally{setBusy(false);executionRef.current=false}
+    finally{setBusy(false);executionRef.current=false;notifyFlameUsage()}
   }
   async function send(value:string){
     if(busy||executionRef.current||!value.trim())return
@@ -87,6 +88,7 @@ export function PersonalFlame({onClose}:{onClose:()=>void}){
       <div className="flex items-center gap-2"><Flame className="h-6 w-6 text-amber-300"/><div><h2 className="font-bold">Personal Flame</h2><p className="text-xs text-slate-400">WEAVE-owned intelligence · your personal interaction</p></div></div>
       <div className="flex gap-1"><button type="button" onClick={()=>setCompact(true)} aria-label="Minimize Flame to observe environment" className="p-2"><Minus className="h-5 w-5"/></button><button type="button" disabled={busy} onClick={onClose} aria-label="Close Personal Flame" className="rounded-lg p-2"><X className="h-5 w-5"/></button></div>
     </div>
+    <FlameSubscriptionPanel />
     <div className="my-3 min-h-0 flex-1 overflow-y-auto rounded-xl border border-white/10 p-3" aria-live="polite">
       {!messages.length&&<p className="text-sm text-slate-300">What are you trying to understand, imagine or work through? Ask about presence, life, learning or everyday matters.</p>}
       {messages.map((m,i)=><div key={i} className={'mb-3 rounded-lg p-3 text-sm '+(m.role==='user'?'bg-white/10':'bg-amber-400/10')}><p className="mb-1 text-[10px] font-bold uppercase text-amber-200">{m.role==='user'?'You':'Flame · '+m.mode}</p><p className="whitespace-pre-wrap break-words">{m.content}</p>{m.movement&&<div className="mt-2 space-y-2"><p className="text-xs text-amber-200">{m.movement.state==='verified'?'Workshop confirmed':m.movement.state==='blocked'?'Not confirmed':'Direction ready'}</p>{m.movement.directions.map(d=><div key={d.href}><button type="button" onClick={()=>navigate(d.href)} className="text-left text-xs font-bold text-amber-200 underline">{d.title}</button><p className="text-xs text-slate-300">{d.detail}</p><p className="text-[10px] text-slate-400">{d.requirements}</p></div>)}</div>}</div>)}
@@ -96,7 +98,7 @@ export function PersonalFlame({onClose}:{onClose:()=>void}){
     <label className="my-3 flex items-start gap-2 text-xs leading-5 text-slate-300"><input type="checkbox" checked={advanced} onChange={e=>setAdvanced(e.target.checked)} className="mt-1"/><span>Enable advanced conversation. Your current message and recent model-assisted turns may be sent to configured external model providers. Native notes are not included automatically. Do not share passwords or confidential information.</span></label>
     {error&&<p role="alert" className="mb-2 text-xs text-amber-200">{error}</p>}
     <form onSubmit={e=>{e.preventDefault();void send(input)}} className="flex items-end gap-2"><textarea ref={field} value={input} onChange={e=>setInput(e.target.value)} maxLength={4000} rows={2} placeholder="Speak with Flame…" className="min-w-0 flex-1 rounded-xl border border-white/15 bg-white/5 p-2 text-sm"/><button type="submit" disabled={busy||!input.trim()} className="rounded-xl bg-amber-300 px-4 py-3 text-sm font-bold text-slate-950 disabled:opacity-40">{busy?'Working…':'Send'}</button></form>
-    <div className="mt-2 flex items-center justify-between gap-2 text-[10px] text-slate-400"><span>Saved to your WEAVE account. Native interactions do not use external AI.</span><button type="button" disabled={busy} onClick={()=>void clear()} className="shrink-0 underline">Clear history</button></div>
+    <div className="mt-2 flex items-center justify-between gap-2 text-[10px] text-slate-400"><span>Saved to your WEAVE account. Native interactions use no external AI but count toward usage.</span><button type="button" disabled={busy} onClick={()=>void clear()} className="shrink-0 underline">Clear history</button></div>
   </div>
 }
 

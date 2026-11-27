@@ -1,4 +1,5 @@
 'use client'
+import {FlameSubscriptionPanel,notifyFlameUsage} from '@/components/flame-subscription'
 import { UsdValue, useUsdValue } from '@/components/usd-value'
 import { isBuildPartCompatible } from '@/lib/file-folder-build-compatibility'
 import { quoteFileFolderBlueprint } from '@/lib/file-folder-build-quote'
@@ -286,7 +287,7 @@ export default function FileFolderOpenWorld({
       setMessage(label)
       return false
     } finally {
-      setBusy('')
+      setBusy('');notifyFlameUsage()
     }
   }
 
@@ -357,6 +358,7 @@ export default function FileFolderOpenWorld({
 
   return (
     <section className="overflow-clip rounded-[1.35rem] border border-amber-200/10 bg-[#02080d] shadow-[0_30px_100px_rgba(0,0,0,.42)] md:rounded-[2rem]" data-construction-workspace="progressive-site">
+      <div className="px-4 pt-2"><FlameSubscriptionPanel /></div>
       <details className="ff-construction-overview">
         <summary>Territory overview <span>Identity, network &amp; resources</span></summary>
       <header className="border-b border-amber-100/10 bg-[radial-gradient(circle_at_18%_0%,rgba(249,115,22,.11),transparent_30%),linear-gradient(180deg,rgba(73,45,24,.22),rgba(2,8,13,.02))] px-4 py-4 md:p-8">
