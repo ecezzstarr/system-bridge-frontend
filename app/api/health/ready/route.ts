@@ -43,5 +43,11 @@ export async function GET(){
   releaseSha:/^[0-9a-f]{40}$/i.test(process.env.WEAVE_RELEASE_SHA||'')?
     process.env.WEAVE_RELEASE_SHA:null,
   checks,
+  host:{
+   provider:process.env.WEAVE_HOST_PROVIDER==='weave-owned'?'weave-owned':
+    process.env.WEAVE_HOST_PROVIDER==='oracle'?'oracle':'unverified',
+   nodeId:/^[a-z][a-z0-9-]{5,63}$/.test(process.env.WEAVE_SOVEREIGN_NODE_ID||'')?
+    process.env.WEAVE_SOVEREIGN_NODE_ID:null,
+  },
  },{status:ready?200:503,headers:{'Cache-Control':'no-store, max-age=0'}})
 }

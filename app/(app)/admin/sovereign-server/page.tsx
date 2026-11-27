@@ -4,6 +4,7 @@ import {useCallback,useEffect,useState} from 'react'
 import {ArrowLeft,CheckCircle2,RefreshCw,Server,ShieldAlert,XCircle} from 'lucide-react'
 import {useAuth} from '@/lib/auth-provider'
 import {WeaveSovereignHostMove} from '@/components/admin/weave-sovereign-host-move'
+import {WeaveSovereignSetup,type SovereignSetup} from '@/components/admin/weave-sovereign-setup'
 const tests=[
  {key:'independent_host',label:'Independent Weave-owned candidate',info:'Dedicated host configured outside Oracle; operational ownership still needs physical verification.'},
  {key:'hardware',label:'Compute and disk capacity',info:'At least four CPUs, eight GiB RAM and 32 GiB free at time of check.'},
@@ -17,10 +18,11 @@ const tests=[
 ] as const
 type NodeReport={nodeId:string;provider:string;observedAt:string;receivedAt:string;
  releaseSha:string|null;checks:Record<string,boolean>;reportedReady:boolean;fresh:boolean;ready:boolean;
- sharedCurrentDatabase:boolean;continuityMode:string}
+ sharedCurrentDatabase:boolean;continuityMode:string;matchesCurrentRelease:boolean}
 export default function SovereignServerPage(){
  const {token,user,isInitialized}=useAuth()
  const [nodes,setNodes]=useState<NodeReport[]>([])
+ const [setup,setSetup]=useState<SovereignSetup|null>(null)
  const [busy,setBusy]=useState(false)
  const [error,setError]=useState('')
  const [loaded,setLoaded]=useState(false)
@@ -33,11 +35,19 @@ export default function SovereignServerPage(){
    const body=await res.json().catch(()=>({}))
    if(!res.ok||!body.success)throw Error(body.error||'Server reports unavailable')
    setNodes(body.nodes||[])
+   setSetup(body.setup||null)
    setLoaded(true)
-  }catch(e){setError(e instanceof Error?e.message:'Server register unavailable')}
+  }catch(e){setNodes([]);setSetup(null);setError(e instanceof Error?e.message:'Server register unavailable')}
   finally{setBusy(false)}
  },[token])
- useEffect(()=>{if(token&&user?.role==='admin')void load()},[token,user?.role,load])
+ useEffect(()=>{
+  if(!token||user?.role!=='admin')return
+  void load()
+  const timer=setInterval(()=>{if(document.visibilityState==='visible')void load()},30000)
+  const refresh=()=>{if(document.visibilityState==='visible')void load()}
+  document.addEventListener('visibilitychange',refresh)
+  return ()=>{clearInterval(timer);document.removeEventListener('visibilitychange',refresh)}
+ },[token,user?.role,load])
  if(!isInitialized)return <main className="p-6 text-white">Opening Weave infrastructure evidence…</main>
  if(user?.role!=='admin')return <main className="p-6 text-white">Administrations required.</main>
  return <main className="min-h-dvh bg-[#081725] px-4 py-8 text-white" data-weave-sovereign-server="candidate-observation-only">
@@ -49,6 +59,7 @@ export default function SovereignServerPage(){
     <p className="mt-4 max-w-4xl text-sm leading-7 text-slate-200">Prepare a separate company-controlled host, measure its actual readiness and record progress without interrupting the Oracle production server. Readiness never changes DNS, starts a release or migrates customer records.</p>
     <p className="mt-3 text-sm font-bold text-[#f6daa8]">Oracle remains production until the company completes and independently authorizes a reversible migration.</p>
    </header>
+   <WeaveSovereignSetup setup={setup}/>
    <div className="flex flex-wrap items-center justify-between gap-3">
     <h2 className="text-xl font-bold">Candidate host verification</h2>
     <button type="button" disabled={busy} onClick={()=>void load()}
@@ -67,7 +78,8 @@ export default function SovereignServerPage(){
       <div><h3 className="text-2xl font-bold">{node.nodeId}</h3>
        <p className="mt-1 text-xs text-slate-300">Candidate host · {node.provider} · Last report {new Date(node.receivedAt).toLocaleString()}</p>
        <p className="mt-1 break-all text-[11px] text-slate-400">Application release {node.releaseSha||'unverified'}</p>
-       <p className={'mt-2 text-xs '+(node.sharedCurrentDatabase?'text-cyan-100':'text-amber-100')}>{node.sharedCurrentDatabase?'Configured for the same current production database':'Existing production database continuity NOT established'}</p></div>
+       <p className={'mt-2 text-xs '+(node.sharedCurrentDatabase?'text-cyan-100':'text-amber-100')}>{node.sharedCurrentDatabase?'Configured for the same current production database':'Existing production database continuity NOT established'}</p>
+       <p className={'mt-2 text-xs '+(node.matchesCurrentRelease?'text-cyan-100':'text-amber-100')}>{node.matchesCurrentRelease?'Matches current production release':'Current production release match NOT established'}</p></div>
      </div>
      <span className={'rounded-full border px-3 py-2 text-xs font-bold '+(node.ready?'border-cyan-200/40 text-cyan-100':'border-amber-200/35 text-amber-100')}>
       {node.ready?'Readiness evidence complete · cutover not authorized':node.fresh?'Preparation incomplete':'Report stale · host status unknown'}

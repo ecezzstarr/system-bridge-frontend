@@ -50,6 +50,7 @@ export function WeaveSovereignHostMove({nodes}:{nodes:NodeReport[]}){
  const current=plans.find(p=>!['confirmed','cancelled'].includes(p.stage))||null
  const choice=nodes.find(n=>n.nodeId===nodeId)||null
  const choices=nodes.filter(n=>n.ready&&n.sharedCurrentDatabase)
+ useEffect(()=>{setPhrase('');setChecked({})},[current?.id,current?.stage])
  const submit=async(action:string,data:Record<string,unknown>)=>{
   if(!token)return
   setBusy(true);setError('');setNotice('')
@@ -70,7 +71,7 @@ export function WeaveSovereignHostMove({nodes}:{nodes:NodeReport[]}){
  const checks=(items:readonly {key:string;label:string}[])=>
   <div className="mt-4 space-y-3">
    {items.map(item=><label key={item.key} className="flex cursor-pointer items-start gap-3 rounded-xl border border-white/10 bg-white/[.035] p-4">
-    <input type="checkbox" checked={Boolean(checked[item.key])}
+    <input type="checkbox" disabled={busy} checked={Boolean(checked[item.key])}
      onChange={e=>setChecked(previous=>({...previous,[item.key]:e.target.checked}))}
      className="mt-1 h-5 w-5 shrink-0 accent-cyan-200"/>
     <span className="text-sm leading-6 text-slate-200">{item.label}</span>
@@ -79,7 +80,7 @@ export function WeaveSovereignHostMove({nodes}:{nodes:NodeReport[]}){
  const ready=(items:readonly {key:string;label:string}[])=>items.every(item=>checked[item.key]===true)
  const entry=(expected:string,label:string)=><label className="mt-5 block text-xs font-semibold text-amber-100">
   Type {expected} to confirm this recorded step
-  <input className={field} autoComplete="off" value={phrase} onChange={e=>setPhrase(e.target.value)} placeholder={expected}/>
+  <input className={field} aria-label={label+' confirmation'} disabled={busy} autoComplete="off" value={phrase} onChange={e=>setPhrase(e.target.value)} placeholder={expected}/>
  </label>
  return <section className="space-y-5 rounded-3xl border border-[#e8c997]/25 bg-[#0c2335] p-5 text-white sm:p-8"
   data-weave-sovereign-manual-move="company-authorized">
@@ -101,13 +102,13 @@ export function WeaveSovereignHostMove({nodes}:{nodes:NodeReport[]}){
    <p className="text-sm leading-6 text-slate-300">Only candidates with recent passing readiness evidence AND the same existing production database endpoint may be selected. This comparison verifies configuration, not ownership or full record reconciliation.</p>
    {choices.length===0?<p className="text-sm text-amber-100">No ready candidate using the same production database has reported. Oracle stays active.</p>:
     <label className="block text-xs font-semibold text-slate-200">Verified candidate
-     <select className={field} value={nodeId} onChange={e=>setNodeId(e.target.value)}>
+    <select className={field} disabled={busy} value={nodeId} onChange={e=>setNodeId(e.target.value)}>
       <option value="">Choose a separate host</option>
       {choices.map(node=><option key={node.nodeId} value={node.nodeId}>{node.nodeId} · {node.releaseSha?.slice(0,12)}</option>)}
      </select>
     </label>}
    <label className="block text-xs font-semibold text-slate-200">Candidate's public IPv4 address
-    <input className={field} value={targetIpv4} onChange={e=>setTargetIpv4(e.target.value)} placeholder="Server's real public IPv4 address"/>
+    <input className={field} disabled={busy} value={targetIpv4} onChange={e=>setTargetIpv4(e.target.value)} placeholder="Server's real public IPv4 address"/>
    </label>
    <button type="button" className={button} disabled={busy||!choice?.ready||!choice?.sharedCurrentDatabase||!targetIpv4.trim()}
     onClick={()=>void submit('prepare',{nodeId,targetIpv4:targetIpv4.trim()})}>
