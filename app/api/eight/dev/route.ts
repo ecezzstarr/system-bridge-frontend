@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { sql } from '@/lib/db'
 import { VertexAI } from '@google-cloud/vertexai'
-import { readFile, readdir } from 'fs/promises'
-import { join } from 'path'
 import { recordToScroll } from '@/lib/eight'
 import { EIGHT_SYSTEM_PROMPT } from '@/lib/eight-constants'
 import { safePublicWebRead } from '@/lib/eight-web'
@@ -14,8 +12,6 @@ const vertexAI = new VertexAI({
   project: process.env.GOOGLE_CLOUD_PROJECT || 'ssbr-495208',
   location: 'us-central1',
 })
-
-const PROJECT_ROOT = process.cwd()
 
 const GOOGLE_AI_MODELS = ['gemini-2.5-flash', 'gemini-2.5-pro']
 
@@ -45,27 +41,6 @@ const TOOLS = [
         parameters: {
           type: 'OBJECT',
           properties: { directory: { type: 'STRING', description: 'Relative directory path. Defaults to project root.' } },
-        },
-      },
-      {
-        name: 'search_files',
-        description: 'Search all project source files for a text pattern, e.g. a function name or a table name, to find where it is used.',
-        parameters: {
-          type: 'OBJECT',
-          properties: {
-            pattern: { type: 'STRING' },
-            directory: { type: 'STRING' },
-          },
-          required: ['pattern'],
-        },
-      },
-      {
-        name: 'run_select_query',
-        description: 'Run a read-only SELECT query against the live database to inspect real data (row counts, sample rows). Only SELECT is allowed.',
-        parameters: {
-          type: 'OBJECT',
-          properties: { query: { type: 'STRING' } },
-          required: ['query'],
         },
       },
       {
@@ -115,101 +90,8 @@ async function toolGetSchema() {
   }
 }
 
-async function toolReadFile(filename: string) {
-  if (!filename || typeof filename !== 'string') return { error: 'filename required' }
-  if (filename.includes('..')) return { error: 'Path traversal not allowed' }
-  if (/node_modules|\.next|\.git|\.env|secret|credential/i.test(filename)) {
-    return { error: 'Access to this file is restricted' }
-  }
-  const fullPath = join(PROJECT_ROOT, filename)
-  if (!fullPath.startsWith(PROJECT_ROOT)) return { error: 'Invalid path' }
-  try {
-    const content = await readFile(fullPath, 'utf-8')
-    const truncated = content.length > 8000
-    return {
-      path: filename,
-      content: truncated ? content.slice(0, 8000) + '\n...[truncated]' : content,
-      truncated,
-    }
-  } catch {
-    return { error: `File not found: ${filename}` }
-  }
-}
-
-async function toolListFiles(directory: string = '.') {
-  const fullPath = join(PROJECT_ROOT, directory)
-  if (!fullPath.startsWith(PROJECT_ROOT)) return { error: 'Invalid path' }
-  try {
-    const entries = await readdir(fullPath, { withFileTypes: true })
-    const files = entries
-      .filter(e => !e.name.startsWith('.') && e.name !== 'node_modules' && e.name !== '.next')
-      .map(e => ({ name: e.name, isDirectory: e.isDirectory() }))
-    return { directory, files }
-  } catch {
-    return { error: `Directory not found: ${directory}` }
-  }
-}
-
-async function toolSearchFiles(pattern: string, directory: string = '.') {
-  if (!pattern) return { error: 'pattern required' }
-  const results: Array<{ path: string; line: number; content: string }> = []
-
-  const searchDir = async (dir: string): Promise<void> => {
-    if (results.length >= 30) return
-    const fullPath = join(PROJECT_ROOT, dir)
-    if (!fullPath.startsWith(PROJECT_ROOT)) return
-    let entries
-    try {
-      entries = await readdir(fullPath, { withFileTypes: true })
-    } catch {
-      return
-    }
-    for (const e of entries) {
-      if (results.length >= 30) return
-      if (e.name.startsWith('.') || e.name === 'node_modules' || e.name === '.next') continue
-      const entryPath = `${dir}/${e.name}`.replace(/^\.\//, '')
-      if (e.isDirectory()) {
-        await searchDir(entryPath)
-      } else if (e.name.match(/\.(tsx?|jsx?|json|md|css)$/)) {
-        try {
-          const content = await readFile(join(fullPath, e.name), 'utf-8')
-          const lines = content.split('\n')
-          lines.forEach((line, idx) => {
-            if (results.length < 30 && line.toLowerCase().includes(pattern.toLowerCase())) {
-              results.push({ path: entryPath, line: idx + 1, content: line.trim().slice(0, 200) })
-            }
-          })
-        } catch {}
-      }
-    }
-  }
-
-  await searchDir(directory)
-  return { pattern, matches: results, count: results.length }
-}
-
-async function toolRunSelectQuery(query: string) {
-  if (!query || typeof query !== 'string') return { error: 'query required' }
-  const trimmed = query.trim()
-  const lower = trimmed.toLowerCase()
-  if (!lower.startsWith('select') && !lower.startsWith('with')) {
-    return { error: 'Only SELECT (or WITH ... SELECT) queries are allowed via this tool.' }
-  }
-  const blocked = ['insert ', 'update ', 'delete ', 'drop ', 'alter ', 'truncate ', 'grant ', 'revoke ', 'create ']
-  if (blocked.some(k => lower.includes(k))) {
-    return { error: 'Query contains a disallowed write keyword.' }
-  }
-  try {
-    const rows = await sql(trimmed as any)
-    const rowsArr = Array.isArray(rows) ? rows : []
-    const limited = rowsArr.slice(0, 50).map(redactRow)
-    return { rowCount: rowsArr.length, rows: limited, truncated: rowsArr.length > 50 }
-  } catch (err: any) {
-    return { error: err.message || 'Query failed' }
-  }
-}
-
 async function executeTool(name: string, args: any, institutional: {actorId:string;topic:string|null}|null) {
+  if (!institutional) return {error:'Appointed Code Workshop operator required'}
   if (['read_continuity_evidence','read_canonical_source','discover_public_research'].includes(name)) {
     if (!institutional) return {error:'Appointed Code Workshop operator required'}
     try {
@@ -223,13 +105,9 @@ async function executeTool(name: string, args: any, institutional: {actorId:stri
     case 'get_schema':
       return toolGetSchema()
     case 'read_file':
-      return toolReadFile(args?.filename)
+      return readContinuitySource(institutional.actorId,String(args?.filename||''))
     case 'list_files':
-      return toolListFiles(args?.directory || '.')
-    case 'search_files':
-      return toolSearchFiles(args?.pattern, args?.directory || '.')
-    case 'run_select_query':
-      return toolRunSelectQuery(args?.query)
+      return readContinuitySource(institutional.actorId,String(args?.directory||'app'),true)
     case 'read_public_web':
       try { return await safePublicWebRead(args?.url) }
       catch (error) { return { error: error instanceof Error ? error.message : 'Web read failed' } }
@@ -356,8 +234,8 @@ export async function POST(request: NextRequest) {
 
     // Development and research conversations must not initiate financial movements.
     const workshop = await requireWorkshopAuthorization(request)
-    const institutional = workshop.authorized && String(workshop.session.user.id) === String(userId)
-      ? {actorId:String(userId),topic:publicResearchTopic(command)} : null
+    if (!workshop.authorized || String(workshop.session.user.id) !== String(userId)) return NextResponse.json({error:'Appointed Code Workshop operator required'},{status:403})
+    const institutional = {actorId:String(userId),topic:publicResearchTopic(command)}
 
     const messages: Array<{ role: string; content: string }> = []
     if (conversationHistory && Array.isArray(conversationHistory)) {
