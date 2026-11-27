@@ -1,6 +1,6 @@
 # Flame Language Model v0
 
-One Weave-owned model foundation, with distinct Eight, River and Echo roles supplied by authorized runtime context. This is an experimental from-scratch causal Transformer, not a production-ready conversational model or an external provider wrapper. The existing production Flame engine remains unchanged.
+One Weave-owned model foundation, with distinct Eight, River and Echo roles supplied by authorized runtime context. This is an experimental from-scratch causal Transformer, not a production-ready conversational model or an external provider wrapper. The existing production Flame engine remains unchanged. An isolated, opt-in Model Lab is available to Administrations for testing the private service; no model output enters operational conversation history.
 
 ## Private account corpus
 
@@ -26,13 +26,35 @@ The demonstration corpus contains 12 synthetic institutional dialogues (14 train
 
 ## Flame Words
 
-The optional --knowledge argument reads a local reviewed JSONL knowledge index. Each record has source_id, scope:"institutional", status:"current", approved:true, and text. The prototype ranks overlapping words; it is not a semantic or device-local personal memory engine. It provides reference text to the model, not authority. Older corrections should remain in the private source archive; only current approved institutional facts enter this index. Retrieved references may be truncated by the small context window. Extend context budgeting and evaluate retrieval before release.
+The optional --knowledge argument reads a local reviewed JSONL knowledge index. Each record has source_id, scope:"institutional", status:"current", approved:true, and text. The prototype ranks overlapping words; it is not a semantic or device-local personal memory engine. institutional_seed.jsonl contains curated institutional principles from the project discussions, not raw account conversations. It provides reference text to the model, not authority. Older corrections should remain in the private source archive; only current approved institutional facts enter this index. Retrieved references may be truncated by the small context window. Extend context budgeting and evaluate retrieval before release.
 
 ## Release gates
 
 1. Review a representative, rights-cleared corpus and assess training compute and target quality. A small account archive alone cannot establish a general-purpose language model trained from scratch.
 2. Evaluate held-out conversations, natural phrasing, multi-turn comprehension, refusal/uncertainty, privacy leakage, injection and hallucination. Validation loss is not an understanding or accuracy score.
-3. Implement an authenticated internal inference service, bounded concurrency, observability without raw personal logs, versioned checkpoints and rollback. Do not expose the research CLI to the public.
+3. The private inference service and Administrations-only laboratory are implemented for evaluation. Production observability, load tests, operational release approval and rollback remain required. Do not expose the research service or CLI to the public.
 4. Implement device-first personal memories separately and obtain explicit consent for transmitting selected context if inference is server-side. Never train shared weights on private user memory automatically.
-5. Integrate into Flame conversation only after evaluation. The runtime alone checks permissions, current records, billing, confirmation and authorized action execution. Model-generated text cannot execute tools or assert completed actions. No deployment, production subscription changes or provider replacement are part of this PR.
+5. Integrate into normal Flame conversation only after evaluation. The runtime alone checks permissions, current records, billing, confirmation and authorized action execution. Model-generated text cannot execute tools or assert completed actions. No deployment, production subscription changes or provider replacement are part of this PR.
 
+
+## Administrations model laboratory
+
+On the company-controlled machine, install the Python dependencies in an isolated environment. Train with a reviewed corpus and run the checkpoint-specific diagnostic evaluation:
+
+```
+python flame-model/evaluate.py /private/flame-demo.pt /private/evaluation.json --knowledge flame-model/institutional_seed.jsonl
+```
+
+The existing 80-step demonstration checkpoint was manually probed on Weave, Agent work, earnings and device memory. Its output was incoherent. It is not approved for participants. Diagnostic keyword scores do not replace human assessment.
+
+Generate a random token (for example with Python secrets.token_urlsafe(48)) and calculate the SHA-256 of the selected trusted checkpoint. Configure the same WEAVE_FLAME_LM_TOKEN in the Python process and Next.js server. Set WEAVE_FLAME_LM_CHECKPOINT_SHA256 in Next.js to that exact hash and WEAVE_FLAME_LM_PILOT=true only for a controlled evaluation environment. Leave it unset for normal production.
+
+```
+python flame-model/serve.py /private/flame-demo.pt --knowledge flame-model/institutional_seed.jsonl
+```
+
+The service binds only to 127.0.0.1:8765, authenticates every request, rejects oversized or malformed conversations, limits concurrent generation, and has no tool interface. The Next.js server must share its loopback network namespace (e.g., same machine/process network); the app does not accept a caller-supplied URL. Do not expose port 8765 through a public proxy or firewall. Restart both processes with the correct token and checkpoint pin if the artifact changes. Do not commit tokens, private corpora, weights or private evaluation reports.
+
+Sign in as Administrations, open Flame and select Model Lab. Health checks confirm checkpoint identity. Tests are temporary browser-session messages, separate from the normal Flame chat, billing and action runtime. There is no external-provider fallback. Model Lab remains unavailable when configuration is missing or the identity differs. Model quality is not inferred from service health.
+
+The shared model for all Flame types and migration of existing participant memories remain future release work. A model trained from the complete account export cannot be produced until the archive is supplied, reviewed and trained.
