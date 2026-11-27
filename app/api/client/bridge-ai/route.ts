@@ -1,3 +1,4 @@
+import {flameCreativeIntent,runCreativeProduction} from '@/lib/weave-creative-production'
 import {flameWebQuery,flameWebSearchReply} from '@/lib/flame-web-search'
 import { withFlameUsage, flameUsageStatus } from '@/lib/flame-usage'
 import { FLAME_INSTITUTION, nativeFlameReply, resolveNativeFolderConnection } from '@/lib/company-flame'
@@ -233,6 +234,13 @@ export async function POST(request: NextRequest) {
         FROM instruction RETURNING id,sender_type,content,created_at
       `
       return NextResponse.json({success:true,message:saved,native:true},{headers:{'Cache-Control':'private, no-store'}})
+    }
+    const creative=flameCreativeIntent(message)
+    if(creative){
+      const result=await runCreativeProduction({id:String(ctx.client.id),role:'client'},{...creative,allowProvider:true,requestId:body.requestId})
+      if(!result.ok)return result
+      const output=await result.json()
+      return record(output.kind==='image'?'Image saved privately. Open /image-workshop/production to view it.':String(output.content||''))
     }
     const webQuery=flameWebQuery(message)
     if(webQuery!==null)return await withFlameUsage(String(ctx.client.id),'client','workshop_operation',async()=>{
