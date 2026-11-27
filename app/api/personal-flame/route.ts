@@ -1,3 +1,4 @@
+import {flameWebQuery,flameWebSearchReply} from '@/lib/flame-web-search'
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { sql } from '@/lib/db'
@@ -52,11 +53,12 @@ export async function POST(request:NextRequest){
     const priorMovement=previous[previous.length-1]?.movement
     const operationMessage=flameFollowupDirection(user.role,message,priorMovement)??message
     if(body?.previewOnly===true)return reply({movement:await runFlameEnvironment(request,user.role,operationMessage,true)})
+    const webQuery=flameWebQuery(message)
     const intent=flameOperationIntent(operationMessage)
     const native=personalFlameNativeReply(message,previous,user.role)
     const operation=async()=>{
-    const movement=await runFlameEnvironment(request,user.role,operationMessage)
-    let response=movement?.summary??native??(body?.allowExternal!==true?nativeFlameClarification(message,user.role):null)
+    const movement=webQuery!==null?null:await runFlameEnvironment(request,user.role,operationMessage)
+    let response=(webQuery!==null?await flameWebSearchReply(user.id,webQuery):null)??movement?.summary??native??(body?.allowExternal!==true?nativeFlameClarification(message,user.role):null)
     let mode:'native'|'model'='native'
     if(response===null){
       if(body?.allowExternal!==true)return reply({error:'This question requires advanced conversation. Enable external model assistance to continue, or use a native command.',code:'CONSENT_REQUIRED'},409)
@@ -77,6 +79,7 @@ export async function POST(request:NextRequest){
       VALUES(${user.id}::uuid,${message},${response},${mode},${movement?JSON.stringify(movement):null}::jsonb)`
     return reply({messages:await history(user.id),mode,movement})
     }
+    if(webQuery!==null)return await withFlameUsage(user.id,user.role,'workshop_operation',async()=>{try{return await operation()}catch(error){return reply({error:error instanceof Error?error.message:'Web search unavailable.'},503)}})
     if(intent?.kind==='navigate')return await operation()
     return await withFlameUsage(user.id,user.role,intent?'workshop_operation':(native!==null||body?.allowExternal!==true)?'native_reply':'model_reply',operation,b=>b.movement?.state!=='blocked')
   }catch{return reply({error:'Personal Flame could not complete this interaction.'},503)}
