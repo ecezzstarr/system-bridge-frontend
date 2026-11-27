@@ -1,3 +1,4 @@
+import {flameWebQuery,flameWebSearchReply} from '@/lib/flame-web-search'
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { sql } from '@/lib/db'
@@ -209,6 +210,8 @@ export async function GET(request: NextRequest) {
 async function nativeEight(command:string,actorId:string,history:PersonalFlameMessage[]):Promise<string>{
  const q=command.trim()
  try{
+  const webQuery=flameWebQuery(q)
+  if(webQuery!==null){try{return await flameWebSearchReply(actorId,webQuery)}catch(error){return error instanceof Error?error.message:'Web search unavailable.'}}
   const topic=publicResearchTopic(q)
   if(topic){
    const r=await discoverResearch(topic)
@@ -225,7 +228,7 @@ async function nativeEight(command:string,actorId:string,history:PersonalFlameMe
    return 'Canonical GitHub evidence (not necessarily the deployed release):\n'+JSON.stringify(r,null,2).slice(0,18000)
   }
   if(/^(?:help|what can you do|who are you)[.!?]*$/i.test(q))
-   return 'I am Eight, the Administrations expression of Weave Flame. Without a model I can inspect release evidence, read permitted canonical source, list directories and discover public research. Try check production status, read source lib/company-flame.ts, list directory lib, or research: a public topic. Source edits and deployment retain independent workshop authorization. Prefix a request with advanced: only if you intentionally want external model assistance for broader analysis or code synthesis.'
+   return 'I am Eight, the Administrations expression of Weave Flame. Without a model I can inspect release evidence, read permitted canonical source, list directories and discover public research. Try check production status, read source lib/company-flame.ts, list directory lib, web search: a public topic, or research: a public topic. Source edits and deployment retain independent workshop authorization. Prefix a request with advanced: only if you intentionally want external model assistance for broader analysis or code synthesis.'
   return personalFlameNativeReply(q,history,'admin')??nativeFlameClarification(q,'admin')
  }catch{return 'The native operation could not verify the requested evidence. Inspect the original workshop before acting; no change was confirmed.'}
 }
