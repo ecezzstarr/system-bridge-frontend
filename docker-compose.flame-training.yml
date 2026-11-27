@@ -1,0 +1,23 @@
+# Optional, explicitly provisioned research worker; never exposes a public port.
+services:
+  flame-training:
+    build:
+      context: .
+      dockerfile: flame-model/Dockerfile.training
+    network_mode: "service:weave"
+    depends_on:
+      weave:
+        condition: service_healthy
+    restart: unless-stopped
+    environment:
+      WEAVE_FLAME_TRAINING_TOKEN: ${WEAVE_FLAME_TRAINING_TOKEN:?Set the private training token}
+    volumes:
+      - weave-one-private:/private/weave-one
+    mem_limit: 2g
+    cpus: 2
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+volumes:
+  weave-one-private:

@@ -71,3 +71,13 @@ The service binds only to 127.0.0.1:8765, authenticates every request, rejects o
 Sign in as Administrations, open Flame and select Model Lab. Health checks confirm checkpoint identity. Tests are temporary browser-session messages, separate from the normal Flame chat, billing and action runtime. There is no external-provider fallback. Model Lab remains unavailable when configuration is missing or the identity differs. Model quality is not inferred from service health.
 
 The shared model for all Flame types and migration of existing participant memories remain future release work. A model trained from the complete account export cannot be produced until the archive is supplied, reviewed and trained.
+
+## Training Workshop (Administrations)
+
+Use Flame → Model Lab → Weave One Training Workshop. The privileged workshop authorization is required. On a company-controlled private machine or a separately provisioned host sharing the app network namespace, install the Python dependencies, provision a private directory outside the checkout, set a random WEAVE_FLAME_TRAINING_TOKEN in both the app and worker, then run:
+
+```
+python flame-model/training_worker.py --root /private/weave-one
+````
+
+The worker listens only on 127.0.0.1:8766, with no public ports. For Docker, use the optional compose overlay in the same project and keep its private volume backed up. Set the token in selfhost/.env first; do not enable this resource-intensive worker on a constrained live host until capacity is verified. The worker receives only manually approved JSONL, never automatically collected conversation history. The interface hashes each corpus, starts bounded CPU research runs, evaluates the candidate, and activates a selected exact checkpoint only for Administrations pilot inference. A previous evaluated checkpoint can be restored, or the pilot deactivated. This does NOT connect experimental outputs to normal Flame conversation. The independent legacy loopback Model Laboratory remains separate. Human review, representative benchmarks, privacy tests, capacity and production authorization remain necessary before public rollout. No real participant data or model weights belong in Git. Keep the private volume accessible only to authorized operators.
