@@ -1,6 +1,9 @@
 'use client'
 import { useEffect,useRef,useState } from 'react'
-import { Flame,X } from 'lucide-react'
+import { Flame,X,Minus } from 'lucide-react'
+import {useRouter,usePathname} from 'next/navigation'
+import {useAuth} from '@/lib/auth-provider'
+import type {FlameMovement} from '@/lib/flame-environment'
 import { getClientToken } from '@/lib/client-auth'
 import type { PersonalFlameMessage } from '@/lib/personal-flame'
 
@@ -9,6 +12,14 @@ function headers():Record<string,string>{
   return {'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})}
 }
 export function PersonalFlame({onClose}:{onClose:()=>void}){
+  const router=useRouter(),pathname=usePathname()
+  const [compact,setCompact]=useState(false)
+  const [movement,setMovement]=useState<FlameMovement|null>(null)
+  const [destination,setDestination]=useState('')
+  function navigate(href:string){
+    if(!/^\/(?!\/)[a-zA-Z0-9_/#:.?=&-]*$/.test(href))return
+    setDestination(href);setCompact(true);router.push(href)
+  }
   const [messages,setMessages]=useState<PersonalFlameMessage[]>([])
   const [input,setInput]=useState('')
   const [advanced,setAdvanced]=useState(false)
@@ -32,31 +43,46 @@ export function PersonalFlame({onClose}:{onClose:()=>void}){
     try{
       const r=await fetch('/api/personal-flame',{method:'POST',headers:headers(),body:JSON.stringify({message:value,allowExternal:advanced})})
       const b=await r.json();if(!r.ok)throw Error(b.error)
-      setMessages(b.messages||[]);setInput('')
+      setMessages(b.messages||[]);setInput('');setMovement(b.movement||null)
+      if(b.movement?.navigate)navigate(b.movement.navigate)
     }catch(e){setError(e instanceof Error?e.message:'Interaction unavailable.')}
     finally{setBusy(false)}
   }
   async function clear(){
     if(busy||!window.confirm('Clear all Personal Flame conversation records and notes from WEAVE? This does not clear external provider records or backups.'))return
     setBusy(true);setError('')
-    try{const r=await fetch('/api/personal-flame',{method:'DELETE',headers:headers()});const b=await r.json();if(!r.ok)throw Error(b.error);setMessages([])}
+    try{const r=await fetch('/api/personal-flame',{method:'DELETE',headers:headers()});const b=await r.json();if(!r.ok)throw Error(b.error);setMessages([]);setMovement(null);setDestination('')}
     catch(e){setError(e instanceof Error?e.message:'Unable to clear conversation.')}
     finally{setBusy(false)}
   }
+  if(compact)return <div className="fixed bottom-4 right-3 z-[90] w-[min(92vw,24rem)] rounded-2xl border border-amber-400/30 bg-slate-950 p-3 text-white shadow-2xl"><div className="flex items-center justify-between"><button type="button" onClick={()=>setCompact(false)} className="flex items-center gap-2 text-sm font-bold text-amber-200"><Flame className="h-5 w-5"/>Flame · expand</button><button onClick={onClose} aria-label="Close Flame"><X className="h-4 w-4"/></button></div><p className="mt-2 text-xs text-slate-300">{busy?'Flame is awaiting a workshop response.':destination?(pathname===destination.split(/[?#]/)[0]?'Environment route opened. Its access and records remain independently verified.':'Requested environment: '+destination+' · waiting for route or access decision.'):movement?.summary||'Your interaction remains open.'}</p>{error&&<p role="alert" className="mt-2 text-xs text-amber-200">{error}</p>}{movement&&<><p className="mt-2 text-xs">{movement.state==='verified'?'Workshop confirmed: ':movement.state==='blocked'?'Not confirmed: ':'Direction: '}{movement.summary}</p>{movement.directions.map(d=><button key={d.href} onClick={()=>navigate(d.href)} className="mt-2 block text-left text-xs text-amber-200 underline">{d.title} — {d.detail}</button>)}</>}</div>
   return <div className="fixed inset-x-2 top-16 z-[90] mx-auto flex max-h-[calc(100dvh-5rem)] max-w-xl flex-col rounded-2xl border border-amber-400/30 bg-slate-950 p-4 text-white shadow-2xl" role="dialog" aria-label="Personal Flame" onKeyDown={e=>{if(e.key==='Escape')onClose()}}>
     <div className="flex items-center justify-between gap-2">
       <div className="flex items-center gap-2"><Flame className="h-6 w-6 text-amber-300"/><div><h2 className="font-bold">Personal Flame</h2><p className="text-xs text-slate-400">WEAVE-owned intelligence · your personal interaction</p></div></div>
-      <button type="button" onClick={onClose} aria-label="Close Personal Flame" className="rounded-lg p-2"><X className="h-5 w-5"/></button>
+      <div className="flex gap-1"><button type="button" onClick={()=>setCompact(true)} aria-label="Minimize Flame to observe environment" className="p-2"><Minus className="h-5 w-5"/></button><button type="button" onClick={onClose} aria-label="Close Personal Flame" className="rounded-lg p-2"><X className="h-5 w-5"/></button></div>
     </div>
     <div className="my-3 min-h-0 flex-1 overflow-y-auto rounded-xl border border-white/10 p-3" aria-live="polite">
       {!messages.length&&<p className="text-sm text-slate-300">What are you trying to understand, imagine or work through? Ask about presence, life, learning or everyday matters.</p>}
-      {messages.map((m,i)=><div key={i} className={'mb-3 rounded-lg p-3 text-sm '+(m.role==='user'?'bg-white/10':'bg-amber-400/10')}><p className="mb-1 text-[10px] font-bold uppercase text-amber-200">{m.role==='user'?'You':'Flame · '+m.mode}</p><p className="whitespace-pre-wrap break-words">{m.content}</p></div>)}
+      {messages.map((m,i)=><div key={i} className={'mb-3 rounded-lg p-3 text-sm '+(m.role==='user'?'bg-white/10':'bg-amber-400/10')}><p className="mb-1 text-[10px] font-bold uppercase text-amber-200">{m.role==='user'?'You':'Flame · '+m.mode}</p><p className="whitespace-pre-wrap break-words">{m.content}</p>{m.movement&&<div className="mt-2 space-y-2"><p className="text-xs text-amber-200">{m.movement.state==='verified'?'Workshop confirmed':m.movement.state==='blocked'?'Not confirmed':'Direction ready'}</p>{m.movement.directions.map(d=><div key={d.href}><button type="button" onClick={()=>navigate(d.href)} className="text-left text-xs font-bold text-amber-200 underline">{d.title}</button><p className="text-xs text-slate-300">{d.detail}</p><p className="text-[10px] text-slate-400">{d.requirements}</p></div>)}</div>}</div>)}
       <div ref={end}/>
     </div>
-    <div className="flex flex-wrap gap-2 text-xs">{['presence','reflect','my notes','help'].map(v=><button key={v} type="button" disabled={busy} onClick={()=>void send(v)} className="rounded-full border border-white/15 px-3 py-1.5 disabled:opacity-40">{v}</button>)}</div>
+    <div className="flex flex-wrap gap-2 text-xs">{['presence','reflect','my notes','help','find my work'].map(v=><button key={v} type="button" disabled={busy} onClick={()=>void send(v)} className="rounded-full border border-white/15 px-3 py-1.5 disabled:opacity-40">{v}</button>)}</div>
     <label className="my-3 flex items-start gap-2 text-xs leading-5 text-slate-300"><input type="checkbox" checked={advanced} onChange={e=>setAdvanced(e.target.checked)} className="mt-1"/><span>Enable advanced conversation. Your current message and recent model-assisted turns may be sent to configured external model providers. Native notes are not included automatically. Do not share passwords or confidential information.</span></label>
     {error&&<p role="alert" className="mb-2 text-xs text-amber-200">{error}</p>}
     <form onSubmit={e=>{e.preventDefault();void send(input)}} className="flex items-end gap-2"><textarea ref={field} value={input} onChange={e=>setInput(e.target.value)} maxLength={4000} rows={2} placeholder="Speak with Flame…" className="min-w-0 flex-1 rounded-xl border border-white/15 bg-white/5 p-2 text-sm"/><button type="submit" disabled={busy||!input.trim()} className="rounded-xl bg-amber-300 px-4 py-3 text-sm font-bold text-slate-950 disabled:opacity-40">{busy?'Working…':'Send'}</button></form>
     <div className="mt-2 flex items-center justify-between gap-2 text-[10px] text-slate-400"><span>Saved to your WEAVE account. Native interactions do not use external AI.</span><button type="button" disabled={busy} onClick={()=>void clear()} className="shrink-0 underline">Clear history</button></div>
   </div>
+}
+
+/** Mounted once above departmental layouts so Flame survives internal navigation. */
+export function PersonalFlameHost(){
+ const {user,isAuthenticated}=useAuth()
+ const [open,setOpen]=useState(false)
+ useEffect(()=>{
+  setOpen(false)
+  const toggle=()=>setOpen(v=>!v)
+  window.addEventListener('weave:personal-flame',toggle)
+  return ()=>window.removeEventListener('weave:personal-flame',toggle)
+ },[user?.id])
+ return isAuthenticated&&user?.id&&open?<PersonalFlame key={user.id} onClose={()=>setOpen(false)}/>:null
 }
