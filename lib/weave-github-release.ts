@@ -79,6 +79,18 @@ export async function releaseProductionCheck(sha:string,branch:'main'|'pull_requ
   return checkFromRuns(await readWorkflowRuns(search),sha,branch)
 }
 
+/** Security evidence is independently required for the same exact commit.
+ * A production build is not a substitute for the security workflow. */
+export async function releaseSecurityCheck(sha:string,branch:'main'|'pull_request'){
+  if(!githubReleaseSha(sha))throw new Error('A full Git commit SHA is required')
+  const search=new URLSearchParams({
+    head_sha:sha,per_page:'30',...(branch==='main'?{branch:'main'}:{event:'pull_request'}),
+  })
+  const data=await github('/actions/workflows/security-check.yml/runs?'+search)
+  if(!Array.isArray(data?.workflow_runs))throw new Error('GitHub security workflow evidence unavailable')
+  return checkFromRuns(data.workflow_runs,sha,branch)
+}
+
 async function githubMainSha(){
   const branch=await github('/branches/main')
   const sha=String(branch?.commit?.sha||'').toLowerCase()
@@ -96,6 +108,7 @@ export async function assertDeployableMain(expected:string){
   const candidate=await githubMainCandidate()
   if(candidate.sha!==expected.toLowerCase())throw new Error('main changed since it was inspected. Refresh the GitHub release board.')
   if(candidate.check.state!=='passed')throw new Error('Current main has not passed GitHub Production Check')
+  if((await releaseSecurityCheck(candidate.sha,'main')).state!=='passed')throw new Error('Current main has not passed WEAVE Security Check')
   return candidate
 }
 
@@ -241,6 +254,7 @@ export async function mergeApprovedWorkPull(input:{number:number;headSha:string;
     throw new Error('The pull request changed after review. Refresh before authorizing.')
   const check=await releaseProductionCheck(head,'pull_request')
   if(check.state!=='passed')throw new Error('This pull request has not passed its Production Check')
+  if((await releaseSecurityCheck(head,'pull_request')).state!=='passed')throw new Error('This pull request has not passed WEAVE Security Check')
   if(pr?.mergeable===false || pr?.mergeable_state==='blocked'||pr?.mergeable_state==='dirty')
     throw new Error('GitHub reports conflicts or required reviews/checks are still blocking the merge')
   await ensurePromotionAudit()
