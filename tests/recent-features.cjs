@@ -1089,7 +1089,7 @@ for(const source of [authLoginShieldSource,authRegisterShieldSource,clientLoginS
 }
 assert.ok(eightWebSource.includes("Private/local hosts are not allowed"),'EIGHT web reader blocks local/private hostnames')
 assert.ok(eightWebSource.includes('lookup(hostname'),"EIGHT web reader resolves DNS before outbound requests")
-assert.ok(eightWebSource.includes("redirect:'manual'"),'EIGHT web reader revalidates redirects')
+assert.ok(eightWebSource.includes('hostname:target.address')&&eightWebSource.includes('validatePublicUrl(new URL(response.location,current.url)'),'EIGHT pins the checked address and revalidates every redirect')
 assert.ok(eightDevSource.includes("name: 'read_public_web'"),'EIGHT can use the safe public web reader')
 assert.ok(eightDevSource.includes('safePublicWebRead'),'EIGHT web tool is backed by the protected web reader')
 assert.ok(cloudControlSource.includes('GoogleAuth'),'Cloud deployment uses Google Application Default Credentials')

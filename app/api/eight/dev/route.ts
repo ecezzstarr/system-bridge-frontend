@@ -2,24 +2,25 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { sql } from '@/lib/db'
 import { VertexAI } from '@google-cloud/vertexai'
-import { readFile, readdir } from 'fs/promises'
-import { join } from 'path'
 import { recordToScroll } from '@/lib/eight'
 import { EIGHT_SYSTEM_PROMPT } from '@/lib/eight-constants'
 import { safePublicWebRead } from '@/lib/eight-web'
+import { requireWorkshopAuthorization } from '@/lib/workshop-auth'
+import { readContinuityEvidence, readContinuitySource, publicResearchTopic, discoverResearch } from '@/lib/flame-institutional-intelligence'
 
 const vertexAI = new VertexAI({
   project: process.env.GOOGLE_CLOUD_PROJECT || 'ssbr-495208',
   location: 'us-central1',
 })
 
-const PROJECT_ROOT = process.cwd()
-
 const GOOGLE_AI_MODELS = ['gemini-2.5-flash', 'gemini-2.5-pro']
 
 const TOOLS = [
   {
     functionDeclarations: [
+      {name:'read_continuity_evidence',description:'Read current release worker heartbeat, active release and recent release outcomes. Use before diagnosing company continuity; this is not a full health check.',parameters:{type:'OBJECT',properties:{}}},
+      {name:'read_canonical_source',description:'Read a permitted source file or list a permitted directory from canonical GitHub main. Returns source SHA and truncation status.',parameters:{type:'OBJECT',properties:{path:{type:'STRING'},directory:{type:'BOOLEAN'}},required:['path']}},
+      {name:'discover_public_research',description:'Discover scholarly sources for the exact public topic explicitly entered by the Administrator as research: topic. No model-generated query is accepted.',parameters:{type:'OBJECT',properties:{}}},
       {
         name: 'get_schema',
         description: 'Get the full live PostgreSQL schema (all tables and their columns/types) for the SSBNOW database. Use this before writing or explaining any SQL.',
@@ -43,27 +44,6 @@ const TOOLS = [
         },
       },
       {
-        name: 'search_files',
-        description: 'Search all project source files for a text pattern, e.g. a function name or a table name, to find where it is used.',
-        parameters: {
-          type: 'OBJECT',
-          properties: {
-            pattern: { type: 'STRING' },
-            directory: { type: 'STRING' },
-          },
-          required: ['pattern'],
-        },
-      },
-      {
-        name: 'run_select_query',
-        description: 'Run a read-only SELECT query against the live database to inspect real data (row counts, sample rows). Only SELECT is allowed.',
-        parameters: {
-          type: 'OBJECT',
-          properties: { query: { type: 'STRING' } },
-          required: ['query'],
-        },
-      },
-      {
         name: 'read_public_web',
         description: 'Read a public HTTP(S) web page for current information. Private networks, localhost, credential URLs, binary downloads, and unsafe redirects are blocked.',
         parameters: {
@@ -76,146 +56,41 @@ const TOOLS = [
   },
 ]
 
-function redactRow(row: Record<string, any>) {
-  const out: Record<string, any> = {}
-  for (const [k, v] of Object.entries(row)) {
-    out[k] = /password|secret|token|private_key/i.test(k) ? '[REDACTED]' : v
-  }
-  return out
-}
-
 async function toolGetSchema() {
   try {
-    const tables = await sql`
-      SELECT table_name FROM information_schema.tables
-      WHERE table_schema = 'public' ORDER BY table_name
+    // A bounded metadata query instead of one database round trip per table.
+    const rows=await sql`
+      SELECT table_name,column_name,data_type,is_nullable
+      FROM information_schema.columns WHERE table_schema='public'
+      ORDER BY table_name,ordinal_position LIMIT 1501
     `
-    const schema: Record<string, any[]> = {}
-    for (const t of tables as any[]) {
-      const columns = await sql`
-        SELECT column_name, data_type, is_nullable
-        FROM information_schema.columns
-        WHERE table_name = ${t.table_name} AND table_schema = 'public'
-        ORDER BY ordinal_position
-      `
-      schema[t.table_name] = (columns as any[]).map(c => ({
-        column: c.column_name,
-        type: c.data_type,
-        nullable: c.is_nullable === 'YES',
-      }))
+    const schema:Record<string,any[]>=Object.create(null)
+    for(const row of rows.slice(0,1500)){
+      const table=String(row.table_name)
+      if(!schema[table])schema[table]=[]
+      schema[table].push({column:row.column_name,type:row.data_type,nullable:row.is_nullable==='YES'})
     }
-    return { schema, tableCount: Object.keys(schema).length }
-  } catch (err: any) {
-    return { error: err.message || 'Schema fetch failed' }
-  }
+    return {schema,tableCount:Object.keys(schema).length,truncated:rows.length>1500}
+  }catch{return {error:'Database metadata unavailable'}}
 }
 
-async function toolReadFile(filename: string) {
-  if (!filename || typeof filename !== 'string') return { error: 'filename required' }
-  if (filename.includes('..')) return { error: 'Path traversal not allowed' }
-  if (/node_modules|\.next|\.git|\.env|secret|credential/i.test(filename)) {
-    return { error: 'Access to this file is restricted' }
-  }
-  const fullPath = join(PROJECT_ROOT, filename)
-  if (!fullPath.startsWith(PROJECT_ROOT)) return { error: 'Invalid path' }
-  try {
-    const content = await readFile(fullPath, 'utf-8')
-    const truncated = content.length > 8000
-    return {
-      path: filename,
-      content: truncated ? content.slice(0, 8000) + '\n...[truncated]' : content,
-      truncated,
-    }
-  } catch {
-    return { error: `File not found: ${filename}` }
-  }
-}
-
-async function toolListFiles(directory: string = '.') {
-  const fullPath = join(PROJECT_ROOT, directory)
-  if (!fullPath.startsWith(PROJECT_ROOT)) return { error: 'Invalid path' }
-  try {
-    const entries = await readdir(fullPath, { withFileTypes: true })
-    const files = entries
-      .filter(e => !e.name.startsWith('.') && e.name !== 'node_modules' && e.name !== '.next')
-      .map(e => ({ name: e.name, isDirectory: e.isDirectory() }))
-    return { directory, files }
-  } catch {
-    return { error: `Directory not found: ${directory}` }
-  }
-}
-
-async function toolSearchFiles(pattern: string, directory: string = '.') {
-  if (!pattern) return { error: 'pattern required' }
-  const results: Array<{ path: string; line: number; content: string }> = []
-
-  const searchDir = async (dir: string): Promise<void> => {
-    if (results.length >= 30) return
-    const fullPath = join(PROJECT_ROOT, dir)
-    if (!fullPath.startsWith(PROJECT_ROOT)) return
-    let entries
+async function executeTool(name: string, args: any, institutional: {actorId:string;topic:string|null}|null) {
+  if (!institutional) return {error:'Appointed Code Workshop operator required'}
+  if (['read_continuity_evidence','read_canonical_source','discover_public_research'].includes(name)) {
     try {
-      entries = await readdir(fullPath, { withFileTypes: true })
-    } catch {
-      return
-    }
-    for (const e of entries) {
-      if (results.length >= 30) return
-      if (e.name.startsWith('.') || e.name === 'node_modules' || e.name === '.next') continue
-      const entryPath = `${dir}/${e.name}`.replace(/^\.\//, '')
-      if (e.isDirectory()) {
-        await searchDir(entryPath)
-      } else if (e.name.match(/\.(tsx?|jsx?|json|md|css)$/)) {
-        try {
-          const content = await readFile(join(fullPath, e.name), 'utf-8')
-          const lines = content.split('\n')
-          lines.forEach((line, idx) => {
-            if (results.length < 30 && line.toLowerCase().includes(pattern.toLowerCase())) {
-              results.push({ path: entryPath, line: idx + 1, content: line.trim().slice(0, 200) })
-            }
-          })
-        } catch {}
-      }
-    }
+      if(name==='read_continuity_evidence') return await readContinuityEvidence()
+      if(name==='read_canonical_source') return await readContinuitySource(institutional.actorId,String(args?.path||''),args?.directory===true)
+      if(!institutional.topic) return {error:'Enter research: followed by an explicitly public topic to authorize bibliographic discovery.'}
+      return await discoverResearch(institutional.topic)
+    } catch { return {error:'Institutional evidence unavailable; verify credentials, network and requested source in the appropriate workshop.'} }
   }
-
-  await searchDir(directory)
-  return { pattern, matches: results, count: results.length }
-}
-
-async function toolRunSelectQuery(query: string) {
-  if (!query || typeof query !== 'string') return { error: 'query required' }
-  const trimmed = query.trim()
-  const lower = trimmed.toLowerCase()
-  if (!lower.startsWith('select') && !lower.startsWith('with')) {
-    return { error: 'Only SELECT (or WITH ... SELECT) queries are allowed via this tool.' }
-  }
-  const blocked = ['insert ', 'update ', 'delete ', 'drop ', 'alter ', 'truncate ', 'grant ', 'revoke ', 'create ']
-  if (blocked.some(k => lower.includes(k))) {
-    return { error: 'Query contains a disallowed write keyword.' }
-  }
-  try {
-    const rows = await sql(trimmed as any)
-    const rowsArr = Array.isArray(rows) ? rows : []
-    const limited = rowsArr.slice(0, 50).map(redactRow)
-    return { rowCount: rowsArr.length, rows: limited, truncated: rowsArr.length > 50 }
-  } catch (err: any) {
-    return { error: err.message || 'Query failed' }
-  }
-}
-
-async function executeTool(name: string, args: any) {
   switch (name) {
     case 'get_schema':
       return toolGetSchema()
     case 'read_file':
-      return toolReadFile(args?.filename)
+      return readContinuitySource(institutional.actorId,String(args?.filename||''))
     case 'list_files':
-      return toolListFiles(args?.directory || '.')
-    case 'search_files':
-      return toolSearchFiles(args?.pattern, args?.directory || '.')
-    case 'run_select_query':
-      return toolRunSelectQuery(args?.query)
+      return readContinuitySource(institutional.actorId,String(args?.directory||'app'),true)
     case 'read_public_web':
       try { return await safePublicWebRead(args?.url) }
       catch (error) { return { error: error instanceof Error ? error.message : 'Web read failed' } }
@@ -226,7 +101,8 @@ async function executeTool(name: string, args: any) {
 
 async function runToolLoop(
   messages: Array<{ role: string; content: string }>,
-  systemPrompt: string
+  systemPrompt: string,
+  institutional: {actorId:string;topic:string|null}|null
 ): Promise<string> {
   const baseContents = messages.map(msg => ({
     role: msg.role === 'assistant' ? 'model' : 'user',
@@ -234,6 +110,7 @@ async function runToolLoop(
   }))
 
   let lastError = ''
+  let toolCallsRemaining=12
 
   for (const modelName of GOOGLE_AI_MODELS) {
     try {
@@ -245,7 +122,6 @@ async function runToolLoop(
 
       let workingContents: any[] = [...baseContents]
       const MAX_ITERATIONS = 10
-      let returned = false
 
       for (let iteration = 0; iteration < MAX_ITERATIONS; iteration++) {
         const result = await model.generateContent({
@@ -259,7 +135,7 @@ async function runToolLoop(
 
         if (functionCallParts.length === 0) {
           const text = parts.map((p: any) => p.text || '').join('')
-          if (text) { returned = true; return text }
+          if (text) return text
           lastError = `Empty response from ${modelName} (finishReason: ${candidate?.finishReason || 'unknown'})`
           break
         }
@@ -269,8 +145,10 @@ async function runToolLoop(
         const responseParts: any[] = []
         for (const part of functionCallParts) {
           const { name, args } = (part as any).functionCall
-          console.log(`[EIGHT tool call ${iteration + 1}/${MAX_ITERATIONS}] ${modelName} -> ${name}`, args)
-          const toolResult = await executeTool(name, args)
+          console.log(`[EIGHT tool call ${iteration + 1}/${MAX_ITERATIONS}] ${modelName} -> ${name}`)
+          const toolResult = toolCallsRemaining-- > 0
+            ? await executeTool(name, args, institutional).catch(()=>({error:'Tool operation unavailable'}))
+            : {error:'Tool budget reached. Summarize verified findings and remaining work.'}
           responseParts.push({ functionResponse: { name, response: { result: toolResult } } })
         }
 
@@ -284,31 +162,6 @@ async function runToolLoop(
   }
 
   throw new Error(`Vertex AI request failed. models tried: ${GOOGLE_AI_MODELS.join(', ')}. error: ${lastError}`)
-}
-
-async function checkAutoSweep(): Promise<void> {
-  try {
-    const walletsToSweep = await sql`
-      SELECT w.id, w.user_id, w.balance_trx, u.name, u.email
-      FROM wallets w
-      JOIN users u ON w.user_id = u.id
-      WHERE w.balance_trx >= 100
-      AND NOT EXISTS (
-        SELECT 1 FROM fund_sweeps fs
-        WHERE fs.user_id = w.user_id
-        AND fs.status IN ('pending', 'approved')
-      )
-      LIMIT 5
-    `
-    for (const wallet of walletsToSweep) {
-      await sql`
-        INSERT INTO fund_sweeps (user_id, amount, status, created_at)
-        VALUES (${wallet.user_id}::uuid, 100, 'pending', NOW())
-      `
-    }
-  } catch (error) {
-    console.error('Error in auto-sweep check:', error)
-  }
 }
 
 async function saveMessage(userId: string, role: 'user' | 'eight', content: string, codeBlocks?: any) {
@@ -360,20 +213,22 @@ export async function POST(request: NextRequest) {
     const { command, conversationHistory } = await request.json()
     const userId = authUser.id
 
-    if (!command) {
+    if (typeof command !== 'string' || !command.trim() || command.length > 16000) {
       return NextResponse.json({ error: 'Command required' }, { status: 400 })
     }
 
-    if (userId) {
-      await checkAutoSweep()
-    }
+    // Development and research conversations must not initiate financial movements.
+    const workshop = await requireWorkshopAuthorization(request)
+    if (!workshop.authorized || String(workshop.session.user.id) !== String(userId)) return NextResponse.json({error:'Appointed Code Workshop operator required'},{status:403})
+    const institutional = {actorId:String(userId),topic:publicResearchTopic(command)}
 
     const messages: Array<{ role: string; content: string }> = []
     if (conversationHistory && Array.isArray(conversationHistory)) {
       for (const msg of conversationHistory.slice(-10)) {
+        if(!msg||typeof msg.content!=='string'||!['user','eight'].includes(msg.role))continue
         messages.push({
           role: msg.role === 'eight' ? 'assistant' : 'user',
-          content: msg.content,
+          content: msg.content.slice(0,8000),
         })
       }
     }
@@ -395,7 +250,7 @@ export async function POST(request: NextRequest) {
         `
         const prior = (priorRows as any[]).reverse().map(r => ({
           role: r.role === 'eight' ? 'assistant' : 'user',
-          content: r.content,
+          content: String(r.content||'').slice(0,8000),
         }))
         messages.unshift(...prior.filter(p => p.content !== command))
       } catch (err) {
@@ -403,7 +258,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const text = await runToolLoop(messages, EIGHT_SYSTEM_PROMPT)
+    const text = await runToolLoop(messages, EIGHT_SYSTEM_PROMPT, institutional)
 
     const codeBlocks: Array<{
       id: string
