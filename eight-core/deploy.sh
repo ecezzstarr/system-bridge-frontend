@@ -87,7 +87,7 @@ gcloud run deploy $SERVICE_NAME \
     --source . \
     --region $REGION \
     --platform managed \
-    --allow-unauthenticated \
+    --no-allow-unauthenticated \
     --memory 512Mi \
     --cpu 1 \
     --min-instances 0 \
