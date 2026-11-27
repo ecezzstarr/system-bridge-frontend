@@ -42,7 +42,7 @@ export function PersonalFlame({onClose}:{onClose:()=>void}){
   useEffect(()=>{end.current?.scrollIntoView({block:'nearest'})},[messages])
   async function execute(value:string){
     try{
-      const r=await fetch('/api/personal-flame',{method:'POST',headers:headers(),body:JSON.stringify({message:value,allowExternal:advanced})})
+      const r=await fetch('/api/personal-flame',{method:'POST',headers:headers(),body:JSON.stringify({message:value,allowExternal:advanced,requestId:crypto.randomUUID()})})
       const b=await r.json();if(!r.ok)throw Error(b.error)
       setMessages(b.messages||[]);setInput('');setMovement(b.movement||null)
       if(b.movement?.state==='verified')window.dispatchEvent(new Event('weave:flame-workshop-confirmed'))
@@ -89,6 +89,8 @@ export function PersonalFlame({onClose}:{onClose:()=>void}){
       <div className="flex gap-1"><button type="button" onClick={()=>setCompact(true)} aria-label="Minimize Flame to observe environment" className="p-2"><Minus className="h-5 w-5"/></button><button type="button" disabled={busy} onClick={onClose} aria-label="Close Personal Flame" className="rounded-lg p-2"><X className="h-5 w-5"/></button></div>
     </div>
     <FlameSubscriptionPanel />
+    <button type="button" className="text-xs text-amber-200 underline" onClick={()=>navigate('/image-workshop/production')}>Creative Production · images and content</button>
+    <p className="text-xs text-slate-300">Explicit provider commands: generate image with provider: your brief (50 units) or write content with provider: your brief (5 units). Administrations exempt. Only the brief is sent; use the workshop for format and preview.</p>
     <div className="my-3 min-h-0 flex-1 overflow-y-auto rounded-xl border border-white/10 p-3" aria-live="polite">
       {!messages.length&&<p className="text-sm text-slate-300">What are you trying to understand or carry out? Speak naturally about your work, ask for a registered workshop, revisit your notes, or say web search: followed by a public topic.</p>}
       {messages.map((m,i)=><div key={i} className={'mb-3 rounded-lg p-3 text-sm '+(m.role==='user'?'bg-white/10':'bg-amber-400/10')}><p className="mb-1 text-[10px] font-bold uppercase text-amber-200">{m.role==='user'?'You':'Flame · '+m.mode}</p><p className="whitespace-pre-wrap break-words">{m.content}</p>{m.movement&&<div className="mt-2 space-y-2"><p className="text-xs text-amber-200">{m.movement.state==='verified'?'Workshop confirmed':m.movement.state==='blocked'?'Not confirmed':'Direction ready'}</p>{m.movement.directions.map(d=><div key={d.href}><button type="button" onClick={()=>navigate(d.href)} className="text-left text-xs font-bold text-amber-200 underline">{d.title}</button><p className="text-xs text-slate-300">{d.detail}</p><p className="text-[10px] text-slate-400">{d.requirements}</p></div>)}</div>}</div>)}
