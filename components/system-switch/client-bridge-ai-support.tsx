@@ -108,7 +108,7 @@ export function ClientBridgeAiSupport() {
               <p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.2em] text-sky-300">Client AI Support</p>
               <h3 className="mt-1 text-lg font-black text-white">File Folder Flame</h3>
               <p className="mt-1 max-w-2xl text-xs leading-5 text-slate-400">
-                You direct your enterprise; WEAVE owns Flame and operates the technical systems through your authorized instructions. Ask about formation and active systems. All Flame replies use your shared usage subscription; actual enterprise costs remain separate.
+                You direct your enterprise; WEAVE owns Flame and operates the technical systems through your authorized instructions. Ask about formation and active systems. All Flame replies use your shared usage subscription; actual enterprise costs remain separate. This conversation runs on Weave's native intelligence without an external model. Say connect Research Room to Operations Board using your actual system names to request a supported connection.
               </p>
             </div>
           </div>
@@ -161,7 +161,7 @@ export function ClientBridgeAiSupport() {
               }
             }}
             rows={2}
-            placeholder="Describe your direction, or type status…"
+            placeholder="Tell Flame what to inspect or connect…"
             className="min-w-0 flex-1 resize-none rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm font-semibold text-white outline-none placeholder:text-slate-500 focus:border-sky-300/30"
           />
           <button
