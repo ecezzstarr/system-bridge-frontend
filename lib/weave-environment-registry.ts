@@ -13,6 +13,7 @@ export type EnvironmentSurfaceDefinition = {
 }
 
 export const WEAVE_ENVIRONMENT_REGISTRY: EnvironmentSurfaceDefinition[] = [
+  { key:'shared-flame-intelligence', label:'Flame', kind:'station', route:'/flame', area:'Shared WEAVE', scope:'shared', protected:true, defaultOrder:18 },
   { key:'shared-lifestyle', label:'Lifestyle', kind:'district', route:'/weave/lifestyles', area:'Shared WEAVE', scope:'shared', protected:true, defaultOrder:12 },
   { key:'shared-carrier', label:'Carrier', kind:'district', route:'/weave/carrier', area:'Shared WEAVE', scope:'shared', protected:true, defaultOrder:14 },
   { key:'shared-carrier-food', label:'Food Carrier', kind:'station', route:'/weave/carrier/food', area:'Carrier', scope:'agent', protected:true, defaultOrder:15 },
