@@ -47,6 +47,8 @@ jobs:
           node tests/eight-code-workshop-regression.cjs
           node tests/flame-environment-regression.cjs
           node tests/flame-usage-regression.cjs
+          node tests/flame-web-search-regression.cjs
+          node tests/flame-creative-production-regression.cjs
 
       - name: Company laptop pairing and installation controls
         env:

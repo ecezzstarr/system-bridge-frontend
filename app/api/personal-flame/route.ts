@@ -1,12 +1,14 @@
+import {flameCreativeIntent,runCreativeProduction} from '@/lib/weave-creative-production'
+import {flameWebQuery,flameWebSearchReply} from '@/lib/flame-web-search'
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { sql } from '@/lib/db'
 import { chatWithRiver } from '@/lib/river-assistant'
 import { withFlameUsage } from '@/lib/flame-usage'
-import { flameOperationIntent } from '@/lib/flame-environment'
+import { flameOperationIntent, flameFollowupDirection } from '@/lib/flame-environment'
 import { runFlameEnvironment } from '@/lib/flame-environment-runtime'
 import type { FlameMovement } from '@/lib/flame-environment'
-import { PERSONAL_FLAME_DAILY_MODEL_LIMIT, PERSONAL_FLAME_MAX_MESSAGE, personalFlameNativeReply, personalFlameModelContext, type PersonalFlameMessage } from '@/lib/personal-flame'
+import { PERSONAL_FLAME_DAILY_MODEL_LIMIT, PERSONAL_FLAME_MAX_MESSAGE, personalFlameNativeReply, nativeFlameClarification, personalFlameModelContext, type PersonalFlameMessage } from '@/lib/personal-flame'
 
 export const dynamic = 'force-dynamic'
 const headers = {'Cache-Control':'private, no-store'}
@@ -47,14 +49,26 @@ export async function POST(request:NextRequest){
     const body=await request.json().catch(()=>null)
     const message=typeof body?.message==='string'?body.message.trim():''
     if(!message||message.length>PERSONAL_FLAME_MAX_MESSAGE)return reply({error:'Enter a message of up to 4,000 characters.'},400)
-    if(body?.previewOnly===true)return reply({movement:await runFlameEnvironment(request,user.role,message,true)})
     await ensureSchema()
     const previous=await history(user.id)
-    const intent=flameOperationIntent(message)
-    const native=personalFlameNativeReply(message,previous)
+    const priorMovement=previous[previous.length-1]?.movement
+    const operationMessage=flameFollowupDirection(user.role,message,priorMovement)??message
+    if(body?.previewOnly===true)return reply({movement:await runFlameEnvironment(request,user.role,operationMessage,true)})
+    const creative=flameCreativeIntent(message)
+    if(creative){
+      const result=await runCreativeProduction(user,{...creative,allowProvider:true,requestId:body.requestId})
+      if(!result.ok)return result
+      const output=await result.json()
+      const response=output.kind==='image'?'Image generated and saved to your private Creative Production workshop. Open /image-workshop/production to view or download it. Asset: '+output.assetId:String(output.content||'')
+      await sql`INSERT INTO weave_personal_flame_turns(user_id,instruction,response,mode) VALUES(${user.id}::uuid,${message},${response},'native')`
+      return reply({messages:await history(user.id),mode:'native',movement:null})
+    }
+    const webQuery=flameWebQuery(message)
+    const intent=flameOperationIntent(operationMessage)
+    const native=personalFlameNativeReply(message,previous,user.role)
     const operation=async()=>{
-    const movement=await runFlameEnvironment(request,user.role,message)
-    let response=movement?.summary??native
+    const movement=webQuery!==null?null:await runFlameEnvironment(request,user.role,operationMessage)
+    let response=(webQuery!==null?await flameWebSearchReply(user.id,webQuery):null)??movement?.summary??native??(body?.allowExternal!==true?nativeFlameClarification(message,user.role):null)
     let mode:'native'|'model'='native'
     if(response===null){
       if(body?.allowExternal!==true)return reply({error:'This question requires advanced conversation. Enable external model assistance to continue, or use a native command.',code:'CONSENT_REQUIRED'},409)
@@ -75,8 +89,9 @@ export async function POST(request:NextRequest){
       VALUES(${user.id}::uuid,${message},${response},${mode},${movement?JSON.stringify(movement):null}::jsonb)`
     return reply({messages:await history(user.id),mode,movement})
     }
+    if(webQuery!==null)return await withFlameUsage(user.id,user.role,'workshop_operation',async()=>{try{return await operation()}catch(error){return reply({error:error instanceof Error?error.message:'Web search unavailable.'},503)}})
     if(intent?.kind==='navigate')return await operation()
-    return await withFlameUsage(user.id,user.role,intent?'workshop_operation':native!==null?'native_reply':'model_reply',operation,b=>b.movement?.state!=='blocked')
+    return await withFlameUsage(user.id,user.role,intent?'workshop_operation':(native!==null||body?.allowExternal!==true)?'native_reply':'model_reply',operation,b=>b.movement?.state!=='blocked')
   }catch{return reply({error:'Personal Flame could not complete this interaction.'},503)}
 }
 export async function DELETE(request:NextRequest){

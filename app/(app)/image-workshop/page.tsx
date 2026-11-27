@@ -168,7 +168,7 @@ export default function WeaveImageSamples(){
       <h1 className="mt-2 max-w-3xl text-3xl font-black tracking-tight sm:text-5xl">The WEAVE Image House</h1>
       <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">
         Explore original visual collections, personalize a finished design for a real business, and sell your production to customers.
-        No API key, live AI generation or paid image provider is required.
+        The original offline designs require no API key or paid image provider.
       </p>
       <div className="mt-5 grid grid-cols-2 gap-2 sm:max-w-2xl sm:grid-cols-4">
         <div className="rounded-xl border border-white/10 bg-white/[.04] p-3"><div className="text-2xl font-black text-cyan-100">{WEAVE_IMAGE_SAMPLES.length}</div><p className="text-[10px] text-slate-400">Original examples</p></div>
@@ -178,6 +178,7 @@ export default function WeaveImageSamples(){
       </div>
     </header>
     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" data-image-house-business-systems="true">
+      <Link href="/image-workshop/production" className="flex min-h-16 items-center justify-center rounded-xl border border-amber-200/25 px-5 py-3 text-center text-base font-bold text-amber-100">Creative Production · Generate images and written content when enabled</Link>
       <Link href="/image-workshop/branding" className="flex min-h-16 items-center justify-center rounded-xl border border-cyan-200/25 bg-cyan-200/[.06] px-5 py-3 text-center text-base font-bold text-cyan-100">Brand clothes, mugs, packaging and artist merchandise</Link>
       <Link href="/image-workshop/business" className="flex min-h-16 items-center justify-center rounded-xl border border-amber-200/25 bg-amber-200/[.06] px-5 py-3 text-center text-base font-bold text-amber-100">Start and scale a branding business · Guided ads</Link>
       {isAdmin&&<Link href="/admin/image-branding" className="flex min-h-16 items-center justify-center rounded-xl border border-white/20 bg-white/[.05] px-5 py-3 text-center text-base font-bold text-white">Administrations · Branding workshop</Link>}
