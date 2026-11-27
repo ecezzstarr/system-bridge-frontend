@@ -39,7 +39,7 @@ export default function CreativeProduction(){
  }
  async function view(asset:string,download=false){
   try{
-   const r=await fetch('/api/image-workshop/assets/'+encodeURIComponent(asset),{headers:headers(),cache:'no-store'})
+   const r=await fetch(`/api/image-workshop/assets/${encodeURIComponent(asset)}`,{headers:headers(),cache:'no-store'})
    if(!r.ok)throw Error('Private image unavailable.')
    const url=URL.createObjectURL(await r.blob())
    if(download){const a=document.createElement('a');a.href=url;a.download='weave-'+asset.slice(0,8)+'.png';a.click();window.setTimeout(()=>URL.revokeObjectURL(url),15000)}

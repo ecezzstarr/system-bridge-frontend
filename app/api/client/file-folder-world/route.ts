@@ -1,3 +1,4 @@
+import {flameEnterprisePlan,isFlameIndustry} from '@/lib/flame-enterprise-plan'
 import { withFlameUsage } from '@/lib/flame-usage'
 import { FLAME_INSTITUTION, resolveFileFolderFlameAction, fileFolderFlameExecution } from '@/lib/company-flame'
 import { isFileFolderPlatformKind } from '@/lib/file-folder-platform-projects'
@@ -106,6 +107,11 @@ export async function GET(request: NextRequest) {
       String(ctx.client.file_number),
       ctx.proBusinessName,
     )
+    const industry=request.nextUrl.searchParams.get('flameIndustry')
+    if(industry!==null){
+      if(!isFlameIndustry(industry))return NextResponse.json({error:'Choose a registered Flame industry.'},{status:400,headers:{'Cache-Control':'private, no-store'}})
+      return NextResponse.json({success:true,plan:flameEnterprisePlan(industry,world)},{headers:{'Cache-Control':'private, no-store'}})
+    }
     const moduleConnections=await ctx.sql`
       SELECT c.id,c.source_system_id,c.target_system_id,c.contract_key,c.status,c.created_at,
         source.title AS source_title,source.system_type AS source_type,

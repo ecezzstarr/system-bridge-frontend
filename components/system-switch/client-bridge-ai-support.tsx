@@ -1,4 +1,5 @@
 'use client'
+import {FlameEnterprisePlanner} from '@/components/system-switch/flame-enterprise-planner'
 import {FlameSubscriptionPanel,notifyFlameUsage} from '@/components/flame-subscription'
 
 import { useEffect, useRef, useState } from 'react'
@@ -119,6 +120,7 @@ export function ClientBridgeAiSupport() {
 
           </div>
         </div>
+        <FlameEnterprisePlanner />
         <FlameSubscriptionPanel />
         <a className="block text-sm text-cyan-200 underline" href="/image-workshop/production">Open Creative Production</a>
         <p className="text-xs text-slate-300">Say generate image with provider: your brief (50 units), or write content with provider: your brief (5 units). Only use non-confidential briefs; this support conversation is shared with your assigned Bridger.</p>
