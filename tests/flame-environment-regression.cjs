@@ -3,7 +3,12 @@ const read=p=>fs.readFileSync(p,'utf8'),e={}
 const directory=[{title:'Prospect Market',href:'/weave/market/prospects',nextStep:'Review candidate',requirements:'Bridger'}]
 vm.runInNewContext(ts.transpileModule(read('lib/flame-environment.ts'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{exports:e,require:()=>({getWeaveSearchDirectory:role=>role==='bridger'?directory:[],isWeaveSearchRole:role=>['bridger','agent'].includes(role),searchWeaveActions:role=>role==='bridger'?directory:[]})})
 assert.equal(e.flameOperationIntent('claim my daily free prospect').kind,'claim_daily_prospect')
-assert.equal(e.flameOperationIntent('how do I claim a free prospect'),null)
+assert.equal(e.flameOperationIntent('how do I claim a free prospect').kind,'navigate')
+assert.equal(e.flameOperationIntent('how do I claim a free prospect').auto,false)
+assert.equal(e.flameOperationIntent('Could you claim my daily free prospect please?').kind,'claim_daily_prospect')
+assert.equal(e.flameOperationIntent('check production status').kind,'check_release')
+assert.equal(e.flameOperationIntent('do it'),null)
+assert.equal(e.flameOperationIntent('do not claim my free prospect'),null)
 assert.equal(e.flameNavigate('bridger','Prospect Market',true).navigate,'/weave/market/prospects')
 assert.equal(e.flameNavigate('bridger','prospect',true).navigate,undefined)
 assert.equal(e.flameNavigate('agent','Prospect Market',true).state,'blocked')
