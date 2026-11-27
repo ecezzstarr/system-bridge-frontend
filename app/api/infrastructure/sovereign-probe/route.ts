@@ -102,16 +102,20 @@ export async function GET(request:NextRequest){
    "SELECT DISTINCT ON (node_id) node_id,provider,observed_at,received_at,release_sha,checks,ready,database_fingerprint "+
    "FROM weave_sovereign_server_reports ORDER BY node_id,received_at DESC")
   const productionDb=currentDatabaseEndpointFingerprint()
+  const productionReleaseSha=validSha.test(process.env.WEAVE_RELEASE_SHA||'')?process.env.WEAVE_RELEASE_SHA!.toLowerCase():null
   const nodes=query.rows.slice(0,25).map(row=>({
    nodeId:row.node_id,provider:row.provider,observedAt:row.observed_at,
    receivedAt:row.received_at,releaseSha:row.release_sha,checks:row.checks,
    reportedReady:row.ready,
+   matchesCurrentRelease:Boolean(productionReleaseSha&&row.release_sha?.toLowerCase()===productionReleaseSha),
    sharedCurrentDatabase:Boolean(productionDb&&row.database_fingerprint===productionDb),
    continuityMode:productionDb&&row.database_fingerprint===productionDb?'same-live-database':'not-proven',
    fresh:Date.now()-new Date(row.received_at).getTime()<=15*60*1000,
-   ready:row.ready&&(Date.now()-new Date(row.received_at).getTime()<=15*60*1000)&&Boolean(productionDb&&row.database_fingerprint===productionDb),
+   ready:row.ready&&(Date.now()-new Date(row.received_at).getTime()<=15*60*1000)&&Boolean(productionDb&&row.database_fingerprint===productionDb)&&Boolean(productionReleaseSha&&row.release_sha?.toLowerCase()===productionReleaseSha),
   }))
   return NextResponse.json({success:true,nodes,
+   setup:{reportingConfigured:(process.env.WEAVE_SOVEREIGN_PROBE_TOKEN||'').length>=32,
+    productionDatabaseIdentified:Boolean(productionDb),productionReleaseSha},
    cutoverAuthorized:false,
    note:'Readiness evidence only. No DNS switch, production transfer, data migration, source release or automatic Oracle shutdown.'},{headers:noStore})
  }catch(error){

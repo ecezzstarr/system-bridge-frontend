@@ -14,6 +14,7 @@ const typed=[
  'lib/weave-sovereign-database-identity.ts',
  'app/api/admin/sovereign-host-transition/route.ts',
  'components/admin/weave-sovereign-host-move.tsx',
+ 'components/admin/weave-sovereign-setup.tsx',
 ]
 for(const file of typed){
  const diagnostics=ts.transpileModule(read(file),{
@@ -25,6 +26,8 @@ for(const file of typed){
 execFileSync('python3',['-m','py_compile','selfhost/sovereign-candidate-probe.py'],{cwd:root,timeout:12000})
 const output=execFileSync('python3',['selfhost/sovereign-candidate-probe.py','--help'],{cwd:root,timeout:12000,encoding:'utf8'})
 assert.match(output,/--report/)
+execFileSync(process.execPath,['tests/sovereign-host-verification.cjs'],{cwd:root,timeout:12000,stdio:'inherit'})
+execFileSync('python3',['tests/sovereign-candidate-probe.py'],{cwd:root,timeout:12000,stdio:'inherit'})
 const probe=read('selfhost/sovereign-candidate-probe.py')
 const route=read('app/api/infrastructure/sovereign-probe/route.ts')
 const ui=read('app/(app)/admin/sovereign-server/page.tsx')

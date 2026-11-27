@@ -1,0 +1,7 @@
+# Candidate host ONLY, after the separately recorded company authorization.
+# Preserve normal production ingress and retain a health-only preview.
+services:
+  caddy:
+    volumes:
+      - ./selfhost/Caddyfile.sovereign-production:/etc/caddy/Caddyfile:ro
+      - ./selfhost/Caddyfile:/etc/caddy/WeaveProduction:ro

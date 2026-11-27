@@ -69,7 +69,8 @@ def health(url: str) -> dict:
             if (response.status != 200 or reached.scheme != requested.scheme or reached.netloc != requested.netloc or reached.path != requested.path):
                 return {}
             data = response.read(4000)
-            return json.loads(data)
+            decoded = json.loads(data)
+            return decoded if isinstance(decoded, dict) else {}
     except (urllib.error.URLError, ValueError, TimeoutError, OSError):
         return {}
 
@@ -123,14 +124,24 @@ def gather(values: dict[str, str]) -> dict:
         target = urllib.parse.urlparse(preview)
         preview_valid = (target.scheme == "https" and bool(target.hostname) and
                          not target.username and not target.password and
-                         not target.path.strip("/") and not target.query and
-                         target.hostname not in ("localhost", "127.0.0.1"))
+                         not target.path.strip("/") and not target.query and not target.fragment and
+                         target.hostname.lower().rstrip(".") not in
+                         ("localhost", "127.0.0.1", "weavingsystem.online", "www.weavingsystem.online"))
     local = health("http://127.0.0.1:3000/api/health/ready")
     remote = health(preview + "/api/health/ready") if preview_valid else {}
     sha = local.get("releaseSha")
     sha_valid = isinstance(sha, str) and re.fullmatch(r"[0-9a-f]{40}", sha, re.I) is not None
-    disk = shutil.disk_usage(values.get("WEAVE_SOVEREIGN_DISK_PATH", "/"))
-    free_gib = disk.free / 1024**3
+    try:
+        disk = shutil.disk_usage(values.get("WEAVE_SOVEREIGN_DISK_PATH", "/"))
+        free_gib = disk.free / 1024**3
+    except OSError:
+        free_gib = 0.0
+    identity_matches = all(
+        isinstance(result.get("host"), dict) and
+        result["host"].get("provider") == "weave-owned" and
+        result["host"].get("nodeId") == node
+        for result in (local, remote)
+    )
     checks = {
         "independent_host": provider == "weave-owned",
         "hardware": (os.cpu_count() or 0) >= 4 and memory_gib() >= 8 and free_gib >= 32,
@@ -142,7 +153,7 @@ def gather(values: dict[str, str]) -> dict:
                                local.get("checks", {}).get("accounts") is True and
                                local.get("checks", {}).get("media") is True),
         "https_preview": (preview_valid and remote.get("status") == "ready"),
-        "release_identity": bool(sha_valid and remote.get("releaseSha") == sha),
+        "release_identity": bool(sha_valid and remote.get("releaseSha") == sha and identity_matches),
         "restore_rehearsal": restore_proof(),
     }
     return {

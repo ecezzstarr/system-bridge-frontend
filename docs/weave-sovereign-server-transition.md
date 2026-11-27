@@ -2,6 +2,18 @@
 
 ## Company decision
 
+The intended destination is **Weave-controlled hardware and operations**, not
+another rented cloud server with a new label. Full independence includes the
+application, database, persistent media and independently recoverable backups.
+The initial application-host transition and the later data transition remain
+separate controlled steps so that existing company records remain authoritative.
+
+The server workshop now shows the preparation sequence before the first host
+reports, plus non-secret indicators for the reporting receiver, current release
+identity and existing database identity. Candidate evidence refreshes every
+thirty seconds while the page is visible and when the operator returns to it.
+Missing or failed evidence is never displayed as a newly created server.
+
 Oracle remains the **active production host** throughout engineering, hardware
 acquisition, candidate testing and recovery rehearsal. The new company-controlled
 host starts as a separate candidate and does not become public by publishing
@@ -368,3 +380,70 @@ Full infrastructure sovereignty is incremental:
 
 At every stage the existing Release Workshop remains an authorized,
 independent tool for engineering and emergency recovery.
+
+## Keep candidate evidence current
+
+The candidate's private configuration must contain its stable node ID and
+`WEAVE_HOST_PROVIDER=weave-owned`. Both local and HTTPS readiness responses
+must return that exact node identity and release SHA. The production hostname
+cannot be used as the separate candidate preview. Current production release
+identity must match before the candidate is selectable for a host transition.
+
+After a successful manual probe on the independently provisioned Linux host,
+the appointed operator can install the supplied systemd units. Review their
+checkout paths and existing `weave` service account first. Keep `selfhost/.env`
+private and readable only by the authorized operator/service account. These
+commands are for the candidate only:
+
+```bash
+sudo install -m 0644 selfhost/weave-sovereign-probe.service /etc/systemd/system/
+sudo install -m 0644 selfhost/weave-sovereign-probe.timer /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now weave-sovereign-probe.timer
+sudo systemctl start weave-sovereign-probe.service
+sudo systemctl status weave-sovereign-probe.timer
+```
+
+The timer repeats five minutes after each run. A failing readiness report is
+still sent and returns exit 2; a reporting/configuration failure returns exit 3
+and is visible as a failed service. Neither result changes traffic. Inspect
+`journalctl -u weave-sovereign-probe.service` if reports stop arriving.
+
+During the authorized routing window, the operator must activate the normal
+production ingress on the new host, set the production hostname/session and
+provider configuration, and apply the planned production database credentials.
+The candidate quarantine serves health routes only; it cannot serve company
+work or receive `/api/infrastructure/sovereign-probe` reports after the company
+domain moves to it. Keep a separately reachable, correctly configured preview
+health hostname so local and preview identity checks continue to pass. Do not
+leave the ordinary customer app on the preview hostname during the shared-data
+readiness window. Verify both hostnames and reporting before final acceptance.
+
+The optional `docker-compose.weave-production.yml` overlay provides the normal
+production ingress and a separate health-only preview, using the existing
+production Caddyfile unchanged. Set `WEAVE_DOMAIN=weavingsystem.online`,
+`NEXTAUTH_URL=https://weavingsystem.online` and the separate
+`WEAVE_SOVEREIGN_PREVIEW_DOMAIN` hostname privately on the candidate during
+the authorized window. Preserve `WEAVE_SOVEREIGN_PREVIEW_URL` for the probe.
+Use this overlay **instead of** the quarantine overlay for the authorized
+production switch:
+
+```bash
+docker compose --env-file selfhost/.env \
+  -f docker-compose.selfhost.yml -f docker-compose.weave-production.yml config --quiet
+docker compose --env-file selfhost/.env \
+  -f docker-compose.selfhost.yml -f docker-compose.weave-production.yml up -d
+```
+
+These commands do not edit DNS. Complete the appointed DNS operator's routing
+step separately and then verify it in the workshop.
+
+Public acceptance requires **all IPv4 records** for the company hostname to
+match the approved candidate address and no unreviewed IPv6 route. This
+IPv4-only workflow refuses remaining AAAA records; an IPv6 transition needs its
+own reviewed destination. The public readiness response must identify the
+approved Weave-owned node, the exact release, working accounts/database and
+writable persistent media. An Oracle response with the same release cannot
+complete the transition. DNS propagation, configured identity and operator
+attestations do not prove physical ownership; company infrastructure inventory
+and operating control must still be independently verified.

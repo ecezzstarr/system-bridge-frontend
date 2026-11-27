@@ -5,14 +5,14 @@ on:
     branches: [main]
     paths:
       - 'Dockerfile.selfhost'
-      - 'docker-compose.selfhost.yml'
+      - 'docker-compose*.yml'
       - 'selfhost/**'
       - '.github/workflows/selfhost-check.yml'
   push:
     branches: [main, 'integration/**']
     paths:
       - 'Dockerfile.selfhost'
-      - 'docker-compose.selfhost.yml'
+      - 'docker-compose*.yml'
       - 'selfhost/**'
       - '.github/workflows/selfhost-check.yml'
   workflow_dispatch:
@@ -29,6 +29,8 @@ jobs:
         run: |
           cp selfhost/.env.example selfhost/.env
           docker compose -f docker-compose.selfhost.yml config >/dev/null
+          docker compose --env-file selfhost/.env -f docker-compose.selfhost.yml -f docker-compose.weave-candidate.yml config >/dev/null
+          docker compose --env-file selfhost/.env -f docker-compose.selfhost.yml -f docker-compose.weave-production.yml config >/dev/null
           rm selfhost/.env
 
       - name: Validate Caddy edge
@@ -36,6 +38,16 @@ jobs:
           docker run --rm \
             -e WEAVE_DOMAIN=weavingsystem.online \
             -v "$PWD/selfhost/Caddyfile:/etc/caddy/Caddyfile:ro" \
+            caddy:2-alpine \
+            caddy validate --config /etc/caddy/Caddyfile
+
+      - name: Validate owned-server production and preview ingress
+        run: |
+          docker run --rm \
+            -e WEAVE_DOMAIN=weavingsystem.online \
+            -e WEAVE_SOVEREIGN_PREVIEW_DOMAIN=candidate.weavingsystem.online \
+            -v "$PWD/selfhost/Caddyfile.sovereign-production:/etc/caddy/Caddyfile:ro" \
+            -v "$PWD/selfhost/Caddyfile:/etc/caddy/WeaveProduction:ro" \
             caddy:2-alpine \
             caddy validate --config /etc/caddy/Caddyfile
 
