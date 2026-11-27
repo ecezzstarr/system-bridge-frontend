@@ -37,6 +37,7 @@ jobs:
         run: npm audit --omit=dev --audit-level=high
       - name: Account and authorization security regressions
         run: |
+          node --import tsx --test tests/flame-institutional-intelligence.test.ts
           node tests/security-boundaries.cjs
           node tests/divine-shield-session-continuity.cjs
           node tests/password-hash-login-regression.cjs
