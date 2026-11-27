@@ -70,7 +70,7 @@ export default function AppLayout({
         const data = await res.json().catch(() => ({}))
         const employment = data?.employment?.active ? data.employment : null
         setLegionEmployment(employment)
-        if (employment && !pathname.startsWith('/weave/lifestyles/legion') && !legionEventRoute && pathname !== '/echo' && pathname !== '/animation-workshop' && pathname !== '/music-workshop') {
+        if (employment && !pathname.startsWith('/weave/lifestyles/legion') && !legionEventRoute && pathname !== '/echo' && pathname !== '/animation-workshop' && pathname !== '/music-workshop' && pathname !== '/flame') {
           router.replace('/weave/lifestyles/legion')
         }
       } catch (e) {
@@ -135,7 +135,7 @@ export default function AppLayout({
 
   if (!isAuthenticated) return null
   if (!routeAllowed) return null
-  if (legionEmployment?.active && !pathname.startsWith('/weave/lifestyles/legion') && !legionEventRoute && pathname !== '/echo' && pathname !== '/animation-workshop' && pathname !== '/music-workshop') return null
+  if (legionEmployment?.active && !pathname.startsWith('/weave/lifestyles/legion') && !legionEventRoute && pathname !== '/echo' && pathname !== '/animation-workshop' && pathname !== '/music-workshop' && pathname !== '/flame') return null
 
   return (
     <EnvironmentOrganizerProvider>
@@ -143,8 +143,8 @@ export default function AppLayout({
     <div className="weave-app-shell relative min-h-dvh overflow-hidden bg-transparent" data-weave-world-runtime="persistent" data-legion-exclusive={legionEmployment?.active ? 'true' : 'false'}>
       <div className="relative z-10 flex min-h-dvh min-w-0 flex-col">
         <AppHeader user={user as any} />
-        <FlameEventAd />
-        <CompanyLoopTwoScroll />
+        {pathname!=='/flame'&&<FlameEventAd /> }
+        {pathname!=='/flame'&&<CompanyLoopTwoScroll /> }
         <main className="relative min-w-0 flex-1 overflow-x-clip" data-weave-world-interior="route">
           <PresenceCameraViewport>
             <WeaveEnvironmentSurface role={user?.role} userName={user?.name}>
@@ -159,7 +159,7 @@ export default function AppLayout({
       {user?.role==='bridger'&&termsChecked&&!termsNeeded&&!legionEmployment?.active&&user.id&&<BridgerSmartGuide userId={user.id}/>}
       {user?.role==='admin'&&user.id&&<AdminSmartGuide userId={user.id}/>}
       <Toaster position="top-center" richColors />
-      <LiveAdSurface />
+      {pathname!=='/flame'&&<LiveAdSurface /> }
       <PresenceCameraSignal />
       {termsChecked && termsNeeded && !legionEmployment?.active && user?.role && ['agent', 'bridger'].includes(user.role) && (
         <TermsAcceptanceModal role={user.role as 'agent' | 'bridger'} userName={user.name} onAccepted={() => setTermsNeeded(false)} />
