@@ -54,6 +54,7 @@ export function departmentBuildings(department: NativeDepartment, pages: readonl
       .map(station=>[station.href,station.officialImage!] as const),
   )
   const doors = new Map<string, DepartmentBuilding>()
+  if(pageSet.has('/flame')) doors.set('/flame',{title:'Flame',href:'/flame',area:'Shared WEAVE intelligence'})
   for (const item of getWeaveSearchDirectory(role)) {
     const path = item.href.split(/[?#]/)[0]
     if (!pageSet.has(path) || entryOnly.test(path) || path === '/' + role) continue
