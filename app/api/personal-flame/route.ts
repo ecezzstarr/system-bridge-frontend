@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { sql } from '@/lib/db'
 import { chatWithRiver } from '@/lib/river-assistant'
+import { withFlameUsage } from '@/lib/flame-usage'
+import { flameOperationIntent } from '@/lib/flame-environment'
 import { runFlameEnvironment } from '@/lib/flame-environment-runtime'
 import type { FlameMovement } from '@/lib/flame-environment'
 import { PERSONAL_FLAME_DAILY_MODEL_LIMIT, PERSONAL_FLAME_MAX_MESSAGE, personalFlameNativeReply, personalFlameModelContext, type PersonalFlameMessage } from '@/lib/personal-flame'
@@ -48,14 +50,17 @@ export async function POST(request:NextRequest){
     if(body?.previewOnly===true)return reply({movement:await runFlameEnvironment(request,user.role,message,true)})
     await ensureSchema()
     const previous=await history(user.id)
+    const intent=flameOperationIntent(message)
+    const native=personalFlameNativeReply(message,previous)
+    const operation=async()=>{
     const movement=await runFlameEnvironment(request,user.role,message)
-    let response=movement?.summary??personalFlameNativeReply(message,previous)
+    let response=movement?.summary??native
     let mode:'native'|'model'='native'
     if(response===null){
       if(body?.allowExternal!==true)return reply({error:'This question requires advanced conversation. Enable external model assistance to continue, or use a native command.',code:'CONSENT_REQUIRED'},409)
       if(!process.env.OPENAI_API_KEY&&!process.env.GOOGLE_AI_KEY&&!process.env.GEMINI_API_KEY)
         return reply({error:'Advanced conversation is not configured. Native commands remain available.'},503)
-      const reserved=await sql`INSERT INTO weave_personal_flame_usage(user_id,usage_day,requests)
+      const reserved=user.role==='admin'?[{requests:0}]:await sql`INSERT INTO weave_personal_flame_usage(user_id,usage_day,requests)
         VALUES(${user.id}::uuid,(NOW() AT TIME ZONE 'UTC')::date,1)
         ON CONFLICT(user_id,usage_day) DO UPDATE SET requests=weave_personal_flame_usage.requests+1
         WHERE weave_personal_flame_usage.requests<${PERSONAL_FLAME_DAILY_MODEL_LIMIT}
@@ -69,6 +74,9 @@ export async function POST(request:NextRequest){
     await sql`INSERT INTO weave_personal_flame_turns(user_id,instruction,response,mode,movement)
       VALUES(${user.id}::uuid,${message},${response},${mode},${movement?JSON.stringify(movement):null}::jsonb)`
     return reply({messages:await history(user.id),mode,movement})
+    }
+    if(intent?.kind==='navigate')return await operation()
+    return await withFlameUsage(user.id,user.role,intent?'workshop_operation':native!==null?'native_reply':'model_reply',operation,b=>b.movement?.state!=='blocked')
   }catch{return reply({error:'Personal Flame could not complete this interaction.'},503)}
 }
 export async function DELETE(request:NextRequest){

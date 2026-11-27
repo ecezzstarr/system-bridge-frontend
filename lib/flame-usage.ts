@@ -40,7 +40,7 @@ export async function withFlameUsage(userId:string,role:string,kind:FlameUsageKi
  try{
   const result=await operation()
   const successful=result.ok&&(!confirmed||confirmed(await result.clone().json()))
-  await finishFlameUsage(reservation.id,userId,successful)
+  await finishFlameUsage(reservation.id,userId,successful).catch(error=>console.error('[Flame usage] settlement pending reconciliation',reservation.id,error))
   return result
  }catch(error){
   await finishFlameUsage(reservation.id,userId,false).catch(()=>{})

@@ -1,3 +1,4 @@
+import { withFlameUsage } from '@/lib/flame-usage'
 import { FLAME_INSTITUTION, resolveFileFolderFlameAction, fileFolderFlameExecution } from '@/lib/company-flame'
 import { isFileFolderPlatformKind } from '@/lib/file-folder-platform-projects'
 import {getProActivationState} from '@/lib/pro-file-folder-activation'
@@ -144,6 +145,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const action = resolveFileFolderFlameAction(clean(body.action, 80))
     if (!action) return NextResponse.json({ error: 'Unknown File Folder Flame action' }, { status: 400 })
+    return await withFlameUsage(String(ctx.client.id),'client','workshop_operation',async()=>{
     const flame = fileFolderFlameExecution(action)
     let receipt = null as Awaited<ReturnType<typeof issueWeaveReceipt>> | null
 
@@ -822,6 +824,7 @@ export async function POST(request: NextRequest) {
       motion:fileFolderMotion(action),
       flame,
     }, { headers: { 'Cache-Control': 'private, no-store' } })
+    },body=>body.success===true)
   } catch (error) {
     console.error('[client/file-folder-world POST]', error)
     return NextResponse.json({ error: 'File Folder movement failed' }, { status: 500 })

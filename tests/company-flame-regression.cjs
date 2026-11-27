@@ -14,5 +14,5 @@ assert.doesNotMatch(f.nativeFlameReply('show systems',{systems:[{title:'Hidden',
 const route=fs.readFileSync('app/api/client/file-folder-world/route.ts','utf8')
 assert(route.indexOf('await resolveClientWorld(request)',route.indexOf('export async function POST'))<route.indexOf('resolveFileFolderFlameAction(clean(body.action'))
 const support=fs.readFileSync('app/api/client/bridge-ai/route.ts','utf8')
-assert(support.indexOf('const nativeReply =')<support.indexOf('if (feeFlameCoin > 0)'))
+assert(support.includes("nativeReply!==null?'native_reply':'model_reply'")&&!support.includes('CLIENT_BRIDGE_AI_ASSIST_FEE_FLAME_COIN'))
 console.log('Company Flame native operation contract passed')
