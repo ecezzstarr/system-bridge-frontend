@@ -1,3 +1,4 @@
+import {flameWebQuery,flameWebSearchReply} from '@/lib/flame-web-search'
 import { withFlameUsage, flameUsageStatus } from '@/lib/flame-usage'
 import { FLAME_INSTITUTION, nativeFlameReply, resolveNativeFolderConnection } from '@/lib/company-flame'
 import { NextRequest, NextResponse } from 'next/server'
@@ -233,6 +234,11 @@ export async function POST(request: NextRequest) {
       `
       return NextResponse.json({success:true,message:saved,native:true},{headers:{'Cache-Control':'private, no-store'}})
     }
+    const webQuery=flameWebQuery(message)
+    if(webQuery!==null)return await withFlameUsage(String(ctx.client.id),'client','workshop_operation',async()=>{
+      try{return await record(await flameWebSearchReply(String(ctx.client.id),webQuery))}
+      catch(error){return NextResponse.json({error:error instanceof Error?error.message:'Web search unavailable.'},{status:503})}
+    })
     if(connection&&!('error' in connection)){
       // Existing owner-checked operation owns authorization, validation and usage
       // accounting. Do not reserve a second chat fee or execute arbitrary routes.
