@@ -12,4 +12,8 @@ assert(runtime.includes('await claimDailyProspect(request)')&&runtime.includes('
 assert(route.includes('runFlameEnvironment(request,user.role,message)'))
 assert(read('components/personal-flame.tsx').includes('router.push(href)'))
 assert(read('app/layout.tsx').includes('<PersonalFlameHost />'))
+assert(runtime.includes('if(previewOnly)return'))
+assert(route.includes('body?.previewOnly===true'))
+assert(read('components/personal-flame.tsx').includes('pathname===queued.href.split'))
+assert(read('components/bridger/daily-prospect-claim.tsx').includes('weave:flame-workshop-confirmed'))
 console.log('Flame environment native navigation and execution contract passed')

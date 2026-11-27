@@ -34,7 +34,10 @@ export function DailyProspectClaim({onOpenProspects}:{onOpenProspects:()=>void})
 
   useEffect(() => {
     void load()
-    return visiblePoll(signal => load(true, signal), 60000, false)
+    const refresh=()=>void load(true)
+    window.addEventListener('weave:flame-workshop-confirmed',refresh)
+    const stop=visiblePoll(signal => load(true, signal), 60000, false)
+    return ()=>{stop();window.removeEventListener('weave:flame-workshop-confirmed',refresh)}
   }, [])
 
   const claimToday = async () => {

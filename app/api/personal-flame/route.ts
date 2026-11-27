@@ -45,6 +45,7 @@ export async function POST(request:NextRequest){
     const body=await request.json().catch(()=>null)
     const message=typeof body?.message==='string'?body.message.trim():''
     if(!message||message.length>PERSONAL_FLAME_MAX_MESSAGE)return reply({error:'Enter a message of up to 4,000 characters.'},400)
+    if(body?.previewOnly===true)return reply({movement:await runFlameEnvironment(request,user.role,message,true)})
     await ensureSchema()
     const previous=await history(user.id)
     const movement=await runFlameEnvironment(request,user.role,message)

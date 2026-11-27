@@ -6,7 +6,7 @@ import {flameDirections,flameNavigate,flameOperationIntent,type FlameMovement} f
 
 /** Fixed capability adapters only. Original endpoints re-authenticate and apply their
  * own role, funding and business rules. No arbitrary URL, model tool or user ID. */
-export async function runFlameEnvironment(request:NextRequest,role:string,message:string):Promise<FlameMovement|null>{
+export async function runFlameEnvironment(request:NextRequest,role:string,message:string,previewOnly=false):Promise<FlameMovement|null>{
  const intent=flameOperationIntent(message)
  if(!intent)return null
  if(intent.kind==='navigate')return flameNavigate(role,intent.query,intent.auto)
@@ -16,6 +16,8 @@ export async function runFlameEnvironment(request:NextRequest,role:string,messag
  if(!permitted)return {kind,state:'blocked',summary:'This operation is not available to your current position.',directions:[]}
  const paths=daily?['/weave/market/prospects','/bridger/my-prospects']:intent.kind==='check_distribution'?['/agent/distribution']:['/client/system-switch']
  const directions=flameDirections(role,paths)
+ if(!directions.length)return {kind,state:'blocked',summary:'The requested workshop is not available to your current position.',directions}
+ if(previewOnly)return {kind,state:'ready',summary:'Opening the workshop before carrying out your requested movement.',directions,navigate:directions[0].href}
  try{
   const response=intent.kind==='claim_daily_prospect'?await claimDailyProspect(request):intent.kind==='check_daily_prospect'?await getDailyProspect(request):intent.kind==='check_distribution'?await getDistribution(request):await getFileFolder(request)
   const data=await response.json()
