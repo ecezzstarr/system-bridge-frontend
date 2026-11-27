@@ -7,8 +7,8 @@ async function ensure(){await sql`CREATE TABLE IF NOT EXISTS weave_publication_l
 export async function GET(request:NextRequest){
  const user=await getAuthUser(request)
  if(!user||!['admin','bridger'].includes(user.role))return NextResponse.json({success:false,error:'Hope or Administrations access required'},{status:403})
- try{await ensure();const rows=await sql`SELECT publication FROM weave_publication_library`;const items=new Map(starterPublications.map(p=>[p.id,p]));for(const row of rows){const p=row.publication as Publication;items.set(p.id,p)}
- return NextResponse.json({success:true,items:[...items.values()].filter(p=>user.role==='admin'||p.active)},{headers:{'Cache-Control':'no-store'}})
+ try{await ensure();const rows=await sql`SELECT publication FROM weave_publication_library`;const items=new Map<string,Publication>();for(const row of rows){const p=row.publication as Publication;items.set(p.id,p)}
+ return NextResponse.json({success:true,items:[...items.values()].filter(p=>user.role==='admin'||(p.active&&p.id.startsWith('custom-')))},{headers:{'Cache-Control':'no-store'}})
  }catch(e){console.error('[Publication Library]',e);return NextResponse.json({success:false,error:'Library unavailable'},{status:500})}
 }
 export async function POST(request:NextRequest){
