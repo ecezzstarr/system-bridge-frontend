@@ -8,8 +8,9 @@ export async function GET(request:NextRequest){
  if(!user)return reply({error:'Active WEAVE login required'},401)
  try{
   const subscription=await flameUsageStatus(user.id,user.role)
-  const quotes=user.role==='admin'?[]:await flamePlanQuotes().catch(()=>[])
-  return reply({subscription,quotes})
+  let quoteError:string|null=null
+  const quotes=user.role==='admin'?[]:await flamePlanQuotes().catch(()=>{quoteError='Live USD valuation unavailable. Your usage balance is available; refresh to retry checkout.';return []})
+  return reply({subscription,quotes,quoteError})
  }catch{return reply({error:'Flame subscription is unavailable'},503)}
 }
 export async function POST(request:NextRequest){
@@ -21,5 +22,5 @@ export async function POST(request:NextRequest){
  try{
   const result=await buyFlamePack(user.id,user.role,String(body.requestId||''),String(body.planId||''),Number(body.expectedUsdCents),Number(body.maxAmountTrx))
   return reply({...result,subscription:await flameUsageStatus(user.id,user.role)})
- }catch(e){return reply({error:e instanceof Error&&/^(Price or exchange|Insufficient|Subscription settlement|Company settlement|Live USD|Valid purchase|Invalid Flame plan|Purchase reference)/.test(e.message)?e.message:'Purchase not confirmed. Refresh before retrying.'},409)}
+ }catch(e){const message=e instanceof Error?e.message:'';const known=/^(Price or exchange|Insufficient|Subscription settlement|Company settlement|Live USD|Valid purchase|Invalid Flame plan|Purchase reference)/.test(message);if(!known)console.error('[Flame subscription] purchase failed',e);return reply({error:known?message:'Purchase not confirmed. Retry the same purchase reference.',code:known?'PURCHASE_REJECTED':'PURCHASE_UNCONFIRMED'},known?409:503)}
 }
