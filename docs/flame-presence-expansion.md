@@ -1,7 +1,7 @@
 # Flame Presence — Client world expansion contract
 
 ## Institutional truth
-The Client remains the owner and source of direction. The Lord or Lady is not required to personally operate every business task. Administration, Forensics, Mandate, Attorney, Bridgers and Legions carry their assigned responsibilities. AI Presence participates within those boundaries, not above them.
+WEAVE owns Flame completely as its institutional intelligence architecture. Eight, River, Echo and specialized File Folder Flames are distinct types of that company intelligence. The Client owns the enterprise and File Folder, not Flame, and remains the source of direction. Native File Folder operations are performed by WEAVE Flame under authenticated owner instructions; no external model is required for those operations. Model-assisted conversation is not itself authorization to execute or spend. The Lord or Lady is not required to personally operate every business task. Administration, Forensics, Mandate, Attorney, Bridgers and Legions carry their assigned responsibilities. AI Presence participates within those boundaries, not above them.
 
 ## Current implementation versus intended capability
 - AI File Folder identities and product/build actions already exist in the repository.

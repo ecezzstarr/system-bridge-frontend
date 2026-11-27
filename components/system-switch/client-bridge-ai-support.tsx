@@ -116,9 +116,9 @@ export function ClientBridgeAiSupport() {
             </div>
             <div>
               <p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.2em] text-sky-300">Client AI Support</p>
-              <h3 className="mt-1 text-lg font-black text-white">Bridge AI</h3>
+              <h3 className="mt-1 text-lg font-black text-white">File Folder Flame</h3>
               <p className="mt-1 max-w-2xl text-xs leading-5 text-slate-400">
-                Your Bridger and Bridge AI work with you here. Ask about the File Folder, active construction, and systems you operate. You remain in control of each build.
+                You direct your enterprise; WEAVE owns Flame and operates the technical systems through your authorized instructions. Ask about formation and active systems. Status, show builds and show systems are free native commands; other assisted replies retain the displayed fee.
               </p>
             </div>
           </div>
@@ -146,7 +146,7 @@ export function ClientBridgeAiSupport() {
           const humanBridger=message.sender_type==='bridger'
           return <div key={message.id||index} className={`flex ${ai||humanBridger?'justify-start':'justify-end'}`}>
             <div className={`max-w-[88%] rounded-2xl border px-4 py-3 text-sm leading-6 ${ai?'border-sky-300/10 bg-sky-400/[0.045] text-slate-200':humanBridger?'border-violet-300/15 bg-violet-400/[0.07] text-slate-100':'border-emerald-300/10 bg-emerald-400/[0.055] text-white'}`}>
-              <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-sky-300">{ai?'Bridge AI':humanBridger?(identity?.assignedBridger?.name||'Assigned Bridger'):'You'}</p>
+              <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-sky-300">{ai?'File Folder Flame':humanBridger?(identity?.assignedBridger?.name||'Assigned Bridger'):'You'}</p>
               <p className="weave-word-presence whitespace-pre-wrap">{message.content}</p>
             </div>
           </div>
@@ -172,7 +172,7 @@ export function ClientBridgeAiSupport() {
               }
             }}
             rows={2}
-            placeholder="Continue with Bridge AI…"
+            placeholder="Describe your direction, or type status…"
             className="min-w-0 flex-1 resize-none rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm font-semibold text-white outline-none placeholder:text-slate-500 focus:border-sky-300/30"
           />
           <button

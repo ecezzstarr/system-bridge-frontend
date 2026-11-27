@@ -1,0 +1,18 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),ts=require('typescript')
+const exportsObject={}
+vm.runInNewContext(ts.transpileModule(fs.readFileSync('lib/company-flame.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{exports:exportsObject})
+const f=exportsObject
+assert.equal(f.FLAME_INSTITUTION.owner,'WEAVE')
+assert.equal(f.FLAME_INSTITUTION.fileFolderOwner,'client')
+for(const key of ['eight','river','echo','file_folder'])assert(f.FLAME_INSTITUTION.types[key])
+for(const action of f.FILE_FOLDER_FLAME_ACTIONS)assert.equal(f.fileFolderFlameExecution(f.resolveFileFolderFlameAction(action)).execution,'native')
+for(const action of ['sql','deploy','withdraw','settle','__proto__',null,{}])assert.equal(f.resolveFileFolderFlameAction(action),null)
+assert.equal(f.nativeFlameReply('purchase everything',{}),null)
+assert.match(f.nativeFlameReply('status',{systems:[{status:'active'}],builds:[{status:'building'}]}),/1 active system/)
+assert.match(f.nativeFlameReply('show systems',{systems:[{title:'Store',status:'active'},{title:'Hidden',status:'paused'}]}),/Store/)
+assert.doesNotMatch(f.nativeFlameReply('show systems',{systems:[{title:'Hidden',status:'paused'}]}),/Hidden/)
+const route=fs.readFileSync('app/api/client/file-folder-world/route.ts','utf8')
+assert(route.indexOf('await resolveClientWorld(request)',route.indexOf('export async function POST'))<route.indexOf('resolveFileFolderFlameAction(clean(body.action'))
+const support=fs.readFileSync('app/api/client/bridge-ai/route.ts','utf8')
+assert(support.indexOf('const nativeReply =')<support.indexOf('if (feeFlameCoin > 0)'))
+console.log('Company Flame native operation contract passed')

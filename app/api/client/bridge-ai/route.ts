@@ -1,3 +1,4 @@
+import { FLAME_INSTITUTION, nativeFlameReply } from '@/lib/company-flame'
 import { NextRequest, NextResponse } from 'next/server'
 import { getFileFolderDb, ensureClientFileFolderSchema } from '@/lib/client-file-folder'
 import { resolveClientToken } from '@/lib/client-vault'
@@ -200,8 +201,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       identity: {
-        name: 'Bridge AI',
-        role: 'Client AI Support',
+        name: 'File Folder Flame',
+        role: 'WEAVE-owned operational intelligence',
+        owner: FLAME_INSTITUTION.owner,
+        fileFolderOwner: FLAME_INSTITUTION.fileFolderOwner,
         continuity: ctx.crossing?.id ? 'crossing-linked' : 'client-continuity',
         template: ctx.crossing?.template_name || null,
         assignedBridger: ctx.bridger ? { id: ctx.bridger.id, name: ctx.bridger.name } : null,
@@ -228,6 +231,16 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const message = typeof body.message === 'string' ? body.message.trim().slice(0, 6000) : ''
     if (!message) return NextResponse.json({ error: 'Message required' }, { status: 400 })
+
+    const nativeReply = nativeFlameReply(message, { systems: ctx.systems, builds: ctx.builds })
+    if (nativeReply !== null) {
+      const [saved] = await ctx.sql`
+        INSERT INTO client_messages (client_id,client_name,position,sender_type,content,is_read)
+        VALUES (${String(ctx.client.id)},${ctx.client.name},'bridge_ai','bridge_ai',${nativeReply},true)
+        RETURNING id,sender_type,content,created_at
+      `
+      return NextResponse.json({success:true,message:saved,native:true,chargedFlameCoin:0}, {headers:{'Cache-Control':'private, no-store'}})
+    }
 
     const feeFlameCoin = WORLD_RULES.CLIENT_BRIDGE_AI_ASSIST_FEE_FLAME_COIN
     let balanceAfter: number | null = null
@@ -303,7 +316,7 @@ Template: ${ctx.crossing?.template_name || 'Bridge AI continuity'}
 Recovered crossing record: ${crossingRecord}
 
 Client-support rules:
-- You are the Client's Bridge AI support continuing from the crossing.
+- You are File Folder Flame, intelligence owned by WEAVE, continuing from the crossing. The Client directs and owns the enterprise, not the intelligence. You may explain and propose native operations; this conversation itself cannot execute them.
 - Work in one assistance thread with the Client and their assigned human Bridger.
 - The Bridger offers human guidance; the Client owns the File Folder and decides what to build.
 - Use the identity prefix on recent messages to distinguish the Bridger from the Client.
