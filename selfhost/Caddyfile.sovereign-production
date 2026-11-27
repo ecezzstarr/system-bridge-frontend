@@ -1,0 +1,24 @@
+# Set WEAVE_DOMAIN to production and keep the preview hostname separate.
+import /etc/caddy/WeaveProduction
+
+# WEAVE_SOVEREIGN_PREVIEW_DOMAIN is a hostname, not an https URL.
+{$WEAVE_SOVEREIGN_PREVIEW_DOMAIN:candidate.weavingsystem.online} {
+    encode zstd gzip
+    @readiness path /api/health /api/health/ready
+    handle @readiness {
+        reverse_proxy weave:3000
+    }
+    handle {
+        respond "WEAVE candidate preview is restricted to readiness checks." 503
+    }
+    header {
+        X-Content-Type-Options nosniff
+        Referrer-Policy strict-origin-when-cross-origin
+        Cache-Control no-store
+        -Server
+    }
+    log {
+        output stdout
+        format console
+    }
+}

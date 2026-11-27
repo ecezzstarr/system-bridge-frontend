@@ -1,0 +1,10 @@
+[Unit]
+Description=Repeat WEAVE candidate readiness every five minutes
+
+[Timer]
+OnBootSec=2min
+OnUnitInactiveSec=5min
+Unit=weave-sovereign-probe.service
+
+[Install]
+WantedBy=timers.target
