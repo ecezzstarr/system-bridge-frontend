@@ -51,3 +51,10 @@ assert.ok(infrastructurePage.includes('Sovereign + Flame Record'),'Infrastructur
 assert.ok(health.includes('WEAVE_RELEASE_SHA'),'Health endpoint exposes release identity for deployment verification')
 
 console.log('PASS: verified main deploys only through WEAVE self-host; Sovereign and Flame preserve deployment and rollback history')
+
+const trainingCompose=read('docker-compose.flame-training.yml')
+assert.ok(trainingCompose.includes('network_mode: "service:weave"')&&!/^\s+ports:/m.test(trainingCompose),'Private training shares app loopback without public ingress')
+assert.ok(trainingCompose.includes('weave-one-private:/private/weave-one')&&trainingCompose.includes('healthcheck:'),'Private persistent model records and authenticated health probe')
+assert.ok(deploy.includes('WEAVE_FLAME_TRAINING_ENABLED')&&deploy.includes('--force-recreate --wait --wait-timeout 90 flame-training'),'Explicitly enabled worker is restored in the recreated application namespace')
+assert.ok(deploy.lastIndexOf('restore_flame_training')>deploy.lastIndexOf('wait_for_health "https://${DOMAIN}/api/health"'),'Worker restoration cannot decide production health')
+assert.ok(deploy.includes('verified application remains live'),'Worker failure does not roll back healthy application')
