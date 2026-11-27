@@ -12,6 +12,12 @@ __pycache__/
 screenshot-main.png
 *.failed-backup
 
+# Private model research artifacts must never enter source history.
+private/
+*.pt
+*.pth
+*.safetensors
+
 # Weave-owned server secrets, backup proofs and database archives
 selfhost/sovereign-db-password.txt
 selfhost/sovereign-restore-proof.json

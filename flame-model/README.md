@@ -14,6 +14,19 @@ The extraction follows the selected conversation branch in chronological order. 
 
 ## Model
 
+### Recovery without an email export
+
+Authorized user-visible chats may be saved as individual `read_thread` response JSON pages on the private device. Select source IDs explicitly; never ingest all account messages or use browser session tokens. The offline importer preserves source/turn/message IDs, tool-provided turn timestamps, corrections as separate messages, and page hashes. It rejects unselected IDs and conflicting copies. It does not scrape an account or automatically approve content:
+
+```
+python flame-model/prepare_threads.py /private/selected_ids.json /private/candidates.jsonl /private/pages/*.json
+python -m unittest discover -s flame-model -p test_prepare_threads.py
+```
+
+Pass explicit page paths on shells that do not expand wildcards. The output must be outside this checkout. Inspect pending cursors and all truncation/missing-attachment notices. A terminal page only establishes the end of returned pagination, not complete original history. Keep a private coverage manifest of selected, recovered, missing and unreviewed sources. Read neither unrelated message bodies nor credentials. Review candidates into the existing approved dialogue format; preserve the raw record and correction history privately. Treat old assistant implementation/deployment statements as unverified claims until checked against current evidence. Do not turn tentative interpretations into current company rules.
+
+Trusted v0 checkpoints can initialize another training run with `train ... --initialize-from /private/previous.pt`. The checkpoint architecture is reused and the new artifact records its parent's SHA-256. This continues weights with a fresh optimizer, not an exact training-state resume. Never overwrite the parent. Missing prior weights must be reported; random initialization is a new experiment, not recovery of that checkpoint.
+
 Python 3.10+ and PyTorch. Training predicts assistant bytes with masked prompt labels. A validation split is required and the checkpoint records its architecture, corpus SHA256 and metrics. Load trusted checkpoints only.
 
 ```

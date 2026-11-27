@@ -81,8 +81,10 @@ def loss(model,x,y):
 def train(args):
     torch.manual_seed(args.seed); random.seed(args.seed)
     torch.set_num_threads(args.threads)
-    model=FlameLM(args.block,args.width,args.heads,args.layers).to(args.device)
-    sets=examples(args.corpus,args.block)
+    # Continuation uses trusted existing weights and their architecture. AdamW is
+    # deliberately reset: v0 artifacts do not contain optimizer/RNG state.
+    model=load(args.initialize_from,args.device) if args.initialize_from else FlameLM(args.block,args.width,args.heads,args.layers).to(args.device)
+    sets=examples(args.corpus,model.config["block"])
     opt=torch.optim.AdamW(model.parameters(),lr=args.lr)
     x,y=sets["train"]
     for step in range(args.steps):
@@ -101,7 +103,10 @@ def train(args):
             xx,yy=vx[start:start+args.batch].to(args.device),vy[start:start+args.batch].to(args.device)
             n=int((yy!=-100).sum())
             total+=float(loss(model,xx,yy))*n;count+=n
-    metrics={"validation_loss":total/count,"parameters":sum(p.numel() for p in model.parameters()),"train_turns":len(x),"validation_turns":len(vx),"steps":args.steps}
+    metrics={"validation_loss":total/count,"parameters":sum(p.numel() for p in model.parameters()),"train_turns":len(x),"validation_turns":len(vx),"steps":args.steps,
+             "initialization":"checkpoint_weights_fresh_optimizer" if args.initialize_from else "random",
+             "parent_checkpoint_sha256":hashlib.sha256(Path(args.initialize_from).read_bytes()).hexdigest() if args.initialize_from else None,
+             "release_approved":False}
     artifact=Path(args.output)
     # Exclusive creation avoids overwriting a verified model.
     with artifact.open("xb") as fp:
@@ -161,6 +166,7 @@ def main():
     for key,value in dict(block=512,width=128,heads=4,layers=4,steps=500,batch=8,threads=4,seed=42).items():
         t.add_argument("--"+key,type=int,default=value)
     t.add_argument("--lr",type=float,default=0.0003);t.add_argument("--device",default="cpu")
+    t.add_argument("--initialize-from",help="Trusted local v0 checkpoint; continues weights with a fresh optimizer")
     c=sub.add_parser("chat")
     c.add_argument("checkpoint");c.add_argument("--knowledge");c.add_argument("--device",default="cpu")
     c.add_argument("--limit",type=int,default=160)
