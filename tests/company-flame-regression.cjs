@@ -14,5 +14,13 @@ assert.doesNotMatch(f.nativeFlameReply('show systems',{systems:[{title:'Hidden',
 const route=fs.readFileSync('app/api/client/file-folder-world/route.ts','utf8')
 assert(route.indexOf('await resolveClientWorld(request)',route.indexOf('export async function POST'))<route.indexOf('resolveFileFolderFlameAction(clean(body.action'))
 const support=fs.readFileSync('app/api/client/bridge-ai/route.ts','utf8')
-assert(support.includes("nativeReply!==null?'native_reply':'model_reply'")&&!support.includes('CLIENT_BRIDGE_AI_ASSIST_FEE_FLAME_COIN'))
+assert(support.includes("'client','native_reply'")&&!support.includes('chatWithBridge')&&support.includes('await operateFileFolder(actionRequest)')&&!support.includes('CLIENT_BRIDGE_AI_ASSIST_FEE_FLAME_COIN'))
 console.log('Company Flame native operation contract passed')
+
+const systems=[{id:'s1',title:'Research Room',status:'active'},{id:'s2',title:'Operations Board',status:'active'}]
+assert.match(f.nativeFlameReply('Could you show me my active systems?',{systems}),/Research Room/)
+assert.equal(f.resolveNativeFolderConnection('Please connect Research Room to Operations Board',systems).sourceId,'s1')
+assert.equal(f.resolveNativeFolderConnection('How do I connect Research Room to Operations Board?',systems),null)
+assert.equal(f.resolveNativeFolderConnection('do it',systems),null)
+assert(f.resolveNativeFolderConnection('connect Research Room to Operations Board',[...systems,{...systems[0],id:'s3'}]).error)
+assert(f.resolveNativeFolderConnection('connect Research Room to Hidden',systems).error)
