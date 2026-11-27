@@ -221,6 +221,8 @@ export async function POST(request: NextRequest) {
     const message = typeof body.message === 'string' ? body.message.trim().slice(0, 6000) : ''
     if (!message) return NextResponse.json({ error: 'Message required' }, { status: 400 })
 
+    // Only the Client's authenticated request can trigger an operation or usage debit.
+    // WEAVE owns Flame; the Client owns the File Folder and decides what to build.
     const connection=resolveNativeFolderConnection(message,ctx.systems)
     async function record(response:string){
       const [saved]=await ctx.sql`
@@ -268,7 +270,7 @@ export async function POST(request: NextRequest) {
     const nativeReply=connection&&'error' in connection?connection.error:
       nativeFlameReply(message,{systems:ctx.systems,builds:ctx.builds})??
       (/^(?:note:|my notes\b)/i.test(message)?'This is your shared File Folder support thread. Use Personal Flame for private notes.':personalFlameNativeReply(message,history,'client'))??
-      nativeFlameClarification(message,'client')
+      (nativeFlameClarification(message,'client')+' Remember: the Client owns the File Folder and decides what to build.')
     return await withFlameUsage(String(ctx.client.id),'client','native_reply',()=>record(nativeReply),body=>body.success===true)
   } catch (error) {
     console.error('[client/bridge-ai POST]', error)

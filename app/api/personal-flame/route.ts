@@ -1,3 +1,5 @@
+import {flameCapabilities} from '@/lib/flame-capabilities'
+import {creativeAvailability} from '@/lib/weave-creative-production'
 import {flameCreativeIntent,runCreativeProduction} from '@/lib/weave-creative-production'
 import {flameWebQuery,flameWebSearchReply} from '@/lib/flame-web-search'
 import { NextRequest, NextResponse } from 'next/server'
@@ -39,7 +41,7 @@ export async function GET(request:NextRequest){
   if(!user)return reply({error:'Active WEAVE login required.'},401)
   try{
     await ensureSchema()
-    return reply({identity:{name:'Personal Flame',owner:'WEAVE',scope:'personal'},messages:await history(user.id)})
+    return reply({identity:{name:'Personal Flame',owner:'WEAVE',scope:'personal'},capabilities:flameCapabilities(user.role,Boolean(process.env.WEAVE_WEB_SEARCH_API_KEY?.trim()),creativeAvailability(user.role)),messages:await history(user.id)})
   }catch{return reply({error:'Personal Flame records are temporarily unavailable.'},503)}
 }
 export async function POST(request:NextRequest){
@@ -54,6 +56,12 @@ export async function POST(request:NextRequest){
     const priorMovement=previous[previous.length-1]?.movement
     const operationMessage=flameFollowupDirection(user.role,message,priorMovement)??message
     if(body?.previewOnly===true)return reply({movement:await runFlameEnvironment(request,user.role,operationMessage,true)})
+    if(/^\s*(?:what can (?:you|flame) do|show (?:my |your )?capabilities|help)[.!?]*$/i.test(message)){
+      const capabilities=flameCapabilities(user.role,Boolean(process.env.WEAVE_WEB_SEARCH_API_KEY?.trim()),creativeAvailability(user.role))
+      const response='Here are the functions available to your position. Select a task in the capability panel; each original workshop retains its access rules. Weave One is still in evaluation.\n'+capabilities.actions.map(a=>a.title+' — '+a.detail).join('\n')
+      await sql`INSERT INTO weave_personal_flame_turns(user_id,instruction,response,mode) VALUES(${user.id}::uuid,${message},${response},'native')`
+      return reply({messages:await history(user.id),mode:'native',movement:null,capabilities})
+    }
     const creative=flameCreativeIntent(message)
     if(creative){
       const result=await runCreativeProduction(user,{...creative,allowProvider:true,requestId:body.requestId})

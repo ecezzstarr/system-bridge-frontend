@@ -215,11 +215,11 @@ async function nativeEight(command:string,actorId:string,history:PersonalFlameMe
   const topic=publicResearchTopic(q)
   if(topic){
    const r=await discoverResearch(topic)
-   return 'Research discovery: '+r.topic+'\n'+r.sources.map(x=>x.title+' — '+(x.published?.join('-')||'date unavailable')+' — '+x.url).join('\n')+'\n'+r.limitations
+   return 'Research discovery: '+r.topic+'\n'+r.sources.map((x:{title:string;published?:number[]|null;url:string})=>x.title+' — '+(x.published?.join('-')||'date unavailable')+' — '+x.url).join('\n')+'\n'+r.limitations
   }
   if(/^(?:please )?(?:check|show|inspect|review) (?:the |our |company )?(?:release|deployment|production|system continuity)(?: status| evidence| health)?[.!?]*$/i.test(q)){
    const e=await readContinuityEvidence()
-   return 'Active release: '+(e.activeRelease||'not reported')+'\nRelease worker: '+(e.workerOnline?'recent heartbeat':'no recent heartbeat')+'\n'+e.recentJobs.map(x=>x.action+': '+x.status).join('\n')+'\n'+e.limitations+'\nOpen /admin/release-workshop to inspect or authorize the next movement.'
+   return 'Active release: '+(e.activeRelease||'not reported')+'\nRelease worker: '+(e.workerOnline?'recent heartbeat':'no recent heartbeat')+'\n'+e.recentJobs.map((x:{action:unknown;status:unknown})=>x.action+': '+x.status).join('\n')+'\n'+e.limitations+'\nOpen /admin/release-workshop to inspect or authorize the next movement.'
   }
   const file=q.match(/^(?:please )?(?:read|show|inspect) (?:source|file) (\S{1,220})$/i)
   const dir=q.match(/^(?:please )?(?:list|show) (?:directory|files in) (\S{1,160})$/i)

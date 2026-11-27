@@ -19,7 +19,7 @@ export async function runFlameEnvironment(request:NextRequest,role:string,messag
   if(previewOnly)return {kind:'inspection',state:'ready',summary:'Ready to inspect release evidence.',directions}
   try{
    const evidence=await readContinuityEvidence()
-   const jobs=evidence.recentJobs.map(j=>String(j.action)+': '+String(j.status)).join('; ')
+   const jobs=evidence.recentJobs.map((j:{action:unknown;status:unknown})=>String(j.action)+': '+String(j.status)).join('; ')
    return {kind:'inspection',state:'verified',summary:'Recorded active release: '+(evidence.activeRelease||'not reported')+'. Release worker: '+(evidence.workerOnline?'recent heartbeat':'no recent heartbeat')+'. Recent jobs: '+(jobs||'none recorded')+'. This is release evidence, not proof of complete company health.',directions}
   }catch{return {kind:'inspection',state:'blocked',summary:'Release evidence is unavailable; inspect the Release Workshop independently.',directions}}
  }
