@@ -1,3 +1,4 @@
+import {flameCreativeIntent,runCreativeProduction} from '@/lib/weave-creative-production'
 import {flameWebQuery,flameWebSearchReply} from '@/lib/flame-web-search'
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
@@ -53,6 +54,15 @@ export async function POST(request:NextRequest){
     const priorMovement=previous[previous.length-1]?.movement
     const operationMessage=flameFollowupDirection(user.role,message,priorMovement)??message
     if(body?.previewOnly===true)return reply({movement:await runFlameEnvironment(request,user.role,operationMessage,true)})
+    const creative=flameCreativeIntent(message)
+    if(creative){
+      const result=await runCreativeProduction(user,{...creative,allowProvider:true,requestId:body.requestId})
+      if(!result.ok)return result
+      const output=await result.json()
+      const response=output.kind==='image'?'Image generated and saved to your private Creative Production workshop. Open /image-workshop/production to view or download it. Asset: '+output.assetId:String(output.content||'')
+      await sql`INSERT INTO weave_personal_flame_turns(user_id,instruction,response,mode) VALUES(${user.id}::uuid,${message},${response},'native')`
+      return reply({messages:await history(user.id),mode:'native',movement:null})
+    }
     const webQuery=flameWebQuery(message)
     const intent=flameOperationIntent(operationMessage)
     const native=personalFlameNativeReply(message,previous,user.role)
