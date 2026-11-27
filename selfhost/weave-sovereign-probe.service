@@ -1,0 +1,18 @@
+[Unit]
+Description=WEAVE independent candidate readiness report
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+# Adjust both paths to the actual trusted candidate checkout.
+WorkingDirectory=/opt/weave/system-bridge-frontend
+ExecStart=/usr/bin/python3 /opt/weave/system-bridge-frontend/selfhost/sovereign-candidate-probe.py --report
+User=weave
+Group=weave
+SupplementaryGroups=docker
+# Exit 2 means a failing readiness report was successfully sent.
+SuccessExitStatus=2
+TimeoutStartSec=120
+NoNewPrivileges=true
+UMask=0077

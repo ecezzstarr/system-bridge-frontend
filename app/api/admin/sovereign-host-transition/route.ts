@@ -1,5 +1,5 @@
 import {NextRequest,NextResponse} from 'next/server'
-import {resolve4} from 'node:dns/promises'
+import {resolve4,resolve6} from 'node:dns/promises'
 import {isIP} from 'node:net'
 import {getPool} from '@/lib/db'
 import {requireWorkshopAuthorization} from '@/lib/workshop-auth'
@@ -72,18 +72,24 @@ async function suitableCandidate(nodeId:string,expectedSha?:string){
  return {node,sha}
 }
 
-async function verifyPublicDestination(plan:{target_ipv4:string;release_sha:string}){
+async function verifyPublicDestination(plan:{node_id:string;target_ipv4:string;release_sha:string}){
  const targets=await dnsTargets()
- if(!targets.includes(plan.target_ipv4))
-  throw Error('Public DNS does not resolve to the approved Weave-owned host IP')
+ if(!targets.length||targets.some(ip=>ip!==plan.target_ipv4))
+  throw Error('Every public IPv4 DNS record must point only to the approved Weave-owned host; mixed Oracle/candidate routing is not accepted')
+ const ipv6=await resolve6(HOST).catch((error:NodeJS.ErrnoException)=>{
+  if(error.code==='ENODATA'||error.code==='ENOTFOUND')return []
+  throw error
+ })
+ if(ipv6.length)throw Error('Public IPv6 routing is not covered by this IPv4 transition; reconcile AAAA records before verification')
  const response=await fetch('https://'+HOST+'/api/health/ready',{
   cache:'no-store',signal:AbortSignal.timeout(7000),redirect:'error',
  })
  const evidence=await response.json().catch(()=>null)
  if(!response.ok||evidence?.status!=='ready'||evidence?.releaseSha!==plan.release_sha||
+  evidence?.host?.provider!=='weave-owned'||evidence?.host?.nodeId!==plan.node_id||
   evidence?.checks?.database!==true||evidence?.checks?.accounts!==true||
   evidence?.checks?.media!==true)
-  throw Error('Public destination did not pass database, media and exact release verification')
+  throw Error('Public destination did not pass approved host identity, database, media and exact release verification')
 }
 
 async function getPlans(){
