@@ -823,7 +823,7 @@ assert.ok(clientBridgeAiApiSource.includes('ensureClientBridgeAiMessageSchema'),
 assert.ok(clientBridgeAiApiSource.includes('ADD COLUMN IF NOT EXISTS sender_type'),'Client Bridge AI upgrades legacy sender columns safely')
 assert.ok(clientBridgeAiApiSource.includes('ALTER COLUMN sender DROP NOT NULL'),'Legacy sender constraints cannot break Bridge AI writes')
 const flameUsageSource=fs.readFileSync(path.join(root,'lib/flame-usage.ts'),'utf8')
-assert.ok(clientBridgeAiApiSource.includes('withFlameUsage')&&clientBridgeAiApiSource.includes("'native_reply':'model_reply'"),'Client Flame uses the usage reservation wrapper for both reply modes')
+assert.ok(clientBridgeAiApiSource.includes('withFlameUsage')&&clientBridgeAiApiSource.includes("'client','native_reply'")&&!clientBridgeAiApiSource.includes('chatWithBridge'),'Client Flame uses native usage accounting without an external model')
 assert.ok(flameUsageSource.includes('FLAME_USAGE_REQUIRED')&&flameUsageSource.includes('units>=${cost}'),'Flame refuses assistance without sufficient usage units')
 assert.ok(flameUsageSource.includes('finishFlameUsage(reservation.id,userId,false)')&&flameUsageSource.includes('ELSE movement.units END'),'Failed Flame operations release their reserved units')
 assert.ok(clientBridgeAiSupportSource.includes('<FlameSubscriptionPanel />')&&clientBridgeAiSupportSource.includes('shared usage subscription'),'Client sees Flame usage costs and available units before assistance')
