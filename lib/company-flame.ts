@@ -32,19 +32,23 @@ export function fileFolderFlameExecution(action: FileFolderFlameAction) {
 }
 
 /** Exact read-only commands; arbitrary prose never becomes an executable instruction. */
+export function isNativeFlameCommand(message: string): boolean {
+  const command = message.trim().toLowerCase().replace(/[.!?]+$/, '')
+  return ['status', 'show builds', 'show systems'].includes(command)
+}
 export function nativeFlameReply(message: string, context: {
   systems?: readonly { title?: unknown; status?: unknown }[]
   builds?: readonly { title?: unknown; status?: unknown }[]
 }): string | null {
   const command = message.trim().toLowerCase().replace(/[.!?]+$/, '')
-  if (!['status', 'show builds', 'show systems'].includes(command)) return null
+  if (!isNativeFlameCommand(message)) return null
   const systems = (context.systems || []).filter(s => s.status === 'active')
   const builds = context.builds || []
   const describe = (rows: readonly {title?: unknown; status?: unknown}[]) =>
     rows.slice(0, 15).map(r => String(r.title || 'Unnamed system') + ' — ' + String(r.status || 'recorded')).join('; ')
   if (command === 'show builds') return builds.length ? 'Recorded construction: ' + describe(builds) : 'No unfinished construction is recorded.'
   if (command === 'show systems') return systems.length ? 'Active systems: ' + describe(systems) : 'No active systems are recorded.'
-  return 'WEAVE Flame — ' + systems.length + ' active system(s); ' + builds.length +
-    ' recorded unfinished build(s). You own the File Folder and direct its formation; WEAVE owns Flame. ' +
+  return 'WEAVE Flame — ' + systems.length + ' active system(s) in the recent record; ' + builds.length +
+    ' recorded unfinished build(s) in the recent record. You own the File Folder and direct its formation; WEAVE owns Flame. ' +
     'Use show builds or show systems for details. This native check does not use an external model.'
 }

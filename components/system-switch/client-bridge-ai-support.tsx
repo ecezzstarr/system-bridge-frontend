@@ -4,6 +4,7 @@ import { UsdValue, useUsdValue } from '@/components/usd-value'
 import { useEffect, useRef, useState } from 'react'
 import { Bot, Send, Sparkles } from 'lucide-react'
 import { getClientToken } from '@/lib/client-auth'
+import { isNativeFlameCommand } from '@/lib/company-flame'
 
 type SupportMessage = {
   id?: string
@@ -181,7 +182,7 @@ export function ClientBridgeAiSupport() {
             className="inline-flex w-12 items-center justify-center rounded-2xl bg-sky-400 text-slate-950 disabled:opacity-40"
             aria-label="Send to Bridge AI"
           >
-            <span className="sr-only">{billing ? `Send for ${usd(billing.feeFlameCoin)}` : 'Send to Bridge AI'}</span>
+            <span className="sr-only">{isNativeFlameCommand(input) ? 'Send free native command' : billing ? `Send for ${usd(billing.feeFlameCoin)}` : 'Send to Flame'}</span>
             <Send className="h-4 w-4"/>
           </button>
         </div>

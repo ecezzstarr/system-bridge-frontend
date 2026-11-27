@@ -235,8 +235,14 @@ export async function POST(request: NextRequest) {
     const nativeReply = nativeFlameReply(message, { systems: ctx.systems, builds: ctx.builds })
     if (nativeReply !== null) {
       const [saved] = await ctx.sql`
+        WITH instruction AS (
+          INSERT INTO client_messages (client_id,client_name,position,sender_type,content,is_read)
+          VALUES (${String(ctx.client.id)},${ctx.client.name},'bridge_ai','client',${message},true)
+          RETURNING id
+        )
         INSERT INTO client_messages (client_id,client_name,position,sender_type,content,is_read)
-        VALUES (${String(ctx.client.id)},${ctx.client.name},'bridge_ai','bridge_ai',${nativeReply},true)
+        SELECT ${String(ctx.client.id)},${ctx.client.name},'bridge_ai','bridge_ai',${nativeReply},true
+        FROM instruction
         RETURNING id,sender_type,content,created_at
       `
       return NextResponse.json({success:true,message:saved,native:true,chargedFlameCoin:0}, {headers:{'Cache-Control':'private, no-store'}})
