@@ -694,7 +694,7 @@ assert.ok(fileFolderWorldApi.includes("action === 'set_business_formation'")&&fi
 assert.ok(fileFolderOpenWorld.includes('data-client-business-formation="owner-controlled"')&&fileFolderOpenWorld.includes('Save business formation'),'Client can define their business from the normal File Folder platform')
 assert.ok(fileFolderOpenWorld.includes("action:'start_build'")&&fileFolderOpenWorld.includes('title:buildDrafts')&&fileFolderOpenWorld.includes('purpose:buildDrafts'),'Client names and purposes each selected business system before formation')
 assert.ok(clientFileFolder.includes('businessName={businessFormation.business_name')&&clientFileFolder3d.includes('businessName?:string'),'Client business identity flows into the 3D world instead of remaining metadata only')
-assert.ok(fileFolderOpenWorld.includes('Main File Folder · Client-owned Business Formation'),'File Folder names itself as Client-owned business formation')
+assert.ok(fileFolderOpenWorld.includes('Main File Folder · Client-owned enterprise · WEAVE Flame operations'),'File Folder names itself as Client-owned business formation')
 assert.ok(fileFolderOpenWorld.includes('Systems in Motion')&&fileFolderOpenWorld.includes('outputs'),'Completed Client technology is described through operation and connection')
 assert.ok(clientFileFolder3d.includes('Main File Folder · Client-owned Business World')&&clientFileFolder3d.includes('You decide what systems exist here'),'3D File Folder presents one Client-owned business world organized by WEAVE')
 assert.ok(clientFileFolderOperatingSource.includes("phase:'Operate + Connect'"),'Client formation route explicitly continues from operation into connection')

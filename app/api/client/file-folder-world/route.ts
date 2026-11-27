@@ -1,3 +1,5 @@
+import { withFlameUsage } from '@/lib/flame-usage'
+import { FLAME_INSTITUTION, resolveFileFolderFlameAction, fileFolderFlameExecution } from '@/lib/company-flame'
 import { isFileFolderPlatformKind } from '@/lib/file-folder-platform-projects'
 import {getProActivationState} from '@/lib/pro-file-folder-activation'
 import {resolveVerifiedClientFileFolderTier} from '@/lib/client-file-folder-tier'
@@ -126,6 +128,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       world: {...world,moduleConnections,moduleRuntimeEvents},
+      flame: FLAME_INSTITUTION,
       motion:fileFolderMotion('snapshot'),
     }, { headers: { 'Cache-Control': 'private, no-store' } })
   } catch (error) {
@@ -140,7 +143,10 @@ export async function POST(request: NextRequest) {
     if (ctx.error) return ctx.error
 
     const body = await request.json()
-    const action = clean(body.action, 80)
+    const action = resolveFileFolderFlameAction(clean(body.action, 80))
+    if (!action) return NextResponse.json({ error: 'Unknown File Folder Flame action' }, { status: 400 })
+    return await withFlameUsage(String(ctx.client.id),'client','workshop_operation',async()=>{
+    const flame = fileFolderFlameExecution(action)
     let receipt = null as Awaited<ReturnType<typeof issueWeaveReceipt>> | null
 
     if (action === 'connect_modules') {
@@ -185,6 +191,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success:true,
         connection:rows[0],
+        flame,
         runtimeNote:readiness.reason,
       },{status:201,headers:{'Cache-Control':'private, no-store'}})
     } else if (action === 'create_platform_project') {
@@ -815,7 +822,9 @@ export async function POST(request: NextRequest) {
       success: true,
       world,
       motion:fileFolderMotion(action),
+      flame,
     }, { headers: { 'Cache-Control': 'private, no-store' } })
+    },body=>body.success===true)
   } catch (error) {
     console.error('[client/file-folder-world POST]', error)
     return NextResponse.json({ error: 'File Folder movement failed' }, { status: 500 })

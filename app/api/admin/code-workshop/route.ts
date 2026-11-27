@@ -1,8 +1,10 @@
 import {NextRequest,NextResponse} from 'next/server'
 import {requireWorkshopAuthorization} from '@/lib/workshop-auth'
+import {mergeApprovedWorkPull} from '@/lib/weave-github-release'
 import {
  CODE_WORKSHOP_POLICY,isCodeWorkshopWritable,readWorkshopSource,workshopActivity,
  createWorkshopBranch,commitWorkshopFile,createWorkshopReview,workshopDraftBranches,
+ proposeEightWorkshopEdit,assertEightWorkshopPull,
 } from '@/lib/weave-code-workshop'
 
 export const runtime='nodejs'
@@ -61,6 +63,12 @@ export async function POST(request:NextRequest){
     content:body.content,expectedSha:typeof body.expectedSha==='string'?body.expectedSha:null,
     message:String(body.message||''),confirmation:String(body.confirmation||''),
    })
+  }else if(body.action==='eight_propose'){
+   result=await proposeEightWorkshopEdit({actorId,branch:String(body.branch||''),path:String(body.path||''),expectedSha:typeof body.expectedSha==='string'?body.expectedSha:null,instruction:String(body.instruction||''),allowProvider:body.allowProvider===true})
+  }else if(body.action==='eight_merge_review'){
+   const number=Number(body.number),headSha=String(body.headSha||'')
+   await assertEightWorkshopPull(actorId,String(body.branch||''),number,headSha)
+   result=await mergeApprovedWorkPull({number,headSha,adminId:actorId,confirmation:String(body.confirmation||'')})
   }else if(body.action==='open_review'){
    result=await createWorkshopReview({
     actorId,branch:String(body.branch||''),title:String(body.title||''),

@@ -1,4 +1,5 @@
 'use client'
+import {FlameSubscriptionPanel,notifyFlameUsage} from '@/components/flame-subscription'
 import { UsdValue, useUsdValue } from '@/components/usd-value'
 import { isBuildPartCompatible } from '@/lib/file-folder-build-compatibility'
 import { quoteFileFolderBlueprint } from '@/lib/file-folder-build-quote'
@@ -278,7 +279,7 @@ export default function FileFolderOpenWorld({
       setWorld(body.world)
       onWorldChange?.(body.world)
       emitWeaveMotion(body.motion||fileFolderMotion(String(payload?.action||'')))
-      setMessage('Movement recorded in the Main File Folder.')
+      setMessage(body.flame?.execution === 'native' ? 'WEAVE Flame recorded your authorized movement.' : 'Movement recorded in the Main File Folder.')
       return true
     } catch (error: any) {
       const label=error?.message||'Movement failed'
@@ -286,7 +287,7 @@ export default function FileFolderOpenWorld({
       setMessage(label)
       return false
     } finally {
-      setBusy('')
+      setBusy('');notifyFlameUsage()
     }
   }
 
@@ -357,12 +358,13 @@ export default function FileFolderOpenWorld({
 
   return (
     <section className="overflow-clip rounded-[1.35rem] border border-amber-200/10 bg-[#02080d] shadow-[0_30px_100px_rgba(0,0,0,.42)] md:rounded-[2rem]" data-construction-workspace="progressive-site">
+      <div className="px-4 pt-2"><FlameSubscriptionPanel /></div>
       <details className="ff-construction-overview">
         <summary>Territory overview <span>Identity, network &amp; resources</span></summary>
       <header className="border-b border-amber-100/10 bg-[radial-gradient(circle_at_18%_0%,rgba(249,115,22,.11),transparent_30%),linear-gradient(180deg,rgba(73,45,24,.22),rgba(2,8,13,.02))] px-4 py-4 md:p-8">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-[8px] font-black uppercase tracking-[0.22em] text-amber-200 md:text-[9px] md:tracking-[0.28em]">Main File Folder · Client-owned Business Formation</p>
+            <p className="text-[8px] font-black uppercase tracking-[0.22em] text-amber-200 md:text-[9px] md:tracking-[0.28em]">Main File Folder · Client-owned enterprise · WEAVE Flame operations</p>
             <h2 className="mt-1 truncate text-lg font-black text-white md:mt-2 md:text-4xl">{world?.businessFormation?.business_name || workshopTitle}</h2>
             <p className="mt-1 truncate text-[9px] font-mono text-slate-500 md:mt-2 md:text-[10px]">{clientName} · {fileNumber}</p>
           </div>
@@ -372,7 +374,7 @@ export default function FileFolderOpenWorld({
           </div>
         </div>
 
-        <p className="mt-3 hidden max-w-3xl text-xs leading-6 text-slate-400 md:block">{world?.businessFormation?.purpose || workshopPurpose || 'You own the business and decide what to build. WEAVE hosts, organizes and integrates the technology through your Customer Door.'}</p>
+        <p className="mt-3 hidden max-w-3xl text-xs leading-6 text-slate-400 md:block">{world?.businessFormation?.purpose || workshopPurpose || 'You own the business and decide what to build. WEAVE owns Flame, which operates the authorized technical functions through your Customer Door.'}</p>
         <div className="mt-4 border-y border-cyan-300/10 py-3" data-file-folder-multiplayer-world="human-and-weave-ai">
           <div className="flex items-center justify-between gap-4"><div><p className="text-[8px] font-black uppercase tracking-[.2em] text-cyan-200">File Folder Formation Network</p><p className="mt-1 text-[10px] leading-5 text-slate-400">This private Client formation view can show clearly identified WEAVE AI-operated demonstration territories for reference. Public visitors do not enter this File Folder; outward visibility begins at an opened Customer Door.</p></div><span className="shrink-0 text-[8px] font-black uppercase tracking-wider text-emerald-300">World active</span></div>
           <div className="mt-3 flex snap-x snap-mandatory gap-2 overflow-x-auto overscroll-x-contain pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">

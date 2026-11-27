@@ -1,6 +1,7 @@
 /**
  * Flame Presence expansion: a capability and authority contract, not a claim
  * that an AI identity has external credentials or autonomous execution.
+ * WEAVE owns Flame; the Client owns the world and authorizes its direction.
  * Every movement is tied to a Client-owned world and an accountable position.
  */
 export type FlamePosition = 'administration'|'forensics'|'mandate'|'attorney'|'bridger'|'legion'|'flame_ai'

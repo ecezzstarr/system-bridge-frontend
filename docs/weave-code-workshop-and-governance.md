@@ -171,3 +171,6 @@ The Native Formation Workshop is different: after its engine is installed
 through a reviewed, operator-authorized software release, ordinary
 versioned pages and supported system blocks can be published in the
 existing database without rebuilding either application host.
+
+## Eight development intelligence
+Eight can propose changes to an existing selected source file (or create a new allowed file) on an operator-owned draft. It reads exact GitHub content, uses the configured model only with operator consent, and applies bounded exact-text edits without executing them. Administrations reviews the proposed source and uses the existing SAVE DRAFT and OPEN REVIEW controls. Eight can then submit the exact reviewed head to the existing protected merge function; confirmation, exact SHA, successful PR Production Check and GitHub required reviews remain mandatory. No deployment is invoked by Eight. The Release Workshop independently verifies the new main commit and queues deployment on explicit authorization. Protected source paths remain excluded and require independent engineering. Model-assisted source generation is not a claim of independent native reasoning or completed tests.
