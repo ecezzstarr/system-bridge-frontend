@@ -1,5 +1,5 @@
 /** Company-owned prepaid usage subscription. Units are service allowances, not currency. */
-export const FLAME_USAGE_COST={native_reply:1,model_reply:5,workshop_operation:2} as const
+export const FLAME_USAGE_COST={native_reply:1,model_reply:5,workshop_operation:2,creative_image:50,creative_text:5} as const
 export type FlameUsageKind=keyof typeof FLAME_USAGE_COST
 export const FLAME_PLANS=[
  {id:'go',name:'Flame Go',usdCents:300,units:300,description:'Everyday interaction and occasional workshop operations'},
