@@ -826,7 +826,7 @@ const flameUsageSource=fs.readFileSync(path.join(root,'lib/flame-usage.ts'),'utf
 assert.ok(clientBridgeAiApiSource.includes('withFlameUsage')&&clientBridgeAiApiSource.includes("'native_reply':'model_reply'"),'Client Flame uses the usage reservation wrapper for both reply modes')
 assert.ok(flameUsageSource.includes('FLAME_USAGE_REQUIRED')&&flameUsageSource.includes('units>=${cost}'),'Flame refuses assistance without sufficient usage units')
 assert.ok(flameUsageSource.includes('finishFlameUsage(reservation.id,userId,false)')&&flameUsageSource.includes('ELSE movement.units END'),'Failed Flame operations release their reserved units')
-assert.ok(clientBridgeAiSupportSource.includes('<UsdValue trx={billing.feeFlameCoin} /> / assisted reply'),'Bridge AI console shows the Client assistance fee before use')
+assert.ok(clientBridgeAiSupportSource.includes('<FlameSubscriptionPanel />')&&clientBridgeAiSupportSource.includes('shared usage subscription'),'Client sees Flame usage costs and available units before assistance')
 assert.ok(bridgeAiEngineSource.includes('CROSSING → CLIENT CONTINUITY'),'Bridge AI engine carries one identity across crossing and Client support')
 assert.ok(clientSystemSwitchSource.includes('ClientFileFolderOperatingEnvironment'),'Client System Switch enters the unified File Folder operating environment')
 assert.ok(fileFolderOperatingMigrationSource.includes('client_file_folder_build_parts'),'Production migration persists live build attachments')
