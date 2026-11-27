@@ -5,6 +5,7 @@ import { VertexAI } from '@google-cloud/vertexai'
 import { recordToScroll } from '@/lib/eight'
 import { EIGHT_SYSTEM_PROMPT } from '@/lib/eight-constants'
 import { safePublicWebRead } from '@/lib/eight-web'
+import {personalFlameNativeReply,nativeFlameClarification,type PersonalFlameMessage} from '@/lib/personal-flame'
 import { requireWorkshopAuthorization } from '@/lib/workshop-auth'
 import { readContinuityEvidence, readContinuitySource, publicResearchTopic, discoverResearch } from '@/lib/flame-institutional-intelligence'
 
@@ -203,6 +204,32 @@ export async function GET(request: NextRequest) {
   }
 }
 
+/** Native institutional commands require no language model or model API key.
+ * External code synthesis remains a separately requested capability. */
+async function nativeEight(command:string,actorId:string,history:PersonalFlameMessage[]):Promise<string>{
+ const q=command.trim()
+ try{
+  const topic=publicResearchTopic(q)
+  if(topic){
+   const r=await discoverResearch(topic)
+   return 'Research discovery: '+r.topic+'\n'+r.sources.map(x=>x.title+' — '+(x.published?.join('-')||'date unavailable')+' — '+x.url).join('\n')+'\n'+r.limitations
+  }
+  if(/^(?:please )?(?:check|show|inspect|review) (?:the |our |company )?(?:release|deployment|production|system continuity)(?: status| evidence| health)?[.!?]*$/i.test(q)){
+   const e=await readContinuityEvidence()
+   return 'Active release: '+(e.activeRelease||'not reported')+'\nRelease worker: '+(e.workerOnline?'recent heartbeat':'no recent heartbeat')+'\n'+e.recentJobs.map(x=>x.action+': '+x.status).join('\n')+'\n'+e.limitations+'\nOpen /admin/release-workshop to inspect or authorize the next movement.'
+  }
+  const file=q.match(/^(?:please )?(?:read|show|inspect) (?:source|file) (\S{1,220})$/i)
+  const dir=q.match(/^(?:please )?(?:list|show) (?:directory|files in) (\S{1,160})$/i)
+  if(file||dir){
+   const r=await readContinuitySource(actorId,(file||dir)![1],Boolean(dir))
+   return 'Canonical GitHub evidence (not necessarily the deployed release):\n'+JSON.stringify(r,null,2).slice(0,18000)
+  }
+  if(/^(?:help|what can you do|who are you)[.!?]*$/i.test(q))
+   return 'I am Eight, the Administrations expression of Weave Flame. Without a model I can inspect release evidence, read permitted canonical source, list directories and discover public research. Try check production status, read source lib/company-flame.ts, list directory lib, or research: a public topic. Source edits and deployment retain independent workshop authorization. Prefix a request with advanced: only if you intentionally want external model assistance for broader analysis or code synthesis.'
+  return personalFlameNativeReply(q,history,'admin')??nativeFlameClarification(q,'admin')
+ }catch{return 'The native operation could not verify the requested evidence. Inspect the original workshop before acting; no change was confirmed.'}
+}
+
 export async function POST(request: NextRequest) {
   try {
     const authUser = await getAuthUser(request)
@@ -258,7 +285,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const text = await runToolLoop(messages, EIGHT_SYSTEM_PROMPT, institutional)
+    const nativeHistory:PersonalFlameMessage[]=messages.slice(0,-1).map(m=>({role:m.role==='assistant'?'assistant':'user',content:m.content,mode:'native'}))
+    const useExternal=/^advanced:\s*\S/i.test(command)
+    const text = useExternal ? await runToolLoop(messages, EIGHT_SYSTEM_PROMPT, institutional) : await nativeEight(command,String(userId),nativeHistory)
 
     const codeBlocks: Array<{
       id: string
@@ -314,6 +343,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       message: cleanedText,
+      mode:useExternal?'model':'native',
       codeBlocks,
       cost: 0,
       paid: true,
