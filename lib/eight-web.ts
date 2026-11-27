@@ -35,7 +35,7 @@ function blockedIpv6(address:string){
   // Accept only ordinary global-unicast IPv6; exclude translation,
   // tunnelling, documentation and special-use ranges.
   const normalized=address.toLowerCase()
-  if(!/^[23][0-9a-f]{0,3}:/.test(normalized))return true
+  if(!/^[23][0-9a-f]{3}:/.test(normalized))return true
   if(/^2001:(?:0{0,3}0|0?2|0?1[0-9a-f]|0?2[0-9a-f]|db8):/.test(normalized))return true
   if(normalized.startsWith('2002:')||normalized.startsWith('3fff:'))return true
   return false
