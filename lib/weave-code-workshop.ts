@@ -15,8 +15,9 @@ const MAX_BYTES=96*1024
 const EDIT_ROOTS=['app/','components/','lib/','tests/','docs/','public/'] as const
 const PROTECTED=[
  /^app\/api\//, /^app\/\(auth\)\//,
- /^lib\/(?:auth|workshop-auth|weave-github-release|weave-code-workshop|weave-workshop-purpose|weave-native-registry|weave-native-blueprint|weave-sovereign-database-identity|weave-release|db(?:\.|\/)|pg-neon|payment|paystack|wallet|pro-file-folder-activation)/i,
- /^components\/admin\/(?:code-workshop|work-github-oracle-flow|weave-sovereign-host-move)/,
+ /^lib\/(?:auth|workshop-auth|weave-laptop-worker|weave-github-release|weave-code-workshop|weave-workshop-purpose|weave-native-registry|weave-native-blueprint|weave-sovereign-database-identity|weave-release|db(?:\.|\/)|pg-neon|payment|paystack|wallet|pro-file-folder-activation)/i,
+ /^components\/admin\/(?:laptop-worker-setup|code-workshop|work-github-oracle-flow|weave-sovereign-host-move)/,
+ /^public\/host\//,
  /^components\/weave\/native-(?:department-rail|module-renderer|world-scene|intake-form)/,
  /^app\/\(app\)\/admin\/(?:code-workshop|release-workshop|native-foundry|sovereign-server)/,
  /^app\/\(app\)\/weave-modules\//,

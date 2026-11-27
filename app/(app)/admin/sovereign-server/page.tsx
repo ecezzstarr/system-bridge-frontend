@@ -3,6 +3,7 @@ import Link from 'next/link'
 import {useCallback,useEffect,useState} from 'react'
 import {ArrowLeft,CheckCircle2,RefreshCw,Server,ShieldAlert,XCircle} from 'lucide-react'
 import {useAuth} from '@/lib/auth-provider'
+import {LaptopWorkerSetup} from '@/components/admin/laptop-worker-setup'
 import {WeaveSovereignHostMove} from '@/components/admin/weave-sovereign-host-move'
 const tests=[
  {key:'independent_host',label:'Independent Weave-owned candidate',info:'Dedicated host configured outside Oracle; operational ownership still needs physical verification.'},
@@ -49,6 +50,7 @@ export default function SovereignServerPage(){
     <p className="mt-4 max-w-4xl text-sm leading-7 text-slate-200">Prepare a separate company-controlled host, measure its actual readiness and record progress without interrupting the Oracle production server. Readiness never changes DNS, starts a release or migrates customer records.</p>
     <p className="mt-3 text-sm font-bold text-[#f6daa8]">Oracle remains production until the company completes and independently authorizes a reversible migration.</p>
    </header>
+   <LaptopWorkerSetup token={token}/>
    <div className="flex flex-wrap items-center justify-between gap-3">
     <h2 className="text-xl font-bold">Candidate host verification</h2>
     <button type="button" disabled={busy} onClick={()=>void load()}
