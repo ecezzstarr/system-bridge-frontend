@@ -34,15 +34,14 @@ export function fileFolderFlameExecution(action: FileFolderFlameAction) {
 
 /** Exact read-only commands; arbitrary prose never becomes an executable instruction. */
 export function isNativeFlameCommand(message: string): boolean {
-  const command = message.trim().toLowerCase().replace(/[.!?]+$/, '')
-  return ['status', 'show builds', 'show systems'].includes(command)
+  return nativeFolderQuery(message)!==null
 }
 export function nativeFlameReply(message: string, context: {
   systems?: readonly { title?: unknown; status?: unknown }[]
   builds?: readonly { title?: unknown; status?: unknown }[]
 }): string | null {
-  const command = message.trim().toLowerCase().replace(/[.!?]+$/, '')
-  if (!isNativeFlameCommand(message)) return null
+  const command = nativeFolderQuery(message)
+  if (!command) return null
   const systems = (context.systems || []).filter(s => s.status === 'active')
   const builds = context.builds || []
   const describe = (rows: readonly {title?: unknown; status?: unknown}[]) =>
@@ -52,4 +51,30 @@ export function nativeFlameReply(message: string, context: {
   return 'WEAVE Flame — ' + systems.length + ' active system(s) in the recent record; ' + builds.length +
     ' recorded unfinished build(s) in the recent record. You own the File Folder and direct its formation; WEAVE owns Flame. ' +
     'Use show builds or show systems for details. This native check does not use an external model.'
+}
+
+function nativeFolderQuery(message:string):'status'|'show builds'|'show systems'|null{
+ const q=message.trim().toLowerCase().replace(/[.!?]+$/,'').replace(/^(?:flame[, ]+)?(?:please +|could you +|can you +|would you +)*/,'')
+ if(/^(?:status|(?:check|show|inspect|review|tell me about) (?:me )?(?:my |the )?(?:file folder|enterprise|business)(?: status| progress)?|how is my file folder doing)$/.test(q))return 'status'
+ if(/^(?:show|list|check|inspect|review|tell me about) (?:me )?(?:my |the )?(?:unfinished |current |active )?(?:builds|construction)(?: status| progress)?$/.test(q)||/^how are my builds (?:doing|progressing)$/.test(q))return 'show builds'
+ if(/^(?:show|list|check|inspect|review|tell me about) (?:me )?(?:my |the )?(?:live |active |installed )?systems$/.test(q)||/^what systems (?:do i have|are active)$/.test(q))return 'show systems'
+ return null
+}
+
+/** Explicit non-financial operation, resolved against server-owned active rows.
+ * Never interpret a question, earlier conversation or a model reply as consent.
+ * A title must identify exactly one system in the authenticated File Folder. */
+export function resolveNativeFolderConnection(message:string,systems:readonly {id?:unknown;title?:unknown;status?:unknown}[]):
+ {sourceId:string;targetId:string;sourceTitle:string;targetTitle:string}|{error:string}|null{
+ const q=message.trim().replace(/[.!]+$/,'')
+ const match=q.match(/^(?:flame[, ]+)?(?:please\s+|could you\s+|can you\s+|i want you to\s+)*(?:connect|link)\s+(.{1,220}?)\s+to\s+(.{1,220}?)$/i)
+ if(!match||q.includes('?'))return null
+ const title=(v:unknown)=>String(v||'').trim().replace(/^["“]|["”]$/g,'').toLowerCase()
+ const active=systems.filter(s=>s.status==='active')
+ const from=active.filter(s=>title(s.title)===title(match[1]))
+ const to=active.filter(s=>title(s.title)===title(match[2]))
+ if(from.length!==1||to.length!==1)return {error:'I need two uniquely named active systems in your File Folder. Say show systems to check their exact names, then specify connect Source to Target.'}
+ const sourceId=String(from[0].id||''),targetId=String(to[0].id||'')
+ if(!sourceId||!targetId||sourceId===targetId)return {error:'Choose two different active systems.'}
+ return {sourceId,targetId,sourceTitle:String(from[0].title),targetTitle:String(to[0].title)}
 }
