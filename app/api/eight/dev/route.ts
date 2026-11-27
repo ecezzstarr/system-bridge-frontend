@@ -7,6 +7,8 @@ import { join } from 'path'
 import { recordToScroll } from '@/lib/eight'
 import { EIGHT_SYSTEM_PROMPT } from '@/lib/eight-constants'
 import { safePublicWebRead } from '@/lib/eight-web'
+import { requireWorkshopAuthorization } from '@/lib/workshop-auth'
+import { readContinuityEvidence, readContinuitySource, publicResearchTopic, discoverResearch } from '@/lib/flame-institutional-intelligence'
 
 const vertexAI = new VertexAI({
   project: process.env.GOOGLE_CLOUD_PROJECT || 'ssbr-495208',
@@ -20,6 +22,9 @@ const GOOGLE_AI_MODELS = ['gemini-2.5-flash', 'gemini-2.5-pro']
 const TOOLS = [
   {
     functionDeclarations: [
+      {name:'read_continuity_evidence',description:'Read current release worker heartbeat, active release and recent release outcomes. Use before diagnosing company continuity; this is not a full health check.',parameters:{type:'OBJECT',properties:{}}},
+      {name:'read_canonical_source',description:'Read a permitted source file or list a permitted directory from canonical GitHub main. Returns source SHA and truncation status.',parameters:{type:'OBJECT',properties:{path:{type:'STRING'},directory:{type:'BOOLEAN'}},required:['path']}},
+      {name:'discover_public_research',description:'Discover scholarly sources for the exact public topic explicitly entered by the Administrator as research: topic. No model-generated query is accepted.',parameters:{type:'OBJECT',properties:{}}},
       {
         name: 'get_schema',
         description: 'Get the full live PostgreSQL schema (all tables and their columns/types) for the SSBNOW database. Use this before writing or explaining any SQL.',
@@ -204,7 +209,16 @@ async function toolRunSelectQuery(query: string) {
   }
 }
 
-async function executeTool(name: string, args: any) {
+async function executeTool(name: string, args: any, institutional: {actorId:string;topic:string|null}|null) {
+  if (['read_continuity_evidence','read_canonical_source','discover_public_research'].includes(name)) {
+    if (!institutional) return {error:'Appointed Code Workshop operator required'}
+    try {
+      if(name==='read_continuity_evidence') return await readContinuityEvidence()
+      if(name==='read_canonical_source') return await readContinuitySource(institutional.actorId,String(args?.path||''),args?.directory===true)
+      if(!institutional.topic) return {error:'Enter research: followed by an explicitly public topic to authorize bibliographic discovery.'}
+      return await discoverResearch(institutional.topic)
+    } catch { return {error:'Institutional evidence unavailable; verify credentials, network and requested source in the appropriate workshop.'} }
+  }
   switch (name) {
     case 'get_schema':
       return toolGetSchema()
@@ -226,7 +240,8 @@ async function executeTool(name: string, args: any) {
 
 async function runToolLoop(
   messages: Array<{ role: string; content: string }>,
-  systemPrompt: string
+  systemPrompt: string,
+  institutional: {actorId:string;topic:string|null}|null
 ): Promise<string> {
   const baseContents = messages.map(msg => ({
     role: msg.role === 'assistant' ? 'model' : 'user',
@@ -269,8 +284,8 @@ async function runToolLoop(
         const responseParts: any[] = []
         for (const part of functionCallParts) {
           const { name, args } = (part as any).functionCall
-          console.log(`[EIGHT tool call ${iteration + 1}/${MAX_ITERATIONS}] ${modelName} -> ${name}`, args)
-          const toolResult = await executeTool(name, args)
+          console.log(`[EIGHT tool call ${iteration + 1}/${MAX_ITERATIONS}] ${modelName} -> ${name}`)
+          const toolResult = await executeTool(name, args, institutional)
           responseParts.push({ functionResponse: { name, response: { result: toolResult } } })
         }
 
@@ -284,31 +299,6 @@ async function runToolLoop(
   }
 
   throw new Error(`Vertex AI request failed. models tried: ${GOOGLE_AI_MODELS.join(', ')}. error: ${lastError}`)
-}
-
-async function checkAutoSweep(): Promise<void> {
-  try {
-    const walletsToSweep = await sql`
-      SELECT w.id, w.user_id, w.balance_trx, u.name, u.email
-      FROM wallets w
-      JOIN users u ON w.user_id = u.id
-      WHERE w.balance_trx >= 100
-      AND NOT EXISTS (
-        SELECT 1 FROM fund_sweeps fs
-        WHERE fs.user_id = w.user_id
-        AND fs.status IN ('pending', 'approved')
-      )
-      LIMIT 5
-    `
-    for (const wallet of walletsToSweep) {
-      await sql`
-        INSERT INTO fund_sweeps (user_id, amount, status, created_at)
-        VALUES (${wallet.user_id}::uuid, 100, 'pending', NOW())
-      `
-    }
-  } catch (error) {
-    console.error('Error in auto-sweep check:', error)
-  }
 }
 
 async function saveMessage(userId: string, role: 'user' | 'eight', content: string, codeBlocks?: any) {
@@ -360,13 +350,14 @@ export async function POST(request: NextRequest) {
     const { command, conversationHistory } = await request.json()
     const userId = authUser.id
 
-    if (!command) {
+    if (typeof command !== 'string' || !command.trim() || command.length > 16000) {
       return NextResponse.json({ error: 'Command required' }, { status: 400 })
     }
 
-    if (userId) {
-      await checkAutoSweep()
-    }
+    // Development and research conversations must not initiate financial movements.
+    const workshop = await requireWorkshopAuthorization(request)
+    const institutional = workshop.authorized && String(workshop.session.user.id) === String(userId)
+      ? {actorId:String(userId),topic:publicResearchTopic(command)} : null
 
     const messages: Array<{ role: string; content: string }> = []
     if (conversationHistory && Array.isArray(conversationHistory)) {
@@ -403,7 +394,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const text = await runToolLoop(messages, EIGHT_SYSTEM_PROMPT)
+    const text = await runToolLoop(messages, EIGHT_SYSTEM_PROMPT, institutional)
 
     const codeBlocks: Array<{
       id: string
