@@ -48,6 +48,14 @@ jobs:
           node tests/flame-environment-regression.cjs
           node tests/flame-usage-regression.cjs
 
+      - name: Company laptop pairing and installation controls
+        env:
+          WEAVE_LAPTOP_TEST_DATABASE_URL: postgres://weave_qa:weave_qa_only@127.0.0.1:5432/weave_switch_test
+        run: |
+          node tests/laptop-worker-regression.cjs
+          node tests/laptop-worker-postgres.cjs
+          pwsh -NoProfile -File tests/laptop-worker-parser.ps1
+
       - name: File Folder world runtime regression
         run: |
           node tests/file-folder-world-runtime-regression.cjs
@@ -378,4 +386,3 @@ jobs:
 
       - name: Exact founder-approved Burning River imagery
         run: node tests/burning-river-approved-artwork.cjs
-

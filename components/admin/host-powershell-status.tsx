@@ -3,6 +3,7 @@ import { useEffect,useState } from 'react'
 import Link from 'next/link'
 import { Activity,RefreshCw,ServerCog,ShieldCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { LaptopWorkerSetup } from '@/components/admin/laptop-worker-setup'
 
 type HostState={
   serverKey:string;online:boolean;lastSeen:string|null
@@ -34,7 +35,7 @@ export function HostPowerShellStatus({token}:{token:string|null}){
     releaseWorkerConfigured:'Release worker token',
     powershellWorkerConfigured:'PowerShell worker token',
   }
-  return <section data-weave-powershell-host className="rounded-[2rem] border border-cyan-300/20 bg-[#06131b]/85 p-6">
+  return <><section data-weave-powershell-host className="rounded-[2rem] border border-cyan-300/20 bg-[#06131b]/85 p-6">
     <div className="flex flex-wrap items-start justify-between gap-3">
       <div><p className="text-[9px] font-black uppercase tracking-[.2em] text-cyan-300">Administrations · PowerShell host</p>
         <h2 className="mt-2 text-xl font-black text-white">Weave Server Operations</h2>
@@ -73,5 +74,5 @@ export function HostPowerShellStatus({token}:{token:string|null}){
         <Activity className="h-4 w-4"/> Host release record
       </Link>
     </div>
-  </section>
+  </section><LaptopWorkerSetup token={token}/></>
 }

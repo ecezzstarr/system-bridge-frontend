@@ -59,6 +59,11 @@ function normalizeLocal(value) {
   if (value.includes('${')) return null
   const interpolated = value
   const clean = interpolated.split('#')[0].split('?')[0] || '/'
+  // A real downloadable public file is a valid destination, regardless of its
+  // extension. Missing files still fall through to the route audit.
+  const publicRoot = path.resolve(root, 'public')
+  const publicFile = path.resolve(publicRoot, '.' + clean)
+  if (publicFile.startsWith(publicRoot + path.sep) && fs.existsSync(publicFile) && fs.statSync(publicFile).isFile()) return null
   if (/\.(svg|png|jpe?g|webp|gif|ico|mp3|wav|mp4|webm|pdf|json|webmanifest)$/i.test(clean)) return null
   return clean
 }
