@@ -48,6 +48,7 @@ jobs:
           node tests/flame-environment-regression.cjs
           node tests/flame-usage-regression.cjs
           node tests/flame-web-search-regression.cjs
+          node tests/flame-creative-production-regression.cjs
 
       - name: File Folder world runtime regression
         run: |
