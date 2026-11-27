@@ -4,13 +4,18 @@ export type FlameDirection={title:string;href:string;detail:string;requirements:
 export type FlameMovement={kind:'navigation'|'inspection'|'execution';state:'ready'|'verified'|'blocked';summary:string;directions:FlameDirection[];navigate?:string}
 const normalize=(v:string)=>v.trim().toLowerCase().replace(/[.!?]+$/,'')
 export function flameOperationIntent(message:string){
- const q=normalize(message)
- if(/^(?:please )?(?:claim|get) (?:my |today's |the )?(?:daily )?free prospect$/.test(q))return {kind:'claim_daily_prospect'} as const
- if(/^(?:please )?(?:check|show|review) (?:my |today's |the )?daily prospect$/.test(q))return {kind:'check_daily_prospect'} as const
- if(/^(?:please )?(?:check|show|review) (?:my )?(?:distribution|stock|outlet) status$/.test(q))return {kind:'check_distribution'} as const
- if(/^(?:please )?(?:check|show|review) (?:my )?(?:file folder|build|construction) status$/.test(q))return {kind:'check_file_folder'} as const
- const nav=q.match(/^(?:please )?(?:open|go to|take me to|navigate to|find)\s+(.+)$/)
- if(nav)return {kind:'navigate',query:nav[1].slice(0,160),auto:!q.startsWith('find ')} as const
+ const q=normalize(message).replace(/^(?:flame[, ]+)?(?:please\s+|could you\s+|can you\s+|would you\s+|i want you to\s+|i need you to\s+)*/,'').replace(/\s+please$/,'').trim()
+ // Imperative, bounded grammar. Questions about how to perform a task
+ // must not be treated as authorization to execute it.
+ if(/^(?:claim|get|collect) (?:me )?(?:my |today's |the |a )?(?:daily )?free prospect(?: for me| for today| today)?$/.test(q))return {kind:'claim_daily_prospect'} as const
+ if(/^(?:check|show|review|inspect|tell me) (?:me )?(?:my |today's |the )?(?:daily |free |daily free )?prospect(?: status| claim| for today| today)?$/.test(q)||/^(?:have i|did i) claim(?:ed)? (?:my |the )?(?:daily )?free prospect(?: today)?$/.test(q))return {kind:'check_daily_prospect'} as const
+ if(/^(?:check|show|review|inspect|tell me about) (?:me )?(?:my )?(?:distribution|stock|outlet)(?: status| records)?$/.test(q))return {kind:'check_distribution'} as const
+ if(/^(?:check|show|review|inspect|tell me about) (?:me )?(?:my )?(?:file folder|builds?|construction)(?: status| records| progress)?$/.test(q)||/^how (?:is my file folder|are my builds) (?:doing|progressing)$/.test(q))return {kind:'check_file_folder'} as const
+ if(/^(?:check|show|review|inspect) (?:me )?(?:the |our |company )?(?:release|deployment|production|system continuity)(?: status| evidence| health)?$/.test(q))return {kind:'check_release'} as const
+ const nav=q.match(/^(?:open|go to|take me to|navigate to|bring me to|find|show me where to find)\s+(.+)$/)
+ if(nav)return {kind:'navigate',query:nav[1].slice(0,160),auto:!/^(?:find|show me where to find) /.test(q)} as const
+ const guide=q.match(/^(?:how (?:do|can|should) i|where (?:do|can) i|i want to|i need to)\s+(.+)$/)
+ if(guide)return {kind:'navigate',query:guide[1].slice(0,160),auto:false} as const
  return null
 }
 export function flameDirections(role:string,paths:string[]):FlameDirection[]{
