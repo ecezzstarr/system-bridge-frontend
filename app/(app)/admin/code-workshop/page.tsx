@@ -53,6 +53,11 @@ export default function CodeWorkshopPage(){
  const [reviewChecksState,setReviewChecksState]=useState<boolean[]>([false,false,false,false])
  const [prUrl,setPrUrl]=useState('')
  const [prNumber,setPrNumber]=useState<number|null>(null)
+ const [prHead,setPrHead]=useState('')
+ const [eightInstruction,setEightInstruction]=useState('')
+ const [eightConsent,setEightConsent]=useState(false)
+ const [eightSummary,setEightSummary]=useState('')
+ const [eightMerged,setEightMerged]=useState('')
 
  const print=(message:string)=>setOutput(current=>[...current.slice(-55),message])
  const headers=useCallback((json=false)=>({
@@ -154,10 +159,29 @@ export default function CodeWorkshopPage(){
     branch,title:reviewTitle,summary:reviewSummary,workArea,
     confirmation,attestations:reviewChecksState,
    })
-   setPrNumber(data.number);setPrUrl(data.url);setConfirmation('')
+   setPrNumber(data.number);setPrUrl(data.url);setPrHead(data.headSha||'');setEightMerged('');setConfirmation('')
    print('PR #'+data.number+' opened. GitHub review and Production Check are required.')
    await reloadActivity()
   }catch(e){setError(e instanceof Error?e.message:'Cannot open review')}
+  finally{setBusy(false)}
+ }
+ async function askEightToCode(){
+  if(branch==='main'||!ready||source!==baseline||!eightConsent||eightInstruction.trim().length<12)return
+  setBusy(true);setError('');setEightSummary('')
+  try{
+   const data=await post('eight_propose',{branch,path:file,expectedSha:sha,instruction:eightInstruction,allowProvider:true})
+   setSource(data.content);setEightSummary(data.summary+' · '+data.notice);setCommitMessage('Eight: '+eightInstruction.trim().replace(/\s+/g,' ').slice(0,130));setConfirmation('');setReviewChecksState([false,false,false,false]);setPrHead('');setPrNumber(null);setPrUrl('');setEightMerged('')
+   print('EIGHT PROPOSAL · '+file+' · review before SAVE DRAFT')
+  }catch(e){setError(e instanceof Error?e.message:'Eight proposal unavailable')}
+  finally{setBusy(false)}
+ }
+ async function mergeWithEight(){
+  if(!prNumber||!prHead||source!==baseline||confirmation!=='MERGE #'+prNumber)return
+  setBusy(true);setError('')
+  try{
+   const data=await post('eight_merge_review',{branch,number:prNumber,headSha:prHead,confirmation})
+   setEightMerged(data.mergedSha);setConfirmation('');print('MERGED #'+prNumber+' · '+data.mergedSha+' · separate main Production Check required')
+  }catch(e){setError(e instanceof Error?e.message:'Eight merge refused')}
   finally{setBusy(false)}
  }
  async function resumeDraft(target:string,lastFile:string|null){
@@ -289,6 +313,14 @@ export default function CodeWorkshopPage(){
         className="mt-2 w-full rounded-xl border border-sky-300/20 bg-[#061524] p-3 font-mono text-sm text-white"/>
       </label>
       <button onClick={()=>void openFile(file)} disabled={busy} className="mt-2 inline-flex items-center gap-2 rounded-lg border border-sky-300/25 px-3 py-2 text-xs font-bold text-sky-100 disabled:opacity-40"><RefreshCw size={14}/>Read source</button>
+      <div className="mt-4 space-y-2 rounded-xl border border-amber-300/25 p-3" data-eight-code-workshop="proposal">
+       <h3 className="text-sm font-bold text-amber-200">Eight · Weave development intelligence</h3>
+       <p className="text-xs text-slate-300">Select a file on your private draft. Eight reads its exact GitHub source and prepares edits for your review. It cannot execute generated code or deploy.</p>
+       <textarea value={eightInstruction} onChange={e=>setEightInstruction(e.target.value)} rows={3} maxLength={3000} placeholder="Describe the work Eight should carry out in this file…" className="w-full rounded-lg border border-white/15 bg-[#061524] p-3 text-sm"/>
+       <label className="flex items-start gap-2 text-xs text-slate-300"><input type="checkbox" checked={eightConsent} onChange={e=>setEightConsent(e.target.checked)}/>Allow Eight's configured model provider to process this selected source and instruction. Do not include confidential data or credentials.</label>
+       <button type="button" onClick={()=>void askEightToCode()} disabled={busy||branch==='main'||!ready||source!==baseline||!eightConsent||eightInstruction.trim().length<12} className="rounded-lg bg-amber-200 px-3 py-2 text-xs font-bold text-slate-950 disabled:opacity-40">Ask Eight to code</button>
+       {eightSummary&&<p className="whitespace-pre-wrap text-xs text-amber-100">{eightSummary}</p>}
+      </div>
       <textarea value={source} onChange={e=>setSource(e.target.value)} disabled={branch==='main'||busy||!ready}
        spellCheck={false} aria-label="GitHub source code editor" rows={21}
        className="mt-4 block min-h-[470px] w-full resize-y rounded-xl border border-sky-300/20 bg-[#040f1c] p-4 font-mono text-[12px] leading-6 text-sky-50 outline-none focus:border-sky-300/60 disabled:opacity-75"/>
@@ -363,6 +395,8 @@ export default function CodeWorkshopPage(){
         className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl bg-sky-200 px-4 text-sm font-bold text-[#102c45] disabled:opacity-35">
         <GitPullRequest size={16}/>Create GitHub review PR</button>
        {prUrl&&<p className="mt-3 text-xs text-emerald-200">PR #{prNumber} created: <a href={prUrl} target="_blank" rel="noreferrer" className="underline">Review exact changes in GitHub</a></p>}
+       {prNumber&&prHead&&!eightMerged&&<div className="mt-4 rounded-xl border border-amber-300/25 p-3"><p className="text-xs text-slate-300">Eight can merge this exact reviewed PR after GitHub Production Check and required reviews pass. Type MERGE #{prNumber} in the confirmation field above.</p><p className="mt-2 break-all font-mono text-[10px] text-amber-100">{prHead}</p><button type="button" onClick={()=>void mergeWithEight()} disabled={busy||modified||confirmation!=='MERGE #'+prNumber} className="mt-2 rounded-lg border border-amber-300/40 px-3 py-2 text-xs font-bold text-amber-100 disabled:opacity-40">Merge with Eight</button></div>}
+       {eightMerged&&<p className="mt-3 break-all text-xs text-emerald-200">Merged: {eightMerged}. Administrations may deploy from Release Workshop only after the new main Production Check passes.</p>}
        <Link href="/admin/release-workshop" className="mt-4 inline-flex items-center gap-2 text-xs font-semibold text-sky-200 underline"><GitMerge size={15}/>Continue to GitHub merge and verified deployment <ArrowRight size={14}/></Link>
       </div>
      </section>
