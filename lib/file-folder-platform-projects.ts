@@ -88,6 +88,42 @@ export const FILE_FOLDER_PLATFORM_TEMPLATES = {
     stages:['customer_door','emergency_preparedness_centre','public_services_portal','transport_coordination','public_audit_office'],
     productionGap:'No emergency call handling, incident dispatch, medical triage or live rescue function is enabled. Such systems require explicit authorized and tested integrations.',
   },
+  flame_creative: {
+    name:'Flame Creative Industry', example:'Design, content and media production',
+    description:'Build a Client-owned creative service business with an intake and delivery workflow.',
+    stages:['customer_door','creator_booth','service_workflow','operations_board'],
+    productionGap:'Creative providers must be enabled, costs reviewed and commercial rights verified. Human review and actual delivery remain necessary; native image generation is not included.',
+  },
+  flame_software: {
+    name:'Flame Software Industry', example:'Websites and business software',
+    description:'Develop a service that designs and delivers verified business systems.',
+    stages:['customer_door','research_room','service_workflow','mobile_service_app','integration_network'],
+    productionGap:'Source development, tests, secure hosting and Client-specific deployment must be separately performed. A commissioned construction system is not a working customer application.',
+  },
+  flame_research: {
+    name:'Flame Research Industry', example:'Market and technical research',
+    description:'Establish a repeatable research and evidence-review service.',
+    stages:['customer_door','research_room','data_room','intelligence_lab','service_workflow'],
+    productionGap:'Source access, evidence verification and human quality review are required. Native general language inference is not yet active; no research accuracy or demand is guaranteed.',
+  },
+  flame_education: {
+    name:'Flame Education Industry', example:'Learning content and tutoring support',
+    description:'Develop a Client-owned learning service with structured lessons and service delivery.',
+    stages:['customer_door','learning_lab','research_room','service_workflow'],
+    productionGap:'Content quality, age-appropriate safeguards, privacy and any required accreditation must be verified before offering education services.',
+  },
+  flame_support: {
+    name:'Flame Customer Service Industry', example:'Business support and request handling',
+    description:'Build a service desk and accountable request-to-resolution workflow.',
+    stages:['customer_door','ai_service_desk','data_room','service_workflow'],
+    productionGap:'Customer-facing language inference, tenant isolation, consent, escalation and quality checks need separate implementation and validation. A service desk is not an autonomous public AI endpoint.',
+  },
+  flame_automation: {
+    name:'Flame Enterprise Automation Industry', example:'Workflow design and business integration',
+    description:'Develop a service that connects authorized operations and records.',
+    stages:['customer_door','operations_board','service_workflow','integration_network','operations_suite'],
+    productionGap:'Each integration needs its own permissions, credentials, runtime adapter and verification. No automatic third-party operation or financial authorization is implied.',
+  },
   custom_platform: {
     name: 'Original platform',
     example: 'A platform designed from your idea',

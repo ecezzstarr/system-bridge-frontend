@@ -6,8 +6,8 @@ function load(file,dependencies={}) {
 }
 const world=load('lib/file-folder-world-runtime.ts'),graph=load('lib/file-folder-capability-graph.ts')
 const platform=load('lib/file-folder-platform-projects.ts')
-assert.equal(Object.keys(platform.FILE_FOLDER_PLATFORM_TEMPLATES).length,14,'Client can start social, institutional, public service and original platform projects')
-for(const kind of ['short_video','microblog','social_community','video_channel','commerce_platform','custom_platform']){
+assert.equal(Object.keys(platform.FILE_FOLDER_PLATFORM_TEMPLATES).length,20,'Client can start social, institutional, public service, intelligence industry and original platform projects')
+for(const kind of ['short_video','microblog','social_community','video_channel','commerce_platform','flame_creative','flame_software','flame_research','flame_education','flame_support','flame_automation','custom_platform']){
  assert(platform.isFileFolderPlatformKind(kind),'Platform kind must be recognized: '+kind)
  assert(platform.FILE_FOLDER_PLATFORM_TEMPLATES[kind].stages.includes('customer_door'),'Public boundary remains a Client Customer Door')
  assert(platform.FILE_FOLDER_PLATFORM_TEMPLATES[kind].productionGap.length>60,'Unimplemented product capabilities are disclosed to the Client')

@@ -1,4 +1,6 @@
 import type {NextRequest} from 'next/server'
+import {requireWorkshopAuthorization} from '@/lib/workshop-auth'
+import {readContinuityEvidence} from '@/lib/flame-institutional-intelligence'
 import {GET as getDailyProspect,POST as claimDailyProspect} from '@/app/api/bridger/daily-prospect/route'
 import {GET as getDistribution} from '@/app/api/agent/distribution/route'
 import {GET as getFileFolder} from '@/app/api/client/file-folder-world/route'
@@ -10,6 +12,17 @@ export async function runFlameEnvironment(request:NextRequest,role:string,messag
  const intent=flameOperationIntent(message)
  if(!intent)return null
  if(intent.kind==='navigate')return flameNavigate(role,intent.query,intent.auto)
+ if(intent.kind==='check_release'){
+  const auth=await requireWorkshopAuthorization(request)
+  if(role!=='admin'||!auth.authorized)return {kind:'inspection',state:'blocked',summary:'Appointed Administrations authority required.',directions:[]}
+  const directions=flameDirections(role,['/admin/release-workshop','/admin/infrastructure','/admin/deployment-records'])
+  if(previewOnly)return {kind:'inspection',state:'ready',summary:'Ready to inspect release evidence.',directions}
+  try{
+   const evidence=await readContinuityEvidence()
+   const jobs=evidence.recentJobs.map((j:{action:unknown;status:unknown})=>String(j.action)+': '+String(j.status)).join('; ')
+   return {kind:'inspection',state:'verified',summary:'Recorded active release: '+(evidence.activeRelease||'not reported')+'. Release worker: '+(evidence.workerOnline?'recent heartbeat':'no recent heartbeat')+'. Recent jobs: '+(jobs||'none recorded')+'. This is release evidence, not proof of complete company health.',directions}
+  }catch{return {kind:'inspection',state:'blocked',summary:'Release evidence is unavailable; inspect the Release Workshop independently.',directions}}
+ }
  const daily=intent.kind==='claim_daily_prospect'||intent.kind==='check_daily_prospect'
  const permitted=daily?role==='bridger':intent.kind==='check_distribution'?role==='agent':role==='client'
  const kind=intent.kind==='claim_daily_prospect'?'execution':'inspection'

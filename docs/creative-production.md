@@ -1,0 +1,13 @@
+# WEAVE Creative Production
+The existing Image House originals, template licensing, customer doors and material editor remain independent of providers. The new /image-workshop/production workshop and its authenticated API share one generation engine with Personal Flame and File Folder Flame.
+
+## Activation
+Administrations must deliberately enable the engine using WEAVE_CREATIVE_ENABLED=true and a separate server-only WEAVE_CREATIVE_API_KEY. Configure WEAVE_CREATIVE_IMAGE_MODEL (supported existing Flare or Sunburst model identifiers) and WEAVE_CREATIVE_TEXT_MODEL with a permitted text model. Verify API organization/model access and project budget first. No ChatGPT consumer subscription or internal tool is transferred. The legacy provider generation route remains retired; stale general OPENAI_API_KEY credentials do not enable the new service.
+
+The initial proposed tariffs are 50 Flame units for one image and 5 for written content; Administrations is exempt from units, not upstream API expense. Confirm pricing and provider budget before activation. The company-wide daily attempt limits are 30 image jobs and 150 text jobs; per-account limits are 3 image and 15 text jobs, including failures and Administrations. No automatic renewal or publishing. A request UUID identifies each manual job; a repeated request cannot dispatch the provider again. Unconfirmed running records require reconciliation, not automatic replay.
+
+## Operating
+Users choose image style and size or written content, supply a brief and explicitly authorize sending that brief to the provider. Flame accepts "generate image with provider: [brief]" and "write content with provider: [brief]" with a client request ID. The same service verifies role, consent, budget and usage. Only the explicit brief is sent; do not include private data or credentials. Images are saved under the private media namespace and displayed/downloaded through existing owner-checked routes. Written content is saved in the owner's production record. File Folder support conversation is shared with its assigned Bridger; private productions should use the manual workshop or Personal Flame. Upstream results are drafts requiring human review; they do not authorize publication or commercial claims.
+
+## Verification and limits
+Check no-key behavior, actual model calls with test credentials, failed and duplicate jobs, cross-account asset access, usage reconciliation, and backup/restore. This is prompt-to-image and text generation, not image editing, video generation, music generation, unlimited model capability or a Weave-trained model. No provider call or production configuration is performed by committing this source.

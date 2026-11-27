@@ -1,0 +1,8 @@
+FROM python:3.12-slim
+WORKDIR /opt/weave-one
+COPY flame-model/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt --index-url https://download.pytorch.org/whl/cpu
+COPY flame-model/flame_lm.py flame-model/evaluate.py flame-model/serve.py flame-model/training_worker.py flame-model/institutional_seed.jsonl ./
+RUN mkdir -p /private/weave-one && chown -R 10001:10001 /private/weave-one
+USER 10001:10001
+CMD ["python","training_worker.py","--root","/private/weave-one"]

@@ -1,4 +1,5 @@
 'use client'
+import Link from 'next/link'
 import {useEffect,useState,useRef} from 'react'
 import {getClientToken} from '@/lib/client-auth'
 import type {FlamePilotMessage} from '@/lib/flame-lm-pilot'
@@ -35,6 +36,7 @@ export function FlameModelPilot(){
   finally{lock.current=false;setBusy(false)}
  }
  return <section className="space-y-4" aria-label="Private Flame language model laboratory">
+  <Link href="/admin/flame-training" className="block rounded-xl border border-border p-3 text-sm font-semibold underline">Open Weave One Training Workshop</Link>
   <div><h3 className="text-xl font-semibold">Flame Model Laboratory</h3><p className="mt-2 text-sm text-muted-foreground">Administrations-only evaluation. Outputs may be incoherent or wrong. This model cannot perform operations or make payments. Do not enter private records or credentials.</p></div>
   <div className="rounded-xl border border-border p-3 text-sm"><p role="status">{status}</p>{checkpoint&&<p className="mt-1 break-all text-xs text-muted-foreground">Checkpoint: {checkpoint}</p>}<button type="button" disabled={busy} onClick={()=>void refresh()} className="mt-2 underline">Check connection</button></div>
   <div className="max-h-[40dvh] space-y-3 overflow-y-auto">{messages.map((m,i)=><article key={i} className="rounded-xl border border-border p-3"><p className="text-xs text-muted-foreground">{m.role==='user'?'Test prompt':'Experimental model output'}</p><p className="mt-1 whitespace-pre-wrap break-words text-sm">{m.content}</p></article>)}</div>

@@ -261,6 +261,29 @@ wait_for_health() {
   return 1
 }
 
+# Optional research service is isolated from production health/rollback authority.
+# The app's namespace changes on recreation; recreate the private worker only
+# after the application is healthy. Named volumes survive --remove-orphans.
+restore_flame_training() {
+  [[ "$(read_env_value WEAVE_FLAME_TRAINING_ENABLED)" == "true" ]] || return 0
+  if [[ ! -f docker-compose.flame-training.yml ]]; then
+    log "Flame training unavailable on this historical release; private model volume retained."
+    return 0
+  fi
+  local token
+  token="$(read_env_value WEAVE_FLAME_TRAINING_TOKEN)"
+  if [[ ! "$token" =~ ^[A-Za-z0-9_-]{32,128}$ ]]; then
+    log "Flame training not restored: private token missing or invalid."
+    return 0
+  fi
+  if docker compose --env-file "$ENV_FILE" -f docker-compose.selfhost.yml -f docker-compose.flame-training.yml up -d --no-deps --build --force-recreate --wait --wait-timeout 90 flame-training; then
+    log "Private Flame training worker restored; checkpoint and corpus volume retained."
+  else
+    log "Private Flame training worker requires operator recovery; verified application remains live."
+  fi
+  return 0
+}
+
 rollback() {
   local exit_code="${1:-1}" line="${2:-unknown}"
   if [[ "$ROLLING_BACK" == "1" ]]; then exit "$exit_code"; fi
@@ -284,6 +307,7 @@ rollback() {
   if wait_for_health http://127.0.0.1:3000/api/health "$PREVIOUS_SHA" "Rollback local health" \
      && wait_for_health "https://${DOMAIN}/api/health" "$PREVIOUS_SHA" "Rollback public health"; then
     log "RECOVERY_STATUS=verified rollback_sha=$PREVIOUS_SHA"
+    restore_flame_training
     post_record rolled_back "$PREVIOUS_SHA" "$TARGET_SHA" "Automatic rollback verified locally and publicly after failure at line $line" "$(printf '{"failedRelease":"%s"}' "$TARGET_SHA")" || true
   else
     log "RECOVERY_STATUS=manual_required rollback_sha=$PREVIOUS_SHA"
@@ -304,6 +328,7 @@ if [[ -z "$ROLLBACK_TARGET" && "$TARGET_SHA" == "$PREVIOUS_SHA" ]] &&
   post_record healthy "$TARGET_SHA" "" "Already live and verified against local and public /api/health" || true
   replay_journal || true
   log "LIVE VERIFIED: $TARGET_SHA at https://${DOMAIN}"
+  # Do not interrupt a running worker on an already verified release.
   exit 0
 fi
 
@@ -368,6 +393,8 @@ else
   post_record healthy "$TARGET_SHA" "$PREVIOUS_SHA" "Local and public /api/health both serve the verified canonical release SHA" "{\"verifiedAt\":\"$VERIFIED_AT\",\"domain\":\"$DOMAIN\"}" || true
 fi
 replay_journal || true
+
+restore_flame_training
 
 DEPLOY_STAGE="postdeploy_diagnostics"
 log "STAGE=$DEPLOY_STAGE"

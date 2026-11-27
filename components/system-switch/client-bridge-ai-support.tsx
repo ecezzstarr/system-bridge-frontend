@@ -1,4 +1,5 @@
 'use client'
+import {FlameEnterprisePlanner} from '@/components/system-switch/flame-enterprise-planner'
 import {FlameSubscriptionPanel,notifyFlameUsage} from '@/components/flame-subscription'
 
 import { useEffect, useRef, useState } from 'react'
@@ -84,7 +85,7 @@ export function ClientBridgeAiSupport() {
           Authorization:`Bearer ${token}`,
           'Content-Type':'application/json',
         },
-        body:JSON.stringify({message:value}),
+        body:JSON.stringify({message:value,requestId:crypto.randomUUID()}),
       })
       const body=await response.json()
       if(!response.ok)throw new Error(body.error||'Bridge AI support is unavailable')
@@ -108,7 +109,7 @@ export function ClientBridgeAiSupport() {
               <p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.2em] text-sky-300">Client AI Support</p>
               <h3 className="mt-1 text-lg font-black text-white">File Folder Flame</h3>
               <p className="mt-1 max-w-2xl text-xs leading-5 text-slate-400">
-                You direct your enterprise; WEAVE owns Flame and operates the technical systems through your authorized instructions. Ask about formation and active systems. All Flame replies use your shared usage subscription; actual enterprise costs remain separate.
+                You direct your enterprise; WEAVE owns Flame and operates the technical systems through your authorized instructions. Ask about formation and active systems. All Flame replies use your shared usage subscription; actual enterprise costs remain separate. This conversation runs on Weave's native intelligence without an external model. Say connect Research Room to Operations Board using your actual system names to request a supported connection. For public market research, say web search: followed by your topic. Only the explicit search query is sent to the search index; do not include private business records.
               </p>
             </div>
           </div>
@@ -119,7 +120,10 @@ export function ClientBridgeAiSupport() {
 
           </div>
         </div>
+        <FlameEnterprisePlanner />
         <FlameSubscriptionPanel />
+        <a className="block text-sm text-cyan-200 underline" href="/image-workshop/production">Open Creative Production</a>
+        <p className="text-xs text-slate-300">Say generate image with provider: your brief (50 units), or write content with provider: your brief (5 units). Only use non-confidential briefs; this support conversation is shared with your assigned Bridger.</p>
       </header>
 
       <div className="max-h-[380px] min-h-[220px] space-y-3 overflow-y-auto p-4 md:p-5">
@@ -161,7 +165,7 @@ export function ClientBridgeAiSupport() {
               }
             }}
             rows={2}
-            placeholder="Describe your direction, or type status…"
+            placeholder="Tell Flame what to inspect or connect…"
             className="min-w-0 flex-1 resize-none rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm font-semibold text-white outline-none placeholder:text-slate-500 focus:border-sky-300/30"
           />
           <button

@@ -1,11 +1,14 @@
+import {flameCreativeIntent,runCreativeProduction} from '@/lib/weave-creative-production'
+import {flameWebQuery,flameWebSearchReply} from '@/lib/flame-web-search'
 import { withFlameUsage, flameUsageStatus } from '@/lib/flame-usage'
-import { FLAME_INSTITUTION, nativeFlameReply } from '@/lib/company-flame'
+import { FLAME_INSTITUTION, nativeFlameReply, resolveNativeFolderConnection } from '@/lib/company-flame'
 import { NextRequest, NextResponse } from 'next/server'
 import { getFileFolderDb, ensureClientFileFolderSchema } from '@/lib/client-file-folder'
 import { resolveClientToken } from '@/lib/client-vault'
 import { ensureClientWorkshopSchema } from '@/lib/client-system-workshop'
 import { ensureFileFolderWorldSchema } from '@/lib/client-file-folder-world'
-import { chatWithBridge, type BridgeMessage } from '@/lib/bridge-ai-engine'
+import { personalFlameNativeReply, nativeFlameClarification, type PersonalFlameMessage } from '@/lib/personal-flame'
+import { POST as operateFileFolder } from '@/app/api/client/file-folder-world/route'
 import { ensureClientMoneyEnvironment } from '@/lib/client-money-environment'
 
 async function ensureClientBridgeAiMessageSchema(sql: any) {
@@ -218,96 +221,57 @@ export async function POST(request: NextRequest) {
     const message = typeof body.message === 'string' ? body.message.trim().slice(0, 6000) : ''
     if (!message) return NextResponse.json({ error: 'Message required' }, { status: 400 })
 
-    const nativeReply = nativeFlameReply(message, { systems: ctx.systems, builds: ctx.builds })
-    return await withFlameUsage(String(ctx.client.id),'client',nativeReply!==null?'native_reply':'model_reply',async()=>{
-    if (nativeReply !== null) {
-      const [saved] = await ctx.sql`
+    // Only the Client's authenticated request can trigger an operation or usage debit.
+    // WEAVE owns Flame; the Client owns the File Folder and decides what to build.
+    const connection=resolveNativeFolderConnection(message,ctx.systems)
+    async function record(response:string){
+      const [saved]=await ctx.sql`
         WITH instruction AS (
           INSERT INTO client_messages (client_id,client_name,position,sender_type,content,is_read)
           VALUES (${String(ctx.client.id)},${ctx.client.name},'bridge_ai','client',${message},true)
           RETURNING id
         )
         INSERT INTO client_messages (client_id,client_name,position,sender_type,content,is_read)
-        SELECT ${String(ctx.client.id)},${ctx.client.name},'bridge_ai','bridge_ai',${nativeReply},true
-        FROM instruction
-        RETURNING id,sender_type,content,created_at
+        SELECT ${String(ctx.client.id)},${ctx.client.name},'bridge_ai','bridge_ai',${response},true
+        FROM instruction RETURNING id,sender_type,content,created_at
       `
-      return NextResponse.json({success:true,message:saved,native:true}, {headers:{'Cache-Control':'private, no-store'}})
+      return NextResponse.json({success:true,message:saved,native:true},{headers:{'Cache-Control':'private, no-store'}})
     }
-
-    await ctx.sql`
-      INSERT INTO client_messages (client_id,client_name,position,sender_type,content,is_read)
-      VALUES (${String(ctx.client.id)},${ctx.client.name},'bridge_ai','client',${message},true)
-    `
-
-    const historyRows = await supportHistory(ctx.sql, String(ctx.client.id))
-    const history: BridgeMessage[] = historyRows.slice(-24).map((entry: any) => ({
-      role: entry.sender_type === 'bridge_ai' ? 'assistant' : 'user',
-      content: entry.sender_type === 'bridger'
-        ? 'Assigned Bridger: ' + String(entry.content || '')
-        : entry.sender_type === 'client'
-          ? 'Client: ' + String(entry.content || '')
-          : String(entry.content || ''),
+    const creative=flameCreativeIntent(message)
+    if(creative){
+      const result=await runCreativeProduction({id:String(ctx.client.id),role:'client'},{...creative,allowProvider:true,requestId:body.requestId})
+      if(!result.ok)return result
+      const output=await result.json()
+      return record(output.kind==='image'?'Image saved privately. Open /image-workshop/production to view it.':String(output.content||''))
+    }
+    const webQuery=flameWebQuery(message)
+    if(webQuery!==null)return await withFlameUsage(String(ctx.client.id),'client','workshop_operation',async()=>{
+      try{return await record(await flameWebSearchReply(String(ctx.client.id),webQuery))}
+      catch(error){return NextResponse.json({error:error instanceof Error?error.message:'Web search unavailable.'},{status:503})}
+    })
+    if(connection&&!('error' in connection)){
+      // Existing owner-checked operation owns authorization, validation and usage
+      // accounting. Do not reserve a second chat fee or execute arbitrary routes.
+      const token=request.headers.get('authorization')||''
+      const actionRequest=new NextRequest(new URL('/api/client/file-folder-world',request.url),{
+        method:'POST',headers:{Authorization:token,'Content-Type':'application/json'},
+        body:JSON.stringify({action:'connect_modules',source_system_id:connection.sourceId,target_system_id:connection.targetId})
+      })
+      const result=await operateFileFolder(actionRequest)
+      const data=await result.json()
+      if(!result.ok||data.success!==true||!data.connection?.id)return NextResponse.json({error:typeof data.error==='string'?data.error:'The workshop did not confirm this connection. No success is assumed.'},{status:result.ok?409:result.status})
+      const state=String(data.connection?.status||'recorded')
+      return record('The File Folder workshop confirmed the connection from '+connection.sourceTitle+' to '+connection.targetTitle+'. Recorded state: '+state+'. A configured connection is not proof that an external integration or transfer ran.')
+    }
+    const historyRows=await supportHistory(ctx.sql,String(ctx.client.id))
+    const history:PersonalFlameMessage[]=historyRows.filter((entry:any)=>entry.sender_type==='client'||entry.sender_type==='bridge_ai').slice(-24).map((entry:any)=>({
+      role:entry.sender_type==='client'?'user':'assistant',content:String(entry.content||''),mode:'native'
     }))
-
-    const installedSystems = (ctx.systems || []).map((system: any) => ({
-      title: system.title,
-      type: system.system_type,
-      status: system.status,
-      installedParts: Array.isArray(system.configuration?.appliedParts)
-        ? system.configuration.appliedParts.map((part: any) => part.name || part.item_key)
-        : [],
-    }))
-
-    const crossingRecord = ctx.crossing?.messages
-      ? JSON.stringify(ctx.crossing.messages).slice(0, 8000)
-      : 'No recoverable legacy crossing transcript is linked to this Client.'
-
-    const supportPrompt = `
-You are now operating inside the authenticated Client File Folder.
-
-Client: ${ctx.client.name}
-Business: ${ctx.client.business_name || 'not named'}
-File Number: ${ctx.client.file_number}
-Workshop: ${ctx.workshop?.title || 'Interaction in Motion'}
-Workshop purpose: ${ctx.workshop?.description || 'Continue the Client movement truthfully and practically.'}
-
-Installed live systems:
-${JSON.stringify(installedSystems, null, 2)}
-
-Active construction and funding gates (the times below are recorded estimates, not proof of completion):
-${JSON.stringify(ctx.builds || [], null, 2)}
-
-Assigned human Bridger: ${ctx.bridger?.name || 'No active Bridger assigned'}
-
-Crossing continuity:
-Template: ${ctx.crossing?.template_name || 'Bridge AI continuity'}
-Recovered crossing record: ${crossingRecord}
-
-Client-support rules:
-- You are File Folder Flame, intelligence owned by WEAVE, continuing from the crossing. The Client directs and owns the enterprise, not the intelligence. You may explain and propose native operations; this conversation itself cannot execute them.
-- Work in one assistance thread with the Client and their assigned human Bridger.
-- The Bridger offers human guidance; the Client owns the File Folder and decides what to build.
-- Use the identity prefix on recent messages to distinguish the Bridger from the Client.
-- Only the Client's authenticated request can trigger an AI-assisted reply or any associated fee.
-- Do not treat a Bridger's suggestion as authorization to purchase, activate or modify systems.
-- Treat the File Folder as the Client's persistent operating environment.
-- Help the Client understand, use, continue and build their real systems.
-- Distinguish previews, construction state and live recorded operation.
-- Never claim an external transaction, deployment, customer action or integration occurred unless the File Folder record shows it.
-- Keep the Client's current topic and unfinished movement continuous rather than restarting with generic onboarding.
-- The human remains the source of direction and judgment.
-`.trim()
-
-    const response = await chatWithBridge(history, supportPrompt)
-    if(!response||response==='Bridge AI is not configured on this server yet.'||response.startsWith("I'm having trouble connecting right now."))return NextResponse.json({error:'Advanced Flame reply unavailable; usage will be released.'},{status:503})
-    const [saved] = await ctx.sql`
-      INSERT INTO client_messages (client_id,client_name,position,sender_type,content,is_read)
-      VALUES (${String(ctx.client.id)},${ctx.client.name},'bridge_ai','bridge_ai',${response},true)
-      RETURNING id,sender_type,content,created_at
-    `
-    return NextResponse.json({success:true,message:saved})
-    },body=>body.success===true)
+    const nativeReply=connection&&'error' in connection?connection.error:
+      nativeFlameReply(message,{systems:ctx.systems,builds:ctx.builds})??
+      (/^(?:note:|my notes\b)/i.test(message)?'This is your shared File Folder support thread. Use Personal Flame for private notes.':personalFlameNativeReply(message,history,'client'))??
+      (nativeFlameClarification(message,'client')+' Remember: the Client owns the File Folder and decides what to build.')
+    return await withFlameUsage(String(ctx.client.id),'client','native_reply',()=>record(nativeReply),body=>body.success===true)
   } catch (error) {
     console.error('[client/bridge-ai POST]', error)
     return NextResponse.json({ error: 'Bridge AI support is unavailable' }, { status: 500 })

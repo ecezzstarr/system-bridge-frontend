@@ -41,3 +41,11 @@ test('legacy privileged service is disabled and release authorization checks sec
  assert.ok(!dev.includes('run_select_query'))
  assert.ok(!dev.includes("from 'fs/promises'"))
 })
+
+test('Eight selects the native runtime unless the operator explicitly requests advanced assistance',()=>{
+ const source=readFileSync('app/api/eight/dev/route.ts','utf8')
+ assert.ok(source.includes('await nativeEight(command,String(userId),nativeHistory)'))
+ assert.ok(source.includes("useExternal ? await runToolLoop([{role:'user',content:command}]"))
+ assert.ok(source.includes('await discoverResearch(topic)'))
+ assert.ok(source.includes('await readContinuityEvidence()'))
+})
