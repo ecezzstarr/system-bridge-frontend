@@ -243,7 +243,7 @@ export async function POST(request: NextRequest) {
       })
       const result=await operateFileFolder(actionRequest)
       const data=await result.json()
-      if(!result.ok||data.success!==true)return NextResponse.json({error:typeof data.error==='string'?data.error:'The workshop did not confirm this connection. No success is assumed.'},{status:result.ok?409:result.status})
+      if(!result.ok||data.success!==true||!data.connection?.id)return NextResponse.json({error:typeof data.error==='string'?data.error:'The workshop did not confirm this connection. No success is assumed.'},{status:result.ok?409:result.status})
       const state=String(data.connection?.status||'recorded')
       return record('The File Folder workshop confirmed the connection from '+connection.sourceTitle+' to '+connection.targetTitle+'. Recorded state: '+state+'. A configured connection is not proof that an external integration or transfer ran.')
     }
@@ -253,7 +253,7 @@ export async function POST(request: NextRequest) {
     }))
     const nativeReply=connection&&'error' in connection?connection.error:
       nativeFlameReply(message,{systems:ctx.systems,builds:ctx.builds})??
-      personalFlameNativeReply(message,history,'client')??
+      (/^(?:note:|my notes\b)/i.test(message)?'This is your shared File Folder support thread. Use Personal Flame for private notes.':personalFlameNativeReply(message,history,'client'))??
       nativeFlameClarification(message,'client')
     return await withFlameUsage(String(ctx.client.id),'client','native_reply',()=>record(nativeReply),body=>body.success===true)
   } catch (error) {
