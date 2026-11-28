@@ -1,0 +1,20 @@
+name: Windows laptop private storage
+on:
+  pull_request:
+    branches: [main]
+    paths: ['public/host/weave-laptop-worker.ps1', 'selfhost/install-laptop-training.ps1', 'tests/laptop-worker-private-storage.ps1', '.github/workflows/laptop-private-storage-check.yml']
+  push:
+    branches: [main]
+    paths: ['public/host/weave-laptop-worker.ps1', 'selfhost/install-laptop-training.ps1', 'tests/laptop-worker-private-storage.ps1', '.github/workflows/laptop-private-storage-check.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  private-storage:
+    runs-on: windows-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reapply account-only storage and round-trip a synthetic DPAPI credential
+        shell: pwsh
+        run: ./tests/laptop-worker-private-storage.ps1
