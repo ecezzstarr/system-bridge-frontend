@@ -46,6 +46,11 @@ if(process.env.WEAVE_LAPTOP_TEST_DATABASE_URL)(async()=>{
   const exp=(await laptop.laptopExchange(device.token,{action:'training_poll',trainingStatus:status})).job
   await pool.query("UPDATE weave_laptop_training_jobs SET expires_at=now()-interval '1 minute' WHERE id=$1",[exp.id])
   await assert.rejects(laptop.laptopExchange(device.token,{...receipt,jobId:exp.id,lease:exp.lease}))
+  await pool.query("UPDATE weave_laptop_training_status SET received_at=now()-interval '2 minutes' WHERE device_id=$1",[device.deviceId])
+  await assert.rejects(transport.requestLaptopTraining(actor))
+  const scrubbed=(await pool.query('SELECT status,payload FROM weave_laptop_training_jobs WHERE id=$1',[exp.id])).rows[0]
+  assert.equal(scrubbed.status,'indeterminate')
+  assert.equal(scrubbed.payload,null,'Expired payload must clear even when the node is offline')
   await laptop.revokeLaptop(actor,device.deviceId,'DISCONNECT LAPTOP')
   await assert.rejects(laptop.laptopExchange(device.token,{action:'training_poll',trainingStatus:status}))
   console.log('Training PostgreSQL: authenticated node, queue/claim races, receipt replay, expiry, payload removal and revocation passed')
@@ -55,3 +60,4 @@ if(process.env.WEAVE_LAPTOP_TEST_DATABASE_URL)(async()=>{
   await pool.end();await control.query('DROP SCHEMA '+schema+' CASCADE');await control.end()
  }
 })().catch(e=>{console.error(e);process.exitCode=1})
+
