@@ -2,6 +2,7 @@ import 'server-only'
 import {createHash,randomBytes} from 'node:crypto'
 import type {PoolClient} from 'pg'
 import {getPool} from '@/lib/db'
+import {trainingExchange} from '@/lib/laptop-training-transport'
 
 export const LAPTOP_OPERATIONS={inspect:'CHECK LAPTOP',install_linux:'INSTALL LINUX',install_docker:'INSTALL DOCKER'} as const
 type Operation=keyof typeof LAPTOP_OPERATIONS
@@ -165,7 +166,7 @@ export async function revokeLaptop(actor:string,deviceId:unknown,confirmation:un
 export async function laptopExchange(token:string,body:Record<string,unknown>){
  if(!credential.test(token))throw new LaptopError('Laptop connection refused',401)
  const action=body.action
- if(!['poll','heartbeat','result'].includes(String(action)))throw new LaptopError('Unsupported worker request',400)
+ if(!['poll','heartbeat','result','training_poll','training_result'].includes(String(action)))throw new LaptopError('Unsupported worker request',400)
  const snapshot=body.snapshot===undefined?null:cleanLaptopSnapshot(body.snapshot)
  if(action==='poll'&&!snapshot)throw new LaptopError('Laptop status required',400)
  return transaction(async db=>{
@@ -174,6 +175,7 @@ export async function laptopExchange(token:string,body:Record<string,unknown>){
    FOR UPDATE OF d`,[digest(token),operatorIds()])
   const device=selected.rows[0]
   if(!device)throw new LaptopError('Laptop connection refused',401)
+  if(action==='training_poll'||action==='training_result')return trainingExchange(db,device.id,body)
   await db.query('UPDATE weave_laptop_devices SET last_seen_at=now(),snapshot=COALESCE($2::jsonb,snapshot) WHERE id=$1::uuid',[device.id,snapshot?JSON.stringify(snapshot):null])
   await expireJobs(db,device.id)
   if(action==='result'){
@@ -212,12 +214,13 @@ export async function readLaptopJson(request:Request){
  let size=0;const chunks:Uint8Array[]=[]
  try{
   while(true){const {value,done}=await reader.read();if(done)break
-   size+=value.length;if(size>8192){await reader.cancel();throw new LaptopError('Request too large',413)}chunks.push(value)}
+   size+=value.length;if(size>327680){await reader.cancel();throw new LaptopError('Request too large',413)}chunks.push(value)}
  }finally{reader.releaseLock()}
  const bytes=new Uint8Array(size);let offset=0
  for(const chunk of chunks){bytes.set(chunk,offset);offset+=chunk.length}
  let body:unknown
  try{body=JSON.parse(new TextDecoder().decode(bytes))}catch{throw new LaptopError('Valid JSON required',400)}
  if(!body||typeof body!=='object'||Array.isArray(body))throw new LaptopError('JSON object required',400)
+ if(size>8192&&!['training_poll','training_result'].includes(String((body as Record<string,unknown>).action)))throw new LaptopError('Request too large',413)
  return body as Record<string,unknown>
 }

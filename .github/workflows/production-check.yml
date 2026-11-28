@@ -58,6 +58,7 @@ jobs:
         run: |
           node tests/laptop-worker-regression.cjs
           node tests/laptop-worker-postgres.cjs
+          node tests/laptop-training-transport.cjs
           pwsh -NoProfile -File tests/laptop-worker-parser.ps1
 
       - name: File Folder world runtime regression

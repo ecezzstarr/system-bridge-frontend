@@ -60,7 +60,8 @@ def validate_corpus(text):
 class Workshop:
     def __init__(self, root):
         self.root=Path(root).resolve()
-        if self.root==HERE.parent or HERE.parent in self.root.parents:
+        code_root = HERE.parent if (HERE.parent / 'package.json').exists() else HERE
+        if self.root==code_root or code_root in self.root.parents:
             raise ValueError("Private root must be outside the repository.")
         self.root.mkdir(parents=True,exist_ok=True,mode=0o700)
         if os.name!="nt":

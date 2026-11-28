@@ -16,12 +16,29 @@ export function FlameTrainingWorkshop(){
   catch(e){setState(null);setError(e instanceof Error?e.message:'Worker unavailable.')}
  }
  useEffect(()=>{void refresh();const t=window.setInterval(()=>{if(!lock.current&&!document.hidden)void refresh()},10000);return()=>window.clearInterval(t)},[])
- async function action(payload:object){const r=await fetch('/api/admin/flame-training',{method:'POST',headers:headers(),body:JSON.stringify(payload)});const b=await r.json();if(!r.ok||!b.success)throw Error(b.error||b.message||'Operation unconfirmed.');return b.result}
+ async function action(payload:object){
+  const r=await fetch('/api/admin/flame-training',{method:'POST',headers:headers(),body:JSON.stringify(payload)});const b=await r.json()
+  if(!r.ok||!b.success)throw Error(b.error||b.message||'Operation unconfirmed.')
+  if(!b.result?.queued)return b.result
+  for(let attempt=0;attempt<60;attempt++){
+   await new Promise(resolve=>window.setTimeout(resolve,2000))
+   const receipt=await fetch('/api/admin/flame-training?jobId='+encodeURIComponent(b.result.jobId),{headers:headers(),cache:'no-store'})
+   const job=await receipt.json()
+   if(!receipt.ok)throw Error('Job receipt unavailable. Inspect node status before retrying.')
+   if(job.status==='completed'){
+    if(job.result?.success!==true)throw Error(job.result?.error||'Native operation failed.')
+    return job.result.result
+   }
+   if(job.status==='indeterminate')throw Error('Job expired. Inspect local node before retrying.')
+  }
+  throw Error('Job still unconfirmed. Inspect node status before retrying.')
+ }
  async function run(fn:()=>Promise<void>){if(lock.current)return;lock.current=true;setBusy(true);setError('');try{await fn();await refresh()}catch(e){setError(e instanceof Error?e.message:'Operation unconfirmed.')}finally{lock.current=false;setBusy(false)}}
  const training=state?.runs.some(r=>['queued','training','evaluating'].includes(r.state))
  return <section className="space-y-4 rounded-2xl border border-border p-4" aria-label="Weave One Training Workshop">
   <header><h3 className="text-xl font-semibold">Weave One Training Workshop</h3><p className="mt-1 text-sm text-muted-foreground">Private corpus → native training → evaluation → checkpoint deployment to the Administrations pilot. Normal Flame remains independent. Research outputs may be unreliable.</p></header>
   <div className="flex flex-wrap items-center gap-2 text-sm"><span>{state?.ready?'Private worker connected':'Worker connection unverified'}</span><button type="button" className={button} disabled={busy} onClick={()=>void refresh()}>Refresh</button></div>
+  <a className="inline-block text-sm underline" href="/admin/sovereign-server">Connect the Weave-owned laptop</a>
   {error&&<p role="alert" className="text-sm text-amber-600">{error}</p>}
   <div className="space-y-2 rounded-xl border border-border p-3">
    <h4 className="font-semibold">1 · Reviewed Flame Words corpus</h4>
