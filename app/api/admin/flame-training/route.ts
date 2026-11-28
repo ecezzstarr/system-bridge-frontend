@@ -1,5 +1,6 @@
 import {NextRequest,NextResponse} from 'next/server'
 import {requireWorkshopAuthorization} from '@/lib/workshop-auth'
+import {trainingDevice,requestLaptopTraining} from '@/lib/laptop-training-transport'
 export const dynamic='force-dynamic'
 export const runtime='nodejs'
 export const maxDuration=90
@@ -16,6 +17,12 @@ async function worker(path:'/status'|'/action',body?:object){
 export async function GET(request:NextRequest){
  const auth=await requireWorkshopAuthorization(request)
  if(!auth.authorized)return auth.response
+ if(trainingDevice()){
+  const jobId=request.nextUrl.searchParams.get('jobId')||undefined
+  if(jobId&&!/^[a-f0-9-]{36}$/i.test(jobId))return reply({error:'Invalid job reference.'},400)
+  try{return reply(await requestLaptopTraining(auth.session.user.id,undefined,jobId) as object)}
+  catch{return reply({error:'Private laptop training node unavailable. Check pairing and local worker.'},503)}
+ }
  return worker('/status')
 }
 export async function POST(request:NextRequest){
@@ -30,6 +37,10 @@ export async function POST(request:NextRequest){
   const b=JSON.parse(Buffer.concat(chunks).toString('utf8'))
   if(!b||typeof b!=='object'||Array.isArray(b)||!['import','train','report','activate','deactivate','test'].includes(b.action))return reply({error:'Unknown workshop action.'},400)
   // The server, not the browser, supplies the authenticated operator identity.
+  if(trainingDevice()){
+   try{return reply({success:true,result:await requestLaptopTraining(auth.session.user.id,b)})}
+   catch{return reply({error:'Training request refused. Check node freshness, bounded inputs and pending jobs.'},409)}
+  }
   return worker('/action',{...b,actor:auth.session.user.id})
  }catch{return reply({error:'Invalid request.'},400)}
 }

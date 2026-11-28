@@ -6,7 +6,7 @@ Run with -Pair once; add -AllowSetup only to permit the two installation actions
 Keep this window running. Ctrl+C disconnects the running worker.
 #>
 [CmdletBinding()]
-param([switch]$Pair,[switch]$AllowSetup,[switch]$Once)
+param([switch]$Pair,[switch]$AllowSetup,[switch]$Once,[switch]$Training)
 Set-StrictMode -Version Latest
 $ErrorActionPreference='Stop'
 if($env:OS -ne 'Windows_NT'){throw 'This worker is for a Windows laptop.'}
@@ -170,6 +170,26 @@ $connection=Import-Clixml -LiteralPath $CredentialFile
 if($connection -isnot [PSCredential]){throw 'Invalid local connection file.'}
 $script:Token=$connection.GetNetworkCredential().Password
 $connection=$null
+if($Training){
+ # Installation is local and separate. The web queue cannot choose this path,
+ # Python arguments, dependencies or code. Credential never enters argv/env.
+ $trainingRoot=Join-Path $Root 'Training'
+ $python=Join-Path $trainingRoot 'venv\Scripts\python.exe'
+ $adapter=Join-Path $trainingRoot 'engine\laptop_training.py'
+ if(-not(Test-Path -LiteralPath $python) -or -not(Test-Path -LiteralPath $adapter)){throw 'Install the reviewed native training engine locally first.'}
+ $start=[Diagnostics.ProcessStartInfo]::new()
+ $start.FileName=$python
+ $start.Arguments='"'+$adapter+'" --root "'+(Join-Path $trainingRoot 'data')+'"'
+ $start.UseShellExecute=$false;$start.CreateNoWindow=$true;$start.RedirectStandardInput=$true
+ $process=[Diagnostics.Process]::new();$process.StartInfo=$start
+ try{
+  [void]$process.Start()
+  $process.StandardInput.WriteLine($script:Token);$process.StandardInput.Close();$script:Token=''
+  $process.WaitForExit()
+  if($process.ExitCode -ne 0){throw 'Private training worker stopped. Inspect its local status.'}
+ }finally{if(-not $process.HasExited){$process.Kill()};$process.Dispose();$script:Token=''}
+ return
+}
 Write-Output 'Weave laptop worker is running. Keep this window open. Ctrl+C stops it.'
 if($AllowSetup){Write-Output 'Linux and Docker setup permitted for this run.'}
 try{

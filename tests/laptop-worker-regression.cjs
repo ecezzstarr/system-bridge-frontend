@@ -5,10 +5,10 @@ const {stripTypeScriptTypes}=require('node:module')
 const crypto=require('node:crypto')
 const root=path.resolve(__dirname,'..')
 const read=file=>fs.readFileSync(path.join(root,file),'utf8')
-function load(pool){
- const source=stripTypeScriptTypes(read('lib/weave-laptop-worker.ts').replace(/^import .*\n/gm,'').replace(/^export /gm,''),{mode:'transform'})
- return new Function('getPool','createHash','randomBytes',source+'\nreturn {cleanLaptopSnapshot,readLaptopJson,queueLaptopJob,createLaptopPairing,pairLaptop,laptopExchange,revokeLaptop,laptopState,operatorIds}')(
-  ()=>pool,crypto.createHash,crypto.randomBytes)
+function load(pool,trainingExchange){
+ const source=stripTypeScriptTypes(read('lib/weave-laptop-worker.ts').replace(/\r\n/g,'\n').replace(/^import .*\n/gm,'').replace(/^export /gm,''),{mode:'transform'})
+ return new Function('getPool','createHash','randomBytes','trainingExchange',source+'\nreturn {cleanLaptopSnapshot,readLaptopJson,queueLaptopJob,createLaptopPairing,pairLaptop,laptopExchange,revokeLaptop,laptopState,operatorIds}')(
+  ()=>pool,crypto.createHash,crypto.randomBytes,trainingExchange)
 }
 module.exports={load}
 if(require.main===module)(async()=>{
@@ -41,7 +41,7 @@ if(require.main===module)(async()=>{
  assert.equal(normalize('/host/weave-laptop-worker.ps1?v=1'),null)
  assert.equal(normalize('/host/definitely-missing-worker.ps1'),'/host/definitely-missing-worker.ps1','Missing downloads must still fail wiring')
  const denied={status:401}
- const adminSource=stripTypeScriptTypes(read('app/api/admin/laptop-worker/route.ts').replace(/^import .*\n/gm,'').replace(/^export /gm,''),{mode:'transform'})
+ const adminSource=stripTypeScriptTypes(read('app/api/admin/laptop-worker/route.ts').replace(/\r\n/g,'\n').replace(/^import .*\n/gm,'').replace(/^export /gm,''),{mode:'transform'})
  const admin=new Function('requireWorkshopAuthorization',adminSource+'\nreturn {GET,POST}')(
   async()=>({authorized:false,response:denied}))
  const malicious={get body(){throw Error('An unauthorized request body must not be consumed')}}
