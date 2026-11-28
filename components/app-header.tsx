@@ -2,7 +2,7 @@
 
 import { useUsdValue } from '@/components/usd-value'
 
-import { useRouter } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { Search, Wallet, Settings, LogOut, Radio, Sparkles, MessageCircle, Flame } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -24,6 +24,7 @@ interface AppHeaderProps {
 export function AppHeader({ user }: AppHeaderProps) {
   const usd = useUsdValue()
   const router = useRouter()
+  const flameBuildingActive = usePathname() === '/flame'
   const [search, setSearch] = useState("")
   const { user: authUser, logout } = useAuth()
   const effectiveUser = user || (authUser ? { name: authUser.name || 'WEAVE User', role: authUser.role || 'user', avatar: authUser.avatar || undefined } : undefined)
@@ -232,7 +233,7 @@ export function AppHeader({ user }: AppHeaderProps) {
           <Wallet className="h-4 w-4 text-cyan-300" />
         </Button>
 
-        {authUser?.id&&<button type="button" onClick={openPersonalFlame} aria-label="Enter Flame building" className="h-9 w-9 shrink-0 rounded-full text-amber-300"><Flame className="mx-auto h-4 w-4"/></button>}
+        {authUser?.id&&<button type="button" onClick={openPersonalFlame} aria-label="Enter Flame building" aria-current={flameBuildingActive?'page':undefined} data-weave-flame-entry="presence" className={"flex h-9 shrink-0 items-center justify-center gap-1 rounded-full border border-amber-300/25 bg-amber-400/10 px-2 text-amber-300 "+(flameBuildingActive?"ring-1 ring-amber-300/60":"")}><Flame className="h-4 w-4" aria-hidden="true"/><span className="hidden text-[10px] font-bold min-[430px]:inline">Flame</span></button>}
         <div className="shrink-0" data-phone-chrome="signal">
           <NotificationBell position="phone" />
         </div>
@@ -242,7 +243,7 @@ export function AppHeader({ user }: AppHeaderProps) {
         <div className="flex min-w-0 flex-1 items-center gap-3">
           <div data-weave-live-word="station" className="weave-flame-live-indicator max-w-[8rem] items-center gap-1.5 overflow-hidden rounded-full border border-orange-300/20 bg-orange-400/[0.07] px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.12em] text-orange-100">
             <span className="h-1.5 w-1.5 rounded-full bg-orange-300 shadow-[0_0_12px_rgba(251,146,60,.8)]" />
-            Flame Live
+            Burning River Live
           </div>
 
           <div className="relative w-64 lg:w-96">
@@ -291,7 +292,7 @@ export function AppHeader({ user }: AppHeaderProps) {
             {accountOpen && renderAccountMenu('right')}
           </div>
 
-          {authUser?.id&&<button type="button" onClick={openPersonalFlame} aria-label="Enter Flame building" className="flex items-center gap-1.5 text-xs font-bold text-amber-300"><Flame className="h-4 w-4"/>Flame</button>}
+          {authUser?.id&&<button type="button" onClick={openPersonalFlame} aria-label="Enter Flame building" aria-current={flameBuildingActive?'page':undefined} data-weave-flame-entry="presence" className={"flex min-h-9 items-center gap-1.5 rounded-full border border-amber-300/25 bg-amber-400/10 px-3 text-xs font-bold text-amber-300 "+(flameBuildingActive?"ring-1 ring-amber-300/60":"")}><Flame className="h-4 w-4" aria-hidden="true"/>Flame · Presence</button>}
           <NotificationBell position="desktop" />
         </div>
       </div>
