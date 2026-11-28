@@ -13,7 +13,7 @@ Install official Python 3.12 locally, then run the reviewed installer with its
 absolute executable path:
 
 ```powershell
-powershell -NoProfile -File selfhost\install-laptop-training.ps1 -Python 'C:\path\to\python.exe'
+pwsh -NoProfile -File selfhost\install-laptop-training.ps1 -Python 'C:\path\to\python.exe'
 ```
 
 Respect Windows signing/execution policy; do not use ExecutionPolicy Bypass or
@@ -40,7 +40,7 @@ Do not change DNS, hosting, production model flags or Oracle access.
 Start the locally installed adapter from the reviewed PowerShell worker:
 
 ```powershell
-powershell -NoProfile -File public\host\weave-laptop-worker.ps1 -Training
+pwsh -NoProfile -File public\host\weave-laptop-worker.ps1 -Training
 ```
 
 The worker decrypts the existing credential locally and sends it to its fixed

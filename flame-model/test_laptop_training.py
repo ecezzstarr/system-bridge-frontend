@@ -36,7 +36,7 @@ class OutboundTrainingTests(unittest.TestCase):
             corpus = w.import_corpus(text, ACTOR)
             hashes = []
             for index in range(2):
-                run = w.start(corpus['sha'], 1, ACTOR)
+                run = w.start(corpus['sha'], 1, ACTOR, hashes[-1][0] if hashes else None)
                 deadline = time.monotonic() + 240
                 while w.record(run['id'])['state'] in ('queued', 'training', 'evaluating') and time.monotonic() < deadline:
                     time.sleep(.2)
@@ -45,6 +45,7 @@ class OutboundTrainingTests(unittest.TestCase):
                 self.assertEqual(w.report(run['id'])['checkpoint_sha256'], record['checkpoint'])
                 hashes.append((run['id'], record['checkpoint']))
                 w.activate(*hashes[-1], ACTOR)
+            self.assertNotEqual(hashes[0][1], hashes[1][1])
             self.assertEqual(w.active()['previous']['checkpoint'], hashes[0][1])
             w.activate(*hashes[0], ACTOR)
             self.assertEqual(w.active()['current']['checkpoint'], hashes[0][1])

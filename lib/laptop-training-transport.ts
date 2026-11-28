@@ -87,7 +87,9 @@ export async function requestLaptopTraining(actor:string,body?:Record<string,unk
  if(!device)throw Error('Appoint a paired training device in private server settings')
  const db=await getPool().connect()
  try{
-  await db.query('BEGIN');await trainingSchema(db)
+  // Expiry scrubs corpus payloads even when an offline node makes the
+  // subsequent authorized status/request transaction fail.
+  await trainingSchema(db);await db.query('BEGIN')
   const node=(await db.query(`SELECT d.id,s.snapshot,s.received_at FROM weave_laptop_devices d
    JOIN users u ON u.id=d.created_by JOIN weave_laptop_training_status s ON s.device_id=d.id
    WHERE d.id=$1 AND d.revoked_at IS NULL AND d.expires_at>now() AND u.is_active=true AND u.role='admin'
