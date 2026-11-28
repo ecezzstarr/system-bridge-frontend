@@ -31,11 +31,17 @@ Pair with the existing `/admin/sovereign-server` connection panel and masked
 local worker prompt. Codes and credentials must never be sent in chat. Existing
 pairing documentation: [Laptop worker](weave-laptop-worker.md).
 
-An authorized host operator sets only `WEAVE_FLAME_TRAINING_DEVICE_ID` to the
-paired device's public UUID in private application settings, preserving all
-existing production settings. This selects outbound transport instead of the
-original loopback training service; no training token is needed for this mode.
-Do not change DNS, hosting, production model flags or Oracle access.
+Open `/admin/flame-training`, select your active paired laptop and confirm **Use
+private training laptop**. Administrations records the appointment in the
+database with its operator and timestamp. Only the pairing Administration's own
+active devices are selectable. This selects outbound transport instead of the
+original loopback training service without changing the Oracle host environment
+or restarting production. No training token is needed for this mode.
+
+An existing private `WEAVE_FLAME_TRAINING_DEVICE_ID` host setting retains
+precedence and locks browser appointment changes. Never change DNS, hosting,
+production model flags or Oracle access for this setup. Finish pending actions
+and active training before changing the appointed laptop.
 
 Start the locally installed adapter from the reviewed PowerShell worker:
 
@@ -87,11 +93,15 @@ review; the worker does not automatically delete training evidence.
 Revoking the laptop, disabling the pairing operator, or removing them from the
 privileged allowlist stops further authenticated exchanges. Already-started
 native computation can finish locally. Stop the local process to stop its work;
-do not assume revocation rolls back a native checkpoint activation. Unset the
-device selector to restore the original loopback workshop transport.
+do not assume revocation rolls back a native checkpoint activation. **Clear
+training laptop selection** restores the original loopback workshop transport
+and retains the pairing and local artifacts. If a private host device setting is
+present, its existing operator-controlled configuration remains authoritative.
 
 Automated synthetic tests exercise corpus rejection, actual one-step training,
 evaluation hashes, two-checkpoint pilot activation, restoration, deactivation,
 receipt replay and action refusal. Isolated PostgreSQL tests exercise pairing,
 claim races, wrong leases, expiry, revocation and payload removal. None contact
-production or import account histories.
+production or import account histories. A Windows-specific check reapplies the
+private folder access rules, removes an extra grant, preserves ownership and
+round-trips a synthetic DPAPI credential without requesting audit privileges.

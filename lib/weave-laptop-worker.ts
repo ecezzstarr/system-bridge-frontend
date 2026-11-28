@@ -175,8 +175,8 @@ export async function laptopExchange(token:string,body:Record<string,unknown>){
    FOR UPDATE OF d`,[digest(token),operatorIds()])
   const device=selected.rows[0]
   if(!device)throw new LaptopError('Laptop connection refused',401)
-  if(action==='training_poll'||action==='training_result')return trainingExchange(db,device.id,body)
   await db.query('UPDATE weave_laptop_devices SET last_seen_at=now(),snapshot=COALESCE($2::jsonb,snapshot) WHERE id=$1::uuid',[device.id,snapshot?JSON.stringify(snapshot):null])
+  if(action==='training_poll'||action==='training_result')return trainingExchange(db,device.id,body)
   await expireJobs(db,device.id)
   if(action==='result'){
    if(typeof body.jobId!=='string'||!uuid.test(body.jobId)||typeof body.lease!=='string'||!credential.test(body.lease))
