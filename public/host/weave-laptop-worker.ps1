@@ -37,14 +37,21 @@ function Protect-LocalDirectory {
  }
  New-Item -ItemType Directory -Path $Root -Force|Out-Null
  $sid=[Security.Principal.WindowsIdentity]::GetCurrent().User
- $acl=[Security.AccessControl.DirectorySecurity]::new()
- $acl.SetOwner($sid)
+ # Preserve owner/audit state and persist only modified access rules. The
+ # Set-Acl provider can request SeSecurityPrivilege for unrelated sections,
+ # which is unavailable in a normal local worker session.
+ $acl=Get-Acl -LiteralPath $Root
  $acl.SetAccessRuleProtection($true,$false)
+ foreach($rule in @($acl.Access)){$acl.RemoveAccessRuleSpecific($rule)}
  foreach($principal in @($sid,[Security.Principal.SecurityIdentifier]::new('S-1-5-18'))){
   $rule=[Security.AccessControl.FileSystemAccessRule]::new($principal,'FullControl','ContainerInherit, ObjectInherit','None','Allow')
   $acl.AddAccessRule($rule)
  }
- Set-Acl -LiteralPath $Root -AclObject $acl
+ if($PSVersionTable.PSEdition -eq 'Core'){
+  [IO.FileSystemAclExtensions]::SetAccessControl([IO.DirectoryInfo]::new($Root),$acl)
+ }else{
+  [IO.Directory]::SetAccessControl($Root,$acl)
+ }
 }
 function Read-Wsl([string]$FixedArguments){
  if(-not(Test-Path -LiteralPath $Wsl)){return @{ok=$false;text=''}}
@@ -156,10 +163,11 @@ if($Pair){
  Write-Output 'Scope: report capacity and runtime status; run checks. -AllowSetup additionally permits fixed Ubuntu and Docker installation.'
  Write-Output 'No remote command prompt, Windows firewall exception, production data copy, DNS change or automatic startup task is created.'
  if((Read-Host 'Type CONNECT to approve this local connection') -cne 'CONNECT'){throw 'Connection cancelled locally.'}
+ # Verify private storage before consuming the one-use server grant.
+ Protect-LocalDirectory
  $code=Read-Host 'Paste the one-time code from Weave' -AsSecureString
  $plainCode=[Net.NetworkCredential]::new('pairing',$code).Password.Trim()
  try{$paired=Send-Weave @{action='pair';code=$plainCode}}finally{$plainCode='';$code=$null}
- Protect-LocalDirectory
  $secureToken=ConvertTo-SecureString $paired.token -AsPlainText -Force
  [PSCredential]::new($paired.deviceId,$secureToken)|Export-Clixml -LiteralPath $CredentialFile
  $paired=$null;$secureToken=$null

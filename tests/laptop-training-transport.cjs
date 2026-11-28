@@ -4,14 +4,24 @@ const {stripTypeScriptTypes}=require('node:module')
 const {createHash,randomBytes,randomUUID}=require('node:crypto')
 function load(pool){
  const source=stripTypeScriptTypes(fs.readFileSync('lib/laptop-training-transport.ts','utf8').replace(/\r\n/g,'\n').replace(/^import .*\n/gm,'').replace(/^export /gm,''),{mode:'transform'})
- return new Function('getPool','createHash','randomBytes',source+'\nreturn {trainingAction,trainingExchange,requestLaptopTraining}')( ()=>pool,createHash,randomBytes)
+ return new Function('getPool','createHash','randomBytes',source+'\nreturn {trainingAction,trainingExchange,requestLaptopTraining,selectedTrainingDevice,trainingNodeOptions,appointTrainingNode}')( ()=>pool,createHash,randomBytes)
 }
 const lib=load(null),actor=randomUUID()
 assert.throws(()=>lib.trainingAction({action:'exec',command:'anything'},actor))
 assert.throws(()=>lib.trainingAction({action:'train',sha:'a'.repeat(64),steps:2001,confirmation:'START TRAINING'},actor))
 assert.throws(()=>lib.trainingAction({action:'activate',id:'../escape',sha:'a'.repeat(64),confirmation:'DEPLOY PILOT'},actor))
 assert.deepEqual(lib.trainingAction({action:'deactivate',confirmation:'DEACTIVATE PILOT',url:'https://evil',actor:'spoof'},actor),{action:'deactivate',actor,confirmation:'DEACTIVATE PILOT'})
+assert.throws(()=>lib.trainingAction({action:'appoint_node',deviceId:randomUUID()},actor),'Node appointment is a separate authorized action, never a native job')
 console.log('Training action allowlist, bounds, artifact references and server actor passed')
+;(async()=>{
+ const source=stripTypeScriptTypes(fs.readFileSync('app/api/admin/flame-training/route.ts','utf8').replace(/\r\n/g,'\n').replace(/^import .*\n/gm,'').replace(/^export /gm,''),{mode:'transform'})
+ const denied={status:401}
+ const route=new Function('requireWorkshopAuthorization',source+'\nreturn {GET,POST}')(async()=>({authorized:false,response:denied}))
+ const malicious={get body(){throw Error('Unauthorized bodies must not be read')}}
+ assert.equal(await route.GET(malicious),denied)
+ assert.equal(await route.POST(malicious),denied)
+ console.log('Training workshop authorization precedes node selection, schema access and body consumption')
+})().catch(e=>{console.error(e);process.exitCode=1})
 if(process.env.WEAVE_LAPTOP_TEST_DATABASE_URL)(async()=>{
  const {Pool}=require('pg'),{load:loadLaptop}=require('./laptop-worker-regression.cjs')
  const control=new Pool({connectionString:process.env.WEAVE_LAPTOP_TEST_DATABASE_URL})
@@ -26,11 +36,26 @@ if(process.env.WEAVE_LAPTOP_TEST_DATABASE_URL)(async()=>{
   const transport=load(pool),laptop=loadLaptop(pool,transport.trainingExchange)
   const pairing=await laptop.createLaptopPairing(actor,'Synthetic node','CONNECT LAPTOP')
   const device=await laptop.pairLaptop(pairing.code)
+  delete process.env.WEAVE_FLAME_TRAINING_DEVICE_ID
+  assert.equal(await transport.selectedTrainingDevice(),null)
+  await assert.rejects(transport.appointTrainingNode(actor,device.deviceId,'YES'))
+  const otherActor=randomUUID()
+  await pool.query("INSERT INTO users VALUES($1,'admin',true)",[otherActor])
+  await assert.rejects(transport.appointTrainingNode(otherActor,device.deviceId,'USE PRIVATE TRAINING NODE'))
+  await assert.rejects(transport.appointTrainingNode(actor,randomUUID(),'USE PRIVATE TRAINING NODE'))
+  await transport.appointTrainingNode(actor,device.deviceId,'USE PRIVATE TRAINING NODE')
+  assert.equal(await transport.selectedTrainingDevice(),device.deviceId)
+  assert.deepEqual((await transport.trainingNodeOptions(actor)).devices.map(d=>d.id),[device.deviceId])
+  assert.deepEqual((await transport.trainingNodeOptions(otherActor)).devices,[])
   process.env.WEAVE_FLAME_TRAINING_DEVICE_ID=device.deviceId
+  await assert.rejects(transport.appointTrainingNode(actor,null,'CLEAR PRIVATE TRAINING NODE'))
+  delete process.env.WEAVE_FLAME_TRAINING_DEVICE_ID
   const status={ready:true,productionEnabled:false,corpus:null,runs:[],deployment:{current:null,previous:null}}
   await laptop.laptopExchange(device.token,{action:'training_poll',trainingStatus:status})
+  assert.equal((await laptop.laptopState()).devices.find(d=>d.id===device.deviceId).online,true)
   assert.deepEqual(await transport.requestLaptopTraining(actor),status)
   const queued=await transport.requestLaptopTraining(actor,{action:'deactivate',confirmation:'DEACTIVATE PILOT'})
+  await assert.rejects(transport.appointTrainingNode(actor,null,'CLEAR PRIVATE TRAINING NODE'))
   await assert.rejects(transport.requestLaptopTraining(actor,{action:'deactivate',confirmation:'DEACTIVATE PILOT'}))
   const claims=await Promise.all([laptop.laptopExchange(device.token,{action:'training_poll',trainingStatus:status}),laptop.laptopExchange(device.token,{action:'training_poll',trainingStatus:status})])
   assert.equal(claims.filter(c=>c.job).length,1)
@@ -42,6 +67,10 @@ if(process.env.WEAVE_LAPTOP_TEST_DATABASE_URL)(async()=>{
   await assert.rejects(laptop.laptopExchange(device.token,{...receipt,result:{success:true,result:{changed:true}}}))
   assert.equal((await transport.requestLaptopTraining(actor,undefined,queued.jobId)).status,'completed')
   assert.equal((await pool.query('SELECT payload FROM weave_laptop_training_jobs WHERE id=$1',[job.id])).rows[0].payload,null)
+  await transport.appointTrainingNode(actor,null,'CLEAR PRIVATE TRAINING NODE')
+  assert.equal(await transport.selectedTrainingDevice(),null)
+  await assert.rejects(laptop.laptopExchange(device.token,{action:'training_poll',trainingStatus:status}))
+  await transport.appointTrainingNode(actor,device.deviceId,'USE PRIVATE TRAINING NODE')
   await transport.requestLaptopTraining(actor,{action:'deactivate',confirmation:'DEACTIVATE PILOT'})
   const exp=(await laptop.laptopExchange(device.token,{action:'training_poll',trainingStatus:status})).job
   await pool.query("UPDATE weave_laptop_training_jobs SET expires_at=now()-interval '1 minute' WHERE id=$1",[exp.id])

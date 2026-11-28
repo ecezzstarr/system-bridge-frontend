@@ -10,6 +10,54 @@ export function trainingDevice(){
  const id=process.env.WEAVE_FLAME_TRAINING_DEVICE_ID||''
  return /^[a-f0-9-]{36}$/i.test(id)?id:null
 }
+async function trainingNodeSchema(db:Pick<PoolClient,'query'>){
+ await db.query(`CREATE TABLE IF NOT EXISTS weave_laptop_training_node(
+ singleton boolean PRIMARY KEY DEFAULT true CHECK(singleton=true),
+ device_id uuid REFERENCES weave_laptop_devices(id),appointed_by uuid NOT NULL REFERENCES users(id),
+ appointed_at timestamptz NOT NULL DEFAULT now())`)
+}
+export async function selectedTrainingDevice(db:Pick<PoolClient,'query'>=getPool()):Promise<string|null>{
+ if((process.env.WEAVE_FLAME_TRAINING_DEVICE_ID||'').trim()){
+  const configured=trainingDevice()
+  if(!configured)throw Error('Invalid private host device setting')
+  return configured
+ }
+ await trainingNodeSchema(db)
+ return (await db.query('SELECT device_id FROM weave_laptop_training_node WHERE singleton=true')).rows[0]?.device_id||null
+}
+export async function trainingNodeOptions(actor:string){
+ const pool=getPool()
+ const selectedDeviceId=await selectedTrainingDevice(pool)
+ const devices=(await pool.query(`SELECT id,label FROM weave_laptop_devices
+  WHERE created_by=$1 AND revoked_at IS NULL AND expires_at>now() ORDER BY created_at DESC LIMIT 10`,[actor])).rows
+ return {selectedDeviceId,devices,hostManaged:Boolean((process.env.WEAVE_FLAME_TRAINING_DEVICE_ID||'').trim())}
+}
+export async function appointTrainingNode(actor:string,deviceId:unknown,confirmation:unknown){
+ if((process.env.WEAVE_FLAME_TRAINING_DEVICE_ID||'').trim())throw Error('The node is managed by a private host setting')
+ if(deviceId!==null&&(typeof deviceId!=='string'||!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(deviceId)))throw Error('Choose an existing paired laptop')
+ if(confirmation!==(deviceId===null?'CLEAR PRIVATE TRAINING NODE':'USE PRIVATE TRAINING NODE'))throw Error('Exact node confirmation required')
+ const db=await getPool().connect()
+ try{
+  await trainingNodeSchema(db);await trainingSchema(db);await db.query('BEGIN')
+  const current=(await db.query('SELECT device_id FROM weave_laptop_training_node WHERE singleton=true FOR UPDATE')).rows[0]?.device_id
+  if(current){
+   await db.query('SELECT id FROM weave_laptop_devices WHERE id=$1 FOR UPDATE',[current])
+   const jobs=await db.query("SELECT id FROM weave_laptop_training_jobs WHERE device_id=$1 AND status IN ('queued','running')",[current])
+   const snapshot=(await db.query('SELECT snapshot FROM weave_laptop_training_status WHERE device_id=$1',[current])).rows[0]?.snapshot
+   if(jobs.rowCount||snapshot?.runs?.some((r:{state?:string})=>['queued','training','evaluating'].includes(r.state||'')))throw Error('Finish or inspect the current node operation before changing nodes')
+  }
+  if(deviceId!==null){
+   const device=await db.query(`SELECT d.id FROM weave_laptop_devices d JOIN users u ON u.id=d.created_by
+    WHERE d.id=$1 AND d.created_by=$2 AND d.revoked_at IS NULL AND d.expires_at>now()
+    AND u.is_active=true AND u.role='admin' FOR UPDATE OF d`,[deviceId,actor])
+   if(!device.rowCount)throw Error('Choose your own active paired laptop')
+  }
+  await db.query(`INSERT INTO weave_laptop_training_node(singleton,device_id,appointed_by) VALUES(true,$1,$2)
+   ON CONFLICT(singleton) DO UPDATE SET device_id=excluded.device_id,appointed_by=excluded.appointed_by,appointed_at=now()`,[deviceId,actor])
+  await db.query('INSERT INTO weave_laptop_events(event,actor_id,device_id) VALUES($1,$2,$3)',[deviceId===null?'training_node_cleared':'training_node_appointed',actor,deviceId])
+  await db.query('COMMIT');return {selectedDeviceId:deviceId}
+ }catch(e){await db.query('ROLLBACK');throw e}finally{db.release()}
+}
 export async function trainingSchema(db:PoolClient){
  await db.query(`CREATE TABLE IF NOT EXISTS weave_laptop_training_jobs(
  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),device_id uuid NOT NULL REFERENCES weave_laptop_devices(id),
@@ -55,7 +103,7 @@ export function trainingAction(body:Record<string,unknown>,actor:string){
 // Called only inside the existing device-authenticated transaction. No second
 // public credential, caller-selected URL, path, executable or shell is accepted.
 export async function trainingExchange(db:PoolClient,device:string,body:Record<string,unknown>){
- if(device!==trainingDevice())throw Error('Device is not the appointed training node')
+ if(device!==await selectedTrainingDevice(db))throw Error('Device is not the appointed training node')
  await trainingSchema(db)
  if(body.action==='training_result'){
   if(typeof body.jobId!=='string'||!/^[a-f0-9-]{36}$/i.test(body.jobId)||typeof body.lease!=='string'||!hex.test(body.lease))throw Error('Invalid training receipt')
@@ -83,10 +131,10 @@ export async function trainingExchange(db:PoolClient,device:string,body:Record<s
  return {job:{id:job.id,lease,payload:job.payload}}
 }
 export async function requestLaptopTraining(actor:string,body?:Record<string,unknown>,jobId?:string){
- const device=trainingDevice()
- if(!device)throw Error('Appoint a paired training device in private server settings')
  const db=await getPool().connect()
  try{
+  const device=await selectedTrainingDevice(db)
+  if(!device)throw Error('Appoint a paired training device in Administrations')
   // Expiry scrubs corpus payloads even when an offline node makes the
   // subsequent authorized status/request transaction fail.
   await trainingSchema(db);await db.query('BEGIN')
@@ -95,6 +143,7 @@ export async function requestLaptopTraining(actor:string,body?:Record<string,unk
    WHERE d.id=$1 AND d.revoked_at IS NULL AND d.expires_at>now() AND u.is_active=true AND u.role='admin'
    AND d.created_by=$2 FOR UPDATE OF d`,[device,actor])).rows[0]
   if(!node||Date.now()-new Date(node.received_at).getTime()>90000)throw Error('Paired training node has no fresh authenticated report')
+  if(device!==await selectedTrainingDevice(db))throw Error('Training node appointment changed; refresh before continuing')
   let result:unknown=node.snapshot
   if(jobId){
    const job=(await db.query('SELECT status,result FROM weave_laptop_training_jobs WHERE id=$1 AND device_id=$2 AND actor_id=$3',[jobId,device,actor])).rows[0]

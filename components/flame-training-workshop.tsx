@@ -3,16 +3,18 @@ import {useEffect,useRef,useState} from 'react'
 import {getClientToken} from '@/lib/client-auth'
 type Run={id:string;state:string;createdAt:string;steps:number;corpus:string;checkpoint?:string;diagnosticPasses?:number;diagnosticCount?:number;metrics?:{validation_loss:number;parameters:number;train_turns:number;validation_turns:number};reason?:string}
 type Active={id:string;checkpoint:string}
+type NodeOptions={selectedDeviceId:string|null;devices:{id:string;label:string}[];hostManaged:boolean}
 type State={ready:boolean;corpus:{sha:string;counts:{train:number;validation:number}}|null;runs:Run[];deployment:{current:Active|null;previous:Active|null};productionEnabled:false}
 const headers=()=>({'Content-Type':'application/json',Authorization:'Bearer '+(getClientToken()||'')})
 const button='rounded-lg border border-border px-3 py-2 text-sm disabled:opacity-40'
 export function FlameTrainingWorkshop(){
  const [state,setState]=useState<State|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false)
+ const [nodes,setNodes]=useState<NodeOptions|null>(null),[nodeChoice,setNodeChoice]=useState('')
  const [file,setFile]=useState<File|null>(null),[reviewed,setReviewed]=useState(false),[steps,setSteps]=useState(500),[parent,setParent]=useState('')
  const [report,setReport]=useState<any>(null),[prompt,setPrompt]=useState(''),[answer,setAnswer]=useState<{text:string;checkpoint:string}|null>(null)
  const lock=useRef(false)
  async function refresh(){
-  try{const r=await fetch('/api/admin/flame-training',{headers:headers(),cache:'no-store'});const b=await r.json();if(!r.ok||!b.ready)throw Error(b.error||b.message||'Worker unavailable.');setState(b);setError('')}
+  try{const r=await fetch('/api/admin/flame-training',{headers:headers(),cache:'no-store'});const b=await r.json();if(b.nodeOptions){setNodes(b.nodeOptions);setNodeChoice(previous=>b.nodeOptions.devices.some((d:{id:string})=>d.id===previous)?previous:b.nodeOptions.selectedDeviceId||'')}if(!r.ok||!b.ready)throw Error(b.error||b.message||'Worker unavailable.');setState(b);setError('')}
   catch(e){setState(null);setError(e instanceof Error?e.message:'Worker unavailable.')}
  }
  useEffect(()=>{void refresh();const t=window.setInterval(()=>{if(!lock.current&&!document.hidden)void refresh()},10000);return()=>window.clearInterval(t)},[])
@@ -39,6 +41,15 @@ export function FlameTrainingWorkshop(){
   <header><h3 className="text-xl font-semibold">Weave One Training Workshop</h3><p className="mt-1 text-sm text-muted-foreground">Private corpus → native training → evaluation → checkpoint deployment to the Administrations pilot. Normal Flame remains independent. Research outputs may be unreliable.</p></header>
   <div className="flex flex-wrap items-center gap-2 text-sm"><span>{state?.ready?'Private worker connected':'Worker connection unverified'}</span><button type="button" className={button} disabled={busy} onClick={()=>void refresh()}>Refresh</button></div>
   <a className="inline-block text-sm underline" href="/admin/sovereign-server">Connect the Weave-owned laptop</a>
+  {nodes&&<div className="space-y-2 rounded-xl border border-border p-3">
+   <h4 className="font-semibold">Private training laptop</h4>
+   <p className="text-xs text-muted-foreground">Appoint a laptop you paired from this Administration account, then start its installed training worker. Oracle remains the live company host.</p>
+   <label className="block text-sm">Paired training laptop<select aria-label="Paired training laptop" className="mt-1 block w-full rounded-lg border border-border bg-background p-2" value={nodeChoice} disabled={busy||training||nodes.hostManaged} onChange={e=>setNodeChoice(e.target.value)}><option value="">Choose a paired laptop</option>{nodes.devices.map(d=><option key={d.id} value={d.id}>{d.label} · {d.id.slice(0,8)}</option>)}</select></label>
+   {nodes.hostManaged?<p className="text-xs">The current node is appointed through private host settings.</p>:<div className="flex flex-wrap gap-2">
+    <button type="button" className={button} disabled={busy||training||!nodeChoice||nodeChoice===nodes.selectedDeviceId} onClick={()=>{const selected=nodes.devices.find(d=>d.id===nodeChoice);if(selected&&window.confirm('Appoint '+selected.label+' for private training only?'))void run(async()=>{await action({action:'appoint_node',deviceId:selected.id,confirmation:'USE PRIVATE TRAINING NODE'});setReport(null);setAnswer(null)})}}>Use private training laptop</button>
+    <button type="button" className={button} disabled={busy||training||!nodes.selectedDeviceId} onClick={()=>{if(window.confirm('Clear the private training node selection? The laptop pairing and its local artifacts are retained.'))void run(async()=>{await action({action:'appoint_node',deviceId:null,confirmation:'CLEAR PRIVATE TRAINING NODE'});setNodeChoice('');setReport(null);setAnswer(null)})}}>Clear training laptop selection</button>
+   </div>}
+  </div>}
   {error&&<p role="alert" className="text-sm text-amber-600">{error}</p>}
   <div className="space-y-2 rounded-xl border border-border p-3">
    <h4 className="font-semibold">1 · Reviewed Flame Words corpus</h4>

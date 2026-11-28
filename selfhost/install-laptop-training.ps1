@@ -17,12 +17,17 @@ $drive=Get-PSDrive -Name $env:SystemDrive.TrimEnd(':')
 if($drive.Free -lt 5GB){throw 'At least 5 GiB free disk required.'}
 New-Item -ItemType Directory -Path $root -Force|Out-Null
 $sid=[Security.Principal.WindowsIdentity]::GetCurrent().User
-$acl=[Security.AccessControl.DirectorySecurity]::new()
-$acl.SetOwner($sid);$acl.SetAccessRuleProtection($true,$false)
+$acl=Get-Acl -LiteralPath $root
+$acl.SetAccessRuleProtection($true,$false)
+foreach($rule in @($acl.Access)){$acl.RemoveAccessRuleSpecific($rule)}
 foreach($principal in @($sid,[Security.Principal.SecurityIdentifier]::new('S-1-5-18'))){
  $acl.AddAccessRule([Security.AccessControl.FileSystemAccessRule]::new($principal,'FullControl','ContainerInherit, ObjectInherit','None','Allow'))
 }
-Set-Acl -LiteralPath $root -AclObject $acl
+if($PSVersionTable.PSEdition -eq 'Core'){
+ [IO.FileSystemAclExtensions]::SetAccessControl([IO.DirectoryInfo]::new($root),$acl)
+}else{
+ [IO.Directory]::SetAccessControl($root,$acl)
+}
 New-Item -ItemType Directory -Path $target|Out-Null
 & $Python -m venv (Join-Path $target 'venv')
 if($LASTEXITCODE -ne 0){throw 'Virtual environment creation failed.'}
