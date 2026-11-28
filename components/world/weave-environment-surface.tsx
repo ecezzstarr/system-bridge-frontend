@@ -16,11 +16,11 @@ const InlineFlame = dynamic(() => import('@/components/personal-flame').then(m =
 })
 
 /** A deliberate, in-flow environment instrument, not an advertisement or overlay. */
-function FlameEnvironmentStation({ title, district }: { title: string; district: string }) {
+function FlameEnvironmentStation({ title, district, purpose }: { title: string; district: string; purpose: string }) {
   const [opened, setOpened] = useState(false)
   const [activated, setActivated] = useState(false)
   return (
-    <section data-weave-flame-presence="integrated" aria-label="Flame environment presence" className="relative mx-2 mb-3 min-w-0 rounded-xl border border-amber-600/20 bg-background text-foreground sm:mx-4">
+    <section data-weave-flame-presence="integrated" aria-label="Flame environment presence" className="relative mx-2 mb-3 mt-[calc(3.75rem+env(safe-area-inset-top))] min-w-0 rounded-xl border border-amber-600/20 bg-background text-foreground sm:mx-4">
       <div className="flex min-w-0 flex-wrap items-center gap-2 px-3 py-2 sm:px-4">
         <button type="button" aria-expanded={opened} aria-controls="weave-flame-environment-interaction" onClick={() => { setActivated(true); setOpened(value => !value) }} className="flex min-h-11 min-w-0 flex-1 items-center gap-3 text-left">
           <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-300"><Flame className="h-5 w-5" aria-hidden="true" /></span>
@@ -31,6 +31,7 @@ function FlameEnvironmentStation({ title, district }: { title: string; district:
         <Link href="/flame" className="flex min-h-11 shrink-0 items-center gap-1 border-l border-border pl-3 text-xs font-medium" aria-label="Enter the full Flame building">Building <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" /></Link>
       </div>
       <div id="weave-flame-environment-interaction" hidden={!opened} className="px-2 pb-2 sm:px-3">
+        <p className="px-2 pb-3 text-xs leading-relaxed text-muted-foreground">{purpose}</p>
         {activated && <InlineFlame embedded environmentTitle={title} />}
       </div>
     </section>
@@ -66,7 +67,7 @@ export function WeaveEnvironmentSurface({
         data-environment-interior="station"
         data-ai-station-presence="contextual"
       >
-        {showFlame && <FlameEnvironmentStation key={user?.id} title={environment.title} district={environment.district} />}
+        {showFlame && <FlameEnvironmentStation key={`${user?.id}:${user?.role}`} title={environment.title} district={environment.district} purpose={environment.purpose} />}
         {children}
       </div>
     </section>
