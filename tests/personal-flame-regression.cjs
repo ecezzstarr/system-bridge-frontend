@@ -55,3 +55,22 @@ assert.match(f.personalFlameNativeReply('do it',history),/Specify the operation/
 assert.match(f.nativeFlameClarification('unknown direction','client'),/No action has been taken/)
 assert(route.includes('nativeFlameClarification(message,user.role)'))
 assert(fs.readFileSync('components/personal-flame.tsx','utf8').includes('FlameModelPilot'))
+
+const environmentSurface=fs.readFileSync('components/world/weave-environment-surface.tsx','utf8')
+const flameWorkspace=fs.readFileSync('components/personal-flame.tsx','utf8')
+const header=fs.readFileSync('components/app-header.tsx','utf8')
+assert(environmentSurface.includes('data-weave-flame-presence="integrated"'))
+assert(environmentSurface.includes('isAuthenticated && user?.id'))
+assert(environmentSurface.includes("pathname !== '/flame'")&&environmentSurface.includes('!isFlameEventVisualRoute(pathname)'))
+assert(environmentSurface.includes('hidden={!opened}')&&environmentSurface.includes('activated && <InlineFlame embedded'))
+assert(environmentSurface.includes('title={environment.title}')&&environmentSurface.includes('purpose={environment.purpose}'))
+assert(environmentSurface.includes('key={`${user?.id}:${user?.role}`}'))
+assert(environmentSurface.includes('<Link href="/flame"'))
+assert(flameWorkspace.includes('if(!embedded)field.current?.focus()'))
+assert(flameWorkspace.includes('Company service reached')&&!flameWorkspace.includes('Native runtime connected'))
+assert(header.includes('data-weave-flame-entry="presence"'))
+for (const file of ['components/world/weave-environment-surface.tsx','components/personal-flame.tsx','components/app-header.tsx']) {
+ const result=ts.transpileModule(fs.readFileSync(file,'utf8'),{fileName:file,reportDiagnostics:true,compilerOptions:{jsx:ts.JsxEmit.Preserve,target:ts.ScriptTarget.ES2022}})
+ assert.equal((result.diagnostics||[]).filter(d=>d.category===ts.DiagnosticCategory.Error).length,0,file+' TSX syntax')
+}
+console.log('Integrated in-flow Flame presence source contract passed')
